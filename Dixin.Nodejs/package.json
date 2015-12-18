@@ -1,0 +1,14 @@
+{
+  "name": "Dixin.Nodejs",
+  "version": "1.0.0",
+  "description": "Code snippets for blog https://weblogs.asp.net/dixin.",
+  "main": "app.js",
+  "author": {
+    "name": "dixin",
+    "email": "dixinyan@live.com"
+  },
+  "dependencies": {
+    "q": "^1.4.1",
+    "tumblr-auto-auth": "^0.2.0"
+  }
+}

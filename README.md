@@ -1,2 +1,2 @@
-# CodeSnippets
-Code snippets for my blog https://weblogs.asp.net/dixin
+# Code Snippets
+Code snippets for blog https://weblogs.asp.net/dixin.
