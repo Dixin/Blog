@@ -1,10 +1,12 @@
-﻿namespace Dixin.Linq.Functional.Tests
+﻿namespace Dixin.Tests.Linq.Functional
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
+
     using Dixin.Linq.Functional;
     using Dixin.TestTools.UnitTesting;
+
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]

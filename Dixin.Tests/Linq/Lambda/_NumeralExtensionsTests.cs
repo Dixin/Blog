@@ -1,6 +1,9 @@
-﻿namespace Dixin.Linq.Lambda.Tests
+﻿namespace Dixin.Tests.Linq.Lambda
 {
     using System;
+
+    using Dixin.Linq.Lambda;
+
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     public static class UInt32Extensions

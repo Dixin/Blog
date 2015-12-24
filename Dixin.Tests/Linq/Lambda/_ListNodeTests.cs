@@ -1,5 +1,7 @@
-﻿namespace Dixin.Linq.Lambda.Tests
+﻿namespace Dixin.Tests.Linq.Lambda
 {
+    using Dixin.Linq.Lambda;
+
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]

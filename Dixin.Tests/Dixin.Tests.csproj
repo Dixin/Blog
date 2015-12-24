@@ -148,7 +148,8 @@
     <Compile Include="Linq\CategoryTheory\MonoidTests.cs" />
     <Compile Include="Linq\CategoryTheory\NaturalTransformationsTests.cs" />
     <Compile Include="Linq\CategoryTheory\StackTests.cs" />
-    <Compile Include="Linq\Combinators\CombinatorTests.cs" />
+    <Compile Include="Linq\Combinators\IotaCombinatorTests.cs" />
+    <Compile Include="Linq\Combinators\SkiCombinatorsTests.cs" />
     <Compile Include="Linq\EnumerableXTests.cs" />
     <Compile Include="Linq\Functional\FunctionalQueryMethodsTests.cs" />
     <Compile Include="Linq\Lambda\ChurchBooleanTests.cs" />

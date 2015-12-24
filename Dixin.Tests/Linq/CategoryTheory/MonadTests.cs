@@ -5,7 +5,9 @@
     using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
+
     using Dixin.TestTools.UnitTesting;
+
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     public partial class MonadTests

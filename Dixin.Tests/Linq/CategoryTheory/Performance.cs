@@ -30,67 +30,65 @@
 
     public class PersonReferenceType : IComparable<PersonReferenceType>
     {
+        private static readonly string LongString =
+            Enumerable.Range(0, 10000).Select(_ => Guid.NewGuid().ToString()).Aggregate(string.Concat);
+
         public string Name { get; set; }
 
         public int Age { get; set; }
 
         public string Description { get; set; }
 
-        public int CompareTo(PersonReferenceType other)
-        {
-            int nameCompare = string.Compare(this.Name, other.Name, StringComparison.OrdinalIgnoreCase);
-            return nameCompare != 0 ? nameCompare : this.Age.CompareTo(other.Age);
-        }
-
-        private static readonly string longString =
-            Enumerable.Range(0, 10000).Select(_ => Guid.NewGuid().ToString()).Aggregate(string.Concat);
-
-        private static readonly Random random = new Random();
-
         public static IEnumerable<PersonReferenceType> Random(int count)
         {
+            Random random = new Random();
             for (int i = 0; i < count; i++)
             {
                 yield return new PersonReferenceType()
                 {
                     Name = Guid.NewGuid().ToString(),
                     Age = random.Next(0, 100),
-                    Description = longString
+                    Description = LongString
                 };
             }
+        }
+
+        public int CompareTo(PersonReferenceType other)
+        {
+            int nameCompare = string.Compare(this.Name, other.Name, StringComparison.OrdinalIgnoreCase);
+            return nameCompare != 0 ? nameCompare : this.Age.CompareTo(other.Age);
         }
     }
 
     public class PersonValueType : IComparable<PersonValueType>
     {
+        private static readonly string LongString =
+            Enumerable.Range(0, 10000).Select(_ => Guid.NewGuid().ToString()).Aggregate(string.Concat);
+
         public string Name { get; set; }
 
         public int Age { get; set; }
 
         public string Description { get; set; }
 
-        public int CompareTo(PersonValueType other)
-        {
-            int nameCompare = string.Compare(this.Name, other.Name, StringComparison.OrdinalIgnoreCase);
-            return nameCompare != 0 ? nameCompare : this.Age.CompareTo(other.Age);
-        }
-
-        private static readonly string longString =
-            Enumerable.Range(0, 10000).Select(_ => Guid.NewGuid().ToString()).Aggregate(string.Concat);
-
-        private static readonly Random random = new Random();
-
         public static IEnumerable<PersonValueType> Random(int count)
         {
+            Random random = new Random();
             for (int i = 0; i < count; i++)
             {
                 yield return new PersonValueType()
                 {
                     Name = Guid.NewGuid().ToString(),
                     Age = random.Next(0, 100),
-                    Description = longString
+                    Description = LongString
                 };
             }
+        }
+
+        public int CompareTo(PersonValueType other)
+        {
+            int nameCompare = string.Compare(this.Name, other.Name, StringComparison.OrdinalIgnoreCase);
+            return nameCompare != 0 ? nameCompare : this.Age.CompareTo(other.Age);
         }
     }
 

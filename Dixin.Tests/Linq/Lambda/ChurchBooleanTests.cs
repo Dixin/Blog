@@ -1,5 +1,7 @@
-﻿namespace Dixin.Linq.Lambda.Tests
+﻿namespace Dixin.Tests.Linq.Lambda
 {
+    using Dixin.Linq.Lambda;
+
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
@@ -63,31 +65,31 @@
             Assert.AreEqual(false ^ false, False.Xor(False)._Unchurch());
         }
 
-[TestMethod]
-public void IfTest()
-{
-    Assert.AreEqual(
-        true ? true && false : true || false,
-        ChurchBoolean.If<Boolean>(True)(_ => True.And(False))(_ => True.Or(False))._Unchurch());
-    Assert.AreEqual(
-        false ? true && false : true || false,
-        ChurchBoolean.If<Boolean>(False)(_ => True.And(False))(_ => True.Or(False))._Unchurch());
+        [TestMethod]
+        public void IfTest()
+        {
+            Assert.AreEqual(
+                true ? true && false : true || false,
+                ChurchBoolean.If<Boolean>(True)(_ => True.And(False))(_ => True.Or(False))._Unchurch());
+            Assert.AreEqual(
+                false ? true && false : true || false,
+                ChurchBoolean.If<Boolean>(False)(_ => True.And(False))(_ => True.Or(False))._Unchurch());
 
-    bool isTrueBranchExecuted = false;
-    bool isFalseBranchExecuted = false;
-    ChurchBoolean.If<object>(True)
-        (_ => { isTrueBranchExecuted = true; return null; })
-        (_ => { isFalseBranchExecuted = true; return null; });
-    Assert.IsTrue(isTrueBranchExecuted);
-    Assert.IsFalse(isFalseBranchExecuted);
+            bool isTrueBranchExecuted = false;
+            bool isFalseBranchExecuted = false;
+            ChurchBoolean.If<object>(True)
+                (_ => { isTrueBranchExecuted = true; return null; })
+                (_ => { isFalseBranchExecuted = true; return null; });
+            Assert.IsTrue(isTrueBranchExecuted);
+            Assert.IsFalse(isFalseBranchExecuted);
 
-    isTrueBranchExecuted = false;
-    isFalseBranchExecuted = false;
-    ChurchBoolean.If<object>(False)
-        (_ => { isTrueBranchExecuted = true; return null; })
-        (_ => { isFalseBranchExecuted = true; return null; });
-    Assert.IsFalse(isTrueBranchExecuted);
-    Assert.IsTrue(isFalseBranchExecuted);
-}
+            isTrueBranchExecuted = false;
+            isFalseBranchExecuted = false;
+            ChurchBoolean.If<object>(False)
+                (_ => { isTrueBranchExecuted = true; return null; })
+                (_ => { isFalseBranchExecuted = true; return null; });
+            Assert.IsFalse(isTrueBranchExecuted);
+            Assert.IsTrue(isFalseBranchExecuted);
+        }
     }
 }

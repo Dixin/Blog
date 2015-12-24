@@ -1,10 +1,12 @@
-﻿namespace Dixin.Linq.LinqToObjects.Tests
+﻿namespace Dixin.Tests.Linq.LinqToObjects
 {
     using System;
     using System.Collections.Generic;
     using System.Linq;
+
     using Dixin.Linq.LinqToObjects;
     using Dixin.TestTools.UnitTesting;
+
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]

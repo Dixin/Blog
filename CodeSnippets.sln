@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.23107.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dixin", "Dixin\Dixin.csproj", "{348FDE06-D850-4118-8796-E2AEE8DF6376}"
 EndProject
@@ -18,11 +18,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{F59804F9
 		Tools\CodeAnalysisDictionary.xml = Tools\CodeAnalysisDictionary.xml
 		Tools\CommonAssemblyInfo.cs = Tools\CommonAssemblyInfo.cs
 		Tools\CommonAssemblyInfo.fs = Tools\CommonAssemblyInfo.fs
+		Tools\VS2015.gitconfig = Tools\VS2015.gitconfig
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{40BB63C5-B016-4623-A4E3-77AE54FE3147}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		CodeSnippets.sln.DotSettings = CodeSnippets.sln.DotSettings
 		LICENSE = LICENSE
 		README.md = README.md
 	EndProjectSection

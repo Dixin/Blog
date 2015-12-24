@@ -1,6 +1,8 @@
-namespace Dixin.Linq.CategoryTheory.Tests
+namespace Dixin.Tests.Linq.CategoryTheory
 {
     using System;
+
+    using Dixin.Linq.CategoryTheory;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 

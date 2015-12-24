@@ -7,7 +7,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace Dixin.Dynamic.Tests
+namespace Dixin.Tests.Dynamic
 {
     using System;
     using System.Globalization;
@@ -16,7 +16,7 @@ namespace Dixin.Dynamic.Tests
     {
         #region Constants and Fields
 
-        private readonly int[,] _array = new int[10, 10];
+        private readonly int[,] array = new int[10, 10];
 
         #endregion
 
@@ -42,12 +42,12 @@ namespace Dixin.Dynamic.Tests
         {
             get
             {
-                return this._array[x, y].ToString(CultureInfo.InvariantCulture);
+                return this.array[x, y].ToString(CultureInfo.InvariantCulture);
             }
 
             set
             {
-                this._array[x, y] = Convert.ToInt32(value);
+                this.array[x, y] = Convert.ToInt32(value);
             }
         }
 

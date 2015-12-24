@@ -4,8 +4,10 @@
     using System.Collections.Generic;
     using System.Globalization;
     using System.Threading.Tasks;
-    using Dixin.TestTools.UnitTesting;
+
     using Dixin.Linq.CategoryTheory;
+    using Dixin.TestTools.UnitTesting;
+
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]

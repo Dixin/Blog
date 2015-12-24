@@ -7,13 +7,14 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace Dixin.Dynamic.Tests
+namespace Dixin.Tests.Dynamic
 {
     using System.Collections.Generic;
     using System.Linq;
+
     using Dixin.Dynamic;
-    using Dixin.Tests.Dynamic;
     using Dixin.Tests.Properties;
+
     using Microsoft.CSharp.RuntimeBinder;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -23,7 +24,7 @@ namespace Dixin.Dynamic.Tests
         #region Public Methods
 
         [TestMethod]
-        public void Static_Memebr()
+        public void StaticMemebr()
         {
             Assert.AreEqual(0, StaticTest.Value);
             dynamic wrapper = new DynamicWrapper<StaticTest>();
@@ -36,7 +37,7 @@ namespace Dixin.Dynamic.Tests
         }
 
         [TestMethod]
-        public void TryGetIndex_TrySetIndex_From_Type()
+        public void GetSetIndexFromType()
         {
             BaseTest @base = new BaseTest();
             Assert.AreEqual("0", @base[5, 5]);
@@ -47,14 +48,14 @@ namespace Dixin.Dynamic.Tests
         }
 
         [TestMethod]
-        public void TryGetMember_TryInvokeMember_From_Base()
+        public void GetInvokeMemberFromBase()
         {
-            Assert.AreEqual(0, new DerivedTest().ToDynamic()._array[6, 6]);
-            Assert.AreEqual(0, new DerivedTest().ToDynamic()._array.ToStatic()[6, 6]);
+            Assert.AreEqual(0, new DerivedTest().ToDynamic().array[6, 6]);
+            Assert.AreEqual(0, new DerivedTest().ToDynamic().array.ToStatic()[6, 6]);
         }
 
         [TestMethod]
-        public void TryGetMember_TryInvokeMember_TryConvert_From_Type()
+        public void GetInvokeMemberConvertFromType()
         {
             using (NorthwindDataContext database = new NorthwindDataContext(Settings.Default.NorthwindConnectionString))
             {
@@ -67,7 +68,7 @@ namespace Dixin.Dynamic.Tests
         }
 
         [TestMethod]
-        public void Value_Type()
+        public void ValueType()
         {
             StructTest test = new StructTest(1);
             dynamic wrapper = test.ToDynamic();
@@ -84,7 +85,7 @@ namespace Dixin.Dynamic.Tests
 
         [TestMethod]
         [ExpectedException(typeof(RuntimeBinderException))]
-        public void Value_Type_Property()
+        public void ValueTypeProperty()
         {
             StructTest test2 = new StructTest(10);
             dynamic wrapper2 = new DynamicWrapper<StructTest>(ref test2);
