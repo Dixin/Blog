@@ -278,6 +278,7 @@
     <Content Include="Linq\LinqToEntities\Mapping.sql" />
     <Content Include="Linq\LinqToSql\EntityModel.sql" />
     <Content Include="Linq\LinqToSql\Mapping.sql" />
+    <Content Include="Sql\AdventureWorks.Delete.sql" />
     <Content Include="Sql\AdventureWorks.sql" />
     <Content Include="Sql\Database.sql" />
     <Content Include="Sql\Server.sql" />
