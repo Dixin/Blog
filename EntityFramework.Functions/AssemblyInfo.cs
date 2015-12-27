@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("EntityFramework.Functions")]
-[assembly: AssemblyDescription("This library implements Entity Framework code first support for stored procedures, table-valued functions, scalar-valued functions (composable or non-composable), aggregate functions, built-in functions, and niladic function.")]
+[assembly: AssemblyDescription("EntityFramework.Functions library implements Entity Framework code first support for stored procedures, table-valued functions, scalar-valued functions (composable or non-composable), aggregate functions, built-in functions, and niladic function.")]
 [assembly: AssemblyCompany("Dixin Yan")]
 [assembly: AssemblyProduct("EntityFramework.Functions")]
 [assembly: AssemblyCopyright("Dixin Yan https://weblogs.asp.net/dixin")]

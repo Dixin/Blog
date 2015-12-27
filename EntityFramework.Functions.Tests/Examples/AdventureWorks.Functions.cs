@@ -74,7 +74,7 @@
         public decimal? ufnGetProductListPrice(
             [Parameter(DbType = "int")] int ProductID,
             [Parameter(DbType = "datetime")] DateTime OrderDate) => 
-                Function.CallNotSupported<decimal?>(nameof(this.ufnGetProductListPrice));
+                Function.CallNotSupported<decimal?>();
 
         // Defines scalar-valued function (composable), 
         // which cannot be used in LINQ to Entities queries;

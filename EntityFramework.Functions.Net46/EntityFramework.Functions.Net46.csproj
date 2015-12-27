@@ -4,14 +4,13 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{20128F9B-B68D-4E51-A0E9-67EB1E7B9402}</ProjectGuid>
+    <ProjectGuid>{1F4A3422-908A-4EA0-98D8-B3AD8F402FAF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>EntityFramework.Functions</RootNamespace>
     <AssemblyName>EntityFramework.Functions</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -21,7 +20,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,15 +28,14 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.1.0\lib\net40\EntityFramework.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.1.0\lib\net40\EntityFramework.SqlServer.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.1.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -47,24 +44,39 @@
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DbContextExtensions.cs" />
-    <Compile Include="Function.cs" />
-    <Compile Include="Function.DbModel.cs" />
-    <Compile Include="Function.DbModelBuilder.cs" />
-    <Compile Include="Function.MethodInfo.cs" />
-    <Compile Include="FunctionAttribute.cs" />
-    <Compile Include="FunctionConvention.cs" />
-    <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="Utilities.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
+    <Compile Include="..\EntityFramework.Functions\AssemblyInfo.cs">
+      <Link>AssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\EntityFramework.Functions\DbContextExtensions.cs">
+      <Link>DbContextExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\EntityFramework.Functions\Function.cs">
+      <Link>Function.cs</Link>
+    </Compile>
+    <Compile Include="..\EntityFramework.Functions\Function.DbModel.cs">
+      <Link>Function.DbModel.cs</Link>
+    </Compile>
+    <Compile Include="..\EntityFramework.Functions\Function.DbModelBuilder.cs">
+      <Link>Function.DbModelBuilder.cs</Link>
+    </Compile>
+    <Compile Include="..\EntityFramework.Functions\Function.MethodInfo.cs">
+      <Link>Function.MethodInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\EntityFramework.Functions\FunctionAttribute.cs">
+      <Link>FunctionAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\EntityFramework.Functions\FunctionConvention.cs">
+      <Link>FunctionConvention.cs</Link>
+    </Compile>
+    <Compile Include="..\EntityFramework.Functions\Utilities.cs">
+      <Link>Utilities.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
-  <Import Project="$(SolutionDir)Tools\TargetFrameworkVersion.prop" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)Tools\TargetFrameworkVersion.prop" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

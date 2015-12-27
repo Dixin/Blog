@@ -61,13 +61,5 @@ namespace EntityFramework.Functions
 
             modelBuilder.Conventions.Add(new FunctionConvention(functionsType));
         }
-
-        // .NET 4.5- does not have [CallerMemberName].
-        public static T CallNotSupported<T>(string methodName)
-        {
-            // System.Data.Entity.Strings.ELinq_EdmFunctionDirectCall.
-            throw new NotSupportedException(
-                $"Direct call to method {methodName} is not supported. This function can only be invoked from LINQ to Entities.");
-        }
     }
 }
