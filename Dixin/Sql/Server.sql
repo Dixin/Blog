@@ -25,14 +25,22 @@ GO
 EXEC sys.sp_detach_db @dbname = N'Northwind', @skipchecks = N'true';
 GO
 
+-- Set database offline
+ALTER DATABASE [AdventureWorks] SET OFFLINE WITH ROLLBACK IMMEDIATE;
+GO
+
+-- Set database online.
+ALTER DATABASE [AdventureWorks] SET ONLINE;
+GO
+
 -- Change compatibility mode.
-ALTER DATABASE [AdventureWorks2014]
+ALTER DATABASE [AdventureWorks]
 SET COMPATIBILITY_LEVEL = 110;
 GO
 
 -- Query compatibility mode.
 SELECT compatibility_level
-FROM sys.databases WHERE name = N'AdventureWorks2014';
+FROM sys.databases WHERE name = N'AdventureWorks';
 GO
 
 -- Create server login.

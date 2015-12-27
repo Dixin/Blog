@@ -26,26 +26,6 @@
             }
         }
 
-        //[TestMethod]
-        //public void CallStoredProcedureWithExecuteStoreQuery()
-        //{
-        //    using (AdventureWorks database = new AdventureWorks())
-        //    {
-        //        ISingleResult<ManagerEmployee> employees = database.uspGetManagerEmployees(2);
-        //        EnumerableAssert.Any(employees);
-        //    }
-        //}
-
-        //[TestMethod]
-        //public void CallFunction()
-        //{
-        //    using (AdventureWorks database = new AdventureWorks())
-        //    {
-        //        IQueryable<ContactInformation> employees = database.ufnGetContactInformation(1);
-        //        EnumerableAssert.Single(employees);
-        //    }
-        //}
-
         [TestMethod]
         public void CallStoredProcedureWithSingleResult()
         {
@@ -62,9 +42,9 @@
             using (AdventureWorks database = new AdventureWorks())
             {
                 int? errorLogId = 5;
-                int rows = database.uspLogError(ref errorLogId);
+                int returnValue = database.uspLogError(ref errorLogId);
                 Assert.AreEqual(0, errorLogId.Value);
-                Assert.AreEqual(0, rows);
+                Assert.AreEqual(0, returnValue);
             }
         }
 

@@ -261,6 +261,7 @@
     <Compile Include="..\Tools\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Common\AppDomainData.cs" />
     <Compile Include="Common\AppDomain`1.cs" />
     <Compile Include="Common\Argument.cs" />
     <Compile Include="Common\ExceptionExtensions.cs" />
@@ -268,11 +269,6 @@
     <Compile Include="Data\Services\WcfWebSocketService.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.cs" />
     <Compile Include="Linq\LinqToEntities\DbContextExtensions.cs" />
-    <Compile Include="Linq\LinqToEntities\DbModelBuilderExtensons.cs" />
-    <Compile Include="Linq\LinqToEntities\FunctionConvention`1.cs" />
-    <Compile Include="Linq\LinqToEntities\FunctionConvention.DbModel.cs" />
-    <Compile Include="Linq\LinqToEntities\FunctionAttribute.cs" />
-    <Compile Include="Linq\LinqToEntities\FunctionConvention.MethodInfo.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.cs" />
     <Compile Include="Management\Win32_Process.cs" />
     <Compile Include="IO\Music.cs" />

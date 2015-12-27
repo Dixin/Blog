@@ -38,13 +38,13 @@ FROM
 	INNER JOIN sys.objects ON sys.objects.object_id = col.referenced_object_id;
 
 -- Change compatibility mode.
-ALTER DATABASE [AdventureWorks2014]
+ALTER DATABASE [AdventureWorks]
 SET COMPATIBILITY_LEVEL = 110;
 GO
 
 -- Query compatibility mode.
 SELECT compatibility_level
-FROM sys.databases WHERE name = N'AdventureWorks2014';
+FROM sys.databases WHERE name = N'AdventureWorks';
 GO
 
 -- Query table-valued function result.

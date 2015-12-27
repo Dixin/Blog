@@ -9,7 +9,7 @@ SELECT
 	[Precision] = 10,
 	[Scale] = 0
 WHERE
-	OBJECTPROPERTY(OBJECT_ID(N'AdventureWorks2014.HumanResources.uspUpdateEmployeePersonalInfo'), 'IsProcedure') = 1
+	OBJECTPROPERTY(OBJECT_ID(N'AdventureWorks.HumanResources.uspUpdateEmployeePersonalInfo'), 'IsProcedure') = 1
 UNION
 SELECT
 	[Name] = CASE WHEN p.name <> '' THEN p.name ELSE '@RETURN_VALUE' END,
@@ -25,6 +25,6 @@ FROM
 	INNER JOIN sys.types ut ON p.user_type_id = ut.user_type_id
 	LEFT OUTER JOIN sys.types st ON ut.system_type_id = st.user_type_id AND ut.system_type_id = st.system_type_id
 WHERE
-	object_id = OBJECT_ID(N'AdventureWorks2014.HumanResources.uspUpdateEmployeePersonalInfo')
+	object_id = OBJECT_ID(N'AdventureWorks.HumanResources.uspUpdateEmployeePersonalInfo')
 ORDER BY
 	2

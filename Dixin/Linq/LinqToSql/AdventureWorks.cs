@@ -4,18 +4,31 @@
     using System.Collections.Generic;
     using System.Data.Linq;
     using System.Data.Linq.Mapping;
+    using System.IO;
     using System.Linq;
     using System.Reflection;
 
-    using Properties;
-    using Reflection;
+    using Dixin.Common;
+    using Dixin.Properties;
+    using Dixin.Reflection;
 
-    [Database(Name = "[AdventureWorks2014]")]
+    [Database(Name = "[AdventureWorks]")]
     public partial class AdventureWorks : DataContext
     {
         public AdventureWorks()
             : base(Settings.Default.AdventureWorksConnectionString)
         {
+        }
+
+        static AdventureWorks()
+        {
+            // Initializes |DataDirectory| in connection string.
+            // <connectionStrings>
+            //  <add name="EntityFramework.Functions.Tests.Properties.Settings.AdventureWorksConnectionString"
+            //    connectionString="Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\AdventureWorks_Data.mdf;Integrated Security=True;Connect Timeout=30"
+            //    providerName="System.Data.SqlClient" />
+            // </connectionStrings>
+            AppDomainData.DataDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\Data");
         }
     }
 
@@ -324,26 +337,23 @@
 
         [Function(Name = "dbo.ufnGetContactInformation", IsComposable = true)]
         public IQueryable<ContactInformation> ufnGetContactInformation(
-            [Parameter(Name = "PersonID", DbType = "Int")] int? personID)
-        {
-            return this.CreateMethodCallQuery<ContactInformation>(this, (MethodInfo)MethodBase.GetCurrentMethod(), personID);
-        }
+            [Parameter(Name = "PersonID", DbType = "Int")] int? personID) => 
+                this.CreateMethodCallQuery<ContactInformation>(
+                    this, (MethodInfo)MethodBase.GetCurrentMethod(), personID);
 
         [Function(Name = "dbo.ufnGetProductListPrice", IsComposable = true)]
         public decimal? ufnGetProductListPrice(
             [Parameter(Name = "ProductID", DbType = "Int")] int? productID, 
-            [Parameter(Name = "OrderDate", DbType = "DateTime")] DateTime? orderDate)
-        {
-            return (decimal?)this.ExecuteMethodCall(this, (MethodInfo)MethodBase.GetCurrentMethod(), productID, orderDate).ReturnValue;
-        }
+            [Parameter(Name = "OrderDate", DbType = "DateTime")] DateTime? orderDate) => 
+                (decimal?)this.ExecuteMethodCall(
+                    this, (MethodInfo)MethodBase.GetCurrentMethod(), productID, orderDate).ReturnValue;
 
         [Function(Name = "dbo.ufnGetProductStandardCost", IsComposable = true)]
         public decimal? ufnGetProductStandardCost(
             [Parameter(Name = "ProductID", DbType = "Int")] int? productID, 
-            [Parameter(Name = "OrderDate", DbType = "DateTime")] DateTime? orderDate)
-        {
-            return (decimal?)this.ExecuteMethodCall(this, (MethodInfo)MethodBase.GetCurrentMethod(), productID, orderDate).ReturnValue;
-        }
+            [Parameter(Name = "OrderDate", DbType = "DateTime")] DateTime? orderDate) => 
+                (decimal?)this.ExecuteMethodCall(
+                    this, (MethodInfo)MethodBase.GetCurrentMethod(), productID, orderDate).ReturnValue;
     }
 
     public partial class ContactInformation

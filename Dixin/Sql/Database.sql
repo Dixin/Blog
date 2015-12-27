@@ -53,3 +53,6 @@ GO
 -- Drop assembly.
 DROP ASSEMBLY [Dixin.Sql];
 GO
+
+-- Table space usage
+sys.sp_msforeachtable N'sys.sp_spaceused [?]'
