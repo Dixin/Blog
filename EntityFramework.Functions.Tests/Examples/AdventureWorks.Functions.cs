@@ -7,7 +7,7 @@
 
     public partial class AdventureWorks
     {
-        public const string DboSchema = "dbo";
+        public const string dbo = nameof(dbo);
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
@@ -20,9 +20,9 @@
             modelBuilder.AddFunctions(typeof(NiladicFunctions));
         }
 
-        // Defines stored procedure returning a single result: 
+        // Defines stored procedure returning a single result type: 
         // - a ManagerEmployee sequence.
-        [Function(nameof(uspGetManagerEmployees), FunctionType.StoredProcedure, Schema = DboSchema)]
+        [Function(FunctionType.StoredProcedure, nameof(uspGetManagerEmployees), Schema = dbo)]
         public ObjectResult<ManagerEmployee> uspGetManagerEmployees(int? BusinessEntityID)
         {
             ObjectParameter businessEntityIdParameter = BusinessEntityID.HasValue
@@ -33,17 +33,18 @@
                 nameof(this.uspGetManagerEmployees), businessEntityIdParameter);
         }
 
+        private const string uspLogError = nameof(uspLogError);
+
         // Defines stored procedure accepting an output parameter.
         // Output parameter must be ObjectParameter, with ParameterAttribute.ClrType provided.
-        [Function(nameof(uspLogError), FunctionType.StoredProcedure, Schema = DboSchema)]
-        public int uspLogError(
-            [Parameter(DbType = "int", ClrType = typeof(int))]ObjectParameter ErrorLogID) =>
-                this.ObjectContext().ExecuteFunction(nameof(this.uspLogError), ErrorLogID);
+        [Function(FunctionType.StoredProcedure, uspLogError, Schema = dbo)]
+        public int LogError([Parameter(DbType = "int", ClrType = typeof(int))]ObjectParameter ErrorLogID) =>
+            this.ObjectContext().ExecuteFunction(uspLogError, ErrorLogID);
 
-        // Defines stored procedure returning a multiple results: 
+        // Defines stored procedure returning multiple result types: 
         // - a ProductCategory sequence.
         // - a ProductSubcategory sequence.
-        [Function(nameof(uspGetCategoryAndSubCategory), FunctionType.StoredProcedure, Schema = DboSchema)]
+        [Function(FunctionType.StoredProcedure, nameof(uspGetCategoryAndSubCategory), Schema = dbo)]
         [ResultType(typeof(ProductCategory))]
         [ResultType(typeof(ProductSubcategory))]
         public ObjectResult<ProductCategory> uspGetCategoryAndSubCategory(int CategoryID)
@@ -54,7 +55,7 @@
         }
 
         // Defines table-valued function, which must return IQueryable<T>.
-        [Function(nameof(ufnGetContactInformation), FunctionType.TableValuedFunction, Schema = DboSchema)]
+        [Function(FunctionType.TableValuedFunction, nameof(ufnGetContactInformation), Schema = dbo)]
         public IQueryable<ContactInformation> ufnGetContactInformation(
             [Parameter(DbType = "int", Name = "PersonID")]int? personId)
         {
@@ -69,17 +70,17 @@
         // Defines scalar-valued function (composable),
         // which can only be used in LINQ to Entities queries, where its body will never be executed;
         // and cannot be called directly.
-        [Function(nameof(ufnGetProductListPrice), FunctionType.ComposableScalarValuedFunction, Schema = DboSchema)]
+        [Function(FunctionType.ComposableScalarValuedFunction, nameof(ufnGetProductListPrice), Schema = dbo)]
         [return: Parameter(DbType = "money")]
         public decimal? ufnGetProductListPrice(
             [Parameter(DbType = "int")] int ProductID,
             [Parameter(DbType = "datetime")] DateTime OrderDate) => 
                 Function.CallNotSupported<decimal?>();
 
-        // Defines scalar-valued function (composable), 
+        // Defines scalar-valued function (non-composable), 
         // which cannot be used in LINQ to Entities queries;
         // and can be called directly.
-        [Function(nameof(ufnGetProductStandardCost), FunctionType.NonComposableScalarValuedFunction, Schema = DboSchema)]
+        [Function(FunctionType.NonComposableScalarValuedFunction, nameof(ufnGetProductStandardCost), Schema = dbo)]
         [return: Parameter(DbType = "money")]
         public decimal? ufnGetProductStandardCost(
             [Parameter(DbType = "int")]int ProductID,

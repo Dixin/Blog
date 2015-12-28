@@ -28,7 +28,7 @@
             using (AdventureWorks database = new AdventureWorks())
             {
                 ObjectParameter errorLogId = new ObjectParameter("ErrorLogID", typeof(int)) { Value = 5 };
-                int? rows = database.uspLogError(errorLogId);
+                int? rows = database.LogError(errorLogId);
                 Assert.AreEqual(0, errorLogId.Value);
                 Assert.AreEqual(typeof(int), errorLogId.ParameterType);
                 Assert.AreEqual(-1, rows);
@@ -40,9 +40,12 @@
         {
             using (AdventureWorks database = new AdventureWorks())
             {
+                // The first type of result type: a sequence of ProductCategory objects.
                 ObjectResult<ProductCategory> categories = database.uspGetCategoryAndSubCategory(1);
                 Assert.IsNotNull(categories.Single());
-                Assert.IsTrue(categories.GetNextResult<ProductSubcategory>().Any());
+                // The second type of result type: a sequence of ProductCategory objects.
+                ObjectResult<ProductSubcategory> subcategories = categories.GetNextResult<ProductSubcategory>();
+                Assert.IsTrue(subcategories.Any());
             }
         }
 
@@ -57,27 +60,6 @@
         }
 
         [TestMethod]
-        public void CallComposableScalarValuedFunction()
-        {
-            using (AdventureWorks database = new AdventureWorks())
-            {
-                IQueryable<Product> products = database
-                    .Products
-                    .Where(product => product.ListPrice <= database.ufnGetProductListPrice(999, DateTime.Now));
-                Assert.IsTrue(products.Any());
-
-                try
-                {
-                    database.ufnGetProductListPrice(999, DateTime.Now);
-                    Assert.Fail();
-                }
-                catch (NotSupportedException)
-                {
-                }
-            }
-        }
-
-        [TestMethod]
         public void CallNonComposableScalarValuedFunction()
         {
             using (AdventureWorks database = new AdventureWorks())
@@ -85,7 +67,14 @@
                 decimal? cost = database.ufnGetProductStandardCost(999, DateTime.Now);
                 Assert.IsNotNull(cost);
                 Assert.IsTrue(cost > 1);
+            }
+        }
 
+        [TestMethod]
+        public void NonComposableScalarValuedFunctionInLinq()
+        {
+            using (AdventureWorks database = new AdventureWorks())
+            {
                 try
                 {
                     database
@@ -101,7 +90,35 @@
         }
 
         [TestMethod]
-        public void CallAggregateFunction()
+        public void ComposableScalarValuedFunctionInLinq()
+        {
+            using (AdventureWorks database = new AdventureWorks())
+            {
+                IQueryable<Product> products = database
+                    .Products
+                    .Where(product => product.ListPrice <= database.ufnGetProductListPrice(999, DateTime.Now));
+                Assert.IsTrue(products.Any());
+            }
+        }
+
+        [TestMethod]
+        public void CallComposableScalarValuedFunction()
+        {
+            using (AdventureWorks database = new AdventureWorks())
+            {
+                try
+                {
+                    database.ufnGetProductListPrice(999, DateTime.Now);
+                    Assert.Fail();
+                }
+                catch (NotSupportedException)
+                {
+                }
+            }
+        }
+
+        [TestMethod]
+        public void AggregateFunctionInLinq()
         {
             using (AdventureWorks database = new AdventureWorks())
             {
@@ -123,7 +140,7 @@
         }
 
         [TestMethod]
-        public void CallBuitInFunction()
+        public void BuitInFunctionInLinq()
         {
             using (AdventureWorks database = new AdventureWorks())
             {
@@ -145,7 +162,7 @@
         }
 
         [TestMethod]
-        public void CallNiladicFunction()
+        public void NiladicFunctionInLinq()
         {
             using (AdventureWorks database = new AdventureWorks())
             {
