@@ -2,7 +2,7 @@
 {
     public static class BuiltInFunctions
     {
-        [Function("LEFT", FunctionType.BuiltInFunction)]
+        [Function(FunctionType.BuiltInFunction, "LEFT")]
         public static string Left(this string value, int count) => Function.CallNotSupported<string>();
     }
 }

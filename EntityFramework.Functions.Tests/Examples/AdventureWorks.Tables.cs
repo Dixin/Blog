@@ -5,7 +5,19 @@
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity;
 
-    [Table(nameof(ProductCategory), Schema = AdventureWorks.ProductionSchema)]
+    public partial class AdventureWorks
+    {
+        public const string Production = nameof(Production);
+
+        public DbSet<ProductCategory> ProductCategories { get; set; }
+
+        public DbSet<ProductSubcategory> ProductSubcategories { get; set; }
+
+        public DbSet<Product> Products { get; set; }
+    }
+
+
+    [Table(nameof(ProductCategory), Schema = AdventureWorks.Production)]
     public partial class ProductCategory
     {
         [Key]
@@ -16,7 +28,7 @@
         public string Name { get; set; }
     }
 
-    [Table(nameof(ProductSubcategory), Schema = AdventureWorks.ProductionSchema)]
+    [Table(nameof(ProductSubcategory), Schema = AdventureWorks.Production)]
     public partial class ProductSubcategory
     {
         [Key]
@@ -27,7 +39,7 @@
         public string Name { get; set; }
     }
 
-    [Table(nameof(Product), Schema = AdventureWorks.ProductionSchema)]
+    [Table(nameof(Product), Schema = AdventureWorks.Production)]
     public partial class Product
     {
         [Key]
@@ -38,15 +50,6 @@
         public string Name { get; set; }
 
         public decimal ListPrice { get; set; }
-    }
-
-    public partial class AdventureWorks
-    {
-        public DbSet<ProductCategory> ProductCategories { get; set; }
-
-        public DbSet<ProductSubcategory> ProductSubcategories { get; set; }
-
-        public DbSet<Product> Products { get; set; }
     }
 
     public partial class ProductCategory
