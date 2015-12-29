@@ -25,12 +25,11 @@
     [AttributeUsage(AttributeTargets.Method)]
     public class FunctionAttribute : DbFunctionAttribute
     {
-
-        public FunctionAttribute(FunctionType type, string name)
+        public FunctionAttribute(string name, FunctionType functionType)
             : base(Function.CodeFirstDatabaseSchema, name) // DbFunctionAttribute has FunctionName property.
         {
-            this.Type = type;
-            switch (type)
+            this.Type = functionType;
+            switch (functionType)
             {
                 case FunctionType.StoredProcedure:
                 case FunctionType.NonComposableScalarValuedFunction:

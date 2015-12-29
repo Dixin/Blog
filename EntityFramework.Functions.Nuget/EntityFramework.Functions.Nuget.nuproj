@@ -24,25 +24,19 @@
   <Import Project="$(NuProjPath)\NuProj.props" Condition="Exists('$(NuProjPath)\NuProj.props')" />
   <PropertyGroup Label="Configuration">
     <Id>EntityFramework.Functions</Id>
-    <Version>1.0.1</Version>
+    <Version>1.0.0</Version>
     <Title>EntityFramework Code First Functions</Title>
     <Authors>Dixin Yan</Authors>
     <Owners>Dixin Yan</Owners>
     <Summary>EntityFramework.Functions library implements Entity Framework code first support for stored procedures, table-valued functions, scalar-valued functions (composable or non-composable), aggregate functions, built-in functions, and niladic function.</Summary>
-    <Description>EntityFramework.Functions library implements Entity Framework code first support for 
-- Stored procedures, 
-- Table-valued functions, 
-- Scalar-valued functions (composable or non-composable), 
-- Aggregate functions, 
-- Built-in functions, and 
-- Niladic function.</Description>
+    <Description>EntityFramework.Functions library implements Entity Framework code first support for stored procedures, table-valued functions, scalar-valued functions (composable or non-composable), aggregate functions, built-in functions, and niladic function.</Description>
     <ReleaseNotes>
     </ReleaseNotes>
     <ProjectUrl>https://github.com/Dixin/EntityFramework.Functions</ProjectUrl>
     <LicenseUrl>
     </LicenseUrl>
     <Copyright>Dixin Yan https://weblogs.asp.net/dixin</Copyright>
-    <Tags>EF Database Data O/RM ADO.NET EntityFramework Entity Framework CodeFirst Code First Functions StoredProcedures Stored Procedures table-valued tablevalued scalar-valued scalarvalued composable non-composable noncomposable aggregate built-in niladic</Tags>
+    <Tags>EntityFramework.Functions.Nuget</Tags>
     <DevelopmentDependency>false</DevelopmentDependency>
     <dependencies>
       <dependency id="EntityFramework" version="[6.1.0, 7.0)" />

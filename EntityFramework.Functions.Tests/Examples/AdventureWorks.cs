@@ -6,6 +6,8 @@
 
     public partial class AdventureWorks : DbContext
     {
+        public const string ProductionSchema = "Production";
+
         static AdventureWorks()
         {
             Database.SetInitializer<AdventureWorks>(null);

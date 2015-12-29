@@ -19,10 +19,10 @@ WHERE object_id = OBJECT_ID(N'dbo.ufnGetContactInformation')
 
 -- Query stored procedure first output schema.
 SELECT *
-FROM sys.dm_exec_describe_first_result_set_for_object(OBJECT_ID(N'dbo.uspGetManagerEmployees'), 0);
+FROM sys.dm_exec_describe_first_result_set_for_object(OBJECT_ID('dbo.uspGetManagerEmployees'), 0);
 
 SELECT *
-FROM sys.dm_exec_describe_first_result_set(N'dbo.uspGetManagerEmployees', NULL, 0);
+FROM sys.dm_exec_describe_first_result_set('Production.uspGetManagerEmployees', NULL, 0);
 
 -- Query T-SQL first output schema.
 SELECT *

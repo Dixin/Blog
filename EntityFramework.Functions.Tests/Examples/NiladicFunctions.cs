@@ -2,22 +2,21 @@ namespace EntityFramework.Functions.Tests.Examples
 {
     using System;
 
-    // https://technet.microsoft.com/en-us/library/ms174979.aspx
     public static class NiladicFunctions
     {
-        [Function(FunctionType.NiladicFunction, "CURRENT_TIMESTAMP")]
+        [Function("CURRENT_TIMESTAMP", FunctionType.NiladicFunction)]
         public static DateTime? CurrentTimestamp() => Function.CallNotSupported<DateTime?>();
 
-        [Function(FunctionType.NiladicFunction, "CURRENT_USER")]
+        [Function("CURRENT_USER", FunctionType.NiladicFunction)]
         public static string CurrentUser() => Function.CallNotSupported<string>();
 
-        [Function(FunctionType.NiladicFunction, "SESSION_USER")]
+        [Function("SESSION_USER", FunctionType.NiladicFunction)]
         public static string SessionUser() => Function.CallNotSupported<string>();
 
-        [Function(FunctionType.NiladicFunction, "SYSTEM_USER")]
+        [Function("SYSTEM_USER", FunctionType.NiladicFunction)]
         public static string SystemUser() => Function.CallNotSupported<string>();
 
-        [Function(FunctionType.NiladicFunction, "USER")]
+        [Function("USER", FunctionType.NiladicFunction)]
         public static string User() => Function.CallNotSupported<string>();
     }
 }

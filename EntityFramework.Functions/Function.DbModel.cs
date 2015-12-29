@@ -27,7 +27,7 @@ namespace EntityFramework.Functions
             }
 
             functionsType
-                .GetMethods(BindingFlags.Public | BindingFlags.InvokeMethod
+                .GetMethods(BindingFlags.Public | BindingFlags.InvokeMethod 
                     | BindingFlags.Instance | BindingFlags.Static)
                 .Select(methodInfo => new
                 {
@@ -99,14 +99,9 @@ namespace EntityFramework.Functions
     </edmx:StorageModels>
             */
             // Build above <StorageModels> imperatively.
-            string functionName = functionAttribute.FunctionName;
-            if (string.IsNullOrWhiteSpace(functionName))
-            {
-                functionName = methodInfo.Name;
-            }
-
             EdmFunction storeFunction = EdmFunction.Create(
-                functionName,
+                string.IsNullOrWhiteSpace(functionAttribute.FunctionName)
+                    ? methodInfo.Name : functionAttribute.FunctionName,
                 CodeFirstDatabaseSchema, // model.StoreModel.Container.Name is "CodeFirstDatabase".
                 DataSpace.SSpace, // <edmx:StorageModels>
                 new EdmFunctionPayload()
@@ -119,7 +114,7 @@ namespace EntityFramework.Functions
                     ParameterTypeSemantics = functionAttribute.ParameterTypeSemantics,
                     Parameters = model.GetStoreParameters(methodInfo, functionAttribute),
                     ReturnParameters = model.GetStoreReturnParameters(methodInfo, functionAttribute),
-                    CommandText = methodInfo.GetStoreCommandText(functionAttribute, functionName)
+                    CommandText = methodInfo.GetStoreCommandText(functionAttribute)
                 },
                 null);
             model.StoreModel.AddItem(storeFunction);
@@ -660,7 +655,7 @@ namespace EntityFramework.Functions
                 throw new NotSupportedException($"The return parameter type of {methodInfo.Name} is not supported.");
             }
 
-            if (functionAttribute.Type == FunctionType.StoredProcedure
+            if (functionAttribute.Type == FunctionType.StoredProcedure 
                 && returnParameterInfo.ParameterType != typeof(int))
             {
                 // returnParameterInfo.ParameterType is ObjectResult<T>.
