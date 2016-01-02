@@ -26,14 +26,12 @@ namespace EntityFramework.Functions
             return returnParameterClrTypes;
         }
 
-        private static string GetStoreCommandText(this MethodInfo methodInfo, FunctionAttribute functionAttribute)
+        private static string GetStoreCommandText(this MethodInfo methodInfo, FunctionAttribute functionAttribute, string functionName)
         {
             if (functionAttribute.Type == FunctionType.NonComposableScalarValuedFunction)
             {
                 string schema = functionAttribute.Schema;
                 schema = string.IsNullOrWhiteSpace(schema) ? string.Empty : $"[{schema}].";
-                string name = functionAttribute.FunctionName;
-                name = string.IsNullOrWhiteSpace(schema) ? methodInfo.Name : name;
                 IEnumerable<string> parameterNames = methodInfo
                     .GetParameters()
                     .Select(parameterInfo =>
@@ -43,7 +41,7 @@ namespace EntityFramework.Functions
                         return string.IsNullOrWhiteSpace(parameterName) ? parameterInfo.Name : parameterName;
                     })
                     .Select(parameterName => $"@{parameterName}");
-                return $"SELECT {schema}[{name}]({string.Join(", ", parameterNames)})";
+                return $"SELECT {schema}[{functionName}]({string.Join(", ", parameterNames)})";
             }
 
             return null;

@@ -19,24 +19,41 @@
     <ProjectGuid>4c1ea2b7-77e9-4703-904f-643d11c17afe</ProjectGuid>
   </PropertyGroup>
   <PropertyGroup>
-    <NuProjPath Condition=" '$(NuProjPath)' == '' ">$(MSBuildExtensionsPath)\NuProj\</NuProjPath>
+    <NuProjPath Condition=" '$(NuProjPath)' == '' ">$(SolutionDir)Tools\NuProj\</NuProjPath>
   </PropertyGroup>
   <Import Project="$(NuProjPath)\NuProj.props" Condition="Exists('$(NuProjPath)\NuProj.props')" />
   <PropertyGroup Label="Configuration">
     <Id>EntityFramework.Functions</Id>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Title>EntityFramework Code First Functions</Title>
     <Authors>Dixin Yan</Authors>
     <Owners>Dixin Yan</Owners>
     <Summary>EntityFramework.Functions library implements Entity Framework code first support for stored procedures, table-valued functions, scalar-valued functions (composable or non-composable), aggregate functions, built-in functions, and niladic function.</Summary>
-    <Description>EntityFramework.Functions library implements Entity Framework code first support for stored procedures, table-valued functions, scalar-valued functions (composable or non-composable), aggregate functions, built-in functions, and niladic function.</Description>
+    <Description>EntityFramework.Functions library implements Entity Framework code first support for 
+- Stored procedures (single result type, multiple result types, output parameter), 
+- Table-valued functions, 
+- Scalar-valued functions (composable or non-composable), 
+- Aggregate functions, 
+- Built-in functions, 
+- Niladic functions.
+
+EntityFramework.Functions library works on .NET 4.0, .NET 4.5, .NET 4.6, with Entity Framework 6.1.0 and later.
+
+It can be installed through Nuget:
+- Install-Package EntityFramework.Functions -DependencyVersion Highest
+
+For more information, see:
+- Document (APIs and examples): https://weblogs.asp.net/Dixin/EntityFramework.Functions
+- Source code: https://github.com/Dixin/EntityFramework.Functions
+- Nuget package: https://www.nuget.org/packages/EntityFramework.Functions
+</Description>
     <ReleaseNotes>
     </ReleaseNotes>
     <ProjectUrl>https://github.com/Dixin/EntityFramework.Functions</ProjectUrl>
     <LicenseUrl>
     </LicenseUrl>
     <Copyright>Dixin Yan https://weblogs.asp.net/dixin</Copyright>
-    <Tags>EntityFramework.Functions.Nuget</Tags>
+    <Tags>EF Database Data O/RM ADO.NET EntityFramework Entity Framework CodeFirst Code First Functions StoredProcedures Stored Procedures table-valued tablevalued scalar-valued scalarvalued composable non-composable noncomposable aggregate built-in niladic</Tags>
     <DevelopmentDependency>false</DevelopmentDependency>
     <dependencies>
       <dependency id="EntityFramework" version="[6.1.0, 7.0)" />

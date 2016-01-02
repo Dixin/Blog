@@ -87,18 +87,35 @@
             Assert.AreEqual(1, actual.Count(), message, parameters);
         }
 
-        public static void Contains<T>
-            (T expected, IEnumerable<T> actual, string message = null, params object[] parameters)
+        public static void Multiple<T>(IEnumerable<T> actual, string message = null, params object[] parameters)
         {
             Assert.IsNotNull(actual, message, parameters);
-            Assert.IsTrue(actual.Contains(expected), message, parameters);
+            using (IEnumerator<T> iterator = actual.GetEnumerator())
+            {
+                Assert.IsTrue(iterator.MoveNext() && iterator.MoveNext(), message, parameters);
+            }
         }
 
-        public static void DoesNotContains<T>
-            (T expected, IEnumerable<T> actual, string message = null, params object[] parameters)
+        public static void Contains<T>(
+            T expected,
+            IEnumerable<T> actual,
+            IEqualityComparer<T> comparer = null,
+            string message = null,
+            params object[] parameters)
         {
             Assert.IsNotNull(actual, message, parameters);
-            Assert.IsFalse(actual.Contains(expected), message, parameters);
+            Assert.IsTrue(actual.Contains(expected, comparer ?? EqualityComparer<T>.Default), message, parameters);
+        }
+
+        public static void DoesNotContain<T>(
+            T expected,
+            IEnumerable<T> actual,
+            IEqualityComparer<T> comparer = null,
+            string message = null,
+            params object[] parameters)
+        {
+            Assert.IsNotNull(actual, message, parameters);
+            Assert.IsFalse(actual.Contains(expected, comparer ?? EqualityComparer<T>.Default), message, parameters);
         }
 
         public static void Count<T>(

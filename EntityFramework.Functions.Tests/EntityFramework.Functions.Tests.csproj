@@ -94,6 +94,9 @@
       <Name>EntityFramework.Functions.Net46</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="UnitTests\AdventureWorks.sql" />
+  </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

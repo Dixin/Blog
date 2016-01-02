@@ -25,7 +25,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
 		CodeSnippets.sln.DotSettings = CodeSnippets.sln.DotSettings
-		EntityFramework.Functions.Net45 = EntityFramework.Functions.Net45
 		LICENSE = LICENSE
 		README.md = README.md
 	EndProjectSection
@@ -49,6 +48,28 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFramework.Functions.Net45", "EntityFramework.Functions.Net45\EntityFramework.Functions.Net45.csproj", "{2FC7EE32-A93E-4B55-AE79-4F49C9EE5E70}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFramework.Functions.Net46", "EntityFramework.Functions.Net46\EntityFramework.Functions.Net46.csproj", "{1F4A3422-908A-4EA0-98D8-B3AD8F402FAF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nuproj", "Nuproj", "{8268BD1F-5E99-499B-A1DF-D58DA5B0747B}"
+	ProjectSection(SolutionItems) = preProject
+		Tools\CodeAnalysisDictionary.xml = Tools\CodeAnalysisDictionary.xml
+		Tools\CommonAssemblyInfo.cs = Tools\CommonAssemblyInfo.cs
+		Tools\CommonAssemblyInfo.fs = Tools\CommonAssemblyInfo.fs
+		Tools\TargetFrameworkVersion.prop = Tools\TargetFrameworkVersion.prop
+		Tools\VS2015.gitconfig = Tools\VS2015.gitconfig
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Rules", "Rules", "{A9A3D788-D9CB-4B39-9DD0-5E49E333020D}"
+	ProjectSection(SolutionItems) = preProject
+		Tools\NuProj\Rules\content.xaml = Tools\NuProj\Rules\content.xaml
+		Tools\NuProj\Rules\folder.xaml = Tools\NuProj\Rules\folder.xaml
+		Tools\NuProj\Rules\general.browseobject.xaml = Tools\NuProj\Rules\general.browseobject.xaml
+		Tools\NuProj\Rules\general.xaml = Tools\NuProj\Rules\general.xaml
+		Tools\NuProj\Rules\none.xaml = Tools\NuProj\Rules\none.xaml
+		Tools\NuProj\Rules\ProjectItemsSchema.xaml = Tools\NuProj\Rules\ProjectItemsSchema.xaml
+		Tools\NuProj\Rules\ProjectReference.xaml = Tools\NuProj\Rules\ProjectReference.xaml
+		Tools\NuProj\Rules\ResolvedProjectReference.xaml = Tools\NuProj\Rules\ResolvedProjectReference.xaml
+		Tools\NuProj\Rules\scc.xaml = Tools\NuProj\Rules\scc.xaml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -107,6 +128,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8268BD1F-5E99-499B-A1DF-D58DA5B0747B} = {F59804F9-2162-4237-BD61-93C0A156A6FE}
+		{A9A3D788-D9CB-4B39-9DD0-5E49E333020D} = {8268BD1F-5E99-499B-A1DF-D58DA5B0747B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8

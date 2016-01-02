@@ -7,9 +7,10 @@ namespace Dixin.Diagnostics
     using System.Linq;
     using System.Management;
 
+    using Dixin.Linq;
     using Dixin.Management;
 
-    public static class ProcessHelper
+    public static partial class ProcessHelper
     {
         public static int StartAndWait(
             string fileName,
@@ -48,25 +49,68 @@ namespace Dixin.Diagnostics
                 return process.ExitCode;
             }
         }
+    }
 
-        public static IEnumerable<Win32_Process> QueryAll
+    public static partial class ProcessHelper
+    {
+        public static IEnumerable<Win32Process> All
             (ManagementScope managementScope = null) => Wmi
-                .Query(
-                    $"SELECT * FROM {nameof(Win32_Process)}", 
-                    managementScope)
-                .Select(process => new Win32_Process(process));
+                .Query($"SELECT * FROM {Win32Process.WmiClassName}", managementScope)
+                .Select(process => new Win32Process(process));
 
-        public static IEnumerable<Win32_Process> QueryById
+        public static Win32Process ById
             (uint processId, ManagementScope managementScope = null) => Wmi
                 .Query(
-                    $"SELECT * FROM {nameof(Win32_Process)} WHERE {nameof(Win32_Process.ProcessId)} = {processId}",
+                    $"SELECT * FROM {Win32Process.WmiClassName} WHERE {nameof(Win32Process.ProcessId)} = {processId}",
                     managementScope)
-                .Select(process => new Win32_Process(process));
+                .Select(process => new Win32Process(process)).FirstOrDefault();
 
-        public static IEnumerable<Win32_Process> QueryByName
-            (string name, ManagementScope managementScope = null) => Wmi.Query(
-                    $"SELECT * FROM {nameof(Win32_Process)} WHERE {nameof(Win32_Process.Name)} = '{name}'",
+        public static IEnumerable<Win32Process> ByName
+            (string name, ManagementScope managementScope = null) => Wmi
+                .Query(
+                    $"SELECT * FROM {Win32Process.WmiClassName} WHERE {nameof(Win32Process.Name)} = '{name}'",
                     managementScope)
-                .Select(process => new Win32_Process(process));
+                .Select(process => new Win32Process(process));
+    }
+
+    public static partial class ProcessHelper
+    {
+        public static Win32Process ParentProcess(uint childProcessId, ManagementScope managementScope = null)
+            => ById(childProcessId)?.ParentProcessId?.Forward(parentProcessId => ById(parentProcessId));
+
+        public static IEnumerable<Win32Process> AllParentProcess(
+            uint childProcessId,
+            ManagementScope managementScope = null)
+        {
+            Win32Process parentProcess =
+                ById(childProcessId)?.ParentProcessId?.Forward(parentProcessId => ById(parentProcessId));
+            return parentProcess == null
+                       ? Enumerable.Empty<Win32Process>()
+                       : Enumerable.Repeat(parentProcess, 1)
+                             .Concat(
+                                 parentProcess.ProcessId.HasValue
+                                     ? AllParentProcess(parentProcess.ProcessId.Value)
+                                     : Enumerable.Empty<Win32Process>());
+        }
+    }
+
+    public static partial class ProcessHelper
+    {
+        public static IEnumerable<Win32Process> ChildProcesses
+            (uint parentProcessId, ManagementScope managementScope = null) => Wmi.Query(
+                    $"SELECT * FROM {Win32Process.WmiClassName} WHERE {nameof(Win32Process.ParentProcessId)} = {parentProcessId}",
+                    managementScope)
+                .Select(process => new Win32Process(process));
+
+        public static IEnumerable<Win32Process> AllChildProcesses
+            (uint parentProcessId, ManagementScope managementScope = null)
+        {
+            IEnumerable<Win32Process> childProcesses = Wmi.Query(
+                    $"SELECT * FROM {Win32Process.WmiClassName} WHERE {nameof(Win32Process.ParentProcessId)} = {parentProcessId}",
+                    managementScope).Select(process => new Win32Process(process));
+            return childProcesses.Concat(childProcesses.SelectMany(process => process.ProcessId.HasValue
+                ? AllChildProcesses(process.ProcessId.Value, managementScope)
+                : Enumerable.Empty<Win32Process>()));
+        }
     }
 }

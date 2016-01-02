@@ -65,3 +65,104 @@ GO
 
 SELECT [dbo].[ConcatWith](Name, N' | ') FROM Production.ProductCategory;
 GO
+
+-- Create table-valued type.
+CREATE TYPE [Category] AS TABLE (
+	Id int,
+	MinListPrice money);
+GO
+
+-- Create stored procedure with table-valued parameter.
+CREATE PROCEDURE [dbo].[uspGetProducts]
+	@Category [dbo].[Category] READONLY
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT [Product].[ProductID], [Product].[Name], [Product].[ListPrice], [Product].[ProductSubcategoryID]
+	FROM [Production].[Product] AS [Product]
+	LEFT OUTER JOIN [Production].[ProductSubcategory] AS [Subcategory]
+	ON [Product].ProductSubcategoryID = [Subcategory].[ProductSubcategoryID]
+	LEFT OUTER JOIN @Category AS [Category]
+	ON [Subcategory].[ProductCategoryID] = [Category].[Id]
+	WHERE [Product].[ListPrice] >= [Category].[MinListPrice];
+END
+GO
+
+-- Call stored procedure with table-valued parameter.
+DECLARE @Category AS [dbo].[Category];
+
+INSERT INTO @Category ([Id], [MinListPrice])
+    SELECT [ProductCategoryID], 300.00
+    FROM [Production].[ProductCategory]
+
+EXEC [dbo].[uspGetProducts] @Category;
+GO
+
+-- Create table-valued function with table-valued parameter.
+CREATE FUNCTION [dbo].[ufnGetProducts]
+(
+	@Category [dbo].[Category] READONLY
+)
+RETURNS @Products TABLE 
+(
+    [ProductID] int NOT NULL, 
+    [Name] nvarchar(50) NOT NULL, 
+    [ListPrice] money NOT NULL, 
+	[ProductSubcategoryID] int NULL
+)
+AS
+BEGIN
+	INSERT INTO @Products
+		SELECT [Product].[ProductID], [Product].[Name], [Product].[ListPrice], [Product].[ProductSubcategoryID]
+		FROM [Production].[Product] AS [Product]
+		LEFT OUTER JOIN [Production].[ProductSubcategory] AS [Subcategory]
+		ON [Product].ProductSubcategoryID = [Subcategory].[ProductSubcategoryID]
+		LEFT OUTER JOIN @Category AS [Category]
+		ON [Subcategory].[ProductCategoryID] = [Category].[Id]
+		WHERE [Product].[ListPrice] >= [Category].[MinListPrice];
+	RETURN;
+END
+GO
+
+-- Call table-valued function with table-valued parameter.
+DECLARE @Category AS [dbo].[Category];
+
+INSERT INTO @Category ([Id], [MinListPrice])
+    SELECT [ProductCategoryID], 300.00
+    FROM [Production].[ProductCategory];
+
+SELECT * FROM [dbo].[ufnGetProducts](@Category);
+GO
+
+-- Create scalar-valued function with table-valued parameter.
+CREATE FUNCTION [dbo].[ufnGetProductCount]
+(
+	@Category [dbo].[Category] READONLY
+)
+RETURNS int
+AS
+BEGIN
+	DECLARE @ProductCount int;
+
+	SELECT @ProductCount = COUNT(*)
+	FROM [Production].[Product] AS [Product]
+	LEFT OUTER JOIN [Production].[ProductSubcategory] AS [Subcategory]
+	ON [Product].ProductSubcategoryID = [Subcategory].[ProductSubcategoryID]
+	LEFT OUTER JOIN @Category AS [Category]
+	ON [Subcategory].[ProductCategoryID] = [Category].[Id]
+	WHERE [Product].[ListPrice] >= [Category].[MinListPrice];
+
+	RETURN @ProductCount;
+END
+GO
+
+-- Call scalar-valued function with table-valued parameter.
+DECLARE @Category AS [dbo].[Category];
+
+INSERT INTO @Category ([Id], [MinListPrice])
+    SELECT [ProductCategoryID], 300.00
+    FROM [Production].[ProductCategory];
+
+SELECT [dbo].[ufnGetProductCount](@Category);
+GO

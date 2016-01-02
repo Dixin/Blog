@@ -137,7 +137,12 @@
     }
 
     @media (max-width:768px) {
-        .blog-post blockquote, .blog-post li, .blog-post p { /*word-break: break-all;*/
+        ul.blog-posts, article.blog-post, ul.comments { 
+            word-wrap: break-word;
+        }
+
+        article.blog-post header h1 {
+            font-size: 30px;
         }
     }
 

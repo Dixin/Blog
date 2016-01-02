@@ -332,6 +332,17 @@
         public static bool IsNotNullOrEmpty<TSource>
             (this IEnumerable<TSource> source) => source != null && source.Any();
 
+        public static bool ContainsAny<TSource>(
+            this IEnumerable<TSource> source,
+            IEnumerable<TSource> values,
+            IEqualityComparer<TSource> comparer = null)
+        {
+            Contract.Requires<ArgumentNullException>(source != null);
+            Contract.Requires<ArgumentNullException>(values != null);
+
+            return source.Any(value => values.Contains(value, comparer));
+        }
+
         #endregion
 
         #region Iteration

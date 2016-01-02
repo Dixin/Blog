@@ -270,7 +270,7 @@
     <Compile Include="Linq\LinqToEntities\AdventureWorks.cs" />
     <Compile Include="Linq\LinqToEntities\DbContextExtensions.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.cs" />
-    <Compile Include="Management\Win32_Process.cs" />
+    <Compile Include="Management\Win32Process.cs" />
     <Compile Include="IO\Music.cs" />
     <Compile Include="IO\Video.cs" />
     <Compile Include="Linq\CategoryTheory\Functor.Like.cs" />
