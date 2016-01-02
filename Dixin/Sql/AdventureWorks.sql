@@ -3,8 +3,6 @@ CREATE PROCEDURE [dbo].[uspGetCategoryAndSubCategory]
 	@CategoryID int
 AS
 BEGIN
-	SET NOCOUNT ON;
-
 	SELECT [Category].[ProductCategoryID], [Category].[Name]
 		FROM [Production].[ProductCategory] AS [Category] 
 		WHERE [Category].[ProductCategoryID] = @CategoryID;
@@ -40,14 +38,6 @@ SELECT [dbo].[Concat](Name) FROM Production.ProductCategory
 WHERE Production.ProductCategory.ProductCategoryID < -1;
 GO
 
-SELECT [Subcategory].[ProductCategoryID], COUNT([Subcategory].[Name]), [dbo].[Concat]([Subcategory].[Name])
-FROM [Production].[ProductSubcategory] AS [Subcategory]
-GROUP BY [Subcategory].[ProductCategoryID];
-GO
-
-SELECT [dbo].[Concat](Name) FROM Production.ProductCategory;
-GO
-
 SELECT [Subcategory].[ProductCategoryID], COUNT([Subcategory].[Name]), [dbo].[ConcatWith]([Subcategory].[Name], N' | ')
 FROM [Production].[ProductSubcategory] AS [Subcategory]
 WHERE [Subcategory].[ProductCategoryID] < -1
@@ -56,6 +46,14 @@ GO
 
 SELECT [dbo].[ConcatWith](Name, N' | ') FROM Production.ProductCategory
 WHERE Production.ProductCategory.ProductCategoryID < -1;
+GO
+
+SELECT [Subcategory].[ProductCategoryID], COUNT([Subcategory].[Name]), [dbo].[Concat]([Subcategory].[Name])
+FROM [Production].[ProductSubcategory] AS [Subcategory]
+GROUP BY [Subcategory].[ProductCategoryID];
+GO
+
+SELECT [dbo].[Concat](Name) FROM Production.ProductCategory;
 GO
 
 SELECT [Subcategory].[ProductCategoryID], COUNT([Subcategory].[Name]), [dbo].[ConcatWith]([Subcategory].[Name], N' | ')
