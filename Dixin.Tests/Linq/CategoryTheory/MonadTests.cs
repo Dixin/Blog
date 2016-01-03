@@ -25,17 +25,17 @@
                                       where z > 1
                                       select z;
             Assert.IsFalse(isExecuted1); // Deferred and lazy.
-            EnumerableAssert.AreEqual(new int[] { 2, 2, 3 }, query1); // Execution.
+            EnumerableAssert.AreSequentialEqual(new int[] { 2, 2, 3 }, query1); // Execution.
             Assert.IsTrue(isExecuted1);
 
             // Monad law 1: m.Monad().SelectMany(f) == f(m)
             Func<int, IEnumerable<int>> addOne = x => (x + 1).Enumerable();
-            EnumerableAssert.AreEqual(1.Enumerable().SelectMany(addOne), addOne(1));
+            EnumerableAssert.AreSequentialEqual(1.Enumerable().SelectMany(addOne), addOne(1));
             // Monad law 2: M.SelectMany(Monad) == M
-            EnumerableAssert.AreEqual(enumerable1.SelectMany(EnumerableExtensions.Enumerable), enumerable1);
+            EnumerableAssert.AreSequentialEqual(enumerable1.SelectMany(EnumerableExtensions.Enumerable), enumerable1);
             // Monad law 3: M.SelectMany(f1).SelectMany(f2) == M.SelectMany(x => f1(x).SelectMany(f2))
             Func<int, IEnumerable<int>> addTwo = x => (x + 2).Enumerable();
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 enumerable2.SelectMany(addOne).SelectMany(addTwo),
                 enumerable2.SelectMany(x => addOne(x).SelectMany(addTwo)));
         }

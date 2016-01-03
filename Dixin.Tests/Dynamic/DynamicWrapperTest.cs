@@ -13,7 +13,7 @@ namespace Dixin.Tests.Dynamic
     using System.Linq;
 
     using Dixin.Dynamic;
-    using Dixin.Tests.Properties;
+    using Dixin.Linq.LinqToSql;
 
     using Microsoft.CSharp.RuntimeBinder;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -57,10 +57,10 @@ namespace Dixin.Tests.Dynamic
         [TestMethod]
         public void GetInvokeMemberConvertFromType()
         {
-            using (NorthwindDataContext database = new NorthwindDataContext(Settings.Default.NorthwindConnectionString))
+            using (AdventureWorksDataContext database = new AdventureWorksDataContext())
             {
                 IQueryable<Product> query =
-                    database.Products.Where(product => product.ProductID > 0).OrderBy(p => p.ProductName).Take(2);
+                    database.Products.Where(product => product.ProductID > 0).OrderBy(p => p.Name).Take(2);
                 IEnumerable<Product> results =
                     database.ToDynamic().Provider.Execute(query.Expression).ReturnValue;
                 Assert.IsTrue(results.Any());

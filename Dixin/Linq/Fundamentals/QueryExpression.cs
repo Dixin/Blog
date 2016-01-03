@@ -7,6 +7,8 @@
     using System.Linq.Expressions;
     using System.Runtime.CompilerServices;
 
+    using Dixin.Linq.LinqToSql;
+
     public static class CompiledLinqToObjects
     {
         [CompilerGenerated]
@@ -37,7 +39,7 @@
         public static string[] ProductNames(string categoryName)
         {
             Closure closure = new Closure { categoryName = categoryName };
-            NorthwindDataContext database = new NorthwindDataContext();
+            AdventureWorksDataContext database = new AdventureWorksDataContext();
 
             try
             {
@@ -46,12 +48,14 @@
                 // Define query
                 IQueryable<string> query = database.Products
                     .Where(
-                        // product => product.Category.CategoryName == closure.categoryName
+                        // product => product.ProductSubCategory.ProductCategory.Name == closure.categoryName
                         Expression.Lambda<Func<Product, bool>>(
-                            Expression.Equal( // => product.Category.CategoryName == closure.categoryName
-                                Expression.Property( // product.Category.CategoryName
-                                    Expression.Property(product, "Category"), // product.Category
-                                    "CategoryName"), // Category.CategoryName
+                            Expression.Equal( // => product.ProductSubCategory.ProductCategory.Name == closure.categoryName
+                                Expression.Property(
+                                    Expression.Property( // product.ProductSubCategory.ProductCategory.Name
+                                        Expression.Property(product, "ProductSubCategory"), // product.ProductSubCategory
+                                        "ProductCategory"), // ProductSubCategory.ProductCategory
+                                    "Name"), // ProductCategory.Name
                                 Expression.Field( // Or Expression.Constant(categoryName) works too.
                                     Expression.Constant(closure), "categoryName"), // closure.categoryName
                                 false,

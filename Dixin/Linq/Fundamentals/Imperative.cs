@@ -81,12 +81,17 @@
         public static List<string> ProductNames(string categoryName)
         {
             using (SqlConnection connection = new SqlConnection(
-                @"Data Source=localhost;Initial Catalog=Northwind;Integrated Security=True"))
+                @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\AdventureWorks_Data.mdf;Integrated Security=True;Connect Timeout=30"))
             using (SqlCommand command = new SqlCommand(
-                @"SELECT [Products].[ProductName]
-            FROM [Products]
-            LEFT OUTER JOIN [Categories] ON [Categories].[CategoryID] = [Products].[CategoryID]
-            WHERE [Categories].[CategoryName] = @categoryName", connection))
+                @"SELECT [Product].[Name]
+                FROM [Production].[Product] AS [Product]
+                LEFT OUTER JOIN [Production].[ProductSubcategory] AS [Subcategory] 
+                    ON [Subcategory].[ProductSubcategoryID] = [Product].[ProductSubcategoryID]
+                LEFT OUTER JOIN [Production].[ProductCategory] AS [Category] 
+                    ON [Category].[ProductCategoryID] = [Subcategory].[ProductCategoryID]
+                WHERE [Category].[Name] = @categoryName
+                ORDER BY [Product].[ListPrice]", 
+                connection))
             {
                 List<string> result = new List<string>();
                 command.Parameters.AddWithValue("@categoryName", categoryName);
@@ -95,7 +100,7 @@
                 {
                     while (reader.Read())
                     {
-                        string productName = (string)reader["ProductName"];
+                        string productName = (string)reader["Name"];
                         result.Add(productName);
                     }
 

@@ -36,6 +36,11 @@ FROM sys.dm_exec_describe_first_result_set(
 	N'@CustomerID int',
 	0);
 
+-- Query table-valued function result.
+SELECT *
+FROM sys.columns
+WHERE object_id = object_id('dbo.ufnGetContactInformation');
+
 -- Enable CLR.
 EXEC sys.sp_configure @configname = N'clr enabled', @configvalue = 1;
 GO

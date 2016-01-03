@@ -269,14 +269,13 @@
     <Compile Include="Data\Services\WcfWebSocketService.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.cs" />
     <Compile Include="Linq\LinqToEntities\DbContextExtensions.cs" />
-    <Compile Include="Linq\LinqToSql\AdventureWorks.cs" />
+    <Compile Include="Linq\LinqToSql\AdventureWorksDataContext.cs" />
     <Compile Include="Management\Win32Process.cs" />
     <Compile Include="IO\Music.cs" />
     <Compile Include="IO\Video.cs" />
     <Compile Include="Linq\CategoryTheory\Functor.Like.cs" />
     <Compile Include="Linq\CategoryTheory\Monad.Like.cs" />
     <Content Include="Linq\LinqToEntities\Mapping.sql" />
-    <Content Include="Linq\LinqToSql\EntityModel.sql" />
     <Content Include="Linq\LinqToSql\Mapping.sql" />
     <Content Include="Sql\AdventureWorks.Delete.sql" />
     <Content Include="Sql\AdventureWorks.sql" />
@@ -392,11 +391,6 @@
     <Compile Include="Linq\LinqToObjects\Lookup`1.cs" />
     <Compile Include="Linq\LinqToObjects\QueryMethods.Linq.cs" />
     <Compile Include="Linq\LinqToObjects\QueryMethods.Interactive.cs" />
-    <Compile Include="Linq\Northwind.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Northwind.dbml</DependentUpon>
-    </Compile>
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
@@ -434,11 +428,6 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <None Include="Linq\Fundamentals\Methods.il" />
-    <None Include="Linq\Northwind.dbml">
-      <Generator>MSLinqToSQLGenerator</Generator>
-      <LastGenOutput>Northwind.designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </None>
     <None Include="Management\Automation\VirtualHardDisk.ps1" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -449,11 +438,6 @@
   <ItemGroup>
     <Service Include="{3259AA49-8AA1-44D3-9025-A0B520596A8C}" />
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Linq\Northwind.dbml.layout">
-      <DependentUpon>Northwind.dbml</DependentUpon>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Linq\Fundamentals\Resources.resx">

@@ -17,19 +17,19 @@
         {
             int[] first = new int[] { 0, 1, 2 };
             int[] second = new int[] { 3, 4, 5 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Concat(first, second),
                 EnumerableExtensions.Concat(first, second));
 
             first = new int[] { };
             second = new int[] { 3, 4, 5 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Concat(first, second),
                 EnumerableExtensions.Concat(first, second));
 
             first = new int[] { 0, 1, 2 };
             second = new int[] { };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Concat(first, second),
                 EnumerableExtensions.Concat(first, second));
         }
@@ -38,12 +38,12 @@
         public void DistinctTest()
         {
             int[] enumerable = new int[] { 0, 1, 2 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Distinct(enumerable),
                 EnumerableExtensions.Distinct(enumerable, EqualityComparer<int>.Default));
 
             enumerable = new int[] { 0, 1, 1, 1, 2, 2 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Distinct(enumerable),
                 EnumerableExtensions.Distinct(enumerable, EqualityComparer<int>.Default));
         }
@@ -53,25 +53,25 @@
         {
             int[] first = new int[] { 0, 1, 2 };
             int[] second = new int[] { 3, 4, 5 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Except(first, second),
                 EnumerableExtensions.Except(first, second, EqualityComparer<int>.Default));
 
             first = new int[] { 0, 1, 2 };
             second = new int[] { };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Except(first, second),
                 EnumerableExtensions.Except(first, second, EqualityComparer<int>.Default));
 
             first = new int[] { };
             second = new int[] { 3, 4, 5 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Except(first, second),
                 EnumerableExtensions.Except(first, second, EqualityComparer<int>.Default));
 
             first = new int[] { 0, 1, 2 };
             second = new int[] { 2, 3, 4 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Except(first, second),
                 EnumerableExtensions.Except(first, second, EqualityComparer<int>.Default));
         }
@@ -86,7 +86,7 @@
             expected.ForEach((group, index) =>
             {
                 Assert.AreEqual(group.Key, actual[index].Key);
-                EnumerableAssert.AreEqual(group, actual[index]);
+                EnumerableAssert.AreSequentialEqual(group, actual[index]);
             });
 
             enumerable = new int[] { };
@@ -96,7 +96,7 @@
             expected.ForEach((group, index) =>
             {
                 Assert.AreEqual(group.Key, actual[index].Key);
-                EnumerableAssert.AreEqual(group, actual[index]);
+                EnumerableAssert.AreSequentialEqual(group, actual[index]);
             });
         }
 
@@ -143,25 +143,25 @@
         {
             int[] first = new int[] { 0, 1, 2 };
             int[] second = new int[] { 3, 4, 5 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Intersect(first, second),
                 EnumerableExtensions.Intersect(first, second, EqualityComparer<int>.Default));
 
             first = new int[] { 0, 1, 2 };
             second = new int[] { };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Intersect(first, second),
                 EnumerableExtensions.Intersect(first, second, EqualityComparer<int>.Default));
 
             first = new int[] { };
             second = new int[] { 3, 4, 5 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Intersect(first, second),
                 EnumerableExtensions.Intersect(first, second, EqualityComparer<int>.Default));
 
             first = new int[] { 0, 1, 2 };
             second = new int[] { 2, 3, 4 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Intersect(first, second),
                 EnumerableExtensions.Intersect(first, second, EqualityComparer<int>.Default));
         }
@@ -264,12 +264,12 @@
         public void SelectTest()
         {
             int[] enumerable = new int[] { 0, 1, 2 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Select(enumerable, x => x.ToString()),
                 EnumerableExtensions.Select(enumerable, x => x.ToString()));
 
             enumerable = new int[] { };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Select(enumerable, x => x.ToString()),
                 EnumerableExtensions.Select(enumerable, x => x.ToString()));
         }
@@ -278,27 +278,27 @@
         public void SkipTest()
         {
             int[] enumerable = new int[] { 0, 1, 2 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Skip(enumerable, 2),
                 EnumerableExtensions.Skip(enumerable, 2));
 
             enumerable = new int[] { 0, 1, 1, 1, 2, 2 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Skip(enumerable, 0),
                 EnumerableExtensions.Skip(enumerable, 0));
 
             enumerable = new int[] { 0, 1, 1, 1, 2, 2 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Skip(enumerable, -1),
                 EnumerableExtensions.Skip(enumerable, -1));
 
             enumerable = new int[] { 0, 1, 1, 1, 2, 2 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Skip(enumerable, 100),
                 EnumerableExtensions.Skip(enumerable, 100));
 
             enumerable = new int[] { };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Skip(enumerable, 100),
                 EnumerableExtensions.Skip(enumerable, 100));
         }
@@ -307,17 +307,17 @@
         public void SkipWhileTest()
         {
             int[] enumerable = new int[] { 0, 1, 2 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.SkipWhile(enumerable, x => x > 0),
                 EnumerableExtensions.SkipWhile(enumerable, x => x > 0));
 
             enumerable = new int[] { 2, 1, 0, -1 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.SkipWhile(enumerable, x => x > 0),
                 EnumerableExtensions.SkipWhile(enumerable, x => x > 0));
 
             enumerable = new int[] { };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.SkipWhile(enumerable, x => x > 0),
                 EnumerableExtensions.SkipWhile(enumerable, x => x > 0));
         }
@@ -326,27 +326,27 @@
         public void TakeTest()
         {
             int[] enumerable = new int[] { 0, 1, 2 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Take(enumerable, 2),
                 EnumerableExtensions.Take(enumerable, 2));
 
             enumerable = new int[] { 0, 1, 1, 1, 2, 2 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Take(enumerable, 0),
                 EnumerableExtensions.Take(enumerable, 0));
 
             enumerable = new int[] { 0, 1, 1, 1, 2, 2 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Take(enumerable, -1),
                 EnumerableExtensions.Take(enumerable, -1));
 
             enumerable = new int[] { 0, 1, 1, 1, 2, 2 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Take(enumerable, 100),
                 EnumerableExtensions.Take(enumerable, 100));
 
             enumerable = new int[] { };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Take(enumerable, 100),
                 EnumerableExtensions.Take(enumerable, 100));
         }
@@ -355,17 +355,17 @@
         public void TakeWhileTest()
         {
             int[] enumerable = new int[] { 0, 1, 2 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.TakeWhile(enumerable, x => x > 0),
                 EnumerableExtensions.TakeWhile(enumerable, x => x > 0));
 
             enumerable = new int[] { 2, 1, 0, -1 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.TakeWhile(enumerable, x => x > 0),
                 EnumerableExtensions.TakeWhile(enumerable, x => x > 0));
 
             enumerable = new int[] { };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.TakeWhile(enumerable, x => x > 0),
                 EnumerableExtensions.TakeWhile(enumerable, x => x > 0));
         }
@@ -375,25 +375,25 @@
         {
             int[] first = new int[] { 0, 1, 2 };
             int[] second = new int[] { 3, 4, 5 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Union(first, second),
                 EnumerableExtensions.Union(first, second, EqualityComparer<int>.Default));
 
             first = new int[] { 0, 1, 2 };
             second = new int[] { };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Union(first, second),
                 EnumerableExtensions.Union(first, second, EqualityComparer<int>.Default));
 
             first = new int[] { };
             second = new int[] { 3, 4, 5 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Union(first, second),
                 EnumerableExtensions.Union(first, second, EqualityComparer<int>.Default));
 
             first = new int[] { 0, 1, 2 };
             second = new int[] { 2, 3, 4 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Union(first, second),
                 EnumerableExtensions.Union(first, second, EqualityComparer<int>.Default));
         }
@@ -402,12 +402,12 @@
         public void WhereTest()
         {
             int[] enumerable = new int[] { 0, 1, 2 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Where(enumerable, x => x > 0),
                 EnumerableExtensions.Where(enumerable, x => x > 0));
 
             enumerable = new int[] { };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Where(enumerable, x => x > 0),
                 EnumerableExtensions.Where(enumerable, x => x > 0));
         }
@@ -417,37 +417,37 @@
         {
             int[] first = new int[] { 0, 1, 2 };
             int[] second = new int[] { 3, 4, 5 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Zip(first, second, (x, y) => x * y),
                 EnumerableExtensions.Zip(first, second, (x, y) => x * y));
 
             first = new int[] { 0, 1, 2 };
             second = new int[] { };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Zip(first, second, (x, y) => x * y),
                 EnumerableExtensions.Zip(first, second, (x, y) => x * y));
 
             first = new int[] { };
             second = new int[] { 3, 4, 5 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Zip(first, second, (x, y) => x * y),
                 EnumerableExtensions.Zip(first, second, (x, y) => x * y));
 
             first = new int[] { 0, 1, 2 };
             second = new int[] { 2, 3, 4 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Zip(first, second, (x, y) => x * y),
                 EnumerableExtensions.Zip(first, second, (x, y) => x * y));
 
             first = new int[] { 0, 1 };
             second = new int[] { 2, 3, 4 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Zip(first, second, (x, y) => x * y),
                 EnumerableExtensions.Zip(first, second, (x, y) => x * y));
 
             first = new int[] { 0, 1, 2 };
             second = new int[] { 2, 3 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Zip(first, second, (x, y) => x * y),
                 EnumerableExtensions.Zip(first, second, (x, y) => x * y));
         }

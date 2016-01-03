@@ -15,12 +15,12 @@
         public void EnumerableMonoidTest()
         {
             // Left unit law: μ(η ∘ F) == F
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 new Enumerable<int>(1).Enumerable().Flatten(),
                 new Enumerable<int>(1));
 
             // Right unit law: F == μ(F ∘ η)
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 new Enumerable<int>(1),
                 new Enumerable<IEnumerable<int>>(1.Enumerable()).Flatten());
 
@@ -30,7 +30,7 @@
             Assert.AreEqual(left.Count(), right.Count());
             for (int i = 0; i < left.Count(); i++)
             {
-                EnumerableAssert.AreEqual(left.Skip(i - 1).Take(1).Single(), right.Skip(i - 1).Take(1).Single());
+                EnumerableAssert.AreSequentialEqual(left.Skip(i - 1).Take(1).Single(), right.Skip(i - 1).Take(1).Single());
             }
         }
     }

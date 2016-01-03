@@ -125,16 +125,16 @@
             Assert.IsFalse(concatEnumerable.Unit.Any());
             int[] x = new[] { 0, 1, 2 };
             int[] y = new[] { 3, 4, 5 };
-            EnumerableAssert.AreEqual(concatEnumerable.Binary(x, y), x.Concat(y));
+            EnumerableAssert.AreSequentialEqual(concatEnumerable.Binary(x, y), x.Concat(y));
 
             // Monoid law 1: Unit Binary m == m
-            EnumerableAssert.AreEqual(concatEnumerable.Binary(concatEnumerable.Unit, x), x);
+            EnumerableAssert.AreSequentialEqual(concatEnumerable.Binary(concatEnumerable.Unit, x), x);
 
             // Monoid law 2: m Binary Unit == m
-            EnumerableAssert.AreEqual(concatEnumerable.Binary(x, concatEnumerable.Unit), x);
+            EnumerableAssert.AreSequentialEqual(concatEnumerable.Binary(x, concatEnumerable.Unit), x);
 
             // Monoid law 3: (m1 Binary m2) Binary m3 == m1 Binary (m2 Binary m3)
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 concatEnumerable.Binary(concatEnumerable.Binary(x, y), x),
                 concatEnumerable.Binary(x, concatEnumerable.Binary(y, x)));
         }

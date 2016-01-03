@@ -8,7 +8,7 @@
 
     public static partial class EnumerableAssert
     {
-        public static void AreEqual<T>(
+        public static void AreSequentialEqual<T>(
             IEnumerable<T> expected,
             IEnumerable<T> actual,
             IEqualityComparer<T> comparer = null,

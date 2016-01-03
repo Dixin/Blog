@@ -20,12 +20,12 @@
             Func<int, int> addOne = x => x + 1;
 
             // Functor law 1: F.Select(Id) == Id(F)
-            EnumerableAssert.AreEqual(functor.Select(Functions.Id), Functions.Id(functor));
+            EnumerableAssert.AreSequentialEqual(functor.Select(Functions.Id), Functions.Id(functor));
             // Functor law 2: F.Select(f2.o(f1)) == F.Select(f1).Select(f2)
             Func<int, string> addTwo = x => (x + 2).ToString(CultureInfo.InvariantCulture);
             IMorphism<int, int, DotNet> addOneMorphism = addOne.DotNetMorphism();
             IMorphism<int, string, DotNet> addTwoMorphism = addTwo.DotNetMorphism();
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 addTwoMorphism.o(addOneMorphism).Select().Invoke(functor),
                 addTwoMorphism.Select().o(addOneMorphism.Select()).Invoke(functor));
         }
@@ -43,18 +43,18 @@
             IEnumerable<int> query1 = from x in enumerable select f1(x);
             Assert.IsFalse(isExecuted1); // Deferred and lazy.
 
-            EnumerableAssert.AreEqual(new int[] { 1, 2, 3 }, query1); // Execution.
+            EnumerableAssert.AreSequentialEqual(new int[] { 1, 2, 3 }, query1); // Execution.
             Assert.IsTrue(isExecuted1);
 
             // Functor law 1: F.Select(Id) == Id(F)
-            EnumerableAssert.AreEqual(enumerable.Select(Functions.Id), Functions.Id(enumerable));
+            EnumerableAssert.AreSequentialEqual(enumerable.Select(Functions.Id), Functions.Id(enumerable));
             // Functor law 2: F.Select(f2.o(f1)) == F.Select(f1).Select(f2)
             Func<int, string> f2 = x => (x + 2).ToString(CultureInfo.InvariantCulture);
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 enumerable.Select(f2.o(f1)),
                 enumerable.Select(f1).Select(f2));
             // Functor law 2: F.Select(f2.o(f1)) == F.Select(f1).Select(f2)
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 from x in enumerable select f2.o(f1)(x),
                 from y in (from x in enumerable select f1(x)) select f2(y));
         }

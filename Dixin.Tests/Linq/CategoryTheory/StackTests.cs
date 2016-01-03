@@ -16,7 +16,7 @@
         {
             IEnumerable<int> expected = Enumerable.Range(0, 3).Push(4).Value2.Pop().Value2;
             IEnumerable<int> actual = StateQuery.Stack();
-            EnumerableAssert.AreEqual(expected, actual);
+            EnumerableAssert.AreSequentialEqual(expected, actual);
         }
     }
 }

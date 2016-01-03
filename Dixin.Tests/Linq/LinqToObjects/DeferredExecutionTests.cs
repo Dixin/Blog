@@ -13,12 +13,12 @@ namespace Dixin.Tests.Linq.LinqToObjects
         public void Reverse2Test()
         {
             int[] enumerable = new int[] { 0, 1, 2 };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Reverse(enumerable),
                 DeferredExecution.Reverse2(enumerable));
 
             enumerable = new int[] { };
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 Enumerable.Reverse(enumerable),
                 DeferredExecution.Reverse2(enumerable));
         }

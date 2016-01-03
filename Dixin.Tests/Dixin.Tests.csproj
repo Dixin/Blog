@@ -131,11 +131,6 @@
     <Compile Include="Dynamic\DerivedTest.cs" />
     <Compile Include="Dynamic\DynamicWrapperTest.cs" />
     <Compile Include="Dynamic\ITest.cs" />
-    <Compile Include="Dynamic\Northwind.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Northwind.dbml</DependentUpon>
-    </Compile>
     <Compile Include="Dynamic\StaticTest.cs" />
     <Compile Include="Dynamic\StructTest.cs" />
     <Compile Include="Linq\CategoryTheory\ApplicativeTests.cs" />
@@ -184,11 +179,6 @@
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Dynamic\Northwind.dbml">
-      <Generator>MSLinqToSQLGenerator</Generator>
-      <LastGenOutput>Northwind.designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -197,11 +187,6 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{3259AA49-8AA1-44D3-9025-A0B520596A8C}" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Dynamic\Northwind.dbml.layout">
-      <DependentUpon>Northwind.dbml</DependentUpon>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <CodeAnalysisDictionary Include="..\Tools\CodeAnalysisDictionary.xml">

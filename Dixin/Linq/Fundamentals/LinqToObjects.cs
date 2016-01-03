@@ -18,7 +18,9 @@
     {
         public static IEnumerable<int> Positive(IEnumerable<int> source)
         {
-            return source.Where(value => value > 0);
+            return from value in source
+                   where value > 0
+                   select value;
         }
     }
 

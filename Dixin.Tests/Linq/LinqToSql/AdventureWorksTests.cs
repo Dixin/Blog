@@ -15,7 +15,7 @@
         [TestMethod]
         public void QueryTable()
         {
-            using (AdventureWorks database = new AdventureWorks())
+            using (AdventureWorksDataContext database = new AdventureWorksDataContext())
             {
                 DataLoadOptions options = new DataLoadOptions();
                 options.LoadWith<ProductCategory>(category => category.ProductSubcategories);
@@ -29,7 +29,7 @@
         [TestMethod]
         public void CallStoredProcedureWithSingleResult()
         {
-            using (AdventureWorks database = new AdventureWorks())
+            using (AdventureWorksDataContext database = new AdventureWorksDataContext())
             {
                 ISingleResult<ManagerEmployee> employees = database.uspGetManagerEmployees(2);
                 EnumerableAssert.Any(employees);
@@ -39,7 +39,7 @@
         [TestMethod]
         public void CallStoreProcedureWithOutParameter()
         {
-            using (AdventureWorks database = new AdventureWorks())
+            using (AdventureWorksDataContext database = new AdventureWorksDataContext())
             {
                 int? errorLogId = 5;
                 int returnValue = database.uspLogError(ref errorLogId);
@@ -51,7 +51,7 @@
         [TestMethod]
         public void CallStoreProcedureWithMultipleResults()
         {
-            using (AdventureWorks database = new AdventureWorks())
+            using (AdventureWorksDataContext database = new AdventureWorksDataContext())
             using (IMultipleResults results = database.uspGetCategoryAndSubCategory(1))
             {
                 EnumerableAssert.Single(results.GetResult<ProductCategory>());
@@ -62,7 +62,7 @@
         [TestMethod]
         public void CallTableValuedFunction()
         {
-            using (AdventureWorks database = new AdventureWorks())
+            using (AdventureWorksDataContext database = new AdventureWorksDataContext())
             {
                 IQueryable<ContactInformation> employees = database.ufnGetContactInformation(1).Take(2);
                 EnumerableAssert.Single(employees);
@@ -72,7 +72,7 @@
         [TestMethod]
         public void CallScalarValuedFunction()
         {
-            using (AdventureWorks database = new AdventureWorks())
+            using (AdventureWorksDataContext database = new AdventureWorksDataContext())
             {
                 IQueryable<Product> products = database
                     .Products

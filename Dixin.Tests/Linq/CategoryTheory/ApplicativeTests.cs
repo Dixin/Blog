@@ -20,25 +20,25 @@
             IEnumerable<int> numbers = new int[] { 0, 1, 2 };
             IEnumerable<int> query = addOne.Enumerable().Apply(numbers);
             Assert.IsFalse(isExecuted1); // Deferred and lazy.
-            EnumerableAssert.AreEqual(new int[] { 1, 2, 3 }, query); // Execution.
+            EnumerableAssert.AreSequentialEqual(new int[] { 1, 2, 3 }, query); // Execution.
             Assert.IsTrue(isExecuted1);
 
             // f.Functor().Apply(F) == F.Select(f)
-            EnumerableAssert.AreEqual(addOne.Enumerable().Apply(numbers), numbers.Select(addOne));
+            EnumerableAssert.AreSequentialEqual(addOne.Enumerable().Apply(numbers), numbers.Select(addOne));
             // id.Functor().Apply(F) == F
             Func<int, int> id = Functions.Id;
-            EnumerableAssert.AreEqual(id.Enumerable().Apply(numbers), numbers);
+            EnumerableAssert.AreSequentialEqual(id.Enumerable().Apply(numbers), numbers);
             // o.Functor().Apply(F1).Apply(F2).Apply(F3) == F1.Apply(F2.Apply(F3))
             Func<int, int> addTwo = x => x + 2;
             Func<Func<int, int>, Func<Func<int, int>, Func<int, int>>> o =
                 new Func<Func<int, int>, Func<int, int>, Func<int, int>>(FuncExtensions.o).Curry();
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 o.Enumerable().Apply(addOne.Enumerable()).Apply(addTwo.Enumerable()).Apply(numbers),
                 addOne.Enumerable().Apply(addTwo.Enumerable().Apply(numbers)));
             // f.Functor().Apply(a.Functor()) == f(a).Functor()
-            EnumerableAssert.AreEqual(addOne.Enumerable().Apply(1.Enumerable()), addOne(1).Enumerable());
+            EnumerableAssert.AreSequentialEqual(addOne.Enumerable().Apply(1.Enumerable()), addOne(1).Enumerable());
             // F.Apply(a.Functor()) == (f => f(a)).Functor().Apply(F)
-            EnumerableAssert.AreEqual(
+            EnumerableAssert.AreSequentialEqual(
                 addOne.Enumerable().Apply(1.Enumerable()),
                 new Func<Func<int, int>, int>(f => f(1)).Enumerable().Apply(addOne.Enumerable()));
         }
@@ -55,7 +55,7 @@
             IEnumerable<int> query = addTwoAddOne.Apply(numbers);
             Assert.IsFalse(isExecuted1); // Deferred and lazy.
             Assert.IsFalse(isExecuted2); // Deferred and lazy.
-            EnumerableAssert.AreEqual(new int[] { 2, 3, 4, 1, 2, 3 }, query); // Execution.
+            EnumerableAssert.AreSequentialEqual(new int[] { 2, 3, 4, 1, 2, 3 }, query); // Execution.
             Assert.IsTrue(isExecuted1);
             Assert.IsTrue(isExecuted2);
         }
@@ -75,7 +75,7 @@
             IEnumerable<int> query = addTwoAddOne.ApplyWithZip(numbers);
             Assert.IsFalse(isExecuted1); // Deferred and lazy.
             Assert.IsFalse(isExecuted2); // Deferred and lazy.
-            EnumerableAssert.AreEqual(new int[] { 2, 3, 4, 5, 1, 2, 3, 4 }, query); // Execution.
+            EnumerableAssert.AreSequentialEqual(new int[] { 2, 3, 4, 5, 1, 2, 3, 4 }, query); // Execution.
             Assert.IsTrue(isExecuted1);
             Assert.IsTrue(isExecuted2);
         }
@@ -92,7 +92,7 @@
             IEnumerable<int> query = addTwoAddOne.ApplyWithJoin(numbers);
             Assert.IsFalse(isExecuted1); // Deferred and lazy.
             Assert.IsFalse(isExecuted2); // Deferred and lazy.
-            EnumerableAssert.AreEqual(new int[] { 2, 3, 4, 1, 2, 3 }, query); // Execution.
+            EnumerableAssert.AreSequentialEqual(new int[] { 2, 3, 4, 1, 2, 3 }, query); // Execution.
             Assert.IsTrue(isExecuted1);
             Assert.IsTrue(isExecuted2);
         }
@@ -109,7 +109,7 @@
             IEnumerable<int> query = functions.ApplyWithLinqJoin(numbers);
             Assert.IsFalse(isExecuted1); // Deferred and lazy.
             Assert.IsFalse(isExecuted2); // Deferred and lazy.
-            EnumerableAssert.AreEqual(new int[] { 2, 3, 4, 1, 2, 3 }, query); // Execution.
+            EnumerableAssert.AreSequentialEqual(new int[] { 2, 3, 4, 1, 2, 3 }, query); // Execution.
             Assert.IsTrue(isExecuted1);
             Assert.IsTrue(isExecuted2);
         }

@@ -58,7 +58,7 @@
                 .Take(2)
                 .Retry<int, OperationCanceledException>(5)
                 .ToArray();
-            EnumerableAssert.AreEqual(new int[] { 5, 6 }, retry);
+            EnumerableAssert.AreSequentialEqual(new int[] { 5, 6 }, retry);
         }
 
         [TestMethod]
@@ -73,12 +73,12 @@
             {
                 Assert.AreEqual("index", exception.ParamName);
             }
-            EnumerableAssert.AreEqual(new int[] { 5, 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Insert(0, 5));
-            EnumerableAssert.AreEqual(new int[] { 0, 5, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Insert(1, 5));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 5, 2, 3, 4 }, Enumerable.Range(0, 5).Insert(2, 5));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 5, 3, 4 }, Enumerable.Range(0, 5).Insert(3, 5));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 5, 4 }, Enumerable.Range(0, 5).Insert(4, 5));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 4, 5 }, Enumerable.Range(0, 5).Insert(5, 5));
+            EnumerableAssert.AreSequentialEqual(new int[] { 5, 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Insert(0, 5));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 5, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Insert(1, 5));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 5, 2, 3, 4 }, Enumerable.Range(0, 5).Insert(2, 5));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 5, 3, 4 }, Enumerable.Range(0, 5).Insert(3, 5));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 5, 4 }, Enumerable.Range(0, 5).Insert(4, 5));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 4, 5 }, Enumerable.Range(0, 5).Insert(5, 5));
             try
             {
                 int[] insert = Enumerable.Range(0, 5).Insert(6, 5).ToArray();
@@ -89,23 +89,23 @@
                 Assert.AreEqual("index", exception.ParamName);
             }
 
-            EnumerableAssert.AreEqual(new int[] { 5, 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Insert(-1, 5, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 5, 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Insert(0, 5, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 5, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Insert(1, 5, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 5, 2, 3, 4 }, Enumerable.Range(0, 5).Insert(2, 5, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 5, 3, 4 }, Enumerable.Range(0, 5).Insert(3, 5, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 5, 4 }, Enumerable.Range(0, 5).Insert(4, 5, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 4, 5 }, Enumerable.Range(0, 5).Insert(5, 5, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 4, 5 }, Enumerable.Range(0, 5).Insert(6, 5, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 5, 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Insert(-1, 5, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 5, 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Insert(0, 5, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 5, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Insert(1, 5, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 5, 2, 3, 4 }, Enumerable.Range(0, 5).Insert(2, 5, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 5, 3, 4 }, Enumerable.Range(0, 5).Insert(3, 5, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 5, 4 }, Enumerable.Range(0, 5).Insert(4, 5, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 4, 5 }, Enumerable.Range(0, 5).Insert(5, 5, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 4, 5 }, Enumerable.Range(0, 5).Insert(6, 5, ListQueryMode.Normalize));
 
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Insert(-1, 5, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 5, 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Insert(0, 5, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 5, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Insert(1, 5, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 5, 2, 3, 4 }, Enumerable.Range(0, 5).Insert(2, 5, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 5, 3, 4 }, Enumerable.Range(0, 5).Insert(3, 5, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 5, 4 }, Enumerable.Range(0, 5).Insert(4, 5, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 4, 5 }, Enumerable.Range(0, 5).Insert(5, 5, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Insert(6, 5, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Insert(-1, 5, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 5, 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Insert(0, 5, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 5, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Insert(1, 5, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 5, 2, 3, 4 }, Enumerable.Range(0, 5).Insert(2, 5, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 5, 3, 4 }, Enumerable.Range(0, 5).Insert(3, 5, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 5, 4 }, Enumerable.Range(0, 5).Insert(4, 5, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 4, 5 }, Enumerable.Range(0, 5).Insert(5, 5, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Insert(6, 5, ListQueryMode.Ignore));
         }
 
         [TestMethod]
@@ -120,11 +120,11 @@
             {
                 Assert.AreEqual("index", exception.ParamName);
             }
-            EnumerableAssert.AreEqual(new int[] { 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(0));
-            EnumerableAssert.AreEqual(new int[] { 0, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(1));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(2));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 4 }, Enumerable.Range(0, 5).RemoveAt(3));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3 }, Enumerable.Range(0, 5).RemoveAt(4));
+            EnumerableAssert.AreSequentialEqual(new int[] { 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(0));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(1));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(2));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 4 }, Enumerable.Range(0, 5).RemoveAt(3));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3 }, Enumerable.Range(0, 5).RemoveAt(4));
             try
             {
                 int[] removeAt = Enumerable.Range(0, 5).RemoveAt(5).ToArray();
@@ -144,23 +144,23 @@
                 Assert.AreEqual("index", exception.ParamName);
             }
 
-            EnumerableAssert.AreEqual(new int[] { 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(-1, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(0, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(1, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(2, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 4 }, Enumerable.Range(0, 5).RemoveAt(3, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3 }, Enumerable.Range(0, 5).RemoveAt(4, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3 }, Enumerable.Range(0, 5).RemoveAt(5, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3 }, Enumerable.Range(0, 5).RemoveAt(6, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(-1, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(0, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(1, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(2, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 4 }, Enumerable.Range(0, 5).RemoveAt(3, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3 }, Enumerable.Range(0, 5).RemoveAt(4, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3 }, Enumerable.Range(0, 5).RemoveAt(5, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3 }, Enumerable.Range(0, 5).RemoveAt(6, ListQueryMode.Normalize));
 
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(-1, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(0, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(1, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(2, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 4 }, Enumerable.Range(0, 5).RemoveAt(3, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3 }, Enumerable.Range(0, 5).RemoveAt(4, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(5, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(6, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(-1, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(0, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(1, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(2, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 4 }, Enumerable.Range(0, 5).RemoveAt(3, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3 }, Enumerable.Range(0, 5).RemoveAt(4, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(5, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAt(6, ListQueryMode.Ignore));
         }
 
         [TestMethod]
@@ -175,11 +175,11 @@
             {
                 Assert.AreEqual("remove", exception.ParamName);
             }
-            EnumerableAssert.AreEqual(new int[] { 1, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(0));
-            EnumerableAssert.AreEqual(new int[] { 0, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(1));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 3, 4 }, Enumerable.Range(0, 5).Remove(2));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 4 }, Enumerable.Range(0, 5).Remove(3));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3 }, Enumerable.Range(0, 5).Remove(4));
+            EnumerableAssert.AreSequentialEqual(new int[] { 1, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(0));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(1));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 3, 4 }, Enumerable.Range(0, 5).Remove(2));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 4 }, Enumerable.Range(0, 5).Remove(3));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3 }, Enumerable.Range(0, 5).Remove(4));
             try
             {
                 int[] remove = Enumerable.Range(0, 5).Remove(5).ToArray();
@@ -199,23 +199,23 @@
                 Assert.AreEqual("remove", exception.ParamName);
             }
 
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(-1, null, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 1, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(0, null, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(1, null, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 3, 4 }, Enumerable.Range(0, 5).Remove(2, null, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 4 }, Enumerable.Range(0, 5).Remove(3, null, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3 }, Enumerable.Range(0, 5).Remove(4, null, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(5, null, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(6, null, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(-1, null, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 1, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(0, null, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(1, null, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 3, 4 }, Enumerable.Range(0, 5).Remove(2, null, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 4 }, Enumerable.Range(0, 5).Remove(3, null, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3 }, Enumerable.Range(0, 5).Remove(4, null, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(5, null, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(6, null, ListQueryMode.Normalize));
 
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(-1, null, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 1, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(0, null, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(1, null, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 3, 4 }, Enumerable.Range(0, 5).Remove(2, null, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 4 }, Enumerable.Range(0, 5).Remove(3, null, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3 }, Enumerable.Range(0, 5).Remove(4, null, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(5, null, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(6, null, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(-1, null, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 1, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(0, null, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(1, null, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 3, 4 }, Enumerable.Range(0, 5).Remove(2, null, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 4 }, Enumerable.Range(0, 5).Remove(3, null, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3 }, Enumerable.Range(0, 5).Remove(4, null, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(5, null, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(6, null, ListQueryMode.Ignore));
         }
 
         [TestMethod]
@@ -230,11 +230,11 @@
             {
                 Assert.AreEqual("remove", exception.ParamName);
             }
-            EnumerableAssert.AreEqual(new int[] { 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(0));
-            EnumerableAssert.AreEqual(new int[] { 0, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(1));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(2));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 4 }, Enumerable.Range(0, 5).RemoveAll(3));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3 }, Enumerable.Range(0, 5).RemoveAll(4));
+            EnumerableAssert.AreSequentialEqual(new int[] { 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(0));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(1));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(2));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 4 }, Enumerable.Range(0, 5).RemoveAll(3));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3 }, Enumerable.Range(0, 5).RemoveAll(4));
             try
             {
                 int[] removeAll = Enumerable.Range(0, 5).RemoveAll(5).ToArray();
@@ -253,7 +253,7 @@
             {
                 Assert.AreEqual("remove", exception.ParamName);
             }
-            EnumerableAssert.AreEqual(Enumerable.Empty<int>(), Enumerable.Repeat(0, 5).RemoveAll(0));
+            EnumerableAssert.AreSequentialEqual(Enumerable.Empty<int>(), Enumerable.Repeat(0, 5).RemoveAll(0));
             try
             {
                 int[] removeAll = Enumerable.Repeat(0, 5).RemoveAll(1).ToArray();
@@ -263,34 +263,34 @@
             {
                 Assert.AreEqual("remove", exception.ParamName);
             }
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 0, 1, 2, 3 }, Enumerable.Range(0, 5).Concat(Enumerable.Range(0, 5)).RemoveAll(4));
-            EnumerableAssert.AreEqual(new int[] { 1, 2, 3, 4, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Concat(Enumerable.Range(0, 5)).RemoveAll(0));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 0, 1, 2, 3 }, Enumerable.Range(0, 5).Concat(Enumerable.Range(0, 5)).RemoveAll(4));
+            EnumerableAssert.AreSequentialEqual(new int[] { 1, 2, 3, 4, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Concat(Enumerable.Range(0, 5)).RemoveAll(0));
 
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(-1, null, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(0, null, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(1, null, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(2, null, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 4 }, Enumerable.Range(0, 5).RemoveAll(3, null, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3 }, Enumerable.Range(0, 5).RemoveAll(4, null, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(5, null, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(6, null, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(Enumerable.Empty<int>(), Enumerable.Repeat(0, 5).RemoveAll(0, null, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(Enumerable.Repeat(0, 5), Enumerable.Repeat(0, 5).RemoveAll(1, null, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 0, 1, 2, 3 }, Enumerable.Range(0, 5).Concat(Enumerable.Range(0, 5)).RemoveAll(4, null, ListQueryMode.Normalize));
-            EnumerableAssert.AreEqual(new int[] { 1, 2, 3, 4, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Concat(Enumerable.Range(0, 5)).RemoveAll(0, null, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(-1, null, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(0, null, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(1, null, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(2, null, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 4 }, Enumerable.Range(0, 5).RemoveAll(3, null, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3 }, Enumerable.Range(0, 5).RemoveAll(4, null, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(5, null, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(6, null, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(Enumerable.Empty<int>(), Enumerable.Repeat(0, 5).RemoveAll(0, null, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(Enumerable.Repeat(0, 5), Enumerable.Repeat(0, 5).RemoveAll(1, null, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 0, 1, 2, 3 }, Enumerable.Range(0, 5).Concat(Enumerable.Range(0, 5)).RemoveAll(4, null, ListQueryMode.Normalize));
+            EnumerableAssert.AreSequentialEqual(new int[] { 1, 2, 3, 4, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Concat(Enumerable.Range(0, 5)).RemoveAll(0, null, ListQueryMode.Normalize));
 
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(-1, null, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(0, null, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(1, null, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(2, null, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 4 }, Enumerable.Range(0, 5).RemoveAll(3, null, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3 }, Enumerable.Range(0, 5).RemoveAll(4, null, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(5, null, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(6, null, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(Enumerable.Empty<int>(), Enumerable.Repeat(0, 5).RemoveAll(0, null, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(Enumerable.Repeat(0, 5), Enumerable.Repeat(0, 5).RemoveAll(1, null, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 0, 1, 2, 3, 0, 1, 2, 3 }, Enumerable.Range(0, 5).Concat(Enumerable.Range(0, 5)).RemoveAll(4, null, ListQueryMode.Ignore));
-            EnumerableAssert.AreEqual(new int[] { 1, 2, 3, 4, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Concat(Enumerable.Range(0, 5)).RemoveAll(0, null, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(-1, null, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(0, null, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(1, null, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(2, null, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 4 }, Enumerable.Range(0, 5).RemoveAll(3, null, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3 }, Enumerable.Range(0, 5).RemoveAll(4, null, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).RemoveAll(5, null, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Remove(6, null, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(Enumerable.Empty<int>(), Enumerable.Repeat(0, 5).RemoveAll(0, null, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(Enumerable.Repeat(0, 5), Enumerable.Repeat(0, 5).RemoveAll(1, null, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 0, 1, 2, 3, 0, 1, 2, 3 }, Enumerable.Range(0, 5).Concat(Enumerable.Range(0, 5)).RemoveAll(4, null, ListQueryMode.Ignore));
+            EnumerableAssert.AreSequentialEqual(new int[] { 1, 2, 3, 4, 1, 2, 3, 4 }, Enumerable.Range(0, 5).Concat(Enumerable.Range(0, 5)).RemoveAll(0, null, ListQueryMode.Ignore));
         }
 
         [TestMethod]

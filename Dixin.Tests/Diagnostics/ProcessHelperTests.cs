@@ -26,7 +26,7 @@
         {
             IEnumerable<Win32Process> processes = ProcessHelper.ByName("System Idle Process");
             EnumerableAssert.Single(processes);
-            processes = ProcessHelper.ByName("svhost.exe");
+            processes = ProcessHelper.ByName("svchost.exe");
             EnumerableAssert.Multiple(processes);
         }
 
