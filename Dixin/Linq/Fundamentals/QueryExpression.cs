@@ -39,14 +39,14 @@
         public static string[] ProductNames(string categoryName)
         {
             Closure closure = new Closure { categoryName = categoryName };
-            AdventureWorksDataContext database = new AdventureWorksDataContext();
+            AdventureWorksDataContext adventureWorks = new AdventureWorksDataContext();
 
             try
             {
                 ParameterExpression product = Expression.Parameter(typeof(Product), "product");
 
                 // Define query
-                IQueryable<string> query = database.Products
+                IQueryable<string> query = adventureWorks.Products
                     .Where(
                         // product => product.ProductSubCategory.ProductCategory.Name == closure.categoryName
                         Expression.Lambda<Func<Product, bool>>(
@@ -71,7 +71,7 @@
             }
             finally
             {
-                database.Dispose();
+                adventureWorks.Dispose();
             }
         }
     }

@@ -2,6 +2,7 @@
 {
     using System;
     using System.Data.Entity.Core.Objects;
+    using System.Diagnostics;
     using System.Globalization;
     using System.Linq;
 
@@ -13,22 +14,22 @@
     public class AdventureWorksTests
     {
         [TestMethod]
-        public void CallStoredProcedureWithSingleResult()
+        public void StoredProcedureWithSingleResultTest()
         {
-            using (AdventureWorks database = new AdventureWorks())
+            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
             {
-                ObjectResult<ManagerEmployee> employees = database.uspGetManagerEmployees(2);
+                ObjectResult<ManagerEmployee> employees = adventureWorks.uspGetManagerEmployees(2);
                 Assert.IsTrue(employees.Any());
             }
         }
 
         [TestMethod]
-        public void CallStoreProcedureWithOutParameter()
+        public void StoreProcedureWithOutParameterTest()
         {
-            using (AdventureWorks database = new AdventureWorks())
+            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
             {
                 ObjectParameter errorLogId = new ObjectParameter("ErrorLogID", typeof(int)) { Value = 5 };
-                int? rows = database.LogError(errorLogId);
+                int? rows = adventureWorks.LogError(errorLogId);
                 Assert.AreEqual(0, errorLogId.Value);
                 Assert.AreEqual(typeof(int), errorLogId.ParameterType);
                 Assert.AreEqual(-1, rows);
@@ -36,12 +37,12 @@
         }
 
         [TestMethod]
-        public void CallStoreProcedureWithMultipleResults()
+        public void StoreProcedureWithMultipleResultsTest()
         {
-            using (AdventureWorks database = new AdventureWorks())
+            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
             {
                 // The first type of result type: a sequence of ProductCategory objects.
-                ObjectResult<ProductCategory> categories = database.uspGetCategoryAndSubCategory(1);
+                ObjectResult<ProductCategory> categories = adventureWorks.uspGetCategoryAndSubCategory(1);
                 Assert.IsNotNull(categories.Single());
                 // The second type of result type: a sequence of ProductCategory objects.
                 ObjectResult<ProductSubcategory> subcategories = categories.GetNextResult<ProductSubcategory>();
@@ -50,79 +51,81 @@
         }
 
         [TestMethod]
-        public void CallTableValuedFunction()
+        public void TableValuedFunctionTest()
         {
-            using (AdventureWorks database = new AdventureWorks())
+            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
             {
-                IQueryable<ContactInformation> employees = database.ufnGetContactInformation(1).Take(2);
+                IQueryable<ContactInformation> employees = adventureWorks.ufnGetContactInformation(1).Take(2);
                 Assert.IsNotNull(employees.Single());
             }
         }
 
         [TestMethod]
-        public void CallNonComposableScalarValuedFunction()
+        public void NonComposableScalarValuedFunctionTest()
         {
-            using (AdventureWorks database = new AdventureWorks())
+            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
             {
-                decimal? cost = database.ufnGetProductStandardCost(999, DateTime.Now);
+                decimal? cost = adventureWorks.ufnGetProductStandardCost(999, DateTime.Now);
                 Assert.IsNotNull(cost);
                 Assert.IsTrue(cost > 1);
             }
         }
 
         [TestMethod]
-        public void NonComposableScalarValuedFunctionInLinq()
+        public void NonComposableScalarValuedFunctionLinqTest()
         {
-            using (AdventureWorks database = new AdventureWorks())
+            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
             {
                 try
                 {
-                    database
+                    adventureWorks
                         .Products
-                        .Where(product => product.ListPrice >= database.ufnGetProductStandardCost(999, DateTime.Now))
+                        .Where(product => product.ListPrice >= adventureWorks.ufnGetProductStandardCost(999, DateTime.Now))
                         .ToArray();
                     Assert.Fail();
                 }
-                catch (NotSupportedException)
+                catch (NotSupportedException exception)
                 {
+                    Trace.WriteLine(exception);
                 }
             }
         }
 
         [TestMethod]
-        public void ComposableScalarValuedFunctionInLinq()
+        public void ComposableScalarValuedFunctionLinqTest()
         {
-            using (AdventureWorks database = new AdventureWorks())
+            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
             {
-                IQueryable<Product> products = database
+                IQueryable<Product> products = adventureWorks
                     .Products
-                    .Where(product => product.ListPrice <= database.ufnGetProductListPrice(999, DateTime.Now));
+                    .Where(product => product.ListPrice <= adventureWorks.ufnGetProductListPrice(999, DateTime.Now));
                 Assert.IsTrue(products.Any());
             }
         }
 
         [TestMethod]
-        public void CallComposableScalarValuedFunction()
+        public void ComposableScalarValuedFunctionTest()
         {
-            using (AdventureWorks database = new AdventureWorks())
+            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
             {
                 try
                 {
-                    database.ufnGetProductListPrice(999, DateTime.Now);
+                    adventureWorks.ufnGetProductListPrice(999, DateTime.Now);
                     Assert.Fail();
                 }
-                catch (NotSupportedException)
+                catch (NotSupportedException exception)
                 {
+                    Trace.WriteLine(exception);
                 }
             }
         }
 
         [TestMethod]
-        public void AggregateFunctionInLinq()
+        public void AggregateFunctionLinqTest()
         {
-            using (AdventureWorks database = new AdventureWorks())
+            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
             {
-                var categories = database.ProductSubcategories
+                var categories = adventureWorks.ProductSubcategories
                     .GroupBy(subcategory => subcategory.ProductCategoryID)
                     .Select(category => new
                     {
@@ -140,11 +143,11 @@
         }
 
         [TestMethod]
-        public void BuitInFunctionInLinq()
+        public void BuitInFunctionLinqTest()
         {
-            using (AdventureWorks database = new AdventureWorks())
+            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
             {
-                var categories = database.ProductSubcategories
+                var categories = adventureWorks.ProductSubcategories
                     .GroupBy(subcategory => subcategory.ProductCategoryID)
                     .Select(category => new
                     {
@@ -162,11 +165,11 @@
         }
 
         [TestMethod]
-        public void NiladicFunctionInLinq()
+        public void NiladicFunctionLinqTest()
         {
-            using (AdventureWorks database = new AdventureWorks())
+            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
             {
-                var firstCategory = database.ProductSubcategories
+                var firstCategory = adventureWorks.ProductSubcategories
                     .GroupBy(subcategory => subcategory.ProductCategoryID)
                     .Select(category => new
                     {

@@ -10,39 +10,37 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class AdventureWorksTests
+    public partial class AdventureWorksTests
     {
         [TestMethod]
-        public void ContainerName()
+        public void ContainerTest()
         {
-            using (AdventureWorks database = new AdventureWorks())
+            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
             {
-                Assert.AreEqual(nameof(AdventureWorks), database.Container().Name);
+                Assert.AreEqual(nameof(AdventureWorksDbContext), adventureWorks.Container().Name);
             }
         }
 
         [TestMethod]
-        public void QueryTable()
+        public void TableTest()
         {
-            using (AdventureWorks database = new AdventureWorks())
+            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
             {
-                ProductCategory[] categories = database
+                ProductCategory[] categories = adventureWorks
                     .ProductCategories
                     .Include(category => category.ProductSubcategories)
                     .ToArray();
                 EnumerableAssert.Any(categories);
                 categories.ForEach(category => EnumerableAssert.Any(category.ProductSubcategories));
-                var x = database.ProductSubcategories.GroupBy(subcategpry => subcategpry.ProductCategoryID)
-                    .Select(group => new { group.Key, Count = group.Count() }).ToArray();
             }
         }
 
         [TestMethod]
-        public void CallStoredProcedureWithExecuteStoreQuery()
+        public void StoredProcedureWithExecuteStoreQueryTest()
         {
-            using (AdventureWorks database = new AdventureWorks())
+            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
             {
-                ObjectResult<ManagerEmployee> employees = database.GetManagerEmployees(2);
+                ObjectResult<ManagerEmployee> employees = adventureWorks.GetManagerEmployees(2);
                 EnumerableAssert.Any(employees);
             }
         }

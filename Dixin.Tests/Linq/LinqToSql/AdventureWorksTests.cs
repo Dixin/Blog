@@ -10,49 +10,49 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class AdventureWorksTests
+    public partial class AdventureWorksTests
     {
         [TestMethod]
-        public void QueryTable()
+        public void TableTest()
         {
-            using (AdventureWorksDataContext database = new AdventureWorksDataContext())
+            using (AdventureWorksDataContext adventureWorks = new AdventureWorksDataContext())
             {
                 DataLoadOptions options = new DataLoadOptions();
                 options.LoadWith<ProductCategory>(category => category.ProductSubcategories);
-                database.LoadOptions = options;
-                ProductCategory[] categories = database.ProductCategories.ToArray();
+                adventureWorks.LoadOptions = options;
+                ProductCategory[] categories = adventureWorks.ProductCategories.ToArray();
                 EnumerableAssert.Any(categories);
                 categories.ForEach(category => EnumerableAssert.Any(category.ProductSubcategories));
             }
         }
 
         [TestMethod]
-        public void CallStoredProcedureWithSingleResult()
+        public void StoredProcedureWithSingleResultTest()
         {
-            using (AdventureWorksDataContext database = new AdventureWorksDataContext())
+            using (AdventureWorksDataContext adventureWorks = new AdventureWorksDataContext())
             {
-                ISingleResult<ManagerEmployee> employees = database.uspGetManagerEmployees(2);
+                ISingleResult<ManagerEmployee> employees = adventureWorks.uspGetManagerEmployees(2);
                 EnumerableAssert.Any(employees);
             }
         }
 
         [TestMethod]
-        public void CallStoreProcedureWithOutParameter()
+        public void StoreProcedureWithOutParameterTest()
         {
-            using (AdventureWorksDataContext database = new AdventureWorksDataContext())
+            using (AdventureWorksDataContext adventureWorks = new AdventureWorksDataContext())
             {
                 int? errorLogId = 5;
-                int returnValue = database.uspLogError(ref errorLogId);
+                int returnValue = adventureWorks.uspLogError(ref errorLogId);
                 Assert.AreEqual(0, errorLogId.Value);
                 Assert.AreEqual(0, returnValue);
             }
         }
 
         [TestMethod]
-        public void CallStoreProcedureWithMultipleResults()
+        public void StoreProcedureWithMultipleResultsTest()
         {
-            using (AdventureWorksDataContext database = new AdventureWorksDataContext())
-            using (IMultipleResults results = database.uspGetCategoryAndSubCategory(1))
+            using (AdventureWorksDataContext adventureWorks = new AdventureWorksDataContext())
+            using (IMultipleResults results = adventureWorks.uspGetCategoryAndSubCategory(1))
             {
                 EnumerableAssert.Single(results.GetResult<ProductCategory>());
                 EnumerableAssert.Any(results.GetResult<ProductSubcategory>());
@@ -60,35 +60,35 @@
         }
 
         [TestMethod]
-        public void CallTableValuedFunction()
+        public void TableValuedFunctionTest()
         {
-            using (AdventureWorksDataContext database = new AdventureWorksDataContext())
+            using (AdventureWorksDataContext adventureWorks = new AdventureWorksDataContext())
             {
-                IQueryable<ContactInformation> employees = database.ufnGetContactInformation(1).Take(2);
+                IQueryable<ContactInformation> employees = adventureWorks.ufnGetContactInformation(1).Take(2);
                 EnumerableAssert.Single(employees);
             }
         }
 
         [TestMethod]
-        public void CallScalarValuedFunction()
+        public void ScalarValuedFunctionTest()
         {
-            using (AdventureWorksDataContext database = new AdventureWorksDataContext())
+            using (AdventureWorksDataContext adventureWorks = new AdventureWorksDataContext())
             {
-                IQueryable<Product> products = database
+                IQueryable<Product> products = adventureWorks
                     .Products
-                    .Where(product => product.ListPrice <= database.ufnGetProductListPrice(999, DateTime.Now));
+                    .Where(product => product.ListPrice <= adventureWorks.ufnGetProductListPrice(999, DateTime.Now));
                 EnumerableAssert.Any(products);
 
-                decimal? price = database.ufnGetProductListPrice(999, DateTime.Now);
+                decimal? price = adventureWorks.ufnGetProductListPrice(999, DateTime.Now);
                 Assert.IsTrue(price > 1);
 
-                decimal? cost = database.ufnGetProductStandardCost(999, DateTime.Now);
+                decimal? cost = adventureWorks.ufnGetProductStandardCost(999, DateTime.Now);
                 Assert.IsNotNull(cost);
                 Assert.IsTrue(cost > 1);
 
-                products = database
+                products = adventureWorks
                         .Products
-                        .Where(product => product.ListPrice >= database.ufnGetProductStandardCost(999, DateTime.Now));
+                        .Where(product => product.ListPrice >= adventureWorks.ufnGetProductStandardCost(999, DateTime.Now));
                 EnumerableAssert.Any(products);
             }
         }

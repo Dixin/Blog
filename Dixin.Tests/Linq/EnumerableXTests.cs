@@ -15,7 +15,7 @@
     public class EnumerableXTests
     {
         [TestMethod]
-        public void Catch()
+        public void CatchTest()
         {
             EnumerableEx
                 .Throw<int>(new OperationCanceledException())
@@ -41,7 +41,7 @@
         }
 
         [TestMethod]
-        public void Retry()
+        public void RetryTest()
         {
             int count = 0;
             int[] retry = EnumerableX.Create(
@@ -62,7 +62,7 @@
         }
 
         [TestMethod]
-        public void Insert()
+        public void InsertTest()
         {
             try
             {
@@ -109,7 +109,7 @@
         }
 
         [TestMethod]
-        public void RemoveAt()
+        public void RemoveAtTest()
         {
             try
             {
@@ -164,7 +164,7 @@
         }
 
         [TestMethod]
-        public void Remove()
+        public void RemoveTest()
         {
             try
             {
@@ -219,7 +219,7 @@
         }
 
         [TestMethod]
-        public void RemoveAll()
+        public void RemoveAllTest()
         {
             try
             {
@@ -294,7 +294,7 @@
         }
 
         [TestMethod]
-        public void IndexOf()
+        public void IndexOfTest()
         {
             Assert.AreEqual(-1, Enumerable.Range(0, 5).IndexOf(-1));
             Assert.AreEqual(-1, Enumerable.Range(0, 5).IndexOf(6));
@@ -306,7 +306,7 @@
         }
 
         [TestMethod]
-        public void LastIndexOf()
+        public void LastIndexOfTest()
         {
             Assert.AreEqual(-1, Enumerable.Range(0, 5).LastIndexOf(-1));
             Assert.AreEqual(-1, Enumerable.Range(0, 5).LastIndexOf(6));
@@ -319,7 +319,7 @@
         }
 
         [TestMethod]
-        public void PercentileExclusive()
+        public void PercentileExclusiveTest()
         {
             IEnumerable<int> source = Enumerable.Range(0, 5).ToArray();
             try
@@ -356,7 +356,7 @@
         }
 
         [TestMethod]
-        public void PercentileInclusive()
+        public void PercentileInclusiveTest()
         {
             IEnumerable<int> source = Enumerable.Range(0, 5).ToArray();
             Assert.AreEqual(0, source.PercentileInclusive(@int => @int, 0));
@@ -369,7 +369,7 @@
         }
 
         [TestMethod]
-        public void Percentile()
+        public void PercentileTest()
         {
             IEnumerable<int> source = Enumerable.Range(0, 5).ToArray();
             Assert.AreEqual(0, source.Percentile(@int => @int, 0));
@@ -382,19 +382,19 @@
         }
 
         [TestMethod]
-        public void VariancePopulation()
+        public void VariancePopulationTest()
         {
-            Assert.AreEqual(8.25, Enumerable.Range(0,10).VariancePopulation(@int=>@int));
+            Assert.AreEqual(8.25, Enumerable.Range(0, 10).VariancePopulation(@int => @int));
         }
 
         [TestMethod]
-        public void VarianceSample()
+        public void VarianceSampleTest()
         {
             Assert.AreEqual(9.166666667, Enumerable.Range(0, 10).VarianceSample(@int => @int), 0.000000001);
         }
 
         [TestMethod]
-        public void Variance()
+        public void VarianceTest()
         {
             Assert.AreEqual(9.166666667, Enumerable.Range(0, 10).Variance(@int => @int), 0.000000001);
         }

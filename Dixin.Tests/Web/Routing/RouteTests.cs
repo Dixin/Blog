@@ -10,7 +10,7 @@
     public class RouteTests
     {
         [TestMethod]
-        public void UnicodeUrl()
+        public void UnicodeUrlTest()
         {
             Route route = new Route("{x}/{y}/中文", new RouteValueDictionary(new { x = "a", y = "b" }), new RouteHandler());
             VirtualPathData result = route.GetVirtualPath(new RequestContext(new EmptyHttpContext(), new RouteData(route, new RouteHandler())), new RouteValueDictionary(new { x = "a", y = "文字", bb = "中国" }));

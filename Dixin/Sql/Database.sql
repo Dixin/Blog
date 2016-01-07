@@ -1,17 +1,17 @@
 ﻿-- Query all foreign keys.
 SELECT 
-	fk.name AS ForeignKey,
-	OBJECT_SCHEMA_NAME(fk.parent_object_id) AS TableNameSchema,
-	OBJECT_NAME(fk.parent_object_id) AS TableName,
-	COL_NAME(col.parent_object_id, col.parent_column_id) AS ColumnName,
-	OBJECT_SCHEMA_NAME(fk.referenced_object_id) AS ReferenceTableNameSchema,
-	OBJECT_NAME (fk.referenced_object_id) AS ReferenceTableName,
-	COL_NAME(col.referenced_object_id, col.referenced_column_id) AS ReferenceColumnName
+	foreign_keys.name AS ForeignKey,
+	OBJECT_SCHEMA_NAME(foreign_keys.parent_object_id) AS TableNameSchema,
+	OBJECT_NAME(foreign_keys.parent_object_id) AS TableName,
+	COL_NAME(columns.parent_object_id, columns.parent_column_id) AS ColumnName,
+	OBJECT_SCHEMA_NAME(foreign_keys.referenced_object_id) AS ReferenceTableNameSchema,
+	OBJECT_NAME (foreign_keys.referenced_object_id) AS ReferenceTableName,
+	COL_NAME(columns.referenced_object_id, columns.referenced_column_id) AS ReferenceColumnName
 FROM
-	sys.foreign_keys AS fk
-	INNER JOIN sys.foreign_key_columns AS col ON fk.object_id = col.constraint_object_id
-	INNER JOIN sys.objects ON sys.objects.object_id = col.referenced_object_id;
-	
+	sys.foreign_keys AS foreign_keys
+	INNER JOIN sys.foreign_key_columns AS columns ON foreign_keys.object_id = columns.constraint_object_id
+	INNER JOIN sys.objects AS objects ON objects.object_id = columns.referenced_object_id;
+
 -- Query table-valued function output schema.
 SELECT *
 FROM sys.columns

@@ -17,6 +17,7 @@
     using Dixin.Linq.Fundamentals;
     using Dixin.Properties;
     using Dixin.Reflection;
+
     using Microsoft.TeamFoundation.Client;
     using Microsoft.TeamFoundation.WorkItemTracking.Client;
 
@@ -413,12 +414,10 @@
             IEnumerable<string> innerJoin = outer
                 .SelectMany(
                     person => inner, (person, character) => new { Person = person, Character = character })
-                .Where(
-                    crossJoinValue => EqualityComparer<string>.Default.Equals(
-                        crossJoinValue.Person.Name, crossJoinValue.Character.Starring))
-                .Select(
-                    innerJoinValue =>
-                        $"{innerJoinValue.Person.Name} ({innerJoinValue.Person.PlaceOfBirth}): {innerJoinValue.Character.Name}");
+                .Where(crossJoinValue => EqualityComparer<string>.Default.Equals(
+                    crossJoinValue.Person.Name, crossJoinValue.Character.Starring))
+                .Select(innerJoinValue =>
+                    $"{innerJoinValue.Person.Name} ({innerJoinValue.Person.PlaceOfBirth}): {innerJoinValue.Character.Name}");
             // Define query.
             foreach (string value in innerJoin) // Execute query.
             {
@@ -529,10 +528,8 @@
                     person => new
                     {
                         Person = person,
-                        Characters =
-                                inner.Where(
-                                    character =>
-                                        EqualityComparer<string>.Default.Equals(person.Name, character.Starring))
+                        Characters = inner.Where(character =>
+                            EqualityComparer<string>.Default.Equals(person.Name, character.Starring))
                     }); // Define query.
             foreach (var value in leftOuterJoin) // Execute query.
             {
@@ -1169,7 +1166,7 @@
 
             int elementAt0OrDefaultOfEmptySource = EmptyInt32Source().ElementAtOrDefault(0); // 0.
 
-            Character characterAt5OrDefault = Characters().ElementAt(5); // null.
+            Character characterAt5OrDefault = Characters().ElementAtOrDefault(5); // null.
         }
 
         public static void Single()
@@ -1305,16 +1302,15 @@
             var typesWithMostDeclaredMembers = mscorlib.ExportedTypes
                 .Select(type => new { Type = type, Count = type.GetPublicDeclaredMembers().Length })
                 .OrderByDescending(tuple => tuple.Count)
-                .TakeWhile(
-                    tuple =>
+                .TakeWhile(tuple =>
+                    {
+                        if (maxDeclaredMembers == 0)
                         {
-                            if (maxDeclaredMembers == 0)
-                            {
-                                maxDeclaredMembers = tuple.Count;
-                            }
+                            maxDeclaredMembers = tuple.Count;
+                        }
 
-                            return tuple.Count == maxDeclaredMembers;
-                        });
+                        return tuple.Count == maxDeclaredMembers;
+                    });
             foreach (var tuple in typesWithMostDeclaredMembers)
             {
                 Trace.WriteLine($"{tuple.Type.FullName}: {tuple.Count}");
@@ -1325,16 +1321,15 @@
             var typesWithMostMembers = mscorlib.ExportedTypes
                 .Select(type => new { Type = type, Count = type.GetPublicMembers().Length })
                 .OrderByDescending(tuple => tuple.Count)
-                .TakeWhile(
-                    tuple =>
+                .TakeWhile(tuple =>
+                    {
+                        if (maxMembers == 0)
                         {
-                            if (maxMembers == 0)
-                            {
-                                maxMembers = tuple.Count;
-                            }
+                            maxMembers = tuple.Count;
+                        }
 
-                            return tuple.Count == maxMembers;
-                        });
+                        return tuple.Count == maxMembers;
+                    });
             foreach (var tuple in typesWithMostMembers)
             {
                 Trace.WriteLine($"{tuple.Type.FullName}: {tuple.Count}");

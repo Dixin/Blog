@@ -67,7 +67,7 @@
         }
 
         [TestMethod]
-        public void ReuseAnonymousType()
+        public void ReuseAnonymousTypeTest()
         {
             var anna = new { Name = "Anna", Age = 18 };
             var bill = new { Name = "Bill", Age = 19 };
@@ -75,7 +75,7 @@
         }
 
         [TestMethod]
-        public void AnonymousObjectEquality()
+        public void AnonymousObjectEqualityTest()
         {
             Assert.AreEqual(
                 new { Name = "Dixin", Age = 30 },

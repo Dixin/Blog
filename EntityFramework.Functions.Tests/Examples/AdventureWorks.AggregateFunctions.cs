@@ -7,7 +7,7 @@
         // Defines aggregate function, which must have one singele IEnumerable<T> or IQueryable<T> parameter.
         // It can only be used in LINQ to Entities queries, where its body will never be executed;
         // and cannot be called directly.
-        [Function(FunctionType.AggregateFunction, nameof(Concat), Schema = AdventureWorks.dbo)]
+        [Function(FunctionType.AggregateFunction, nameof(Concat), Schema = AdventureWorksDbContext.dbo)]
         public static string Concat(this IEnumerable<string> value) => Function.CallNotSupported<string>();
 
         // Aggregate function with more than more parameter is not supported by Entity Framework.

@@ -66,7 +66,7 @@
   <ItemGroup>
     <Compile Include="Examples\AdventureWorks.AggregateFunctions.cs" />
     <Compile Include="Examples\AdventureWorks.ComplexTypes.cs" />
-    <Compile Include="Examples\AdventureWorks.cs" />
+    <Compile Include="Examples\AdventureWorks.Database.cs" />
     <Compile Include="Examples\AdventureWorks.Functions.cs" />
     <Compile Include="Examples\AdventureWorks.Tables.cs" />
     <Compile Include="UnitTests\AdventureWorksTests.cs" />

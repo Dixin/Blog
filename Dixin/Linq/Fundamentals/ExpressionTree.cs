@@ -79,18 +79,6 @@
                 $"{@operator}({this.VisitNode(binary.Left, expression)}, {this.VisitNode(binary.Right, expression)})";
     }
 
-    public static partial class AnonymousFunction
-    {
-        public static void String()
-        {
-            Expression<Func<double, double, double, double, double, double>> infix =
-                (a, b, c, d, e) => a + b - c * d / 2 + e * 3;
-
-            PrefixVisitor prefixVisitor = new PrefixVisitor();
-            string prefix = prefixVisitor.VisitBody(infix); // "add(sub(add(a, b), div(mul(c, d), 2)), mul(e, 3))"
-        }
-    }
-
     public class PostfixVisitor : BinaryArithmeticExpressionVisitor<IEnumerable<Tuple<OpCode, double?>>>
     {
         protected override IEnumerable<Tuple<OpCode, double?>> VisitAdd
@@ -189,10 +177,10 @@
     {
         public static void Method()
         {
-            Expression<Func<double, double, double, double, double, double>> infix =
+            Expression<Func<double, double, double, double, double, double>> expression =
                 (a, b, c, d, e) => a + b - c * d / 2 + e * 3;
 
-            Func<double, double, double, double, double, double> method = BinaryArithmeticCompiler.Compile(infix);
+            Func<double, double, double, double, double, double> method = BinaryArithmeticCompiler.Compile(expression);
             double result = method(1, 2, 3, 4, 5); // 12
         }
 

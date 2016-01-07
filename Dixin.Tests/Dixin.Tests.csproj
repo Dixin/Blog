@@ -32,7 +32,7 @@
     <CodeContractsRuntimeThrowOnFailure>True</CodeContractsRuntimeThrowOnFailure>
     <CodeContractsRuntimeCallSiteRequires>False</CodeContractsRuntimeCallSiteRequires>
     <CodeContractsRuntimeSkipQuantifiers>False</CodeContractsRuntimeSkipQuantifiers>
-    <CodeContractsRunCodeAnalysis>True</CodeContractsRunCodeAnalysis>
+    <CodeContractsRunCodeAnalysis>False</CodeContractsRunCodeAnalysis>
     <CodeContractsNonNullObligations>True</CodeContractsNonNullObligations>
     <CodeContractsBoundsObligations>True</CodeContractsBoundsObligations>
     <CodeContractsArithmeticObligations>True</CodeContractsArithmeticObligations>
@@ -94,6 +94,14 @@
       <HintPath>..\packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8\Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.TeamFoundation.Common, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\TestAgent\Microsoft.TeamFoundation.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.Services.Common, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data" />
@@ -114,13 +122,7 @@
         <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
       </ItemGroup>
     </When>
-    <Otherwise>
-      <ItemGroup>
-        <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework">
-          <Private>False</Private>
-        </Reference>
-      </ItemGroup>
-    </Otherwise>
+    <Otherwise />
   </Choose>
   <ItemGroup>
     <Compile Include="..\Tools\CommonAssemblyInfo.cs">
@@ -147,6 +149,8 @@
     <Compile Include="Linq\Combinators\SkiCombinatorsTests.cs" />
     <Compile Include="Linq\EnumerableXTests.cs" />
     <Compile Include="Linq\Functional\FunctionalQueryMethodsTests.cs" />
+    <Compile Include="Linq\Fundamentals\BinaryArithmeticCompilerTests.cs" />
+    <Compile Include="Linq\Fundamentals\PrefixVisitorTests.cs" />
     <Compile Include="Linq\Lambda\ChurchBooleanTests.cs" />
     <Compile Include="Linq\Lambda\ChurchListTests.cs" />
     <Compile Include="Linq\Lambda\ChurchPredicatesTests.cs" />
@@ -155,10 +159,17 @@
     <Compile Include="Linq\Lambda\_ListNodeTests.cs" />
     <Compile Include="Linq\Lambda\_NumeralExtensionsTests.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorksTests.cs" />
+    <Compile Include="Linq\LinqToEntities\AdventureWorksTests.Log.cs" />
+    <Compile Include="Linq\LinqToEntities\AdventureWorksTests.QueryMethods.cs" />
     <Compile Include="Linq\LinqToObjects\DeferredExecutionTests.cs" />
     <Compile Include="Linq\LinqToObjects\EnumerableQueryMethodsTests.cs" />
     <Compile Include="Linq\LinqToObjects\IteratorPatternTests.cs" />
+    <Compile Include="Linq\LinqToObjects\QueryMethodsTests.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorksTests.cs" />
+    <Compile Include="Linq\LinqToSql\AdventureWorksTests.Log.cs" />
+    <Compile Include="Linq\LinqToSql\AdventureWorksTests.QueryMethods.cs" />
+    <Compile Include="Linq\LinqToSql\BinaryArithmeticTanslatorTests.cs" />
+    <Compile Include="Linq\LinqToSql\InfixVisitorTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>

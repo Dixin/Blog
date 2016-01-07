@@ -30,8 +30,8 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeContractsEnableRuntimeChecking>True</CodeContractsEnableRuntimeChecking>
     <CodeContractsRuntimeOnlyPublicSurface>False</CodeContractsRuntimeOnlyPublicSurface>
-    <CodeContractsRuntimeThrowOnFailure>False</CodeContractsRuntimeThrowOnFailure>
-    <CodeContractsRuntimeCallSiteRequires>True</CodeContractsRuntimeCallSiteRequires>
+    <CodeContractsRuntimeThrowOnFailure>True</CodeContractsRuntimeThrowOnFailure>
+    <CodeContractsRuntimeCallSiteRequires>False</CodeContractsRuntimeCallSiteRequires>
     <CodeContractsRuntimeSkipQuantifiers>False</CodeContractsRuntimeSkipQuantifiers>
     <CodeContractsRunCodeAnalysis>False</CodeContractsRunCodeAnalysis>
     <CodeContractsNonNullObligations>True</CodeContractsNonNullObligations>
@@ -136,13 +136,13 @@
       <HintPath>C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\TestAgent\Microsoft.TeamFoundation.WorkItemTracking.Client.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualBasic" />
-    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.WebSockets, Version=0.2.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.WebSockets.0.2.3\lib\net45\Microsoft.WebSockets.dll</HintPath>
+      <HintPath>..\packages\Microsoft.WebSockets.0.2.3.1\lib\net45\Microsoft.WebSockets.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Cecil, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
@@ -267,15 +267,33 @@
     <Compile Include="Common\ExceptionExtensions.cs" />
     <Compile Include="Common\ValidatedNotNullAttribute.cs" />
     <Compile Include="Data\Services\WcfWebSocketService.cs" />
-    <Compile Include="Linq\LinqToEntities\AdventureWorks.cs" />
+    <Compile Include="Linq\LinqToEntities\AdventureWorks.Association.cs" />
+    <Compile Include="Linq\LinqToEntities\AdventureWorks.Compiled.cs" />
+    <Compile Include="Linq\LinqToEntities\AdventureWorks.Database.cs" />
+    <Compile Include="Linq\LinqToEntities\AdventureWorks.Inheritance.cs" />
+    <Compile Include="Linq\LinqToEntities\AdventureWorks.Log.cs" />
+    <Compile Include="Linq\LinqToEntities\AdventureWorks.Query.cs" />
+    <Compile Include="Linq\LinqToEntities\AdventureWorks.Tables.cs" />
     <Compile Include="Linq\LinqToEntities\DbContextExtensions.cs" />
-    <Compile Include="Linq\LinqToSql\AdventureWorksDataContext.cs" />
+    <Compile Include="Linq\LinqToSql\AdventureWorks.Associations.cs" />
+    <Compile Include="Linq\LinqToSql\AdventureWorks.Inheritance.cs" />
+    <Compile Include="Linq\LinqToSql\AdventureWorks.Database.cs" />
+    <Compile Include="Linq\LinqToSql\AdventureWorks.Functions.cs" />
+    <Compile Include="Linq\LinqToSql\AdventureWorks.Log.cs" />
+    <Compile Include="Linq\LinqToSql\AdventureWorks.Tables.cs" />
+    <Compile Include="Linq\LinqToSql\ExpressionTree.cs" />
+    <Compile Include="IO\CustomTextWriter.cs" />
+    <Compile Include="Linq\LinqToSql\AdventureWorks.QueryMethods.cs" />
+    <Compile Include="Linq\LinqToSql\TableHelper.cs" />
     <Compile Include="Management\Win32Process.cs" />
     <Compile Include="IO\Music.cs" />
     <Compile Include="IO\Video.cs" />
     <Compile Include="Linq\CategoryTheory\Functor.Like.cs" />
     <Compile Include="Linq\CategoryTheory\Monad.Like.cs" />
+    <Content Include="Linq\LinqToEntities\AdventureWorks.QueryMethods.sql" />
     <Content Include="Linq\LinqToEntities\Mapping.sql" />
+    <Content Include="Linq\LinqToSql\AdventureWorks.QueryMethods.sql" />
+    <Content Include="Linq\LinqToSql\ExpressionTree.sql" />
     <Content Include="Linq\LinqToSql\Mapping.sql" />
     <Content Include="Sql\AdventureWorks.Delete.sql" />
     <Content Include="Sql\AdventureWorks.sql" />
@@ -428,6 +446,7 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <None Include="Linq\Fundamentals\Methods.il" />
+    <Compile Include="Linq\LinqToEntities\AdventureWorks.QueryMethods.cs" />
     <None Include="Management\Automation\VirtualHardDisk.ps1" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">

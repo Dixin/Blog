@@ -1,7 +1,9 @@
 ﻿namespace EntityFramework.Functions
 {
     using System;
+#if NET45
     using System.Runtime.CompilerServices;
+#endif
 
     public static partial class Function
     {

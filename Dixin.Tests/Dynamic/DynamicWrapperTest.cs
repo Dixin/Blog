@@ -21,10 +21,8 @@ namespace Dixin.Tests.Dynamic
     [TestClass]
     public class DynamicWrapperTest
     {
-        #region Public Methods
-
         [TestMethod]
-        public void StaticMemebr()
+        public void StaticMemebrTest()
         {
             Assert.AreEqual(0, StaticTest.Value);
             dynamic wrapper = new DynamicWrapper<StaticTest>();
@@ -37,7 +35,7 @@ namespace Dixin.Tests.Dynamic
         }
 
         [TestMethod]
-        public void GetSetIndexFromType()
+        public void GetSetIndexFromTypeTest()
         {
             BaseTest @base = new BaseTest();
             Assert.AreEqual("0", @base[5, 5]);
@@ -48,27 +46,27 @@ namespace Dixin.Tests.Dynamic
         }
 
         [TestMethod]
-        public void GetInvokeMemberFromBase()
+        public void GetInvokeMemberFromBaseTest()
         {
             Assert.AreEqual(0, new DerivedTest().ToDynamic().array[6, 6]);
             Assert.AreEqual(0, new DerivedTest().ToDynamic().array.ToStatic()[6, 6]);
         }
 
         [TestMethod]
-        public void GetInvokeMemberConvertFromType()
+        public void GetInvokeMemberConvertFromTypeTest()
         {
-            using (AdventureWorksDataContext database = new AdventureWorksDataContext())
+            using (AdventureWorksDataContext adventureWorks = new AdventureWorksDataContext())
             {
                 IQueryable<Product> query =
-                    database.Products.Where(product => product.ProductID > 0).OrderBy(p => p.Name).Take(2);
+                    adventureWorks.Products.Where(product => product.ProductID > 0).OrderBy(p => p.Name).Take(2);
                 IEnumerable<Product> results =
-                    database.ToDynamic().Provider.Execute(query.Expression).ReturnValue;
+                    adventureWorks.ToDynamic().Provider.Execute(query.Expression).ReturnValue;
                 Assert.IsTrue(results.Any());
             }
         }
 
         [TestMethod]
-        public void ValueType()
+        public void ValueTypeTest()
         {
             StructTest test = new StructTest(1);
             dynamic wrapper = test.ToDynamic();
@@ -85,14 +83,12 @@ namespace Dixin.Tests.Dynamic
 
         [TestMethod]
         [ExpectedException(typeof(RuntimeBinderException))]
-        public void ValueTypeProperty()
+        public void ValueTypePropertyTest()
         {
             StructTest test2 = new StructTest(10);
             dynamic wrapper2 = new DynamicWrapper<StructTest>(ref test2);
 
             wrapper2.Value = 30;
         }
-
-        #endregion
     }
 }

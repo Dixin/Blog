@@ -25,5 +25,8 @@
                     new DirectoryInfo(value).FullName);
             }
         }
+
+        internal static void SetDefaultDataDirectory
+            () => DataDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\Data");
     }
 }

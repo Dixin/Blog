@@ -85,19 +85,18 @@ namespace Dixin.Diagnostics
             Win32Process parentProcess =
                 ById(childProcessId)?.ParentProcessId?.Forward(parentProcessId => ById(parentProcessId));
             return parentProcess == null
-                       ? Enumerable.Empty<Win32Process>()
-                       : Enumerable.Repeat(parentProcess, 1)
-                             .Concat(
-                                 parentProcess.ProcessId.HasValue
-                                     ? AllParentProcess(parentProcess.ProcessId.Value)
-                                     : Enumerable.Empty<Win32Process>());
+                ? Enumerable.Empty<Win32Process>()
+                : Enumerable.Repeat(parentProcess, 1).Concat(parentProcess.ProcessId.HasValue
+                    ? AllParentProcess(parentProcess.ProcessId.Value)
+                    : Enumerable.Empty<Win32Process>());
         }
     }
 
     public static partial class ProcessHelper
     {
         public static IEnumerable<Win32Process> ChildProcesses
-            (uint parentProcessId, ManagementScope managementScope = null) => Wmi.Query(
+            (uint parentProcessId, ManagementScope managementScope = null) => Wmi
+                .Query(
                     $"SELECT * FROM {Win32Process.WmiClassName} WHERE {nameof(Win32Process.ParentProcessId)} = {parentProcessId}",
                     managementScope)
                 .Select(process => new Win32Process(process));
@@ -105,7 +104,8 @@ namespace Dixin.Diagnostics
         public static IEnumerable<Win32Process> AllChildProcesses
             (uint parentProcessId, ManagementScope managementScope = null)
         {
-            IEnumerable<Win32Process> childProcesses = Wmi.Query(
+            IEnumerable<Win32Process> childProcesses = Wmi
+                .Query(
                     $"SELECT * FROM {Win32Process.WmiClassName} WHERE {nameof(Win32Process.ParentProcessId)} = {parentProcessId}",
                     managementScope).Select(process => new Win32Process(process));
             return childProcesses.Concat(childProcesses.SelectMany(process => process.ProcessId.HasValue
