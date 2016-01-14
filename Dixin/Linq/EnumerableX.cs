@@ -1,6 +1,7 @@
 ﻿namespace Dixin.Linq
 {
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics.Contracts;
     using System.Linq;
@@ -385,6 +386,16 @@
                 while (iterator.MoveNext())
                 {
                 }
+            }
+        }
+
+        public static void ForEach(this IEnumerable source)
+        {
+            Contract.Requires<ArgumentNullException>(source != null);
+
+            IEnumerator iterator = source.GetEnumerator();
+            while (iterator.MoveNext())
+            {
             }
         }
 

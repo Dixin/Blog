@@ -238,14 +238,14 @@ WHERE ProductID NOT IN (
         SELECT TOP (@ProductCount)
             ProductID
         FROM Production.Product
-        ORDER BY ProductID UNION (SELECT TOP 1 ProductID FROM Production.Product ORDER BY ProductID DESC));
+        ORDER BY ProductID DESC);
 
 DELETE Production.ProductProductPhoto
 WHERE ProductID NOT IN (
         SELECT TOP (@ProductCount)
             ProductID
         FROM Production.Product
-        ORDER BY ProductID UNION (SELECT TOP 1 ProductID FROM Production.Product ORDER BY ProductID DESC));
+        ORDER BY ProductID DESC);
 
 DELETE Production.ProductPhoto
 WHERE Productphotoid NOT IN (
@@ -258,28 +258,28 @@ WHERE ProductID NOT IN (
         SELECT TOP (@ProductCount)
             ProductID
         FROM Production.Product
-        ORDER BY ProductID UNION (SELECT TOP 1 ProductID FROM Production.Product ORDER BY ProductID DESC));
+        ORDER BY ProductID DESC);
 
 DELETE FROM Production.TransactionHistory
 WHERE ProductID NOT IN (
         SELECT TOP (@ProductCount)
             ProductID
         FROM Production.Product
-        ORDER BY ProductID UNION (SELECT TOP 1 ProductID FROM Production.Product ORDER BY ProductID DESC));
+        ORDER BY ProductID DESC);
 
 DELETE FROM Production.TransactionHistoryArchive
 WHERE ProductID NOT IN (
         SELECT TOP (@ProductCount)
             ProductID
         FROM Production.Product
-        ORDER BY ProductID UNION (SELECT TOP 1 ProductID FROM Production.Product ORDER BY ProductID DESC));
+        ORDER BY ProductID DESC);
 
 DELETE FROM Production.BillOfMaterials
 WHERE Productassemblyid NOT IN (
         SELECT TOP (@ProductCount)
             ProductID
         FROM Production.Product
-        ORDER BY ProductID UNION (SELECT TOP 1 ProductID FROM Production.Product ORDER BY ProductID DESC));
+        ORDER BY ProductID DESC);
 
 
 DELETE FROM Production.BillOfMaterials
@@ -287,7 +287,7 @@ WHERE Componentid NOT IN (
         SELECT TOP (@ProductCount)
             ProductID
         FROM Production.Product
-        ORDER BY ProductID UNION (SELECT TOP 1 ProductID FROM Production.Product ORDER BY ProductID DESC));
+        ORDER BY ProductID DESC);
 
 DELETE Production.WorkOrderRouting
     FROM Production.WorkOrderRouting
@@ -297,14 +297,14 @@ WHERE Production.Workorder.ProductID NOT IN (
         SELECT TOP (@ProductCount)
             ProductID
         FROM Production.Product
-        ORDER BY ProductID UNION (SELECT TOP 1 ProductID FROM Production.Product ORDER BY ProductID DESC));
+        ORDER BY ProductID DESC);
 
 DELETE Production.WorkOrder
 WHERE ProductID NOT IN (
         SELECT TOP (@ProductCount)
             ProductID
         FROM Production.Product
-        ORDER BY ProductID UNION (SELECT TOP 1 ProductID FROM Production.Product ORDER BY ProductID DESC));
+        ORDER BY ProductID DESC);
 
 DELETE Sales.SalesOrderDetail
     FROM Sales.SalesOrderDetail
@@ -312,46 +312,46 @@ WHERE ProductID NOT IN (
         SELECT TOP (@ProductCount)
             ProductID
         FROM Production.Product
-        ORDER BY ProductID UNION (SELECT TOP 1 ProductID FROM Production.Product ORDER BY ProductID DESC));
+        ORDER BY ProductID DESC);
 
 DELETE Sales.SpecialOfferProduct
 WHERE ProductID NOT IN (
         SELECT TOP (@ProductCount)
             ProductID
         FROM Production.Product
-        ORDER BY ProductID UNION (SELECT TOP 1 ProductID FROM Production.Product ORDER BY ProductID DESC));
+        ORDER BY ProductID DESC);
 
 DELETE FROM Production.ProductCostHistory
 WHERE ProductID NOT IN (
         SELECT TOP (@ProductCount)
             ProductID
         FROM Production.Product
-        ORDER BY ProductID UNION (SELECT TOP 1 ProductID FROM Production.Product ORDER BY ProductID DESC));
+        ORDER BY ProductID DESC);
 
 DELETE FROM Production.ProductListPriceHistory
 WHERE ProductID NOT IN (
         SELECT TOP (@ProductCount)
             ProductID
         FROM Production.Product
-        ORDER BY ProductID UNION (SELECT TOP 1 ProductID FROM Production.Product ORDER BY ProductID DESC));
+        ORDER BY ProductID DESC);
 
 DELETE Production.ProductReview
 WHERE ProductID NOT IN (
         SELECT TOP (@ProductCount)
             ProductID
         FROM Production.Product
-        ORDER BY ProductID UNION (SELECT TOP 1 ProductID FROM Production.Product ORDER BY ProductID DESC));
+        ORDER BY ProductID DESC);
 
 DELETE Sales.ShoppingCartItem
 WHERE ProductID NOT IN (
         SELECT TOP (@ProductCount)
             ProductID
         FROM Production.Product
-        ORDER BY ProductID UNION (SELECT TOP 1 ProductID FROM Production.Product ORDER BY ProductID DESC));
+        ORDER BY ProductID DESC);
 
 DELETE Production.Product
 WHERE ProductID NOT IN (
         SELECT TOP (@ProductCount)
             ProductID
         FROM Production.Product
-        ORDER BY ProductID UNION (SELECT TOP 1 ProductID FROM Production.Product ORDER BY ProductID DESC));
+        ORDER BY ProductID DESC);

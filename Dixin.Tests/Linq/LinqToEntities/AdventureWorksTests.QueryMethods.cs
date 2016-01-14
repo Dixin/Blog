@@ -1,102 +1,190 @@
 ﻿namespace Dixin.Tests.Linq.LinqToEntities
 {
     using System;
+    using System.Data.Entity.Core;
     using System.Diagnostics;
 
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Dixin.Linq.LinqToEntities;
 
-    using static Dixin.Linq.LinqToEntities.QueryMethods;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
     public class QueryMethodsTests
     {
         [TestMethod]
+        public void ChangesTest()
+        {
+            QueryMethods.EntitiesFromSameContext();
+            QueryMethods.MappingsFromSameContext();
+            QueryMethods.EntitiesFromContexts();
+            QueryMethods.TrackChanges();
+            QueryMethods.Attach();
+            QueryMethods.AssociationChanges();
+        }
+
+        [TestMethod]
+        public void CrudTest()
+        {
+            QueryMethods.Insert();
+        }
+
+        [TestMethod]
+        public void LazinessTest()
+        {
+            try
+            {
+                UI.ViewCategoryProducts("Bikes");
+                Assert.Fail();
+            }
+            catch (InvalidOperationException exception)
+            {
+                Trace.WriteLine(exception);
+            }
+            try
+            {
+                QueryMethods.LazyLoading();
+            }
+            catch (EntityCommandExecutionException exception)
+            {
+                Trace.WriteLine(exception);
+            }
+            QueryMethods.LazyLoadingWithToArray();
+            QueryMethods.EagerLoadingWithSelect();
+            QueryMethods.EagerLoadingWithAssociation();
+            try
+            {
+                QueryMethods.ConditionalEagerLoading();
+            }
+            catch (ArgumentException exception)
+            {
+                Trace.WriteLine(exception);
+            }
+            QueryMethods.ConditionalEagerLoadingWithSelect();
+            QueryMethods.NoLoading();
+        }
+
+        [TestMethod]
+        public void LocalRemoteMethodTests()
+        {
+            QueryMethods.InlinePredicate();
+            QueryMethods.InlinePredicateCompiled();
+            try
+            {
+                QueryMethods.MethodPredicate();
+                Assert.Fail();
+            }
+            catch (NotSupportedException exception)
+            {
+                Trace.WriteLine(exception);
+            }
+            try
+            {
+                QueryMethods.MethodPredicateCompiled();
+                Assert.Fail();
+            }
+            catch (NotSupportedException exception)
+            {
+                Trace.WriteLine(exception);
+            }
+            try
+            {
+                QueryMethods.MethodSelector();
+                Assert.Fail();
+            }
+            catch (NotSupportedException exception)
+            {
+                Trace.WriteLine(exception);
+            }
+            QueryMethods.LocalSelector();
+        }
+
+        [TestMethod]
         public void GenerationTest()
         {
-            DefaultIfEmpty();
+            QueryMethods.DefaultIfEmpty();
         }
 
         [TestMethod]
         public void FilteringTest()
         {
-            Where();
-            WhereWithOr();
-            WhereWithAnd();
-            WhereAndWhere();
-            WhereWithLike();
+            QueryMethods.Where();
+            QueryMethods.WhereWithOr();
+            QueryMethods.WhereWithAnd();
+            QueryMethods.WhereAndWhere();
+            QueryMethods.WhereWithLike();
             try
             {
-                WhereWithLikeMethod();
+                QueryMethods.WhereWithLikeMethod();
                 Assert.Fail();
             }
             catch (NotSupportedException exception)
             {
                 Trace.WriteLine(exception);
             }
-            WhereWithContains();
-            WhereWithNull();
-            OfType();
+            QueryMethods.WhereWithContains();
+            QueryMethods.WhereWithNull();
+            QueryMethods.OfType();
         }
 
         [TestMethod]
         public void MappingTest()
         {
-            Select();
-            SelectWithStringConcat();
-            SelectAnonymousType();
+            QueryMethods.Select();
+            QueryMethods.SelectWithStringConcat();
+            QueryMethods.SelectAnonymousType();
             try
             {
-                SelectEntity();
+                QueryMethods.SelectEntity();
                 Assert.Fail();
             }
             catch (NotSupportedException exception)
             {
                 Trace.WriteLine(exception);
             }
-            SelectEntityObjects();
-            SelectWithCase();
+            QueryMethods.SelectEntityObjects();
+            QueryMethods.SelectWithCase();
         }
 
         [TestMethod]
         public void GroupingTest()
         {
-            Grouping();
-            GroupBy();
-            GroupByWithWhere();
+            QueryMethods.Grouping();
+            QueryMethods.GroupBy();
+            QueryMethods.GroupByWithWhere();
         }
 
         [TestMethod]
         public void JoinTest()
         {
-            InnerJoin();
-            InnerJoinWithSelectMany();
-            InnerJoinWithAssociation();
-            InnerJoinWithMultipleKeys();
-            LeftOuterJoin();
-            LeftOuterJoinWithDefaultIfEmpty();
-            LeftOuterJoinWithSelect();
-            LeftOuterJoinWithAssociation();
-            CrossJoin();
-            CrossJoinWithSelectMany();
-            CrossJoinWithJoin();
-            SelfJoin();
+            QueryMethods.InnerJoin();
+            QueryMethods.InnerJoinWithSelectMany();
+            QueryMethods.InnerJoinWithAssociation();
+            QueryMethods.InnerJoinWithMultipleKeys();
+            QueryMethods.LeftOuterJoin();
+            QueryMethods.LeftOuterJoinWithDefaultIfEmpty();
+            QueryMethods.LeftOuterJoinWithSelect();
+            QueryMethods.LeftOuterJoinWithAssociation();
+            QueryMethods.CrossJoin();
+            QueryMethods.CrossJoinWithSelectMany();
+            QueryMethods.CrossJoinWithJoin();
+            QueryMethods.SelfJoin();
         }
 
         [TestMethod]
         public void ConcatenationTest()
         {
-            Concat();
-            ConcatWithSelect();
+            QueryMethods.Concat();
+            QueryMethods.ConcatWithSelect();
         }
 
         [TestMethod]
         public void SetTest()
         {
-            Distinct();
-            DistinctWithGroupByAndSelect();
-            DistinctWithGroupByAndSelectMany();
-            Intersect();
-            Except();
+            QueryMethods.Distinct();
+            QueryMethods.DistinctWithGroupByAndSelect();
+            QueryMethods.DistinctWithGroupByAndSelectMany();
+            QueryMethods.Intersect();
+            QueryMethods.Except();
         }
 
         [TestMethod]
@@ -104,28 +192,28 @@
         {
             try
             {
-                Skip();
+                QueryMethods.Skip();
                 Assert.Fail();
             }
             catch (NotSupportedException exception)
             {
                 Trace.WriteLine(exception);
             }
-            OrderBySkip();
-            Take();
-            OrderBySkipTake();
+            QueryMethods.OrderBySkip();
+            QueryMethods.Take();
+            QueryMethods.OrderBySkipTake();
         }
 
         [TestMethod]
         public void OrderingTest()
         {
-            OrderBy();
-            OrderByDescending();
-            OrderByThenBy();
-            OrderByOrderBy();
+            QueryMethods.OrderBy();
+            QueryMethods.OrderByDescending();
+            QueryMethods.OrderByThenBy();
+            QueryMethods.OrderByOrderBy();
             try
             {
-                Reverse();
+                QueryMethods.Reverse();
                 Assert.Fail();
             }
             catch (NotSupportedException exception)
@@ -139,7 +227,7 @@
         {
             try
             {
-                Cast();
+                QueryMethods.Cast();
                 Assert.Fail();
             }
             catch (NotSupportedException exception)
@@ -151,11 +239,11 @@
         [TestMethod]
         public void ElementTest()
         {
-            First();
-            FirstOrDefault();
+            QueryMethods.First();
+            QueryMethods.FirstOrDefault();
             try
             {
-                Last();
+                QueryMethods.Last();
                 Assert.Fail();
             }
             catch (NotSupportedException exception)
@@ -164,34 +252,34 @@
             }
             try
             {
-                LastOrDefault();
+                QueryMethods.LastOrDefault();
                 Assert.Fail();
             }
             catch (NotSupportedException exception)
             {
                 Trace.WriteLine(exception);
             }
-            Single();
-            SingleOrDefault();
+            QueryMethods.Single();
+            QueryMethods.SingleOrDefault();
         }
 
         [TestMethod]
         public void AggregateTest()
         {
-            Count();
-            LongCount();
-            Min();
-            Max();
-            Sum();
-            Average();
+            QueryMethods.Count();
+            QueryMethods.LongCount();
+            QueryMethods.Min();
+            QueryMethods.Max();
+            QueryMethods.Sum();
+            QueryMethods.Average();
         }
 
         [TestMethod]
         public void QuantifiersTest()
         {
-            All();
-            Any();
-            Contains();
+            QueryMethods.All();
+            QueryMethods.Any();
+            QueryMethods.Contains();
         }
     }
 }

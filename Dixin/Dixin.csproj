@@ -268,13 +268,18 @@
     <Compile Include="Common\ValidatedNotNullAttribute.cs" />
     <Compile Include="Data\Services\WcfWebSocketService.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Association.cs" />
+    <Compile Include="Linq\LinqToEntities\AdventureWorks.Changes.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Compiled.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Database.cs" />
+    <Compile Include="Linq\LinqToEntities\AdventureWorks.Laziness.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Inheritance.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Log.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Query.cs" />
+    <Compile Include="Linq\LinqToEntities\AdventureWorks.RemoteMethods.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Tables.cs" />
     <Compile Include="Linq\LinqToEntities\DbContextExtensions.cs" />
+    <Compile Include="Linq\LinqToSql\AdventureWorks.Laziness.cs" />
+    <Compile Include="Linq\LinqToSql\AdventureWorks.RemoteMethods.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.Associations.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.Inheritance.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.Database.cs" />
@@ -284,6 +289,7 @@
     <Compile Include="Linq\LinqToSql\ExpressionTree.cs" />
     <Compile Include="IO\CustomTextWriter.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.QueryMethods.cs" />
+    <Compile Include="Reflection\ReflectionHelper.cs" />
     <Compile Include="Linq\LinqToSql\TableHelper.cs" />
     <Compile Include="Management\Win32Process.cs" />
     <Compile Include="IO\Music.cs" />

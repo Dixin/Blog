@@ -79,7 +79,7 @@ namespace Dixin.Linq.LinqToSql
         public static void WhereWithNull()
         {
             IQueryable<Product> source = AdventureWorks.Products;
-            IQueryable<Product> products = source.Where(product => product.ProductSubcategoryID != null); // Define query.
+            IQueryable<Product> products = source.Where(product => product.ProductSubcategory != null); // Define query.
             products.ForEach(product => Trace.WriteLine($"{product.Name}: {product.ListPrice}")); // Execute query.
         }
 
@@ -156,7 +156,7 @@ namespace Dixin.Linq.LinqToSql
             var products = source.Select(product =>
                 new { Name = product.Name, HasListPrice = product.ListPrice > 0 }); // Define query.
             products.ForEach(product => Trace.WriteLine(
-                $"{product.Name}{(product.HasListPrice ? "has list price" : null)}.")); // Execute query.
+                $"{product.Name} has{(product.HasListPrice ? null : " no")} list price.")); // Execute query.
         }
 
         #endregion
@@ -596,7 +596,7 @@ namespace Dixin.Linq.LinqToSql
             IQueryable<Product> source = AdventureWorks.Products;
             var single = source
                 .Select(product => new { Name = product.Name, ListPrice = product.ListPrice })
-                .Single(product => product.ListPrice == 539.99M); // Execute query.
+                .Single(product => product.Name == "Road-750 Black, 52"); // Execute query.
             Trace.WriteLine($"{single.Name}: {single.ListPrice}");
         }
 

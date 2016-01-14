@@ -6,24 +6,24 @@
 
     public partial class ProductCategory
     {
-        public ICollection<ProductSubcategory> ProductSubcategories { get; } = new HashSet<ProductSubcategory>();
+        public virtual ICollection<ProductSubcategory> ProductSubcategories { get; } = new HashSet<ProductSubcategory>();
     }
 
     public partial class ProductSubcategory
     {
         public int? ProductCategoryID { get; set; }
 
-        public ProductCategory ProductCategory { get; set; }
+        public virtual ProductCategory ProductCategory { get; set; }
     }
 
     public partial class ProductSubcategory
     {
-        public ICollection<Product> Products { get; set; } = new HashSet<Product>();
+        public virtual ICollection<Product> Products { get; set; } = new HashSet<Product>();
     }
 
     public partial class Product
     {
-        public ProductSubcategory ProductSubcategory { get; set; }
+        public virtual ProductSubcategory ProductSubcategory { get; set; }
 
         public int? ProductSubcategoryID { get; set; }
     }
@@ -35,23 +35,23 @@
 
     public partial class Product
     {
-        public ICollection<ProductProductPhoto> ProductProductPhotos { get; } = new HashSet<ProductProductPhoto>();
+        public virtual ICollection<ProductProductPhoto> ProductProductPhotos { get; } = new HashSet<ProductProductPhoto>();
     }
 
     public partial class ProductPhoto
     {
-        public ICollection<ProductProductPhoto> ProductProductPhotos { get; } = new HashSet<ProductProductPhoto>();
+        public virtual ICollection<ProductProductPhoto> ProductProductPhotos { get; } = new HashSet<ProductProductPhoto>();
     }
 
     public partial class ProductProductPhoto
     {
-        public Product Product { get; set; }
+        public virtual Product Product { get; set; }
 
         [Key]
         [Column(Order = 0)]
         public int ProductID { get; set; }
 
-        public ProductPhoto ProductPhoto { get; set; }
+        public virtual ProductPhoto ProductPhoto { get; set; }
 
         [Key]
         [Column(Order = 1)]

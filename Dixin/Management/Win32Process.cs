@@ -13,7 +13,7 @@
         public const string WmiClassName = "Win32_Process";
     }
 
-    [DebuggerDisplay("Name = {Name}; Id = {ProcessId}")]
+    [DebuggerDisplay("Name = {this.Name}, Id = {this.ProcessId}")]
     public partial class Win32Process
     {
         public string Caption { get; }

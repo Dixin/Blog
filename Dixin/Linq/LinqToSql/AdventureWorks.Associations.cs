@@ -1,5 +1,4 @@
-﻿
-namespace Dixin.Linq.LinqToSql
+﻿namespace Dixin.Linq.LinqToSql
 {
     using System.Data.Linq;
     using System.Data.Linq.Mapping;
