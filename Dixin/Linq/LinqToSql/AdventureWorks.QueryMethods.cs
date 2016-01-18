@@ -7,7 +7,7 @@ namespace Dixin.Linq.LinqToSql
 
     public static partial class QueryMethods
     {
-        private static readonly AdventureWorksDataContext AdventureWorks = new AdventureWorksDataContext();
+        private static readonly AdventureWorks AdventureWorks = new AdventureWorks();
 
         #region Generation
 

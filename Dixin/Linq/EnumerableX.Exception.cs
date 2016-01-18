@@ -34,13 +34,8 @@
                             break;
                         }
                     }
-                    catch (TException exception)
+                    catch (TException exception) when (handler?.Invoke(exception) != true)
                     {
-                        if (handler?.Invoke(exception) == true)
-                        {
-                            throw;
-                        }
-
                         break;
                     }
 
@@ -356,12 +351,8 @@
                     isTransient,
                     retryingHandler);
             }
-            catch (TException exception)
+            catch (TException exception) when (@catch?.Invoke(exception) != true)
             {
-                if (@catch?.Invoke(exception) == true)
-                {
-                    throw;
-                }
             }
 
             return results.Hide();
@@ -390,13 +381,8 @@
                                 yield break; // End of source.
                             }
                         }
-                        catch (TException exception)
+                        catch (TException exception) when (@catch?.Invoke(exception) != true)
                         {
-                            if (@catch?.Invoke(exception) == true)
-                            {
-                                throw;
-                            }
-
                             lastException = exception;
                             break; // Next retry.
                         }
@@ -414,13 +400,8 @@
 
                             value = iterator.Current;
                         }
-                        catch (TException exception)
+                        catch (TException exception) when (@catch?.Invoke(exception) != true)
                         {
-                            if (@catch?.Invoke(exception) == true)
-                            {
-                                throw;
-                            }
-
                             lastException = exception;
                             break; // Next retry.
                         }

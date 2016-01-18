@@ -8,7 +8,7 @@
     {
         public static IQueryable<Product> QueryCategoryProducts(string category)
         {
-            using (AdventureWorksDataContext adventureWorks = new AdventureWorksDataContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 return adventureWorks.Products.Where(
                     product => product.ProductSubcategory.ProductCategory.Name == category);
@@ -50,7 +50,7 @@
 
         public static void EagerLoadingWithAssociation()
         {
-            using (AdventureWorksDataContext adventureWorks = new AdventureWorksDataContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 DataLoadOptions options = new DataLoadOptions();
                 options.LoadWith<ProductSubcategory>(subcategory => subcategory.Products);
@@ -65,7 +65,7 @@
 
         public static void ConditionalEagerLoading()
         {
-            using (AdventureWorksDataContext adventureWorks = new AdventureWorksDataContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 DataLoadOptions options = new DataLoadOptions();
                 options.LoadWith<ProductSubcategory>(subcategory => subcategory.Products);
@@ -81,7 +81,7 @@
 
         public static void NoLoading()
         {
-            using (AdventureWorksDataContext adventureWorks = new AdventureWorksDataContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 adventureWorks.DeferredLoadingEnabled = false; // Default: true.
                 IQueryable<ProductSubcategory> subcategories = AdventureWorks.ProductSubcategories;

@@ -5,7 +5,7 @@
     using System.Data.Entity.Core.Objects;
     using System.Linq;
 
-    public partial class AdventureWorksDbContext
+    public partial class AdventureWorks
     {
         public const string dbo = nameof(dbo);
 
@@ -14,7 +14,7 @@
             base.OnModelCreating(modelBuilder);
 
             // Add functions to model.
-            modelBuilder.AddFunctions<AdventureWorksDbContext>();
+            modelBuilder.AddFunctions<AdventureWorks>();
             modelBuilder.AddFunctions(typeof(AdventureWorksFunctions));
             modelBuilder.AddFunctions(typeof(BuiltInFunctions));
             modelBuilder.AddFunctions(typeof(NiladicFunctions));

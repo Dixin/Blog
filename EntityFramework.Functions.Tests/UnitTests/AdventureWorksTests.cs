@@ -16,7 +16,7 @@
         [TestMethod]
         public void StoredProcedureWithSingleResultTest()
         {
-            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 ObjectResult<ManagerEmployee> employees = adventureWorks.uspGetManagerEmployees(2);
                 Assert.IsTrue(employees.Any());
@@ -26,7 +26,7 @@
         [TestMethod]
         public void StoreProcedureWithOutParameterTest()
         {
-            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 ObjectParameter errorLogId = new ObjectParameter("ErrorLogID", typeof(int)) { Value = 5 };
                 int? rows = adventureWorks.LogError(errorLogId);
@@ -39,7 +39,7 @@
         [TestMethod]
         public void StoreProcedureWithMultipleResultsTest()
         {
-            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 // The first type of result type: a sequence of ProductCategory objects.
                 ObjectResult<ProductCategory> categories = adventureWorks.uspGetCategoryAndSubCategory(1);
@@ -53,7 +53,7 @@
         [TestMethod]
         public void TableValuedFunctionTest()
         {
-            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 IQueryable<ContactInformation> employees = adventureWorks.ufnGetContactInformation(1).Take(2);
                 Assert.IsNotNull(employees.Single());
@@ -63,7 +63,7 @@
         [TestMethod]
         public void NonComposableScalarValuedFunctionTest()
         {
-            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 decimal? cost = adventureWorks.ufnGetProductStandardCost(999, DateTime.Now);
                 Assert.IsNotNull(cost);
@@ -74,7 +74,7 @@
         [TestMethod]
         public void NonComposableScalarValuedFunctionLinqTest()
         {
-            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 try
                 {
@@ -94,7 +94,7 @@
         [TestMethod]
         public void ComposableScalarValuedFunctionLinqTest()
         {
-            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 IQueryable<Product> products = adventureWorks
                     .Products
@@ -106,7 +106,7 @@
         [TestMethod]
         public void ComposableScalarValuedFunctionTest()
         {
-            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 try
                 {
@@ -123,7 +123,7 @@
         [TestMethod]
         public void AggregateFunctionLinqTest()
         {
-            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 var categories = adventureWorks.ProductSubcategories
                     .GroupBy(subcategory => subcategory.ProductCategoryID)
@@ -145,7 +145,7 @@
         [TestMethod]
         public void BuitInFunctionLinqTest()
         {
-            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 var categories = adventureWorks.ProductSubcategories
                     .GroupBy(subcategory => subcategory.ProductCategoryID)
@@ -167,7 +167,7 @@
         [TestMethod]
         public void NiladicFunctionLinqTest()
         {
-            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 var firstCategory = adventureWorks.ProductSubcategories
                     .GroupBy(subcategory => subcategory.ProductCategoryID)

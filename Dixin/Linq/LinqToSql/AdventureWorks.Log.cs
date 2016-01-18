@@ -11,7 +11,7 @@
 
         public static void WhereWithLog()
         {
-            using (AdventureWorksDataContext adventureWorks = new AdventureWorksDataContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 IQueryable<Product> source = adventureWorks.Products;
                 IQueryable<Product> products = source.Where(product => product.ListPrice > 100); // Define query.

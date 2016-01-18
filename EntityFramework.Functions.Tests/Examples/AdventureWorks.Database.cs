@@ -4,15 +4,15 @@
 
     using EntityFramework.Functions.Tests.Properties;
 
-    public partial class AdventureWorksDbContext : DbContext
+    public partial class AdventureWorks : DbContext
     {
-        static AdventureWorksDbContext()
+        static AdventureWorks()
         {
-            Database.SetInitializer<AdventureWorksDbContext>(null);
-            // Equivalent to: Database.SetInitializer(new NullDatabaseInitializer<AdventureWorksDbContext>());
+            Database.SetInitializer<AdventureWorks>(null);
+            // Equivalent to: Database.SetInitializer(new NullDatabaseInitializer<AdventureWorks>());
         }
 
-        public AdventureWorksDbContext()
+        public AdventureWorks()
             : base(Settings.Default.AdventureWorksConnectionString)
         {
         }

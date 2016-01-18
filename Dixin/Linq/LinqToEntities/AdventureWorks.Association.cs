@@ -28,7 +28,7 @@
         public int? ProductSubcategoryID { get; set; }
     }
 
-    [Table(nameof(ProductProductPhoto), Schema = AdventureWorksDbContext.Production)]
+    [Table(nameof(ProductProductPhoto), Schema = AdventureWorks.Production)]
     public partial class ProductProductPhoto
     {
     }
@@ -49,12 +49,14 @@
 
         [Key]
         [Column(Order = 0)]
+        [Index(IsUnique = true, IsClustered = false, Order = 1)]
         public int ProductID { get; set; }
 
         public virtual ProductPhoto ProductPhoto { get; set; }
 
         [Key]
         [Column(Order = 1)]
+        [Index(IsUnique = true, IsClustered = false, Order = 2)]
         public int ProductPhotoID { get; set; }
     }
 }

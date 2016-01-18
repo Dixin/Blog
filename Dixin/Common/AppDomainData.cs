@@ -21,12 +21,9 @@
             {
                 AppDomain.CurrentDomain.SetData(
                     nameof(DataDirectory),
-                    // ..\ in path does not work. so use new DirectoryInfo(path).FullName to remove ..\ in path.
+                    // .. in path does not work. so use new DirectoryInfo(path).FullName to remove .. in path.
                     new DirectoryInfo(value).FullName);
             }
         }
-
-        internal static void SetDefaultDataDirectory
-            () => DataDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\Data");
     }
 }

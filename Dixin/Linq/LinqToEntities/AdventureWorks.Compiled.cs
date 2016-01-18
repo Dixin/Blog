@@ -13,7 +13,7 @@
                 .ToArray());
 
         public static Product[] GetCategoryProducts
-            (this AdventureWorksDbContext adventureWorks, string category) =>
+            (this AdventureWorks adventureWorks, string category) =>
                 getCategoryProducts(adventureWorks.ObjectContext(), category);
     }
 }

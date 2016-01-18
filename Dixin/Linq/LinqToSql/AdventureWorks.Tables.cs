@@ -46,7 +46,7 @@
         public string LargePhotoFileName { get; set; }
     }
     
-    public partial class AdventureWorksDataContext
+    public partial class AdventureWorks
     {
         public Table<ProductCategory> ProductCategories => this.GetTable<ProductCategory>();
 

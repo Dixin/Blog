@@ -5,7 +5,7 @@
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity;
 
-    public partial class AdventureWorksDbContext
+    public partial class AdventureWorks
     {
         public const string Production = nameof(Production);
 
@@ -16,7 +16,7 @@
         public DbSet<Product> Products { get; set; }
     }
     
-    [Table(nameof(ProductCategory), Schema = AdventureWorksDbContext.Production)]
+    [Table(nameof(ProductCategory), Schema = AdventureWorks.Production)]
     public partial class ProductCategory
     {
         [Key]
@@ -27,7 +27,7 @@
         public string Name { get; set; }
     }
 
-    [Table(nameof(ProductSubcategory), Schema = AdventureWorksDbContext.Production)]
+    [Table(nameof(ProductSubcategory), Schema = AdventureWorks.Production)]
     public partial class ProductSubcategory
     {
         [Key]
@@ -38,7 +38,7 @@
         public string Name { get; set; }
     }
 
-    [Table(nameof(Product), Schema = AdventureWorksDbContext.Production)]
+    [Table(nameof(Product), Schema = AdventureWorks.Production)]
     public partial class Product
     {
         [Key]

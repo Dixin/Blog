@@ -10,7 +10,7 @@
         public static void InlinePredicate()
         {
             IQueryable<string> query = AdventureWorks.Products
-                .Where(product => product.ListPrice > 0 && product.ProductSubcategory != null)
+                .Where(product => product.ListPrice > 0 && product.ProductSubcategoryID != null)
                 .Select(product => product.Name); // Define query.
             query.ForEach(); // Execute query.
         }
@@ -25,7 +25,7 @@
                             Expression.Property(product, nameof(Product.ListPrice)), // [Product].[ListPrice].
                             Expression.Constant(0M, typeof(decimal))), // 0.
                         Expression.NotEqual( // ... IS NOT ....
-                            Expression.Property(product, nameof(Product.ProductSubcategory)), // [Product].[ProductSubcategoryID].
+                            Expression.Property(product, nameof(Product.ProductSubcategoryID)), // [Product].[ProductSubcategoryID].
                             Expression.Constant(null, typeof(object)))), // NULL.
                     product))
                 .Select(Expression.Lambda<Func<Product, string>>( // SELECT ....
@@ -35,7 +35,7 @@
         }
 
         public static bool IsValid
-            (this Product product) => product.ListPrice > 0 && product.ProductSubcategory != null;
+            (this Product product) => product.ListPrice > 0 && product.ProductSubcategoryID != null;
 
         public static void MethodPredicate()
         {

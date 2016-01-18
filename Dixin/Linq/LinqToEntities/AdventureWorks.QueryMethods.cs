@@ -7,7 +7,7 @@
 
     public static partial class QueryMethods
     {
-        private static readonly AdventureWorksDbContext AdventureWorks = new AdventureWorksDbContext();
+        private static readonly AdventureWorks AdventureWorks = new AdventureWorks();
 
         #region Generation
 

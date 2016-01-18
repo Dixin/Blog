@@ -55,7 +55,7 @@ namespace Dixin.Tests.Dynamic
         [TestMethod]
         public void GetInvokeMemberConvertFromTypeTest()
         {
-            using (AdventureWorksDataContext adventureWorks = new AdventureWorksDataContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 IQueryable<Product> query =
                     adventureWorks.Products.Where(product => product.ProductID > 0).OrderBy(p => p.Name).Take(2);

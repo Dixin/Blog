@@ -21,7 +21,7 @@
     {
     }
 
-    public partial class AdventureWorksDbContext
+    public partial class AdventureWorks
     {
         protected override void OnModelCreating(DbModelBuilder modelBuilder) => modelBuilder
             .Entity<Product>()

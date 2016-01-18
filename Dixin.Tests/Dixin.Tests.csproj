@@ -158,6 +158,7 @@
     <Compile Include="Linq\Lambda\ChurchTupleTests.cs" />
     <Compile Include="Linq\Lambda\_ListNodeTests.cs" />
     <Compile Include="Linq\Lambda\_NumeralExtensionsTests.cs" />
+    <Compile Include="Linq\LinqToEntities\AdventureWorksTests.Changes.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorksTests.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorksTests.Log.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorksTests.QueryMethods.cs" />
@@ -177,6 +178,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="Reflection\TypeExtensionsTests.cs" />
+    <Compile Include="TestAssembly.cs" />
     <Compile Include="TransientFaultHandling\RetryTests.cs" />
     <Compile Include="Web\Routing\RouteTests.cs" />
   </ItemGroup>

@@ -48,7 +48,7 @@ namespace Dixin.Linq.LinqToSql
         public string BusinessEntityType { get; set; }
     }
 
-    public partial class AdventureWorksDataContext
+    public partial class AdventureWorks
     {
         [Function(Name = "dbo.uspGetManagerEmployees")]
         public ISingleResult<ManagerEmployee> uspGetManagerEmployees(

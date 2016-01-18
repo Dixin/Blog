@@ -23,7 +23,7 @@
         public string LastName { get; set; }
     }
 
-    public partial class AdventureWorksDbContext
+    public partial class AdventureWorks
     {
         public ObjectResult<ManagerEmployee> GetManagerEmployees(int businessEntityId)
         {

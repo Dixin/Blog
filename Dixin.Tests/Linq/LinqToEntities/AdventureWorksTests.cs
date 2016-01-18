@@ -15,16 +15,16 @@
         [TestMethod]
         public void ContainerTest()
         {
-            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
-                Assert.AreEqual(nameof(AdventureWorksDbContext), adventureWorks.Container().Name);
+                Assert.AreEqual(nameof(AdventureWorks), adventureWorks.Container().Name);
             }
         }
 
         [TestMethod]
         public void TableTest()
         {
-            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 ProductCategory[] categories = adventureWorks
                     .ProductCategories
@@ -38,7 +38,7 @@
         [TestMethod]
         public void StoredProcedureWithExecuteStoreQueryTest()
         {
-            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 ObjectResult<ManagerEmployee> employees = adventureWorks.GetManagerEmployees(2);
                 EnumerableAssert.Any(employees);

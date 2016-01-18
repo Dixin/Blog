@@ -8,7 +8,7 @@
     {
         public static string[] ProductNames(string categoryName)
         {
-            using (AdventureWorksDataContext adventureWorks = new AdventureWorksDataContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 IQueryable<string> query =
                     from product in adventureWorks.Products
@@ -24,7 +24,7 @@
     {
         public static string[] ProductNames(string categoryName, int pageSize, int pageIndex)
         {
-            using (AdventureWorksDataContext adventureWorks = new AdventureWorksDataContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 IQueryable<string> query =
                     (from product in adventureWorks.Products
@@ -42,7 +42,7 @@
     {
         public static string[] ProductNames2(string categoryName, int pageSize, int pageIndex)
         {
-            using (AdventureWorksDataContext adventureWorks = new AdventureWorksDataContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 IQueryable<string> query = adventureWorks
                     .Products

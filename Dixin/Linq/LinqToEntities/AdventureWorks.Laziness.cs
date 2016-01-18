@@ -8,7 +8,7 @@
     {
         public static IQueryable<Product> QueryCategoryProducts(string category)
         {
-            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 return adventureWorks.Products.Where(
                     product => product.ProductSubcategory.ProductCategory.Name == category);
@@ -59,7 +59,7 @@
 
         public static void EagerLoadingWithAssociation()
         {
-            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 IQueryable<ProductSubcategory> subcategories = adventureWorks.ProductSubcategories
                     .Include(subcategory => subcategory.ProductCategory)
@@ -72,7 +72,7 @@
 
         public static void ConditionalEagerLoading()
         {
-            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 IQueryable<ProductSubcategory> subcategories = adventureWorks.ProductSubcategories
                     .Include(subcategory => subcategory.Products.Where(product => product.ListPrice > 0));
@@ -85,7 +85,7 @@
 
         public static void ConditionalEagerLoadingWithSelect()
         {
-            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 var subcategories = adventureWorks.ProductSubcategories
                     .Select(subcategory => new
@@ -102,7 +102,7 @@
 
         public static void NoLoading()
         {
-            using (AdventureWorksDbContext adventureWorks = new AdventureWorksDbContext())
+            using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 adventureWorks.Configuration.LazyLoadingEnabled = false; // Default: true.
                 IQueryable<ProductSubcategory> subcategories = AdventureWorks.ProductSubcategories;

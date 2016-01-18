@@ -10,7 +10,7 @@ BEGIN
 	SELECT [Subcategory].[ProductSubcategoryID], [Subcategory].[Name], [Subcategory].[ProductCategoryID]
 		FROM [Production].[ProductSubcategory] As [Subcategory]
 	    WHERE [Subcategory].[ProductCategoryID] = @CategoryID;
-END
+END;
 GO
 
 -- Create assembly.
@@ -84,7 +84,7 @@ BEGIN
 	LEFT OUTER JOIN @Category AS [Category]
 	ON [Subcategory].[ProductCategoryID] = [Category].[Id]
 	WHERE [Product].[ListPrice] >= [Category].[MinListPrice];
-END
+END;
 GO
 
 -- Call stored procedure with table-valued parameter.
@@ -120,7 +120,7 @@ BEGIN
 		ON [Subcategory].[ProductCategoryID] = [Category].[Id]
 		WHERE [Product].[ListPrice] >= [Category].[MinListPrice];
 	RETURN;
-END
+END;
 GO
 
 -- Call table-valued function with table-valued parameter.
@@ -152,7 +152,7 @@ BEGIN
 	WHERE [Product].[ListPrice] >= [Category].[MinListPrice];
 
 	RETURN @ProductCount;
-END
+END;
 GO
 
 -- Call scalar-valued function with table-valued parameter.
@@ -163,4 +163,25 @@ INSERT INTO @Category ([Id], [MinListPrice])
     FROM [Production].[ProductCategory];
 
 SELECT [dbo].[ufnGetProductCount](@Category);
+GO
+
+-- Add rowversion column.
+ALTER TABLE [Production].[Product] ADD [RowVersion] rowversion NOT NULL;
+GO
+
+-- Create trigger.
+CREATE TRIGGER [Production].[uProductSubcategory] ON [Production].[ProductSubcategory]
+AFTER UPDATE AS
+BEGIN
+	SET NOCOUNT ON;
+
+    IF UPDATE([ModifiedDate]) 
+		RETURN;
+
+    UPDATE [Production].[ProductSubcategory]
+    SET [ModifiedDate] = GETDATE()
+	FROM [Production].[ProductSubcategory]
+	INNER JOIN [inserted]
+    ON [ProductSubcategory].[ProductSubcategoryID] = [inserted].[ProductSubcategoryID]
+END;
 GO

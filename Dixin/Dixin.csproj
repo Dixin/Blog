@@ -220,6 +220,7 @@
       <HintPath>..\packages\System.Spatial.5.7.0\lib\net40\System.Spatial.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.Helpers.dll</HintPath>
@@ -274,6 +275,7 @@
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Laziness.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Inheritance.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Log.cs" />
+    <Compile Include="Linq\LinqToEntities\AdventureWorks.Performance.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Query.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.RemoteMethods.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Tables.cs" />

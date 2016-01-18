@@ -1,10 +1,10 @@
 ﻿-- Query all foreign keys.
 SELECT 
 	foreign_keys.name AS ForeignKey,
-	OBJECT_SCHEMA_NAME(foreign_keys.parent_object_id) AS TableNameSchema,
+	OBJECT_SCHEMA_NAME(foreign_keys.parent_object_id) AS TableSchema,
 	OBJECT_NAME(foreign_keys.parent_object_id) AS TableName,
 	COL_NAME(columns.parent_object_id, columns.parent_column_id) AS ColumnName,
-	OBJECT_SCHEMA_NAME(foreign_keys.referenced_object_id) AS ReferenceTableNameSchema,
+	OBJECT_SCHEMA_NAME(foreign_keys.referenced_object_id) AS ReferenceTableSchema,
 	OBJECT_NAME (foreign_keys.referenced_object_id) AS ReferenceTableName,
 	COL_NAME(columns.referenced_object_id, columns.referenced_column_id) AS ReferenceColumnName
 FROM
@@ -59,5 +59,24 @@ GO
 DROP ASSEMBLY [Dixin.Sql];
 GO
 
--- Table space usage
+-- QUery table space usage.
 sys.sp_msforeachtable N'sys.sp_spaceused [?]'
+
+-- Query table triggers.
+SELECT
+    schemas.name AS [TableSchema],
+    OBJECT_NAME(parent_obj) AS [TableName],
+	USER_NAME(sysobjects.uid) AS [TriggerOwner],
+	sysobjects.name AS [TriggerName],
+    OBJECTPROPERTY(id, N'ExecIsUpdateTrigger') AS [Update],
+    OBJECTPROPERTY(id, N'ExecIsDeleteTrigger') AS [Delete],
+    OBJECTPROPERTY(id, N'ExecIsInsertTrigger') AS [Insert],
+    OBJECTPROPERTY(id, N'ExecIsAfterTrigger') AS [After],
+    OBJECTPROPERTY(id, N'ExecIsInsteadOfTrigger') AS [InsteadOf],
+    OBJECTPROPERTY(id, N'ExecIsTriggerDisabled') AS [Disabled]
+FROM sys.sysobjects
+INNER JOIN sys.tables
+    ON sysobjects.parent_obj = tables.object_id
+INNER JOIN sys.schemas
+    ON tables.schema_id = schemas.schema_id
+WHERE sysobjects.type = N'TR'

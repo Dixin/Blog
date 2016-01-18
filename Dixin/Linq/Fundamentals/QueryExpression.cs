@@ -39,7 +39,7 @@
         public static string[] ProductNames(string categoryName)
         {
             Closure closure = new Closure { categoryName = categoryName };
-            AdventureWorksDataContext adventureWorks = new AdventureWorksDataContext();
+            AdventureWorks adventureWorks = new AdventureWorks();
 
             try
             {

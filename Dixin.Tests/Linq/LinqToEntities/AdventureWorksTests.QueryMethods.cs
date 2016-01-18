@@ -12,58 +12,6 @@
     public class QueryMethodsTests
     {
         [TestMethod]
-        public void ChangesTest()
-        {
-            QueryMethods.EntitiesFromSameContext();
-            QueryMethods.MappingsFromSameContext();
-            QueryMethods.EntitiesFromContexts();
-            QueryMethods.TrackChanges();
-            QueryMethods.Attach();
-            QueryMethods.AssociationChanges();
-        }
-
-        [TestMethod]
-        public void CrudTest()
-        {
-            QueryMethods.Insert();
-        }
-
-        [TestMethod]
-        public void LazinessTest()
-        {
-            try
-            {
-                UI.ViewCategoryProducts("Bikes");
-                Assert.Fail();
-            }
-            catch (InvalidOperationException exception)
-            {
-                Trace.WriteLine(exception);
-            }
-            try
-            {
-                QueryMethods.LazyLoading();
-            }
-            catch (EntityCommandExecutionException exception)
-            {
-                Trace.WriteLine(exception);
-            }
-            QueryMethods.LazyLoadingWithToArray();
-            QueryMethods.EagerLoadingWithSelect();
-            QueryMethods.EagerLoadingWithAssociation();
-            try
-            {
-                QueryMethods.ConditionalEagerLoading();
-            }
-            catch (ArgumentException exception)
-            {
-                Trace.WriteLine(exception);
-            }
-            QueryMethods.ConditionalEagerLoadingWithSelect();
-            QueryMethods.NoLoading();
-        }
-
-        [TestMethod]
         public void LocalRemoteMethodTests()
         {
             QueryMethods.InlinePredicate();
@@ -281,5 +229,41 @@
             QueryMethods.Any();
             QueryMethods.Contains();
         }
+
+        [TestMethod]
+        public void LazinessTest()
+        {
+            try
+            {
+                UI.ViewCategoryProducts("Bikes");
+                Assert.Fail();
+            }
+            catch (InvalidOperationException exception)
+            {
+                Trace.WriteLine(exception);
+            }
+            try
+            {
+                QueryMethods.LazyLoading();
+            }
+            catch (EntityCommandExecutionException exception)
+            {
+                Trace.WriteLine(exception);
+            }
+            QueryMethods.LazyLoadingWithToArray();
+            QueryMethods.EagerLoadingWithSelect();
+            QueryMethods.EagerLoadingWithAssociation();
+            try
+            {
+                QueryMethods.ConditionalEagerLoading();
+            }
+            catch (ArgumentException exception)
+            {
+                Trace.WriteLine(exception);
+            }
+            QueryMethods.ConditionalEagerLoadingWithSelect();
+            QueryMethods.NoLoading();
+        }
+
     }
 }

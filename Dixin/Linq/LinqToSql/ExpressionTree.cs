@@ -8,7 +8,6 @@
     using System.Reflection;
     using System.Reflection.Emit;
 
-    using Dixin.Common;
     using Dixin.Linq.Fundamentals;
     using Dixin.Properties;
 
@@ -59,7 +58,6 @@
             if (connection == null)
             {
                 connection = Settings.Default.AdventureWorksConnectionString;
-                AppDomainData.SetDefaultDataDirectory();
             }
 
             DynamicMethod dynamicMethod = new DynamicMethod(
@@ -123,14 +121,6 @@
 
                 return (double)command.ExecuteScalar();
             }
-        }
-    }
-
-    public static partial class BinaryArithmeticTanslator
-    {
-        static BinaryArithmeticTanslator()
-        {
-            AppDomainData.SetDefaultDataDirectory();
         }
     }
 }
