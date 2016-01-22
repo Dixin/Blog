@@ -170,7 +170,7 @@ ALTER TABLE [Production].[Product] ADD [RowVersion] rowversion NOT NULL;
 GO
 
 -- Create trigger.
-CREATE TRIGGER [Production].[uProductSubcategory] ON [Production].[ProductSubcategory]
+CREATE TRIGGER [Production].[uProductPhoto] ON [Production].[ProductPhoto]
 AFTER UPDATE AS
 BEGIN
 	SET NOCOUNT ON;
@@ -178,10 +178,31 @@ BEGIN
     IF UPDATE([ModifiedDate]) 
 		RETURN;
 
-    UPDATE [Production].[ProductSubcategory]
+    UPDATE [Production].[ProductPhoto]
     SET [ModifiedDate] = GETDATE()
-	FROM [Production].[ProductSubcategory]
+	FROM [Production].[ProductPhoto]
 	INNER JOIN [inserted]
-    ON [ProductSubcategory].[ProductSubcategoryID] = [inserted].[ProductSubcategoryID]
+    ON [ProductPhoto].[ProductPhotoID] = [inserted].[ProductPhotoID]
 END;
+GO
+
+-- Update logic file name.
+ALTER DATABASE [D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\ADVENTUREWORKS_DATA.MDF]
+	MODIFY FILE (NAME = N'AdventureWorks2014_Data', NEWNAME = N'AdventureWorks_Data');
+GO
+
+ALTER DATABASE [D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\ADVENTUREWORKS_DATA.MDF]
+	MODIFY FILE (NAME = N'AdventureWorks2014_Log', NEWNAME = N'AdventureWorks_Log');
+GO
+
+-- Shrink database and log.
+DBCC SHRINKDATABASE ([D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\ADVENTUREWORKS_DATA.MDF], 0, NOTRUNCATE)
+GO
+
+DECLARE @UsedSpaceInMB int;
+SET @UsedSpaceInMB = (CAST(FILEPROPERTY(N'AdventureWorks_Data', 'SpaceUsed') AS int) / 128);
+DBCC SHRINKFILE (AdventureWorks_Data, @UsedSpaceInMB);
+GO
+
+DBCC SHRINKFILE (AdventureWorks_Log, EMPTYFILE);
 GO

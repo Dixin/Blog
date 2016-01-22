@@ -15,7 +15,7 @@ FROM
 -- Query table-valued function output schema.
 SELECT *
 FROM sys.columns
-WHERE object_id = OBJECT_ID(N'dbo.ufnGetContactInformation')
+WHERE object_id = OBJECT_ID(N'dbo.ufnGetContactInformation');
 
 -- Query stored procedure first output schema.
 SELECT *
@@ -59,8 +59,8 @@ GO
 DROP ASSEMBLY [Dixin.Sql];
 GO
 
--- QUery table space usage.
-sys.sp_msforeachtable N'sys.sp_spaceused [?]'
+-- Query table space usage.
+sys.sp_msforeachtable N'sys.sp_spaceused [?]';
 
 -- Query table triggers.
 SELECT
@@ -79,4 +79,53 @@ INNER JOIN sys.tables
     ON sysobjects.parent_obj = tables.object_id
 INNER JOIN sys.schemas
     ON tables.schema_id = schemas.schema_id
-WHERE sysobjects.type = N'TR'
+WHERE sysobjects.type = N'TR';
+
+-- Query files.
+USE master;
+GO
+
+SELECT
+	name,
+	physical_name,
+	type_desc,
+	state_desc
+FROM sys.master_files
+WHERE database_id = DB_ID(N'D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\ADVENTUREWORKS_DATA.MDF');
+
+-- Update logic file name.
+ALTER DATABASE [D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\ADVENTUREWORKS_DATA.MDF]
+	MODIFY FILE (NAME = N'AdventureWorks2014_Data', NEWNAME = N'AdventureWorks_Data');
+GO
+
+-- Shrink database and log.
+DBCC SHRINKDATABASE ([D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\ADVENTUREWORKS_DATA.MDF], 0, NOTRUNCATE)
+GO
+
+DECLARE @UsedSpaceInMB int;
+SET @UsedSpaceInMB = (CAST(FILEPROPERTY(N'AdventureWorks_Data', 'SpaceUsed') AS int) / 128);
+DBCC SHRINKFILE (AdventureWorks_Data, @UsedSpaceInMB);
+GO
+
+DBCC SHRINKFILE (AdventureWorks_Log, EMPTYFILE);
+GO
+
+-- Shrink logs for database with full recover model.
+ALTER DATABASE [D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\ADVENTUREWORKS_DATA.MDF]
+	SET RECOVERY SIMPLE;
+GO
+
+BACKUP DATABASE [D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\ADVENTUREWORKS_DATA.MDF] 
+	TO DISK = N'D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\Advunture.bak';
+GO
+
+BACKUP LOG [D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\ADVENTUREWORKS_DATA.MDF]
+	TO DISK = N'D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\Advunture_Log.bak';
+GO
+
+DBCC SHRINKFILE (AdventureWorks_Log, EMPTYFILE);
+GO
+
+ALTER DATABASE [D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\ADVENTUREWORKS_DATA.MDF]
+	SET RECOVERY FULL;
+GO

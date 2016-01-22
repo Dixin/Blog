@@ -62,7 +62,6 @@
             }
             catch (AggregateException exception) when (exception.InnerExceptions.Single() is DbUpdateConcurrencyException)
             {
-                Assert.IsInstanceOfType(exception.InnerExceptions.Single(), typeof(DbUpdateConcurrencyException));
                 Trace.WriteLine(exception);
             }
             Concurrency.DatabaseWins().Wait();
