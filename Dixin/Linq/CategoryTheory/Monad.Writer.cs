@@ -94,9 +94,9 @@
     }
 
     // Impure.
-    public static partial class WriterQuery
+    internal static partial class WriterQuery
     {
-        public static void Stack()
+        internal static void Stack()
         {
             IEnumerable<int> stack = Enumerable.Empty<int>();
             Writer<IEnumerable<int>, IEnumerable<string>> writer =

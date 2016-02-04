@@ -8,11 +8,11 @@
 
     using Dixin.Reflection;
 
-    public static partial class QueryMethods
+    internal static partial class QueryMethods
     {
         #region Generation
 
-        public static void Defer()
+        internal static void Defer()
         {
             Func<IEnumerable<int>> sequenceFactory = () =>
                 {
@@ -25,7 +25,7 @@
                 .Where(@int => @int > 0);
         }
 
-        public static void Create()
+        internal static void Create()
         {
             IEnumerable<int> sequence = EnumerableEx.Create<int>(async yield =>
                 {
@@ -37,7 +37,7 @@
             int[] result = sequence.ToArray(); // 0 1.
         }
 
-        public static IEnumerable<TResult> CastWithCreate<TResult>
+        internal static IEnumerable<TResult> CastWithCreate<TResult>
             (this IEnumerable source) => source as IEnumerable<TResult> ?? EnumerableEx.Create<TResult>(async yield =>
                 {
                     foreach (object value in source)
@@ -46,7 +46,7 @@
                     }
                 });
 
-        public static IEnumerable<TResult> CreateWithCreate<TResult>
+        internal static IEnumerable<TResult> CreateWithCreate<TResult>
             (Func<IEnumerator<TResult>> getEnumerator) => EnumerableEx.Create<TResult>(async yield =>
                 {
                     using (IEnumerator<TResult> iterator = getEnumerator())
@@ -62,7 +62,7 @@
 
         #region Filtering
 
-        public static void DistinctUntilChanged()
+        internal static void DistinctUntilChanged()
         {
             IEnumerable<int> source = new int[]
                 {
@@ -75,7 +75,7 @@
 
         #region Mapping
 
-        public static void Scan()
+        internal static void Scan()
         {
             int productOfValues = Int32Source().Aggregate((currentProduct, @int) => currentProduct * @int);
             // ((((-1 * 1) * 2) * 3) * -4) => 24.
@@ -84,7 +84,7 @@
             // ((((-1 * 1) * 2) * 3) * -4) => { -1, -2, -6, 24 }.
         }
 
-        public static void Expand()
+        internal static void Expand()
         {
             int[] expanded = Enumerable.Range(0, 5).Expand(@int => EnumerableEx.Return(@int * @int)).Take(25).ToArray();
             // 0 1 2 3 4 => map each @int to { @int * @int }:
@@ -94,7 +94,7 @@
             // 0 1 65536 43046721 4294967296 => ...
         }
 
-        public static void Expand2()
+        internal static void Expand2()
         {
             int[] expanded = Enumerable.Range(0, 5).Expand(@int => Enumerable.Repeat(@int, 2)).Take(75).ToArray();
             // 0 1 2 3 4 => map each @int to { @int, @int }:
@@ -103,7 +103,7 @@
             // 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 4 4 4 4 4 4 4 4 => ...
         }
 
-        public static void Expand3()
+        internal static void Expand3()
         {
             int[] expanded = Enumerable.Range(0, 5).Expand(@int => Enumerable.Empty<int>()).Take(100).ToArray();
             // 0 1 2 3 4 => map each @int to { }.
@@ -113,7 +113,7 @@
 
         #region Partioning
 
-        public static void SkipLastTakeLast()
+        internal static void SkipLastTakeLast()
         {
             int[] skipFirst2 = Enumerable.Range(0, 5).Skip(2).ToArray(); // 2 3 4.
             int[] skipLast2 = Enumerable.Range(0, 5).SkipLast(2).ToArray(); // 0 1 2.
@@ -125,7 +125,7 @@
 
         #region Conversion
 
-        public static void Hide()
+        internal static void Hide()
         {
             List<string> source = new List<string>() { "a", "b" };
             IEnumerable<string> exposed = source.AsEnumerable();
@@ -141,7 +141,7 @@
 
         #region Buffering
 
-        public static void Buffer()
+        internal static void Buffer()
         {
             IEnumerable<IList<int>> buffers1 = Enumerable.Range(0, 5).Buffer(2, 1);
             IList<int>[] result1 = buffers1.ToArray();
@@ -163,7 +163,7 @@
             //   { 3, 4 } }
         }
 
-        public static void Share()
+        internal static void Share()
         {
             IEnumerable<int> sequence = Enumerable.Range(0, 5);
             IEnumerator<int> indepedentIterator1 = sequence.GetEnumerator();
@@ -192,7 +192,7 @@
             sharedIterator3.MoveNext(); // ObjectDisposedException.
         }
 
-        public static IEnumerable<int> TracedRange(int start, int count)
+        internal static IEnumerable<int> TracedRange(int start, int count)
         {
             for (int value = start; value < start + count; value++)
             {
@@ -201,7 +201,7 @@
             }
         }
 
-        public static void ShareWithSelector()
+        internal static void ShareWithSelector()
         {
             IEnumerable<int> source1 = TracedRange(0, 5);
             int[] concat1 = source1.Concat(source1).ToArray(); // 0 1 2 3 4 0 1 2 3 4.
@@ -216,7 +216,7 @@
             // Trace: 0 1 2 3 4.
         }
 
-        public static IEnumerable<TSource> Concat<TSource>(
+        internal static IEnumerable<TSource> Concat<TSource>(
             IEnumerable<TSource> first, IEnumerable<TSource> second)
         {
             using (IEnumerator<TSource> iterator1 = first.GetEnumerator())
@@ -236,7 +236,7 @@
             }
         }
 
-        public static void ShareWithSelector2()
+        internal static void ShareWithSelector2()
         {
             IEnumerable<int> source1 = TracedRange(0, 5);
             int[] concat1 = EnumerableEx.Create<int>(async yield =>
@@ -303,7 +303,7 @@
                 }).ToArray(); // 0 1 2 3 4.
         }
 
-        public static void ShareWithSelector3()
+        internal static void ShareWithSelector3()
         {
             IEnumerable<int> source1 = TracedRange(0, 5);
             Tuple<int, int>[] concat1 = source1.Zip(source1, Tuple.Create).ToArray();
@@ -321,7 +321,7 @@
             // Trace: 0 1 2 3 4.
         }
 
-        public static void ShareWithSelector4()
+        internal static void ShareWithSelector4()
         {
             IEnumerable<int> source1 = TracedRange(0, 5);
             Tuple<int, int>[] concat1 = EnumerableEx.Create<Tuple<int, int>>(async yield =>
@@ -372,7 +372,7 @@
                 }).ToArray(); // (0, 1) (2, 3).
         }
 
-        public static void Publish()
+        internal static void Publish()
         {
             IBuffer<int> publish = TracedRange(0, 5).Publish();
             IEnumerator<int> iterator1 = publish.GetEnumerator();
@@ -393,7 +393,7 @@
             iterator2.MoveNext(); // ObjectDisposedException.
         }
 
-        public static void Publish2()
+        internal static void Publish2()
         {
             IBuffer<int> publish = TracedRange(0, 5).Publish();
             IEnumerator<int> iterator1 = publish.GetEnumerator();
@@ -413,7 +413,7 @@
             iterator2.MoveNext(); // ObjectDisposedException.
         }
 
-        public static void PublishWithSelector1()
+        internal static void PublishWithSelector1()
         {
             IEnumerable<int> source1 = TracedRange(0, 5);
             Tuple<int, int>[] concat1 = source1.Zip(source1, Tuple.Create).ToArray();
@@ -431,7 +431,7 @@
             // Trace: 0 1 2 3 4
         }
 
-        public static void Memoize()
+        internal static void Memoize()
         {
             IEnumerable<int> source1 = TracedRange(0, 5);
             int[] concat1 = source1.Concat(source1).ToArray();
@@ -454,7 +454,7 @@
             // Trace: 0 1 2 3 4
         }
 
-        public static void MemoizeWithSelector()
+        internal static void MemoizeWithSelector()
         {
             IEnumerable<int> source3 = TracedRange(0, 5);
             int[] concat3 = source3.Memoize(source => source.Concat(source)).ToArray();
@@ -462,7 +462,7 @@
             // Trace: 0 1 2 3 4
         }
 
-        public static void MemoizeWithReaderCount()
+        internal static void MemoizeWithReaderCount()
         {
             IEnumerable<int> source1 = TracedRange(0, 5).Memoize(2);
             int[] reader1 = source1.ToArray();
@@ -483,7 +483,7 @@
 
         #region Exception
 
-        public static void Throw()
+        internal static void Throw()
         {
             IEnumerable<int> @throw = EnumerableEx.Throw<int>(new OperationCanceledException(
                 $"{nameof(OperationCanceledException)} from {nameof(EnumerableEx.Throw)}"));
@@ -502,7 +502,7 @@
             // 0 1 2 3 4 "OperationCanceledException from Throw".
         }
 
-        public static void CatchWithHandler()
+        internal static void CatchWithHandler()
         {
             IEnumerable<string> @throw = EnumerableEx.Throw<string>(new OperationCanceledException());
             IEnumerable<string> @catch = @throw.Catch<string, OperationCanceledException>(
@@ -510,7 +510,7 @@
             string[] strings = @catch.ToArray(); // Handled OperationCanceledException: The operation was canceled.
         }
 
-        public static void Catch()
+        internal static void Catch()
         {
             IEnumerable<int> scan = Enumerable.Repeat(0, 5).Scan((a, b) => a / b);
             IEnumerable<int> range = Enumerable.Range(0, 5);
@@ -541,7 +541,7 @@
 
         #region Iteration
 
-        public static void Do()
+        internal static void Do()
         {
             IEnumerable<int> query = Enumerable
                 .Range(0, 5).Do(
@@ -564,7 +564,7 @@
 
         #region Aggregation
 
-        public static void MinByMaxBy()
+        internal static void MinByMaxBy()
         {
             IList<Character> min = Characters()
                 .MinBy(character => character.Name, StringComparer.OrdinalIgnoreCase); // { JAVIS }.
@@ -572,7 +572,7 @@
                 .MaxBy(character => character.Name, StringComparer.OrdinalIgnoreCase); // { Vision }.
         }
 
-        public static void MaxBy()
+        internal static void MaxBy()
         {
             IList<Type> maxTypes = mscorlib.ExportedTypes.MaxBy(type => type.GetPublicMembers().Length);
             // { System.Convert }.

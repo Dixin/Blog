@@ -6,9 +6,9 @@
     using System.Linq;
     using System.Xml.Linq;
 
-    public static partial class LinqToXml
+    internal static partial class LinqToXml
     {
-        public static IEnumerable<string> Titles(string rss, params string[] categories)
+        internal static IEnumerable<string> Titles(string rss, params string[] categories)
         {
             return from item in XDocument.Load(rss).Root.Element("channel").Elements("item")
                    where !categories.Any()

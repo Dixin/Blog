@@ -151,9 +151,9 @@
 
 
     // Impure.
-    public static class TaskQuery
+    internal static class TaskQuery
     {
-        public static async void Download()
+        internal static async void Download()
         {
             Func<string, Task<string>> query = url =>
                 from response in new HttpClient().GetAsync(url) // Returns Task<HttpResponseMessage>.

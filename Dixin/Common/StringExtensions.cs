@@ -18,8 +18,6 @@ namespace Dixin.Common
 
     public static class StringExtensions
     {
-        #region Public Methods and Operators
-
         public static string With
                 (this string format, params object[] args) => string.Format(CultureInfo.InvariantCulture, format, args);
 
@@ -55,7 +53,5 @@ namespace Dixin.Common
             && value.Any(@char => char.GetUnicodeCategory(@char) == category);
 
         public static bool HasOtherLetter(this string value) => value.Any(UnicodeCategory.OtherLetter);
-
-        #endregion
     }
 }

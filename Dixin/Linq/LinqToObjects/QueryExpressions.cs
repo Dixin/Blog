@@ -16,11 +16,11 @@ namespace Dixin.Linq.LinqToObjects
     using Microsoft.TeamFoundation.Client;
     using Microsoft.TeamFoundation.WorkItemTracking.Client;
 
-    public static class QueryExpressions
+    internal static class QueryExpressions
     {
         private static readonly Assembly mscorlib = typeof(object).Assembly;
 
-        public static void Where()
+        internal static void Where()
         {
             IEnumerable<Type> source = mscorlib.ExportedTypes;
             IEnumerable<Type> primitives = from type in source
@@ -32,7 +32,7 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static void Select()
+        internal static void Select()
         {
             IEnumerable<int> source = Enumerable.Range(0, 5);
             IEnumerable<string> squareRoots = from @int in source
@@ -43,7 +43,7 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static void Let()
+        internal static void Let()
         {
             IEnumerable<int> source = Enumerable.Range(-2, 5);
             IEnumerable<string> absoluteValues = from @int in source
@@ -56,7 +56,7 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static void SelectMany()
+        internal static void SelectMany()
         {
             IEnumerable<MemberInfo> mappedAndFiltered =
                 from type in mscorlib.GetExportedTypes()
@@ -68,7 +68,7 @@ namespace Dixin.Linq.LinqToObjects
                 Trace.WriteLine($"{obsoleteMember.DeclaringType} - {obsoleteMember}");
             }
         }
-        public static void SelectManyWithResultSelector3()
+        internal static void SelectManyWithResultSelector3()
         {
             IEnumerable<Type> source = mscorlib.GetExportedTypes();
             IEnumerable<string> obsoleteMembers =
@@ -82,7 +82,7 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static void SelectManyWithResultSelector()
+        internal static void SelectManyWithResultSelector()
         {
             IEnumerable<Type> source = mscorlib.GetExportedTypes();
             IEnumerable<string> obsoleteMembers =
@@ -97,9 +97,9 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static IEnumerable<string> Words() => QueryMethods.Words();
+        internal static IEnumerable<string> Words() => QueryMethods.Words();
 
-        public static void OrderBy()
+        internal static void OrderBy()
         {
             IEnumerable<string> source = Words();
             IEnumerable<string> ordered = from word in source
@@ -111,7 +111,7 @@ namespace Dixin.Linq.LinqToObjects
             } // four one three two Zero
         }
 
-        public static void OrderByDescending()
+        internal static void OrderByDescending()
         {
             IEnumerable<string> source = Words();
             IEnumerable<string> ordered = from word in source
@@ -123,9 +123,9 @@ namespace Dixin.Linq.LinqToObjects
             } // four one three two Zero
         }
 
-        public static IEnumerable<Person> Persons() => QueryMethods.Persons();
+        internal static IEnumerable<Person> Persons() => QueryMethods.Persons();
 
-        public static void ThenBy()
+        internal static void ThenBy()
         {
             IEnumerable<Person> source = Persons();
             IEnumerable<Person> ordered = from person in source
@@ -137,7 +137,7 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static void OrderByOrderBy1()
+        internal static void OrderByOrderBy1()
         {
             IEnumerable<Person> source = Persons();
             IEnumerable<Person> ordered = from person in source
@@ -150,7 +150,7 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static void OrderByOrderBy2()
+        internal static void OrderByOrderBy2()
         {
             IEnumerable<Person> source = Persons();
             IEnumerable<Person> ordered1 = from person in source
@@ -165,7 +165,7 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static void OrderByOrderBy3()
+        internal static void OrderByOrderBy3()
         {
             IEnumerable<Person> source = Persons();
             IEnumerable<Person> ordered = from person in (from person in source
@@ -179,7 +179,7 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static void OrderByOrderBy4()
+        internal static void OrderByOrderBy4()
         {
             IEnumerable<Person> source = Persons();
             IEnumerable<Person> ordered = from person in source
@@ -193,7 +193,7 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static void GroupBy()
+        internal static void GroupBy()
         {
             IEnumerable<Person> source = Persons();
             IEnumerable<IGrouping<string, Person>> groups = from person in source
@@ -209,7 +209,7 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static void GroupBySelect()
+        internal static void GroupBySelect()
         {
             IEnumerable<Person> source = Persons();
             IEnumerable<IGrouping<string, Person>> groups = from person in source
@@ -222,7 +222,7 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static void GroupBySelect2()
+        internal static void GroupBySelect2()
         {
             IEnumerable<Person> source = Persons();
             IEnumerable<string> groups = from @group in (from person in source
@@ -234,7 +234,7 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static void GroupBySelect3()
+        internal static void GroupBySelect3()
         {
             IEnumerable<Person> source = Persons();
             IEnumerable<string> groups = from person in source
@@ -246,7 +246,7 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static void GroupByWithElementSelector()
+        internal static void GroupByWithElementSelector()
         {
             IEnumerable<Person> source = Persons();
             IEnumerable<IGrouping<string, string>> groups = from person in source
@@ -262,7 +262,7 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static void GroupByWithElementSelectorAndSelect()
+        internal static void GroupByWithElementSelectorAndSelect()
         {
             IEnumerable<Person> source = Persons();
             IEnumerable<string> groups = from person in source
@@ -278,7 +278,7 @@ namespace Dixin.Linq.LinqToObjects
 
         private static readonly string[] columns = { "A", "B", "C", "D" };
 
-        public static void CrossJoin()
+        internal static void CrossJoin()
         {
             IEnumerable<string> cells = from row in rows
                                         from column in columns
@@ -295,7 +295,7 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static void CrossJoinWithJoin()
+        internal static void CrossJoinWithJoin()
         {
             IEnumerable<string> cells = from row in rows
                                         join column in columns on true equals true
@@ -312,7 +312,7 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static IEnumerable<TResult> CrossJoinWithJoin<TOuter, TInner, TResult>(
+        internal static IEnumerable<TResult> CrossJoinWithJoin<TOuter, TInner, TResult>(
             this IEnumerable<TOuter> outer,
             IEnumerable<TInner> inner,
             Func<TOuter, TInner, TResult> resultSelector) =>
@@ -320,9 +320,9 @@ namespace Dixin.Linq.LinqToObjects
                 join innerValue in inner on true equals true
                 select resultSelector(outerValue, innerValue);
 
-        public static IEnumerable<Character> Characters() => QueryMethods.Characters();
+        internal static IEnumerable<Character> Characters() => QueryMethods.Characters();
 
-        public static void InnerJoin()
+        internal static void InnerJoin()
         {
             IEnumerable<Person> outer = Persons();
             IEnumerable<Character> inner = Characters();
@@ -336,7 +336,7 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static void InnerJoinWithSelectMany()
+        internal static void InnerJoinWithSelectMany()
         {
             IEnumerable<Person> outer = Persons();
             IEnumerable<Character> inner = Characters();
@@ -351,7 +351,7 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static IEnumerable<TResult> InnerJoinWithSelectMany<TOuter, TInner, TKey, TResult>(
+        internal static IEnumerable<TResult> InnerJoinWithSelectMany<TOuter, TInner, TKey, TResult>(
             this IEnumerable<TOuter> outer,
             IEnumerable<TInner> inner,
             Func<TOuter, TKey> outerKeySelector,
@@ -366,7 +366,7 @@ namespace Dixin.Linq.LinqToObjects
                    select resultSelector(outerValue, innerValue);
         }
 
-        public static void InnerJoinWithMultipleKeys()
+        internal static void InnerJoinWithMultipleKeys()
         {
             IEnumerable<Person> outer = Persons();
             IEnumerable<Character> inner = Characters();
@@ -382,7 +382,7 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static void LeftOuterJoin()
+        internal static void LeftOuterJoin()
         {
             IEnumerable<Person> outer = Persons();
             IEnumerable<Character> inner = Characters();
@@ -401,7 +401,7 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static void LeftOuterJoinWithDefaultIfEmpty()
+        internal static void LeftOuterJoinWithDefaultIfEmpty()
         {
             IEnumerable<Person> outer = Persons();
             IEnumerable<Character> inner = Characters();
@@ -416,7 +416,7 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static void LeftOuterJoinWithSelectMany()
+        internal static void LeftOuterJoinWithSelectMany()
         {
             IEnumerable<Person> outer = Persons();
             IEnumerable<Character> inner = Characters();
@@ -442,7 +442,7 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static void LeftOuterJoinWithSelect()
+        internal static void LeftOuterJoinWithSelect()
         {
             IEnumerable<Person> outer = Persons();
             IEnumerable<Character> inner = Characters();
@@ -471,7 +471,7 @@ namespace Dixin.Linq.LinqToObjects
             // Paul Bettany (UK): Vision (KR), JARVIS (US),
         }
 
-        public static IEnumerable<TResult> LeftOuterJoinWithSelect<TOuter, TInner, TKey, TResult>(
+        internal static IEnumerable<TResult> LeftOuterJoinWithSelect<TOuter, TInner, TKey, TResult>(
             this IEnumerable<TOuter> outer,
             IEnumerable<TInner> inner,
             Func<TOuter, TKey> outerKeySelector,
@@ -488,7 +488,7 @@ namespace Dixin.Linq.LinqToObjects
                        select innerValue);
         }
 
-        public static void CastNonGenericIEnumerable()
+        internal static void CastNonGenericIEnumerable()
         {
             using (TfsTeamProjectCollection projectCollection = new TfsTeamProjectCollection(
                 new Uri("https://dixin.visualstudio.com/DefaultCollection"),
@@ -507,14 +507,14 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static void CastNonGenericIEnumerable2()
+        internal static void CastNonGenericIEnumerable2()
         {
             IEnumerable<SettingsProperty> genericProperties =
                 from SettingsProperty property in ProfileBase.Properties // SettingsPropertyCollection: IEnumerable.
                 select property;
         }
 
-        public static void CastGenericIEnumerable()
+        internal static void CastGenericIEnumerable()
         {
             IEnumerable<Base> source = new Base[] { new Derived(), new Derived() };
             IEnumerable<Derived> casted = from Derived derived in source
@@ -526,7 +526,7 @@ namespace Dixin.Linq.LinqToObjects
             // Derived Derived
         }
 
-        public static void CastGenericIEnumerableWithException()
+        internal static void CastGenericIEnumerableWithException()
         {
             IEnumerable<Base> source = new Base[] { new Derived(), new Base() };
             IEnumerable<Derived> casted = from Derived derived in source
@@ -538,7 +538,7 @@ namespace Dixin.Linq.LinqToObjects
             // Derived InvalidCastException
         }
 
-        public static void CastWithJoin()
+        internal static void CastWithJoin()
         {
             IEnumerable outer = new int[] { 1, 2, 3 };
             IEnumerable inner = new string[] { "a", "bb", "ccc" };
@@ -551,7 +551,7 @@ namespace Dixin.Linq.LinqToObjects
             }
         }
 
-        public static void CastGenericIEnumerableWithRestriction()
+        internal static void CastGenericIEnumerableWithRestriction()
         {
             object[] source = { 1, 2, 'a', 'b', "aa", "bb", new object(), 3 };
             IEnumerable<int> casted = from int value in (from value in source
@@ -565,7 +565,7 @@ namespace Dixin.Linq.LinqToObjects
             // 1 2 3
         }
 
-        public static void CastGenericIEnumerableWithRestriction2()
+        internal static void CastGenericIEnumerableWithRestriction2()
         {
             object[] source = { 1, 2, 'a', 'b', "aa", "bb", new object(), 3 };
             IEnumerable<int> casted = from value in source

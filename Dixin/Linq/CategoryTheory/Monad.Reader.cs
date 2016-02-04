@@ -58,9 +58,9 @@
     }
 
     // Impure.
-    public static partial class ReaderQuery
+    internal static partial class ReaderQuery
     {
-        public static void ProcessSettings()
+        internal static void ProcessSettings()
         {
             Reader<Settings, string> query =
                 // 1. Use settings.

@@ -28,63 +28,63 @@ namespace Dixin.Linq.LinqToObjects
 
     using Dixin.Linq.Fundamentals;
 
-    public class FluentList<T> : List<T>
+    internal class FluentList<T> : List<T>
     {
-        public new FluentList<T> Add(T item) { base.Add(item); return this; }
+        internal new FluentList<T> Add(T item) { base.Add(item); return this; }
 
-        public new FluentList<T> Clear() { base.Clear(); return this; }
+        internal new FluentList<T> Clear() { base.Clear(); return this; }
 
-        public new FluentList<T> ForEach(Action<T> action) { base.ForEach(action); return this; }
+        internal new FluentList<T> ForEach(Action<T> action) { base.ForEach(action); return this; }
 
-        public new FluentList<T> Insert(int index, T item) { base.Insert(index, item); return this; }
+        internal new FluentList<T> Insert(int index, T item) { base.Insert(index, item); return this; }
 
-        public new FluentList<T> RemoveAt(int index) { base.RemoveAt(index); return this; }
+        internal new FluentList<T> RemoveAt(int index) { base.RemoveAt(index); return this; }
 
-        public new FluentList<T> Reverse() { base.Reverse(); return this; }
+        internal new FluentList<T> Reverse() { base.Reverse(); return this; }
     }
 
-    public static class ListExtensions
+    internal static class ListExtensions
     {
-        public static List<T> FluentAdd<T>(this List<T> list, T item)
+        internal static List<T> FluentAdd<T>(this List<T> list, T item)
         {
             list.Add(item);
             return list;
         }
 
-        public static List<T> FluentClear<T>(this List<T> list)
+        internal static List<T> FluentClear<T>(this List<T> list)
         {
             list.Clear();
             return list;
         }
 
-        public static List<T> FluentForEach<T>(this List<T> list, Action<T> action)
+        internal static List<T> FluentForEach<T>(this List<T> list, Action<T> action)
         {
             list.ForEach(action);
             return list;
         }
 
-        public static List<T> FluentInsert<T>(this List<T> list, int index, T item)
+        internal static List<T> FluentInsert<T>(this List<T> list, int index, T item)
         {
             list.Insert(index, item);
             return list;
         }
 
-        public static List<T> FluentRemoveAt<T>(this List<T> list, int index)
+        internal static List<T> FluentRemoveAt<T>(this List<T> list, int index)
         {
             list.RemoveAt(index);
             return list;
         }
 
-        public static List<T> FluentReverse<T>(this List<T> list)
+        internal static List<T> FluentReverse<T>(this List<T> list)
         {
             list.Reverse();
             return list;
         }
     }
 
-    public static partial class Fluent
+    internal static partial class Fluent
     {
-        public static void List()
+        internal static void List()
         {
             List<int> list = new List<int>() { 1, 2, 3, 4, 5 };
             list.Add(1);
@@ -95,7 +95,7 @@ namespace Dixin.Linq.LinqToObjects
             list.Clear();
         }
 
-        public static void FluentList()
+        internal static void FluentList()
         {
             FluentList<int> fluentlist = new FluentList<int>() { 1, 2, 3, 4, 5 }
                 .Add(1)
@@ -106,7 +106,7 @@ namespace Dixin.Linq.LinqToObjects
                 .Clear();
         }
 
-        public static void String()
+        internal static void String()
         {
             string source = "...";
             string result = source
@@ -118,7 +118,7 @@ namespace Dixin.Linq.LinqToObjects
                 .ToUpperInvariant();
         }
 
-        public static void ListFluentExtensions()
+        internal static void ListFluentExtensions()
         {
             List<int> list = new List<int>() { 1, 2, 3, 4, 5 }
                 .FluentAdd(1)
@@ -129,7 +129,7 @@ namespace Dixin.Linq.LinqToObjects
                 .FluentClear();
         }
 
-        public static void CompiledListExtensions()
+        internal static void CompiledListExtensions()
         {
             List<int> list = ListExtensions.FluentClear(
                                 ListExtensions.FluentForEach(
@@ -146,7 +146,7 @@ namespace Dixin.Linq.LinqToObjects
                                 );
         }
 
-        public static void Debug()
+        internal static void Debug()
         {
             Person[] persons =
                 {

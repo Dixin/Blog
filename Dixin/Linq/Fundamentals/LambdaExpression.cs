@@ -5,20 +5,20 @@
     using System.Linq.Expressions;
     using System.Runtime.CompilerServices;
 
-    public static partial class Anonymous
+    internal static partial class Anonymous
     {
-        public static bool IsPositive(int number)
+        internal static bool IsPositive(int number)
         {
             return number > 0;
         }
 
-        public static void Delegate()
+        internal static void Delegate()
         {
             Func<int, bool> predicate1 = new Func<int, bool>(IsPositive);
             Func<int, bool> predicate2 = IsPositive;
         }
 
-        public static void AnonymousMethod()
+        internal static void AnonymousMethod()
         {
             Func<int, bool> isPositive = delegate (int number)
                 {
@@ -31,7 +31,7 @@
                 };
         }
 
-        public static void Lambda()
+        internal static void Lambda()
         {
             Func<int, bool> isPositive = (int number) =>
                 {
@@ -44,14 +44,14 @@
                 };
         }
 
-        public static void ExpressionLambda()
+        internal static void ExpressionLambda()
         {
             Func<int, bool> isPositive = number => number > 0;
 
             AppDomain.CurrentDomain.UnhandledException += (sender, e) => Trace.WriteLine(e.ExceptionObject);
         }
 
-        public static void StatementLambda()
+        internal static void StatementLambda()
         {
             Func<int, bool> predicate = number =>
                 {
@@ -60,14 +60,14 @@
                 };
         }
 
-        public static void CallAnonymousMethod()
+        internal static void CallAnonymousMethod()
         {
             bool isPositive = new Func<int, bool>(delegate (int number) { return number > 0; })(1);
 
             new Action<bool>(delegate (bool value) { Trace.WriteLine(value); })(isPositive);
         }
 
-        public static void CallLambda()
+        internal static void CallLambda()
         {
             bool isPositive = new Func<int, bool>(number => number > 0)(1);
 
@@ -75,7 +75,7 @@
         }
     }
 
-    public static class CompiledAnonymous
+    internal static class CompiledAnonymous
     {
         [CompilerGenerated]
         private static Func<int, bool> cachedAnonymousMethodDelegate0;
@@ -95,7 +95,7 @@
             Trace.WriteLine(e.ExceptionObject);
         }
 
-        public static void AnonymousMethod()
+        internal static void AnonymousMethod()
         {
             Func<int, bool> isPositive = cachedAnonymousMethodDelegate0
                 ?? (cachedAnonymousMethodDelegate0 = AnonymousMethod0);
@@ -104,15 +104,15 @@
         }
     }
 
-    public static partial class AnonymousFunction
+    internal static partial class AnonymousFunction
     {
-        public static void ExpressionTree()
+        internal static void ExpressionTree()
         {
             Expression<Func<int, bool>> predicate = number => number > 0;
         }
 
 #if ERROR
-        public static void ExpressionTree()
+        internal static void ExpressionTree()
         {
             Expression<Func<int, bool>> statementLambda2 = number =>
                 {
@@ -122,7 +122,7 @@
     }
 #endif
 
-        public static void CompiledExpressionTree()
+        internal static void CompiledExpressionTree()
         {
             ParameterExpression number = Expression.Parameter(typeof(int), "number"); // number
             ConstantExpression _0 = Expression.Constant(0, typeof(int)); // 0
@@ -134,7 +134,7 @@
         }
 
 #if ERROR
-        public static void Statement()
+        internal static void Statement()
         {
             Expression<Func<int, bool>> statementLambda1 = number => { return number > 0; };
 
@@ -146,7 +146,7 @@
         }
 #endif
 
-        public static void Statement()
+        internal static void Statement()
         {
             {
                 // Single statement. Syntactic sugar can be used.

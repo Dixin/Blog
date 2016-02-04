@@ -12,7 +12,7 @@
     public static partial class Cps
     {
         // Add = (x, y) => x + y
-        public static int Add
+        internal static int Add
             (int x, int y) => x + y;
     }
 
@@ -20,23 +20,23 @@
     public static partial class Cps
     {
         // AddWithCallback = (x, y, callback) => callback(x + y)
-        public static TCallback AddWithCallback<TCallback>
+        internal static TCallback AddWithCallback<TCallback>
             (int x, int y, Func<int, TCallback> callback) => callback(x + y);
 
         // AddWithCallback = (x, y) => callback => callback(x + y)
-        public static Func<Func<int, TCallback>, TCallback> AddWithCallback<TCallback>
+        internal static Func<Func<int, TCallback>, TCallback> AddWithCallback<TCallback>
             (int x, int y) => callback => callback(x + y);
 
         // AddCps = (x, y) => continuation => continuation(x + y)
-        public static Cps<int, TContinuation> AddCps<TContinuation>
+        internal static Cps<int, TContinuation> AddCps<TContinuation>
             (int x, int y) => continuation => continuation(x + y);
 
         // SquareCps = x => continuation => continuation(x * x)
-        public static Cps<int, TContinuation> SquareCps<TContinuation>
+        internal static Cps<int, TContinuation> SquareCps<TContinuation>
             (int x) => continuation => continuation(x * x);
 
         // SumOfSquaresCps = (x, y) => continuation => SquareCps(x)(xx => SquareCps(y)(yy => AddCps(xx)(yy)(continuation)));
-        public static Cps<int, TContinuation> SumOfSquaresCps<TContinuation>
+        internal static Cps<int, TContinuation> SumOfSquaresCps<TContinuation>
             (int x, int y) => continuation =>
                 SquareCps<TContinuation>(x)(xx =>
                     SquareCps<TContinuation>(y)(yy =>
@@ -98,9 +98,9 @@
     }
 
     [Pure]
-    public static partial class CpsQuery
+    internal static partial class CpsQuery
     {
-        public static void SumOfSqaure()
+        internal static void SumOfSqaure()
         {
             Func<int, Func<int, int>> add = x => y => x + y;
             Func<int, int> sqaure = x => x * x;

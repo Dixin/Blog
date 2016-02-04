@@ -22,5 +22,11 @@
             || exception is InvalidProgramException
             || exception is OutOfMemoryException
             || exception is ThreadAbortException);
+
+        public static bool Trace(this Exception exception)
+        {
+            System.Diagnostics.Trace.WriteLine(exception);
+            return true;
+        }
     }
 }

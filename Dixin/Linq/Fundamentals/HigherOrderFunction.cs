@@ -2,41 +2,41 @@
 {
     using System;
 
-    public static partial class HigherOrderFunction
+    internal static partial class HigherOrderFunction
     {
-        public class DataType { }
+        internal class DataType { }
 
-        public static DataType FirstOrder(DataType dataValue)
+        internal static DataType FirstOrder(DataType dataValue)
         {
             return dataValue;
         }
 
-        public static void CallFirstOrder()
+        internal static void CallFirstOrder()
         {
             DataType inputValue = default(DataType);
             DataType outputValue = FirstOrder(inputValue);
         }
     }
 
-    public static partial class HigherOrderFunction
+    internal static partial class HigherOrderFunction
     {
-        public delegate void FunctionType();
+        internal delegate void FunctionType();
 
-        public static FunctionType HigherOrder(FunctionType functionValue)
+        internal static FunctionType HigherOrder(FunctionType functionValue)
         {
             return functionValue;
         }
 
-        public static void CallHigherOrder()
+        internal static void CallHigherOrder()
         {
             FunctionType inputValue = default(FunctionType);
             FunctionType outputValue = HigherOrder(inputValue);
         }
     }
 
-    public static partial class HigherOrderFunction
+    internal static partial class HigherOrderFunction
     {
-        public static void Lambda()
+        internal static void Lambda()
         {
             Action firstOrder1 = () => { };
             Action<Action> higherOrder1 = action => action();
@@ -46,46 +46,46 @@
         }
     }
 
-    public static partial class FirstClass
+    internal static partial class FirstClass
     {
-        public class ObjectType
+        internal class ObjectType
         {
-            public ObjectType InnerObject { get; set; }
+            internal ObjectType InnerObject { get; set; }
         }
 
-        public delegate void FunctionType();
+        internal delegate void FunctionType();
 
-        public static void ObjectInstance()
+        internal static void ObjectInstance()
         {
             ObjectType objectValue = new ObjectType();
         }
 
-        public static void FunctionInstance()
+        internal static void FunctionInstance()
         {
             FunctionType functionValue1 = FunctionInstance; // Named function.
             FunctionType functionValue2 = () => { }; // Anonymous function.
         }
     }
 
-    public static partial class FirstClass
+    internal static partial class FirstClass
     {
-        public static ObjectType objectField = new ObjectType();
+        internal static ObjectType objectField = new ObjectType();
 
-        public static FunctionType functionField1 = FunctionInstance; // Named function.
+        internal static FunctionType functionField1 = FunctionInstance; // Named function.
 
-        public static FunctionType functionField2 = () => { }; // Anonymous function.
+        internal static FunctionType functionField2 = () => { }; // Anonymous function.
     }
 
-    public static partial class FirstClass
+    internal static partial class FirstClass
     {
-        public static ObjectType InputOutputObject(ObjectType objectValue) => objectValue;
+        internal static ObjectType InputOutputObject(ObjectType objectValue) => objectValue;
 
-        public static FunctionType InputOutputFunction(FunctionType functionValue) => functionValue;
+        internal static FunctionType InputOutputFunction(FunctionType functionValue) => functionValue;
     }
 
-    public static partial class FirstClass
+    internal static partial class FirstClass
     {
-        public static void NestedObject()
+        internal static void NestedObject()
         {
             ObjectType outerObject = new ObjectType()
             {
@@ -93,7 +93,7 @@
             };
         }
 
-        public static void NestedFunction()
+        internal static void NestedFunction()
         {
             object nonLocalVariable = new object();
             FunctionType outerFunction = () =>
@@ -107,9 +107,9 @@
         }
     }
 
-    public static partial class FirstClass
+    internal static partial class FirstClass
     {
-        public static void ObjectEquality()
+        internal static void ObjectEquality()
         {
             ObjectType objectValue1;
             ObjectType objectValue2;
@@ -120,7 +120,7 @@
             bool areEqual2 = objectValue2 == objectValue3; // false.
         }
 
-        public static void FunctionEquality()
+        internal static void FunctionEquality()
         {
             FunctionType functionValue1;
             FunctionType functionValue2;

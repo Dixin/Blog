@@ -12,7 +12,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Dixin</RootNamespace>
     <AssemblyName>Dixin</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
@@ -276,10 +276,11 @@
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Inheritance.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Log.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Performance.cs" />
-    <Compile Include="Linq\LinqToEntities\AdventureWorks.Query.cs" />
+    <Compile Include="Linq\LinqToEntities\AdventureWorks.Functions.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.RemoteMethods.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Tables.cs" />
     <Compile Include="Linq\LinqToEntities\DbContextExtensions.cs" />
+    <Compile Include="Linq\LinqToSql\AdventureWorks.Changes.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.Laziness.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.RemoteMethods.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.Associations.cs" />
@@ -298,9 +299,9 @@
     <Compile Include="IO\Video.cs" />
     <Compile Include="Linq\CategoryTheory\Functor.Like.cs" />
     <Compile Include="Linq\CategoryTheory\Monad.Like.cs" />
-    <Content Include="Linq\LinqToEntities\AdventureWorks.QueryMethods.sql" />
+    <Content Include="Linq\LinqToEntities\AdventureWorks.sql" />
     <Content Include="Linq\LinqToEntities\Mapping.sql" />
-    <Content Include="Linq\LinqToSql\AdventureWorks.QueryMethods.sql" />
+    <Content Include="Linq\LinqToSql\AdventureWorks.sql" />
     <Content Include="Linq\LinqToSql\ExpressionTree.sql" />
     <Content Include="Linq\LinqToSql\Mapping.sql" />
     <Content Include="Sql\AdventureWorks.Delete.sql" />
@@ -442,6 +443,7 @@
     <Compile Include="Threading\SpinLockSlim.cs" />
     <Compile Include="Web\Mvc\HtmlHelperExtensions.cs" />
     <Compile Include="Web\HttpRequestBaseExtensions.cs" />
+    <Compile Include="Windows\ClipboardHelper.cs" />
     <Compile Include="Xml\Linq\XDocumentHelper.cs" />
   </ItemGroup>
   <ItemGroup>

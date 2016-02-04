@@ -4,9 +4,9 @@
     using System.Diagnostics;
     using System.Linq;
 
-    public static class DataAccess
+    internal static class DataAccess
     {
-        public static IQueryable<Product> QueryCategoryProducts(string category)
+        internal static IQueryable<Product> QueryCategoryProducts(string category)
         {
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {
@@ -16,18 +16,18 @@
         }
     }
 
-    public static class UI
+    internal static class UI
     {
-        public static void ViewCategoryProducts(string category) => DataAccess
+        internal static void ViewCategoryProducts(string category) => DataAccess
             .QueryCategoryProducts(category)
             .Select(product => product.Name)
             .ForEach(name => Trace.WriteLine(name));
         // ObjectDisposedException: Cannot access a disposed object. Object name: 'DataContext accessed after Dispose.'.
     }
 
-    public static partial class QueryMethods
+    internal static partial class QueryMethods
     {
-        public static void DeferredLoading()
+        internal static void DeferredLoading()
         {
             IQueryable<ProductSubcategory> subcategories = AdventureWorks.ProductSubcategories;
             subcategories.ForEach(subcategory => Trace.WriteLine(
@@ -35,7 +35,7 @@
                     ", ", subcategory.Products.Select(product => product.Name))}"));
         }
 
-        public static void EagerLoadingWithSelect()
+        internal static void EagerLoadingWithSelect()
         {
             var subcategories = AdventureWorks.ProductSubcategories
                 .Select(subcategory => new
@@ -48,7 +48,7 @@
                 $"{subcategory.Category}/{subcategory}: {string.Join(", ", subcategory.Products)}"));
         }
 
-        public static void EagerLoadingWithAssociation()
+        internal static void EagerLoadingWithAssociation()
         {
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {
@@ -63,7 +63,7 @@
             }
         }
 
-        public static void ConditionalEagerLoading()
+        internal static void ConditionalEagerLoading()
         {
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {
@@ -79,7 +79,7 @@
             }
         }
 
-        public static void NoLoading()
+        internal static void NoLoading()
         {
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {

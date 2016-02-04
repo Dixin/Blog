@@ -1,11 +1,10 @@
-﻿namespace Dixin.Tests.Linq.LinqToEntities
+﻿namespace Dixin.Tests.Linq.LinqToSql
 {
     using System;
-    using System.Data.Entity.Infrastructure;
+    using System.Data.Linq;
     using System.Diagnostics;
     using System.Transactions;
-
-    using Dixin.Linq.LinqToEntities;
+    using Dixin.Linq.LinqToSql;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -64,7 +63,7 @@
                 Concurrency.CheckModifiedDate();
                 Assert.Fail();
             }
-            catch (DbUpdateConcurrencyException exception)
+            catch (ChangeConflictException exception)
             {
                 Trace.WriteLine(exception);
             }

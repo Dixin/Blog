@@ -6,14 +6,14 @@
     using System.IO;
     using System.Linq;
 
-    public static class Music
+    internal static class Music
     {
         private const char Separater = '.';
 
         private static readonly HashSet<string> Extensions = new HashSet<string>(
             new[] { ".mp3", ".m4a", ".wma" }, StringComparer.OrdinalIgnoreCase);
 
-        public static void RenameAlbum(string from, string to)
+        internal static void RenameAlbum(string from, string to)
         {
             DirectoryInfo fromDirectory = new DirectoryInfo(from);
             DirectoryInfo toDirectory = new DirectoryInfo(to);
@@ -60,7 +60,7 @@
                     });
         }
 
-        public static void RenameAllAlbums(string from, string to)
+        internal static void RenameAllAlbums(string from, string to)
         {
             bool hasError = false;
             DirectoryInfo music = new DirectoryInfo(from);

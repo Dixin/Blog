@@ -5,9 +5,9 @@
     using System.Threading.Tasks;
     using System.Transactions;
 
-    public class Performance
+    internal class Performance
     {
-        public static async Task Async()
+        internal static async Task Async()
         {
             using (new TransactionScope(TransactionScopeAsyncFlowOption.Enabled)) // BEGIN TRANSACTION.
             using (AdventureWorks adventureWorks = new AdventureWorks())

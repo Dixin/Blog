@@ -5,9 +5,9 @@
     using System.Collections.Generic;
     using System.Linq;
 
-    public static partial class EnumerableExtensions
+    internal static partial class EnumerableExtensions
     {
-        public static IEnumerable<TSource> Reverse<TSource>(this IEnumerable<TSource> source)
+        internal static IEnumerable<TSource> Reverse<TSource>(this IEnumerable<TSource> source)
         {
             TSource[] array = ToArray(source); // Eager evaluation.
             for (int i = array.Length - 1; i >= 0; i--)
@@ -16,30 +16,30 @@
             }
         }
 
-        public static IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(
+        internal static IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             IComparer<TKey> comparer = null) =>
                 new OrderedSequence<TSource, TKey>(source, keySelector, comparer);
 
-        public static IOrderedEnumerable<TSource> OrderByDescending<TSource, TKey>(
+        internal static IOrderedEnumerable<TSource> OrderByDescending<TSource, TKey>(
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             IComparer<TKey> comparer = null) =>
                 new OrderedSequence<TSource, TKey>(source, keySelector, comparer, true);
 
-        public static IOrderedEnumerable<TSource> ThenBy<TSource, TKey>(
+        internal static IOrderedEnumerable<TSource> ThenBy<TSource, TKey>(
             this IOrderedEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             IComparer<TKey> comparer = null) => source.CreateOrderedEnumerable(keySelector, comparer, false);
 
-        public static IOrderedEnumerable<TSource> ThenByDescending<TSource, TKey>(
+        internal static IOrderedEnumerable<TSource> ThenByDescending<TSource, TKey>(
             this IOrderedEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             IComparer<TKey> comparer = null) => source.CreateOrderedEnumerable(keySelector, comparer, true);
     }
 
-    public class OrderedSequence<TSource, TKey> : IOrderedEnumerable<TSource>
+    internal class OrderedSequence<TSource, TKey> : IOrderedEnumerable<TSource>
     {
         private readonly IEnumerable<TSource> source;
 
@@ -51,7 +51,7 @@
 
         private readonly Func<TSource[], Comparison<int>> previousGetComparison;
 
-        public OrderedSequence(
+        internal OrderedSequence(
             IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             IComparer<TKey> comparer,

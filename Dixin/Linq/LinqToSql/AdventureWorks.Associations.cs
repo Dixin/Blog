@@ -5,9 +5,16 @@
 
     public partial class ProductCategory
     {
-        private readonly EntitySet<ProductSubcategory> productSubcategories = new EntitySet<ProductSubcategory>();
+        private readonly EntitySet<ProductSubcategory> productSubcategories;
 
-        [Association(ThisKey = nameof(ProductCategoryID), OtherKey = nameof(ProductSubcategory.ProductCategoryID))]
+        public ProductCategory()
+        {
+            this.productSubcategories = new EntitySet<ProductSubcategory>(
+                subcategory => subcategory.ProductCategory = this, subcategory => subcategory.ProductCategory = null);
+        }
+
+        [Association(Storage = nameof(productSubcategories),
+            ThisKey = nameof(ProductCategoryID), OtherKey = nameof(ProductSubcategory.ProductCategoryID))]
         public EntitySet<ProductSubcategory> ProductSubcategories
         {
             get { return this.productSubcategories; }
@@ -19,9 +26,9 @@
     {
         private int? productCategoryId;
 
-        private EntityRef<ProductCategory> productCategory = new EntityRef<ProductCategory>();
+        private EntityRef<ProductCategory> productCategory = default(EntityRef<ProductCategory>);
 
-        [Column(DbType = "int NOT NULL")]
+        [Column(DbType = "int NOT NULL", Storage = nameof(productCategoryId), UpdateCheck = UpdateCheck.Never)]
         public int? ProductCategoryID
         {
             get { return this.productCategoryId; }
@@ -32,17 +39,17 @@
             }
         }
 
-        [Association(IsForeignKey = true, ThisKey = nameof(ProductCategoryID), OtherKey = nameof(LinqToSql.ProductCategory.ProductCategoryID))]
+        [Association(Storage = nameof(productCategory),
+            IsForeignKey = true, ThisKey = nameof(ProductCategoryID), OtherKey = nameof(LinqToSql.ProductCategory.ProductCategoryID))]
         public ProductCategory ProductCategory
         {
             get { return this.productCategory.Entity; }
             set
             {
                 this.Associate(
-                    key => this.ProductCategoryID = key, 
-                    this.productCategory,
-                    value, 
-                    () => value.ProductCategoryID, 
+                    () => this.productCategoryId = value?.ProductCategoryID,
+                    ref this.productCategory,
+                    value,
                     other => other.ProductSubcategories);
                 // ProductCategory previousCategory = this.productCategory.Entity;
                 // if (previousCategory != value || !this.productCategory.HasLoadedOrAssignedValue)
@@ -52,16 +59,16 @@
                 //        this.productCategory.Entity = null;
                 //        previousCategory.ProductSubcategories.Remove(this);
                 //    }
-                //
+
                 //    this.productCategory.Entity = value;
                 //    if (value != null)
                 //    {
                 //        value.ProductSubcategories.Add(this);
-                //        this.ProductCategoryID = value.ProductCategoryID;
+                //        this.productCategoryId = value.ProductCategoryID;
                 //    }
                 //    else
                 //    {
-                //        this.ProductCategoryID = default(int);
+                //        this.productCategoryId = default(int?);
                 //    }
                 // }
             }
@@ -70,9 +77,16 @@
 
     public partial class ProductSubcategory
     {
-        private readonly EntitySet<Product> products = new EntitySet<Product>();
+        private readonly EntitySet<Product> products;
 
-        [Association(ThisKey = nameof(ProductSubcategoryID), OtherKey = nameof(Product.ProductSubcategoryID))]
+        public ProductSubcategory()
+        {
+            this.products = new EntitySet<Product>(
+                product => product.ProductSubcategory = this, product => product.ProductSubcategory = null);
+        }
+
+        [Association(Storage = nameof(products), 
+            ThisKey = nameof(ProductSubcategoryID), OtherKey = nameof(Product.ProductSubcategoryID))]
         public EntitySet<Product> Products
         {
             get { return this.products; }
@@ -84,9 +98,9 @@
     {
         private int? productSubcategoryId;
 
-        private EntityRef<ProductSubcategory> productSubcategory = new EntityRef<ProductSubcategory>();
+        private EntityRef<ProductSubcategory> productSubcategory = default(EntityRef<ProductSubcategory>);
 
-        [Column(DbType = "int")]
+        [Column(DbType = "int", Storage = nameof(productSubcategoryId))]
         public int? ProductSubcategoryID
         {
             get { return this.productSubcategoryId; }
@@ -97,17 +111,17 @@
             }
         }
 
-        [Association(IsForeignKey = true, ThisKey = nameof(ProductSubcategoryID), OtherKey = nameof(LinqToSql.ProductSubcategory.ProductSubcategoryID))]
+        [Association(Storage = nameof(productSubcategory),
+            IsForeignKey = true, ThisKey = nameof(ProductSubcategoryID), OtherKey = nameof(LinqToSql.ProductSubcategory.ProductSubcategoryID))]
         public ProductSubcategory ProductSubcategory
         {
             get { return this.productSubcategory.Entity; }
             set
             {
                 this.Associate(
-                    key => this.ProductSubcategoryID = key, 
-                    this.productSubcategory,
-                    value, 
-                    () => value.ProductSubcategoryID, 
+                    () => this.productSubcategoryId = value?.ProductSubcategoryID,
+                    ref this.productSubcategory,
+                    value,
                     other => other.Products);
             }
         }
@@ -120,9 +134,16 @@
 
     public partial class Product
     {
-        private readonly EntitySet<ProductProductPhoto> productProductPhotos = new EntitySet<ProductProductPhoto>();
+        private readonly EntitySet<ProductProductPhoto> productProductPhotos;
 
-        [Association(ThisKey = nameof(ProductID), OtherKey = nameof(ProductProductPhoto.ProductID))]
+        public Product()
+        {
+            this.productProductPhotos = new EntitySet<ProductProductPhoto>(
+                productProductPhoto => productProductPhoto.Product = this, productProductPhoto => productProductPhoto.Product = null);
+        }
+
+        [Association(Storage = nameof(productProductPhotos),
+            ThisKey = nameof(ProductID), OtherKey = nameof(ProductProductPhoto.ProductID))]
         public EntitySet<ProductProductPhoto> ProductProductPhotos
         {
             get { return this.productProductPhotos; }
@@ -132,9 +153,17 @@
 
     public partial class ProductPhoto
     {
-        private readonly EntitySet<ProductProductPhoto> productProductPhotos = new EntitySet<ProductProductPhoto>();
+        private readonly EntitySet<ProductProductPhoto> productProductPhotos;
 
-        [Association(ThisKey = nameof(ProductPhotoID), OtherKey = nameof(ProductProductPhoto.ProductPhotoID))]
+        public ProductPhoto()
+        {
+            this.productProductPhotos = new EntitySet<ProductProductPhoto>(
+                productProductPhoto => productProductPhoto.ProductPhoto = this, 
+                productProductPhoto => productProductPhoto.ProductPhoto = null);
+        }
+
+        [Association(Storage = nameof(productProductPhotos),
+            ThisKey = nameof(ProductPhotoID), OtherKey = nameof(ProductProductPhoto.ProductPhotoID))]
         public EntitySet<ProductProductPhoto> ProductProductPhotos
         {
             get { return this.productProductPhotos; }
@@ -144,32 +173,32 @@
 
     public partial class ProductProductPhoto
     {
-        private int productId;
+        private int? productId;
 
-        private EntityRef<Product> product = new EntityRef<Product>();
+        private EntityRef<Product> product = default(EntityRef<Product>);
 
-        [Column(DbType = "int", IsPrimaryKey = true)]
-        public int ProductID
+        [Column(DbType = "int", Storage = nameof(productId), IsPrimaryKey = true)]
+        public int? ProductID
         {
             get { return this.productId; }
             set
             {
                 this.product.SetForeignKey(
-                    () => this.ProductID == value, () => this.ProductID = value);
+                    () => this.productId == value, () => this.productId = value);
             }
         }
 
-        [Association(IsForeignKey = true, ThisKey = nameof(ProductID), OtherKey = nameof(LinqToSql.Product.ProductID))]
+        [Association(Storage = nameof(product),
+            IsForeignKey = true, ThisKey = nameof(ProductID), OtherKey = nameof(LinqToSql.Product.ProductID))]
         public Product Product
         {
             get { return this.product.Entity; }
             set
             {
                 this.Associate(
-                    key => this.ProductID = key, 
-                    this.product,
-                    value, 
-                    () => value.ProductID, 
+                    () => this.productId = value?.ProductID,
+                    ref this.product,
+                    value,
                     other => other.ProductProductPhotos);
             }
         }
@@ -177,32 +206,32 @@
 
     public partial class ProductProductPhoto
     {
-        private int productPhotoId;
+        private int? productPhotoId;
 
-        private EntityRef<ProductPhoto> productPhoto = new EntityRef<ProductPhoto>();
+        private EntityRef<ProductPhoto> productPhoto = default(EntityRef<ProductPhoto>);
 
-        [Column(DbType = "int", IsPrimaryKey = true)]
-        public int ProductPhotoID
+        [Column(DbType = "int", Storage = nameof(productPhotoId), IsPrimaryKey = true)]
+        public int? ProductPhotoID
         {
             get { return this.productPhotoId; }
             set
             {
                 this.product.SetForeignKey(
-                    () => this.ProductPhotoID == value, () => this.ProductPhotoID = value);
+                    () => this.productPhotoId == value, () => this.productPhotoId = value);
             }
         }
 
-        [Association(IsForeignKey = true, ThisKey = nameof(ProductPhotoID), OtherKey = nameof(LinqToSql.ProductPhoto.ProductPhotoID))]
+        [Association(Storage = nameof(productPhoto),
+            IsForeignKey = true, ThisKey = nameof(ProductPhotoID), OtherKey = nameof(LinqToSql.ProductPhoto.ProductPhotoID))]
         public ProductPhoto ProductPhoto
         {
             get { return this.productPhoto.Entity; }
             set
             {
                 this.Associate(
-                    key => this.ProductPhotoID = key, 
-                    this.productPhoto,
-                    value, 
-                    () => value.ProductPhotoID, 
+                    () => this.productPhotoId = value?.ProductPhotoID,
+                    ref this.productPhoto,
+                    value,
                     other => other.ProductProductPhotos);
             }
         }

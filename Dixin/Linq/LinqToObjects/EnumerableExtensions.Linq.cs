@@ -7,9 +7,9 @@
 
     using Microsoft.FSharp.Linq.RuntimeHelpers;
 
-    public static partial class EnumerableExtensions
+    internal static partial class EnumerableExtensions
     {
-        public static TSource[] ToArray<TSource>(this IEnumerable<TSource> source)
+        internal static TSource[] ToArray<TSource>(this IEnumerable<TSource> source)
         {
             ICollection<TSource> genericCollection = source as ICollection<TSource>;
             if (genericCollection != null)
@@ -54,13 +54,13 @@
         }
     }
 
-    public static partial class EnumerableExtensions
+    internal static partial class EnumerableExtensions
     {
         #region Conversion
 
-        public static List<TSource> ToList<TSource>(this IEnumerable<TSource> source) => new List<TSource>(source);
+        internal static List<TSource> ToList<TSource>(this IEnumerable<TSource> source) => new List<TSource>(source);
 
-        public static Dictionary<TKey, TElement> ToDictionary<TSource, TKey, TElement>(
+        internal static Dictionary<TKey, TElement> ToDictionary<TSource, TKey, TElement>(
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             Func<TSource, TElement> elementSelector,
@@ -75,7 +75,7 @@
             return dictionary;
         }
 
-        public static ILookup<TKey, TElement> ToLookup<TSource, TKey, TElement>(
+        internal static ILookup<TKey, TElement> ToLookup<TSource, TKey, TElement>(
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             Func<TSource, TElement> elementSelector = null,
@@ -110,7 +110,7 @@
                 groupWithNullKey.Count > 0);
         }
 
-        public static ILookup<TKey, TSource> ToLookup<TSource, TKey>(
+        internal static ILookup<TKey, TSource> ToLookup<TSource, TKey>(
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             IEqualityComparer<TKey> comparer = null) => source.ToLookup(keySelector, value => value, comparer);
@@ -119,11 +119,11 @@
 
         #region Conversion
 
-        public static IEnumerable<TSource> AsEnumerable<TSource>
+        internal static IEnumerable<TSource> AsEnumerable<TSource>
             (this IEnumerable<TSource> source) => source; // Deferred execution.
 
 #if ERROR
-        public static IEnumerable<TResult> Cast<TResult>(this IEnumerable source)
+        internal static IEnumerable<TResult> Cast<TResult>(this IEnumerable source)
         {
             IEnumerable<TResult> generic = source as IEnumerable<TResult>;
             if (generic != null)
@@ -138,10 +138,10 @@
         }
 #endif
 
-        public static IEnumerable<TResult> Cast<TResult>
+        internal static IEnumerable<TResult> Cast<TResult>
             (this IEnumerable source) => source as IEnumerable<TResult> ?? source.CastGenerator<TResult>();  // Deferred execution.
 
-        public static IEnumerable<TResult> CastGenerator<TResult>(this IEnumerable source)
+        internal static IEnumerable<TResult> CastGenerator<TResult>(this IEnumerable source)
         {
             foreach (object value in source)
             {
@@ -153,14 +153,14 @@
 
         #region Generation
 
-        public static IEnumerable<TResult> Empty<TResult>() => EmptyArray<TResult>.Cache;
+        internal static IEnumerable<TResult> Empty<TResult>() => EmptyArray<TResult>.Cache;
 
-        public static IEnumerable<TResult> Empty2<TResult>()
+        internal static IEnumerable<TResult> Empty2<TResult>()
         {
             yield break;
         }
 
-        public static IEnumerable<int> Range(int start, int count)
+        internal static IEnumerable<int> Range(int start, int count)
         {
             for (int value = start; value < start + count; value++)
             {
@@ -168,7 +168,7 @@
             }
         }
 
-        public static IEnumerable<TResult> Repeat<TResult>(TResult element, int count)
+        internal static IEnumerable<TResult> Repeat<TResult>(TResult element, int count)
         {
             for (int index = 0; index < count; index++)
             {
@@ -176,7 +176,7 @@
             }
         }
 
-        public static IEnumerable<TSource> DefaultIfEmpty<TSource>(
+        internal static IEnumerable<TSource> DefaultIfEmpty<TSource>(
             this IEnumerable<TSource> source, TSource defaultValue = default(TSource))
         {
             using (IEnumerator<TSource> iterator = source.GetEnumerator())
@@ -200,7 +200,7 @@
 
         #region Filtering
 
-        public static IEnumerable<TSource> Where<TSource>(
+        internal static IEnumerable<TSource> Where<TSource>(
             this IEnumerable<TSource> source,
             Func<TSource, bool> predicate)
         {
@@ -213,7 +213,7 @@
             }
         }
 
-        public static IEnumerable<TSource> Where<TSource>(
+        internal static IEnumerable<TSource> Where<TSource>(
             this IEnumerable<TSource> source, Func<TSource, int, bool> predicate)
         {
             int index = -1;
@@ -227,7 +227,7 @@
             }
         }
 
-        public static IEnumerable<TResult> OfType<TResult>(this IEnumerable source)
+        internal static IEnumerable<TResult> OfType<TResult>(this IEnumerable source)
         {
             foreach (object value in source)
             {
@@ -242,7 +242,7 @@
 
         #region Mapping
 
-        public static IEnumerable<TResult> Select<TSource, TResult>(
+        internal static IEnumerable<TResult> Select<TSource, TResult>(
             this IEnumerable<TSource> source, Func<TSource, TResult> selector)
         {
             foreach (TSource value in source)
@@ -251,7 +251,7 @@
             }
         }
 
-        public static IEnumerable<TResult> Select<TSource, TResult>(
+        internal static IEnumerable<TResult> Select<TSource, TResult>(
             this IEnumerable<TSource> source, Func<TSource, int, TResult> selector)
         {
             int index = -1;
@@ -262,7 +262,7 @@
             }
         }
 
-        public static IEnumerable<TResult> SelectMany<TSource, TResult>(
+        internal static IEnumerable<TResult> SelectMany<TSource, TResult>(
             this IEnumerable<TSource> source,
             Func<TSource, IEnumerable<TResult>> selector)
         {
@@ -275,7 +275,7 @@
             }
         }
 
-        public static IEnumerable<TResult> SelectMany<TSource, TCollection, TResult>(
+        internal static IEnumerable<TResult> SelectMany<TSource, TCollection, TResult>(
             this IEnumerable<TSource> source,
             Func<TSource, IEnumerable<TCollection>> collectionSelector,
             Func<TSource, TCollection, TResult> resultSelector)
@@ -289,7 +289,7 @@
             }
         }
 
-        public static IEnumerable<TResult> SelectMany<TSource, TResult>(
+        internal static IEnumerable<TResult> SelectMany<TSource, TResult>(
             this IEnumerable<TSource> source,
             Func<TSource, int, IEnumerable<TResult>> selector)
         {
@@ -304,7 +304,7 @@
             }
         }
 
-        public static IEnumerable<TResult> SelectMany<TSource, TCollection, TResult>(
+        internal static IEnumerable<TResult> SelectMany<TSource, TCollection, TResult>(
             this IEnumerable<TSource> source,
             Func<TSource, int, IEnumerable<TCollection>> collectionSelector,
             Func<TSource, TCollection, TResult> resultSelector)
@@ -324,12 +324,12 @@
 
         #region Grouping
 
-        public static IEnumerable<IGrouping<TKey, TSource>> GroupByWithToLookup<TSource, TKey>(
+        internal static IEnumerable<IGrouping<TKey, TSource>> GroupByWithToLookup<TSource, TKey>(
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             IEqualityComparer<TKey> comparer = null) => source.ToLookup(keySelector, comparer);
 
-        public static IEnumerable<IGrouping<TKey, TSource>> GroupBy<TSource, TKey>(
+        internal static IEnumerable<IGrouping<TKey, TSource>> GroupBy<TSource, TKey>(
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             IEqualityComparer<TKey> comparer = null)
@@ -341,7 +341,7 @@
             }
         }
 
-        public static IEnumerable<IGrouping<TKey, TElement>> GroupBy<TSource, TKey, TElement>(
+        internal static IEnumerable<IGrouping<TKey, TElement>> GroupBy<TSource, TKey, TElement>(
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             Func<TSource, TElement> elementSelector,
@@ -354,7 +354,7 @@
             }
         }
 
-        public static IEnumerable<TResult> GroupBy<TSource, TKey, TResult>(
+        internal static IEnumerable<TResult> GroupBy<TSource, TKey, TResult>(
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             Func<TKey, IEnumerable<TSource>, TResult> resultSelector,
@@ -367,7 +367,7 @@
             }
         }
 
-        public static IEnumerable<TResult> GroupBy<TSource, TKey, TElement, TResult>(
+        internal static IEnumerable<TResult> GroupBy<TSource, TKey, TElement, TResult>(
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             Func<TSource, TElement> elementSelector,
@@ -385,7 +385,7 @@
 
         #region Join
 
-        public static IEnumerable<TResult> Join<TOuter, TInner, TKey, TResult>(
+        internal static IEnumerable<TResult> Join<TOuter, TInner, TKey, TResult>(
             this IEnumerable<TOuter> outer,
             IEnumerable<TInner> inner,
             Func<TOuter, TKey> outerKeySelector,
@@ -407,7 +407,7 @@
             }
         }
 
-        public static IEnumerable<TResult> GroupJoin<TOuter, TInner, TKey, TResult>(
+        internal static IEnumerable<TResult> GroupJoin<TOuter, TInner, TKey, TResult>(
             this IEnumerable<TOuter> outer,
             IEnumerable<TInner> inner,
             Func<TOuter, TKey> outerKeySelector,
@@ -426,7 +426,7 @@
 
         #region Concatenation
 
-        public static IEnumerable<TSource> Concat<TSource>(
+        internal static IEnumerable<TSource> Concat<TSource>(
             this IEnumerable<TSource> first, IEnumerable<TSource> second)
         {
             foreach (TSource value in first)
@@ -444,7 +444,7 @@
 
         #region Set
 
-        public static IEnumerable<TSource> Distinct<TSource>(
+        internal static IEnumerable<TSource> Distinct<TSource>(
             this IEnumerable<TSource> source, IEqualityComparer<TSource> comparer = null)
         {
             HashSet<TSource> hashSet = new HashSet<TSource>(comparer);
@@ -457,14 +457,14 @@
             }
         }
 
-        public static IEnumerable<TSource> DistinctWithWhere<TSource>(
+        internal static IEnumerable<TSource> DistinctWithWhere<TSource>(
             this IEnumerable<TSource> source, IEqualityComparer<TSource> comparer = null)
         {
             HashSet<TSource> hashSet = new HashSet<TSource>(comparer);
             return source.Where(hashSet.Add); // Deferred execution.
         }
 
-        public static IEnumerable<TSource> Union<TSource>(
+        internal static IEnumerable<TSource> Union<TSource>(
             this IEnumerable<TSource> first,
             IEnumerable<TSource> second,
             IEqualityComparer<TSource> comparer = null)
@@ -487,7 +487,7 @@
             }
         }
 
-        public static IEnumerable<TSource> UnionWithWhere<TSource>(
+        internal static IEnumerable<TSource> UnionWithWhere<TSource>(
             this IEnumerable<TSource> first,
             IEnumerable<TSource> second,
             IEqualityComparer<TSource> comparer = null)
@@ -496,7 +496,7 @@
             return first.Where(hashSet.Add).Concat(second.Where(hashSet.Add)); // Deferred execution.
         }
 
-        public static IEnumerable<TSource> Except<TSource>(
+        internal static IEnumerable<TSource> Except<TSource>(
             this IEnumerable<TSource> first,
             IEnumerable<TSource> second,
             IEqualityComparer<TSource> comparer = null)
@@ -518,7 +518,7 @@
             }
         }
 
-        public static IEnumerable<TSource> IntersectWithAdd<TSource>(
+        internal static IEnumerable<TSource> IntersectWithAdd<TSource>(
             this IEnumerable<TSource> first,
             IEnumerable<TSource> second,
             IEqualityComparer<TSource> comparer = null)
@@ -543,7 +543,7 @@
             }
         }
 
-        public static IEnumerable<TSource> Intersect<TSource>(
+        internal static IEnumerable<TSource> Intersect<TSource>(
             this IEnumerable<TSource> first,
             IEnumerable<TSource> second,
             IEqualityComparer<TSource> comparer = null)
@@ -568,7 +568,7 @@
 
         #region Convolution
 
-        public static IEnumerable<TResult> Zip<TFirst, TSecond, TResult>(
+        internal static IEnumerable<TResult> Zip<TFirst, TSecond, TResult>(
             this IEnumerable<TFirst> first,
             IEnumerable<TSecond> second,
             Func<TFirst, TSecond, TResult> resultSelector)
@@ -587,7 +587,7 @@
 
         #region Partioning
 
-        public static IEnumerable<TSource> Skip<TSource>(this IEnumerable<TSource> source, int count)
+        internal static IEnumerable<TSource> Skip<TSource>(this IEnumerable<TSource> source, int count)
         {
             using (IEnumerator<TSource> iterator = source.GetEnumerator())
             {
@@ -606,7 +606,7 @@
             }
         }
 
-        public static IEnumerable<TSource> SkipWhile<TSource>(
+        internal static IEnumerable<TSource> SkipWhile<TSource>(
             this IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
             bool skip = true;
@@ -624,7 +624,7 @@
             }
         }
 
-        public static IEnumerable<TSource> SkipWhile<TSource>(
+        internal static IEnumerable<TSource> SkipWhile<TSource>(
             this IEnumerable<TSource> source, Func<TSource, int, bool> predicate)
         {
             int index = -1;
@@ -644,7 +644,7 @@
             }
         }
 
-        public static IEnumerable<TSource> Take<TSource>(this IEnumerable<TSource> source, int count)
+        internal static IEnumerable<TSource> Take<TSource>(this IEnumerable<TSource> source, int count)
         {
             if (count > 0)
             {
@@ -659,11 +659,11 @@
             }
         }
 
-        public static IEnumerable<TSource> TakeWithWhere<TSource>
+        internal static IEnumerable<TSource> TakeWithWhere<TSource>
             (this IEnumerable<TSource> source, int count) => 
                 count > 0 ? source.Where((_, index) => index < count) : Empty<TSource>();
 
-        public static IEnumerable<TSource> TakeWhile<TSource>(
+        internal static IEnumerable<TSource> TakeWhile<TSource>(
             this IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
             foreach (TSource value in source)
@@ -677,7 +677,7 @@
             }
         }
 
-        public static IEnumerable<TSource> TakeWhile<TSource>(
+        internal static IEnumerable<TSource> TakeWhile<TSource>(
             this IEnumerable<TSource> source, Func<TSource, int, bool> predicate)
         {
             int index = -1;
@@ -697,7 +697,7 @@
 
         #region Element
 
-        public static TSource First<TSource>(this IEnumerable<TSource> source)
+        internal static TSource First<TSource>(this IEnumerable<TSource> source)
         {
             IList<TSource> list = source as IList<TSource>;
             if (list != null)
@@ -721,7 +721,7 @@
             throw new InvalidOperationException("Sequence contains no elements.");
         }
 
-        public static TSource First<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
+        internal static TSource First<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
             foreach (TSource value in source)
             {
@@ -734,7 +734,7 @@
             throw new InvalidOperationException("Sequence contains no matching element.");
         }
 
-        public static TSource FirstOrDefault<TSource>(this IEnumerable<TSource> source)
+        internal static TSource FirstOrDefault<TSource>(this IEnumerable<TSource> source)
         {
             IList<TSource> list = source as IList<TSource>;
             if (list != null)
@@ -758,7 +758,7 @@
             return default(TSource);
         }
 
-        public static TSource FirstOrDefault<TSource>(
+        internal static TSource FirstOrDefault<TSource>(
             this IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
             foreach (TSource value in source)
@@ -772,7 +772,7 @@
             return default(TSource);
         }
 
-        public static TSource Last<TSource>(this IEnumerable<TSource> source)
+        internal static TSource Last<TSource>(this IEnumerable<TSource> source)
         {
             IList<TSource> list = source as IList<TSource>;
             if (list != null)
@@ -803,7 +803,7 @@
             throw new InvalidOperationException("Sequence contains no elements.");
         }
 
-        public static TSource Last<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
+        internal static TSource Last<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
             IList<TSource> list = source as IList<TSource>;
             if (list != null)
@@ -844,7 +844,7 @@
             throw new InvalidOperationException("Sequence contains no matching element.");
         }
 
-        public static TSource LastOrDefault<TSource>(this IEnumerable<TSource> source)
+        internal static TSource LastOrDefault<TSource>(this IEnumerable<TSource> source)
         {
             IList<TSource> list = source as IList<TSource>;
             if (list != null)
@@ -875,7 +875,7 @@
             return default(TSource);
         }
 
-        public static TSource LastOrDefault<TSource>(
+        internal static TSource LastOrDefault<TSource>(
             this IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
             IList<TSource> list = source as IList<TSource>;
@@ -905,7 +905,7 @@
             return last;
         }
 
-        public static TSource ElementAt<TSource>(this IEnumerable<TSource> source, int index)
+        internal static TSource ElementAt<TSource>(this IEnumerable<TSource> source, int index)
         {
             IList<TSource> list = source as IList<TSource>;
             if (list != null)
@@ -932,7 +932,7 @@
             throw new ArgumentOutOfRangeException(nameof(index));
         }
 
-        public static TSource ElementAtOrDefault<TSource>(this IEnumerable<TSource> source, int index)
+        internal static TSource ElementAtOrDefault<TSource>(this IEnumerable<TSource> source, int index)
         {
             if (index >= 0)
             {
@@ -962,7 +962,7 @@
             return default(TSource);
         }
 
-        public static TSource Single<TSource>(this IEnumerable<TSource> source)
+        internal static TSource Single<TSource>(this IEnumerable<TSource> source)
         {
             IList<TSource> list = source as IList<TSource>;
             if (list != null)
@@ -995,7 +995,7 @@
             throw new InvalidOperationException("Sequence contains more than one element.");
         }
 
-        public static TSource Single<TSource>(
+        internal static TSource Single<TSource>(
             this IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
             using (IEnumerator<TSource> iterator = source.GetEnumerator())
@@ -1021,7 +1021,7 @@
             throw new InvalidOperationException("Sequence contains no matching element.");
         }
 
-        public static TSource SingleOrDefault<TSource>(this IEnumerable<TSource> source)
+        internal static TSource SingleOrDefault<TSource>(this IEnumerable<TSource> source)
         {
             IList<TSource> list = source as IList<TSource>;
             if (list != null)
@@ -1056,7 +1056,7 @@
             throw new InvalidOperationException("Sequence contains more than one element.");
         }
 
-        public static TSource SingleOrDefault<TSource>(
+        internal static TSource SingleOrDefault<TSource>(
             this IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
             using (IEnumerator<TSource> iterator = source.GetEnumerator())
@@ -1085,7 +1085,7 @@
 
         #region Aggregation
 
-        public static TResult Aggregate<TSource, TAccumulate, TResult>(
+        internal static TResult Aggregate<TSource, TAccumulate, TResult>(
             this IEnumerable<TSource> source,
             TAccumulate seed,
             Func<TAccumulate, TSource, TAccumulate> func,
@@ -1100,7 +1100,7 @@
             return resultSelector(accumulate);
         }
 
-        public static TAccumulate Aggregate<TSource, TAccumulate>(
+        internal static TAccumulate Aggregate<TSource, TAccumulate>(
             this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func)
         {
             TAccumulate accumulate = seed;
@@ -1112,7 +1112,7 @@
             return accumulate;
         }
 
-        public static TSource Aggregate<TSource>(
+        internal static TSource Aggregate<TSource>(
             this IEnumerable<TSource> source, Func<TSource, TSource, TSource> func)
         {
             using (IEnumerator<TSource> iterator = source.GetEnumerator())
@@ -1132,7 +1132,7 @@
             }
         }
 
-        public static int Count<TSource>(this IEnumerable<TSource> source)
+        internal static int Count<TSource>(this IEnumerable<TSource> source)
         {
             ICollection<TSource> genericCollection = source as ICollection<TSource>;
             if (genericCollection != null)
@@ -1158,7 +1158,7 @@
             return count;
         }
 
-        public static int Count<TSource>(
+        internal static int Count<TSource>(
             this IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
             int count = 0;
@@ -1172,7 +1172,7 @@
             return count;
         }
 
-        public static long LongCount<TSource>(this IEnumerable<TSource> source)
+        internal static long LongCount<TSource>(this IEnumerable<TSource> source)
         {
             long count = 0L;
             using (IEnumerator<TSource> iterator = source.GetEnumerator())
@@ -1186,7 +1186,7 @@
             return count;
         }
 
-        public static long LongCount<TSource>(
+        internal static long LongCount<TSource>(
             this IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
             long count = 0L;
@@ -1200,7 +1200,7 @@
             return count;
         }
 
-        public static decimal Min(this IEnumerable<decimal> source)
+        internal static decimal Min(this IEnumerable<decimal> source)
         {
             decimal min;
             using (IEnumerator<decimal> iterator = source.GetEnumerator())
@@ -1224,10 +1224,10 @@
             return min;
         }
 
-        public static decimal Min<TSource>
+        internal static decimal Min<TSource>
             (this IEnumerable<TSource> source, Func<TSource, decimal> selector) => source.Select(selector).Min();
 
-        public static decimal Max(this IEnumerable<decimal> source)
+        internal static decimal Max(this IEnumerable<decimal> source)
         {
             decimal max;
             using (IEnumerator<decimal> iterator = source.GetEnumerator())
@@ -1251,10 +1251,10 @@
             return max;
         }
 
-        public static decimal Max<TSource>
+        internal static decimal Max<TSource>
             (this IEnumerable<TSource> source, Func<TSource, decimal> selector) => source.Select(selector).Max();
 
-        public static decimal Sum(this IEnumerable<decimal> source)
+        internal static decimal Sum(this IEnumerable<decimal> source)
         {
             decimal sum = 0;
             foreach (decimal value in source)
@@ -1265,10 +1265,10 @@
             return sum;
         }
 
-        public static decimal Sum<TSource>
+        internal static decimal Sum<TSource>
             (this IEnumerable<TSource> source, Func<TSource, decimal> selector) => source.Select(selector).Sum();
 
-        public static decimal Average(this IEnumerable<decimal> source)
+        internal static decimal Average(this IEnumerable<decimal> source)
         {
             using (IEnumerator<decimal> iterator = source.GetEnumerator())
             {
@@ -1289,14 +1289,14 @@
             }
         }
 
-        public static decimal Average<TSource>
+        internal static decimal Average<TSource>
             (this IEnumerable<TSource> source, Func<TSource, decimal> selector) => source.Select(selector).Average();
 
         #endregion
 
         #region Quantifiers
 
-        public static bool All<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
+        internal static bool All<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
             foreach (TSource value in source)
             {
@@ -1308,7 +1308,7 @@
             return true;
         }
 
-        public static bool Any<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
+        internal static bool Any<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
             foreach (TSource value in source)
             {
@@ -1321,7 +1321,7 @@
             return false;
         }
 
-        public static bool Any<TSource>(this IEnumerable<TSource> source)
+        internal static bool Any<TSource>(this IEnumerable<TSource> source)
         {
             using (IEnumerator<TSource> iterator = source.GetEnumerator())
             {
@@ -1334,7 +1334,7 @@
             return false;
         }
 
-        public static bool Contains<TSource>(
+        internal static bool Contains<TSource>(
             this IEnumerable<TSource> source,
             TSource value,
             IEqualityComparer<TSource> comparer = null)
@@ -1355,7 +1355,7 @@
 
         #region Equality
 
-        public static bool SequenceEqual<TSource>(
+        internal static bool SequenceEqual<TSource>(
             this IEnumerable<TSource> first,
             IEnumerable<TSource> second,
             IEqualityComparer<TSource> comparer = null)

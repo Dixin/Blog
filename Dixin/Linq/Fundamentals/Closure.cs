@@ -5,20 +5,20 @@
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
 
-    public class DisplayClass
+    internal class DisplayClass
     {
         int nonLocalVariable = 0; // Outside the scope of method Add.
 
-        public int Add()
+        internal int Add()
         {
             int localVariable = 1; // Inside the scope of method Add.
             return localVariable + nonLocalVariable; // 1.
         }
     }
 
-    public static partial class Closure
+    internal static partial class Closure
     {
-        public static void Lambda()
+        internal static void Lambda()
         {
             int nonLocalVariable = 0; // Outside the scope of function add.
             Func<int> add = () =>
@@ -31,7 +31,7 @@
         }
     }
 
-    public static class CompiledClosure
+    internal static class CompiledClosure
     {
         [CompilerGenerated]
         private sealed class DisplayClass0
@@ -45,7 +45,7 @@
             }
         }
 
-        public static void Outer()
+        internal static void Outer()
         {
             DisplayClass0 displayClass0 = new DisplayClass0();
             displayClass0.nonLocalVariable = 0;
@@ -54,9 +54,9 @@
         }
     }
 
-    public static partial class Closure
+    internal static partial class Closure
     {
-        public static void ChangedNonLocal()
+        internal static void ChangedNonLocal()
         {
             int nonLocalVariable = 1; // Outside the scope of function add.
             Func<int> add = () =>
@@ -69,7 +69,7 @@
             int result = add(); // 2 instead of 1.
         }
 
-        public static void MultipleReferences()
+        internal static void MultipleReferences()
         {
             List<Func<int>> functions = new List<Func<int>>(3);
             for (int nonLocalVariable = 0; nonLocalVariable < 3; nonLocalVariable++)
@@ -87,7 +87,7 @@
             }
         }
 
-        public static void CopyCurrent()
+        internal static void CopyCurrent()
         {
             List<Func<int>> functions = new List<Func<int>>(3);
             for (int nonLocalVariable = 0; nonLocalVariable < 3; nonLocalVariable++)
@@ -108,11 +108,11 @@
         }
     }
 
-    public static partial class Closure
+    internal static partial class Closure
     {
         private static Func<int> longLifeFunction;
 
-        public static void Reference()
+        internal static void Reference()
         {
             // https://msdn.microsoft.com/en-us/library/System.Array.aspx
             byte[] shortLifeVariable = new byte[0X7FFFFFC7];

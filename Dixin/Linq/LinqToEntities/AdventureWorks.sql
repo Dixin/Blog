@@ -840,11 +840,6 @@ BEGIN TRANSACTION
 COMMIT TRANSACTION
 
 -- UpdateWithNoChange
-SELECT TOP (1) 
-    [c].[ProductCategoryID] AS [ProductCategoryID], 
-    [c].[Name] AS [Name]
-    FROM [Production].[ProductCategory] AS [c]
-
 SELECT 
     [Limit1].[C1] AS [C1], 
     [Limit1].[ProductID] AS [ProductID], 

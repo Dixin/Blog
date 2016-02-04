@@ -5,9 +5,9 @@
     using System.Data.SqlClient;
     using System.Reflection;
 
-    public partial class Imperative
+    internal partial class Imperative
     {
-        public static List<Person> FilterAndOrderByAge(IEnumerable<Person> source)
+        internal static List<Person> FilterAndOrderByAge(IEnumerable<Person> source)
         {
             List<Person> results = new List<Person>();
             foreach (Person person in source)
@@ -31,9 +31,9 @@
         }
     }
 
-    public static partial class Imperative
+    internal static partial class Imperative
     {
-        public static IEnumerable<Type> GetTypes<TType>(Assembly assembly, bool isPublicOnly = false)
+        internal static IEnumerable<Type> GetTypes<TType>(Assembly assembly, bool isPublicOnly = false)
         {
             foreach (Type type in assembly.GetTypes())
             {
@@ -45,9 +45,9 @@
         }
     }
 
-    public static partial class Imperative
+    internal static partial class Imperative
     {
-        public static IEnumerable<int> Positive(IEnumerable<int> source)
+        internal static IEnumerable<int> Positive(IEnumerable<int> source)
         {
             foreach (int value in source)
             {
@@ -59,9 +59,9 @@
         }
     }
 
-    public static partial class Imperative
+    internal static partial class Imperative
     {
-        public static List<int> GetPositive(IEnumerable<int> source)
+        internal static List<int> GetPositive(IEnumerable<int> source)
         {
             List<int> resullt = new List<int>();
             foreach (int value in source)
@@ -76,9 +76,9 @@
         }
     }
 
-    public static partial class Imperative
+    internal static partial class Imperative
     {
-        public static List<string> ProductNames(string categoryName)
+        internal static List<string> ProductNames(string categoryName)
         {
             using (SqlConnection connection = new SqlConnection(
                 @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\AdventureWorks_Data.mdf;Integrated Security=True;Connect Timeout=30"))

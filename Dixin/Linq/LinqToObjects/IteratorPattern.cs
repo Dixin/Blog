@@ -9,33 +9,33 @@
 
     using Dixin.Reflection;
 
-    public class Sequence
+    internal class Sequence
     {
         public Iterator GetEnumerator() => new Iterator();
     }
 
-    public class Iterator
+    internal class Iterator
     {
         public bool MoveNext() => false;
 
         public object Current { get; }
     }
 
-    public class GenericSequence<T>
+    internal class GenericSequence<T>
     {
         public GenericIterator<T> GetEnumerator() => new GenericIterator<T>();
     }
 
-    public class GenericIterator<T>
+    internal class GenericIterator<T>
     {
         public bool MoveNext() => false;
 
         public T Current { get; }
     }
 
-    public static partial class IteratorPattern
+    internal static partial class IteratorPattern
     {
-        public static void ForEach<T>(Sequence sequence, Action<T> processValue)
+        internal static void ForEach<T>(Sequence sequence, Action<T> processValue)
         {
             foreach (T value in sequence)
             {
@@ -43,7 +43,7 @@
             }
         }
 
-        public static void ForEach<T>(GenericSequence<T> sequence, Action<T> processValue)
+        internal static void ForEach<T>(GenericSequence<T> sequence, Action<T> processValue)
         {
             foreach (T value in sequence)
             {
@@ -52,9 +52,9 @@
         }
     }
 
-    public static partial class IteratorPattern
+    internal static partial class IteratorPattern
     {
-        public static void CompiledForEach<T>(Sequence sequence, Action<T> next)
+        internal static void CompiledForEach<T>(Sequence sequence, Action<T> next)
         {
             Iterator iterator = sequence.GetEnumerator();
             try
@@ -71,7 +71,7 @@
             }
         }
 
-        public static void CompiledForEach<T>(GenericSequence<T> sequence, Action<T> next)
+        internal static void CompiledForEach<T>(GenericSequence<T> sequence, Action<T> next)
         {
             GenericIterator<T> genericIterator = sequence.GetEnumerator();
             try
@@ -88,7 +88,7 @@
             }
         }
 
-        public static void ForEach<T>(T[] array, Action<T> next)
+        internal static void ForEach<T>(T[] array, Action<T> next)
         {
             foreach (T value in array)
             {
@@ -96,7 +96,7 @@
             }
         }
 
-        public static void CompiledForEach<T>(T[] array, Action<T> next)
+        internal static void CompiledForEach<T>(T[] array, Action<T> next)
         {
             for (int index = 0; index < array.Length; index++)
             {
@@ -105,7 +105,7 @@
             }
         }
 
-        public static void ForEach(string @string, Action<char> next)
+        internal static void ForEach(string @string, Action<char> next)
         {
             foreach (char value in @string)
             {
@@ -113,7 +113,7 @@
             }
         }
 
-        public static void CompiledForEach(string @string, Action<char> next)
+        internal static void CompiledForEach(string @string, Action<char> next)
         {
             for (int index = 0; index < @string.Length; index++)
             {
@@ -123,12 +123,12 @@
         }
     }
 
-    public static partial class IteratorPattern
+    internal static partial class IteratorPattern
     {
-        public static void Iterate<T>
+        internal static void Iterate<T>
             (GenericSequence<T> sequence, Action<T> next) => Iterate(sequence.GetEnumerator(), next);
 
-        public static void Iterate<T>(GenericIterator<T> iterator, Action<T> next)
+        internal static void Iterate<T>(GenericIterator<T> iterator, Action<T> next)
         {
             if (iterator.MoveNext())
             {
@@ -138,9 +138,9 @@
         }
     }
 
-    public static partial class IteratorPattern
+    internal static partial class IteratorPattern
     {
-        public static IEnumerable<Type> NonGenericSequences(Assembly assembly)
+        internal static IEnumerable<Type> NonGenericSequences(Assembly assembly)
         {
             Type nonGenericEnumerable = typeof(IEnumerable);
             Type genericEnumerable = typeof(IEnumerable<>);
@@ -154,7 +154,7 @@
                 .OrderBy(type => type.FullName);
         }
 
-        public static void NonGenericSequences()
+        internal static void NonGenericSequences()
         {
             foreach (Type nonGenericSequence in NonGenericSequences(typeof(object).Assembly)) // mscorlib.dll.
             {
@@ -412,9 +412,9 @@
         }
     }
 
-    public static partial class IteratorPattern
+    internal static partial class IteratorPattern
     {
-        public static IEnumerable<TSource> Enumerable<TSource>
+        internal static IEnumerable<TSource> Enumerable<TSource>
             (TSource value) => new Sequence<TSource, bool>(false, isValueIterated => new Iterator<TSource>(
                 hasNext: () =>
                 {
@@ -429,16 +429,16 @@
                 next: () => value));
     }
 
-    public static partial class IteratorPattern
+    internal static partial class IteratorPattern
     {
-        public static void ForEachEnumerable<TSource>(TSource value)
+        internal static void ForEachEnumerable<TSource>(TSource value)
         {
             foreach (TSource _ in Enumerable(value))
             {
             }
         }
 
-        public static void CompiledForEachEnumerable<TSource>(TSource value)
+        internal static void CompiledForEachEnumerable<TSource>(TSource value)
         {
             using (IEnumerator<TSource> iterator = Enumerable(value).GetEnumerator())
             { // bool isValueIterated = false;
@@ -449,12 +449,12 @@
             }
         }
 
-        public static IEnumerable<TSource> Repeat<TSource>
+        internal static IEnumerable<TSource> Repeat<TSource>
             (TSource value, int count) => new Sequence<TSource, int>(0, index => new Iterator<TSource>(
                 hasNext: () => index++ < count,
                 next: () => value));
 
-        public static void CompiledForEachRepeat<TSource>(TSource value, int count)
+        internal static void CompiledForEachRepeat<TSource>(TSource value, int count)
         {
             using (IEnumerator<TSource> iterator = Repeat(value, count).GetEnumerator())
             { // int index = 0;
@@ -465,7 +465,7 @@
             }
         }
 
-        public static IEnumerable<TResult> Select<TSource, TResult>
+        internal static IEnumerable<TResult> Select<TSource, TResult>
             (IEnumerable<TSource> source, Func<TSource, TResult> selector) =>
                 new Sequence<TResult, IEnumerator<TSource>>(null, sourceIterator => new Iterator<TResult>(
                     start: () => sourceIterator = source.GetEnumerator(),
@@ -474,7 +474,7 @@
                     dispose: () => sourceIterator?.Dispose(),
                     end: () => sourceIterator = null));
 
-        public static void CompiledForEachSelect<TSource, TResult>(
+        internal static void CompiledForEachSelect<TSource, TResult>(
             IEnumerable<TSource> source, Func<TSource, TResult> selector)
         {
             using (IEnumerator<TResult> iterator = Select(source, selector).GetEnumerator())
@@ -488,7 +488,7 @@
               // end: sourceIterator = null;
         }
 
-        public static IEnumerable<TSource> Where<TSource>
+        internal static IEnumerable<TSource> Where<TSource>
             (IEnumerable<TSource> source, Func<TSource, bool> predicate) =>
                 new Sequence<TSource, IEnumerator<TSource>>(null, sourceIterator => new Iterator<TSource>(
                     start: () => sourceIterator = source.GetEnumerator(),
@@ -508,7 +508,7 @@
                     dispose: () => sourceIterator?.Dispose(),
                     end: () => sourceIterator = null));
 
-        public static void CompiledForEachWhere<TSource>(
+        internal static void CompiledForEachWhere<TSource>(
             IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
             using (IEnumerator<TSource> iterator = Where(source, predicate).GetEnumerator())
@@ -523,9 +523,9 @@
         }
     }
 
-    public static partial class Generator
+    internal static partial class Generator
     {
-        public static IEnumerable<TSource> Enumerable<TSource>(TSource value)
+        internal static IEnumerable<TSource> Enumerable<TSource>(TSource value)
         {
             bool isValueIterated = false;
             while (!isValueIterated) // hasNext.
@@ -536,14 +536,14 @@
         }
     }
 
-    public static partial class Generator
+    internal static partial class Generator
     {
-        public static IEnumerable<TSource> Enumerable2<TSource>(TSource value)
+        internal static IEnumerable<TSource> Enumerable2<TSource>(TSource value)
         {
             yield return value;
         }
 
-        public static IEnumerable<TSource> Repeat<TSource>(TSource value, int count)
+        internal static IEnumerable<TSource> Repeat<TSource>(TSource value, int count)
         {
             int index = 0;
             while (index++ < count) // hasNext.
@@ -552,7 +552,7 @@
             }
         }
 
-        public static IEnumerable<TSource> Repeat2<TSource>(TSource value, int count)
+        internal static IEnumerable<TSource> Repeat2<TSource>(TSource value, int count)
         {
             for (int index = 0; index < count; index++)
             {
@@ -560,7 +560,7 @@
             }
         }
 
-        public static IEnumerable<TResult> Select<TSource, TResult>(
+        internal static IEnumerable<TResult> Select<TSource, TResult>(
             IEnumerable<TSource> source, Func<TSource, TResult> selector)
         {
             using (IEnumerator<TSource> sourceIterator = source.GetEnumerator()) // start.
@@ -572,7 +572,7 @@
             }
         }
 
-        public static IEnumerable<TResult> Select2<TSource, TResult>(
+        internal static IEnumerable<TResult> Select2<TSource, TResult>(
             IEnumerable<TSource> source, Func<TSource, TResult> selector)
         {
             foreach (TSource value in source)
@@ -581,7 +581,7 @@
             }
         }
 
-        public static IEnumerable<TSource> Where<TSource>(
+        internal static IEnumerable<TSource> Where<TSource>(
             IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
             using (IEnumerator<TSource> sourceIterator = source.GetEnumerator()) // start.
@@ -596,7 +596,7 @@
             }
         }
 
-        public static IEnumerable<TSource> Where2<TSource>(
+        internal static IEnumerable<TSource> Where2<TSource>(
             IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
             foreach (TSource value in source)
@@ -609,9 +609,9 @@
         }
     }
 
-    public static partial class Generator
+    internal static partial class Generator
     {
-        public static IEnumerable<TResult> CompiledSelect<TSource, TResult>(
+        internal static IEnumerable<TResult> CompiledSelect<TSource, TResult>(
             IEnumerable<TSource> source, Func<TSource, TResult> selector)
         {
             return new SelectGenerator<TSource, TResult>((int)IteratorState.Create)
@@ -623,7 +623,7 @@
     }
 
     [CompilerGenerated]
-    public sealed class SelectGenerator<TSource, TResult> : IEnumerable<TResult>, IEnumerator<TResult>
+    internal sealed class SelectGenerator<TSource, TResult> : IEnumerable<TResult>, IEnumerator<TResult>
     {
         private readonly int initialThreadId;
 
@@ -638,7 +638,7 @@
         private IEnumerator<TSource> sourceIterator;
 
         [DebuggerHidden]
-        public SelectGenerator(int state)
+        internal SelectGenerator(int state)
         {
             this.state = state;
             this.initialThreadId = Environment.CurrentManagedThreadId;

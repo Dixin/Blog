@@ -1,10 +1,12 @@
 namespace Dixin.Linq.LinqToSql
 {
     using System;
-    using System.Collections.Generic;
     using System.Data.Linq;
+    using System.Data.Linq.Mapping;
+    using System.Linq;
+    using System.Linq.Expressions;
 
-    using Dixin.Reflection;
+    using Dixin.Linq.Fundamentals;
 
     public static class TableHelper
     {
@@ -23,12 +25,11 @@ namespace Dixin.Linq.LinqToSql
             }
         }
 
-        public static void Associate<TThis, TOther, TKey>(
-            this TThis @this, 
-            Action<TKey> setThisKey, 
-            EntityRef<TOther> thisEntityRef, 
-            TOther other, 
-            Func<TKey> getOtherKey, 
+        public static void Associate<TThis, TOther>(
+            this TThis @this,
+            Action setThisKey,
+            ref EntityRef<TOther> thisEntityRef,
+            TOther other,
             Func<TOther, EntitySet<TThis>> getOtherEntitySet)
             where TOther : class
             where TThis : class
@@ -46,56 +47,31 @@ namespace Dixin.Linq.LinqToSql
                 if (other != null)
                 {
                     getOtherEntitySet(other).Add(@this);
-                    setThisKey(getOtherKey());
                 }
-                else
-                {
-                    setThisKey(default(TKey));
-                }
+                setThisKey();
             }
         }
 
-        public static void SetForeignKey<TThis, TOther, TKey>(
-            this TThis @this, TKey value, string key, string entity)
-            where TOther : class
+        public static TEntity Find<TEntity>(this DataContext database, params object[] keys)
+            where TEntity : class
         {
-            if (!EqualityComparer<TKey>.Default.Equals(@this.GetField<TKey>(key), value))
+            MetaType metaType = database.Mapping.GetMetaType(typeof(TEntity));
+            MetaDataMember[] primaryKeys = metaType
+                .Select(type => type.DataMembers)
+                .Where(member => member.IsPrimaryKey)
+                .ToArray();
+            if (keys.Length != primaryKeys.Length)
             {
-                if (@this.GetField<EntityRef<TOther>>(entity).HasLoadedOrAssignedValue)
-                {
-                    throw new ForeignKeyReferenceAlreadyHasValueException();
-                }
-
-                @this.SetField(key, value);
+                throw new ArgumentOutOfRangeException();
             }
-        }
 
-        public static void Associate<TThis, TOther, TColumn>(
-            this TThis @this, TOther other, string entity, string entitySet, string thisKey, string otherKey)
-            where TOther : class
-            where TThis : class
-        {
-            EntityRef<TOther> entityRef = @this.GetField<EntityRef<TOther>>(entity);
-            TOther previousOther = entityRef.Entity;
-            if (previousOther != other || !entityRef.HasLoadedOrAssignedValue)
-            {
-                if (previousOther != null)
-                {
-                    entityRef.Entity = null;
-                    previousOther.GetProperty<EntitySet<TThis>>(entitySet).Remove(@this);
-                }
-
-                entityRef.Entity = other;
-                if (other != null)
-                {
-                    other.GetProperty<EntitySet<TThis>>(entitySet).Add(@this);
-                    @this.SetProperty(thisKey, other.GetProperty<TColumn>(otherKey));
-                }
-                else
-                {
-                    @this.SetProperty(thisKey, default(TColumn));
-                }
-            }
+            ParameterExpression entity = Expression.Parameter(typeof(TEntity), nameof(entity));
+            Expression predicateBody = primaryKeys
+                .Select((primaryKey, index) => Expression.Equal(
+                    Expression.Property(entity, primaryKey.Name),
+                    Expression.Constant(keys[index])))
+                .Aggregate<Expression, Expression>(Expression.Constant(true), Expression.AndAlso);
+            return database.GetTable<TEntity>().Single(Expression.Lambda<Func<TEntity, bool>>(predicateBody, entity));
         }
     }
 }

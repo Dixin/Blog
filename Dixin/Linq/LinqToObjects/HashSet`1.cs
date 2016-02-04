@@ -37,7 +37,7 @@
         private int GetHashCode(T value) => value == null
             ? -1
             : this.equalityComparer.GetHashCode(value) & int.MaxValue;
-            // int.MaxValue is ‭01111111111111111111111111111111‬, so the the result of & is always >= 0.
+            // int.MaxValue is ‭01111111111111111111111111111111‬ in binary, so the the result of & is always >= 0.
     }
 
     public partial class HashSet<T>

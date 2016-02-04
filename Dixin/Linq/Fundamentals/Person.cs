@@ -1,15 +1,15 @@
 ﻿namespace Dixin.Linq.Fundamentals
 {
-    public partial class Person
+    internal partial class Person
     {
-        public string Name { get; set; }
+        internal string Name { get; set; }
 
-        public int Age { get; set; }
+        internal int Age { get; set; }
     }
 
-    public partial class Person
+    internal partial class Person
     {
-        public string PlaceOfBirth { get; set; }
+        internal string PlaceOfBirth { get; set; }
     }
 }
 
@@ -17,18 +17,18 @@ namespace Dixin.Linq.Fundamentals.DataAnnotation
 {
     using System.ComponentModel.DataAnnotations;
 
-    public class Person
+    internal class Person
     {
         [Required(ErrorMessageResourceType = typeof(Resources), ErrorMessageResourceName = nameof(Resources.NameRequired))]
         [StringLength(1, ErrorMessageResourceType = typeof(Resources), ErrorMessageResourceName = nameof(Resources.InvalidName))]
-        public string Name { get; set; }
+        internal string Name { get; set; }
 
         [Required(ErrorMessageResourceType = typeof(Resources), ErrorMessageResourceName = nameof(Resources.AgeRequired))]
         [Range(0, 123, ErrorMessageResourceType = typeof(Resources), ErrorMessageResourceName = nameof(Resources.InvalidAge))] // https://en.wikipedia.org/wiki/Oldest_people
-        public int Age { get; set; }
+        internal int Age { get; set; }
 
         [EmailAddress(ErrorMessageResourceType = typeof(Resources), ErrorMessageResourceName = nameof(Resources.InvalidEmail))]
-        public string Email { get; set; }
+        internal string Email { get; set; }
     }
 }
 
@@ -37,13 +37,13 @@ namespace Dixin.Linq.Fundamentals.Contracts
     using System;
     using System.Diagnostics.Contracts;
 
-    public class Person
+    internal class Person
     {
         private readonly string name;
 
         private readonly int age;
 
-        public Person(string name, int age)
+        internal Person(string name, int age)
         {
             Contract.Requires<ArgumentNullException>(!string.IsNullOrWhiteSpace(name));
             Contract.Requires<ArgumentOutOfRangeException>(age >= 0);
@@ -52,7 +52,7 @@ namespace Dixin.Linq.Fundamentals.Contracts
             this.age = age;
         }
 
-        public string Name
+        internal string Name
         {
             [Pure]
             get
@@ -63,7 +63,7 @@ namespace Dixin.Linq.Fundamentals.Contracts
             }
         }
 
-        public int Age
+        internal int Age
         {
             [Pure]
             get

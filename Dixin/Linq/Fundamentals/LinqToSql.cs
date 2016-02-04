@@ -4,9 +4,9 @@
 
     using Dixin.Linq.LinqToSql;
 
-    public static partial class LinqToSql
+    internal static partial class LinqToSql
     {
-        public static string[] ProductNames(string categoryName)
+        internal static string[] ProductNames(string categoryName)
         {
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {
@@ -20,9 +20,9 @@
         }
     }
 
-    public static partial class LinqToSql
+    internal static partial class LinqToSql
     {
-        public static string[] ProductNames(string categoryName, int pageSize, int pageIndex)
+        internal static string[] ProductNames(string categoryName, int pageSize, int pageIndex)
         {
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {
@@ -38,9 +38,9 @@
         }
     }
 
-    public static partial class LinqToSql
+    internal static partial class LinqToSql
     {
-        public static string[] ProductNames2(string categoryName, int pageSize, int pageIndex)
+        internal static string[] ProductNames2(string categoryName, int pageSize, int pageIndex)
         {
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {

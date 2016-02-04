@@ -156,9 +156,9 @@
     }
 
     // Impure.
-    public static class FuncQuery
+    internal static class FuncQuery
     {
-        public static async void Download()
+        internal static async void Download()
         {
             Func<Task<Unit>> io1 =
                 from url in new Func<string>(Console.ReadLine)

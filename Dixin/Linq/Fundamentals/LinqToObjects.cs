@@ -3,9 +3,9 @@
     using System.Collections.Generic;
     using System.Linq;
 
-    public partial class LinqToObjects
+    internal partial class LinqToObjects
     {
-        public static IEnumerable<Person> FilterAndOrderByAge(IEnumerable<Person> source)
+        internal static IEnumerable<Person> FilterAndOrderByAge(IEnumerable<Person> source)
         {
             return source
                 .Where(person => person.Age >= 18)
@@ -14,9 +14,9 @@
         }
     }
 
-    public static partial class LinqToObjects
+    internal static partial class LinqToObjects
     {
-        public static IEnumerable<int> Positive(IEnumerable<int> source)
+        internal static IEnumerable<int> Positive(IEnumerable<int> source)
         {
             return from value in source
                    where value > 0
@@ -24,9 +24,9 @@
         }
     }
 
-    public static partial class LinqToObjects
+    internal static partial class LinqToObjects
     {
-        public static IEnumerable<dynamic> Dynamic(IEnumerable<dynamic> source)
+        internal static IEnumerable<dynamic> Dynamic(IEnumerable<dynamic> source)
         {
             return from value in source
                    where value.NotChecked > new object()
@@ -34,9 +34,9 @@
         }
     }
 
-    public partial class LinqToObjects
+    internal partial class LinqToObjects
     {
-        public static IEnumerable<string> FilterAndSort(IEnumerable<Person> source)
+        internal static IEnumerable<string> FilterAndSort(IEnumerable<Person> source)
         {
             return source
                 .Where(person => person.Age >= 18)

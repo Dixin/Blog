@@ -89,24 +89,24 @@
     public delegate IO<Task<TrafficLightState>> TrafficLightState();
 
     // Impure.
-    public static partial class StateQuery
+    internal static partial class StateQuery
     {
         [Pure]
-        public static IO<Task<TrafficLightState>> GreenState
+        internal static IO<Task<TrafficLightState>> GreenState
             () =>
                 from _ in TraceHelper.Log(nameof(GreenState))
                 select (from __ in Task.Delay(TimeSpan.FromSeconds(3))
                         select new TrafficLightState(YellowState));
 
         [Pure]
-        public static IO<Task<TrafficLightState>> YellowState
+        internal static IO<Task<TrafficLightState>> YellowState
             () =>
                 from _ in TraceHelper.Log(nameof(YellowState))
                 select (from __ in Task.Delay(TimeSpan.FromSeconds(1))
                         select new TrafficLightState(RedState));
 
         [Pure]
-        public static IO<Task<TrafficLightState>> RedState
+        internal static IO<Task<TrafficLightState>> RedState
             () =>
                 from _ in TraceHelper.Log(nameof(RedState))
                 select (from __ in Task.Delay(TimeSpan.FromSeconds(2))
@@ -114,10 +114,10 @@
     }
 
     // Impure.
-    public static partial class StateQuery
+    internal static partial class StateQuery
     {
         [Pure]
-        public static State<Unit, IO<Task<TrafficLightState>>> MoveNext
+        internal static State<Unit, IO<Task<TrafficLightState>>> MoveNext
             () =>
                 ((Unit)null).State<Unit, IO<Task<TrafficLightState>>>(state => async () =>
                     {
@@ -126,7 +126,7 @@
                     });
 
         [Pure]
-        public static IO<Task<TrafficLightState>> TrafficLight(IO<Task<TrafficLightState>> state = null)
+        internal static IO<Task<TrafficLightState>> TrafficLight(IO<Task<TrafficLightState>> state = null)
         {
             State<Unit, IO<Task<TrafficLightState>>> query =
                 from green in MoveNext()
@@ -138,9 +138,9 @@
     }
 
     // Impure.
-    public static partial class StateQuery
+    internal static partial class StateQuery
     {
-        public static async void ExecuteTrafficLight() => await TrafficLight()();
+        internal static async void ExecuteTrafficLight() => await TrafficLight()();
     }
 
     // [Pure]
@@ -157,18 +157,18 @@
     }
 
     // Impure.
-    public static partial class StateQuery
+    internal static partial class StateQuery
     {
         [Pure]
-        public static State<T, IEnumerable<T>> Pop<T>
+        internal static State<T, IEnumerable<T>> Pop<T>
             () => source => source.Pop();
 
         [Pure]
-        public static State<T, IEnumerable<T>> Push<T>
+        internal static State<T, IEnumerable<T>> Push<T>
             (T value) => source => source.Push(value);
 
         [Pure]
-        public static IEnumerable<int> Stack(IEnumerable<int> state = null)
+        internal static IEnumerable<int> Stack(IEnumerable<int> state = null)
         {
             state = state ?? Enumerable.Empty<int>();
             State<IEnumerable<int>, IEnumerable<int>> query =
@@ -185,26 +185,26 @@
     }
 
     // Impure.
-    public class TrafficLightStateMachine
+    internal class TrafficLightStateMachine
     {
-        public ITrafficLightState State { get; private set; }
+        internal ITrafficLightState State { get; private set; }
 
-        public async Task MoveNext(ITrafficLightState state = null)
+        internal async Task MoveNext(ITrafficLightState state = null)
         {
             this.State = state ?? new GreenState();
             await this.State.Handle(this);
         }
 
-        public static async void Execute() => await new TrafficLightStateMachine().MoveNext();
+        internal static async void Execute() => await new TrafficLightStateMachine().MoveNext();
     }
 
-    public interface ITrafficLightState // State
+    internal interface ITrafficLightState // State
     {
         Task Handle(TrafficLightStateMachine light);
     }
 
     // Impure.
-    public class GreenState : ITrafficLightState // ConcreteStateA
+    internal class GreenState : ITrafficLightState // ConcreteStateA
     {
         public async Task Handle(TrafficLightStateMachine light)
         {
@@ -215,7 +215,7 @@
     }
 
     // Impure.
-    public class YellowState : ITrafficLightState // ConcreteStateB
+    internal class YellowState : ITrafficLightState // ConcreteStateB
     {
         public async Task Handle(TrafficLightStateMachine light)
         {
@@ -226,7 +226,7 @@
     }
 
     // Impure.
-    public class RedState : ITrafficLightState // ConcreteStateC
+    internal class RedState : ITrafficLightState // ConcreteStateC
     {
         public async Task Handle(TrafficLightStateMachine light)
         {

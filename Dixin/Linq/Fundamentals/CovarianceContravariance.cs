@@ -6,42 +6,42 @@
     using System.Linq;
     using System.Reflection;
 
-    public class Base
+    internal class Base
     {
     }
 
-    public class Derived : Base
+    internal class Derived : Base
     {
     }
 
-    public partial class Methods
+    internal partial class Methods
     {
-        public static Base DerivedIn_BaseOut(Derived @in)
+        internal static Base DerivedIn_BaseOut(Derived @in)
         {
             return new Base();
         }
 
-        public static Derived DerivedIn_DerivedOut(Derived @in)
+        internal static Derived DerivedIn_DerivedOut(Derived @in)
         {
             return new Derived();
         }
 
-        public static Base BaseIn_BaseOut(Base @in)
+        internal static Base BaseIn_BaseOut(Base @in)
         {
             return new Base();
         }
 
-        public static Derived BaseIn_DerivedOut(Base @in)
+        internal static Derived BaseIn_DerivedOut(Base @in)
         {
             return new Derived();
         }
     }
 
-    public static partial class NonGenericDelegate
+    internal static partial class NonGenericDelegate
     {
-        public delegate Base DerivedIn_BaseOut(Derived @in);
+        internal delegate Base DerivedIn_BaseOut(Derived @in);
 
-        public static void Bind()
+        internal static void Bind()
         {
             // Binding: DerivedIn_BaseOut delegate type and DerivedIn_BaseOut method have exactly the same signature.
             DerivedIn_BaseOut derivedIn_BaseOut = Methods.DerivedIn_BaseOut;
@@ -51,9 +51,9 @@
         }
     }
 
-    public static partial class NonGenericDelegate
+    internal static partial class NonGenericDelegate
     {
-        public static void Covariance()
+        internal static void Covariance()
         {
             // Covariance: Derived "is a" Base => DerivedIn_DerivedOut "is a" DerivedIn_BaseOut.
             DerivedIn_BaseOut derivedIn_DerivedOut = Methods.DerivedIn_DerivedOut;
@@ -65,9 +65,9 @@
         }
     }
 
-    public static partial class NonGenericDelegate
+    internal static partial class NonGenericDelegate
     {
-        public static void Contravariance()
+        internal static void Contravariance()
         {
             // Contravariance: Derived is a Base => BaseIn_BaseOut is a DerivedIn_BaseOut.
             DerivedIn_BaseOut derivedIn_BaseOut = Methods.BaseIn_BaseOut;
@@ -78,9 +78,9 @@
             Base @out = derivedIn_BaseOut(@in: new Derived());
         }
     }
-    public static partial class NonGenericDelegate
+    internal static partial class NonGenericDelegate
     {
-        public static void CovarianceAndContravariance()
+        internal static void CovarianceAndContravariance()
         {
             // Covariance and contravariance: Derived is a Base => BaseIn_DerivedOut is a DerivedIn_BaseOut. 
             DerivedIn_BaseOut derivedIn_BaseOut = Methods.BaseIn_DerivedOut;
@@ -93,11 +93,11 @@
         }
     }
 
-    public static partial class NonGenericDelegate
+    internal static partial class NonGenericDelegate
     {
-        public delegate Derived BaseIn_DerivedOut(Base @base);
+        internal delegate Derived BaseIn_DerivedOut(Base @base);
 
-        public static void InvalidVariance()
+        internal static void InvalidVariance()
         {
 #if ERROR
         // baseIn_DerivedOut should output a Derived object, while BaseIn_DerivedOut outputs a Base object. 
@@ -116,14 +116,14 @@
         }
     }
 
-    public static partial class GenericDelegate
+    internal static partial class GenericDelegate
     {
-        public delegate TOut Func<TIn, TOut>(TIn @in);
+        internal delegate TOut Func<TIn, TOut>(TIn @in);
     }
 
-    public static partial class GenericDelegate
+    internal static partial class GenericDelegate
     {
-        public static void BindMethods()
+        internal static void BindMethods()
         {
             // Bind.
             Func<Derived, Base> derivedIn_BaseOut1 = Methods.DerivedIn_BaseOut;
@@ -139,9 +139,9 @@
         }
     }
 
-    public static partial class GenericDelegate
+    internal static partial class GenericDelegate
     {
-        public static void BindLambdas()
+        internal static void BindLambdas()
         {
             Func<Derived, Base> derivedIn_BaseOut = (Derived @in) => new Base();
             Func<Derived, Derived> derivedIn_DerivedOut = (Derived @in) => new Derived();
@@ -161,14 +161,14 @@
         }
     }
 
-    public static partial class GenericDelegateWithVariances
+    internal static partial class GenericDelegateWithVariances
     {
-        public delegate TOut Func<in TIn, out TOut>(TIn @in);
+        internal delegate TOut Func<in TIn, out TOut>(TIn @in);
     }
 
-    public static partial class GenericDelegateWithVariances
+    internal static partial class GenericDelegateWithVariances
     {
-        public static void BindMethods()
+        internal static void BindMethods()
         {
             // Bind.
             Func<Derived, Base> derivedIn_BaseOut1 = Methods.DerivedIn_BaseOut;
@@ -183,7 +183,7 @@
             Func<Derived, Base> derivedIn_BaseOut4 = Methods.BaseIn_DerivedOut;
         }
 
-        public static void BindLambdas()
+        internal static void BindLambdas()
         {
             Func<Derived, Base> derivedIn_BaseOut = (Derived @in) => new Base();
             Func<Derived, Derived> derivedIn_DerivedOut = (Derived @in) => new Derived();
@@ -201,24 +201,24 @@
         }
     }
 
-    public static partial class GenericDelegateWithVariances
+    internal static partial class GenericDelegateWithVariances
     {
 #if ERROR
         // CS1961 Invalid variance: The type parameter 'TOut' must be covariantly valid on 'GenericDelegateWithVariances.Func<TOut>.Invoke()'. 'TOut' is contravariant.
-        public delegate TOut Func<in TOut>();
+        internal delegate TOut Func<in TOut>();
 
         // CS1961 Invalid variance: The type parameter 'TIn' must be contravariantly valid on 'GenericDelegateWithVariances.Action<TIn>.Invoke(TIn)'. 'TIn' is covariant.
-        public delegate void Action<out TIn>(TIn @in);
+        internal delegate void Action<out TIn>(TIn @in);
 
         // CS1961 Invalid variance: The type parameter 'TOut' must be covariantly valid on 'GenericDelegateWithVariances.Func<TIn, TOut>.Invoke(TIn)'. 'TOut' is contravariant.
         // CS1961 Invalid variance: The type parameter 'TIn' must be contravariantly valid on 'GenericDelegateWithVariances.Func<TIn, TOut>.Invoke(TIn)'. 'TIn' is covariant.
-        public delegate TOut Func<out TIn, in TOut>(TIn @in);
+        internal delegate TOut Func<out TIn, in TOut>(TIn @in);
 #endif
     }
 
-    public static partial class GenericInterface
+    internal static partial class GenericInterface
     {
-        public interface IOut<TOut> // TOut is only used as output.
+        internal interface IOut<TOut> // TOut is only used as output.
         {
             TOut Out1(); // TOut is covariant for Out1 (Func<TOut>).
 
@@ -227,7 +227,7 @@
             TOut Out3 { get; } // TOut is covariant for Out3's getter (Func<object, TOut>).
         }
 
-        public interface IIn<TIn> // TIn is only used as input.
+        internal interface IIn<TIn> // TIn is only used as input.
         {
             void In1(TIn @in); // TIn is contravariant for In1 (Action<TIn>).
 
@@ -236,7 +236,7 @@
             TIn In3 { set; } // TIn is contravariant for In3's setter (Action<TIn>).
         }
 
-        public interface IIn_Out<T>
+        internal interface IIn_Out<T>
         {
             T Out(); // T is covariant for Out (Func<T>).
 
@@ -244,9 +244,9 @@
         }
     }
 
-    public static partial class GenericInterfaceWithVariances
+    internal static partial class GenericInterfaceWithVariances
     {
-        public interface IOut<out TOut> // TOut is covariant for all members of interface.
+        internal interface IOut<out TOut> // TOut is covariant for all members of interface.
         {
             TOut Out1();
 
@@ -256,9 +256,9 @@
         }
     }
 
-    public static partial class GenericInterfaceWithVariances
+    internal static partial class GenericInterfaceWithVariances
     {
-        public static void Covariance()
+        internal static void Covariance()
         {
             IOut<Base> baseOut = default(IOut<Base>);
             IOut<Derived> derivedOut = default(IOut<Derived>);
@@ -282,9 +282,9 @@
         }
     }
 
-    public static partial class GenericInterfaceWithVariances
+    internal static partial class GenericInterfaceWithVariances
     {
-        public interface IIn<in TIn> // TIn is contravariant for all members of interface.
+        internal interface IIn<in TIn> // TIn is contravariant for all members of interface.
         {
             void In1(TIn @in);
 
@@ -294,9 +294,9 @@
         }
     }
 
-    public static partial class GenericInterfaceWithVariances
+    internal static partial class GenericInterfaceWithVariances
     {
-        public static void Contravariance()
+        internal static void Contravariance()
         {
             IIn<Derived> derivedIn = default(IIn<Derived>);
             IIn<Base> baseIn = default(IIn<Base>);
@@ -320,18 +320,18 @@
         }
     }
 
-    public static partial class GenericInterfaceWithVariances
+    internal static partial class GenericInterfaceWithVariances
     {
-        public interface IIn_Out<in TIn, out TOut>
+        internal interface IIn_Out<in TIn, out TOut>
         {
             void In(TIn @in);
             TOut Out();
         }
     }
 
-    public static partial class GenericInterfaceWithVariances
+    internal static partial class GenericInterfaceWithVariances
     {
-        public static void CovarianceAndContravariance()
+        internal static void CovarianceAndContravariance()
         {
             IIn_Out<Derived, Base> derivedIn_BaseOut = default(IIn_Out<Derived, Base>);
             IIn_Out<Base, Derived> baseIn_DerivedOut = default(IIn_Out<Base, Derived>);
@@ -341,9 +341,9 @@
         }
     }
 
-    public static partial class GenericInterfaceWithVariances
+    internal static partial class GenericInterfaceWithVariances
     {
-        public static void IEnumerableCovariance()
+        internal static void IEnumerableCovariance()
         {
             IEnumerable<Derived> derivedEnumerable = Enumerable.Empty<Derived>();
             IEnumerable<Base> baseEnumerable = Enumerable.Empty<Base>();
@@ -353,9 +353,9 @@
         }
     }
 
-    public static partial class GenericInterfaceWithVariances
+    internal static partial class GenericInterfaceWithVariances
     {
-        public static void IEnumerable()
+        internal static void IEnumerable()
         {
             IEnumerable<Derived> derivedEnumerable = Enumerable.Empty<Derived>();
             IEnumerable<Base> baseEnumerable = Enumerable.Empty<Base>();
@@ -364,9 +364,9 @@
         }
     }
 
-    public static partial class HigherOrderFunction
+    internal static partial class HigherOrderFunction
     {
-        public static void FirstOrder_HigherOrder()
+        internal static void FirstOrder_HigherOrder()
         {
             { Action action = () => { }; } // First-order function.
             Action<Action> actionIn = action => action(); // Higher-order function
@@ -376,12 +376,12 @@
         }
     }
 
-    public static partial class HigherOrderFunction
+    internal static partial class HigherOrderFunction
     {
         // System.Action<T>.
-        public delegate void Action<in TIn>(TIn @in);
+        internal delegate void Action<in TIn>(TIn @in);
 
-        public static void ContravarianceForFirstOrder()
+        internal static void ContravarianceForFirstOrder()
         {
             // First-order functions.
             Action<Derived> derivedIn = (Derived @in) => { };
@@ -393,12 +393,12 @@
         }
     }
 
-    public static partial class HigherOrderFunction
+    internal static partial class HigherOrderFunction
     {
 #if ERROR
-        public delegate void ActionIn<in T>(Action<T> action);
+        internal delegate void ActionIn<in T>(Action<T> action);
 
-        public static void ContravarianceOfInput()
+        internal static void ContravarianceOfInput()
         {
             // Higher-order funcitons:
             ActionIn<Derived> derivedInIn = (Action<Derived> derivedIn) => derivedIn(new Derived());
@@ -417,12 +417,12 @@
 #endif
     }
 
-    public static partial class HigherOrderFunction
+    internal static partial class HigherOrderFunction
     {
         // Action<Action<T>>
-        public delegate void ActionIn<out T>(Action<T> action);
+        internal delegate void ActionIn<out T>(Action<T> action);
 
-        public static void CovarianceOfInput() // Not contravariance.
+        internal static void CovarianceOfInput() // Not contravariance.
         {
             // Higher-order funcitons:
             ActionIn<Derived> derivedInIn = (Action<Derived> derivedIn) => derivedIn(new Derived());
@@ -438,11 +438,11 @@
         }
     }
 
-    public static partial class HigherOrderFunction
+    internal static partial class HigherOrderFunction
     {
-        public delegate Func<TOut> FuncOut<out TOut>();
+        internal delegate Func<TOut> FuncOut<out TOut>();
 
-        public static void CovarianceOfOutput()
+        internal static void CovarianceOfOutput()
         {
             // First order functions.
             Func<Base> baseOut = () => new Base();
@@ -464,41 +464,41 @@
         }
     }
 
-    public static class OutputCovarianceForHigherOrder
+    internal static class OutputCovarianceForHigherOrder
     {
-        public delegate T Func<out T>(); // Covariant T as output.
+        internal delegate T Func<out T>(); // Covariant T as output.
 
         // Func<Func<T>>
-        public delegate Func<T> FuncOut<out T>(); // Covariant T as output.
+        internal delegate Func<T> FuncOut<out T>(); // Covariant T as output.
 
         // Func<Func<Func<T>>>
-        public delegate FuncOut<T> FuncOutOut<out T>(); // Covariant T as output.
+        internal delegate FuncOut<T> FuncOutOut<out T>(); // Covariant T as output.
 
         // Func<Func<Func<Func<T>>>>
-        public delegate FuncOutOut<T> FuncOutOutOut<out T>(); // Covariant T as output.
+        internal delegate FuncOutOut<T> FuncOutOutOut<out T>(); // Covariant T as output.
 
         // ...
     }
 
-    public static class InputVarianceReversalForHigherOrder
+    internal static class InputVarianceReversalForHigherOrder
     {
-        public delegate void Action<in T>(T @in); // Contravariant T as input.
+        internal delegate void Action<in T>(T @in); // Contravariant T as input.
 
         // Action<Action<T>>
-        public delegate void ActionIn<out T>(Action<T> action); // Covariant T as input.
+        internal delegate void ActionIn<out T>(Action<T> action); // Covariant T as input.
 
         // Action<Action<Action<T>>>
-        public delegate void ActionInIn<in T>(ActionIn<T> actionIn); // Contravariant T as input.
+        internal delegate void ActionInIn<in T>(ActionIn<T> actionIn); // Contravariant T as input.
 
         // Action<Action<Action<Action<T>>>>
-        public delegate void ActionInInIn<out T>(ActionInIn<T> actionInIn); // Covariant T as input.
+        internal delegate void ActionInInIn<out T>(ActionInIn<T> actionInIn); // Covariant T as input.
 
         // ...
     }
 
-    public static partial class Array
+    internal static partial class Array
     {
-        public static void Covariance()
+        internal static void Covariance()
         {
             // IList<Base> baseArray = new Base[2];
             Base[] baseArray = new Base[2];
@@ -522,23 +522,23 @@
         }
     }
 
-    public static partial class Array
+    internal static partial class Array
     {
-        public static void ProcessArray(Base[] array)
+        internal static void ProcessArray(Base[] array)
         {
             array[0] = new Base(); // ArrayTypeMismatchException.
         }
 
-        public static void CallProcessArray()
+        internal static void CallProcessArray()
         {
             Derived[] array = new Derived[1];
             ProcessArray(array); // Array covariance. Compliable.
         }
     }
 
-    public static partial class Array
+    internal static partial class Array
     {
-        public static void ValueType()
+        internal static void ValueType()
         {
             object[] objectArray = new object[1];
             int[] int32Array = new int[1];

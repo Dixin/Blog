@@ -3,9 +3,9 @@
     using System;
     using System.Threading;
 
-    public static class CpuUsage
+    internal static class CpuUsage
     {
-        public static void Draw()
+        internal static void Draw()
         {
             Thread thread0 = new Thread(() =>
             {

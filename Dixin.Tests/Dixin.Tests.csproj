@@ -8,7 +8,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Dixin.Tests</RootNamespace>
     <AssemblyName>Dixin.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -102,6 +102,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.Services.Common, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Data" />
@@ -112,6 +113,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Management" />
+    <Reference Include="System.Transactions" />
     <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="WindowsBase" />
@@ -128,6 +130,7 @@
     <Compile Include="..\Tools\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Windows\ClipboardHelperTests.cs" />
     <Compile Include="Diagnostics\ProcessHelperTests.cs" />
     <Compile Include="Dynamic\BaseTest.cs" />
     <Compile Include="Dynamic\DerivedTest.cs" />
@@ -162,6 +165,7 @@
     <Compile Include="Linq\LinqToEntities\AdventureWorksTests.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorksTests.Log.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorksTests.QueryMethods.cs" />
+    <Compile Include="Linq\LinqToSql\AdventureWorksTests.Changes.cs" />
     <Compile Include="Linq\LinqToObjects\DeferredExecutionTests.cs" />
     <Compile Include="Linq\LinqToObjects\EnumerableQueryMethodsTests.cs" />
     <Compile Include="Linq\LinqToObjects\IteratorPatternTests.cs" />

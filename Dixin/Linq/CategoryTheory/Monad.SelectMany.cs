@@ -10,11 +10,11 @@
     [Pure]
     public static partial class EnumerableSelectManyExtensions
     {
-        // value.Sequence(isNotEmpty) is the alias of (isNotEmpty ? value.Sequence() : Enumerable.Empty<TSource>())
-        public static IEnumerable<TSource> Sequence<TSource>(this TSource value, bool isNotEmpty = false)
+        // value.Sequence(hasValue) is the alias of (hasValue ? value.Sequence() : Enumerable.Empty<TSource>())
+        public static IEnumerable<TSource> Sequence<TSource>(this TSource value, bool hasValue = false)
         {
-            // return isNotEmpty ? EnumerableEx.Return(value) : Enumerable.Empty<TSource>();
-            if (isNotEmpty)
+            // return hasValue ? EnumerableEx.Return(value) : Enumerable.Empty<TSource>();
+            if (hasValue)
             {
                 yield return value;
             }

@@ -6,10 +6,9 @@
 
     using Dixin.IO;
 
-    public static partial class Log
+    internal static partial class Log
     {
-
-        public static void WhereWithLog()
+        internal static void WhereWithLog()
         {
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {
@@ -47,6 +46,5 @@
                 products.ForEach(product => Trace.WriteLine($"{product.Name}: {product.ListPrice}")); // Execute query.
             }
         }
-
     }
 }

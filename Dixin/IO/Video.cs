@@ -8,11 +8,11 @@
 
     using Dixin.Common;
 
-    public static class Video
+    internal static class Video
     {
         private const string Separater = ".";
 
-        public static void RenameAllAlbums(string root, bool otherLettersFirst = false)
+        internal static void RenameAllAlbums(string root, bool otherLettersFirst = false)
         {
             bool hasError = false;
             Directory.EnumerateDirectories(root).Where(IsNotFormated).ForEach(album =>

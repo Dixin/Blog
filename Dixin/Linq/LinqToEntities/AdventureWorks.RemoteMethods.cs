@@ -5,9 +5,9 @@
     using System.Linq.Expressions;
     using System.Reflection;
 
-    public static partial class QueryMethods
+    internal static partial class QueryMethods
     {
-        public static void InlinePredicate()
+        internal static void InlinePredicate()
         {
             IQueryable<string> query = AdventureWorks.Products
                 .Where(product => product.ListPrice > 0 && product.ProductSubcategoryID != null)
@@ -15,7 +15,7 @@
             query.ForEach(); // Execute query.
         }
 
-        public static void InlinePredicateCompiled()
+        internal static void InlinePredicateCompiled()
         {
             ParameterExpression product = Expression.Parameter(typeof(Product), nameof(product));
             IQueryable<string> query = AdventureWorks.Products // ... FROM [Product].
@@ -34,10 +34,10 @@
             query.ForEach(); // Execute query.
         }
 
-        public static bool IsValid
+        internal static bool IsValid
             (this Product product) => product.ListPrice > 0 && product.ProductSubcategoryID != null;
 
-        public static void MethodPredicate()
+        internal static void MethodPredicate()
         {
             IQueryable<string> query = AdventureWorks.Products
                 .Where(product => product.IsValid())
@@ -46,14 +46,14 @@
             // NotSupportedException: Method 'Boolean IsValid(Dixin.Linq.LinqToSql.Product)' has no supported translation to SQL.
         }
 
-        public static void MethodPredicateCompiled()
+        internal static void MethodPredicateCompiled()
         {
             ParameterExpression product = Expression.Parameter(typeof(Product), nameof(product));
             IQueryable<string> query = AdventureWorks.Products
                 .Where(Expression.Lambda<Func<Product, bool>>( // product => product.IsValid().
                     Expression.Call(
                         null,
-                        typeof(QueryMethods).GetMethod(nameof(IsValid), BindingFlags.Static | BindingFlags.Public | BindingFlags.InvokeMethod),
+                        typeof(QueryMethods).GetMethod(nameof(IsValid), BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.InvokeMethod),
                         product), // IsValid has no SQL translation.
                     product))
                 .Select(Expression.Lambda<Func<Product, string>>(
@@ -63,7 +63,7 @@
             // NotSupportedException: Method 'Boolean IsValid(Dixin.Linq.LinqToSql.Product)' has no supported translation to SQL.
         }
 
-        public static void MethodSelector()
+        internal static void MethodSelector()
         {
             var query = AdventureWorks.Products
                 .Where(product => product.ProductID > 100)
@@ -71,7 +71,7 @@
             query.ForEach(); // Execute query.
         }
 
-        public static void LocalSelector()
+        internal static void LocalSelector()
         {
             var query = AdventureWorks.Products
                 .Where(product => product.ProductID > 100)

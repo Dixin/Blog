@@ -36,7 +36,7 @@
                 $"({this.VisitNode(binary.Left, expression)} {@operator} {this.VisitNode(binary.Right, expression)})";
     }
 
-    public static partial class AnonymousFunction
+    internal static partial class AnonymousFunction
     {
         public static void String()
         {

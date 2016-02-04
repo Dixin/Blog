@@ -151,9 +151,9 @@
     }
 
     // Impure.
-    public static partial class IOQuery
+    internal static partial class IOQuery
     {
-        public static void AsIO()
+        internal static void AsIO()
         {
             IO<string> consoleReadLine = new Func<string>(Console.ReadLine).AsIO();
             Func<string, IO<Unit>> consoleWriteLine = new Action<string>(Console.WriteLine).AsIO();
@@ -165,7 +165,7 @@
             // ...
         }
 
-        public static void IOFuncAction()
+        internal static void IOFuncAction()
         {
             IO<string> consoleReadLine = IO.Func(Console.ReadLine);
             Func<string, IO<Unit>> consoleWriteLine = IO.Action<string>(Console.WriteLine);
@@ -177,7 +177,7 @@
             // ...
         }
 
-        public static void FileIO()
+        internal static void FileIO()
         {
             IO<Tuple<bool, string>> query =
                 // 1. Read file name from console.
@@ -197,7 +197,7 @@
             Tuple<bool, string> result = query(); // Execution.
         }
 
-        public static void NetworkIO()
+        internal static void NetworkIO()
         {
             IO<Unit> query =
                 // 1. Read URL from console.

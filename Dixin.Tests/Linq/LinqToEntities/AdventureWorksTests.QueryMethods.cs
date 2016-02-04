@@ -12,7 +12,7 @@
     public class QueryMethodsTests
     {
         [TestMethod]
-        public void LocalRemoteMethodTests()
+        public void LocalRemoteMethodTest()
         {
             QueryMethods.InlinePredicate();
             QueryMethods.InlinePredicateCompiled();

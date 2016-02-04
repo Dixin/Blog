@@ -9,7 +9,7 @@
 
     using Dixin.Linq.LinqToSql;
 
-    public static class CompiledLinqToObjects
+    internal static class CompiledLinqToObjects
     {
         [CompilerGenerated]
         private static Func<int, bool> cachedAnonymousMethodDelegate;
@@ -20,7 +20,7 @@
             return value > 0;
         }
 
-        public static IEnumerable<int> Positive(IEnumerable<int> source)
+        internal static IEnumerable<int> Positive(IEnumerable<int> source)
         {
             return Enumerable.Where(
                 source,
@@ -28,15 +28,15 @@
         }
     }
 
-    public static class CompiledLinqToSql
+    internal static class CompiledLinqToSql
     {
         [CompilerGenerated]
         private sealed class Closure
         {
-            public string categoryName;
+            internal string categoryName;
         }
 
-        public static string[] ProductNames(string categoryName)
+        internal static string[] ProductNames(string categoryName)
         {
             Closure closure = new Closure { categoryName = categoryName };
             AdventureWorks adventureWorks = new AdventureWorks();
@@ -76,20 +76,20 @@
         }
     }
 
-    public static partial class LinqToObjects
+    internal static partial class LinqToObjects
     {
-        public static IEnumerable<Person> Where
+        internal static IEnumerable<Person> Where
             (IEnumerable<Person> source) => source.Where((person, index) => person.Age >= 18 && index % 2 == 0);
     }
 
-    public static partial class Int32Extensions
+    internal static partial class Int32Extensions
     {
-        public static TResult Select<TResult>(this int value, Func<int, TResult> selector) => selector(value);
+        internal static TResult Select<TResult>(this int value, Func<int, TResult> selector) => selector(value);
     }
 
-    public static partial class Int32Extensions
+    internal static partial class Int32Extensions
     {
-        public static void QueryExpression()
+        internal static void QueryExpression()
         {
             int query1 = from zero in default(int) // 0
                          select zero; // 0
@@ -99,9 +99,9 @@
         }
     }
 
-    public static partial class Int32Extensions
+    internal static partial class Int32Extensions
     {
-        public static void QueryMethod()
+        internal static void QueryMethod()
         {
             int query1 = Int32Extensions.Select(default(int), zero => zero);
 
@@ -110,20 +110,20 @@
         }
     }
 
-    public static partial class ObjectExtensions
+    internal static partial class ObjectExtensions
     {
-        public static TResult Select<TSource, TResult>(this TSource value, Func<TSource, TResult> selector) => selector(value);
+        internal static TResult Select<TSource, TResult>(this TSource value, Func<TSource, TResult> selector) => selector(value);
     }
 
-    public static partial class ObjectExtensions
+    internal static partial class ObjectExtensions
     {
-        public static void QueryExpression()
+        internal static void QueryExpression()
         {
             string query = from newGuild in Guid.NewGuid()
                            select newGuild.ToString();
         }
 
-        public static void QueryMethod()
+        internal static void QueryMethod()
         {
             string query = ObjectExtensions.Select(Guid.NewGuid(), newGuild => newGuild.ToString());
         }

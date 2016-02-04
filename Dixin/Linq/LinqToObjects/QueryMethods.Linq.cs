@@ -21,9 +21,9 @@
     using Microsoft.TeamFoundation.Client;
     using Microsoft.TeamFoundation.WorkItemTracking.Client;
 
-    public static partial class QueryMethods
+    internal static partial class QueryMethods
     {
-        public static void Empty()
+        internal static void Empty()
         {
             IEnumerable<string> empty = Enumerable.Empty<string>(); // Define query.
             int count = 0;
@@ -36,11 +36,11 @@
         }
     }
 
-    public static partial class QueryMethods
+    internal static partial class QueryMethods
     {
         #region Generation
 
-        public static void Range()
+        internal static void Range()
         {
             IEnumerable<int> range = Enumerable.Range(-1, 5); // Define query.
             foreach (int @int in range) // Execute query.
@@ -50,12 +50,12 @@
             // -1 0 1 2 3
         }
 
-        public static void LargeRange()
+        internal static void LargeRange()
         {
             IEnumerable<int> range = Enumerable.Range(int.MinValue, int.MaxValue); // Define query.
         }
 
-        public static void Repeat()
+        internal static void Repeat()
         {
             IEnumerable<int> repeat = Enumerable.Repeat(1, 5); // Define query.
             foreach (int @int in repeat) // Execute query.
@@ -65,7 +65,7 @@
             // 1 1 1 1 1
         }
 
-        public static void DefaultIfEmpty()
+        internal static void DefaultIfEmpty()
         {
             IEnumerable<int> souce = Enumerable.Empty<int>();
             IEnumerable<int> singletonIfEmpty = souce.DefaultIfEmpty();
@@ -76,7 +76,7 @@
             // 0
         }
 
-        public static void DefaultIfEmptyWithDefaultValue()
+        internal static void DefaultIfEmptyWithDefaultValue()
         {
             IEnumerable<int> souce = Enumerable.Empty<int>();
             IEnumerable<int> singletonIfEmpty = souce.DefaultIfEmpty(1);
@@ -91,9 +91,9 @@
 
         #region Filtering
 
-        public static readonly Assembly mscorlib = typeof(object).Assembly;
+        internal static readonly Assembly mscorlib = typeof(object).Assembly;
 
-        public static void Where()
+        internal static void Where()
         {
             IEnumerable<Type> source = mscorlib.ExportedTypes;
             IEnumerable<Type> primitives = source.Where(type => type.IsPrimitive); // Define query.
@@ -104,7 +104,7 @@
             // System.Boolean System.Byte System.Char System.Double System.Int16 System.Int32 System.Int64 System.IntPtr System.SByte System.Single System.UInt16 System.UInt32 System.UInt64 System.UIntPtr
         }
 
-        public static void WhereWithIndex()
+        internal static void WhereWithIndex()
         {
             IEnumerable<string> source = new string[] { "zero", "one", "two", "three", "four" };
             IEnumerable<string> evenNumbers = source.Where((value, index) => index % 2 == 0); // Define query.
@@ -115,7 +115,7 @@
             // zero two four
         }
 
-        public static void OfType()
+        internal static void OfType()
         {
             IEnumerable<object> source = new object[] { 1, 2, 'a', 'b', "aa", "bb", new object() };
             IEnumerable<string> strings = source.OfType<string>();  // Define query.
@@ -130,7 +130,7 @@
 
         #region Mapping
 
-        public static void Select()
+        internal static void Select()
         {
             IEnumerable<int> source = Enumerable.Range(0, 5);
             IEnumerable<string> squareRoots = source.Select(@int => $"{Math.Sqrt(@int):0.00}"); // Define query.
@@ -141,9 +141,9 @@
             // 0.00 1.00 1.41 1.73 2.00
         }
 
-        public static IEnumerable<string> Words() => new string[] { "Zero", "one", "Two", "three", "four" };
+        internal static IEnumerable<string> Words() => new string[] { "Zero", "one", "Two", "three", "four" };
 
-        public static void SelectWithIndex()
+        internal static void SelectWithIndex()
         {
             IEnumerable<string> source = Words();
             var mapped = source.Select((value, index) => new
@@ -158,7 +158,7 @@
             // 0:zero 1:one 2:two 3:three 4:four
         }
 
-        public static void Let()
+        internal static void Let()
         {
             IEnumerable<int> source = Enumerable.Range(-2, 5);
             IEnumerable<string> absoluteValues = source
@@ -175,7 +175,7 @@
             // Math.Abs(2) == 2
         }
 
-        public static void SelectMany()
+        internal static void SelectMany()
         {
             IEnumerable<Type> source = mscorlib.GetExportedTypes();
             IEnumerable<MemberInfo> mapped = source.SelectMany(type => type.GetMembers(
@@ -192,7 +192,7 @@
             // ...
         }
 
-        public static void SelectMany2()
+        internal static void SelectMany2()
         {
             IEnumerable<Type> source = mscorlib.GetExportedTypes();
             IEnumerable<MemberInfo> mapped = source.SelectMany(type => type.GetPublicDeclaredMembers()); // Define query.
@@ -203,7 +203,7 @@
             }
         }
 
-        public static void SelectManyFluent()
+        internal static void SelectManyFluent()
         {
             IEnumerable<MemberInfo> mappedAndFiltered = mscorlib
                 .GetExportedTypes()
@@ -215,7 +215,7 @@
             }
         }
 
-        public static void SelectManyWithResultSelector2()
+        internal static void SelectManyWithResultSelector2()
         {
             IEnumerable<Type> source = mscorlib.GetExportedTypes();
             IEnumerable<string> obsoleteMembers = source.SelectMany(
@@ -227,7 +227,7 @@
             }
         }
 
-        public static void SelectManyWithResultSelector()
+        internal static void SelectManyWithResultSelector()
         {
             IEnumerable<Type> source = mscorlib.GetExportedTypes();
             IEnumerable<string> obsoleteMembers = mscorlib
@@ -247,7 +247,7 @@
 
         #region Grouping
 
-        public static void GroupBy()
+        internal static void GroupBy()
         {
             IEnumerable<Person> source = Persons();
             IEnumerable<IGrouping<string, Person>> groups = source.GroupBy(person => person.PlaceOfBirth); // Define query.
@@ -266,7 +266,7 @@
             // AU: Chris Hemsworth,
         }
 
-        public static void GroupByWithResultSelector()
+        internal static void GroupByWithResultSelector()
         {
             IEnumerable<Person> source = Persons();
             IEnumerable<string> groups = source
@@ -280,7 +280,7 @@
             // AU: 1
         }
 
-        public static void GroupBySelect()
+        internal static void GroupBySelect()
         {
             IEnumerable<Person> source = Persons();
             IEnumerable<IGrouping<string, Person>> groups = source.GroupBy(person => person.PlaceOfBirth);
@@ -294,7 +294,7 @@
             // AU: 1
         }
 
-        public static void GroupBySelect2()
+        internal static void GroupBySelect2()
         {
             IEnumerable<Person> source = Persons();
             IEnumerable<string> groups = source
@@ -309,7 +309,7 @@
             // AU: 1
         }
 
-        public static void GroupByWithElementSelector()
+        internal static void GroupByWithElementSelector()
         {
             IEnumerable<Person> source = Persons();
             IEnumerable<IGrouping<string, string>> groups = source
@@ -329,7 +329,7 @@
             // AU: Chris Hemsworth,
         }
 
-        public static void GroupByWithElementAndResultSelector()
+        internal static void GroupByWithElementAndResultSelector()
         {
             IEnumerable<Person> source = Persons();
             IEnumerable<string> groups = source.GroupBy(
@@ -345,7 +345,7 @@
             // AU: Chris Hemsworth
         }
 
-        public static void GroupByWithEqualityComparer()
+        internal static void GroupByWithEqualityComparer()
         {
             IEnumerable<Person> source = Persons();
             IEnumerable<string> groups = source.GroupBy(
@@ -365,20 +365,20 @@
         #endregion
     }
 
-    public partial class Character
+    internal partial class Character
     {
-        public string Name { get; set; }
+        internal string Name { get; set; }
 
-        public string PlaceOfBirth { get; set; }
+        internal string PlaceOfBirth { get; set; }
 
-        public string Starring { get; set; }
+        internal string Starring { get; set; }
     }
 
-    public static partial class QueryMethods
+    internal static partial class QueryMethods
     {
         #region Join
 
-        public static IEnumerable<Character> Characters() => new Character[]
+        internal static IEnumerable<Character> Characters() => new Character[]
             {
                 new Character() { Name = "Tony Stark", Starring = "Robert Downey Jr.", PlaceOfBirth = "US" },
                 new Character() { Name = "Thor", Starring = "Chris Hemsworth", PlaceOfBirth = "Asgard" },
@@ -387,7 +387,7 @@
                 new Character() { Name = "JARVIS", Starring = "Paul Bettany", PlaceOfBirth = "US" }
             };
 
-        public static void InnerJoin()
+        internal static void InnerJoin()
         {
             IEnumerable<Person> outer = Persons();
             IEnumerable<Character> inner = Characters();
@@ -407,7 +407,7 @@
             // Paul Bettany (UK): JARVIS
         }
 
-        public static void InnerJoinWithSelectMany()
+        internal static void InnerJoinWithSelectMany()
         {
             IEnumerable<Person> outer = Persons();
             IEnumerable<Character> inner = Characters();
@@ -430,7 +430,7 @@
             // Paul Bettany (UK): JARVIS
         }
 
-        public static IEnumerable<TResult> InnerJoinWithSelectMany<TOuter, TInner, TKey, TResult>(
+        internal static IEnumerable<TResult> InnerJoinWithSelectMany<TOuter, TInner, TKey, TResult>(
             this IEnumerable<TOuter> outer,
             IEnumerable<TInner> inner,
             Func<TOuter, TKey> outerKeySelector,
@@ -450,7 +450,7 @@
                 .Select(innerJoinValue => resultSelector(innerJoinValue.OuterValue, innerJoinValue.InnerValue));
         }
 
-        public static void InnerJoinWithMultipleKeys()
+        internal static void InnerJoinWithMultipleKeys()
         {
             IEnumerable<Person> outer = Persons();
             IEnumerable<Character> inner = Characters();
@@ -470,7 +470,7 @@
             // Chris Evans (US): Steve Rogers (US)
         }
 
-        public static void LeftOuterJoin()
+        internal static void LeftOuterJoin()
         {
             IEnumerable<Person> outer = Persons();
             IEnumerable<Character> inner = Characters();
@@ -495,7 +495,7 @@
             // Paul Bettany (UK): Vision (KR), JARVIS (US),
         }
 
-        public static void LeftOuterJoinWithDefaultIfEmpty()
+        internal static void LeftOuterJoinWithDefaultIfEmpty()
         {
             IEnumerable<Person> outer = Persons();
             IEnumerable<Character> inner = Characters();
@@ -519,7 +519,7 @@
             // Paul Bettany: JARVIS
         }
 
-        public static void LeftOuterJoinWithSelect()
+        internal static void LeftOuterJoinWithSelect()
         {
             IEnumerable<Person> outer = Persons();
             IEnumerable<Character> inner = Characters();
@@ -547,7 +547,7 @@
             // Paul Bettany (UK): Vision (KR), JARVIS (US),
         }
 
-        public static IEnumerable<TResult> LeftOuterJoinWithSelect<TOuter, TInner, TKey, TResult>(
+        internal static IEnumerable<TResult> LeftOuterJoinWithSelect<TOuter, TInner, TKey, TResult>(
             this IEnumerable<TOuter> outer,
             IEnumerable<TInner> inner,
             Func<TOuter, TKey> outerKeySelector,
@@ -567,7 +567,7 @@
 
         private static readonly string[] columns = { "A", "B", "C", "D" };
 
-        public static void CrossJoin()
+        internal static void CrossJoin()
         {
             IEnumerable<string> cells = rows
                 .SelectMany(row => columns, (row, column) => $"{column}{row}"); // Define query.
@@ -587,7 +587,7 @@
             // A3 B3 C3 D3
         }
 
-        public static void CrossJoinWithJoin()
+        internal static void CrossJoinWithJoin()
         {
             IEnumerable<string> cells = rows.Join(
                 columns,
@@ -605,7 +605,7 @@
             }
         }
 
-        public static IEnumerable<TResult> CrossJoinWithJoin<TOuter, TInner, TResult>(
+        internal static IEnumerable<TResult> CrossJoinWithJoin<TOuter, TInner, TResult>(
             this IEnumerable<TOuter> outer,
             IEnumerable<TInner> inner,
             Func<TOuter, TInner, TResult> resultSelector) => outer.Join(
@@ -617,11 +617,11 @@
 
         #region Concatenation
 
-        public static int[] First() => new int[] { 1, 2, 3, 4, 4 };
+        internal static int[] First() => new int[] { 1, 2, 3, 4, 4 };
 
-        public static int[] Second() => new int[] { 3, 4, 5, 6 };
+        internal static int[] Second() => new int[] { 3, 4, 5, 6 };
 
-        public static void Concat()
+        internal static void Concat()
         {
             IEnumerable<int> first = First();
             IEnumerable<int> second = Second();
@@ -637,7 +637,7 @@
 
         #region Set
 
-        public static void Distinct()
+        internal static void Distinct()
         {
             IEnumerable<int> first = First();
             IEnumerable<int> distinct = first.Distinct(); // Define query.
@@ -648,7 +648,7 @@
             // 1 2 3 4
         }
 
-        public static void Union()
+        internal static void Union()
         {
             IEnumerable<int> first = First();
             IEnumerable<int> second = Second();
@@ -660,7 +660,7 @@
             // 1 2 3 4 5 6
         }
 
-        public static void Intersect()
+        internal static void Intersect()
         {
             IEnumerable<int> first = First();
             IEnumerable<int> second = Second();
@@ -672,7 +672,7 @@
             // 3 4
         }
 
-        public static void Except()
+        internal static void Except()
         {
             IEnumerable<int> first = First();
             IEnumerable<int> second = Second();
@@ -684,7 +684,7 @@
             // 1 2
         }
 
-        public static void DistinctWithComparer()
+        internal static void DistinctWithComparer()
         {
             IEnumerable<string> source = new string[] { "aa", "AA", "Aa", "aA", "bb" };
             IEnumerable<string> distinctWithComparer = source.Distinct(StringComparer.OrdinalIgnoreCase);
@@ -700,7 +700,7 @@
 
         #region Convolution
 
-        public static void Zip()
+        internal static void Zip()
         {
             IEnumerable<int> first = First();
             IEnumerable<int> second = Second();
@@ -716,7 +716,7 @@
 
         #region Partioning
 
-        public static void SkipTake()
+        internal static void SkipTake()
         {
             IEnumerable<int> source = Enumerable.Range(0, 5); // Define query.
 
@@ -735,7 +735,7 @@
             // 0 1
         }
 
-        public static void TakeWhileSkipWhile()
+        internal static void TakeWhileSkipWhile()
         {
             IEnumerable<int> source = new int[] { 1, 2, 3, -1, 4, 5 };
 
@@ -754,7 +754,7 @@
             // -1 4 5
         }
 
-        public static void TakeWhileSkipWhileWithIndex()
+        internal static void TakeWhileSkipWhileWithIndex()
         {
             IEnumerable<int> source = new int[] { 4, 3, 2, 1, 5 };
 
@@ -777,7 +777,7 @@
 
         #region Ordering
 
-        public static void OrderBy()
+        internal static void OrderBy()
         {
             IEnumerable<string> source = Words();
             IEnumerable<string> ordered = source.OrderBy(word => word); // Define query.
@@ -794,7 +794,7 @@
             // Zero one Two three four
         }
 
-        public static void OrderByDescending()
+        internal static void OrderByDescending()
         {
             IEnumerable<string> source = Words();
             IEnumerable<string> ordered = source.OrderByDescending(word => word); // Define query.
@@ -811,7 +811,7 @@
             // Zero one Two three four
         }
 
-        public static void OrderByWithComparer()
+        internal static void OrderByWithComparer()
         {
             IEnumerable<string> source = Words();
             IEnumerable<string> ordered = source.OrderBy(word => word, StringComparer.Ordinal); // Define query.
@@ -822,7 +822,7 @@
             // Two Zero four one three
         }
 
-        public static IEnumerable<Person> Persons() => new Person[]
+        internal static IEnumerable<Person> Persons() => new Person[]
             {
                 new Person() { Name = "Robert Downey Jr.", PlaceOfBirth = "US" },
                 new Person() { Name = "Tom Hiddleston", PlaceOfBirth = "UK" },
@@ -831,7 +831,7 @@
                 new Person() { Name = "Paul Bettany", PlaceOfBirth = "UK" }
             };
 
-        public static void ThenBy()
+        internal static void ThenBy()
         {
             IEnumerable<Person> source = Persons();
             IEnumerable<Person> ordered = source // IEnumerable<Person>
@@ -848,7 +848,7 @@
             // US: Robert Downey Jr.
         }
 
-        public static void OrderByOrderBy()
+        internal static void OrderByOrderBy()
         {
             IEnumerable<Person> source = Persons();
             IEnumerable<Person> ordered = source
@@ -865,7 +865,7 @@
             // UK: Tom Hiddleston
         }
 
-        public static void Reverse()
+        internal static void Reverse()
         {
             IEnumerable<int> source = Enumerable.Range(0, 5);
             IEnumerable<int> reversed = source.Reverse(); // Define query.
@@ -879,7 +879,7 @@
 
         #region Conversion
 
-        public static void CastNonGenericIEnumerable()
+        internal static void CastNonGenericIEnumerable()
         {
             using (TfsTeamProjectCollection projectCollection = new TfsTeamProjectCollection(
                 new Uri("https://dixin.visualstudio.com/DefaultCollection"),
@@ -901,14 +901,14 @@
             }
         }
 
-        public static void CastNonGenericIEnumerable2()
+        internal static void CastNonGenericIEnumerable2()
         {
             // SettingsPropertyCollection: IEnumerable.
             SettingsPropertyCollection properties = ProfileBase.Properties;
             IEnumerable<SettingsProperty> genericProperties = properties.Cast<SettingsProperty>();
         }
 
-        public static void CastGenericIEnumerable()
+        internal static void CastGenericIEnumerable()
         {
             IEnumerable<Base> source = new Base[] { new Derived(), new Derived() };
             IEnumerable<Derived> casted = source.Cast<Derived>(); // Define query.
@@ -919,7 +919,7 @@
             // Derived Derived
         }
 
-        public static void CastGenericIEnumerableWithException()
+        internal static void CastGenericIEnumerableWithException()
         {
             IEnumerable<Base> source = new Base[] { new Derived(), new Base() };
             IEnumerable<Derived> casted = source.Cast<Derived>(); // Define query.
@@ -930,7 +930,7 @@
             // Derived InvalidCastException
         }
 
-        public static void CastWithJoin()
+        internal static void CastWithJoin()
         {
             IEnumerable outer = new int[] { 1, 2, 3 };
             IEnumerable inner = new string[] { string.Empty, "a", "bb", "ccc", "dddd" };
@@ -947,14 +947,14 @@
             // 3: ccc
         }
 
-        public static void AsEnumerable()
+        internal static void AsEnumerable()
         {
             List<int> list = new List<int>();
             list.Add(0);
             IEnumerable<int> enumerable = list.AsEnumerable(); // enumerable does not have Add method.
         }
 
-        public static void AsEnumerableReverse()
+        internal static void AsEnumerableReverse()
         {
             List<int> list = new List<int>();
             list.Reverse(); // List<T>.Reverse.
@@ -983,7 +983,7 @@
             immutableSortedSet.AsEnumerable().Reverse(); // Enumerable.Reverse.
         }
 
-        public static void ToArrayToList()
+        internal static void ToArrayToList()
         {
             int[] array = Enumerable
                 .Range(0, 5) // Define query.
@@ -994,7 +994,7 @@
                 .ToList(); // Execute query.
         }
 
-        public static void ToDictionaryToLookup()
+        internal static void ToDictionaryToLookup()
         {
             Dictionary<int, string> dictionary = Enumerable
                 .Range(0, 5) // Define query.
@@ -1029,7 +1029,7 @@
             // √0: 0,
         }
 
-        public static void ToDictionaryWithException()
+        internal static void ToDictionaryWithException()
         {
             Dictionary<int, int> lookup = Enumerable.Range(-2, 5)
                 .Select(@int => new { Int32 = @int, Square = @int * @int }) // Define query.
@@ -1037,7 +1037,7 @@
             // ArgumentException: An item with the same key has already been added.
         }
 
-        public static void DictionaryLookup()
+        internal static void DictionaryLookup()
         {
             Dictionary<int, int> dictionary = Enumerable
                 .Range(0, 5) // Define query.
@@ -1057,7 +1057,7 @@
             Trace.WriteLine(count); // 0
         }
 
-        public static void DictionaryLookupNullKey()
+        internal static void DictionaryLookupNullKey()
         {
             Dictionary<string, string> dictionary =
                 new string[] { "a", "b", null }.ToDictionary(@string => @string);
@@ -1073,7 +1073,7 @@
             Trace.WriteLine(count); // 1
         }
 
-        public static void ToLookupWithComparer()
+        internal static void ToLookupWithComparer()
         {
             ILookup<string, string> lookup = new string[] { "aa", "AA", "Aa", "aA", "bb" }
                 .ToLookup(@string => @string, StringComparer.OrdinalIgnoreCase);
@@ -1095,15 +1095,15 @@
 
         #region Element
 
-        public static IEnumerable<int> Int32Source() => new int[] { -1, 1, 2, 3, -4 };
+        internal static IEnumerable<int> Int32Source() => new int[] { -1, 1, 2, 3, -4 };
 
-        public static IEnumerable<int> SingleInt32Source() => Enumerable.Repeat(5, 1);
+        internal static IEnumerable<int> SingleInt32Source() => Enumerable.Repeat(5, 1);
 
-        public static IEnumerable<int> EmptyInt32Source() => Enumerable.Empty<int>();
+        internal static IEnumerable<int> EmptyInt32Source() => Enumerable.Empty<int>();
 
-        public static IEnumerable<int?> NullableInt32Source() => new int?[] { -1, 1, 2, 3, -4, null };
+        internal static IEnumerable<int?> NullableInt32Source() => new int?[] { -1, 1, 2, 3, -4, null };
 
-        public static void FirstLast()
+        internal static void FirstLast()
         {
             int firstOfSource = Int32Source().First(); // -1.
             int lastOfSource = Int32Source().Last(); // -4.
@@ -1115,7 +1115,7 @@
             int lastOfEmptySOurce = EmptyInt32Source().Last(); // InvalidOperationException.
         }
 
-        public static void FirstLastWithPredicate()
+        internal static void FirstLastWithPredicate()
         {
             int firstPositiveOfSource = Int32Source().First(@int => @int > 0); // 1.
             int lastNegativeOfSource = Int32Source().Last(@int => @int < 0); // -4.
@@ -1130,7 +1130,7 @@
             // InvalidOperationException.
         }
 
-        public static void FirstOrDefaultLastOrDefault()
+        internal static void FirstOrDefaultLastOrDefault()
         {
             int firstOrDefaultOfEmptySOurce = EmptyInt32Source().FirstOrDefault(); // 0.
             int lastOrDefaultOfEmptySOurce = EmptyInt32Source().LastOrDefault(); // 0.
@@ -1145,7 +1145,7 @@
             // null.
         }
 
-        public static void ElementAt()
+        internal static void ElementAt()
         {
             int elementAt2OfSource = Int32Source().ElementAt(2); // 2.
             int elementAt9OfSource = Int32Source().ElementAt(9); // ArgumentOutOfRangeException.
@@ -1157,7 +1157,7 @@
             int elementAt0OfEmptySource = EmptyInt32Source().ElementAt(0); // ArgumentOutOfRangeException.
         }
 
-        public static void ElementAtOrDefault()
+        internal static void ElementAtOrDefault()
         {
             int elementAt9OrDefaultOfSource = Int32Source().ElementAtOrDefault(9); // 0.
             int elementAtNegativeIndexOrDefault = Int32Source().ElementAtOrDefault(-5); // 0.
@@ -1169,7 +1169,7 @@
             Character characterAt5OrDefault = Characters().ElementAtOrDefault(5); // null.
         }
 
-        public static void Single()
+        internal static void Single()
         {
             int singleOfSource = Int32Source().Single(); // InvalidOperationException.
             int singleGreaterThan2OfSource = Int32Source().Single(@int => @int > 2); // 3.
@@ -1193,7 +1193,7 @@
             // InvalidOperationException.
         }
 
-        public static void SingleOrDefault()
+        internal static void SingleOrDefault()
         {
             int singleOrDefaultOfSource = Int32Source().SingleOrDefault(); // InvalidOperationException.
             int singleNegativeOrDefaultOfSource = Int32Source().SingleOrDefault(@int => @int < 0);
@@ -1216,7 +1216,7 @@
 
         #region Aggregation
 
-        public static void Aggregate()
+        internal static void Aggregate()
         {
             int productOfSource = Int32Source().Aggregate((currentProduct, @int) => currentProduct * @int);
             // ((((-1 * 1) * 2) * 3) * -4) = 24.
@@ -1226,7 +1226,7 @@
             // InvalidOperationException.
         }
 
-        public static void AggregateWithSeed()
+        internal static void AggregateWithSeed()
         {
             int sumOfSquaresOfSource = Int32Source().Aggregate(
                 0,
@@ -1239,7 +1239,7 @@
                 (currentSumOfSquares, @int) => currentSumOfSquares + @int * @int); // 0.
         }
 
-        public static void AggregateWithSeedAndResultSelector()
+        internal static void AggregateWithSeedAndResultSelector()
         {
             string sumOfSquaresMessage = Int32Source().Aggregate(
                 0,
@@ -1247,7 +1247,7 @@
                 result => $"Sum of squares: {result}"); // Sum of squares: 31.
         }
 
-        public static void Count()
+        internal static void Count()
         {
             int countOfSource = Int32Source().Count(); // 5.
             int countOfSingleSource = SingleInt32Source().Count(); // 1.
@@ -1256,7 +1256,7 @@
             int countOfTypesInMscorlib = mscorlib.ExportedTypes.Count();
         }
 
-        public static void CountWithPredicate()
+        internal static void CountWithPredicate()
         {
             int positiveCountOfSource = Int32Source().Count(@int => @int > 0); // 3.
             int positiveCountOfSingleSource = SingleInt32Source().Count(@int => @int > 0); // 1.
@@ -1268,7 +1268,7 @@
             // 3.
         }
 
-        public static void LongCount()
+        internal static void LongCount()
         {
             long longCountOfSource = Int32Source().LongCount(); // 5L.
             long countOfConcat = Enumerable.Repeat(0, int.MaxValue)
@@ -1276,7 +1276,7 @@
             // int.MaxValue + int.MaxValue = 4294967294L.
         }
 
-        public static void MinMax()
+        internal static void MinMax()
         {
             int minOfSource = Int32Source().Min(); // -4.
             int maxOfSource = Int32Source().Max(); // 3.
@@ -1288,7 +1288,7 @@
             int maxOfEmptySource = EmptyInt32Source().Max(); // InvalidOperationException.
         }
 
-        public static void MinMaxWithSelector()
+        internal static void MinMaxWithSelector()
         {
             decimal mostDeclaredMembers = mscorlib.ExportedTypes
                 .Max(type => type.GetPublicDeclaredMembers().Length); // 311.
@@ -1296,7 +1296,7 @@
                 .Max(type => type.GetPublicMembers().Length); // 315.
         }
 
-        public static void OrderByDescending2()
+        internal static void OrderByDescending2()
         {
             int maxDeclaredMembers = 0;
             var typesWithMostDeclaredMembers = mscorlib.ExportedTypes
@@ -1337,7 +1337,7 @@
             // System.Convert: 315.
         }
 
-        public static void AggregateWithSeed2()
+        internal static void AggregateWithSeed2()
         {
             Tuple<List<Type>, int, List<Type>, int> biggestTypes = mscorlib.ExportedTypes.Aggregate(
                 Tuple.Create(new List<Type>(), 0, new List<Type>(), 0),
@@ -1386,7 +1386,7 @@
 
         }
 
-        public static void Except2()
+        internal static void Except2()
         {
             IEnumerable<MemberInfo> membersFromBase = typeof(Convert).GetPublicMembers()
                 .Except(typeof(Convert).GetPublicDeclaredMembers());
@@ -1400,13 +1400,13 @@
             // System.Type GetType()
         }
 
-        public static void MinMaxGeneric()
+        internal static void MinMaxGeneric()
         {
             Character min = Characters().Min(); // JAVIS.
             Character max = Characters().Max(); // Vision.
         }
 
-        public static void SumAverage()
+        internal static void SumAverage()
         {
             int sumOfSource = Int32Source().Sum(); // 1.
             double averageOfSource = Int32Source().Average(); // 0.2.
@@ -1418,7 +1418,7 @@
             double averageOfEmptySource = EmptyInt32Source().Average(); // InvalidOperationException.
         }
 
-        public static void AverageWithSelector()
+        internal static void AverageWithSelector()
         {
             IEnumerable<Type> publicTypes = mscorlib.ExportedTypes;
             decimal averagePublicMemberCount = publicTypes.Average(type => type.GetMembers(
@@ -1431,35 +1431,35 @@
 
         #region Quantifiers
 
-        public static void All()
+        internal static void All()
         {
             bool allNegative = Int32Source().All(@int => @int < 0); // false.
             bool allPositive = SingleInt32Source().All(@int => @int > 0); // true.
             bool allGreaterThanMax = EmptyInt32Source().All(@int => @int > int.MaxValue); // true.
         }
 
-        public static void Any()
+        internal static void Any()
         {
             bool anyInSource = Int32Source().Any(); // true.
             bool anyInSingleSource = SingleInt32Source().Any(); // true.
             bool anyInEmptySource = EmptyInt32Source().Any(); // false.
         }
 
-        public static void AnyWithPredicate()
+        internal static void AnyWithPredicate()
         {
             bool anyNegative = Int32Source().Any(@int => @int < 0); // true.
             bool anyPositive = SingleInt32Source().Any(@int => @int > 0); // true.
             bool any0 = EmptyInt32Source().Any(_ => true); // false.
         }
 
-        public static void Contains()
+        internal static void Contains()
         {
             bool contains5InSource = Int32Source().Contains(5); // false.
             bool contains5InSingleSource = SingleInt32Source().Contains(5); // true.
             bool contains5InEmptySource = EmptyInt32Source().Contains(5); // false.
         }
 
-        public static void ContainsWithComparer()
+        internal static void ContainsWithComparer()
         {
             bool containsTwo = Words().Contains("two", StringComparer.Ordinal); // false.
             bool containsTwoIgnoreCase = Words().Contains("two", StringComparer.OrdinalIgnoreCase); // true.
@@ -1469,7 +1469,7 @@
 
         #region Equality
 
-        public static void SequentialEqual()
+        internal static void SequentialEqual()
         {
             IEnumerable<object> first = new object[] { null, 1, "2", mscorlib };
             IEnumerable<object> second = new List<object>() { null, 1, $"{1 + 1}", mscorlib };
@@ -1478,14 +1478,14 @@
             bool sequentialEqual = first.SequenceEqual(second.Concat(Enumerable.Empty<object>())); // true.
         }
 
-        public static void SequentialEqualOfEmpty()
+        internal static void SequentialEqualOfEmpty()
         {
             IEnumerable<Derived> emptyfirst = new ConcurrentQueue<Derived>();
             IEnumerable<Base> emptysecond = ImmutableHashSet.Create<Base>();
             bool sequentialEqual = emptyfirst.SequenceEqual(emptysecond); // true.
         }
 
-        public static void SequentialEqualWithComparer()
+        internal static void SequentialEqualWithComparer()
         {
             IEnumerable<string> first = new string[] { null, string.Empty, "ss", };
             IEnumerable<string> second = new string[] { null, string.Empty, "ß", };
@@ -1496,13 +1496,13 @@
         #endregion
     }
 
-    public partial class Character : IComparable<Character>
+    internal partial class Character : IComparable<Character>
     {
         public int CompareTo
             (Character other) => string.Compare(this.Name, other.Name, StringComparison.Ordinal);
     }
 
-    public partial class Character
+    internal partial class Character
     {
         public override bool Equals(object obj)
         {

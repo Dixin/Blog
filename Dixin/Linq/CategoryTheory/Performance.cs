@@ -81,12 +81,11 @@ namespace Dixin.Linq.CategoryTheory
 {
     using System.Collections.Generic;
     using System.Linq;
-    using Microsoft.FSharp.Core;
 
     // [Pure]
     public static partial class EnumerableExtensions
     {
-        public static IEnumerable<T> QuickSort<T>(this IEnumerable<T> source, Comparer<T> comparer = null)
+        internal static IEnumerable<T> QuickSort<T>(this IEnumerable<T> source, Comparer<T> comparer = null)
         {
             if (!source.Any())
             {
@@ -103,19 +102,6 @@ namespace Dixin.Linq.CategoryTheory
                                               where comparer.Compare(value, head) > 0
                                               select value).QuickSort();
             return smallerThanHead.Concat(head.Enumerable()).Concat(greaterThanHead);
-        }
-    }
-
-    // [Pure]
-    public static partial class EnumerableExtensions
-    {
-        public static Unit ForEach<T>(this IEnumerable<T> source)
-        {
-            foreach (T value in source)
-            {
-            }
-
-            return null;
         }
     }
 }

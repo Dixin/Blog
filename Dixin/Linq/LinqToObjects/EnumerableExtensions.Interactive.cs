@@ -6,11 +6,11 @@
     using System.Linq;
     using System.Threading;
 
-    public static partial class EnumerableExtensions
+    internal static partial class EnumerableExtensions
     {
         #region Generation
 
-        public static IEnumerable<TResult> Defer<TResult>(Func<IEnumerable<TResult>> enumerableFactory)
+        internal static IEnumerable<TResult> Defer<TResult>(Func<IEnumerable<TResult>> enumerableFactory)
         {
             foreach (TResult value in enumerableFactory())
             {
@@ -18,7 +18,7 @@
             }
         }
 
-        public static IEnumerable<TResult> Create<TResult>(Func<IEnumerator<TResult>> getEnumerator)
+        internal static IEnumerable<TResult> Create<TResult>(Func<IEnumerator<TResult>> getEnumerator)
         {
             using (IEnumerator<TResult> iterator = getEnumerator())
             {
@@ -29,14 +29,14 @@
             }
         }
 
-        public static IEnumerable<T> Create<T>(Action<IYielder<T>> create) => EnumerableEx.Create(create);
+        internal static IEnumerable<T> Create<T>(Action<IYielder<T>> create) => EnumerableEx.Create(create);
 
-        public static IEnumerable<TResult> Return<TResult>(TResult value)
+        internal static IEnumerable<TResult> Return<TResult>(TResult value)
         {
             yield return value;
         }
 
-        public static IEnumerable<TResult> Repeat<TResult>(TResult value)
+        internal static IEnumerable<TResult> Repeat<TResult>(TResult value)
         {
             while (true)
             {
@@ -44,7 +44,7 @@
             }
         }
 
-        public static IEnumerable<TSource> Repeat<TSource>(this IEnumerable<TSource> source, int? count = null)
+        internal static IEnumerable<TSource> Repeat<TSource>(this IEnumerable<TSource> source, int? count = null)
         {
             if (count == null)
             {
@@ -70,7 +70,7 @@
 
         #region Filtering
 
-        public static IEnumerable<TSource> IgnoreElements<TSource>(this IEnumerable<TSource> source)
+        internal static IEnumerable<TSource> IgnoreElements<TSource>(this IEnumerable<TSource> source)
         {
             foreach (TSource _ in source)
             {
@@ -83,10 +83,10 @@
 
         #region Mapping
 
-        public static IEnumerable<TOther> SelectMany<TSource, TOther>
+        internal static IEnumerable<TOther> SelectMany<TSource, TOther>
             (this IEnumerable<TSource> source, IEnumerable<TOther> other) => source.SelectMany(_ => other);
 
-        public static IEnumerable<TSource> Scan<TSource>(
+        internal static IEnumerable<TSource> Scan<TSource>(
             this IEnumerable<TSource> source, Func<TSource, TSource, TSource> func)
         {
             using (IEnumerator<TSource> iterator = source.GetEnumerator())
@@ -104,7 +104,7 @@
             }
         }
 
-        public static IEnumerable<TAccumulate> Scan<TSource, TAccumulate>(
+        internal static IEnumerable<TAccumulate> Scan<TSource, TAccumulate>(
             this IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func) =>
                 source.Select(value => seed = func(seed, value));
 
@@ -112,20 +112,20 @@
 
         #region Concatenation
 
-        public static IEnumerable<TSource> Concat<TSource>
+        internal static IEnumerable<TSource> Concat<TSource>
             (this IEnumerable<IEnumerable<TSource>> sources) => sources.SelectMany(source => source);
 
-        public static IEnumerable<TSource> Concat<TSource>
+        internal static IEnumerable<TSource> Concat<TSource>
             (params IEnumerable<TSource>[] sources) => sources.Concat();
 
-        public static IEnumerable<TSource> StartWith<TSource>
+        internal static IEnumerable<TSource> StartWith<TSource>
             (this IEnumerable<TSource> source, params TSource[] values) => values.Concat(source);
 
         #endregion
 
         #region Set
 
-        public static IEnumerable<TSource> Distinct<TSource, TKey>(
+        internal static IEnumerable<TSource> Distinct<TSource, TKey>(
             this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IEqualityComparer<TKey> comparer = null)
         {
             HashSet<TKey> hashSet = new HashSet<TKey>(comparer);
@@ -136,7 +136,7 @@
 
         #region Partitioning
 
-        public static IEnumerable<TSource> TakeLast_<TSource>(this IEnumerable<TSource> source, int count)
+        internal static IEnumerable<TSource> TakeLast_<TSource>(this IEnumerable<TSource> source, int count)
         {
             if (count <= 0)
             {
@@ -161,7 +161,7 @@
             }
         }
 
-        public static IEnumerable<TSource> SkipLast_<TSource>(this IEnumerable<TSource> source, int count)
+        internal static IEnumerable<TSource> SkipLast_<TSource>(this IEnumerable<TSource> source, int count)
         {
             Queue<TSource> lastValues = new Queue<TSource>();
             foreach (TSource value in source)
@@ -178,7 +178,7 @@
 
         #region Conversion
 
-        public static IEnumerable<TSource> Hide<TSource>(this IEnumerable<TSource> source)
+        internal static IEnumerable<TSource> Hide<TSource>(this IEnumerable<TSource> source)
         {
             foreach (TSource value in source)
             {
@@ -190,7 +190,7 @@
 
         #region Exception
 
-        public static IEnumerable<TResult> Throw<TResult>(Exception exception)
+        internal static IEnumerable<TResult> Throw<TResult>(Exception exception)
         {
             Trace.WriteLine($"throw {exception}, thread id: {Thread.CurrentThread.ManagedThreadId}");
             throw exception;
@@ -200,7 +200,7 @@
         }
 
 #if ERROR
-        public static IEnumerable<TSource> CatchWithYield<TSource, TException>(
+        internal static IEnumerable<TSource> CatchWithYield<TSource, TException>(
             this IEnumerable<TSource> source, Func<TException, IEnumerable<TSource>> handler)
             where TException : Exception
         {
@@ -221,7 +221,7 @@
         }
 #endif
 
-        public static IEnumerable<TSource> CatchWithYield<TSource, TException>(
+        internal static IEnumerable<TSource> CatchWithYield<TSource, TException>(
             this IEnumerable<TSource> source, Func<TException, IEnumerable<TSource>> handler)
             where TException : Exception => Create<TSource>(async yield =>
         {
@@ -241,7 +241,7 @@
             }
         });
 
-        public static IEnumerable<TSource> Catch<TSource, TException>(
+        internal static IEnumerable<TSource> Catch<TSource, TException>(
             this IEnumerable<TSource> source, Func<TException, IEnumerable<TSource>> handler)
             where TException : Exception
         {
@@ -282,7 +282,7 @@
         }
 
 #if ERROR
-        public static IEnumerable<TSource> CatchWithYield<TSource>(this IEnumerable<IEnumerable<TSource>> sources)
+        internal static IEnumerable<TSource> CatchWithYield<TSource>(this IEnumerable<IEnumerable<TSource>> sources)
         {
             Exception lastException = null;
             foreach (IEnumerable<TSource> source in sources)
@@ -311,7 +311,7 @@
         }
 #endif
 
-        public static IEnumerable<TSource> Catch<TSource>(this IEnumerable<IEnumerable<TSource>> sources)
+        internal static IEnumerable<TSource> Catch<TSource>(this IEnumerable<IEnumerable<TSource>> sources)
              => Create<TSource>(async yield =>
         {
             Exception lastException = null;
@@ -340,7 +340,7 @@
             }
         });
 
-        public static IEnumerable<TSource> Catch2<TSource>(this IEnumerable<IEnumerable<TSource>> sources)
+        internal static IEnumerable<TSource> Catch2<TSource>(this IEnumerable<IEnumerable<TSource>> sources)
         {
             Exception lastException = null;
             foreach (IEnumerable<TSource> source in sources)
@@ -384,13 +384,13 @@
             }
         }
 
-        public static IEnumerable<TSource> Catch<TSource>(params IEnumerable<TSource>[] sources) => sources.Catch();
+        internal static IEnumerable<TSource> Catch<TSource>(params IEnumerable<TSource>[] sources) => sources.Catch();
 
-        public static IEnumerable<TSource> Catch<TSource>
+        internal static IEnumerable<TSource> Catch<TSource>
             (this IEnumerable<TSource> first, IEnumerable<TSource> second) =>
                 new IEnumerable<TSource>[] { first, second }.Catch();
 
-        public static IEnumerable<TSource> Finally<TSource>(this IEnumerable<TSource> source, Action finalAction)
+        internal static IEnumerable<TSource> Finally<TSource>(this IEnumerable<TSource> source, Action finalAction)
         {
             try
             {
@@ -405,11 +405,11 @@
             }
         }
 
-        public static IEnumerable<TSource> Retry<TSource>
+        internal static IEnumerable<TSource> Retry<TSource>
             (this IEnumerable<TSource> source, int? retryCount = null) => Return(source).Repeat(retryCount).Catch();
 
 #if ERROR
-        public static IEnumerable<TSource> OnErrorResumeNextWithYield<TSource>(
+        internal static IEnumerable<TSource> OnErrorResumeNextWithYield<TSource>(
             this IEnumerable<IEnumerable<TSource>> sources)
         {
             foreach (IEnumerable<TSource> source in sources)
@@ -428,7 +428,7 @@
         }
 #endif
 
-        public static IEnumerable<TSource> OnErrorResumeNext<TSource>(
+        internal static IEnumerable<TSource> OnErrorResumeNext<TSource>(
             this IEnumerable<IEnumerable<TSource>> sources) => Create<TSource>(async yield =>
         {
             foreach (IEnumerable<TSource> source in sources)
@@ -446,10 +446,10 @@
             }
         });
 
-        public static IEnumerable<TSource> OnErrorResumeNext<TSource>
+        internal static IEnumerable<TSource> OnErrorResumeNext<TSource>
             (params IEnumerable<TSource>[] sources) => sources.OnErrorResumeNext();
 
-        public static IEnumerable<TSource> OnErrorResumeNext<TSource>
+        internal static IEnumerable<TSource> OnErrorResumeNext<TSource>
             (this IEnumerable<TSource> first, IEnumerable<TSource> second) =>
                 new IEnumerable<TSource>[] { first, second }.OnErrorResumeNext();
 
@@ -457,7 +457,7 @@
 
         #region Imperative
 
-        public static IEnumerable<TSource> Using<TSource, TResource>(
+        internal static IEnumerable<TSource> Using<TSource, TResource>(
             Func<TResource> resourceFactory, Func<TResource, IEnumerable<TSource>> enumerableFactory)
             where TResource : IDisposable
         {
@@ -470,11 +470,11 @@
             }
         }
 
-        public static IEnumerable<TResult> If<TResult>
+        internal static IEnumerable<TResult> If<TResult>
             (Func<bool> condition, IEnumerable<TResult> thenSource, IEnumerable<TResult> elseSource = null) =>
                 Defer(() => condition() ? thenSource : elseSource ?? Enumerable.Empty<TResult>());
 
-        public static IEnumerable<TResult> Case<TValue, TResult>(
+        internal static IEnumerable<TResult> Case<TValue, TResult>(
             Func<TValue> selector,
             IDictionary<TValue, IEnumerable<TResult>> sources,
             IEnumerable<TResult> defaultSource = null) => Defer(() =>
@@ -488,7 +488,7 @@
             return result;
         });
 
-        public static IEnumerable<TResult> While<TResult>(Func<bool> condition, IEnumerable<TResult> source)
+        internal static IEnumerable<TResult> While<TResult>(Func<bool> condition, IEnumerable<TResult> source)
         {
             while (condition())
             {
@@ -499,10 +499,10 @@
             }
         }
 
-        public static IEnumerable<TResult> DoWhile<TResult>
+        internal static IEnumerable<TResult> DoWhile<TResult>
             (this IEnumerable<TResult> source, Func<bool> condition) => source.Concat(While(condition, source));
 
-        public static IEnumerable<TResult> Generate<TState, TResult>(
+        internal static IEnumerable<TResult> Generate<TState, TResult>(
             TState initialState,
             Func<TState, bool> condition,
             Func<TState, TState> iterate,
@@ -514,7 +514,7 @@
             }
         }
 
-        public static IEnumerable<TResult> For<TSource, TResult>
+        internal static IEnumerable<TResult> For<TSource, TResult>
             (IEnumerable<TSource> source, Func<TSource, IEnumerable<TResult>> resultSelector) =>
                 source.SelectMany(resultSelector);
 
@@ -522,7 +522,7 @@
 
         #region Iteration
 
-        public static IEnumerable<TSource> Do<TSource>(
+        internal static IEnumerable<TSource> Do<TSource>(
             this IEnumerable<TSource> source,
             Action<TSource> onNext = null, Action<Exception> onError = null, Action onCompleted = null)
         {
@@ -554,7 +554,7 @@
             }
         }
 
-        public static void ForEach<TSource>(/* this */ IEnumerable<TSource> source, Action<TSource> onNext)
+        internal static void ForEach<TSource>(/* this */ IEnumerable<TSource> source, Action<TSource> onNext)
         {
             foreach (TSource value in source)
             {
@@ -562,7 +562,7 @@
             }
         }
 
-        public static void ForEach<TSource>(/* this */ IEnumerable<TSource> source, Action<TSource, int> onNext)
+        internal static void ForEach<TSource>(/* this */ IEnumerable<TSource> source, Action<TSource, int> onNext)
         {
             int index = 0;
             foreach (TSource value in source)
@@ -576,7 +576,7 @@
 
         #region Quantifier
 
-        public static bool IsEmpty<TSource>(this IEnumerable<TSource> source) => !source.Any();
+        internal static bool IsEmpty<TSource>(this IEnumerable<TSource> source) => !source.Any();
 
         #endregion
     }

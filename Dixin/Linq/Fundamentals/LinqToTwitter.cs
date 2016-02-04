@@ -6,20 +6,22 @@
     using System.Threading.Tasks;
     using global::LinqToTwitter;
 
-    public static partial class LinqToTwitter
+    using Settings = Dixin.Properties.Settings;
+
+    internal static class LinqToTwitter
     {
         private static readonly SingleUserAuthorizer Authorizer = new SingleUserAuthorizer()
         {
             CredentialStore = new InMemoryCredentialStore()
             {
-                ConsumerKey = "ConsumerKey",
-                ConsumerSecret = "ConsumerSecret",
-                OAuthToken = "OAuthToken",
-                OAuthTokenSecret = "OAuthTokenSecret"
+                ConsumerKey = Settings.Default.TwitterConsumerKey,
+                ConsumerSecret = Settings.Default.TwitterConsumerSecret,
+                OAuthToken = Settings.Default.TwitterOAuthToken,
+                OAuthTokenSecret = Settings.Default.TwitterOAuthTokenSecret
             }
         };
 
-        public static async Task<IEnumerable<Tuple<string, string>>> SearchAsync(string keyword, int count)
+        internal static async Task<IEnumerable<Tuple<string, string>>> SearchAsync(string keyword, int count)
         {
             using (TwitterContext twitter = new TwitterContext(Authorizer))
             {

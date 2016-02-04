@@ -116,9 +116,9 @@
                     .Concat(EnumerableEx.Return(Tuple.Create(postfix, (double?)null))); // left, right, postfix
     }
 
-    public static partial class AnonymousFunction
+    internal static partial class AnonymousFunction
     {
-        public static void IL()
+        internal static void IL()
         {
             Expression<Func<double, double, double, double, double, double>> infix =
                 (a, b, c, d, e) => a + b - c * d / 2 + e * 3;
@@ -173,9 +173,9 @@
         }
     }
 
-    public static partial class AnonymousFunction
+    internal static partial class AnonymousFunction
     {
-        public static void Method()
+        internal static void Method()
         {
             Expression<Func<double, double, double, double, double, double>> expression =
                 (a, b, c, d, e) => a + b - c * d / 2 + e * 3;
@@ -184,7 +184,7 @@
             double result = method(1, 2, 3, 4, 5); // 12
         }
 
-        public static void BuiltInCompile()
+        internal static void BuiltInCompile()
         {
             Expression<Func<double, double, double, double, double, double>> infix =
                 (a, b, c, d, e) => a + b - c * d / 2 + e * 3;
@@ -193,7 +193,7 @@
             double result = method(1, 2, 3, 4, 5); // 12
         }
 
-        public static void TypeInference()
+        internal static void TypeInference()
         {
             // Anonymous method with a int parameter, and returns a bool value.
             Func<int, bool> predicate1 = number => number > 0;

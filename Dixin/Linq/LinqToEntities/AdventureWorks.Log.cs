@@ -6,13 +6,13 @@
     using System.Diagnostics;
     using System.Linq;
 
-    public class CustomDbCommandInterceptor : IDbCommandInterceptor
+    internal class CustomDbCommandInterceptor : IDbCommandInterceptor
     {
         private readonly Action<DbCommand> begin;
 
         private readonly Action end;
 
-        public CustomDbCommandInterceptor(Action<string> write)
+        internal CustomDbCommandInterceptor(Action<string> write)
         {
             this.begin = command => write?.Invoke($@"{command.CommandText}{string.Concat(command.Parameters
                 .OfType<DbParameter>()
@@ -39,7 +39,7 @@
             (DbCommand command, DbCommandInterceptionContext<object> _) => this.end();
     }
 
-    public static partial class Log
+    internal static partial class Log
     {
         static Log()
         {
@@ -58,7 +58,7 @@
             // Done.
         }
 
-        public static void WhereWithLog()
+        internal static void WhereWithLog()
         {
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {
