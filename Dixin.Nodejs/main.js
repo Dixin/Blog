@@ -3,10 +3,11 @@
 var tumblr = require("./tumblr");
 
 tumblr.downloadAllAndUnlike({
-    userEmail: "dixinyan@live.com",
-    userPassword: "ftSq1@zure",
-    appConsumerKey: "...",
-    appSecretKey: "...",
+    userEmail: "userEmail",
+    userPassword: "userPassword",
+    // register an application in tumblr: https://www.tumblr.com/oauth/apps.
+    appConsumerKey: "appConsumerKey",
+    appSecretKey: "appSecretKey",
     offset: 5,
     limit: 51,
     directory: "D:\\Tumblr",
