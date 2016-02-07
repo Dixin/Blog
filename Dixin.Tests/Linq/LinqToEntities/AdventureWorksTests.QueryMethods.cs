@@ -8,8 +8,7 @@
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    [TestClass]
-    public class QueryMethodsTests
+    public partial class AdventureWorksTests
     {
         [TestMethod]
         public void LocalRemoteMethodTest()

@@ -270,7 +270,6 @@
     <Compile Include="Data\Services\WcfWebSocketService.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Association.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Changes.cs" />
-    <Compile Include="Linq\LinqToEntities\AdventureWorks.Compiled.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Database.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Laziness.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Inheritance.cs" />
@@ -282,6 +281,7 @@
     <Compile Include="Linq\LinqToEntities\DbContextExtensions.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.Changes.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.Laziness.cs" />
+    <Compile Include="Linq\LinqToSql\AdventureWorks.Performance.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.RemoteMethods.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.Associations.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.Inheritance.cs" />
