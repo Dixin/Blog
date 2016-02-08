@@ -9,7 +9,6 @@
     using System.Reflection.Emit;
 
     using Dixin.Linq.Fundamentals;
-    using Dixin.Properties;
 
     public class InfixVisitor : BinaryArithmeticExpressionVisitor<string>
     {
@@ -57,7 +56,7 @@
         {
             if (connection == null)
             {
-                connection = Settings.Default.AdventureWorksConnectionString;
+                connection = Connection.String;
             }
 
             DynamicMethod dynamicMethod = new DynamicMethod(

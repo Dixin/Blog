@@ -269,6 +269,7 @@
     <Compile Include="Common\ExceptionExtensions.cs" />
     <Compile Include="Common\ValidatedNotNullAttribute.cs" />
     <Compile Include="Data\Services\WcfWebSocketService.cs" />
+    <Compile Include="Linq\Connection.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Association.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Changes.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Database.cs" />
