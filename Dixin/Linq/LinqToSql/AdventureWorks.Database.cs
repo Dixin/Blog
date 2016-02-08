@@ -1,5 +1,6 @@
 ﻿namespace Dixin.Linq.LinqToSql
 {
+    using System.Configuration;
     using System.Data.Linq;
     using System.Data.Linq.Mapping;
 
@@ -9,7 +10,8 @@
     public partial class AdventureWorks : DataContext
     {
         public AdventureWorks()
-            : base(Settings.Default.AdventureWorksConnectionString)
+            : base(ConfigurationManager.ConnectionStrings[nameof(Settings.AdventureWorksConnectionString)]?.ConnectionString
+                ?? Settings.Default.AdventureWorksConnectionString)
         {
             // if (!this.DatabaseExists())
             // {

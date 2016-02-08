@@ -1,5 +1,6 @@
 ﻿namespace Dixin.Linq.LinqToEntities
 {
+    using System.Configuration;
     using System.Data.Entity;
 
     using Dixin.Properties;
@@ -13,7 +14,8 @@
         }
 
         public AdventureWorks()
-            : base(Settings.Default.AdventureWorksConnectionString)
+            : base(ConfigurationManager.ConnectionStrings[nameof(Settings.AdventureWorksConnectionString)]?.ConnectionString
+                ?? Settings.Default.AdventureWorksConnectionString)
         {
         }
     }
