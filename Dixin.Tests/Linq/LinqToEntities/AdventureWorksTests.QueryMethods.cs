@@ -43,6 +43,7 @@
                 Trace.WriteLine(exception);
             }
             QueryMethods.LocalSelector();
+            QueryMethods.RemoteMethod();
         }
 
         [TestMethod]

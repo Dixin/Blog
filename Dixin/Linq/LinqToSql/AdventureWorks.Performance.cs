@@ -7,13 +7,17 @@
     internal static class CompiledQueries
     {
         private static readonly Func<AdventureWorks, decimal, IQueryable<string>> GetProductNamesCompiled =
-            CompiledQuery.Compile((AdventureWorks adventureWorks, decimal maxListPrice) => adventureWorks
+            CompiledQuery.Compile((AdventureWorks adventureWorks, decimal listPrice) => adventureWorks
                 .Products
-                .Where(product => product.ListPrice <= maxListPrice)
+                .Where(product => product.ListPrice == listPrice)
                 .Select(product => product.Name));
 
         internal static IQueryable<string> GetProductNames
-            (this AdventureWorks adventureWorks, decimal maxListPrice) =>
-                GetProductNamesCompiled(adventureWorks, maxListPrice);
+            (this AdventureWorks adventureWorks, decimal listPrice) =>
+                GetProductNamesCompiled(adventureWorks, listPrice);
+    }
+
+    internal static class Performance
+    {
     }
 }

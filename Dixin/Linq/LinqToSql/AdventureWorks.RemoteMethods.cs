@@ -1,6 +1,7 @@
 ﻿namespace Dixin.Linq.LinqToSql
 {
     using System;
+    using System.Data.Linq.SqlClient;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
@@ -77,6 +78,14 @@
                 .Where(product => product.ProductID > 100)
                 .AsEnumerable()
                 .Select(product => new { Name = product.Name, IsValid = product.IsValid() }); // Define query.
+            query.ForEach(); // Execute query.
+        }
+
+        internal static void RemoteMethod()
+        {
+            IQueryable<DateTime> query = AdventureWorks.ProductPhotos
+                .Where(photo => SqlMethods.DateDiffYear(photo.ModifiedDate, DateTime.Now) >= 5)
+                .Select(photo => photo.ModifiedDate); // Define query.
             query.ForEach(); // Execute query.
         }
     }

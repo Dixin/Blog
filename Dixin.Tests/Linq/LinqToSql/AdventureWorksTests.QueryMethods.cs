@@ -53,6 +53,7 @@
             }
             QueryMethods.MethodSelector();
             QueryMethods.LocalSelector();
+            QueryMethods.RemoteMethod();
         }
 
         [TestMethod]

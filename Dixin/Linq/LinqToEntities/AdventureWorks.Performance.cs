@@ -4,31 +4,34 @@
     using System.Data.Entity;
     using System.Data.Entity.Core.EntityClient;
     using System.Data.Entity.Core.Objects;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
     using System.Transactions;
 
     public class LegacyAdventureWorks : ObjectContext
     {
+        private ObjectSet<Product> products;
+
         public LegacyAdventureWorks()
             : base(new AdventureWorks().ObjectContext().Connection as EntityConnection)
         {
         }
 
-        public ObjectSet<Product> Products => this.CreateObjectSet<Product>();
+        public ObjectSet<Product> Products => this.products ?? (this.products = this.CreateObjectSet<Product>());
     }
 
     internal static class CompiledQueries
     {
         private static readonly Func<LegacyAdventureWorks, decimal, IQueryable<string>> GetProductNamesCompiled =
-            CompiledQuery.Compile((LegacyAdventureWorks adventureWorks, decimal maxListPrice) => adventureWorks
+            CompiledQuery.Compile((LegacyAdventureWorks adventureWorks, decimal listPrice) => adventureWorks
                 .Products
-                .Where(product => product.ListPrice <= maxListPrice)
+                .Where(product => product.ListPrice == listPrice)
                 .Select(product => product.Name));
 
         internal static IQueryable<string> GetProductNames
-            (this LegacyAdventureWorks adventureWorks, decimal maxListPrice) =>
-                GetProductNamesCompiled(adventureWorks, maxListPrice);
+            (this LegacyAdventureWorks adventureWorks, decimal listPrice) =>
+                GetProductNamesCompiled(adventureWorks, listPrice);
     }
 
     internal class Performance

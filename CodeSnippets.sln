@@ -33,42 +33,10 @@ Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Dixin.Nodejs", "Dixin.Nodej
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dixin.Sql", "Dixin.Sql\Dixin.Sql.csproj", "{3B8554BA-8A06-460B-9FE6-CF8303476027}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFramework.Functions", "EntityFramework.Functions\EntityFramework.Functions.csproj", "{20128F9B-B68D-4E51-A0E9-67EB1E7B9402}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFramework.Functions.Tests", "EntityFramework.Functions.Tests\EntityFramework.Functions.Tests.csproj", "{A8813069-8F37-4D70-886B-DEA7D846CBDF}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{4569910E-06BB-405F-B3FB-6742FB822234}"
 	ProjectSection(SolutionItems) = preProject
 		Data\AdventureWorks_Data.mdf = Data\AdventureWorks_Data.mdf
 		Data\AdventureWorks_Log.ldf = Data\AdventureWorks_Log.ldf
-	EndProjectSection
-EndProject
-Project("{FF286327-C783-4F7A-AB73-9BCBAD0D4460}") = "EntityFramework.Functions.Nuget", "EntityFramework.Functions.Nuget\EntityFramework.Functions.Nuget.nuproj", "{4C1EA2B7-77E9-4703-904F-643D11C17AFE}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFramework.Functions.Net45", "EntityFramework.Functions.Net45\EntityFramework.Functions.Net45.csproj", "{2FC7EE32-A93E-4B55-AE79-4F49C9EE5E70}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EntityFramework.Functions.Net46", "EntityFramework.Functions.Net46\EntityFramework.Functions.Net46.csproj", "{1F4A3422-908A-4EA0-98D8-B3AD8F402FAF}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Nuproj", "Nuproj", "{8268BD1F-5E99-499B-A1DF-D58DA5B0747B}"
-	ProjectSection(SolutionItems) = preProject
-		Tools\CodeAnalysisDictionary.xml = Tools\CodeAnalysisDictionary.xml
-		Tools\CommonAssemblyInfo.cs = Tools\CommonAssemblyInfo.cs
-		Tools\CommonAssemblyInfo.fs = Tools\CommonAssemblyInfo.fs
-		Tools\TargetFrameworkVersion.prop = Tools\TargetFrameworkVersion.prop
-		Tools\VS2015.gitconfig = Tools\VS2015.gitconfig
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Rules", "Rules", "{A9A3D788-D9CB-4B39-9DD0-5E49E333020D}"
-	ProjectSection(SolutionItems) = preProject
-		Tools\NuProj\Rules\content.xaml = Tools\NuProj\Rules\content.xaml
-		Tools\NuProj\Rules\folder.xaml = Tools\NuProj\Rules\folder.xaml
-		Tools\NuProj\Rules\general.browseobject.xaml = Tools\NuProj\Rules\general.browseobject.xaml
-		Tools\NuProj\Rules\general.xaml = Tools\NuProj\Rules\general.xaml
-		Tools\NuProj\Rules\none.xaml = Tools\NuProj\Rules\none.xaml
-		Tools\NuProj\Rules\ProjectItemsSchema.xaml = Tools\NuProj\Rules\ProjectItemsSchema.xaml
-		Tools\NuProj\Rules\ProjectReference.xaml = Tools\NuProj\Rules\ProjectReference.xaml
-		Tools\NuProj\Rules\ResolvedProjectReference.xaml = Tools\NuProj\Rules\ResolvedProjectReference.xaml
-		Tools\NuProj\Rules\scc.xaml = Tools\NuProj\Rules\scc.xaml
 	EndProjectSection
 EndProject
 Global
@@ -105,33 +73,9 @@ Global
 		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Release|Any CPU.Build.0 = Release|Any CPU
-		{20128F9B-B68D-4E51-A0E9-67EB1E7B9402}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{20128F9B-B68D-4E51-A0E9-67EB1E7B9402}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{20128F9B-B68D-4E51-A0E9-67EB1E7B9402}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{20128F9B-B68D-4E51-A0E9-67EB1E7B9402}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A8813069-8F37-4D70-886B-DEA7D846CBDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A8813069-8F37-4D70-886B-DEA7D846CBDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A8813069-8F37-4D70-886B-DEA7D846CBDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A8813069-8F37-4D70-886B-DEA7D846CBDF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4C1EA2B7-77E9-4703-904F-643D11C17AFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4C1EA2B7-77E9-4703-904F-643D11C17AFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4C1EA2B7-77E9-4703-904F-643D11C17AFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4C1EA2B7-77E9-4703-904F-643D11C17AFE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2FC7EE32-A93E-4B55-AE79-4F49C9EE5E70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2FC7EE32-A93E-4B55-AE79-4F49C9EE5E70}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2FC7EE32-A93E-4B55-AE79-4F49C9EE5E70}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2FC7EE32-A93E-4B55-AE79-4F49C9EE5E70}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1F4A3422-908A-4EA0-98D8-B3AD8F402FAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1F4A3422-908A-4EA0-98D8-B3AD8F402FAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1F4A3422-908A-4EA0-98D8-B3AD8F402FAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1F4A3422-908A-4EA0-98D8-B3AD8F402FAF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{8268BD1F-5E99-499B-A1DF-D58DA5B0747B} = {F59804F9-2162-4237-BD61-93C0A156A6FE}
-		{A9A3D788-D9CB-4B39-9DD0-5E49E333020D} = {8268BD1F-5E99-499B-A1DF-D58DA5B0747B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8

@@ -14,7 +14,7 @@
         {
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {
-                string[] productNames = adventureWorks.GetProductNames(100).ToArray();
+                string[] productNames = adventureWorks.GetProductNames(539.99M).ToArray();
                 EnumerableAssert.Any(productNames);
             }
         }
