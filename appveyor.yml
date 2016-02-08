@@ -48,6 +48,9 @@ before_test:
     sqlcmd -S "$server" -Q "Use [$database]; EXEC sys.sp_configure @configname = N'clr enabled', @configvalue = 1;"
 
     sqlcmd -S "$server" -Q "Use [$database]; RECONFIGURE;"
+
+
+    Start-Service MSDTC
 notifications:
 - provider: Email
   to:

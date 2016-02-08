@@ -43,7 +43,9 @@
         [TestMethod]
         public void QueryParentProcess()
         {
-            ProcessHelper.ByName("svchost.exe").ForEach(process =>
+            Win32Process[] processes = ProcessHelper.ByName("svchost.exe").ToArray();
+            EnumerableAssert.Any(processes);
+            processes.ForEach(process =>
                 {
                     Win32Process parentProcess = ProcessHelper.ParentProcess(process.ProcessId.Value);
                     Assert.IsNotNull(parentProcess);
@@ -53,7 +55,9 @@
         [TestMethod]
         public void QueryAllParentProcesses()
         {
-            ProcessHelper.ByName("svchost.exe").ForEach(process =>
+            Win32Process[] processes = ProcessHelper.ByName("svchost.exe").ToArray();
+            EnumerableAssert.Any(processes);
+            processes.ForEach(process =>
                 {
                     IEnumerable<Win32Process> parentProcesses = ProcessHelper.AllParentProcess(process.ProcessId.Value);
                     EnumerableAssert.Multiple(parentProcesses);
