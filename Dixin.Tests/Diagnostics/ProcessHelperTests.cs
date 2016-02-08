@@ -43,17 +43,21 @@
         [TestMethod]
         public void QueryParentProcess()
         {
-            uint id = ProcessHelper.ByName("SearchUI.exe").Single().ProcessId.Value; // Cortana.
-            Win32Process parentProcess = ProcessHelper.ParentProcess(id);
-            Assert.IsNotNull(parentProcess);
+            ProcessHelper.ByName("svchost.exe").ForEach(process =>
+                {
+                    Win32Process parentProcess = ProcessHelper.ParentProcess(process.ProcessId.Value);
+                    Assert.IsNotNull(parentProcess);
+                });
         }
 
         [TestMethod]
         public void QueryAllParentProcesses()
         {
-            uint id = ProcessHelper.ByName("SearchUI.exe").Single().ProcessId.Value; // Cortana.
-            IEnumerable<Win32Process> parentProcesses = ProcessHelper.AllParentProcess(id);
-            EnumerableAssert.Multiple(parentProcesses);
+            ProcessHelper.ByName("svchost.exe").ForEach(process =>
+                {
+                    IEnumerable<Win32Process> parentProcesses = ProcessHelper.AllParentProcess(process.ProcessId.Value);
+                    EnumerableAssert.Multiple(parentProcesses);
+                });
         }
 
         [TestMethod]
