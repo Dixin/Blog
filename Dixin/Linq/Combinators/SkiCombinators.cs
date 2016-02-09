@@ -43,8 +43,6 @@ namespace Dixin.Linq.Combinators
 
     public delegate Func<Func<T1, T2>, Func<T1, TResult>> S<T1, T2, TResult>(Func<T1, Func<T2, TResult>> x);
 
-
-
     [SuppressMessage("Microsoft.Naming", "CA1708:IdentifiersShouldDifferByMoreThanCase")]
     public static partial class SkiCombinators
     {
