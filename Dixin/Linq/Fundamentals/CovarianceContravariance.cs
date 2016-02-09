@@ -577,7 +577,7 @@
                     {
                         try
                         {
-                            return Assembly.LoadFrom(file);
+                            return Assembly.Load(AssemblyName.GetAssemblyName(file));
                         }
                         catch (BadImageFormatException)
                         {
@@ -591,7 +591,7 @@
     {
         public static IEnumerable<Type> GetTypesWithVariance()
         {
-            string mscorlibPath = typeof(object).Assembly.GetName().CodeBase;
+            string mscorlibPath = typeof(object).Assembly.CodeBase;
             string directory = Path.GetDirectoryName(new Uri(mscorlibPath).AbsolutePath);
             return GetAssemblies(directory)
                 .SelectMany(GetTypesWithVariance)

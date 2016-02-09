@@ -9,6 +9,7 @@
 
 namespace Dixin.Reflection
 {
+    using System.Diagnostics.CodeAnalysis;
     using System.Reflection;
 
     using Dixin.Common;
@@ -17,6 +18,7 @@ namespace Dixin.Reflection
     {
         #region Methods
 
+        [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", MessageId = "1#")]
         public static void SetValue<T>(this FieldInfo field, ref T obj, object value)
         {
             field.NotNull(nameof(field));

@@ -1,5 +1,6 @@
 ﻿namespace Dixin.Windows
 {
+    using System.Diagnostics.CodeAnalysis;
     using System.Windows;
 
     using Dixin.Threading;
@@ -13,6 +14,7 @@
             (string text, TextDataFormat format = TextDataFormat.UnicodeText) =>
                 ThreadHelper.Sta(() => Clipboard.SetText(text, format));
 
+        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
         public static IDataObject GetData
             () => ThreadHelper.Sta(Clipboard.GetDataObject);
 

@@ -49,7 +49,7 @@ namespace Dixin.IO
         {
             directory.NotNull(nameof(directory));
 
-            new DirectoryInfo(directory).Attributes = FileAttributes.Normal;
+            new DirectoryInfo(directory).Attributes = fileAttributes;
         }
     }
 }

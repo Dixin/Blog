@@ -3,6 +3,7 @@ namespace Dixin.Linq.LinqToSql
     using System;
     using System.Data.Linq;
     using System.Data.Linq.Mapping;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
 
@@ -58,6 +59,7 @@ namespace Dixin.Linq.LinqToSql
             return (ISingleResult<ManagerEmployee>)result.ReturnValue;
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", MessageId = "0#")]
         [Function(Name = "dbo.uspLogError")]
         public int uspLogError(
             [Parameter(Name = "ErrorLogID", DbType = "int")] ref int? errorLogID)
@@ -67,10 +69,10 @@ namespace Dixin.Linq.LinqToSql
             return (int)result.ReturnValue;
         }
 
-        [Function(Name = "dbo.uspGetCategoryAndSubCategory")]
+        [Function(Name = "dbo.uspGetCategoryAndSubcategory")]
         [ResultType(typeof(ProductCategory))]
         [ResultType(typeof(ProductSubcategory))]
-        public IMultipleResults uspGetCategoryAndSubCategory(
+        public IMultipleResults uspGetCategoryAndSubcategory(
             [Parameter(Name = "CategoryID", DbType = "int")] int? categoryID)
         {
             IExecuteResult result = this.ExecuteMethodCall(this, (MethodInfo)MethodBase.GetCurrentMethod(), categoryID);

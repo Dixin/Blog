@@ -1,6 +1,7 @@
 namespace Dixin.IO
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -11,6 +12,8 @@ namespace Dixin.IO
 
     public static class PathHelper
     {
+        [SuppressMessage("Microsoft.Design", "CA1055:UriReturnValuesShouldNotBeStrings")]
+        [SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#")]
         public static string FromUrl(string url)
         {
             url.NotNullOrWhiteSpace(nameof(url));
@@ -18,6 +21,7 @@ namespace Dixin.IO
             return new Uri(url).AbsoluteUri;
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#")]
         public static string AbsolutePath(string url)
         {
             url.NotNullOrWhiteSpace(nameof(url));

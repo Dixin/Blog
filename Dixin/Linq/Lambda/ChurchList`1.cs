@@ -10,13 +10,15 @@
     {
         private readonly T value;
 
-        protected virtual _ListNode<T> Next { get; set; }
+        private _ListNode<T> next;
 
         public _ListNode(T value, _ListNode<T> next)
         {
             this.value = value;
-            this.Next = next;
+            this.next = next;
         }
+
+        protected virtual _ListNode<T> Next => this.next;
 
         public virtual ListNode<T, TAccumulate> Node<TAccumulate>
             () =>
@@ -31,7 +33,7 @@
 
         private class _NullListNode : _ListNode<T>
         {
-            protected override _ListNode<T> Next { get { return this; } set { } }
+            protected override _ListNode<T> Next => this;
 
             public override ListNode<T, TAccumulate> Node<TAccumulate>
                 () =>

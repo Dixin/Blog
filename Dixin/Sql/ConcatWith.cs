@@ -2,6 +2,7 @@ namespace Dixin.Sql
 {
     using System;
     using System.Data.SqlTypes;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Text;
 
@@ -18,6 +19,7 @@ namespace Dixin.Sql
     {
         private StringBuilder concatWith;
 
+        [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
         public void Init()
         {
         }

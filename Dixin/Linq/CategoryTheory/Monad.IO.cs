@@ -1,6 +1,7 @@
 ﻿namespace Dixin.Linq.CategoryTheory
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Diagnostics.Contracts;
     using System.IO;
     using System.Net;
@@ -44,6 +45,7 @@
                 source.SelectMany(value => selector(value).IO());
     }
 
+    [SuppressMessage("Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces")]
     [Pure]
     public static partial class IO
     {
@@ -182,34 +184,37 @@
             IO<Tuple<bool, string>> query =
                 // 1. Read file name from console.
                 from fileName in IO.Func(Console.ReadLine)
-                // 2. Write confirmation message to console.
+                    // 2. Write confirmation message to console.
                 let message = $"{fileName}? y/n"
                 from _ in IO.Action<string>(Console.WriteLine)(message)
-                // 3. Read confirmation from console.
+                    // 3. Read confirmation from console.
                 from confirmation in IO.Func(Console.ReadLine)
-                // 4. If confirmed, read the file.
+                    // 4. If confirmed, read the file.
                 let isConfirmed = "y".EqualsIgnoreCase(confirmation)
                 from text in isConfirmed ? IO.Func<string, string>(File.ReadAllText)(fileName) : string.Empty.IO()
-                // 5. Write text to console.
+                    // 5. Write text to console.
                 from __ in IO.Action<string>(Console.WriteLine)(text)
-                // 6. Returns text as query result.
+                    // 6. Returns text as query result.
                 select new Tuple<bool, string>(isConfirmed, text); // Deferred and lazy.
             Tuple<bool, string> result = query(); // Execution.
         }
 
         internal static void NetworkIO()
         {
-            IO<Unit> query =
-                // 1. Read URL from console.
-                from url in IO.Func(Console.ReadLine)
-                    // 2. Download string from Internet.
-                from text in IO.Func(() => new WebClient().DownloadString(url))
-                    // 3. Write string to console.
-                let length = 1000
-                let message = text.Length <= length ? text : $"{text.Substring(0, length)}..."
-                from unit in IO.Action<string>(Console.WriteLine)(message)
-                select (Unit)null; // Deferred and lazy.
-            query(); // Execution.
+            using (WebClient webClient = new WebClient())
+            {
+                IO<Unit> query =
+                    // 1. Read URL from console.
+                    from url in IO.Func(Console.ReadLine)
+                        // 2. Download string from Internet.
+                    from text in IO.Func(() => webClient.DownloadString(url))
+                        // 3. Write string to console.
+                    let length = 1000
+                    let message = text.Length <= length ? text : $"{text.Substring(0, length)}..."
+                    from unit in IO.Action<string>(Console.WriteLine)(message)
+                    select (Unit)null; // Deferred and lazy.
+                query(); // Execution.
+            }
         }
     }
 }

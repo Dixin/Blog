@@ -1,5 +1,7 @@
 namespace Dixin.Linq.Lambda
 {
+    using System.Diagnostics.CodeAnalysis;
+
     public static partial class ChurchPredicates
     {
         // IsZero = n => n(_ => False)(True)
@@ -11,6 +13,7 @@ namespace Dixin.Linq.Lambda
     public static partial class ChurchPredicates
     {
         // IsLessOrEqual = a => b => a.Subtract(b).IsZero()
+        [SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "LessOr")]
         public static Boolean IsLessOrEqual
             (this _Numeral a, _Numeral b) => a.Subtract(b).IsZero();
 

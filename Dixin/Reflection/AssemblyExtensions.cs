@@ -12,8 +12,7 @@
             assembly.NotNull(nameof(assembly));
             resourceName.NotNullOrWhiteSpace(nameof(resourceName));
 
-            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-            using (StreamReader reader = new StreamReader(stream))
+            using (StreamReader reader = new StreamReader(assembly.GetManifestResourceStream(resourceName)))
             {
                 return reader.ReadToEnd();
             }

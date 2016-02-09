@@ -52,7 +52,7 @@
         public void StoreProcedureWithMultipleResultsTest()
         {
             using (AdventureWorks adventureWorks = new AdventureWorks())
-            using (IMultipleResults results = adventureWorks.uspGetCategoryAndSubCategory(1))
+            using (IMultipleResults results = adventureWorks.uspGetCategoryAndSubcategory(1))
             {
                 EnumerableAssert.Single(results.GetResult<ProductCategory>());
                 EnumerableAssert.Any(results.GetResult<ProductSubcategory>());

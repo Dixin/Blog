@@ -3,7 +3,7 @@
     using System;
     using System.Threading;
 
-    public class SpinLockSlim
+    public class SpinlockSlim
     {
         private const int Locked = 1;
 

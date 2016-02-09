@@ -3,8 +3,9 @@
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
 
-    public partial class Concat<T> : IEnumerable<T>
+    public sealed partial class Concat<T> : IEnumerable<T>
     {
         private readonly IEnumerable<T> first;
 
@@ -42,6 +43,7 @@
 
         private bool moveSecond;
 
+        [SuppressMessage("Microsoft.Design", "CA1063:ImplementIDisposableCorrectly")]
         public void Dispose()
         {
             this.firstIterator?.Dispose();

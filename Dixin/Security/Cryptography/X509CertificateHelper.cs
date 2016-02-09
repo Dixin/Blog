@@ -21,7 +21,6 @@
             {
                 store.Open(OpenFlags.ReadOnly);
                 certificate = store.Certificates.OfType<X509Certificate2>().FirstOrDefault(predicate);
-                store.Close();
             }
 
             return certificate;

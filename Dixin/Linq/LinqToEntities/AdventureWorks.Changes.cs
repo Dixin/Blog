@@ -377,6 +377,7 @@
 
     public partial class Product
     {
+        [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         [Timestamp]
         public byte[] RowVersion { get; set; }
     }

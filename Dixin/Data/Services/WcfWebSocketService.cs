@@ -3,6 +3,7 @@
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.ServiceModel;
     using System.ServiceModel.Activation;
@@ -55,6 +56,7 @@
 
     public class WebSocketServiceHostFactory : ServiceHostFactory
     {
+        [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         protected override ServiceHost CreateServiceHost(Type serviceType, Uri[] baseAddresses)
         {
             WebSocketHost host = new WebSocketHost(serviceType, baseAddresses);

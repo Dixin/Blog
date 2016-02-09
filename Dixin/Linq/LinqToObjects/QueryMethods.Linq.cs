@@ -7,6 +7,7 @@
     using System.Collections.Immutable;
     using System.Configuration;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.Linq;
     using System.Net;
@@ -143,6 +144,7 @@
 
         internal static IEnumerable<string> Words() => new string[] { "Zero", "one", "Two", "three", "four" };
 
+        [SuppressMessage("Microsoft.Globalization", "CA1308:NormalizeStringsToUppercase")]
         internal static void SelectWithIndex()
         {
             IEnumerable<string> source = Words();
@@ -1485,6 +1487,7 @@
             bool sequentialEqual = emptyfirst.SequenceEqual(emptysecond); // true.
         }
 
+        [SuppressMessage("Microsoft.Globalization", "CA1309:UseOrdinalStringComparison", MessageId = "Dixin.Linq.LinqToObjects.EnumerableExtensions.SequenceEqual<System.String>(System.Collections.Generic.IEnumerable`1<System.String>,System.Collections.Generic.IEnumerable`1<System.String>,System.Collections.Generic.IEqualityComparer`1<System.String>)")]
         internal static void SequentialEqualWithComparer()
         {
             IEnumerable<string> first = new string[] { null, string.Empty, "ss", };

@@ -8,12 +8,14 @@
 
     public partial class _Numeral
     {
+        private readonly _Numeral predecessor;
+
         public _Numeral(_Numeral predecessor)
         {
-            this.Predecessor = predecessor;
+            this.predecessor = predecessor;
         }
 
-        protected virtual _Numeral Predecessor { get; set; }
+        protected virtual _Numeral Predecessor => this.predecessor;
 
         public virtual Numeral<T> Numeral<T>
             () =>
@@ -28,7 +30,7 @@
 
         private class _ZeroNumeral : _Numeral
         {
-            protected override _Numeral Predecessor { get { return this; } set { } }
+            protected override _Numeral Predecessor => this;
 
             public override Numeral<T> Numeral<T>
                 () =>

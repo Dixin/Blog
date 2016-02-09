@@ -1,11 +1,13 @@
 ﻿namespace Dixin.Threading.Tasks
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
 
     public interface IAwaitable
     {
+        [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
         IAwaiter GetAwaiter();
     }
 
@@ -45,7 +47,7 @@
         public IAwaiter<TResult> GetAwaiter() => new FuncAwaiter<TResult>(this.function);
     }
 
-    public class FuncAwaiter<TResult> : IAwaiter<TResult>
+    public sealed class FuncAwaiter<TResult> : IAwaiter<TResult>, IDisposable
     {
         private readonly Task<TResult> task;
 
@@ -60,6 +62,8 @@
         TResult IAwaiter<TResult>.GetResult() => this.task.Result;
 
         void INotifyCompletion.OnCompleted(Action continuation) => new Task(continuation).Start();
+
+        public void Dispose() => this.task.Dispose();
     }
 
     public static partial class FuncExtensions

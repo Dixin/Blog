@@ -1,6 +1,7 @@
 ﻿namespace Dixin.Threading
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Threading;
     using Dixin.Runtime.InteropServices;
 
@@ -20,6 +21,7 @@
                 },
             ignoreException);
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         public static TResult Sta<TResult>(Func<TResult> func, bool ignoreException = false)
         {
             Exception staThreadException = null;

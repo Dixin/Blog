@@ -1,7 +1,10 @@
 ﻿namespace Dixin.Linq.Combinators
 {
+    using System.Diagnostics.CodeAnalysis;
+
     public delegate T ω<T>(ω<T> ω);
 
+    [SuppressMessage("Microsoft.Naming", "CA1708:IdentifiersShouldDifferByMoreThanCase")]
     public static class OmegaCombinators
     {
         // ω = x => x(x)

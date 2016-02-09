@@ -4,6 +4,7 @@
     using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
 
     using Dixin.Reflection;
@@ -510,6 +511,7 @@
             string[] strings = @catch.ToArray(); // Handled OperationCanceledException: The operation was canceled.
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         internal static void Catch()
         {
             IEnumerable<int> scan = Enumerable.Repeat(0, 5).Scan((a, b) => a / b);

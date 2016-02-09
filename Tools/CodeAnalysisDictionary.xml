@@ -4,6 +4,7 @@
     <Recognized>
       <Word>Dixin</Word>
       <Word>combinator</Word>
+      <Word>combinators</Word>
       <Word>functor</Word>
       <Word>Mvc</Word>
       <Word>monoid</Word>
@@ -14,6 +15,7 @@
       <Word>cpu</Word>
       <Word>awaitable</Word>
       <Word>awaiter</Word>
+      <Word>retry</Word>
     </Recognized>
   </Words>
 </Dictionary>

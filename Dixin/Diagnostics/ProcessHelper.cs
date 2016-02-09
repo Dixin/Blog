@@ -76,14 +76,14 @@ namespace Dixin.Diagnostics
     public static partial class ProcessHelper
     {
         public static Win32Process ParentProcess(uint childProcessId, ManagementScope managementScope = null)
-            => ById(childProcessId)?.ParentProcessId?.Forward(parentProcessId => ById(parentProcessId));
+            => ById(childProcessId, managementScope)?.ParentProcessId?.Forward(parentProcessId => ById(parentProcessId));
 
         public static IEnumerable<Win32Process> AllParentProcess(
             uint childProcessId,
             ManagementScope managementScope = null)
         {
             Win32Process parentProcess =
-                ById(childProcessId)?.ParentProcessId?.Forward(parentProcessId => ById(parentProcessId));
+                ById(childProcessId, managementScope)?.ParentProcessId?.Forward(parentProcessId => ById(parentProcessId));
             return parentProcess == null
                 ? Enumerable.Empty<Win32Process>()
                 : Enumerable.Repeat(parentProcess, 1).Concat(parentProcess.ProcessId.HasValue

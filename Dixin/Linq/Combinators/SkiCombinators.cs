@@ -35,6 +35,7 @@
 namespace Dixin.Linq.Combinators
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
 
     public delegate T I<T>(T x);
 
@@ -44,6 +45,7 @@ namespace Dixin.Linq.Combinators
 
 
 
+    [SuppressMessage("Microsoft.Naming", "CA1708:IdentifiersShouldDifferByMoreThanCase")]
     public static partial class SkiCombinators
     {
         // S = x => y => z = x(z)(y(z))

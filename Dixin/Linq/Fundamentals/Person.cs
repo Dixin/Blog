@@ -32,7 +32,8 @@ namespace Dixin.Linq.Fundamentals.DataAnnotation
     }
 }
 
-namespace Dixin.Linq.Fundamentals.Contracts
+#if ERROR
+namespace Dixin.Linq.Fundamentals
 {
     using System;
     using System.Diagnostics.Contracts;
@@ -75,3 +76,4 @@ namespace Dixin.Linq.Fundamentals.Contracts
         }
     }
 }
+#endif

@@ -6,6 +6,8 @@
     using System.IO;
     using System.Linq;
 
+    using Dixin.Common;
+
     internal static class Music
     {
         private const char Separater = '.';
@@ -107,7 +109,7 @@
                             else
                             {
                                 string newAlbumName = $"{genre}{Separater}{artistName}{Separater}{year}{Separater}{albumName}";
-                                if (!string.Equals(album.Name, newAlbumName, StringComparison.InvariantCultureIgnoreCase))
+                                if (!album.Name.EqualsIgnoreCase(newAlbumName))
                                 {
                                     album.Rename(newAlbumName);
                                 }

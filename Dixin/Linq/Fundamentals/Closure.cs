@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
 
     internal class DisplayClass
@@ -110,6 +111,7 @@
 
     internal static partial class Closure
     {
+        [SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields")]
         private static Func<int> longLifeFunction;
 
         internal static void Reference()

@@ -10,6 +10,7 @@
 namespace Dixin.Dynamic
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Dynamic;
     using System.Linq;
     using System.Reflection;
@@ -24,6 +25,7 @@ namespace Dixin.Dynamic
         #region Constants and Fields
 
 #pragma warning disable 414
+        [SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields")]
         private readonly bool hasValue;
 #pragma warning restore 414
 
@@ -44,6 +46,7 @@ namespace Dixin.Dynamic
             this.hasValue = false;
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", MessageId = "0#")]
         public DynamicWrapper(ref T value) // Uses ref in case of 'value' is value type.
         {
             value.NotNull(nameof(value));

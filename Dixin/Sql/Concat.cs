@@ -2,6 +2,7 @@
 {
     using System;
     using System.Data.SqlTypes;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Text;
 
@@ -20,6 +21,7 @@
 
         private StringBuilder concat;
 
+        [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
         public void Init()
         {
         }

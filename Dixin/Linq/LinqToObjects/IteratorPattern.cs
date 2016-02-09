@@ -4,6 +4,7 @@
     using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.Reflection;
     using System.Runtime.CompilerServices;
 
@@ -11,11 +12,13 @@
 
     internal class Sequence
     {
+        [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
         public Iterator GetEnumerator() => new Iterator();
     }
 
     internal class Iterator
     {
+        [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
         public bool MoveNext() => false;
 
         public object Current { get; }
@@ -23,11 +26,13 @@
 
     internal class GenericSequence<T>
     {
+        [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
         public GenericIterator<T> GetEnumerator() => new GenericIterator<T>();
     }
 
     internal class GenericIterator<T>
     {
+        [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
         public bool MoveNext() => false;
 
         public T Current { get; }
@@ -321,7 +326,7 @@
         Error = -3
     }
 
-    public class Iterator<T> : IEnumerator<T>
+    public sealed class Iterator<T> : IEnumerator<T>
     {
         private readonly Action start;
 
@@ -394,6 +399,7 @@
             throw new NotSupportedException();
         }
 
+        [SuppressMessage("Microsoft.Design", "CA1063:ImplementIDisposableCorrectly")]
         public void Dispose()
         {
             if (this.State == IteratorState.Error || this.State == IteratorState.Next)
