@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Diagnostics.Contracts;
 
     using Microsoft.TeamFoundation;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -263,6 +264,11 @@
                 Trace.WriteLine(exception);
             }
             AverageWithSelector();
+        }
+
+        private void Contract_ContractFailed(object sender, ContractFailedEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         [TestMethod]

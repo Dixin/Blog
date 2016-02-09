@@ -10,9 +10,10 @@
 namespace Dixin.Reflection
 {
     using System;
-    using System.Diagnostics.Contracts;
     using System.Linq;
     using System.Reflection;
+
+    using Dixin.Common;
 
     public static partial class TypeExtensions
     {
@@ -20,7 +21,7 @@ namespace Dixin.Reflection
 
         internal static FieldInfo GetBaseField(this Type type, string name)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            type.NotNull(nameof(type));
 
             Type @base = type.BaseType;
             if (@base == null)
@@ -33,7 +34,7 @@ namespace Dixin.Reflection
 
         internal static PropertyInfo GetBaseIndex(this Type type, params object[] args)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            type.NotNull(nameof(type));
 
             Type @base = type.BaseType;
             if (@base == null)
@@ -46,7 +47,7 @@ namespace Dixin.Reflection
 
         internal static MethodInfo GetBaseMethod(this Type type, string name, params object[] args)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            type.NotNull(nameof(type));
 
             Type @base = type.BaseType;
             if (@base == null)
@@ -59,7 +60,7 @@ namespace Dixin.Reflection
 
         internal static PropertyInfo GetBaseProperty(this Type type, string name)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            type.NotNull(nameof(type));
 
             Type @base = type.BaseType;
             if (@base == null)
@@ -72,7 +73,7 @@ namespace Dixin.Reflection
 
         internal static MethodInfo GetInterfaceMethod(this Type type, string name, params object[] args)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            type.NotNull(nameof(type));
 
             return type.GetInterfaces()
                 .Select(type.GetInterfaceMap)
@@ -87,7 +88,7 @@ namespace Dixin.Reflection
 
         internal static FieldInfo GetTypeField(this Type type, string name)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            type.NotNull(nameof(type));
 
             return type
                 .GetRuntimeFields()
@@ -96,7 +97,7 @@ namespace Dixin.Reflection
 
         internal static PropertyInfo GetTypeIndex(this Type type, params object[] args)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            type.NotNull(nameof(type));
 
             return type
                 .GetRuntimeProperties()
@@ -110,7 +111,7 @@ namespace Dixin.Reflection
 
         internal static MethodInfo GetTypeMethod(this Type type, string name, params object[] args)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            type.NotNull(nameof(type));
 
             return type
                 .GetRuntimeMethods()
@@ -126,7 +127,7 @@ namespace Dixin.Reflection
 
         internal static PropertyInfo GetTypeProperty(this Type type, string name)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            type.NotNull(nameof(type));
 
             return type
                 .GetRuntimeProperties()
@@ -140,7 +141,7 @@ namespace Dixin.Reflection
     {
         public static MemberInfo[] GetPublicDeclaredMembers(this Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            type.NotNull(nameof(type));
 
             return type.GetMembers(
                 BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly);
@@ -151,7 +152,7 @@ namespace Dixin.Reflection
     {
         public static MemberInfo[] GetPublicMembers(this Type type)
         {
-            Contract.Requires<ArgumentNullException>(type != null);
+            type.NotNull(nameof(type));
 
             return type.GetMembers(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance);
         }
@@ -161,8 +162,8 @@ namespace Dixin.Reflection
     {
         public static bool IsAssignableTo(this Type from, Type to)
         {
-            Contract.Requires<ArgumentNullException>(to != null);
-            Contract.Requires<ArgumentNullException>(from != null);
+            to.NotNull(nameof(to));
+            from.NotNull(nameof(from));
 
             if (to.IsAssignableFrom(from))
             {
@@ -194,28 +195,28 @@ namespace Dixin.Reflection
     {
         public static TValue GetField<TValue>(this object @object, string name)
         {
-            Contract.Requires<ArgumentNullException>(@object != null);
+            @object.NotNull(nameof(@object));
 
             return (TValue)@object.GetType().GetTypeField(name).GetValue(@object);
         }
 
         public static void SetField(this object @object, string name, object value)
         {
-            Contract.Requires<ArgumentNullException>(@object != null);
+            @object.NotNull(nameof(@object));
 
             @object.GetType().GetTypeField(name).SetValue(@object, value);
         }
 
         public static TValue GetProperty<TValue>(this object @object, string name)
         {
-            Contract.Requires<ArgumentNullException>(@object != null);
+            @object.NotNull(nameof(@object));
 
             return (TValue)@object.GetType().GetTypeProperty(name).GetValue(@object);
         }
 
         public static void SetProperty(this object @object, string name, object value)
         {
-            Contract.Requires<ArgumentNullException>(@object != null);
+            @object.NotNull(nameof(@object));
 
             @object.GetType().GetTypeProperty(name).SetValue(@object, value);
         }

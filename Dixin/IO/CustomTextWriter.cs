@@ -1,9 +1,10 @@
 ﻿namespace Dixin.IO
 {
     using System;
-    using System.Diagnostics.Contracts;
     using System.IO;
     using System.Text;
+
+    using Dixin.Common;
 
     public class CustomTextWriter : TextWriter
     {
@@ -11,7 +12,7 @@
 
         public CustomTextWriter(Action<string> write, Encoding encoding = null)
         {
-            Contract.Requires<ArgumentNullException>(write != null);
+            write.NotNull(nameof(write));
 
             this.write = write;
             this.Encoding = encoding ?? Encoding.Default;

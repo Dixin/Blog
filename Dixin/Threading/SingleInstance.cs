@@ -1,8 +1,9 @@
 ﻿namespace Dixin.Threading
 {
     using System;
-    using System.Diagnostics.Contracts;
     using System.Threading;
+
+    using Dixin.Common;
 
     public sealed class SingleInstance : IDisposable
     {
@@ -10,7 +11,7 @@
 
         public SingleInstance(string mutexName)
         {
-            Contract.Requires<ArgumentNullException>(!string.IsNullOrEmpty(mutexName));
+            mutexName.NotNullOrEmpty(nameof(mutexName));
 
             this.mutex = new Mutex(true, mutexName);
             this.IsSingle = this.mutex.WaitOne(TimeSpan.Zero, true);
@@ -30,8 +31,8 @@
 
         public static bool Detect(string mutexName, Action single, Action multiple = null)
         {
-            Contract.Requires<ArgumentNullException>(!string.IsNullOrEmpty(mutexName));
-            Contract.Requires<ArgumentNullException>(single != null);
+            mutexName.NotNullOrEmpty(nameof(mutexName));
+            single.NotNull(nameof(single));
 
             using (Mutex mutex = new Mutex(true, mutexName))
             {

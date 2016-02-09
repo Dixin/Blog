@@ -1,9 +1,10 @@
 ﻿namespace Dixin.TransientFaultHandling
 {
     using System;
-    using System.Diagnostics.Contracts;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
+
+    using Dixin.Common;
 
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
@@ -15,7 +16,7 @@
             Func<Exception, bool> isTransient = null,
             EventHandler<RetryingEventArgs> retryingHandler = null)
         {
-            Contract.Requires<ArgumentNullException>(func != null);
+            func.NotNull(nameof(func));
 
             RetryPolicy retryPolicy = new RetryPolicy(
                 new ExceptionDetection(isTransient), retryStrategy ?? RetryStrategy.DefaultFixed);
@@ -39,7 +40,7 @@
             bool? firstFastRetry = null,
             [CallerMemberName] string name = null)
         {
-            Contract.Requires<ArgumentNullException>(func != null);
+            func.NotNull(nameof(func));
 
             return Execute(
                 func,
@@ -64,7 +65,7 @@
             Func<Exception, bool> isTransient = null,
             EventHandler<RetryingEventArgs> retryingHandler = null)
         {
-            Contract.Requires<ArgumentNullException>(action != null);
+            action.NotNull(nameof(action));
 
             RetryPolicy retryPolicy = new RetryPolicy(
                 new ExceptionDetection(isTransient), retryStrategy ?? RetryStrategy.DefaultFixed);
@@ -85,7 +86,7 @@
             bool? firstFastRetry = null,
             [CallerMemberName] string name = null)
         {
-            Contract.Requires<ArgumentNullException>(action != null);
+            action.NotNull(nameof(action));
 
             Execute(
                 action,
@@ -100,7 +101,7 @@
             Func<Exception, bool> isTransient = null,
             EventHandler<RetryingEventArgs> retryingHandler = null)
         {
-            Contract.Requires<ArgumentNullException>(func != null);
+            func.NotNull(nameof(func));
 
             RetryPolicy retryPolicy = new RetryPolicy(
                 new ExceptionDetection(isTransient), retryStrategy ?? RetryStrategy.DefaultFixed);
@@ -121,7 +122,7 @@
             bool? firstFastRetry = null,
             [CallerMemberName] string name = null)
         {
-            Contract.Requires<ArgumentNullException>(func != null);
+            func.NotNull(nameof(func));
 
             return ExecuteAsync(
                 func,

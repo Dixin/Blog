@@ -1,7 +1,6 @@
 ﻿namespace Dixin.IO.Compression
 {
     using System;
-    using System.Diagnostics.Contracts;
     using System.IO;
     using System.Linq;
 
@@ -33,7 +32,7 @@
 
         public SevenZip(string sevenZ)
         {
-            Contract.Requires<ArgumentNullException>(!string.IsNullOrWhiteSpace(sevenZ));
+            sevenZ.NotNullOrWhiteSpace(nameof(sevenZ));
 
             this.sevenZ = sevenZ;
         }
@@ -44,7 +43,7 @@
 
         public static void DeleteDirectory(string directory, TextWriter logger = null)
         {
-            Contract.Requires<ArgumentNullException>(!string.IsNullOrWhiteSpace(directory));
+            directory.NotNullOrWhiteSpace(nameof(directory));
 
             $"Start deleting directory {directory}".LogWith(logger);
             DirectoryHelper.Delete(directory);
@@ -53,7 +52,7 @@
 
         public static void DeleteFile(string file, TextWriter logger = null)
         {
-            Contract.Requires<ArgumentNullException>(!string.IsNullOrWhiteSpace(file));
+            file.NotNullOrWhiteSpace(nameof(file));
 
             $"Start deleting file {file}".LogWith(logger);
             FileHelper.Delete(file);
@@ -69,7 +68,7 @@
             TextWriter logger = null,
             int level = DefaultCompressionLevel)
         {
-            Contract.Requires<ArgumentNullException>(!string.IsNullOrWhiteSpace(directory));
+            directory.NotNullOrWhiteSpace(nameof(directory));
 
             Directory.EnumerateFiles(directory)
                 .Where(file => archiveExtensions.Contains(Path.GetExtension(file), StringComparer.OrdinalIgnoreCase))
@@ -89,8 +88,8 @@
             TextWriter logger = null,
             int level = DefaultCompressionLevel)
         {
-            Contract.Requires<ArgumentNullException>(!string.IsNullOrWhiteSpace(source));
-
+            source.NotNullOrWhiteSpace(nameof(source));
+            
             intermediateFile = intermediateFile ?? (name => $"{source}..zip");
 
             string firstPassZip = intermediateFile(source);
@@ -104,7 +103,7 @@
 
         public void Extract(string archive, string destination = null, bool deleteArchive = false, TextWriter logger = null)
         {
-            Contract.Requires<ArgumentNullException>(!string.IsNullOrWhiteSpace(archive));
+            archive.NotNullOrWhiteSpace(nameof(archive));
 
             destination = !string.IsNullOrWhiteSpace(destination)
                 ? destination
@@ -131,8 +130,8 @@
             bool isRecursive = false,
             TextWriter logger = null)
         {
-            Contract.Requires<ArgumentNullException>(!string.IsNullOrWhiteSpace(directory));
-            Contract.Requires<ArgumentNullException>(archiveExtensions != null);
+            directory.NotNullOrWhiteSpace(nameof(directory));
+            archiveExtensions.NotNull(nameof(archiveExtensions));
 
             Directory
                 .EnumerateFiles(directory)
@@ -156,7 +155,7 @@
             TextWriter logger = null,
             int level = DefaultCompressionLevel)
         {
-            Contract.Requires<ArgumentNullException>(!string.IsNullOrWhiteSpace(archive));
+            archive.NotNullOrWhiteSpace(nameof(archive));
 
             // Create temp directory.
             string tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
@@ -191,7 +190,7 @@
             string password = null,
             int level = DefaultCompressionLevel)
         {
-            Contract.Requires<ArgumentNullException>(!string.IsNullOrWhiteSpace(source));
+            source.NotNullOrWhiteSpace(nameof(source));
 
             level = FormatCompressionLevel(level);
             zip = !string.IsNullOrWhiteSpace(zip) ? zip : $"{source}.zip";

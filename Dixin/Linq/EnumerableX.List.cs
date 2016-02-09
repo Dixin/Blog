@@ -2,8 +2,9 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.Contracts;
     using System.Linq;
+
+    using Dixin.Common;
 
     public enum ListQueryMode
     {
@@ -19,8 +20,15 @@
         public static IEnumerable<TSource> Insert<TSource>(
             this IEnumerable<TSource> source, int index, TSource insert, ListQueryMode mode = ListQueryMode.Strict)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentOutOfRangeException>(mode != ListQueryMode.Strict || index >= 0);
+            source.NotNull(nameof(source));
+            if (mode == ListQueryMode.Strict)
+            {
+                Argument.Range(
+                    index >= 0,
+                    $"When {nameof(mode)} is {ListQueryMode.Strict}, {nameof(index)} must be 0 or positive.",
+                    nameof(index));
+            }
+
 
             if (mode == ListQueryMode.Normalize && index < 0)
             {
@@ -79,8 +87,14 @@
         public static IEnumerable<TSource> RemoveAt<TSource>(
             this IEnumerable<TSource> source, int index, ListQueryMode mode = ListQueryMode.Strict)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentOutOfRangeException>(mode != ListQueryMode.Strict || index >= 0);
+            source.NotNull(nameof(source));
+            if (mode == ListQueryMode.Strict)
+            {
+                Argument.Range(
+                    index >= 0,
+                    $"When {nameof(mode)} is {ListQueryMode.Strict}, {nameof(index)} must be 0 or positive.",
+                    nameof(index));
+            }
 
             if (index < 0 && mode == ListQueryMode.Normalize)
             {
@@ -150,7 +164,7 @@
             IEqualityComparer<TSource> comparer = null,
             ListQueryMode mode = ListQueryMode.Strict)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            source.NotNull(nameof(source));
 
             comparer = comparer ?? EqualityComparer<TSource>.Default;
             bool isRemoved = false;
@@ -180,7 +194,7 @@
             IEqualityComparer<TSource> comparer = null,
             ListQueryMode mode = ListQueryMode.Strict)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            source.NotNull(nameof(source));
 
             comparer = comparer ?? EqualityComparer<TSource>.Default;
             bool isRemoved = false;
@@ -210,7 +224,7 @@
             int startIndex = 0,
             int? count = null)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            source.NotNull(nameof(source));
 
             comparer = comparer ?? EqualityComparer<TSource>.Default;
             source = source.Skip(startIndex);
@@ -239,7 +253,7 @@
             int startIndex = 0,
             int? count = null)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            source.NotNull(nameof(source));
 
             comparer = comparer ?? EqualityComparer<TSource>.Default;
             source = source.Skip(startIndex);

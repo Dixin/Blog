@@ -1,15 +1,15 @@
 ﻿namespace Dixin.Management
 {
-    using System;
-    using System.Diagnostics.Contracts;
     using System.Linq;
     using System.Management;
+
+    using Dixin.Common;
 
     public static class Wmi
     {
         public static ManagementObject[] Query(ObjectQuery objectQuery, ManagementScope managementScope = null)
         {
-            Contract.Requires<ArgumentNullException>(objectQuery != null);
+            objectQuery.NotNull(nameof(objectQuery));
 
             using (ManagementObjectSearcher searcher = new ManagementObjectSearcher(
                 managementScope ?? new ManagementScope(), // Default ManagementPath: \\.\root\cimv2.

@@ -9,8 +9,6 @@
 
 namespace Dixin.Web
 {
-    using System;
-    using System.Diagnostics.Contracts;
     using System.Text.RegularExpressions;
     using System.Web;
 
@@ -35,7 +33,7 @@ namespace Dixin.Web
 
         public static bool IsMobile(this HttpRequestBase request)
         {
-            Contract.Requires<ArgumentNullException>(request != null);
+            request.NotNull(nameof(request));
 
             string userAgent = request.ServerVariables["HTTP_USER_AGENT"];
             return Browser.IsMatch(userAgent) || Version.IsMatch(userAgent.Left(4));

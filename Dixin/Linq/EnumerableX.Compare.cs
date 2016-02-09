@@ -2,8 +2,9 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.Contracts;
     using System.Linq;
+
+    using Dixin.Common;
 
     public static partial class EnumerableX
     {
@@ -134,7 +135,7 @@
 
         public ComparerWrapper(Func<T, T, int> compare)
         {
-            Contract.Requires<ArgumentException>(compare != null);
+            compare.NotNull(nameof(compare));
 
             this.compare = compare;
         }
@@ -149,7 +150,7 @@
 
         public EqualityComparerWrapper(Func<T, T, bool> equality, Func<T, int> getHashCode = null)
         {
-            Contract.Requires<ArgumentNullException>(equality != null);
+            equality.NotNull(nameof(equality));
 
             this.equality = equality;
             this.getHashCode = getHashCode ?? (value => value.GetHashCode());

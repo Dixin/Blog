@@ -1,16 +1,16 @@
 ﻿namespace Dixin.Text
 {
-    using System;
-    using System.Diagnostics.Contracts;
     using System.IO;
     using System.Text;
+
+    using Dixin.Common;
 
     public static class EncodingHelper
     {
         public static string Convert(string value, Encoding from, Encoding to)
         {
-            Contract.Requires<ArgumentNullException>(from != null);
-            Contract.Requires<ArgumentNullException>(to != null);
+            from.NotNull(nameof(from));
+            to.NotNull(nameof(to));
 
             byte[] fromBytes = from.GetBytes(value);
             byte[] toBytes = Encoding.Convert(from, to, fromBytes);
@@ -26,8 +26,8 @@
 
         public static void Convert(Encoding from, Encoding to, string fromPath, string toPath = null)
         {
-            Contract.Requires<ArgumentNullException>(from != null);
-            Contract.Requires<ArgumentNullException>(to != null);
+            from.NotNull(nameof(from));
+            to.NotNull(nameof(to));
 
             byte[] fromBytes = File.ReadAllBytes(fromPath);
             byte[] toBytes = Encoding.Convert(from, to, fromBytes);

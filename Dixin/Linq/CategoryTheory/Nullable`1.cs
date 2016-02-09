@@ -27,7 +27,10 @@
             get
             {
                 // Message is copied from mscorlib.dll string table, where key is InvalidOperation_NoValue.
-                Contract.Requires<InvalidOperationException>(this.HasValue, "Nullable object must have a value.");
+                if (!this.HasValue)
+                {
+                    throw new InvalidOperationException("Nullable object must have a value.");
+                }
 
                 return this.factory.Value.Item2;
             }

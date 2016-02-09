@@ -9,9 +9,9 @@
 
 namespace Dixin.Reflection
 {
-    using System;
-    using System.Diagnostics.Contracts;
     using System.Reflection;
+
+    using Dixin.Common;
 
     public static class FieldInfoExtensions
     {
@@ -19,7 +19,7 @@ namespace Dixin.Reflection
 
         public static void SetValue<T>(this FieldInfo field, ref T obj, object value)
         {
-            Contract.Requires<ArgumentNullException>(field != null);
+            field.NotNull(nameof(field));
 
             if (typeof(T).IsValueType)
             {

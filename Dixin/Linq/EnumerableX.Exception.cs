@@ -2,9 +2,10 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.Contracts;
     using System.Linq;
     using System.Runtime.CompilerServices;
+
+    using Dixin.Common;
 
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
@@ -16,7 +17,7 @@
             this IEnumerable<TSource> source, Func<TException, bool> handler = null)
             where TException : Exception
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            source.NotNull(nameof(source));
 
             using (IEnumerator<TSource> iterator = source.GetEnumerator())
             {
@@ -48,7 +49,7 @@
             this IEnumerable<TSource> source, Action<TException> handler = null)
             where TException : Exception
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            source.NotNull(nameof(source));
 
             return source.Catch<TSource, TException>(exception =>
                 {
@@ -60,7 +61,7 @@
         public static IEnumerable<TSource> Catch<TSource>(
             this IEnumerable<TSource> source, Func<Exception, bool> handler = null)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            source.NotNull(nameof(source));
 
             return source.Catch<TSource, Exception>(handler);
         }
@@ -68,7 +69,7 @@
         public static IEnumerable<TSource> Catch<TSource>(
             this IEnumerable<TSource> source, Action<Exception> handler = null)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            source.NotNull(nameof(source));
 
             return source.Catch<TSource, Exception>(handler);
         }
@@ -78,8 +79,8 @@
             Func<TSource, int, TResult> selector,
             Func<TException, bool?> @catch = null) where TException : Exception
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(selector != null);
+            source.NotNull(nameof(source));
+            selector.NotNull(nameof(selector));
 
             using (IEnumerator<TSource> iterator = source.GetEnumerator())
             {
@@ -120,8 +121,8 @@
             Func<TSource, int, TResult> selector,
             Func<Exception, bool?> @catch = null)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(selector != null);
+            source.NotNull(nameof(source));
+            selector.NotNull(nameof(selector));
 
             return source.TrySelect<TSource, TResult, Exception>(selector, @catch);
         }
@@ -134,8 +135,8 @@
             EventHandler<RetryingEventArgs> retryingHandler = null,
             Func<TException, bool?> @catch = null) where TException : Exception
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(selector != null);
+            source.NotNull(nameof(source));
+            selector.NotNull(nameof(selector));
 
             return source.TrySelect(
                 (value, index) => Execute(() => selector(value, index), retryStrategy, isTransient, retryingHandler),
@@ -153,8 +154,8 @@
             Func<TException, bool?> @catch = null,
             [CallerMemberName] string retryStrategyName = null) where TException : Exception
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(selector != null);
+            source.NotNull(nameof(source));
+            selector.NotNull(nameof(selector));
 
             return source.RetrySelect(
                 selector,
@@ -172,8 +173,8 @@
             EventHandler<RetryingEventArgs> retryingHandler = null,
             Func<Exception, bool?> @catch = null)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(selector != null);
+            source.NotNull(nameof(source));
+            selector.NotNull(nameof(selector));
 
             return source.RetrySelect<TSource, TResult, Exception>(
                 selector, retryStrategy, isTransient, retryingHandler, @catch);
@@ -190,8 +191,8 @@
             Func<Exception, bool?> @catch = null,
             [CallerMemberName] string retryStrategyName = null)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(selector != null);
+            source.NotNull(nameof(source));
+            selector.NotNull(nameof(selector));
 
             return source.RetrySelect(
                 selector,
@@ -206,8 +207,8 @@
             Func<TSource, TResult> selector,
             Func<TException, bool?> @catch = null) where TException : Exception
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(selector != null);
+            source.NotNull(nameof(source));
+            selector.NotNull(nameof(selector));
 
             using (IEnumerator<TSource> iterator = source.GetEnumerator())
             {
@@ -246,8 +247,8 @@
             Func<TSource, TResult> selector,
             Func<Exception, bool?> @catch = null)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(selector != null);
+            source.NotNull(nameof(source));
+            selector.NotNull(nameof(selector));
 
             return source.TrySelect<TSource, TResult, Exception>(selector, @catch);
         }
@@ -260,8 +261,8 @@
             EventHandler<RetryingEventArgs> retryingHandler = null,
             Func<TException, bool?> @catch = null) where TException : Exception
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(selector != null);
+            source.NotNull(nameof(source));
+            selector.NotNull(nameof(selector));
 
             return source.TrySelect(
                 value => Execute(() => selector(value), retryStrategy, isTransient, retryingHandler),
@@ -279,8 +280,8 @@
             Func<TException, bool?> @catch = null,
             [CallerMemberName] string retryStrategyName = null) where TException : Exception
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(selector != null);
+            source.NotNull(nameof(source));
+            selector.NotNull(nameof(selector));
 
             return source.RetrySelect(
                 selector,
@@ -298,8 +299,8 @@
             EventHandler<RetryingEventArgs> retryingHandler = null,
             Func<Exception, bool?> @catch = null)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(selector != null);
+            source.NotNull(nameof(source));
+            selector.NotNull(nameof(selector));
 
             return source.RetrySelect<TSource, TResult, Exception>(
                 selector, retryStrategy, isTransient, retryingHandler, @catch);
@@ -316,8 +317,8 @@
             Func<Exception, bool?> @catch = null,
             [CallerMemberName] string retryStrategyName = null)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(selector != null);
+            source.NotNull(nameof(source));
+            selector.NotNull(nameof(selector));
 
             return source.RetrySelect(
                 selector,
@@ -334,7 +335,7 @@
             EventHandler<RetryingEventArgs> retryingHandler = null,
             Func<TException, bool> @catch = null) where TException : Exception
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            source.NotNull(nameof(source));
 
             List<TSource> results = new List<TSource>();
             try
@@ -363,8 +364,8 @@
             int retryCount,
             Func<TException, bool> @catch = null) where TException : Exception
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentOutOfRangeException>(retryCount >= 0);
+            source.NotNull(nameof(source));
+            Argument.Range(retryCount >= 0, $"{nameof(retryCount)} must be 0 or positive.", nameof(retryCount));
 
             int count = 0;
             TException lastException = null;
@@ -424,8 +425,8 @@
             int retryCount,
             Func<Exception, bool> @catch = null)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentOutOfRangeException>(retryCount >= 0);
+            source.NotNull(nameof(source));
+            Argument.Range(retryCount >= 0, $"{nameof(retryCount)} must be 0 or positive.", nameof(retryCount));
 
             return source.Retry<TSource, Exception>(retryCount, @catch);
         }

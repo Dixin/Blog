@@ -1,7 +1,6 @@
 namespace Dixin.IO
 {
     using System;
-    using System.Diagnostics.Contracts;
     using System.IO;
     using System.Linq;
     using System.Reflection;
@@ -14,14 +13,14 @@ namespace Dixin.IO
     {
         public static string FromUrl(string url)
         {
-            Contract.Requires<ArgumentNullException>(!string.IsNullOrWhiteSpace(url));
+            url.NotNullOrWhiteSpace(nameof(url));
 
             return new Uri(url).AbsoluteUri;
         }
 
         public static string AbsolutePath(string url)
         {
-            Contract.Requires<ArgumentNullException>(!string.IsNullOrWhiteSpace(url));
+            url.NotNullOrWhiteSpace(nameof(url));
 
             return new Uri(url).AbsolutePath;
         }

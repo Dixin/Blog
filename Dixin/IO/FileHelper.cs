@@ -1,15 +1,15 @@
 namespace Dixin.IO
 {
-    using System;
-    using System.Diagnostics.Contracts;
     using System.IO;
     using System.Text;
+
+    using Dixin.Common;
 
     public static class FileHelper
     {
         public static void Delete(string file)
         {
-            Contract.Requires<ArgumentNullException>(!string.IsNullOrWhiteSpace(file));
+            file.NotNullOrWhiteSpace(nameof(file));
 
             File.SetAttributes(file, FileAttributes.Normal); // In case file is read only.
             File.Delete(file);
@@ -17,7 +17,7 @@ namespace Dixin.IO
 
         public static bool Contains(string file, string find, Encoding encoding = null)
         {
-            Contract.Requires<ArgumentNullException>(!string.IsNullOrWhiteSpace(file));
+            file.NotNullOrWhiteSpace(nameof(file));
 
             encoding = encoding ?? Encoding.UTF8;
             return File.ReadAllText(file, encoding).Contains(find);
@@ -25,7 +25,7 @@ namespace Dixin.IO
 
         public static void Replace(string file, string find, string replace = null, Encoding encoding = null)
         {
-            Contract.Requires<ArgumentNullException>(!string.IsNullOrWhiteSpace(file));
+            file.NotNullOrWhiteSpace(nameof(file));
 
             replace = replace ?? string.Empty;
             encoding = encoding ?? Encoding.UTF8;
@@ -35,8 +35,8 @@ namespace Dixin.IO
 
         public static void Rename(this FileInfo file, string newName)
         {
-            Contract.Requires<ArgumentNullException>(file != null);
-            Contract.Requires<ArgumentNullException>(!string.IsNullOrWhiteSpace(newName));
+            file.NotNull(nameof(file));
+            newName.NotNullOrWhiteSpace(nameof(newName));
 
             file.MoveTo(newName);
         }

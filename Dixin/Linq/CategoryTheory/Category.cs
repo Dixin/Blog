@@ -3,6 +3,8 @@
     using System;
     using System.Diagnostics.Contracts;
 
+    using Dixin.Common;
+
     public interface ICategory<TCategory> where TCategory : ICategory<TCategory>
     {
         // o = (m2, m1) -> composition
@@ -66,7 +68,7 @@
         public static IMorphism<TSource, TResult, DotNet> o<TSource, TMiddle, TResult>(
             this IMorphism<TMiddle, TResult, DotNet> m2, IMorphism<TSource, TMiddle, DotNet> m1)
         {
-            Contract.Requires<ArgumentException>(m2.Category == m1.Category, "m2 and m1 are not in the same category.");
+            Argument.Requires(m2.Category == m1.Category, $"{nameof(m2)} and {nameof(m1)} are not in the same category.");
 
             return m1.Category.o(m2, m1);
         }

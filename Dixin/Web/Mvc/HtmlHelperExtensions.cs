@@ -9,16 +9,16 @@
 
 namespace Dixin.Web.Mvc
 {
-    using System;
-    using System.Diagnostics.Contracts;
     using System.Web;
     using System.Web.Mvc;
+
+    using Dixin.Common;
 
     public static class HtmlHelperExtensions
     {
         public static IHtmlString Script(this HtmlHelper htmlHelper, string path)
         {
-            Contract.Requires<ArgumentNullException>(htmlHelper != null);
+            htmlHelper.NotNull(nameof(htmlHelper));
 
             TagBuilder tagBuilder = new TagBuilder("script");
             tagBuilder.MergeAttribute("type", "text/javascript");

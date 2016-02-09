@@ -10,7 +10,6 @@
 namespace Dixin.Common
 {
     using System;
-    using System.Diagnostics.Contracts;
     using System.Globalization;
     using System.IO;
     using System.Linq;
@@ -23,7 +22,7 @@ namespace Dixin.Common
 
         public static bool ContainsIgnoreCase(this string value, string substring)
         {
-            Contract.Requires<ArgumentNullException>(value != null);
+            Argument.NotNull(value, nameof(value));
 
             return value.IndexOf(substring, StringComparison.OrdinalIgnoreCase) >= 0;
         }

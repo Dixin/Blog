@@ -1,15 +1,16 @@
 ﻿namespace Dixin.Threading.Tasks
 {
     using System;
-    using System.Diagnostics.Contracts;
     using System.Threading;
     using System.Threading.Tasks;
+
+    using Dixin.Common;
 
     public static partial class ActionExtensions
     {
         public static Task InvokeWith(this Action action, SynchronizationContext synchronizationContext, ExecutionContext executionContext)
         {
-            Contract.Requires<ArgumentNullException>(action != null);
+            action.NotNull(nameof(action));
 
             return new Func<object>(() =>
                 {
@@ -23,7 +24,7 @@
     {
         public static TResult InvokeWith<TResult>(this Func<TResult> function, ExecutionContext executionContext)
         {
-            Contract.Requires<ArgumentNullException>(function != null);
+            function.NotNull(nameof(function));
 
             if (executionContext == null)
             {
@@ -39,7 +40,7 @@
 
         public static Task<TResult> InvokeWith<TResult>(this Func<TResult> function, SynchronizationContext synchronizationContext, ExecutionContext executionContext)
         {
-            Contract.Requires<ArgumentNullException>(function != null);
+            function.NotNull(nameof(function));
 
             TaskCompletionSource<TResult> taskCompletionSource = new TaskCompletionSource<TResult>();
             try
@@ -87,8 +88,8 @@
     {
         public static Task<TNewResult> ContinueWithContext<TResult, TNewResult>(this Task<TResult> task, Func<Task<TResult>, TNewResult> continuation)
         {
-            Contract.Requires<ArgumentNullException>(task != null);
-            Contract.Requires<ArgumentNullException>(continuation != null);
+            task.NotNull(nameof(task));
+            continuation.NotNull(nameof(continuation));
 
             // See: System.Runtime.CompilerServices.AsyncMethodBuilderCore.GetCompletionAction()
             ExecutionContext executionContext = ExecutionContext.Capture();
@@ -105,8 +106,8 @@
 
         public static Task<TNewResult> ContinueWithContext<TNewResult>(this Task task, Func<Task, TNewResult> continuation)
         {
-            Contract.Requires<ArgumentNullException>(task != null);
-            Contract.Requires<ArgumentNullException>(continuation != null);
+            task.NotNull(nameof(task));
+            continuation.NotNull(nameof(continuation));
 
             // See: System.Runtime.CompilerServices.AsyncMethodBuilderCore.GetCompletionAction()
             ExecutionContext executionContext = ExecutionContext.Capture();
@@ -123,8 +124,8 @@
 
         public static Task ContinueWithContext<TResult>(this Task<TResult> task, Action<Task<TResult>> continuation)
         {
-            Contract.Requires<ArgumentNullException>(task != null);
-            Contract.Requires<ArgumentNullException>(continuation != null);
+            task.NotNull(nameof(task));
+            continuation.NotNull(nameof(continuation));
 
             return task.ContinueWithContext(new Func<Task<TResult>, object>(t =>
                 {
@@ -135,8 +136,8 @@
 
         public static Task ContinueWithContext(this Task task, Action<Task> continuation)
         {
-            Contract.Requires<ArgumentNullException>(task != null);
-            Contract.Requires<ArgumentNullException>(continuation != null);
+            task.NotNull(nameof(task));
+            continuation.NotNull(nameof(continuation));
 
             return task.ContinueWithContext(new Func<Task, object>(t =>
                 {

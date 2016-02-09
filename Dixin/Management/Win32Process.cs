@@ -2,9 +2,9 @@
 {
     using System;
     using System.Diagnostics;
-    using System.Diagnostics.Contracts;
     using System.Management;
 
+    using Dixin.Common;
     using Dixin.Linq;
 
     // https://msdn.microsoft.com/en-us/library/windows/desktop/aa394372.aspx
@@ -111,7 +111,7 @@
     {
         public Win32Process(ManagementObject process)
         {
-            Contract.Requires<ArgumentNullException>(process != null);
+            process.NotNull(nameof(process));
 
             this.Caption = process[nameof(this.Caption)] as string;
             this.CommandLine = process[nameof(this.CommandLine)] as string;

@@ -3,8 +3,9 @@
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using System.Diagnostics.Contracts;
     using System.Linq;
+
+    using Dixin.Common;
 
     public static partial class EnumerableX
     {
@@ -16,7 +17,7 @@
 
         public static IEnumerable<TResult> Create<TResult>(Func<TResult> valueFactory, int? count = null)
         {
-            Contract.Requires<ArgumentNullException>(valueFactory != null);
+            valueFactory.NotNull(nameof(valueFactory));
 
             if (count == null)
             {
@@ -60,7 +61,7 @@
 
         public static IEnumerable<TSource> Join<TSource>(this IEnumerable<TSource> source, TSource separator)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            source.NotNull(nameof(source));
 
             using (IEnumerator<TSource> iterator = source.GetEnumerator())
             {
@@ -79,7 +80,7 @@
         public static IEnumerable<TSource> Join<TSource>(
             this IEnumerable<TSource> source, IEnumerable<TSource> separator)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            source.NotNull(nameof(source));
 
             separator = separator ?? Enumerable.Empty<TSource>();
             using (IEnumerator<TSource> iterator = source.GetEnumerator())
@@ -103,7 +104,7 @@
         public static IEnumerable<TSource> Append<TSource>
             (this IEnumerable<TSource> source, params TSource[] append)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            source.NotNull(nameof(source));
 
             return source.Concat(append);
         }
@@ -111,7 +112,7 @@
         public static IEnumerable<TSource> Prepend<TSource>
             (this IEnumerable<TSource> source, params TSource[] prepend)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            source.NotNull(nameof(source));
 
             return prepend.Concat(source);
         }
@@ -119,7 +120,7 @@
         public static IEnumerable<TSource> AppendTo<TSource>
             (this TSource append, IEnumerable<TSource> source)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            source.NotNull(nameof(source));
 
             return source.Append(append);
         }
@@ -127,7 +128,7 @@
         public static IEnumerable<TSource> PrependTo<TSource>
             (this TSource prepend, IEnumerable<TSource> source)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            source.NotNull(nameof(source));
 
             return source.Prepend(prepend);
         }
@@ -139,7 +140,7 @@
         public static IEnumerable<TSource> Subsequence<TSource>
             (this IEnumerable<TSource> source, int startIndex, int count)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            source.NotNull(nameof(source));
 
             return source.Skip(startIndex).Take(count);
         }
@@ -154,8 +155,8 @@
             IFormatProvider formatProvider = null)
             where TKey : IConvertible
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(keySelector != null);
+            source.NotNull(nameof(source));
+            keySelector.NotNull(nameof(keySelector));
 
             // Excel VAR.P function
             // https://support.office.com/en-us/article/VAR-P-function-73d1285c-108c-4843-ba5d-a51f90656f3a
@@ -170,8 +171,8 @@
             IFormatProvider formatProvider = null)
             where TKey : IConvertible
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(keySelector != null);
+            source.NotNull(nameof(source));
+            keySelector.NotNull(nameof(keySelector));
 
             // Excel VAR.S function:
             // https://support.office.com/en-us/article/VAR-S-function-913633de-136b-449d-813e-65a00b2b990b
@@ -186,8 +187,8 @@
             IFormatProvider formatProvider = null)
             where TKey : IConvertible
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(keySelector != null);
+            source.NotNull(nameof(source));
+            keySelector.NotNull(nameof(keySelector));
 
             // Excel VAR function:
             // https://support.office.com/en-us/article/VAR-function-270da762-03d5-4416-8503-10008194458a
@@ -200,8 +201,8 @@
             IFormatProvider formatProvider = null)
             where TKey : IConvertible
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(keySelector != null);
+            source.NotNull(nameof(source));
+            keySelector.NotNull(nameof(keySelector));
 
             // Excel STDEV.P function:
             // https://support.office.com/en-us/article/STDEV-P-function-6e917c05-31a0-496f-ade7-4f4e7462f285
@@ -214,8 +215,8 @@
             IFormatProvider formatProvider = null)
             where TKey : IConvertible
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(keySelector != null);
+            source.NotNull(nameof(source));
+            keySelector.NotNull(nameof(keySelector));
 
             // Excel STDEV.S function:
             // https://support.office.com/en-us/article/STDEV-S-function-7d69cf97-0c1f-4acf-be27-f3e83904cc23
@@ -228,8 +229,8 @@
             IFormatProvider formatProvider = null)
             where TKey : IConvertible
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(keySelector != null);
+            source.NotNull(nameof(source));
+            keySelector.NotNull(nameof(keySelector));
 
             // Excel STDDEV.P function:
             // https://support.office.com/en-us/article/STDEV-function-51fecaaa-231e-4bbb-9230-33650a72c9b0
@@ -244,11 +245,10 @@
             IFormatProvider formatProvider = null)
             where TKey : IConvertible
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(keySelector != null);
-            Contract.Requires<ArgumentOutOfRangeException>(
-                percentile >= 0 && percentile <= 1,
-                "percentile must be in the range of 1 / source.Count() and 1 - 1 / (source.Count() + 1).");
+            source.NotNull(nameof(source));
+            keySelector.NotNull(nameof(keySelector));
+            Argument.Range(
+                percentile >= 0 && percentile <= 1, $"{nameof(percentile)} must be between 0 and 1.", nameof(percentile));
 
             // Excel PERCENTILE.EXC function:
             // https://support.office.com/en-us/article/PERCENTILE-EXC-function-bbaa7204-e9e1-4010-85bf-c31dc5dce4ba
@@ -259,7 +259,7 @@
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(percentile),
-                    $"{nameof(percentile)} must be in the range of 1/source.Count() and 1 - 1 / source.Count().");
+                    $"{nameof(percentile)} must be in the range of (1 / source.Count()) and (1 - 1 / source.Count()).");
             }
 
             double index = percentile * (length + 1) - 1;
@@ -279,10 +279,10 @@
             IFormatProvider formatProvider = null)
             where TKey : IConvertible
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(keySelector != null);
-            Contract.Requires<ArgumentOutOfRangeException>(
-                percentile >= 0 && percentile <= 1, "percentile must be between 0 and 1.");
+            source.NotNull(nameof(source));
+            keySelector.NotNull(nameof(keySelector));
+            Argument.Range(
+                percentile >= 0 && percentile <= 1, $"{nameof(percentile)} must be between 0 and 1.", nameof(percentile));
 
             // Excel PERCENTILE.INC function:
             // https://support.office.com/en-us/article/PERCENTILE-INC-Function-DAX-15f69af8-1588-4863-9acf-2acc00384ffd
@@ -312,10 +312,10 @@
             IFormatProvider formatProvider = null)
             where TKey : IConvertible
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(keySelector != null);
-            Contract.Requires<ArgumentOutOfRangeException>(
-                percentile >= 0 && percentile <= 1, "percentile must be between 0 and 1.");
+            source.NotNull(nameof(source));
+            keySelector.NotNull(nameof(keySelector));
+            Argument.Range(
+                percentile >= 0 && percentile <= 1, $"{nameof(percentile)} must be between 0 and 1.", nameof(percentile));
 
             // Excel PERCENTILE function:
             // https://support.office.com/en-us/article/PERCENTILE-function-91b43a53-543c-4708-93de-d626debdddca
@@ -338,8 +338,8 @@
             IEnumerable<TSource> values,
             IEqualityComparer<TSource> comparer = null)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
-            Contract.Requires<ArgumentNullException>(values != null);
+            source.NotNull(nameof(source));
+            values.NotNull(nameof(values));
 
             return source.Any(value => values.Contains(value, comparer));
         }
@@ -350,7 +350,7 @@
 
         public static void ForEach<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> onNext)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            source.NotNull(nameof(source));
 
             foreach (TSource value in source)
             {
@@ -363,7 +363,7 @@
 
         public static void ForEach<TSource>(this IEnumerable<TSource> source, Func<TSource, int, bool> onNext)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            source.NotNull(nameof(source));
 
             int index = 0;
             foreach (TSource value in source)
@@ -379,7 +379,7 @@
 
         public static void ForEach<TSource>(this IEnumerable<TSource> source)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            source.NotNull(nameof(source));
 
             using (IEnumerator<TSource> iterator = source.GetEnumerator())
             {
@@ -391,7 +391,7 @@
 
         public static void ForEach(this IEnumerable source)
         {
-            Contract.Requires<ArgumentNullException>(source != null);
+            source.NotNull(nameof(source));
 
             IEnumerator iterator = source.GetEnumerator();
             while (iterator.MoveNext())

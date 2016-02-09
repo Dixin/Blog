@@ -3,10 +3,10 @@ namespace Dixin.Diagnostics
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Diagnostics.Contracts;
     using System.Linq;
     using System.Management;
 
+    using Dixin.Common;
     using Dixin.Linq;
     using Dixin.Management;
 
@@ -18,7 +18,7 @@ namespace Dixin.Diagnostics
             Action<string> outputReceived = null,
             Action<string> errorReceived = null)
         {
-            Contract.Requires<ArgumentNullException>(!string.IsNullOrWhiteSpace(fileName));
+            fileName.NotNullOrWhiteSpace(nameof(fileName));
 
             using (Process process = new Process())
             {

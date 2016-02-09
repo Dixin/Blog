@@ -1,11 +1,12 @@
 ﻿namespace Dixin.Security.Cryptography
 {
     using System;
-    using System.Diagnostics.Contracts;
     using System.Linq;
     using System.Security.Cryptography;
     using System.Security.Cryptography.X509Certificates;
     using System.Text;
+
+    using Dixin.Common;
 
     public static class X509Certificate2Helper
     {
@@ -13,7 +14,7 @@
             Func<X509Certificate2, bool> predicate,
             StoreLocation location = StoreLocation.CurrentUser)
         {
-            Contract.Requires<ArgumentNullException>(predicate != null);
+            predicate.NotNull(nameof(predicate));
 
             X509Certificate2 certificate;
             using (X509Store store = new X509Store(location))
@@ -28,7 +29,7 @@
 
         public static string Encrypt(this X509Certificate2 x509, string value, Encoding encoding)
         {
-            Contract.Requires<ArgumentNullException>(x509 != null);
+            x509.NotNull(nameof(x509));
 
             byte[] encryptedBytes;
             using (RSACryptoServiceProvider rsa = (RSACryptoServiceProvider)x509.PublicKey.Key)
@@ -42,7 +43,7 @@
 
         public static string Decrypt(this X509Certificate2 x509, string value,  Encoding encoding)
         {
-            Contract.Requires<ArgumentNullException>(x509 != null);
+            x509.NotNull(nameof(x509));
 
             RSACryptoServiceProvider rsa = (RSACryptoServiceProvider)x509.PrivateKey;
             byte[] bytesToDecrypt = Convert.FromBase64String(value);

@@ -1,16 +1,16 @@
 ﻿namespace Dixin.Reflection
 {
-    using System;
-    using System.Diagnostics.Contracts;
     using System.IO;
     using System.Reflection;
+
+    using Dixin.Common;
 
     public static class AssemblyExtensions
     {
         public static string GetResourceString(this Assembly assembly, string resourceName)
         {
-            Contract.Requires<ArgumentNullException>(assembly != null);
-            Contract.Requires<ArgumentNullException>(!string.IsNullOrWhiteSpace(resourceName));
+            assembly.NotNull(nameof(assembly));
+            resourceName.NotNullOrWhiteSpace(nameof(resourceName));
 
             using (Stream stream = assembly.GetManifestResourceStream(resourceName))
             using (StreamReader reader = new StreamReader(stream))
@@ -21,9 +21,9 @@
 
         public static void GetResourceFile(this Assembly assembly, string resourceName, string filePath)
         {
-            Contract.Requires<ArgumentNullException>(assembly != null);
-            Contract.Requires<ArgumentNullException>(!string.IsNullOrWhiteSpace(resourceName));
-            Contract.Requires<ArgumentNullException>(!string.IsNullOrWhiteSpace(filePath));
+            assembly.NotNull(nameof(assembly));
+            resourceName.NotNullOrWhiteSpace(nameof(resourceName));
+            filePath.NotNullOrWhiteSpace(nameof(filePath));
 
             using (Stream stream = assembly.GetManifestResourceStream(resourceName))
             using (FileStream fileStream = new FileStream(filePath, FileMode.CreateNew))

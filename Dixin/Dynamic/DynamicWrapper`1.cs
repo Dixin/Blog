@@ -14,6 +14,7 @@ namespace Dixin.Dynamic
     using System.Linq;
     using System.Reflection;
 
+    using Dixin.Common;
     using Dixin.Reflection;
 
     using Microsoft.CSharp.RuntimeBinder;
@@ -45,10 +46,7 @@ namespace Dixin.Dynamic
 
         public DynamicWrapper(ref T value) // Uses ref in case of 'value' is value type.
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(nameof(value));
-            }
+            value.NotNull(nameof(value));
 
             this.value = value;
             this.type = value.GetType();
