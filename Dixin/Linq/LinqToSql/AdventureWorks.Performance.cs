@@ -17,7 +17,5 @@
                 GetProductNamesCompiled(adventureWorks, listPrice);
     }
 
-    internal static class Performance
-    {
-    }
+    
 }

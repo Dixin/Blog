@@ -1,9 +1,14 @@
 ﻿namespace Dixin.Linq.LinqToEntities
 {
     using System;
+    using System.Collections.Generic;
     using System.Data.Entity;
     using System.Data.Entity.Core.EntityClient;
+    using System.Data.Entity.Core.Mapping;
+    using System.Data.Entity.Core.Metadata.Edm;
     using System.Data.Entity.Core.Objects;
+    using System.Data.Entity.Infrastructure.MappingViews;
+    using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
     using System.Transactions;
@@ -33,7 +38,25 @@
                 GetProductNamesCompiled(adventureWorks, listPrice);
     }
 
-    internal class Performance
+    internal static partial class Performance
+    {
+        internal static void PrintViews()
+        {
+            using (AdventureWorks adventureWorks = new AdventureWorks())
+            {
+                StorageMappingItemCollection mappingItemCollection = adventureWorks.ObjectContext().MetadataWorkspace
+                .GetItemCollection(DataSpace.CSSpace) as StorageMappingItemCollection;
+                Trace.WriteLine(mappingItemCollection.ComputeMappingHashValue());
+                mappingItemCollection.GenerateViews(new EdmSchemaError[0]).ForEach(view =>
+                    {
+                        Trace.WriteLine($"{view.Key.EntityContainer.Name}.{view.Key.Name}");
+                        Trace.WriteLine(view.Value.EntitySql);
+                    });
+            }
+        }
+    }
+
+    internal static partial class Performance
     {
         internal static async Task Async()
         {

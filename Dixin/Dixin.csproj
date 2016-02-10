@@ -263,6 +263,7 @@
     <Compile Include="..\Tools\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Properties\Assembly.cs" />
     <Compile Include="Common\AppDomainData.cs" />
     <Compile Include="Common\AppDomain`1.cs" />
     <Compile Include="Common\Argument.cs" />
@@ -280,6 +281,7 @@
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Functions.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.RemoteMethods.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.Tables.cs" />
+    <Compile Include="Linq\LinqToEntities\AdventureWorks.Views.cs" />
     <Compile Include="Linq\LinqToEntities\DbContextExtensions.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.Changes.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.Laziness.cs" />
