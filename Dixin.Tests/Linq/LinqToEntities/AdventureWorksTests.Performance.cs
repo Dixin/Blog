@@ -22,8 +22,16 @@
         [TestMethod]
         public void ViewsTest()
         {
-            //Performance.PrintViews();
+            Performance.PrintViews();
             Performance.QueryPlanCache();
+        }
+
+        [TestMethod]
+        public void PerformanceTest()
+        {
+            Performance.ObjectCache();
+            Performance.QueryPlanCache();
+            Performance.Async().Wait();
         }
     }
 }

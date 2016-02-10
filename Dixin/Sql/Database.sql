@@ -132,3 +132,9 @@ GO
 
 -- Clear query plan.
 DBCC FREEPROCCACHE WITH NO_INFOMSGS;
+
+-- Query query plans.
+SELECT syscacheobjects.cacheobjtype, dm_exec_cached_plans.usecounts, syscacheobjects.[sql] 
+FROM sys.syscacheobjects
+INNER JOIN sys.dm_exec_cached_plans
+ON sys.syscacheobjects.bucketid = sys.dm_exec_cached_plans.bucketid; 

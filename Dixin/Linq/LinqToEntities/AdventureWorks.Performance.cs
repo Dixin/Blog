@@ -57,8 +57,9 @@
         {
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {
-                Product[] products = adventureWorks.Products.Where(product => product.Name.StartsWith("Road-750 Black")).ToArray();
-                Product cachedProduct = adventureWorks.Products.Find(999); // Cached.
+                Product[] products = adventureWorks.Products
+                    .Where(product => product.Name.StartsWith("Road-750 Black")).ToArray();
+                Product cachedProduct = adventureWorks.Products.Find(999); // Reused.
             }
         }
 
@@ -66,10 +67,17 @@
         {
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {
-                ProductCategory[] query1 = adventureWorks.ProductCategories
-                    .Where(category => category.Name.StartsWith("B")).ToArray();
-                ProductCategory[] query2 = adventureWorks.ProductCategories
-                    .Where(category => category.Name.StartsWith("Bik")).ToArray();// Nt cached.
+                ProductCategory[] where1 = adventureWorks.ProductCategories
+                    .Where(category => category.Name.StartsWith("A")).ToArray();
+                ProductCategory[] where2 = adventureWorks.ProductCategories
+                    .Where(category => category.Name.StartsWith("B")).ToArray(); // Reused.
+                ProductCategory[] where3 = adventureWorks.ProductCategories
+                    .Where(category => category.Name.StartsWith("Bik")).ToArray(); // Not reused.
+
+                ProductSubcategory[] take1 = adventureWorks.ProductSubcategories
+                    .Take(1).ToArray();
+                ProductSubcategory[] take2 = adventureWorks.ProductSubcategories
+                    .Take(2).ToArray(); // Not reused.
             }
         }
     }

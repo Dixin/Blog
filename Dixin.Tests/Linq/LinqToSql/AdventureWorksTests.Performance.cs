@@ -18,5 +18,11 @@
                 EnumerableAssert.Any(productNames);
             }
         }
+
+        [TestMethod]
+        public void PerformanceTest()
+        {
+            Performance.QueryPlanCache();
+        }
     }
 }
