@@ -1,13 +1,11 @@
 ﻿namespace Dixin.Linq.LinqToEntities
 {
     using System;
-    using System.Collections.Generic;
     using System.Data.Entity;
     using System.Data.Entity.Core.EntityClient;
     using System.Data.Entity.Core.Mapping;
     using System.Data.Entity.Core.Metadata.Edm;
     using System.Data.Entity.Core.Objects;
-    using System.Data.Entity.Infrastructure.MappingViews;
     using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
@@ -52,6 +50,26 @@
                         Trace.WriteLine($"{view.Key.EntityContainer.Name}.{view.Key.Name}");
                         Trace.WriteLine(view.Value.EntitySql);
                     });
+            }
+        }
+
+        internal static void ObjectCache()
+        {
+            using (AdventureWorks adventureWorks = new AdventureWorks())
+            {
+                Product[] products = adventureWorks.Products.Where(product => product.Name.StartsWith("Road-750 Black")).ToArray();
+                Product cachedProduct = adventureWorks.Products.Find(999); // Cached.
+            }
+        }
+
+        internal static void QueryPlanCache()
+        {
+            using (AdventureWorks adventureWorks = new AdventureWorks())
+            {
+                ProductCategory[] query1 = adventureWorks.ProductCategories
+                    .Where(category => category.Name.StartsWith("B")).ToArray();
+                ProductCategory[] query2 = adventureWorks.ProductCategories
+                    .Where(category => category.Name.StartsWith("Bik")).ToArray();// Nt cached.
             }
         }
     }
