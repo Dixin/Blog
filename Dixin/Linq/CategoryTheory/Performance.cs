@@ -118,28 +118,14 @@ namespace Dixin.Linq.CategoryTheory
     [Pure]
     public static class ArrayHelper
     {
-        public static IEnumerable<int[]> Random(int minValue, int maxValue, int minLength, int maxLength, int count)
-        {
-            for (int index = 0; index < count; index++)
-            {
-                yield return Random(minValue, maxValue, minLength, maxLength);
-            }
-        }
+        public static int[][] Random(int minValue, int maxValue, int minLength, int maxLength, int count)
+            => Enumerable
+                .Range(0, count)
+                .Select(_ => Random(minValue, maxValue, minLength, maxLength))
+                .ToArray();
 
         public static int[] Random(int minValue, int maxValue, int minLength, int maxLength)
-        {
-            minLength = minLength < 0 ? 0 : minLength;
-            maxLength = maxLength < minLength ? minLength : maxLength;
-            Random random = new Random();
-            int arrayLength = random.Next(minLength, maxLength);
-            int[] array = new int[arrayLength];
-            for (int index = 0; index < arrayLength; index++)
-            {
-                array[index] = random.Next(minValue, maxValue);
-            }
-
-            return array;
-        }
+            => EnumerableX.RandomInt32(minValue, maxValue).Take(maxLength).ToArray();
     }
 
     // Impure.
@@ -192,11 +178,11 @@ namespace Dixin.Linq.CategoryTheory
         private static readonly string LongString =
             Enumerable.Range(0, 10000).Select(_ => Guid.NewGuid().ToString()).Aggregate(string.Concat);
 
-        public string Name { [Pure]get; set; }
+        public string Name { [Pure]get; private set; }
 
-        public int Age { [Pure]get; set; }
+        public int Age { [Pure]get; private set; }
 
-        public string Description { [Pure]get; set; }
+        public string Description { [Pure]get; private set; }
 
         [Pure]
         public static IEnumerable<PersonReferenceType> Random(int count)
@@ -226,11 +212,11 @@ namespace Dixin.Linq.CategoryTheory
         private static readonly string LongString =
             Enumerable.Range(0, 10000).Select(_ => Guid.NewGuid().ToString()).Aggregate(string.Concat);
 
-        public string Name { [Pure]get; set; }
+        public string Name { [Pure]get; private set; }
 
-        public int Age { [Pure]get; set; }
+        public int Age { [Pure]get; private set; }
 
-        public string Description { [Pure]get; set; }
+        public string Description { [Pure]get; private set; }
 
         [Pure]
         public static IEnumerable<PersonValueType> Random(int count)
@@ -276,7 +262,7 @@ namespace Dixin.Linq.CategoryTheory
     {
         internal static void Int32Array()
         {
-            int[][] arrays1 = ArrayHelper.Random(int.MinValue, int.MaxValue, 0, 100, 100).ToArray();
+            int[][] arrays1 = ArrayHelper.Random(int.MinValue, int.MaxValue, 0, 100, 100);
             int[][] arrays2 = arrays1.Select(array => array.ToArray()).ToArray(); // Copy.
             int[][] arrays3 = arrays1.Select(array => array.ToArray()).ToArray(); // Copy.
             int[][] arrays4 = arrays1.Select(array => array.ToArray()).ToArray(); // Copy.
@@ -382,7 +368,7 @@ namespace Dixin.Linq.CategoryTheory
     {
         internal static void Int32Sequence()
         {
-            IEnumerable<int>[] arrays1 = ArrayHelper.Random(int.MinValue, int.MaxValue, 0, 100, 100).ToArray();
+            IEnumerable<int>[] arrays1 = ArrayHelper.Random(int.MinValue, int.MaxValue, 0, 100, 100);
             IEnumerable<int>[] arrays2 = arrays1.Select(array => array.ToArray()).ToArray(); // Copy.
             IEnumerable<int>[] arrays3 = arrays1.Select(array => array.ToArray()).ToArray(); // Copy.
             IEnumerable<int>[] arrays4 = arrays1.Select(array => array.ToArray()).ToArray(); // Copy.
@@ -438,19 +424,24 @@ namespace Dixin.Linq.CategoryTheory
     {
         internal static PersonReferenceType[] WithoutLambda(
             this PersonReferenceType[] source,
-            int minAge1, int maxAge1, int minAge2, int maxAge2,
-            string minName1, string maxName1, string minName2, string maxName2)
+            int minAge1,
+            int maxAge1,
+            int minAge2,
+            int maxAge2,
+            string minName1,
+            string maxName1,
+            string minName2,
+            string maxName2)
         {
             PersonReferenceType[] result = new PersonReferenceType[source.Length];
             int resultIndex = 0;
             foreach (PersonReferenceType person in source)
             {
-                if ((person.Age >= minAge1 && person.Age <= maxAge2
-                        || person.Age >= minAge2 && person.Age <= maxAge2)
+                if ((person.Age >= minAge1 && person.Age <= maxAge2 || person.Age >= minAge2 && person.Age <= maxAge2)
                     && (string.Compare(person.Name, minName1, StringComparison.OrdinalIgnoreCase) >= 0
-                            && string.Compare(person.Name, maxName1, StringComparison.OrdinalIgnoreCase) <= 0
+                        && string.Compare(person.Name, maxName1, StringComparison.OrdinalIgnoreCase) <= 0
                         || string.Compare(person.Name, minName2, StringComparison.OrdinalIgnoreCase) >= 0
-                            && string.Compare(person.Name, maxName2, StringComparison.OrdinalIgnoreCase) <= 0))
+                        && string.Compare(person.Name, maxName2, StringComparison.OrdinalIgnoreCase) <= 0))
                 {
                     result[resultIndex++] = person;
                 }
@@ -464,16 +455,18 @@ namespace Dixin.Linq.CategoryTheory
             this PersonReferenceType[] source,
             int minAge1, int maxAge1, int minAge2, int maxAge2,
             string minName1, string maxName1, string minName2, string maxName2)
-                => source
-                    .Where(person =>
-                        (person.Age >= minAge1 && person.Age <= maxAge2
-                            || person.Age >= minAge2 && person.Age <= maxAge2)
-                        && (string.Compare(person.Name, minName1, StringComparison.OrdinalIgnoreCase) >= 0
-                                && string.Compare(person.Name, maxName1, StringComparison.OrdinalIgnoreCase) <= 0
-                            || string.Compare(person.Name, minName2, StringComparison.OrdinalIgnoreCase) >= 0
-                                && string.Compare(person.Name, maxName2, StringComparison.OrdinalIgnoreCase) <= 0))
-                    .ToArray();
+            =>
+                source.Where(
+                    person =>
+                    (person.Age >= minAge1 && person.Age <= maxAge2 || person.Age >= minAge2 && person.Age <= maxAge2)
+                    && (string.Compare(person.Name, minName1, StringComparison.OrdinalIgnoreCase) >= 0
+                        && string.Compare(person.Name, maxName1, StringComparison.OrdinalIgnoreCase) <= 0
+                        || string.Compare(person.Name, minName2, StringComparison.OrdinalIgnoreCase) >= 0
+                        && string.Compare(person.Name, maxName2, StringComparison.OrdinalIgnoreCase) <= 0)).ToArray();
+    }
 
+    internal static partial class Filter
+    {
         [CompilerGenerated]
         private sealed class Predicate
         {
@@ -510,6 +503,7 @@ namespace Dixin.Linq.CategoryTheory
                     {
                         minAge1 = minAge1,
                         minAge2 = minAge2,
+                        maxAge1 = maxAge1,
                         maxAge2 = maxAge2,
                         minName1 = minName1,
                         maxName1 = maxName1,

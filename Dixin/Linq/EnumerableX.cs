@@ -33,11 +33,14 @@
             }
         }
 
-        public static IEnumerable<int> RandomInt32(int? seed = null, int min = int.MinValue, int max = int.MaxValue)
+        public static IEnumerable<int> RandomInt32(int min = int.MinValue, int max = int.MaxValue, Random random = null)
         {
-            Random random = new Random(seed ?? Environment.TickCount);
+            random = random ?? new Random();
             return Create(() => random.Next(min, max));
         }
+
+        public static IEnumerable<int> RandomInt32(int seed, int min, int max)
+            => RandomInt32(min, max, new Random(seed)); // Default seed: Environment.TickCount.
 
         public static IEnumerable<double> RandomDouble(int? seed = null)
         {
