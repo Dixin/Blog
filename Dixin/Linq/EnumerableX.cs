@@ -40,7 +40,7 @@
         }
 
         public static IEnumerable<int> RandomInt32(int seed, int min, int max)
-            => RandomInt32(min, max, new Random(seed)); // Default seed: Environment.TickCount.
+            => RandomInt32(min, max, new Random(seed));
 
         public static IEnumerable<double> RandomDouble(int? seed = null)
         {

@@ -115,21 +115,8 @@ namespace Dixin.Linq.CategoryTheory
         }
     }
 
-    [Pure]
-    public static class ArrayHelper
-    {
-        public static int[][] Random(int minValue, int maxValue, int minLength, int maxLength, int count)
-            => Enumerable
-                .Range(0, count)
-                .Select(_ => Random(minValue, maxValue, minLength, maxLength))
-                .ToArray();
-
-        public static int[] Random(int minValue, int maxValue, int minLength, int maxLength)
-            => EnumerableX.RandomInt32(minValue, maxValue).Take(maxLength).ToArray();
-    }
-
     // Impure.
-    public static class StopwatchExtensions
+    public static class StopwatchHelper
     {
         public const int DefaultCount = 100;
 
@@ -171,6 +158,19 @@ namespace Dixin.Linq.CategoryTheory
             int count = DefaultCount,
             Stopwatch stopwatch = null)
                 => Run(() => action(arg1, arg2).ForEach(), count);
+    }
+
+    [Pure]
+    public static class ArrayHelper
+    {
+        public static int[][] Random(int minValue, int maxValue, int minLength, int maxLength, int count)
+            => Enumerable
+                .Range(0, count)
+                .Select(_ => Random(minValue, maxValue, minLength, maxLength))
+                .ToArray();
+
+        public static int[] Random(int minValue, int maxValue, int minLength, int maxLength)
+            => EnumerableX.RandomInt32(minValue, maxValue).Take(maxLength).ToArray();
     }
 
     public class PersonReferenceType : IComparable<PersonReferenceType>
@@ -424,14 +424,8 @@ namespace Dixin.Linq.CategoryTheory
     {
         internal static PersonReferenceType[] WithoutLambda(
             this PersonReferenceType[] source,
-            int minAge1,
-            int maxAge1,
-            int minAge2,
-            int maxAge2,
-            string minName1,
-            string maxName1,
-            string minName2,
-            string maxName2)
+            int minAge1, int maxAge1, int minAge2, int maxAge2,
+            string minName1, string maxName1, string minName2, string maxName2)
         {
             PersonReferenceType[] result = new PersonReferenceType[source.Length];
             int resultIndex = 0;
@@ -455,14 +449,12 @@ namespace Dixin.Linq.CategoryTheory
             this PersonReferenceType[] source,
             int minAge1, int maxAge1, int minAge2, int maxAge2,
             string minName1, string maxName1, string minName2, string maxName2)
-            =>
-                source.Where(
-                    person =>
-                    (person.Age >= minAge1 && person.Age <= maxAge2 || person.Age >= minAge2 && person.Age <= maxAge2)
-                    && (string.Compare(person.Name, minName1, StringComparison.OrdinalIgnoreCase) >= 0
-                        && string.Compare(person.Name, maxName1, StringComparison.OrdinalIgnoreCase) <= 0
-                        || string.Compare(person.Name, minName2, StringComparison.OrdinalIgnoreCase) >= 0
-                        && string.Compare(person.Name, maxName2, StringComparison.OrdinalIgnoreCase) <= 0)).ToArray();
+            => source.Where(person =>
+                (person.Age >= minAge1 && person.Age <= maxAge2 || person.Age >= minAge2 && person.Age <= maxAge2)
+                && (string.Compare(person.Name, minName1, StringComparison.OrdinalIgnoreCase) >= 0
+                    && string.Compare(person.Name, maxName1, StringComparison.OrdinalIgnoreCase) <= 0
+                    || string.Compare(person.Name, minName2, StringComparison.OrdinalIgnoreCase) >= 0
+                    && string.Compare(person.Name, maxName2, StringComparison.OrdinalIgnoreCase) <= 0)).ToArray();
     }
 
     internal static partial class Filter
@@ -500,16 +492,16 @@ namespace Dixin.Linq.CategoryTheory
             int minAge1, int maxAge1, int minAge2, int maxAge2,
             string minName1, string maxName1, string minName2, string maxName2)
                 => source.Where(new Predicate
-                    {
-                        minAge1 = minAge1,
-                        minAge2 = minAge2,
-                        maxAge1 = maxAge1,
-                        maxAge2 = maxAge2,
-                        minName1 = minName1,
-                        maxName1 = maxName1,
-                        minName2 = minName2,
-                        maxName2 = maxName2
-                    }.WithLambda).ToArray();
+                {
+                    minAge1 = minAge1,
+                    minAge2 = minAge2,
+                    maxAge1 = maxAge1,
+                    maxAge2 = maxAge2,
+                    minName1 = minName1,
+                    maxName1 = maxName1,
+                    minName2 = minName2,
+                    maxName2 = maxName2
+                }.WithLambda).ToArray();
     }
 
     // Impure.
