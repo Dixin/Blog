@@ -88,6 +88,8 @@ namespace Dixin.Linq.CategoryTheory
     using System.Linq;
     using System.Runtime.CompilerServices;
 
+    using CustomLinq = Dixin.Linq.LinqToObjects.EnumerableExtensions;
+
     // [Pure]
     public static partial class EnumerableExtensions
     {
@@ -101,12 +103,14 @@ namespace Dixin.Linq.CategoryTheory
             comparer = comparer ?? Comparer<T>.Default;
             T head = source.First();
             IEnumerable<T> tail = source.Skip(1);
-            IEnumerable<T> smallerThanHead = (from value in tail
-                                              where comparer.Compare(value, head) <= 0
-                                              select value).QuickSort();
-            IEnumerable<T> greaterThanHead = (from value in tail
-                                              where comparer.Compare(value, head) > 0
-                                              select value).QuickSort();
+            IEnumerable<T> smallerThanHead =
+                (from value in tail
+                 where comparer.Compare(value, head) <= 0
+                 select value).QuickSort(); // Recursion.
+            IEnumerable<T> greaterThanHead =
+                (from value in tail
+                 where comparer.Compare(value, head) > 0
+                 select value).QuickSort(); // Recursion.
             return smallerThanHead.Concat(head.Enumerable()).Concat(greaterThanHead);
         }
     }
@@ -137,7 +141,7 @@ namespace Dixin.Linq.CategoryTheory
             return array;
         }
     }
-    
+
     // Impure.
     public static class StopwatchExtensions
     {
@@ -160,18 +164,18 @@ namespace Dixin.Linq.CategoryTheory
         }
 
         public static long RunEach<T>
-            (this IEnumerable<T> args, Action<T> action, int count = DefaultCount, Stopwatch stopwatch = null) =>
-                Run(() => args.ForEach(action), count);
+            (this IEnumerable<T> args, Func<T, T> action, int count = DefaultCount, Stopwatch stopwatch = null) =>
+                Run(() => args.ForEach(arg => action(arg)), count);
 
         public static long RunEach<T1, T2>
             (this IEnumerable<IEnumerable<T1>> args1,
             Func<IEnumerable<T1>, Func<T1, T2>, IEnumerable<T1>> action,
             Func<T1, T2> arg2,
             int count = DefaultCount,
-            Stopwatch stopwatch = null) 
+            Stopwatch stopwatch = null)
                 => Run(() => args1.ForEach(arg1 => action(arg1, arg2).ForEach()), count);
 
-        public static long Run<T>(this T arg, Action<T> action, int count = DefaultCount, Stopwatch stopwatch = null) =>
+        public static long Run<T>(this T arg, Func<T, T> action, int count = DefaultCount, Stopwatch stopwatch = null) =>
             Run(() => action(arg), count);
 
         public static long Run<T1, T2>
@@ -179,7 +183,7 @@ namespace Dixin.Linq.CategoryTheory
             Func<IEnumerable<T1>, Func<T1, T2>, IEnumerable<T1>> action,
             Func<T1, T2> arg2,
             int count = DefaultCount,
-            Stopwatch stopwatch = null) 
+            Stopwatch stopwatch = null)
                 => Run(() => action(arg1, arg2).ForEach(), count);
     }
 
@@ -254,15 +258,17 @@ namespace Dixin.Linq.CategoryTheory
     // Impure.
     internal static partial class Sort
     {
-        internal static void ArraySort<T>(T[] array)
+        internal static T[] ArraySort<T>(T[] array)
         {
-            Array.Sort(array); // Impure. Sort values in place.
-            array.ForEach(); // Iterate sorting result.
+            Array.Sort(array);
+            return array;
         }
 
-        internal static void LinqOrderBy<T>(T[] array) => array.OrderBy(value => value).ForEach();
+        internal static T[] LinqOrderBy<T>(T[] array) => array.OrderBy(value => value).ToArray();
 
-        internal static void FunctionalQuickSort<T>(T[] array) => array.QuickSort().ForEach();
+        internal static T[] CustomLinqOrderBy<T>(T[] array) => CustomLinq.OrderBy(array, value => value).ToArray();
+
+        internal static T[] FunctionalQuickSort<T>(T[] array) => array.QuickSort().ToArray();
     }
 
     // Impure.
@@ -273,28 +279,34 @@ namespace Dixin.Linq.CategoryTheory
             int[][] arrays1 = ArrayHelper.Random(int.MinValue, int.MaxValue, 0, 100, 100).ToArray();
             int[][] arrays2 = arrays1.Select(array => array.ToArray()).ToArray(); // Copy.
             int[][] arrays3 = arrays1.Select(array => array.ToArray()).ToArray(); // Copy.
+            int[][] arrays4 = arrays1.Select(array => array.ToArray()).ToArray(); // Copy.
             Trace.WriteLine($"{nameof(ArraySort)}: {arrays1.RunEach(ArraySort)}");
             Trace.WriteLine($"{nameof(LinqOrderBy)}: {arrays2.RunEach(LinqOrderBy)}");
+            Trace.WriteLine($"{nameof(CustomLinqOrderBy)}: {arrays4.RunEach(CustomLinqOrderBy)}");
             Trace.WriteLine($"{nameof(FunctionalQuickSort)}: {arrays3.RunEach(FunctionalQuickSort)}");
         }
 
         internal static void StringArray()
         {
-            string[] array1 = Enumerable.Range(0, 1000).Select(_ => Guid.NewGuid().ToString()).ToArray();
+            string[] array1 = Enumerable.Range(0, 100).Select(_ => Guid.NewGuid().ToString()).ToArray();
             string[] array2 = array1.ToArray(); // Copy.
             string[] array3 = array1.ToArray(); // Copy.
+            string[] array4 = array1.ToArray(); // Copy.
             Trace.WriteLine($"{nameof(ArraySort)}: {array1.Run(ArraySort)}");
             Trace.WriteLine($"{nameof(LinqOrderBy)}: {array2.Run(LinqOrderBy)}");
+            Trace.WriteLine($"{nameof(CustomLinqOrderBy)}: {array4.Run(CustomLinqOrderBy)}");
             Trace.WriteLine($"{nameof(FunctionalQuickSort)}: {array3.Run(FunctionalQuickSort)}");
         }
 
         internal static void ValueTypeArray()
         {
-            PersonValueType[] array1 = PersonValueType.Random(1000).ToArray();
+            PersonValueType[] array1 = PersonValueType.Random(100).ToArray();
             PersonValueType[] array2 = array1.ToArray(); // Copy.
             PersonValueType[] array3 = array1.ToArray(); // Copy.
+            PersonValueType[] array4 = array1.ToArray(); // Copy.
             Trace.WriteLine($"{nameof(ArraySort)}: {array1.Run(ArraySort)}");
             Trace.WriteLine($"{nameof(LinqOrderBy)}: {array2.Run(LinqOrderBy)}");
+            Trace.WriteLine($"{nameof(CustomLinqOrderBy)}: {array4.Run(CustomLinqOrderBy)}");
             Trace.WriteLine($"{nameof(FunctionalQuickSort)}: {array3.Run(FunctionalQuickSort)}");
         }
 
@@ -303,8 +315,10 @@ namespace Dixin.Linq.CategoryTheory
             PersonReferenceType[] array1 = PersonReferenceType.Random(100).ToArray();
             PersonReferenceType[] array2 = array1.ToArray(); // Copy.
             PersonReferenceType[] array3 = array1.ToArray(); // Copy.
+            PersonReferenceType[] array4 = array1.ToArray(); // Copy.
             Trace.WriteLine($"{nameof(ArraySort)}: {array1.Run(ArraySort)}");
             Trace.WriteLine($"{nameof(LinqOrderBy)}: {array2.Run(LinqOrderBy)}");
+            Trace.WriteLine($"{nameof(CustomLinqOrderBy)}: {array4.Run(CustomLinqOrderBy)}");
             Trace.WriteLine($"{nameof(FunctionalQuickSort)}: {array3.Run(FunctionalQuickSort)}");
         }
     }
@@ -357,7 +371,7 @@ namespace Dixin.Linq.CategoryTheory
 
         [Pure]
         internal static IEnumerable<T> Monad<T>
-            (IEnumerable<T> source, Func<T, bool> predicate) 
+            (IEnumerable<T> source, Func<T, bool> predicate)
                 => from value in source
                    from result in predicate(value) ? Enumerable.Empty<T>() : value.Enumerable()
                    select result;
@@ -368,40 +382,40 @@ namespace Dixin.Linq.CategoryTheory
     {
         internal static void Int32Sequence()
         {
-            IEnumerable<int>[] arrays1 = ArrayHelper.Random(int.MinValue, int.MaxValue, 0, 1000, 1000).ToArray();
+            IEnumerable<int>[] arrays1 = ArrayHelper.Random(int.MinValue, int.MaxValue, 0, 100, 100).ToArray();
             IEnumerable<int>[] arrays2 = arrays1.Select(array => array.ToArray()).ToArray(); // Copy.
             IEnumerable<int>[] arrays3 = arrays1.Select(array => array.ToArray()).ToArray(); // Copy.
             IEnumerable<int>[] arrays4 = arrays1.Select(array => array.ToArray()).ToArray(); // Copy.
             Func<int, bool> predicate = value => value > 0;
-            Trace.WriteLine($"{nameof(EagerForEach)}: {arrays1.RunEach(EagerForEach, predicate)}");
-            Trace.WriteLine($"{nameof(LazyForEach)}: {arrays2.RunEach(LazyForEach, predicate)}");
-            Trace.WriteLine($"{nameof(Linq)}: {arrays3.RunEach(Linq, predicate)}");
+            Trace.WriteLine($"{nameof(Linq)}: {arrays1.RunEach(Linq, predicate)}");
+            Trace.WriteLine($"{nameof(EagerForEach)}: {arrays2.RunEach(EagerForEach, predicate)}");
+            Trace.WriteLine($"{nameof(LazyForEach)}: {arrays3.RunEach(LazyForEach, predicate)}");
             Trace.WriteLine($"{nameof(Monad)}: {arrays4.RunEach(Monad, predicate)}");
         }
 
         internal static void StringSequence()
         {
-            IEnumerable<string> array1 = Enumerable.Range(0, 10000).Select(_ => Guid.NewGuid().ToString()).ToArray();
+            IEnumerable<string> array1 = Enumerable.Range(0, 1000).Select(_ => Guid.NewGuid().ToString()).ToArray();
             IEnumerable<string> array2 = array1.ToArray(); // Copy.
             IEnumerable<string> array3 = array1.ToArray(); // Copy.
             IEnumerable<string> array4 = array1.ToArray(); // Copy.
             Func<string, bool> predicate = value => string.Compare(value, "x", StringComparison.OrdinalIgnoreCase) > 0;
-            Trace.WriteLine($"{nameof(EagerForEach)}: {array1.Run(EagerForEach, predicate)}");
-            Trace.WriteLine($"{nameof(LazyForEach)}: {array2.Run(LazyForEach, predicate)}");
-            Trace.WriteLine($"{nameof(Linq)}: {array3.Run(Linq, predicate)}");
+            Trace.WriteLine($"{nameof(Linq)}: {array1.Run(Linq, predicate)}");
+            Trace.WriteLine($"{nameof(EagerForEach)}: {array2.Run(EagerForEach, predicate)}");
+            Trace.WriteLine($"{nameof(LazyForEach)}: {array3.Run(LazyForEach, predicate)}");
             Trace.WriteLine($"{nameof(Monad)}: {array4.Run(Monad, predicate)}");
         }
 
         internal static void ValueTypeSequence()
         {
-            IEnumerable<PersonValueType> array1 = PersonValueType.Random(10000).ToArray();
+            IEnumerable<PersonValueType> array1 = PersonValueType.Random(1000).ToArray();
             IEnumerable<PersonValueType> array2 = array1.ToArray(); // Copy.
             IEnumerable<PersonValueType> array3 = array1.ToArray(); // Copy.
             IEnumerable<PersonValueType> array4 = array1.ToArray(); // Copy.
             Func<PersonValueType, bool> predicate = value => value.Age > 18;
-            Trace.WriteLine($"{nameof(EagerForEach)}: {array1.Run(EagerForEach, predicate)}");
-            Trace.WriteLine($"{nameof(LazyForEach)}: {array2.Run(LazyForEach, predicate)}");
-            Trace.WriteLine($"{nameof(Linq)}: {array3.Run(Linq, predicate)}");
+            Trace.WriteLine($"{nameof(Linq)}: {array1.Run(Linq, predicate)}");
+            Trace.WriteLine($"{nameof(EagerForEach)}: {array2.Run(EagerForEach, predicate)}");
+            Trace.WriteLine($"{nameof(LazyForEach)}: {array3.Run(LazyForEach, predicate)}");
             Trace.WriteLine($"{nameof(Monad)}: {array4.Run(Monad, predicate)}");
         }
 
@@ -412,9 +426,9 @@ namespace Dixin.Linq.CategoryTheory
             IEnumerable<PersonReferenceType> array3 = array1.ToArray(); // Copy.
             IEnumerable<PersonReferenceType> array4 = array1.ToArray(); // Copy.
             Func<PersonReferenceType, bool> predicate = value => value.Age > 18;
-            Trace.WriteLine($"{nameof(EagerForEach)}: {array1.Run(EagerForEach, predicate)}");
-            Trace.WriteLine($"{nameof(LazyForEach)}: {array2.Run(LazyForEach, predicate)}");
-            Trace.WriteLine($"{nameof(Linq)}: {array3.Run(Linq, predicate)}");
+            Trace.WriteLine($"{nameof(Linq)}: {array1.Run(Linq, predicate)}");
+            Trace.WriteLine($"{nameof(EagerForEach)}: {array2.Run(EagerForEach, predicate)}");
+            Trace.WriteLine($"{nameof(LazyForEach)}: {array3.Run(LazyForEach, predicate)}");
             Trace.WriteLine($"{nameof(Monad)}: {array4.Run(Monad, predicate)}");
         }
     }
@@ -467,6 +481,8 @@ namespace Dixin.Linq.CategoryTheory
 
             public int minAge2;
 
+            public int maxAge1;
+
             public int maxAge2;
 
             public string minName1;
@@ -478,7 +494,7 @@ namespace Dixin.Linq.CategoryTheory
             public string maxName2;
 
             public bool WithLambda(PersonReferenceType person)
-                => ((person.Age >= this.minAge1 && person.Age <= this.maxAge2)
+                => ((person.Age >= this.minAge1 && person.Age <= this.maxAge1)
                         || (person.Age >= this.minAge2 && person.Age <= this.maxAge2))
                     && ((string.Compare(person.Name, this.minName1, StringComparison.OrdinalIgnoreCase) >= 0
                             && string.Compare(person.Name, this.maxName1, StringComparison.OrdinalIgnoreCase) <= 0)
@@ -488,24 +504,18 @@ namespace Dixin.Linq.CategoryTheory
 
         internal static PersonReferenceType[] CompiledWithLambda(
             this PersonReferenceType[] source,
-            int minAge1,
-            int maxAge1,
-            int minAge2,
-            int maxAge2,
-            string minName1,
-            string maxName1,
-            string minName2,
-            string maxName2)
+            int minAge1, int maxAge1, int minAge2, int maxAge2,
+            string minName1, string maxName1, string minName2, string maxName2)
                 => source.Where(new Predicate
-                {
-                    minAge1 = minAge1,
-                    minAge2 = minAge2,
-                    maxAge2 = maxAge2,
-                    minName1 = minName1,
-                    maxName1 = maxName1,
-                    minName2 = minName2,
-                    maxName2 = maxName2
-                }.WithLambda).ToArray();
+                    {
+                        minAge1 = minAge1,
+                        minAge2 = minAge2,
+                        maxAge2 = maxAge2,
+                        minName1 = minName1,
+                        maxName1 = maxName1,
+                        minName2 = minName2,
+                        maxName2 = maxName2
+                    }.WithLambda).ToArray();
     }
 
     // Impure.
@@ -513,18 +523,18 @@ namespace Dixin.Linq.CategoryTheory
     {
         internal static void ReferenceTypeArray()
         {
-            PersonReferenceType[] array1 = PersonReferenceType.Random(1000).ToArray();
+            PersonReferenceType[] array1 = PersonReferenceType.Random(10000).ToArray();
             PersonReferenceType[] array2 = array1.ToArray(); // Copy.
             string minName1 = Guid.NewGuid().ToString();
             string maxName1 = Guid.NewGuid().ToString();
             string minName2 = Guid.NewGuid().ToString();
             string maxName2 = Guid.NewGuid().ToString();
             Trace.WriteLine(
-                $@"{nameof(WithLambda)}: {array1.Run(values =>
-                    WithLambda(values, 10, 20, 30, 40, minName1, maxName1, minName2, maxName2))}");
-            Trace.WriteLine(
-                $@"{nameof(WithoutLambda)}: {array2.Run(values =>
+                $@"{nameof(WithoutLambda)}: {array1.Run(values =>
                     WithoutLambda(values, 10, 20, 30, 40, minName1, maxName1, minName2, maxName2))}");
+            Trace.WriteLine(
+                $@"{nameof(WithLambda)}: {array2.Run(values =>
+                    WithLambda(values, 10, 20, 30, 40, minName1, maxName1, minName2, maxName2))}");
         }
     }
 }

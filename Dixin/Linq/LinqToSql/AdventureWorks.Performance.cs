@@ -28,7 +28,7 @@
                 ProductCategory[] where2 = adventureWorks.ProductCategories
                     .Where(category => category.Name.StartsWith("B")).ToArray(); // Reused.
                 ProductCategory[] where3 = adventureWorks.ProductCategories
-                    .Where(category => category.Name.StartsWith("Bik")).ToArray(); // Reused.
+                    .Where(category => category.Name.StartsWith("Bike")).ToArray(); // Reused.
 
                 ProductSubcategory[] take1 = adventureWorks.ProductSubcategories
                     .Take(1).ToArray();

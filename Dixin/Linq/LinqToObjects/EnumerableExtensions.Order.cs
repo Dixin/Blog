@@ -73,17 +73,20 @@
         {
             TSource[] values = this.source.ToArray(); // Eager evaluation.
             int count = values.Length;
-            if (count > 0)
+            if (count <= 0)
             {
-                int[] indexMap = new int[count];
-                for (int index = 0; index < count; index++)
-                {
-                    indexMap[index] = index;
-                }
+                yield break;
+            }
 
-                // GetComparison is only called once for each generator instance.
-                Comparison<int> comparison = this.GetComparison(values);
-                Array.Sort(indexMap, (index1, index2) => // index1 < index2
+            int[] indexMap = new int[count];
+            for (int index = 0; index < count; index++)
+            {
+                indexMap[index] = index;
+            }
+
+            // GetComparison is only called once for each generator instance.
+            Comparison<int> comparison = this.GetComparison(values);
+            Array.Sort(indexMap, (index1, index2) => // index1 < index2
                 {
                     // Format the compareResult. 
                     // When compareResult is equal, return index1 - index2, 
@@ -92,10 +95,9 @@
                     int compareResult = comparison(index1, index2);
                     return compareResult == 0 ? index1 - index2 : compareResult;
                 }); // More eager evaluation.
-                for (int index = 0; index < count; index++)
-                {
-                    yield return values[indexMap[index]];
-                }
+            for (int index = 0; index < count; index++)
+            {
+                yield return values[indexMap[index]];
             }
         }
 

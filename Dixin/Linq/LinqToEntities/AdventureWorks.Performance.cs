@@ -72,7 +72,7 @@
                 ProductCategory[] where2 = adventureWorks.ProductCategories
                     .Where(category => category.Name.StartsWith("B")).ToArray(); // Reused.
                 ProductCategory[] where3 = adventureWorks.ProductCategories
-                    .Where(category => category.Name.StartsWith("Bik")).ToArray(); // Not reused.
+                    .Where(category => category.Name.StartsWith("Bike")).ToArray(); // Not reused.
 
                 ProductSubcategory[] take1 = adventureWorks.ProductSubcategories
                     .Take(1).ToArray();
@@ -89,14 +89,19 @@
             using (new TransactionScope(TransactionScopeAsyncFlowOption.Enabled)) // BEGIN TRANSACTION.
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {
-                ProductCategory category = await adventureWorks.ProductCategories.FindAsync(1); // Async IO.
-                ProductSubcategory[] subcategories = await adventureWorks.ProductSubcategories
-                    .Where(subcategory => subcategory.ProductCategory == category).ToArrayAsync(); // Async IO.
-                adventureWorks.ProductSubcategories.RemoveRange(subcategories);
-                await adventureWorks.Products
-                    .Where(product => product.ListPrice > 1000)
-                    .ForEachAsync(product => product.ListPrice -= 50); // Async IO.
-                await adventureWorks.SaveChangesAsync();
+                ProductCategory category1 = await adventureWorks.ProductCategories
+                    .FindAsync(1); // Async IO.
+                ProductCategory category2 = await adventureWorks.ProductCategories
+                    .SingleAsync(category => category.Name.StartsWith("A")); // Async IO.
+                await adventureWorks.ProductSubcategories
+                    .Where(subcategory => subcategory.ProductCategoryID == category1.ProductCategoryID)
+                    .ForEachAsync(subcategory => subcategory.ProductCategoryID = category2.ProductCategoryID); // Async IO.
+                Product[] products = await adventureWorks.Products
+                    .OrderByDescending(product => product.ListPrice)
+                    .Take(5)
+                    .ToArrayAsync(); // Async IO.
+                adventureWorks.ProductCategories.Remove(category1);
+                await adventureWorks.SaveChangesAsync(); // Async IO.
             } // ROLLBACK TRANSACTION.
         }
     }
