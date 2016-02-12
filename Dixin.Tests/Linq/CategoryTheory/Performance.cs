@@ -44,8 +44,8 @@
         [TestMethod]
         public void LambdaTest()
         {
-            Trace.WriteLine(nameof(Filter.ReferenceTypeArray));
-            Filter.ReferenceTypeArray();
+            Trace.WriteLine(nameof(Filter.ByPredicate));
+            Filter.ByPredicate();
         }
     }
 }

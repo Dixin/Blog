@@ -462,21 +462,9 @@ namespace Dixin.Linq.CategoryTheory
         [CompilerGenerated]
         private sealed class Predicate
         {
-            public int minAge1;
+            public int minAge1; public int minAge2; public int maxAge1; public int maxAge2;
 
-            public int minAge2;
-
-            public int maxAge1;
-
-            public int maxAge2;
-
-            public string minName1;
-
-            public string maxName1;
-
-            public string minName2;
-
-            public string maxName2;
+            public string minName1; public string maxName1; public string minName2; public string maxName2;
 
             public bool WithLambda(PersonReferenceType person)
                 => ((person.Age >= this.minAge1 && person.Age <= this.maxAge1)
@@ -492,22 +480,16 @@ namespace Dixin.Linq.CategoryTheory
             int minAge1, int maxAge1, int minAge2, int maxAge2,
             string minName1, string maxName1, string minName2, string maxName2)
                 => source.Where(new Predicate
-                {
-                    minAge1 = minAge1,
-                    minAge2 = minAge2,
-                    maxAge1 = maxAge1,
-                    maxAge2 = maxAge2,
-                    minName1 = minName1,
-                    maxName1 = maxName1,
-                    minName2 = minName2,
-                    maxName2 = maxName2
-                }.WithLambda).ToArray();
+                    {
+                        minAge1 = minAge1, minAge2 = minAge2, maxAge1 = maxAge1, maxAge2 = maxAge2,
+                        minName1 = minName1, maxName1 = maxName1, minName2 = minName2, maxName2 = maxName2
+                    }.WithLambda).ToArray();
     }
 
     // Impure.
     internal static partial class Filter
     {
-        internal static void ReferenceTypeArray()
+        internal static void ByPredicate()
         {
             PersonReferenceType[] array1 = PersonReferenceType.Random(10000).ToArray();
             PersonReferenceType[] array2 = array1.ToArray(); // Copy.
