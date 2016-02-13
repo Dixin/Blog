@@ -263,7 +263,6 @@
     <Compile Include="..\Tools\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Properties\Assembly.cs" />
     <Compile Include="Common\AppDomainData.cs" />
     <Compile Include="Common\AppDomain`1.cs" />
     <Compile Include="Common\Argument.cs" />
