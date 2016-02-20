@@ -39,7 +39,7 @@
             return Create(() => random.Next(min, max));
         }
 
-        public static IEnumerable<int> RandomInt32(int seed, int min, int max)
+        public static IEnumerable<int> RandomInt32(int min, int max, int seed)
             => RandomInt32(min, max, new Random(seed));
 
         public static IEnumerable<double> RandomDouble(int? seed = null)

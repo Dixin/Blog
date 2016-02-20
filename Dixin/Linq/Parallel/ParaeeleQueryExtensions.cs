@@ -1,0 +1,55 @@
+namespace Dixin.Linq.Parallel
+{
+    using System;
+    using System.Linq;
+    using System.Reflection;
+    using System.Threading.Tasks;
+
+    using Dixin.Common;
+
+    public struct QuerySettings
+    {
+        public TaskScheduler TaskScheduler { get; set; }
+
+        public int? DegreeOfParallelism { get; set; }
+
+        public ParallelExecutionMode? ExecutionMode { get; set; }
+
+        public ParallelMergeOptions? MergeOptions { get; set; }
+    }
+
+    public static class ParaeeleQueryExtensions
+    {
+        private static readonly PropertyInfo QuerySettingsProperty = typeof(ParallelQuery).GetProperty(
+            "SpecifiedQuerySettings", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
+
+        private static readonly Type QuerySettingsType = typeof(ParallelQuery).Assembly.GetType(
+            "System.Linq.Parallel.QuerySettings");
+
+        private static readonly PropertyInfo TaskSchedulerProperty = QuerySettingsType.GetProperty(
+            "TaskScheduler", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
+
+        private static readonly PropertyInfo DegreeOfParallelismProperty = QuerySettingsType.GetProperty(
+            "DegreeOfParallelism", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
+
+        private static readonly PropertyInfo ExecutionModeProperty = QuerySettingsType.GetProperty(
+            "ExecutionMode", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
+
+        private static readonly PropertyInfo MergeOptionsProperty = QuerySettingsType.GetProperty(
+            "MergeOptions", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
+
+        public static QuerySettings SpecifiedQuerySettings(this ParallelQuery source)
+        {
+            source.NotNull(nameof(source));
+
+            object querySettings = QuerySettingsProperty.GetValue(source);
+            return new QuerySettings()
+                {
+                    TaskScheduler = TaskSchedulerProperty.GetValue(querySettings) as TaskScheduler,
+                    DegreeOfParallelism = DegreeOfParallelismProperty.GetValue(querySettings) as int?,
+                    ExecutionMode = ExecutionModeProperty.GetValue(querySettings) as ParallelExecutionMode?,
+                    MergeOptions = MergeOptionsProperty.GetValue(querySettings) as ParallelMergeOptions?
+                };
+        }
+    }
+}

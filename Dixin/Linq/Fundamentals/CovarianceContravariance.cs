@@ -591,9 +591,9 @@
     {
         public static IEnumerable<Type> GetTypesWithVariance()
         {
-            string mscorlibPath = typeof(object).Assembly.CodeBase;
-            string directory = Path.GetDirectoryName(new Uri(mscorlibPath).AbsolutePath);
-            return GetAssemblies(directory)
+            string mscorlibPath = typeof(object).Assembly.Location;
+            string gacPath = Path.GetDirectoryName(mscorlibPath);
+            return GetAssemblies(gacPath)
                 .SelectMany(GetTypesWithVariance)
                 .OrderBy(type => type.Name);
         }

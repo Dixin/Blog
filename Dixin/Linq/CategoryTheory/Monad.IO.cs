@@ -206,9 +206,9 @@
                 IO<Unit> query =
                     // 1. Read URL from console.
                     from url in IO.Func(Console.ReadLine)
-                        // 2. Download string from Internet.
+                    // 2. Download string from Internet.
                     from text in IO.Func(() => webClient.DownloadString(url))
-                        // 3. Write string to console.
+                    // 3. Write string to console.
                     let length = 1000
                     let message = text.Length <= length ? text : $"{text.Substring(0, length)}..."
                     from unit in IO.Action<string>(Console.WriteLine)(message)

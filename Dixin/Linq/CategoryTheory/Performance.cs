@@ -126,7 +126,12 @@ namespace Dixin.Linq.CategoryTheory
         {
             stopwatch = stopwatch ?? DefaultStopwatch;
             stopwatch.Reset();
+            action(); // Warm up.
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            GC.Collect();
             stopwatch.Start();
+
             for (int index = 0; index < count; index++)
             {
                 action();
@@ -163,14 +168,19 @@ namespace Dixin.Linq.CategoryTheory
     [Pure]
     public static class ArrayHelper
     {
-        public static int[][] Random(int minValue, int maxValue, int minLength, int maxLength, int count)
+        public static int[][] RandomArrays(int minValue, int maxValue, int minLength, int maxLength, int count)
             => Enumerable
                 .Range(0, count)
-                .Select(_ => Random(minValue, maxValue, minLength, maxLength))
+                .Select(_ => RandomArray(minValue, maxValue, minLength, maxLength))
                 .ToArray();
 
-        public static int[] Random(int minValue, int maxValue, int minLength, int maxLength)
-            => EnumerableX.RandomInt32(minValue, maxValue).Take(maxLength).ToArray();
+        public static int[] RandomArray(int minValue, int maxValue, int minLength, int maxLength)
+        {
+            Random random = new Random();
+            return EnumerableX
+                .RandomInt32(minValue, maxValue, random).Take(random.Next(minLength, maxLength))
+                .ToArray();
+        }
     }
 
     public class PersonReferenceType : IComparable<PersonReferenceType>
@@ -262,7 +272,7 @@ namespace Dixin.Linq.CategoryTheory
     {
         internal static void Int32Array()
         {
-            int[][] arrays1 = ArrayHelper.Random(int.MinValue, int.MaxValue, 0, 100, 100);
+            int[][] arrays1 = ArrayHelper.RandomArrays(int.MinValue, int.MaxValue, 0, 100, 100);
             int[][] arrays2 = arrays1.Select(array => array.ToArray()).ToArray(); // Copy.
             int[][] arrays3 = arrays1.Select(array => array.ToArray()).ToArray(); // Copy.
             int[][] arrays4 = arrays1.Select(array => array.ToArray()).ToArray(); // Copy.
@@ -368,7 +378,7 @@ namespace Dixin.Linq.CategoryTheory
     {
         internal static void Int32Sequence()
         {
-            IEnumerable<int>[] arrays1 = ArrayHelper.Random(int.MinValue, int.MaxValue, 0, 100, 100);
+            IEnumerable<int>[] arrays1 = ArrayHelper.RandomArrays(int.MinValue, int.MaxValue, 0, 100, 100);
             IEnumerable<int>[] arrays2 = arrays1.Select(array => array.ToArray()).ToArray(); // Copy.
             IEnumerable<int>[] arrays3 = arrays1.Select(array => array.ToArray()).ToArray(); // Copy.
             IEnumerable<int>[] arrays4 = arrays1.Select(array => array.ToArray()).ToArray(); // Copy.

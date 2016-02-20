@@ -103,6 +103,9 @@
       <HintPath>..\packages\linqtotwitter.3.1.2\lib\net45\LinqToTwitterPcl.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.ConcurrencyVisualizer.Markers">
+      <HintPath>..\Tools\Microsoft.ConcurrencyVisualizer.Markers.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Data.Edm, Version=5.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Data.Edm.5.7.0\lib\net40\Microsoft.Data.Edm.dll</HintPath>
@@ -263,7 +266,10 @@
     <Compile Include="..\Tools\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Properties\Assembly.cs" />
+    <Compile Include="Common\Int32Extensions.cs" />
+    <Compile Include="Diagnostics\Tracing\Event.cs" />
+    <Compile Include="Linq\Parallel\ParaeeleQueryExtensions.cs" />
+    <Compile Include="Linq\Parallel\Performance.cs" />
     <Compile Include="Common\AppDomainData.cs" />
     <Compile Include="Common\AppDomain`1.cs" />
     <Compile Include="Common\Argument.cs" />
@@ -296,6 +302,7 @@
     <Compile Include="Linq\LinqToSql\ExpressionTree.cs" />
     <Compile Include="IO\CustomTextWriter.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.QueryMethods.cs" />
+    <Compile Include="Linq\Parallel\Query.cs" />
     <Compile Include="Reflection\ReflectionHelper.cs" />
     <Compile Include="Linq\LinqToSql\TableHelper.cs" />
     <Compile Include="Management\Win32Process.cs" />

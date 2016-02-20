@@ -40,6 +40,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{4569910E-0
 		Data\AdventureWorks_Log.ldf = Data\AdventureWorks_Log.ldf
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dixin.Console", "Dixin.Console\Dixin.Console.csproj", "{E331D518-EAC8-4A5E-9273-E420CC01C9E3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,6 +76,10 @@ Global
 		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E331D518-EAC8-4A5E-9273-E420CC01C9E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E331D518-EAC8-4A5E-9273-E420CC01C9E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E331D518-EAC8-4A5E-9273-E420CC01C9E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E331D518-EAC8-4A5E-9273-E420CC01C9E3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

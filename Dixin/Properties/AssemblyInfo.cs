@@ -7,3 +7,4 @@ using System.Runtime.InteropServices;
 [assembly: Guid("ba4bc172-4478-4594-b2d9-a3f41a39378d")]
 
 [assembly: InternalsVisibleTo("Dixin.Tests")]
+[assembly: InternalsVisibleTo("Dixin.Console")]

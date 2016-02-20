@@ -131,10 +131,12 @@
     <Compile Include="..\Tools\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Common\Int32ExtensionsTests.cs" />
     <Compile Include="Linq\Connection.cs" />
     <Compile Include="Linq\Fundamentals\ReflectionHelperTests.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorksTests.Performance.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorksTests.Performance.cs" />
+    <Compile Include="Linq\Parallel\PerformanceTests.cs" />
     <Compile Include="Windows\ClipboardHelperTests.cs" />
     <Compile Include="Diagnostics\ProcessHelperTests.cs" />
     <Compile Include="Dynamic\BaseTest.cs" />
@@ -145,7 +147,7 @@
     <Compile Include="Dynamic\StructTest.cs" />
     <Compile Include="Linq\CategoryTheory\ApplicativeTests.cs" />
     <Compile Include="Linq\CategoryTheory\BinaryFunctorTests.cs" />
-    <Compile Include="Linq\CategoryTheory\Performance.cs" />
+    <Compile Include="Linq\CategoryTheory\PerformanceTests.cs" />
     <Compile Include="Linq\CategoryTheory\EnumerableExtensionsTests.cs" />
     <Compile Include="Linq\CategoryTheory\EnumerableTests.cs" />
     <Compile Include="Linq\CategoryTheory\FunctorTests.cs" />
