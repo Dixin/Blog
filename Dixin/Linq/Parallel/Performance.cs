@@ -1,11 +1,38 @@
 ﻿namespace Dixin.Linq.Parallel
 {
+    using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Net;
     using System.Xml.Linq;
 
     using Microsoft.ConcurrencyVisualizer.Instrumentation;
+
+    internal static partial class Performance
+    {
+        private static void Computing(int value) => Enumerable.Repeat(value, 200000000).ForEach();
+
+        internal static void Linq()
+        {
+            int[] source = Enumerable.Range(0, 16).ToArray();
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            source.ForEach(value => Computing(value));
+            stopwatch.Stop();
+            Trace.WriteLine($"Sequential LINQ: {stopwatch.ElapsedMilliseconds}");
+
+            stopwatch = Stopwatch.StartNew();
+            source.AsParallel().ForAll(value => Computing(value));
+            stopwatch.Stop();
+            Trace.WriteLine($"Parallel LINQ: {stopwatch.ElapsedMilliseconds}");
+        }
+
+        internal static void VisualizeLinq()
+        {
+            int[] source = Enumerable.Range(0, 8).ToArray();
+            Visualize.Sequential(source, Computing);
+            Visualize.Parallel(source, Computing);
+        }
+    }
 
     public static class ArrayHelper
     {
@@ -14,9 +41,6 @@
                 .Range(0, count)
                 .Select(_ => EnumerableX.RandomInt32(minValue, maxValue).Take(length).ToArray())
                 .ToArray();
-
-        public static int[] RandomArray(int minValue, int maxValue, int length)
-            => EnumerableX.RandomInt32(minValue, maxValue).Take(length).ToArray();
     }
 
     internal static partial class Performance

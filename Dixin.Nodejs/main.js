@@ -11,5 +11,7 @@ tumblr.downloadAllAndUnlike({
     offset: 5,
     limit: 51,
     directory: "D:\\Tumblr",
-    after: 1
+    after: 1,
+    debug: true,
+    fiddler: false
 });

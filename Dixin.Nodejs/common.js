@@ -36,10 +36,17 @@ var http = require("http"),
             }
         });
         return deferred.promise;
+    },
+
+    fiddler = function () {
+        process.env.http_proxy = "http://127.0.0.1:8888";
+        process.env.https_proxy = "http://127.0.0.1:8888";
+        process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
     };
 
 module.exports = {
     download: download,
     removeReservedCharactersFromFileName: removeReservedCharactersFromFileName,
-    exists: exists
+    exists: exists,
+    fiddler: fiddler
 };

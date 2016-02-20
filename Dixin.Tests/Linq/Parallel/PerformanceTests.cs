@@ -12,11 +12,11 @@
         [TestMethod]
         public void VisualizeTest()
         {
-            Trace.WriteLine(nameof(Performance.Compute));
-            Performance.Compute();
+            Trace.WriteLine(nameof(Performance.Linq));
+            Performance.Linq();
 
-            Trace.WriteLine(nameof(Performance.VisualizeComputing));
-            Performance.VisualizeComputing();
+            Trace.WriteLine(nameof(Performance.VisualizeLinq));
+            Performance.VisualizeLinq();
         }
 
         [TestMethod]

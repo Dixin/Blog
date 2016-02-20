@@ -2,7 +2,6 @@ namespace Dixin.Linq.Parallel
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Linq;
 
     using Microsoft.ConcurrencyVisualizer.Instrumentation;
@@ -79,36 +78,8 @@ namespace Dixin.Linq.Parallel
                     {
                         return func(value);
                     }
-                }).ForEach();
+                }).ForAll(_ => { });
             }
-        }
-    }
-
-    internal static partial class Performance
-    {
-        private static void Computing(int value) => Enumerable.Repeat(value, 10000000).ForEach();
-
-        internal static void Compute()
-        {
-            int[] source = Enumerable.Range(0, 16).ToArray();
-            Stopwatch stopwatch = Stopwatch.StartNew();
-            stopwatch.Start();
-            source.ForEach(value => Computing(value));
-            stopwatch.Stop();
-            Trace.WriteLine($"Sequential LINQ: {stopwatch.ElapsedMilliseconds}");
-
-            stopwatch.Reset();
-            stopwatch.Start();
-            source.AsParallel().ForAll(value => Computing(value));
-            stopwatch.Stop();
-            Trace.WriteLine($"Parallel LINQ: {stopwatch.ElapsedMilliseconds}");
-        }
-
-        internal static void VisualizeComputing()
-        {
-            int[] source = Enumerable.Range(0, 16).ToArray();
-            Visualize.Sequential(source, Computing);
-            Visualize.Parallel(source, Computing);
         }
     }
 }

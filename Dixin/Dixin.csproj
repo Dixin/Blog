@@ -302,7 +302,7 @@
     <Compile Include="Linq\LinqToSql\ExpressionTree.cs" />
     <Compile Include="IO\CustomTextWriter.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.QueryMethods.cs" />
-    <Compile Include="Linq\Parallel\Query.cs" />
+    <Compile Include="Linq\Parallel\Visualize.cs" />
     <Compile Include="Reflection\ReflectionHelper.cs" />
     <Compile Include="Linq\LinqToSql\TableHelper.cs" />
     <Compile Include="Management\Win32Process.cs" />
@@ -502,7 +502,9 @@
     <Content Include="Sql\instnwnd.sql" />
     <Content Include="Web\Blog.htm" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Linq\LinqToXml\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" />
   <Target Name="EnsureBclBuildImported" BeforeTargets="BeforeBuild" Condition="'$(BclBuildImported)' == ''">

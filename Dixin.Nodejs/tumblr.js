@@ -8,27 +8,36 @@ var path = require("path"),
 
     getClient = function (options) {
         var deferred = Q.defer();
-        tumblr.getAuthorizedClient({
-            userEmail: options.userEmail,
-            userPassword: options.userPassword,
-            appConsumerKey: options.appConsumerKey,
-            appSecretKey: options.appSecretKey,
-            debug: options.debug
-        }, function (error, client) {
+        tumblr.interactiveAuthorization(options, function (error) {
             if (error) {
                 deferred.reject(error);
-            } else {
-                options.client = client;
-                deferred.resolve(options);
             }
+            tumblr.getAuthorizedClient({
+                userEmail: options.userEmail,
+                userPassword: options.userPassword,
+                appConsumerKey: options.appConsumerKey,
+                appSecretKey: options.appSecretKey,
+                debug: options.debug
+            }, function(error, client) {
+                if (error) {
+                    deferred.reject(error);
+                } else {
+                    options.client = client;
+                    deferred.resolve(options);
+                }
+            });
         });
         return deferred.promise;
     },
 
     getLikes = function (options) {
         var deferred = Q.defer();
-        options.client.likes(options, function (error, data) {
+        options.client.likes({
+            limit: options.limit,
+            after: options.after
+        }, function (error, data) {
             if (error) {
+                console.log(error);
                 deferred.reject(error);
             } else {
                 console.log("Likes: " + data.liked_count);
@@ -91,6 +100,10 @@ var path = require("path"),
     },
 
     downloadAllAndUnlike = function (options) {
+        if (options.fiddler) {
+            common.fiddler();
+        }
+
         getClient(options)// Get tumblr client.
             .then(getLikes)// Get tumblr liked post.
             .then(function (options) {
