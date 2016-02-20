@@ -10,10 +10,13 @@
     public class PerformanceTests
     {
         [TestMethod]
-        public void PrimeTest()
+        public void VisualizeTest()
         {
-            Trace.WriteLine(nameof(Query.Primes));
-            Query.Primes();
+            Trace.WriteLine(nameof(Performance.Compute));
+            Performance.Compute();
+
+            Trace.WriteLine(nameof(Performance.VisualizeComputing));
+            Performance.VisualizeComputing();
         }
 
         [TestMethod]

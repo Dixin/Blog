@@ -43,22 +43,22 @@
         {
             int[][] arrays = ArrayHelper.RandomArrays(int.MinValue, int.MaxValue, 5, 2000);
 
-            VisualizerHelper.Run(arrays, array => array.OrderBy(value => value).ToArray(), false, "Sequential");
-            VisualizerHelper.Run(arrays, array => array.AsParallel().OrderBy(value => value).ToArray(), false, "Parallel");
+            Visualize.Run(arrays, array => array.OrderBy(value => value).ToArray(), false, "Sequential");
+            Visualize.Run(arrays, array => array.AsParallel().OrderBy(value => value).ToArray(), false, "Parallel");
         }
 
         internal static void QueryMediumArray()
         {
             int[][] arrays = ArrayHelper.RandomArrays(int.MinValue, int.MaxValue, 2000, 50);
-            VisualizerHelper.Run(arrays, array => array.OrderBy(value => value).ToArray(), false, "Sequential");
-            VisualizerHelper.Run(arrays, array => array.AsParallel().OrderBy(value => value).ToArray(), false, "Parallel");
+            Visualize.Run(arrays, array => array.OrderBy(value => value).ToArray(), false, "Sequential");
+            Visualize.Run(arrays, array => array.AsParallel().OrderBy(value => value).ToArray(), false, "Parallel");
         }
 
         internal static void QueryLargeArray()
         {
             int[][] arrays = ArrayHelper.RandomArrays(int.MinValue, int.MaxValue, 50000, 2);
-            VisualizerHelper.Run(arrays, array => array.OrderBy(value => value).ToArray(), false, "Sequential");
-            VisualizerHelper.Run(arrays, array => array.AsParallel().OrderBy(value => value).ToArray(), false, "Parallel");
+            Visualize.Run(arrays, array => array.OrderBy(value => value).ToArray(), false, "Sequential");
+            Visualize.Run(arrays, array => array.AsParallel().OrderBy(value => value).ToArray(), false, "Parallel");
         }
     }
 
@@ -79,8 +79,8 @@
                 .Select(item => item.Element(XNamespace.Get("http://search.yahoo.com/mrss/") + "thumbnail").Attribute("url").Value)
                 .ToArray();
 
-            VisualizerHelper.Sequential(urls, Download);
-            VisualizerHelper.Parallel(urls, Download);
+            Visualize.Sequential(urls, Download);
+            Visualize.Parallel(urls, Download);
         }
 
         internal static void DownloadLargeFiles()
@@ -90,8 +90,8 @@
                 .Select(item => item.Element((XNamespace)"http://search.yahoo.com/mrss/" + "content").Attribute("url").Value)
                 .ToArray();
 
-            VisualizerHelper.Sequential(urls, Download);
-            VisualizerHelper.Parallel(urls, Download);
+            Visualize.Sequential(urls, Download);
+            Visualize.Parallel(urls, Download);
         }
 
         internal static void ReadFiles()
@@ -100,8 +100,8 @@
             string gacPath = Path.GetDirectoryName(mscorlibPath);
             string[] files = Directory.GetFiles(gacPath);
 
-            VisualizerHelper.Sequential(files, file => File.ReadAllBytes(file));
-            VisualizerHelper.Parallel(files, file => File.ReadAllBytes(file));
+            Visualize.Sequential(files, file => File.ReadAllBytes(file));
+            Visualize.Parallel(files, file => File.ReadAllBytes(file));
         }
     }
 }
