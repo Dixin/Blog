@@ -459,7 +459,7 @@
         [TestMethod]
         public void QuickSortTest()
         {
-            int[] array = ArrayHelper.Random(int.MinValue, int.MaxValue, 0, 10);
+            int[] array = ArrayHelper.RandomArray(int.MinValue, int.MaxValue, 0, 10);
             int[] result = array.QuickSort().ToArray();
             Array.Sort(array);
             EnumerableAssert.AreSequentialEqual(result, array);
