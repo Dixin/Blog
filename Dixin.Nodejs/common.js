@@ -1,14 +1,25 @@
 ﻿"use strict";
 
 var http = require("http"),
+    https = require("https"),
     fs = require("fs"),
+    url = require("url"),
     Q = require("q"),
 
-    download = function (url, path) {
+    getHttpModule = function (options) {
+        if (typeof options === "string") { // options can be URL string.
+            options = url.parse(options);
+        }
+        return options.protocol && options.protocol.toLowerCase() === "https:" ? https : http;
+    },
+
+    download = function (options, path) {
         var deferred = Q.defer(),
-            file = fs.createWriteStream(path);
-        console.log("Downloading " + url + "to " + path);
-        http.get(url, function (response) {
+            file = fs.createWriteStream(path),
+            httpModule = getHttpModule(options);
+
+        console.log("Downloading " + url.format(options) + " to " + path);
+        httpModule.request(options, function (response) {
             response.pipe(file);
             file.on("finish", function () {
                 file.close(deferred.resolve);
@@ -16,7 +27,7 @@ var http = require("http"),
         }).on("error", function (error) {
             fs.unlink(path);
             deferred.reject(error);
-        });
+        }).end();
         return deferred.promise;
     },
 
@@ -36,17 +47,10 @@ var http = require("http"),
             }
         });
         return deferred.promise;
-    },
-
-    fiddler = function () {
-        process.env.http_proxy = "http://127.0.0.1:8888";
-        process.env.https_proxy = "http://127.0.0.1:8888";
-        process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
     };
 
 module.exports = {
     download: download,
     removeReservedCharactersFromFileName: removeReservedCharactersFromFileName,
-    exists: exists,
-    fiddler: fiddler
+    exists: exists
 };
