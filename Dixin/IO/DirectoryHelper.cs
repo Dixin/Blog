@@ -1,5 +1,6 @@
 namespace Dixin.IO
 {
+    using System;
     using System.IO;
     using System.Linq;
 
@@ -25,6 +26,27 @@ namespace Dixin.IO
             newName.NotNullOrWhiteSpace(nameof(newName));
 
             FileSystem.RenameDirectory(directory.FullName, newName);
+        }
+
+        public static bool TryRename(this DirectoryInfo directory, string newName)
+        {
+            directory.NotNull(nameof(directory));
+            newName.NotNullOrWhiteSpace(nameof(newName));
+
+            if (directory.Exists && !directory.Name.EqualsOrdinal(newName))
+            {
+                try
+                {
+                    FileSystem.RenameDirectory(directory.FullName, newName);
+                }
+                catch (Exception exception) when (exception.IsNotCritical())
+                {
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         public static void Rename(string directory, string newName)

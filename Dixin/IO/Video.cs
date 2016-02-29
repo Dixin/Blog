@@ -30,7 +30,30 @@
                     string[] names = Path.GetFileName(album).Split(Separater.ToCharArray());
                     if ((otherLettersFirst && names.Last().HasOtherLetter()) || (!otherLettersFirst && names.First().HasOtherLetter()))
                     {
-                        new DirectoryInfo(album).Rename(string.Join(Separater, names.Last(), names[0], names.First()));
+                        new DirectoryInfo(album).Rename(string.Join(Separater, names.Last(), names[1], names.First()));
+                    }
+                });
+        }
+
+        internal static void FixAlbums(string source, string target)
+        {
+            Directory.EnumerateDirectories(target).ForEach(targetAlbum =>
+                {
+                    string name = Path.GetFileName(targetAlbum).Split(Separater.ToCharArray(), StringSplitOptions.RemoveEmptyEntries).Last();
+                    string[] sources = Directory.EnumerateDirectories(source)
+                        .Where(sourceAlbum =>
+                            name.EqualsOrdinal(Path.GetFileName(sourceAlbum).Split(Separater.ToCharArray(), StringSplitOptions.RemoveEmptyEntries).First()))
+                        .ToArray();
+                    if (sources.Length == 1)
+                    {
+                        try
+                        {
+                            new DirectoryInfo(targetAlbum).Rename(Path.GetFileName(sources.Single()));
+                        }
+                        catch (Exception exception) when(exception.IsNotCritical())
+                        {
+                        }
+                        
                     }
                 });
         }
