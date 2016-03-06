@@ -269,6 +269,7 @@
     <Compile Include="Common\Int32Extensions.cs" />
     <Compile Include="Diagnostics\Tracing\Event.cs" />
     <Compile Include="Linq\Parallel\ParaeeleQueryExtensions.cs" />
+    <Compile Include="Linq\Parallel\Partitioning.cs" />
     <Compile Include="Linq\Parallel\Performance.cs" />
     <Compile Include="Common\AppDomainData.cs" />
     <Compile Include="Common\AppDomain`1.cs" />
@@ -302,7 +303,7 @@
     <Compile Include="Linq\LinqToSql\ExpressionTree.cs" />
     <Compile Include="IO\CustomTextWriter.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.QueryMethods.cs" />
-    <Compile Include="Linq\Parallel\Visualize.cs" />
+    <Compile Include="Linq\Parallel\Visualizer.cs" />
     <Compile Include="Reflection\ReflectionHelper.cs" />
     <Compile Include="Linq\LinqToSql\TableHelper.cs" />
     <Compile Include="Management\Win32Process.cs" />

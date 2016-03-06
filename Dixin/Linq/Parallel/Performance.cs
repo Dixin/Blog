@@ -6,8 +6,6 @@
     using System.Net;
     using System.Xml.Linq;
 
-    using Microsoft.ConcurrencyVisualizer.Instrumentation;
-
     internal static partial class Performance
     {
         private static void Computing(int value) => Enumerable.Repeat(value, 200000000).ForEach();
@@ -29,61 +27,43 @@
         internal static void VisualizeLinq()
         {
             int[] source = Enumerable.Range(0, 8).ToArray();
-            Visualize.Sequential(source, Computing);
-            Visualize.Parallel(source, Computing);
+            source.Visualize(Computing);
+            source.AsParallel().Visualize(Computing);
         }
     }
 
     public static class ArrayHelper
     {
-        public static int[][] RandomArrays(int minValue, int maxValue, int length, int count)
-            => Enumerable
-                .Range(0, count)
-                .Select(_ => EnumerableX.RandomInt32(minValue, maxValue).Take(length).ToArray())
-                .ToArray();
+        public static int[][] RandomArrays
+            (int length, int count, int minValue = int.MinValue, int maxValue = int.MaxValue)
+                => Enumerable
+                    .Range(0, count)
+                    .Select(_ => EnumerableX.RandomInt32(minValue, maxValue).Take(length).ToArray())
+                    .ToArray();
     }
 
     internal static partial class Performance
     {
-        internal static int[] SequentialComputing
-            (int[] array, MarkerSeries markerSeries, int category) => array.OrderBy(value =>
-                {
-                    using (markerSeries.EnterSpan(nameof(Enumerable.OrderBy)))
-                    {
-                        return value;
-                    }
-                }).ToArray();
-
-        internal static int[] ParallelComputing
-            (int[] array, MarkerSeries markerSeries, int category) => array.AsParallel().OrderBy(value =>
-                {
-                    using (markerSeries.EnterSpan(nameof(Enumerable.OrderBy)))
-                    {
-                        return value;
-                    }
-                }).ToArray();
-
-        internal static void QuerySmallArray()
+        private static void QueryArray(int length, int count)
         {
-            int[][] arrays = ArrayHelper.RandomArrays(int.MinValue, int.MaxValue, 5, 2000);
-
-            Visualize.Run(arrays, array => array.OrderBy(value => value).ToArray(), false, "Sequential");
-            Visualize.Run(arrays, array => array.AsParallel().OrderBy(value => value).ToArray(), false, "Parallel");
+            int[][] arrays = ArrayHelper.RandomArrays(length, count);
+            new int[0].OrderBy(value => value).ForEach(); // Warm up.
+            new int[0].AsParallel().OrderBy(value => value).ForAll(_ => { }); // Warm up.
+            arrays.Visualize( // array.OrderBy(value => value)
+                array => array.VisualizeQuery(Enumerable.OrderBy, value => value), 
+                Visualizer.Sequential, 
+                0);
+            arrays.Visualize( // array.AsParallel().OrderBy(value => value)
+                array => array.AsParallel().VisualizeQuery(ParallelEnumerable.OrderBy, value => value), 
+                Visualizer.Parallel, 
+                1);
         }
 
-        internal static void QueryMediumArray()
-        {
-            int[][] arrays = ArrayHelper.RandomArrays(int.MinValue, int.MaxValue, 2000, 50);
-            Visualize.Run(arrays, array => array.OrderBy(value => value).ToArray(), false, "Sequential");
-            Visualize.Run(arrays, array => array.AsParallel().OrderBy(value => value).ToArray(), false, "Parallel");
-        }
+        internal static void QuerySmallArray() => QueryArray(5, 20000);
 
-        internal static void QueryLargeArray()
-        {
-            int[][] arrays = ArrayHelper.RandomArrays(int.MinValue, int.MaxValue, 50000, 2);
-            Visualize.Run(arrays, array => array.OrderBy(value => value).ToArray(), false, "Sequential");
-            Visualize.Run(arrays, array => array.AsParallel().OrderBy(value => value).ToArray(), false, "Parallel");
-        }
+        internal static void QueryMediumArray() => QueryArray(100, 1000);
+
+        internal static void QueryLargeArray() => QueryArray(5000, 20);
     }
 
     internal static partial class Performance
@@ -103,8 +83,8 @@
                 .Select(item => item.Element(XNamespace.Get("http://search.yahoo.com/mrss/") + "thumbnail").Attribute("url").Value)
                 .ToArray();
 
-            Visualize.Sequential(urls, Download);
-            Visualize.Parallel(urls, Download);
+            urls.Visualize(Download);
+            urls.AsParallel().Visualize(Download);
         }
 
         internal static void DownloadLargeFiles()
@@ -114,8 +94,8 @@
                 .Select(item => item.Element((XNamespace)"http://search.yahoo.com/mrss/" + "content").Attribute("url").Value)
                 .ToArray();
 
-            Visualize.Sequential(urls, Download);
-            Visualize.Parallel(urls, Download);
+            urls.Visualize(Download);
+            urls.AsParallel().Visualize(Download);
         }
 
         internal static void ReadFiles()
@@ -124,8 +104,8 @@
             string gacPath = Path.GetDirectoryName(mscorlibPath);
             string[] files = Directory.GetFiles(gacPath);
 
-            Visualize.Sequential(files, file => File.ReadAllBytes(file));
-            Visualize.Parallel(files, file => File.ReadAllBytes(file));
+            files.Visualize(file => File.ReadAllBytes(file));
+            files.AsParallel().Visualize(file => File.ReadAllBytes(file));
         }
     }
 }
