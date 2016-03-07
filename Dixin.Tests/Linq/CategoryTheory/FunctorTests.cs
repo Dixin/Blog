@@ -1,4 +1,4 @@
-﻿namespace Dixin.Linq.CategoryTheory.Tests
+﻿namespace Dixin.Tests.Linq.CategoryTheory
 {
     using System;
     using System.Collections.Generic;
@@ -9,6 +9,9 @@
     using Dixin.TestTools.UnitTesting;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using NullableInt32 = Dixin.Linq.CategoryTheory.Nullable<int>;
+    using NullableString = Dixin.Linq.CategoryTheory.Nullable<string>;
 
     [TestClass]
     public partial class FunctorTests
@@ -187,9 +190,9 @@
         {
             bool isExecuted1 = false;
             Func<int, string> append = x => { isExecuted1 = true; return x + "b"; };
-            CategoryTheory.Nullable<int> nullable = new CategoryTheory.Nullable<int>();
+            NullableInt32 nullable = new NullableInt32();
 
-            CategoryTheory.Nullable<string> query1 = from x in nullable select append(x);
+            NullableString query1 = from x in nullable select append(x);
             Assert.IsFalse(isExecuted1); // Deferred and lazy.
 
             Assert.IsFalse(query1.HasValue); // Execution.
@@ -199,8 +202,8 @@
             Assert.AreEqual(query1.Select(Functions.Id).HasValue, Functions.Id(query1).HasValue);
             // Functor law 2: F.Select(f2.o(f1)) == F.Select(f1).Select(f2)
             Func<string, int> length = x => x.Length;
-            CategoryTheory.Nullable<int> query2 = nullable.Select(length.o(append));
-            CategoryTheory.Nullable<int> query3 = nullable.Select(append).Select(length);
+            NullableInt32 query2 = nullable.Select(length.o(append));
+            NullableInt32 query3 = nullable.Select(append).Select(length);
             Assert.AreEqual(query2.HasValue, query3.HasValue);
         }
 
@@ -209,9 +212,9 @@
         {
             bool isExecuted1 = false;
             Func<int, string> append = x => { isExecuted1 = true; return x + "b"; };
-            CategoryTheory.Nullable<int> nullable = new CategoryTheory.Nullable<int>(() => Tuple.Create(true, 1));
+            NullableInt32 nullable = new NullableInt32(() => Tuple.Create(true, 1));
 
-            CategoryTheory.Nullable<string> query1 = from x in nullable select append(x);
+            NullableString query1 = from x in nullable select append(x);
             Assert.IsFalse(isExecuted1); // Deferred and lazy.
 
             Assert.IsTrue(query1.HasValue); // Execution.
@@ -222,8 +225,8 @@
             Assert.AreEqual(query1.Select(Functions.Id).HasValue, Functions.Id(query1).HasValue);
             // Functor law 2: F.Select(f2.o(f1)) == F.Select(f1).Select(f2)
             Func<string, int> length = x => x.Length;
-            CategoryTheory.Nullable<int> query2 = nullable.Select(length.o(append));
-            CategoryTheory.Nullable<int> query3 = nullable.Select(append).Select(length);
+            NullableInt32 query2 = nullable.Select(length.o(append));
+            NullableInt32 query3 = nullable.Select(append).Select(length);
             Assert.AreEqual(query2.Value, query3.Value);
         }
     }

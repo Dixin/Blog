@@ -5,7 +5,6 @@
     using System.Linq;
 
     using Dixin.Linq.CategoryTheory;
-    using Dixin.Linq.CategoryTheory.Tests;
     using Dixin.TestTools.UnitTesting;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;

@@ -266,8 +266,10 @@
     <Compile Include="..\Tools\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Common\ExceptionFilter.cs" />
     <Compile Include="Common\Int32Extensions.cs" />
     <Compile Include="Diagnostics\Tracing\Event.cs" />
+    <Compile Include="Linq\Parallel\Ordering.cs" />
     <Compile Include="Linq\Parallel\ParaeeleQueryExtensions.cs" />
     <Compile Include="Linq\Parallel\Partitioning.cs" />
     <Compile Include="Linq\Parallel\Performance.cs" />
@@ -471,6 +473,7 @@
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Common\ExceptionFIlter.il" />
     <None Include="Linq\CategoryTheory\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

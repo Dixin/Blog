@@ -4,11 +4,10 @@
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Threading;
 
     internal static partial class Partitioning
     {
-        private static int Computing(int value = 0)
+        internal static int Computing(int value = 0)
         {
             Enumerable.Range(0, (value + 1) * 10000000).ForEach();
             return value;
@@ -110,36 +109,6 @@
         {
             IEnumerable<int> source = Enumerable.Range(0, Environment.ProcessorCount * 4);
             new IxPartitioner<int>(source).AsParallel().VisualizeQuery(ParallelEnumerable.Select, Computing);
-        }
-    }
-
-    public class IxOrderablePartitioner<TSource> : OrderablePartitioner<TSource>, IDisposable
-    {
-        private readonly IBuffer<KeyValuePair<long, TSource>> buffer;
-
-        public IxOrderablePartitioner(IEnumerable<TSource> source)
-            : base(keysOrderedInEachPartition: true, keysOrderedAcrossPartitions: true, keysNormalized: true)
-        {
-            long index = -1;
-            this.buffer = source.Select(value => new KeyValuePair<long, TSource>(Interlocked.Increment(ref index), value)).Share();
-        }
-
-        public override bool SupportsDynamicPartitions => true;
-
-        public override IList<IEnumerator<KeyValuePair<long, TSource>>> GetOrderablePartitions
-            (int partitionCount) => Enumerable.Range(0, partitionCount).Select(_ => this.buffer.GetEnumerator()).ToArray();
-
-        public override IEnumerable<KeyValuePair<long, TSource>> GetOrderableDynamicPartitions() => this.buffer;
-
-        public void Dispose() => this.buffer.Dispose();
-    }
-
-    internal static partial class Partitioning
-    {
-        internal static void IxOrderablePartitioner()
-        {
-            IEnumerable<int> source = Enumerable.Range(0, Environment.ProcessorCount * 4);
-            new IxOrderablePartitioner<int>(source).AsParallel().VisualizeQuery(ParallelEnumerable.Select, Computing);
         }
     }
 }

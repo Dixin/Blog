@@ -1,13 +1,17 @@
-﻿namespace Dixin.Linq.CategoryTheory.Tests
+﻿namespace Dixin.Tests.Linq.CategoryTheory
 {
     using System;
     using System.Collections.Generic;
     using System.Globalization;
-    using System.Linq;
     using System.Threading.Tasks;
 
+    using Dixin.Linq;
+    using Dixin.Linq.CategoryTheory;
     using Dixin.TestTools.UnitTesting;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using FuncExtensions = Dixin.Linq.CategoryTheory.FuncExtensions;
+    using NullableInt32 = Dixin.Linq.CategoryTheory.Nullable<int>;
 
     [TestClass]
     public partial class MonoidalFunctorTests
@@ -224,7 +228,7 @@
         {
             bool isExecuted1 = false;
             Func<int, int> addOne = x => { isExecuted1 = true; return x + 1; };
-            CategoryTheory.Nullable<int> query1 = addOne.Nullable().Apply(2.Nullable());
+            NullableInt32 query1 = addOne.Nullable().Apply(2.Nullable());
             Assert.IsFalse(isExecuted1); // Deferred and lazy.
             Assert.IsTrue(query1.HasValue); // Execution.
             Assert.AreEqual(addOne(2), query1.Value);
@@ -239,19 +243,19 @@
             Func<int, int> addTwo = x => x + 2;
             Func<Func<int, int>, Func<Func<int, int>, Func<int, int>>> o =
                 new Func<Func<int, int>, Func<int, int>, Func<int, int>>(FuncExtensions.o).Curry();
-            CategoryTheory.Nullable<int> left1 = o.Nullable().Apply(addOne.Nullable()).Apply(addTwo.Nullable()).Apply(1.Nullable());
-            CategoryTheory.Nullable<int> right1 = addOne.Nullable().Apply(addTwo.Nullable().Apply(1.Nullable()));
+            NullableInt32 left1 = o.Nullable().Apply(addOne.Nullable()).Apply(addTwo.Nullable()).Apply(1.Nullable());
+            NullableInt32 right1 = addOne.Nullable().Apply(addTwo.Nullable().Apply(1.Nullable()));
             Assert.AreEqual(left1.Value, right1.Value);
             // f.Functor().Apply(a.Functor()) == f(a).Functor()
             Assert.AreEqual(addOne.Nullable().Apply(1.Nullable()).Value, addOne(1).Nullable().Value);
             // F.Apply(a.Functor()) == (f => f(a)).Functor().Apply(F)
-            CategoryTheory.Nullable<int> left2 = addOne.Nullable().Apply(1.Nullable());
-            CategoryTheory.Nullable<int> right2 = new Func<Func<int, int>, int>(f => f(1)).Nullable().Apply(addOne.Nullable());
+            NullableInt32 left2 = addOne.Nullable().Apply(1.Nullable());
+            NullableInt32 right2 = new Func<Func<int, int>, int>(f => f(1)).Nullable().Apply(addOne.Nullable());
             Assert.AreEqual(left2.Value, right2.Value);
 
             bool isExecuted2 = false;
             Func<int, int> addTwo2 = x => { isExecuted2 = true; return x + 2; };
-            CategoryTheory.Nullable<int> query2 = addTwo2.Nullable().Apply(new CategoryTheory.Nullable<int>());
+            NullableInt32 query2 = addTwo2.Nullable().Apply(new NullableInt32());
             Assert.IsFalse(isExecuted2); // Deferred and lazy.
             Assert.IsFalse(query2.HasValue); // Execution.
             Assert.IsFalse(isExecuted2);

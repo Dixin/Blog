@@ -1,10 +1,13 @@
-﻿namespace Dixin.Linq.CategoryTheory.Tests
+﻿namespace Dixin.Tests.Linq.CategoryTheory
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
+
+    using Dixin.Linq.CategoryTheory;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using NullableInt32 = Dixin.Linq.CategoryTheory.Nullable<int>;
 
     [TestClass]
     public partial class NaturalTransformationsTests
@@ -42,7 +45,7 @@
         [TestMethod]
         public void NullableToEnumerableTest()
         {
-            CategoryTheory.Nullable<int> functor = new CategoryTheory.Nullable<int>(() => Tuple.Create(true, 1));
+            NullableInt32 functor = new NullableInt32(() => Tuple.Create(true, 1));
             IEnumerable<int> query1 = from x in functor.ToEnumerable()
                                       where x > 0
                                       select x;
@@ -53,7 +56,7 @@
                                       select x;
             Assert.IsFalse(query2.Any());
 
-            IEnumerable<int> query3 = from x in new CategoryTheory.Nullable<int>().ToEnumerable()
+            IEnumerable<int> query3 = from x in new NullableInt32().ToEnumerable()
                                       select x;
             Assert.IsFalse(query3.Any());
         }
@@ -71,12 +74,11 @@
         private Tuple<Func<Lazy<T>, IEnumerable<T>>, Func<Lazy<T>, IEnumerable<T>>> Compositions<T>()
         {
             Func<Lazy<T>, Func<T>> t1 = NaturalTransformations.ToFunc;
-            Func<Func<T>, CategoryTheory.Nullable<T>> t2 = NaturalTransformations.ToNullable;
-            Func<CategoryTheory.Nullable<T>, IEnumerable<T>> t3 = NaturalTransformations.ToEnumerable;
+            Func<Func<T>, Dixin.Linq.CategoryTheory.Nullable<T>> t2 = NaturalTransformations.ToNullable;
+            Func<Dixin.Linq.CategoryTheory.Nullable<T>, IEnumerable<T>> t3 = NaturalTransformations.ToEnumerable;
             Func<Lazy<T>, IEnumerable<T>> x = t3.o(t2).o(t1);
             Func<Lazy<T>, IEnumerable<T>> y = t3.o(t2.o(t1));
             return Tuple.Create(x, y);
         }
     }
 }
-

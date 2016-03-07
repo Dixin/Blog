@@ -1,14 +1,20 @@
-﻿namespace Dixin.Linq.CategoryTheory.Tests
+﻿namespace Dixin.Tests.Linq.CategoryTheory
 {
     using System;
     using System.Collections.Generic;
     using System.Globalization;
-    using System.Linq;
     using System.Threading.Tasks;
 
+    using Dixin.Linq;
+    using Dixin.Linq.CategoryTheory;
     using Dixin.TestTools.UnitTesting;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using FuncExtensions = Dixin.Linq.CategoryTheory.FuncExtensions;
+    using NullableInt32 = Dixin.Linq.CategoryTheory.Nullable<int>;
+    using NullableString = Dixin.Linq.CategoryTheory.Nullable<string>;
+    using TaskExtensions = Dixin.Linq.CategoryTheory.TaskExtensions;
 
     public partial class MonadTests
     {
@@ -151,9 +157,9 @@
             bool isExecuted1 = false;
             Func<int, Func<int, string>> add = x => y =>
             { isExecuted1 = true; return (x + y).ToString(CultureInfo.InvariantCulture); };
-            CategoryTheory.Nullable<int> nullable1 = new CategoryTheory.Nullable<int>();
-            CategoryTheory.Nullable<int> nullable2 = new CategoryTheory.Nullable<int>();
-            CategoryTheory.Nullable<string> query1 = from x in nullable1
+            NullableInt32 nullable1 = new NullableInt32();
+            NullableInt32 nullable2 = new NullableInt32();
+            NullableString query1 = from x in nullable1
                                                      from y in nullable2
                                                      from _ in nullable1
                                                      select add(x)(y);
@@ -166,11 +172,11 @@
             bool isExecuted5 = false;
             add = x => y =>
             { isExecuted3 = true; return (x + y).ToString(CultureInfo.InvariantCulture); };
-            CategoryTheory.Nullable<int> one = new CategoryTheory.Nullable<int>(() =>
+            NullableInt32 one = new NullableInt32(() =>
                 { isExecuted4 = true; return Tuple.Create(true, 1); });
-            CategoryTheory.Nullable<int> two = new CategoryTheory.Nullable<int>(() =>
+            NullableInt32 two = new NullableInt32(() =>
                 { isExecuted5 = true; return Tuple.Create(true, 2); });
-            CategoryTheory.Nullable<string> query2 = from x in one
+            NullableString query2 = from x in one
                                                      from y in two
                                                      from _ in one
                                                      select add(x)(y);
@@ -184,17 +190,17 @@
             Assert.IsTrue(isExecuted5);
 
             // Monad law 1: m.Monad().SelectMany(f) == f(m)
-            Func<int, CategoryTheory.Nullable<int>> addOne = x => (x + 1).Nullable();
-            CategoryTheory.Nullable<int> left = 1.Nullable().SelectMany(addOne);
-            CategoryTheory.Nullable<int> right = addOne(1);
+            Func<int, NullableInt32> addOne = x => (x + 1).Nullable();
+            NullableInt32 left = 1.Nullable().SelectMany(addOne);
+            NullableInt32 right = addOne(1);
             Assert.AreEqual(left.Value, right.Value);
             // Monad law 2: M.SelectMany(Monad) == M
-            CategoryTheory.Nullable<int> M = 1.Nullable();
+            NullableInt32 M = 1.Nullable();
             left = M.SelectMany(NullableExtensions.Nullable);
             right = M;
             Assert.AreEqual(left.Value, right.Value);
             // Monad law 3: M.SelectMany(f1).SelectMany(f2) == M.SelectMany(x => f1(x).SelectMany(f2))
-            Func<int, CategoryTheory.Nullable<int>> addTwo = x => (x + 2).Nullable();
+            Func<int, NullableInt32> addTwo = x => (x + 2).Nullable();
             left = M.SelectMany(addOne).SelectMany(addTwo);
             right = M.SelectMany(x => addOne(x).SelectMany(addTwo));
             Assert.AreEqual(left.Value, right.Value);
@@ -253,7 +259,7 @@
             Assert.AreEqual(left.Result, right.Result);
             // Monad law 2: M.SelectMany(Monad) == M
             Task<int> M = 1.Task();
-            left = M.SelectMany(CategoryTheory.TaskExtensions.Task);
+            left = M.SelectMany(TaskExtensions.Task);
             right = M;
             Assert.AreEqual(left.Result, right.Result);
             // Monad law 3: M.SelectMany(f1).SelectMany(f2) == M.SelectMany(x => f1(x).SelectMany(f2))
@@ -304,7 +310,7 @@
             Assert.AreEqual(left.Result, right.Result);
             // Monad law 2: M.SelectMany(Monad) == M
             Task<int> M = 1.Task(true);
-            left = M.SelectMany(CategoryTheory.TaskExtensions.Task);
+            left = M.SelectMany(TaskExtensions.Task);
             right = M;
             M.Start();
             Assert.AreEqual(left.Result, right.Result);
