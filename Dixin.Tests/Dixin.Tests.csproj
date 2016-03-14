@@ -137,8 +137,10 @@
     <Compile Include="Linq\Fundamentals\ReflectionHelperTests.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorksTests.Performance.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorksTests.Performance.cs" />
+    <Compile Include="Linq\Parallel\QueryMethods.OrderingTests.cs" />
     <Compile Include="Linq\Parallel\PartitioningTests.cs" />
     <Compile Include="Linq\Parallel\PerformanceTests.cs" />
+    <Compile Include="Linq\Parallel\QueryMethodsTests.cs" />
     <Compile Include="Windows\ClipboardHelperTests.cs" />
     <Compile Include="Diagnostics\ProcessHelperTests.cs" />
     <Compile Include="Dynamic\BaseTest.cs" />

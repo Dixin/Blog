@@ -1,61 +1,52 @@
 ﻿namespace Dixin.Linq.Parallel
 {
+    using System;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Net;
     using System.Xml.Linq;
 
+    using static HelperMethods;
+
     internal static partial class Performance
     {
-        private static void Computing(int value) => Enumerable.Repeat(value, 200000000).ForEach();
-
-        internal static void Linq()
+        internal static void Benchmark()
         {
-            int[] source = Enumerable.Range(0, 16).ToArray();
+            int[] source = Enumerable.Range(0, Environment.ProcessorCount * 4).ToArray();
             Stopwatch stopwatch = Stopwatch.StartNew();
             source.ForEach(value => Computing(value));
             stopwatch.Stop();
             Trace.WriteLine($"Sequential LINQ: {stopwatch.ElapsedMilliseconds}");
 
-            stopwatch = Stopwatch.StartNew();
+            stopwatch.Restart();
             source.AsParallel().ForAll(value => Computing(value));
             stopwatch.Stop();
             Trace.WriteLine($"Parallel LINQ: {stopwatch.ElapsedMilliseconds}");
         }
 
-        internal static void VisualizeLinq()
+        internal static void Visualize()
         {
-            int[] source = Enumerable.Range(0, 8).ToArray();
-            source.Visualize(Computing);
-            source.AsParallel().Visualize(Computing);
+            int[] source = Enumerable.Range(0, Environment.ProcessorCount * 4).ToArray();
+            source.Visualize(value => Computing(value));
+            source.AsParallel().Visualize(value => Computing(value));
         }
-    }
-
-    public static class ArrayHelper
-    {
-        public static int[][] RandomArrays
-            (int length, int count, int minValue = int.MinValue, int maxValue = int.MaxValue)
-                => Enumerable
-                    .Range(0, count)
-                    .Select(_ => EnumerableX.RandomInt32(minValue, maxValue).Take(length).ToArray())
-                    .ToArray();
     }
 
     internal static partial class Performance
     {
         private static void QueryArray(int length, int count)
         {
-            int[][] arrays = ArrayHelper.RandomArrays(length, count);
+            int[][] arrays = RandomArrays(length, count);
             new int[0].OrderBy(value => value).ForEach(); // Warm up.
             new int[0].AsParallel().OrderBy(value => value).ForAll(_ => { }); // Warm up.
             arrays.Visualize( // array.OrderBy(value => value)
-                array => array.VisualizeQuery(Enumerable.OrderBy, value => value), 
-                Visualizer.Sequential, 
+                array => array.Visualize(Enumerable.OrderBy, value => value),
+                Visualizer.Sequential,
                 0);
             arrays.Visualize( // array.AsParallel().OrderBy(value => value)
-                array => array.AsParallel().VisualizeQuery(ParallelEnumerable.OrderBy, value => value), 
-                Visualizer.Parallel, 
+                array => array.AsParallel().Visualize(ParallelEnumerable.OrderBy, value => value),
+                Visualizer.Parallel,
                 1);
         }
 

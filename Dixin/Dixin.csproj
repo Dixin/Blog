@@ -269,7 +269,9 @@
     <Compile Include="Common\ExceptionFilter.cs" />
     <Compile Include="Common\Int32Extensions.cs" />
     <Compile Include="Diagnostics\Tracing\Event.cs" />
-    <Compile Include="Linq\Parallel\Ordering.cs" />
+    <Compile Include="Linq\Parallel\HelperMethods.cs" />
+    <Compile Include="Linq\Parallel\QueryMethods.cs" />
+    <Compile Include="Linq\Parallel\QueryMethods.Ordering.cs" />
     <Compile Include="Linq\Parallel\ParaeeleQueryExtensions.cs" />
     <Compile Include="Linq\Parallel\Partitioning.cs" />
     <Compile Include="Linq\Parallel\Performance.cs" />

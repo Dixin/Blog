@@ -46,14 +46,14 @@ namespace Dixin.Linq.Parallel
 
     public static partial class Visualizer
     {
-        internal static void VisualizeQuery<T, TResult>(
+        internal static void Visualize<T, TResult>(
             this IEnumerable<T> source, Func<IEnumerable<T>, Func<T, TResult>, IEnumerable<T>> query, Func<T, TResult> func, string span = Sequential, int category = 0)
         {
             using (Markers.EnterSpan(category, span))
             {
                 MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
                 query(
-                    source, 
+                    source,
                     value =>
                         {
                             using (markerSeries.EnterSpan(category, value.ToString()))
@@ -65,14 +65,14 @@ namespace Dixin.Linq.Parallel
             }
         }
 
-        internal static void VisualizeQuery<T, TResult>(
+        internal static void Visualize<T, TResult>(
             this ParallelQuery<T> source, Func<ParallelQuery<T>, Func<T, TResult>, ParallelQuery<T>> query, Func<T, TResult> func, string span = Parallel, int category = 1)
         {
             using (Markers.EnterSpan(category, span))
             {
                 MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
                 query(
-                    source, 
+                    source,
                     value =>
                         {
                             using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, value.ToString()))
@@ -82,6 +82,146 @@ namespace Dixin.Linq.Parallel
                         })
                 .ForAll(_ => { });
             }
+        }
+
+        internal static ParallelQuery<T> VisualizeQuery<T, TResult>(
+            this ParallelQuery<T> source, Func<ParallelQuery<T>, Func<T, TResult>, ParallelQuery<T>> query, Func<T, TResult> func, string span = Parallel)
+        {
+            MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
+            return query(
+                source,
+                value =>
+                {
+                    using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, value.ToString()))
+                    {
+                        return func(value);
+                    }
+                });
+        }
+    }
+
+    public static partial class Visualizer
+    {
+        internal static T Visualize<T>(
+            this ParallelQuery<T> source,
+            Func<ParallelQuery<T>, Func<T, T, T>, T> aggregate,
+            Func<T, T, T> func,
+            string span = nameof(ParallelEnumerable.Aggregate))
+        {
+            MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
+            return aggregate(
+                source,
+                (accumulate, value) =>
+                {
+                    using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, $"{accumulate} {value}"))
+                    {
+                        return func(accumulate, value);
+                    }
+                });
+        }
+
+        internal static TAccumulate Visualize<T, TAccumulate>(
+            this ParallelQuery<T> source,
+            Func<ParallelQuery<T>, TAccumulate, Func<TAccumulate, T, TAccumulate>, TAccumulate> aggregate,
+            TAccumulate seed,
+            Func<TAccumulate, T, TAccumulate> func,
+            string span = nameof(ParallelEnumerable.Aggregate))
+        {
+            MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
+            return aggregate(
+                source,
+                seed,
+                (accumulate, value) =>
+                {
+                    using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, value.ToString()))
+                    {
+                        return func(accumulate, value);
+                    }
+                });
+        }
+
+        internal static TResult Visualize<T, TAccumulate, TResult>(
+            this ParallelQuery<T> source,
+            Func<ParallelQuery<T>, TAccumulate, Func<TAccumulate, T, TAccumulate>, Func<TAccumulate, TResult>, TResult> aggregate,
+            TAccumulate seed,
+            Func<TAccumulate, T, TAccumulate> func,
+            Func<TAccumulate, TResult> resultSelector,
+            string span = nameof(ParallelEnumerable.Aggregate))
+        {
+            MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
+            return aggregate(
+                source,
+                seed,
+                (accumulate, value) =>
+                {
+                    using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, value.ToString()))
+                    {
+                        return func(accumulate, value);
+                    }
+                },
+                resultSelector);
+        }
+
+        internal static TResult Visualize<TSource, TAccumulate, TResult>(
+            this ParallelQuery<TSource> source,
+            Func<ParallelQuery<TSource>, TAccumulate, Func<TAccumulate, TSource, TAccumulate>, Func<TAccumulate, TAccumulate, TAccumulate>, Func<TAccumulate, TResult>, TResult> aggregate,
+            TAccumulate seed,
+            Func<TAccumulate, TSource, TAccumulate> updateAccumulatorFunc,
+            Func<TAccumulate, TAccumulate, TAccumulate> combineAccumulatorsFunc,
+            Func<TAccumulate, TResult> resultSelector,
+            string span = nameof(ParallelEnumerable.Aggregate))
+
+        {
+            MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
+            return aggregate(
+                source,
+                seed,
+                (accumulate, value) =>
+                    {
+                        using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, $"{accumulate} {value}"))
+                        {
+                            return updateAccumulatorFunc(accumulate, value);
+                        }
+                    },
+                (accumulates, accumulate) =>
+                    {
+                        using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, $"{accumulates} {accumulate}"))
+                        {
+                            return combineAccumulatorsFunc(accumulates, accumulate);
+                        }
+                    },
+                resultSelector);
+        }
+
+        internal static TResult Visualize<TSource, TAccumulate, TResult>(
+            this ParallelQuery<TSource> source,
+            Func<ParallelQuery<TSource>, Func<TAccumulate>, Func<TAccumulate, TSource, TAccumulate>, Func<TAccumulate, TAccumulate, TAccumulate>, Func<TAccumulate, TResult>, TResult> aggregate,
+            Func<TAccumulate> seedFactory,
+            Func<TAccumulate, TSource, TAccumulate> updateAccumulatorFunc,
+            Func<TAccumulate, TAccumulate, TAccumulate> combineAccumulatorsFunc,
+            Func<TAccumulate, TResult> resultSelector,
+            string span = nameof(ParallelEnumerable.Aggregate))
+
+        {
+            MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
+            return aggregate(
+                source,
+                seedFactory,
+                (accumulate, value) =>
+                {
+                    using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, $"{accumulate} {value}"))
+                    {
+                        return updateAccumulatorFunc(accumulate, value);
+                    }
+                },
+                (accumulates, accumulate) =>
+                {
+                    using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, $"{accumulates} {accumulate}"))
+                    {
+                        return combineAccumulatorsFunc(accumulates, accumulate);
+                    }
+                },
+                resultSelector);
         }
     }
 }

@@ -23,10 +23,10 @@
             || exception is OutOfMemoryException
             || exception is ThreadAbortException);
 
-        public static bool Trace(this Exception exception)
+        public static bool Trace(this Exception exception, bool result = false)
         {
             System.Diagnostics.Trace.WriteLine(exception);
-            return true;
+            return result;
         }
     }
 }

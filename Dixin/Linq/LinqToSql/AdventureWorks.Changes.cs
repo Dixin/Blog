@@ -58,7 +58,7 @@
             {
                 Product insert = new UniversalProduct() { Name = "Insert", ListPrice = 123 };
                 // Product insert = new Product() causes InvalidOperationException for InsertOnSubmit:
-                // System.InvalidOperationException: Instance of type 'Dixin.Linq.LinqToSql.Product' could not be added. This type is not part of the mapped type system.
+                // InvalidOperationException: Instance of type 'Dixin.Linq.LinqToSql.Product' could not be added. This type is not part of the mapped type system.
                 adventureWorks.Products.InsertOnSubmit(insert);
                 IQueryable<Product> update = adventureWorks.Products
                     .Where(product => product.Name.Contains("HL"));
