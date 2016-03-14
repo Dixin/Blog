@@ -35,8 +35,8 @@ namespace Dixin.Linq.LinqToObjects
         internal static void Select()
         {
             IEnumerable<int> source = Enumerable.Range(0, 5);
-            IEnumerable<string> squareRoots = from @int in source
-                                              select $"{Math.Sqrt(@int):0.00}";
+            IEnumerable<string> squareRoots = from int32 in source
+                                              select $"{Math.Sqrt(int32):0.00}";
             foreach (string squareRoot in squareRoots)
             {
                 Trace.WriteLine(squareRoot);
@@ -46,10 +46,10 @@ namespace Dixin.Linq.LinqToObjects
         internal static void Let()
         {
             IEnumerable<int> source = Enumerable.Range(-2, 5);
-            IEnumerable<string> absoluteValues = from @int in source
-                                                 let abs = Math.Abs(@int)
+            IEnumerable<string> absoluteValues = from int32 in source
+                                                 let abs = Math.Abs(int32)
                                                  where abs > 0
-                                                 select $"Math.Abs({@int}) == {abs}";
+                                                 select $"Math.Abs({int32}) == {abs}";
             foreach (string absoluteValue in absoluteValues)
             {
                 Trace.WriteLine(absoluteValue);
@@ -542,9 +542,9 @@ namespace Dixin.Linq.LinqToObjects
         {
             IEnumerable outer = new int[] { 1, 2, 3 };
             IEnumerable inner = new string[] { "a", "bb", "ccc" };
-            IEnumerable<string> innerJoin = from int @int in outer
-                                            join string @string in inner on @int equals @string.Length
-                                            select $"{@int}: {@string}";
+            IEnumerable<string> innerJoin = from int int32 in outer
+                                            join string @string in inner on int32 equals @string.Length
+                                            select $"{int32}: {@string}";
             foreach (string value in innerJoin)
             {
                 Trace.WriteLine(value);

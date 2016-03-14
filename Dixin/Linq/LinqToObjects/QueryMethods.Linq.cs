@@ -44,9 +44,9 @@
         internal static void Range()
         {
             IEnumerable<int> range = Enumerable.Range(-1, 5); // Define query.
-            foreach (int @int in range) // Execute query.
+            foreach (int int32 in range) // Execute query.
             {
-                Trace.WriteLine(@int);
+                Trace.WriteLine(int32);
             }
             // -1 0 1 2 3
         }
@@ -59,9 +59,9 @@
         internal static void Repeat()
         {
             IEnumerable<int> repeat = Enumerable.Repeat(1, 5); // Define query.
-            foreach (int @int in repeat) // Execute query.
+            foreach (int int32 in repeat) // Execute query.
             {
-                Trace.WriteLine(@int);
+                Trace.WriteLine(int32);
             }
             // 1 1 1 1 1
         }
@@ -70,9 +70,9 @@
         {
             IEnumerable<int> souce = Enumerable.Empty<int>();
             IEnumerable<int> singletonIfEmpty = souce.DefaultIfEmpty();
-            foreach (int @int in singletonIfEmpty)
+            foreach (int int32 in singletonIfEmpty)
             {
-                Trace.WriteLine(@int);
+                Trace.WriteLine(int32);
             }
             // 0
         }
@@ -81,9 +81,9 @@
         {
             IEnumerable<int> souce = Enumerable.Empty<int>();
             IEnumerable<int> singletonIfEmpty = souce.DefaultIfEmpty(1);
-            foreach (int @int in singletonIfEmpty)
+            foreach (int int32 in singletonIfEmpty)
             {
-                Trace.WriteLine(@int);
+                Trace.WriteLine(int32);
             }
             // 1
         }
@@ -134,7 +134,7 @@
         internal static void Select()
         {
             IEnumerable<int> source = Enumerable.Range(0, 5);
-            IEnumerable<string> squareRoots = source.Select(@int => $"{Math.Sqrt(@int):0.00}"); // Define query.
+            IEnumerable<string> squareRoots = source.Select(int32 => $"{Math.Sqrt(int32):0.00}"); // Define query.
             foreach (string squareRoot in squareRoots) // Execute query.
             {
                 Trace.WriteLine(squareRoot);
@@ -164,9 +164,9 @@
         {
             IEnumerable<int> source = Enumerable.Range(-2, 5);
             IEnumerable<string> absoluteValues = source
-                .Select(@int => new { @int = @int, abs = Math.Abs(@int) })
+                .Select(int32 => new { int32 = int32, abs = Math.Abs(int32) })
                 .Where(tuple => tuple.abs > 0)
-                .Select(tuple => $"Math.Abs({tuple.@int}) == {tuple.abs}");
+                .Select(tuple => $"Math.Abs({tuple.int32}) == {tuple.abs}");
             foreach (string absoluteValue in absoluteValues)
             {
                 Trace.WriteLine(absoluteValue);
@@ -628,9 +628,9 @@
             IEnumerable<int> first = First();
             IEnumerable<int> second = Second();
             IEnumerable<int> concat = first.Concat(second); // Define query.
-            foreach (int @int in concat) // Execute query.
+            foreach (int int32 in concat) // Execute query.
             {
-                Trace.WriteLine(@int);
+                Trace.WriteLine(int32);
             }
             // 1 2 3 4 4 3 4 5 6
         }
@@ -643,9 +643,9 @@
         {
             IEnumerable<int> first = First();
             IEnumerable<int> distinct = first.Distinct(); // Define query.
-            foreach (int @int in distinct) // Execute query.
+            foreach (int int32 in distinct) // Execute query.
             {
-                Trace.WriteLine(@int);
+                Trace.WriteLine(int32);
             }
             // 1 2 3 4
         }
@@ -655,9 +655,9 @@
             IEnumerable<int> first = First();
             IEnumerable<int> second = Second();
             IEnumerable<int> union = first.Union(second); // Define query.
-            foreach (int @int in union) // Execute query.
+            foreach (int int32 in union) // Execute query.
             {
-                Trace.WriteLine(@int);
+                Trace.WriteLine(int32);
             }
             // 1 2 3 4 5 6
         }
@@ -667,9 +667,9 @@
             IEnumerable<int> first = First();
             IEnumerable<int> second = Second();
             IEnumerable<int> intersect = first.Intersect(second); // Define query.
-            foreach (int @int in intersect) // Execute query.
+            foreach (int int32 in intersect) // Execute query.
             {
-                Trace.WriteLine(@int);
+                Trace.WriteLine(int32);
             }
             // 3 4
         }
@@ -679,9 +679,9 @@
             IEnumerable<int> first = First();
             IEnumerable<int> second = Second();
             IEnumerable<int> except = first.Except(second); // Define query.
-            foreach (int @int in except) // Execute query.
+            foreach (int int32 in except) // Execute query.
             {
-                Trace.WriteLine(@int);
+                Trace.WriteLine(int32);
             }
             // 1 2
         }
@@ -707,9 +707,9 @@
             IEnumerable<int> first = First();
             IEnumerable<int> second = Second();
             IEnumerable<int> zip = first.Zip(second, (a, b) => a + b); // Define query.
-            foreach (int @int in zip) // Execute query.
+            foreach (int int32 in zip) // Execute query.
             {
-                Trace.WriteLine(@int);
+                Trace.WriteLine(int32);
             }
             // 4 6 8 10
         }
@@ -723,16 +723,16 @@
             IEnumerable<int> source = Enumerable.Range(0, 5); // Define query.
 
             IEnumerable<int> partition1 = source.Skip(2); // Define query.
-            foreach (int @int in partition1) // Execute query.
+            foreach (int int32 in partition1) // Execute query.
             {
-                Trace.WriteLine(@int);
+                Trace.WriteLine(int32);
             }
             // 2 3 4
 
             IEnumerable<int> partition2 = source.Take(2); // Define query.
-            foreach (int @int in partition2) // Execute query.
+            foreach (int int32 in partition2) // Execute query.
             {
-                Trace.WriteLine(@int);
+                Trace.WriteLine(int32);
             }
             // 0 1
         }
@@ -741,17 +741,17 @@
         {
             IEnumerable<int> source = new int[] { 1, 2, 3, -1, 4, 5 };
 
-            IEnumerable<int> partition1 = source.TakeWhile(@int => @int > 0); // Define query.
-            foreach (int @int in partition1) // Execute query.
+            IEnumerable<int> partition1 = source.TakeWhile(int32 => int32 > 0); // Define query.
+            foreach (int int32 in partition1) // Execute query.
             {
-                Trace.WriteLine(@int);
+                Trace.WriteLine(int32);
             }
             // 1 2 3
 
-            IEnumerable<int> partition2 = source.SkipWhile(@int => @int > 0); // Define query.
-            foreach (int @int in partition2) // Execute query.
+            IEnumerable<int> partition2 = source.SkipWhile(int32 => int32 > 0); // Define query.
+            foreach (int int32 in partition2) // Execute query.
             {
-                Trace.WriteLine(@int);
+                Trace.WriteLine(int32);
             }
             // -1 4 5
         }
@@ -760,17 +760,17 @@
         {
             IEnumerable<int> source = new int[] { 4, 3, 2, 1, 5 };
 
-            IEnumerable<int> partition1 = source.TakeWhile((@int, index) => @int >= index); // Define query.
-            foreach (int @int in partition1) // Execute query.
+            IEnumerable<int> partition1 = source.TakeWhile((int32, index) => int32 >= index); // Define query.
+            foreach (int int32 in partition1) // Execute query.
             {
-                Trace.WriteLine(@int);
+                Trace.WriteLine(int32);
             }
             // 4 3 2
 
-            IEnumerable<int> partition2 = source.SkipWhile((@int, index) => @int >= index); // Define query.
-            foreach (int @int in partition2) // Execute query.
+            IEnumerable<int> partition2 = source.SkipWhile((int32, index) => int32 >= index); // Define query.
+            foreach (int int32 in partition2) // Execute query.
             {
-                Trace.WriteLine(@int);
+                Trace.WriteLine(int32);
             }
             // 1 5
         }
@@ -871,9 +871,9 @@
         {
             IEnumerable<int> source = Enumerable.Range(0, 5);
             IEnumerable<int> reversed = source.Reverse(); // Define query.
-            foreach (int @int in reversed) // Execute query.
+            foreach (int int32 in reversed) // Execute query.
             {
-                Trace.WriteLine(@int);
+                Trace.WriteLine(int32);
             } // 4 3 2 1 0
         }
 
@@ -938,8 +938,8 @@
             IEnumerable inner = new string[] { string.Empty, "a", "bb", "ccc", "dddd" };
             IEnumerable<string> innerJoin = outer.Cast<int>().Join(
                 inner.Cast<string>(),
-                @int => @int, @string => @string.Length, // on int equal @string.Length
-                (@int, @string) => $"{@int}: {@string}"); // Define query.
+                int32 => int32, @string => @string.Length, // on int equal @string.Length
+                (int32, @string) => $"{int32}: {@string}"); // Define query.
             foreach (string value in innerJoin) // Execute query.
             {
                 Trace.WriteLine(value);
@@ -1001,8 +1001,8 @@
             Dictionary<int, string> dictionary = Enumerable
                 .Range(0, 5) // Define query.
                 .ToDictionary(
-                    @int => @int,
-                    @int => Math.Sqrt(@int).ToString("F", CultureInfo.InvariantCulture)); // Execute query.
+                    int32 => int32,
+                    int32 => Math.Sqrt(int32).ToString("F", CultureInfo.InvariantCulture)); // Execute query.
             foreach (KeyValuePair<int, string> squareRoot in dictionary)
             {
                 Trace.WriteLine($"√{squareRoot.Key}: {squareRoot.Value}");
@@ -1014,7 +1014,7 @@
             // √4: 2.00
 
             ILookup<int, int> lookup = Enumerable.Range(-2, 5)
-                .Select(@int => new { Int32 = @int, Square = @int * @int }) // Define query.
+                .Select(int32 => new { Int32 = int32, Square = int32 * int32 }) // Define query.
                 .ToLookup(pair => pair.Square, pair => pair.Int32); // Execute query.
             foreach (IGrouping<int, int> squareRoots in lookup)
             {
@@ -1034,7 +1034,7 @@
         internal static void ToDictionaryWithException()
         {
             Dictionary<int, int> lookup = Enumerable.Range(-2, 5)
-                .Select(@int => new { Int32 = @int, Square = @int * @int }) // Define query.
+                .Select(int32 => new { Int32 = int32, Square = int32 * int32 }) // Define query.
                 .ToDictionary(pair => pair.Square, pair => pair.Int32); // Execute query.
             // ArgumentException: An item with the same key has already been added.
         }
@@ -1043,13 +1043,13 @@
         {
             Dictionary<int, int> dictionary = Enumerable
                 .Range(0, 5) // Define query.
-                .ToDictionary(@int => @int); // Execute query.
+                .ToDictionary(int32 => int32); // Execute query.
             int value = dictionary[10];
             // KeyNotFoundException: The given key was not present in the dictionary.
 
             ILookup<int, int> lookup = Enumerable
                 .Range(0, 5) // Define query.
-                .ToLookup(@int => @int); // Execute query.
+                .ToLookup(int32 => int32); // Execute query.
             int count = 0;
             IEnumerable<int> group = lookup[10];
             foreach (int _ in group)
@@ -1119,16 +1119,16 @@
 
         internal static void FirstLastWithPredicate()
         {
-            int firstPositiveOfSource = Int32Source().First(@int => @int > 0); // 1.
-            int lastNegativeOfSource = Int32Source().Last(@int => @int < 0); // -4.
+            int firstPositiveOfSource = Int32Source().First(int32 => int32 > 0); // 1.
+            int lastNegativeOfSource = Int32Source().Last(int32 => int32 < 0); // -4.
 
-            int firstPositiveOfSingleSOurce = SingleInt32Source().First(@int => @int > 0); // 1.
-            int lastNegativeOfSingleSOurce = SingleInt32Source().Last(@int => @int < 0);
+            int firstPositiveOfSingleSOurce = SingleInt32Source().First(int32 => int32 > 0); // 1.
+            int lastNegativeOfSingleSOurce = SingleInt32Source().Last(int32 => int32 < 0);
             // InvalidOperationException.
 
-            int firstPositiveOfEmptySOurce = EmptyInt32Source().First(@int => @int > 0);
+            int firstPositiveOfEmptySOurce = EmptyInt32Source().First(int32 => int32 > 0);
             // InvalidOperationException.
-            int lastNegativeOfEmptySOurce = EmptyInt32Source().Last(@int => @int < 0);
+            int lastNegativeOfEmptySOurce = EmptyInt32Source().Last(int32 => int32 < 0);
             // InvalidOperationException.
         }
 
@@ -1137,10 +1137,10 @@
             int firstOrDefaultOfEmptySOurce = EmptyInt32Source().FirstOrDefault(); // 0.
             int lastOrDefaultOfEmptySOurce = EmptyInt32Source().LastOrDefault(); // 0.
 
-            int lastNegativeOrDefaultOfSingleSOurce = SingleInt32Source().LastOrDefault(@int => @int < 0); // 0.
+            int lastNegativeOrDefaultOfSingleSOurce = SingleInt32Source().LastOrDefault(int32 => int32 < 0); // 0.
 
-            int firstPositiveOrDefaultOfEmptySOurce = EmptyInt32Source().FirstOrDefault(@int => @int > 0); // 0.
-            int lastNegativeOrDefaultOfEmptySOurce = EmptyInt32Source().LastOrDefault(@int => @int < 0); // 0.
+            int firstPositiveOrDefaultOfEmptySOurce = EmptyInt32Source().FirstOrDefault(int32 => int32 > 0); // 0.
+            int lastNegativeOrDefaultOfEmptySOurce = EmptyInt32Source().LastOrDefault(int32 => int32 < 0); // 0.
 
             Character lokiOrDefault =
                 Characters().FirstOrDefault(character => "Loki".Equals(character.Name, StringComparison.Ordinal));
@@ -1174,15 +1174,15 @@
         internal static void Single()
         {
             int singleOfSource = Int32Source().Single(); // InvalidOperationException.
-            int singleGreaterThan2OfSource = Int32Source().Single(@int => @int > 2); // 3.
-            int singleNegativeOfSource = Int32Source().Single(@int => @int < 0); // InvalidOperationException.
+            int singleGreaterThan2OfSource = Int32Source().Single(int32 => int32 > 2); // 3.
+            int singleNegativeOfSource = Int32Source().Single(int32 => int32 < 0); // InvalidOperationException.
 
             int singleOfSingleSource = SingleInt32Source().Single(); // 5.
-            int singleNegativeOfSingleSource = SingleInt32Source().Single(@int => @int < 0);
+            int singleNegativeOfSingleSource = SingleInt32Source().Single(int32 => int32 < 0);
             // InvalidOperationException.
 
             int singleOfEmptySource = EmptyInt32Source().Single(); // InvalidOperationException.
-            int singlePositiveOfEmptySource = EmptyInt32Source().Single(@int => @int == 0);
+            int singlePositiveOfEmptySource = EmptyInt32Source().Single(int32 => int32 == 0);
             // InvalidOperationException.
 
             Character singleCharacter = Characters().Single(); // InvalidOperationException.
@@ -1198,14 +1198,14 @@
         internal static void SingleOrDefault()
         {
             int singleOrDefaultOfSource = Int32Source().SingleOrDefault(); // InvalidOperationException.
-            int singleNegativeOrDefaultOfSource = Int32Source().SingleOrDefault(@int => @int < 0);
+            int singleNegativeOrDefaultOfSource = Int32Source().SingleOrDefault(int32 => int32 < 0);
             // InvalidOperationException.
 
-            int singleNegativeOrDefaultOfSingleSource = SingleInt32Source().SingleOrDefault(@int => @int < 0);
+            int singleNegativeOrDefaultOfSingleSource = SingleInt32Source().SingleOrDefault(int32 => int32 < 0);
             // 0.
 
             int singleOrDefaultOfEmptySource = EmptyInt32Source().SingleOrDefault(); // 0.
-            int singlePositiveOrDefaultOfEmptySource = EmptyInt32Source().SingleOrDefault(@int => @int == 0);
+            int singlePositiveOrDefaultOfEmptySource = EmptyInt32Source().SingleOrDefault(int32 => int32 == 0);
             // 0.
 
             Character singleCharacterOrDefault = Characters().SingleOrDefault(); // InvalidOperationException.
@@ -1220,11 +1220,11 @@
 
         internal static void Aggregate()
         {
-            int productOfSource = Int32Source().Aggregate((currentProduct, @int) => currentProduct * @int);
+            int productOfSource = Int32Source().Aggregate((currentProduct, int32) => currentProduct * int32);
             // ((((-1 * 1) * 2) * 3) * -4) = 24.
             int productOfSingleSource =
-                SingleInt32Source().Aggregate((currentProduct, @int) => currentProduct * @int); // 5.
-            int productOfEmptySource = EmptyInt32Source().Aggregate((currentProduct, @int) => currentProduct * @int);
+                SingleInt32Source().Aggregate((currentProduct, int32) => currentProduct * int32); // 5.
+            int productOfEmptySource = EmptyInt32Source().Aggregate((currentProduct, int32) => currentProduct * int32);
             // InvalidOperationException.
         }
 
@@ -1232,20 +1232,20 @@
         {
             int sumOfSquaresOfSource = Int32Source().Aggregate(
                 0,
-                (currentSumOfSquares, @int) => currentSumOfSquares + @int * @int); // 31.
+                (currentSumOfSquares, int32) => currentSumOfSquares + int32 * int32); // 31.
             int sumOfSquaresOfSingleSource = SingleInt32Source().Aggregate(
                 0,
-                (currentSumOfSquares, @int) => currentSumOfSquares + @int * @int); // 25.
+                (currentSumOfSquares, int32) => currentSumOfSquares + int32 * int32); // 25.
             int sumOfSquaresOfEmptySource = EmptyInt32Source().Aggregate(
                 0,
-                (currentSumOfSquares, @int) => currentSumOfSquares + @int * @int); // 0.
+                (currentSumOfSquares, int32) => currentSumOfSquares + int32 * int32); // 0.
         }
 
         internal static void AggregateWithSeedAndResultSelector()
         {
             string sumOfSquaresMessage = Int32Source().Aggregate(
                 0,
-                (currentSumOfSquares, @int) => currentSumOfSquares + @int * @int,
+                (currentSumOfSquares, int32) => currentSumOfSquares + int32 * int32,
                 result => $"Sum of squares: {result}"); // Sum of squares: 31.
         }
 
@@ -1260,9 +1260,9 @@
 
         internal static void CountWithPredicate()
         {
-            int positiveCountOfSource = Int32Source().Count(@int => @int > 0); // 3.
-            int positiveCountOfSingleSource = SingleInt32Source().Count(@int => @int > 0); // 1.
-            int positiveCountOfEmptySource = EmptyInt32Source().Count(@int => @int > 0); // 0.
+            int positiveCountOfSource = Int32Source().Count(int32 => int32 > 0); // 3.
+            int positiveCountOfSingleSource = SingleInt32Source().Count(int32 => int32 > 0); // 1.
+            int positiveCountOfEmptySource = EmptyInt32Source().Count(int32 => int32 > 0); // 0.
             int countOfConcat =
                 Enumerable.Repeat(0, int.MaxValue).Concat(Enumerable.Repeat(0, int.MaxValue)).Count();
             // OverflowException.
@@ -1435,9 +1435,9 @@
 
         internal static void All()
         {
-            bool allNegative = Int32Source().All(@int => @int < 0); // false.
-            bool allPositive = SingleInt32Source().All(@int => @int > 0); // true.
-            bool allGreaterThanMax = EmptyInt32Source().All(@int => @int > int.MaxValue); // true.
+            bool allNegative = Int32Source().All(int32 => int32 < 0); // false.
+            bool allPositive = SingleInt32Source().All(int32 => int32 > 0); // true.
+            bool allGreaterThanMax = EmptyInt32Source().All(int32 => int32 > int.MaxValue); // true.
         }
 
         internal static void Any()
@@ -1449,8 +1449,8 @@
 
         internal static void AnyWithPredicate()
         {
-            bool anyNegative = Int32Source().Any(@int => @int < 0); // true.
-            bool anyPositive = SingleInt32Source().Any(@int => @int > 0); // true.
+            bool anyNegative = Int32Source().Any(int32 => int32 < 0); // true.
+            bool anyPositive = SingleInt32Source().Any(int32 => int32 > 0); // true.
             bool any0 = EmptyInt32Source().Any(_ => true); // false.
         }
 

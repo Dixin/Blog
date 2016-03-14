@@ -11,7 +11,7 @@
     {
         internal static void EmptyIfNull()
         {
-            Func<IEnumerable<int>, IEnumerable<int>> positive = source => source.EmptyIfNull().Where(@int => @int > 0);
+            Func<IEnumerable<int>, IEnumerable<int>> positive = source => source.EmptyIfNull().Where(int32 => int32 > 0);
             int count = positive(null).Count(); // 0.
         }
 
@@ -24,7 +24,14 @@
         internal static IEnumerable<Assembly> Libraries
             (string directory) => Directory.EnumerateFiles(directory, "*.dll").TrySelect(Assembly.LoadFrom);
 
-        internal static IEnumerable<byte[]> Download
-            (IEnumerable<Uri> uris) => uris.Select(uri => new WebClient().DownloadData(uri)).Retry(3);
+        internal static IEnumerable<byte[]> Download(IEnumerable<Uri> uris) => uris
+            .Select(uri =>
+                {
+                    using (WebClient webClinet = new WebClient())
+                    {
+                        return webClinet.DownloadData(uri);
+                    }
+                })
+            .Retry(3);
     }
 }

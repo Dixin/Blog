@@ -21,9 +21,9 @@
                     return Enumerable.Empty<int>();
                 };
             IEnumerable<int> sequence1 = sequenceFactory() // sequenceFactory immediate executes.
-                .Where(@int => @int > 0);
+                .Where(int32 => int32 > 0);
             IEnumerable<int> sequence2 = EnumerableEx.Defer(sequenceFactory) // sequenceFactory does not execute.
-                .Where(@int => @int > 0);
+                .Where(int32 => int32 > 0);
         }
 
         internal static void Create()
@@ -78,36 +78,36 @@
 
         internal static void Scan()
         {
-            int productOfValues = Int32Source().Aggregate((currentProduct, @int) => currentProduct * @int);
+            int productOfValues = Int32Source().Aggregate((currentProduct, int32) => currentProduct * int32);
             // ((((-1 * 1) * 2) * 3) * -4) => 24.
 
-            int[] productsOfValues = Int32Source().Scan((currentProduct, @int) => currentProduct * @int).ToArray();
+            int[] productsOfValues = Int32Source().Scan((currentProduct, int32) => currentProduct * int32).ToArray();
             // ((((-1 * 1) * 2) * 3) * -4) => { -1, -2, -6, 24 }.
         }
 
         internal static void Expand()
         {
-            int[] expanded = Enumerable.Range(0, 5).Expand(@int => EnumerableEx.Return(@int * @int)).Take(25).ToArray();
-            // 0 1 2 3 4 => map each @int to { @int * @int }:
-            // 0 1 4 9 16 => map each @int to { @int * @int }:
-            // 0 1 16 81 256 => map each @int to { @int * @int }:
-            // 0 1 256 6561 65536 => map each @int to { @int * @int }:
+            int[] expanded = Enumerable.Range(0, 5).Expand(int32 => EnumerableEx.Return(int32 * int32)).Take(25).ToArray();
+            // 0 1 2 3 4 => map each int32 to { int32 * int32 }:
+            // 0 1 4 9 16 => map each int32 to { int32 * int32 }:
+            // 0 1 16 81 256 => map each int32 to { int32 * int32 }:
+            // 0 1 256 6561 65536 => map each int32 to { int32 * int32 }:
             // 0 1 65536 43046721 4294967296 => ...
         }
 
         internal static void Expand2()
         {
-            int[] expanded = Enumerable.Range(0, 5).Expand(@int => Enumerable.Repeat(@int, 2)).Take(75).ToArray();
-            // 0 1 2 3 4 => map each @int to { @int, @int }:
-            // 0 0 1 1 2 2 3 3 4 4 => map each @int to { @int, @int }:
-            // 0 0 0 0 1 1 1 1 2 2 2 2 3 3 3 3 4 4 4 4 => map each @int to { @int, @int }:
+            int[] expanded = Enumerable.Range(0, 5).Expand(int32 => Enumerable.Repeat(int32, 2)).Take(75).ToArray();
+            // 0 1 2 3 4 => map each int32 to { int32, int32 }:
+            // 0 0 1 1 2 2 3 3 4 4 => map each int32 to { int32, int32 }:
+            // 0 0 0 0 1 1 1 1 2 2 2 2 3 3 3 3 4 4 4 4 => map each int32 to { int32, int32 }:
             // 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 3 3 3 3 3 3 3 3 4 4 4 4 4 4 4 4 => ...
         }
 
         internal static void Expand3()
         {
-            int[] expanded = Enumerable.Range(0, 5).Expand(@int => Enumerable.Empty<int>()).Take(100).ToArray();
-            // 0 1 2 3 4 => map each @int to { }.
+            int[] expanded = Enumerable.Range(0, 5).Expand(int32 => Enumerable.Empty<int>()).Take(100).ToArray();
+            // 0 1 2 3 4 => map each int32 to { }.
         }
 
         #endregion

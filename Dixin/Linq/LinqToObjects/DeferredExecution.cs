@@ -63,7 +63,7 @@
 
         internal static void ForEachSelect()
         {
-            IEnumerable<int> squares1 = Enumerable.Range(0, 5).Select1(@int => @int * @int); // Create sequence.
+            IEnumerable<int> squares1 = Enumerable.Range(0, 5).Select1(int32 => int32 * int32); // Create sequence.
             Trace.WriteLine(nameof(squares1));
             foreach (int _ in squares1) // Iterate sequence.
             {
@@ -76,7 +76,7 @@
                 // Select query ends.
             }
 
-            IEnumerable<int> squares2 = Enumerable.Range(0, 5).Select2(@int => @int * @int); // Create sequence.
+            IEnumerable<int> squares2 = Enumerable.Range(0, 5).Select2(int32 => int32 * int32); // Create sequence.
             Trace.WriteLine(nameof(squares2));
             foreach (int _ in squares2) // Iterate sequence.
             {
@@ -89,7 +89,7 @@
                 // Select query ends.
             }
 
-            IEnumerable<int> squares3 = Enumerable.Range(0, 5).Select3(@int => @int * @int); // Create sequence.
+            IEnumerable<int> squares3 = Enumerable.Range(0, 5).Select3(int32 => int32 * int32); // Create sequence.
             // Select query starts.
             // Select is calling selector with 0.
             // Select is calling selector with 1.
@@ -161,7 +161,7 @@
 
         internal static void ForEachReverse()
         {
-            IEnumerable<int> squares = Enumerable.Range(0, 5).Select1(@int => @int * @int); // Deferred execution.
+            IEnumerable<int> squares = Enumerable.Range(0, 5).Select1(int32 => int32 * int32); // Deferred execution.
             IEnumerable<int> reverse = squares.Reverse1(); // Deferred execution.
             using (IEnumerator<int> reverseIterator = reverse.GetEnumerator())
             {

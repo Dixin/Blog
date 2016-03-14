@@ -67,7 +67,7 @@
             try
             {
                 int[] insert = Enumerable.Range(0, 5).Insert(-1, 5).ToArray();
-                Assert.Fail(string.Join(", ", insert.Select(@int => @int.ToString())));
+                Assert.Fail(string.Join(", ", insert.Select(int32 => int32.ToString())));
             }
             catch (ArgumentOutOfRangeException exception)
             {
@@ -82,7 +82,7 @@
             try
             {
                 int[] insert = Enumerable.Range(0, 5).Insert(6, 5).ToArray();
-                Assert.Fail(string.Join(", ", insert.Select(@int => @int.ToString())));
+                Assert.Fail(string.Join(", ", insert.Select(int32 => int32.ToString())));
             }
             catch (ArgumentOutOfRangeException exception)
             {
@@ -114,7 +114,7 @@
             try
             {
                 int[] removeAt = Enumerable.Range(0, 5).RemoveAt(-1).ToArray();
-                Assert.Fail(string.Join(", ", removeAt.Select(@int => @int.ToString())));
+                Assert.Fail(string.Join(", ", removeAt.Select(int32 => int32.ToString())));
             }
             catch (ArgumentOutOfRangeException exception)
             {
@@ -128,7 +128,7 @@
             try
             {
                 int[] removeAt = Enumerable.Range(0, 5).RemoveAt(5).ToArray();
-                Assert.Fail(string.Join(", ", removeAt.Select(@int => @int.ToString())));
+                Assert.Fail(string.Join(", ", removeAt.Select(int32 => int32.ToString())));
             }
             catch (ArgumentOutOfRangeException exception)
             {
@@ -137,7 +137,7 @@
             try
             {
                 int[] removeAt = Enumerable.Range(0, 5).RemoveAt(6).ToArray();
-                Assert.Fail(string.Join(", ", removeAt.Select(@int => @int.ToString())));
+                Assert.Fail(string.Join(", ", removeAt.Select(int32 => int32.ToString())));
             }
             catch (ArgumentOutOfRangeException exception)
             {
@@ -169,7 +169,7 @@
             try
             {
                 int[] remove = Enumerable.Range(0, 5).Remove(-1).ToArray();
-                Assert.Fail(string.Join(", ", remove.Select(@int => @int.ToString())));
+                Assert.Fail(string.Join(", ", remove.Select(int32 => int32.ToString())));
             }
             catch (ArgumentOutOfRangeException exception)
             {
@@ -183,7 +183,7 @@
             try
             {
                 int[] remove = Enumerable.Range(0, 5).Remove(5).ToArray();
-                Assert.Fail(string.Join(", ", remove.Select(@int => @int.ToString())));
+                Assert.Fail(string.Join(", ", remove.Select(int32 => int32.ToString())));
             }
             catch (ArgumentOutOfRangeException exception)
             {
@@ -192,7 +192,7 @@
             try
             {
                 int[] remove = Enumerable.Range(0, 5).Remove(6).ToArray();
-                Assert.Fail(string.Join(", ", remove.Select(@int => @int.ToString())));
+                Assert.Fail(string.Join(", ", remove.Select(int32 => int32.ToString())));
             }
             catch (ArgumentOutOfRangeException exception)
             {
@@ -224,7 +224,7 @@
             try
             {
                 int[] removeAll = Enumerable.Range(0, 5).RemoveAll(-1).ToArray();
-                Assert.Fail(string.Join(", ", removeAll.Select(@int => @int.ToString())));
+                Assert.Fail(string.Join(", ", removeAll.Select(int32 => int32.ToString())));
             }
             catch (ArgumentOutOfRangeException exception)
             {
@@ -238,7 +238,7 @@
             try
             {
                 int[] removeAll = Enumerable.Range(0, 5).RemoveAll(5).ToArray();
-                Assert.Fail(string.Join(", ", removeAll.Select(@int => @int.ToString())));
+                Assert.Fail(string.Join(", ", removeAll.Select(int32 => int32.ToString())));
             }
             catch (ArgumentOutOfRangeException exception)
             {
@@ -247,7 +247,7 @@
             try
             {
                 int[] removeAll = Enumerable.Range(0, 5).RemoveAll(6).ToArray();
-                Assert.Fail(string.Join(", ", removeAll.Select(@int => @int.ToString())));
+                Assert.Fail(string.Join(", ", removeAll.Select(int32 => int32.ToString())));
             }
             catch (ArgumentOutOfRangeException exception)
             {
@@ -257,7 +257,7 @@
             try
             {
                 int[] removeAll = Enumerable.Repeat(0, 5).RemoveAll(1).ToArray();
-                Assert.Fail(string.Join(", ", removeAll.Select(@int => @int.ToString())));
+                Assert.Fail(string.Join(", ", removeAll.Select(int32 => int32.ToString())));
             }
             catch (ArgumentOutOfRangeException exception)
             {
@@ -324,20 +324,20 @@
             IEnumerable<int> source = Enumerable.Range(0, 5).ToArray();
             try
             {
-                double percentile = source.PercentileExclusive(@int => @int, 0);
+                double percentile = source.PercentileExclusive(int32 => int32, 0);
                 Assert.Fail($"{percentile}");
             }
             catch (ArgumentOutOfRangeException exception)
             {
                 Assert.AreEqual("percentile", exception.ParamName);
             }
-            Assert.AreEqual(0.2, source.PercentileExclusive(@int => @int, 0.2), 0.000000001);
-            Assert.AreEqual(2, source.PercentileExclusive(@int => @int, 0.5), 0.000000001);
-            Assert.AreEqual(2.6, source.PercentileExclusive(@int => @int, 0.6), 0.000000001);
-            Assert.AreEqual(3.98, source.PercentileExclusive(@int => @int, 0.83), 0.000000001);
+            Assert.AreEqual(0.2, source.PercentileExclusive(int32 => int32, 0.2), 0.000000001);
+            Assert.AreEqual(2, source.PercentileExclusive(int32 => int32, 0.5), 0.000000001);
+            Assert.AreEqual(2.6, source.PercentileExclusive(int32 => int32, 0.6), 0.000000001);
+            Assert.AreEqual(3.98, source.PercentileExclusive(int32 => int32, 0.83), 0.000000001);
             try
             {
-                double percentile = source.PercentileExclusive(@int => @int, 0.84);
+                double percentile = source.PercentileExclusive(int32 => int32, 0.84);
                 Assert.Fail($"{percentile}");
             }
             catch (ArgumentOutOfRangeException exception)
@@ -346,7 +346,7 @@
             }
             try
             {
-                double percentile = source.PercentileExclusive(@int => @int, 0.95);
+                double percentile = source.PercentileExclusive(int32 => int32, 0.95);
                 Assert.Fail($"{percentile}");
             }
             catch (ArgumentOutOfRangeException exception)
@@ -359,44 +359,44 @@
         public void PercentileInclusiveTest()
         {
             IEnumerable<int> source = Enumerable.Range(0, 5).ToArray();
-            Assert.AreEqual(0, source.PercentileInclusive(@int => @int, 0));
-            Assert.AreEqual(0.8, source.PercentileInclusive(@int => @int, 0.2));
-            Assert.AreEqual(2, source.PercentileInclusive(@int => @int, 0.5));
-            Assert.AreEqual(2.4, source.PercentileInclusive(@int => @int, 0.6));
-            Assert.AreEqual(3.32, source.PercentileInclusive(@int => @int, 0.83));
-            Assert.AreEqual(3.36, source.PercentileInclusive(@int => @int, 0.84));
-            Assert.AreEqual(3.8, source.PercentileInclusive(@int => @int, 0.95));
+            Assert.AreEqual(0, source.PercentileInclusive(int32 => int32, 0));
+            Assert.AreEqual(0.8, source.PercentileInclusive(int32 => int32, 0.2));
+            Assert.AreEqual(2, source.PercentileInclusive(int32 => int32, 0.5));
+            Assert.AreEqual(2.4, source.PercentileInclusive(int32 => int32, 0.6));
+            Assert.AreEqual(3.32, source.PercentileInclusive(int32 => int32, 0.83));
+            Assert.AreEqual(3.36, source.PercentileInclusive(int32 => int32, 0.84));
+            Assert.AreEqual(3.8, source.PercentileInclusive(int32 => int32, 0.95));
         }
 
         [TestMethod]
         public void PercentileTest()
         {
             IEnumerable<int> source = Enumerable.Range(0, 5).ToArray();
-            Assert.AreEqual(0, source.Percentile(@int => @int, 0));
-            Assert.AreEqual(0.8, source.Percentile(@int => @int, 0.2));
-            Assert.AreEqual(2, source.Percentile(@int => @int, 0.5));
-            Assert.AreEqual(2.4, source.Percentile(@int => @int, 0.6));
-            Assert.AreEqual(3.32, source.Percentile(@int => @int, 0.83));
-            Assert.AreEqual(3.36, source.Percentile(@int => @int, 0.84));
-            Assert.AreEqual(3.8, source.Percentile(@int => @int, 0.95));
+            Assert.AreEqual(0, source.Percentile(int32 => int32, 0));
+            Assert.AreEqual(0.8, source.Percentile(int32 => int32, 0.2));
+            Assert.AreEqual(2, source.Percentile(int32 => int32, 0.5));
+            Assert.AreEqual(2.4, source.Percentile(int32 => int32, 0.6));
+            Assert.AreEqual(3.32, source.Percentile(int32 => int32, 0.83));
+            Assert.AreEqual(3.36, source.Percentile(int32 => int32, 0.84));
+            Assert.AreEqual(3.8, source.Percentile(int32 => int32, 0.95));
         }
 
         [TestMethod]
         public void VariancePopulationTest()
         {
-            Assert.AreEqual(8.25, Enumerable.Range(0, 10).VariancePopulation(@int => @int));
+            Assert.AreEqual(8.25, Enumerable.Range(0, 10).VariancePopulation(int32 => int32));
         }
 
         [TestMethod]
         public void VarianceSampleTest()
         {
-            Assert.AreEqual(9.166666667, Enumerable.Range(0, 10).VarianceSample(@int => @int), 0.000000001);
+            Assert.AreEqual(9.166666667, Enumerable.Range(0, 10).VarianceSample(int32 => int32), 0.000000001);
         }
 
         [TestMethod]
         public void VarianceTest()
         {
-            Assert.AreEqual(9.166666667, Enumerable.Range(0, 10).Variance(@int => @int), 0.000000001);
+            Assert.AreEqual(9.166666667, Enumerable.Range(0, 10).Variance(int32 => int32), 0.000000001);
         }
     }
 }
