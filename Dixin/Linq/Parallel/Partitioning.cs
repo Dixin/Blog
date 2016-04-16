@@ -74,7 +74,8 @@
 
         internal int Value { get; }
 
-        public override int GetHashCode() => this.Value % (Environment.ProcessorCount - 1);
+        public override int GetHashCode() => 
+            this.Value % Math.Min(Environment.ProcessorCount - 1, 1);
 
         public override bool Equals(object obj) => obj is Data && this.GetHashCode() == ((Data)obj).GetHashCode();
 

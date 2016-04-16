@@ -114,6 +114,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Management" />
+    <Reference Include="System.Runtime.Serialization.Formatters.Soap" />
     <Reference Include="System.Transactions" />
     <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
@@ -141,6 +142,7 @@
     <Compile Include="Linq\Parallel\PartitioningTests.cs" />
     <Compile Include="Linq\Parallel\PerformanceTests.cs" />
     <Compile Include="Linq\Parallel\QueryMethodsTests.cs" />
+    <Compile Include="Runtime\Serialization\SerializerTests.cs" />
     <Compile Include="Windows\ClipboardHelperTests.cs" />
     <Compile Include="Diagnostics\ProcessHelperTests.cs" />
     <Compile Include="Dynamic\BaseTest.cs" />

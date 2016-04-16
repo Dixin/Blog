@@ -1,0 +1,17 @@
+﻿<rss version="2.0" xmlns:dixin="https://weblogs.asp.net/dixin">
+  <channel>
+    <item>
+      <title>LINQ via C#</title>
+      <link>https://weblogs.asp.net/dixin/linq-via-csharp</link>
+      <description>
+        <p>This is a tutorial of LINQ and functional programming. Hope it helps.</p>
+      </description>
+      <pubDate>Mon, 07 Sep 2009 00:00:00 GMT</pubDate>
+      <guid isPermaLink="true">https://weblogs.asp.net/dixin/linq-via-csharp</guid>
+      <category>C#</category>
+      <category>LINQ</category>
+      <!--Comment.-->
+      <dixin:source>https://github.com/Dixin/CodeSnippets/tree/master/Dixin/Linq</dixin:source>
+    </item>
+  </channel>
+</rss>

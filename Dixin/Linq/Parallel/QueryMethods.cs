@@ -75,6 +75,7 @@ namespace Dixin.Linq.Parallel
             Trace.WriteLine(sum3);
         }
 
+        // http://blogs.msdn.com/b/pfxteam/archive/2008/01/22/7211660.aspx
         public static void Aggregate()
         {
             int sumOfSquares1 = ParallelEnumerable

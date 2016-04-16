@@ -268,7 +268,13 @@
     </Compile>
     <Compile Include="Common\ExceptionFilter.cs" />
     <Compile Include="Common\Int32Extensions.cs" />
+    <Compile Include="Linq\LinqToXml\Dom.cs" />
+    <Compile Include="Linq\LinqToXml\Manipulation.cs" />
+    <Compile Include="Linq\LinqToXml\QueryMethods.cs" />
+    <Compile Include="Linq\LinqToXml\XExtensions.cs" />
+    <Compile Include="Runtime\Serialization\Serializer.cs" />
     <Compile Include="Diagnostics\Tracing\Event.cs" />
+    <Compile Include="Linq\LinqToXml\Modeling.cs" />
     <Compile Include="Linq\Parallel\HelperMethods.cs" />
     <Compile Include="Linq\Parallel\QueryMethods.cs" />
     <Compile Include="Linq\Parallel\QueryMethods.Ordering.cs" />
@@ -330,6 +336,7 @@
     <Content Include="Linq\LinqToSql\AdventureWorks.QueryMethods.sql" />
     <Content Include="Linq\LinqToSql\ExpressionTree.sql" />
     <Content Include="Linq\LinqToSql\Mapping.sql" />
+    <Content Include="Linq\LinqToXml\Rss.xml" />
     <Content Include="Sql\AdventureWorks.Delete.sql" />
     <Content Include="Sql\AdventureWorks.sql" />
     <Content Include="Sql\Database.sql" />
@@ -508,9 +515,7 @@
     <Content Include="Sql\instnwnd.sql" />
     <Content Include="Web\Blog.htm" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Linq\LinqToXml\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" />
   <Target Name="EnsureBclBuildImported" BeforeTargets="BeforeBuild" Condition="'$(BclBuildImported)' == ''">

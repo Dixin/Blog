@@ -31,18 +31,23 @@ namespace Dixin.Office.HtmlToWord
  
 foreach (IGrouping<string, Tuple<string, string>> chapter in this.Chapters)
 {
+
             this.Write("\t\t<h1><br />");
             this.Write(this.ToStringHelper.ToStringWithCulture(chapter.Key));
             this.Write("</h1>\r\n");
-	foreach (Tuple<string, string> section in chapter)
+
+    foreach (Tuple<string, string> section in chapter)
 	{
+
             this.Write("\t\t<h2>");
             this.Write(this.ToStringHelper.ToStringWithCulture(section.Item1));
             this.Write("</h2>\r\n\t\t");
             this.Write(this.ToStringHelper.ToStringWithCulture(section.Item2));
             this.Write("\r\n");
-	}
+
+    }
 }
+
             this.Write("\t</body>\r\n</html>");
             return this.GenerationEnvironment.ToString();
         }

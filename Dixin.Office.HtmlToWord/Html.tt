@@ -16,13 +16,18 @@
 	<body>
 <# 
 foreach (IGrouping<string, Tuple<string, string>> chapter in this.Chapters)
-{#>
+{
+#>
 		<h1><br /><#= chapter.Key #></h1>
-<#	foreach (Tuple<string, string> section in chapter)
-	{#>
+<#
+    foreach (Tuple<string, string> section in chapter)
+	{
+#>
 		<h2><#= section.Item1 #></h2>
 		<#= section.Item2 #>
-<#	}
-}#>
+<#
+    }
+}
+#>
 	</body>
 </html>
