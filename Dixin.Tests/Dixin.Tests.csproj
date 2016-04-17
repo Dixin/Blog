@@ -118,6 +118,8 @@
     <Reference Include="System.Transactions" />
     <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <Choose>
@@ -138,6 +140,10 @@
     <Compile Include="Linq\Fundamentals\ReflectionHelperTests.cs" />
     <Compile Include="Linq\LinqToEntities\AdventureWorksTests.Performance.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorksTests.Performance.cs" />
+    <Compile Include="Linq\LinqToXml\DomTests.cs" />
+    <Compile Include="Linq\LinqToXml\ManipulationTests.cs" />
+    <Compile Include="Linq\LinqToXml\QueryMethodsTests.cs" />
+    <Compile Include="Linq\LinqToXml\UnitTest1.cs" />
     <Compile Include="Linq\Parallel\QueryMethods.OrderingTests.cs" />
     <Compile Include="Linq\Parallel\PartitioningTests.cs" />
     <Compile Include="Linq\Parallel\PerformanceTests.cs" />

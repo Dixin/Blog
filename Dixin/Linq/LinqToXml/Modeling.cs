@@ -181,16 +181,19 @@
                 .Select(value => new XElement("child", value));
 
             XElement immediate1 = new XElement("parent", getChildElements()); // 0 1 2 3 4.
-            Trace.WriteLine(immediate1); // <parent>...
+            Trace.WriteLine(immediate1.ToString(SaveOptions.DisableFormatting));
+            // <parent><child>0</child><child>1</child><child>2</child><child>3</child><child>4</child></parent>.
 
             XStreamingElement deferred1 = new XStreamingElement("parent", getChildElements());
-            Trace.WriteLine(deferred1); // 0 1 2 3 4 <parent>...
+            Trace.WriteLine(deferred1.ToString(SaveOptions.DisableFormatting));
+            // 0 1 2 3 4 <parent><child>0</child><child>1</child><child>2</child><child>3</child><child>4</child></parent>.
 
             XElement immediate2 = new XElement("parent", immediate1.Elements());
-            immediate1.Remove();
             XStreamingElement deferred2 = new XStreamingElement("parent", immediate1.Elements());
             immediate1.RemoveAll();
-            Trace.WriteLine(deferred1); // 0 1 2 3 4 <parent>...
+            Trace.WriteLine(immediate2.ToString(SaveOptions.DisableFormatting));
+            // <parent><child>0</child><child>1</child><child>2</child><child>3</child><child>4</child></parent>.
+            Trace.WriteLine(deferred2); // <parent />.
         }
     }
 }
