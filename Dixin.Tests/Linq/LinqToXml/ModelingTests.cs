@@ -1,6 +1,5 @@
 ﻿namespace Dixin.Tests.Linq.LinqToXml
 {
-    using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
@@ -37,6 +36,7 @@
             try
             {
                 Modeling.Read();
+                Assert.Fail();
             }
             catch (XmlException exception)
             {
@@ -44,6 +44,7 @@
             }
             IEnumerable<XElement> items = Modeling.RssItems("https://weblogs.asp.net/dixin/rss");
             Assert.IsTrue(items.Any());
+            Modeling.XNodeToString();
             Modeling.Write();
         }
 

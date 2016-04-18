@@ -65,21 +65,22 @@ namespace Dixin.Linq.LinqToXml
             source.InnerText = "https://github.com/Dixin/CodeSnippets/tree/master/Dixin/Linq";
             item.AppendChild(source);
 
-            StringBuilder text = new StringBuilder();
+            // Serialize XmlDocument to string.
+            StringBuilder xmlString = new StringBuilder();
             XmlWriterSettings settings = new XmlWriterSettings
             {
                 Indent = true,
                 IndentChars = "  ",
                 OmitXmlDeclaration = true
             };
-            using (XmlWriter writer = XmlWriter.Create(text, settings))
+            using (XmlWriter writer = XmlWriter.Create(xmlString, settings))
             {
                 document.Save(writer);
             }
 
-            // Trace.WriteLine(rssItem.ToString) writes "System.Xml.XmlElement".
-            // Trace.WriteLine(rssItem.OuterXml) writes a single line of text.
-            Trace.WriteLine(text);
+            // Trace.WriteLine(rssItem.ToString) outputs "System.Xml.XmlElement".
+            // Trace.WriteLine(rssItem.OuterXml) outputs a single line of XML text.
+            Trace.WriteLine(xmlString);
         }
     }
 }

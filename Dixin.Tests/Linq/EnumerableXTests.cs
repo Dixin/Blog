@@ -6,6 +6,7 @@
     using Dixin.Linq;
     using Dixin.Linq.LinqToObjects;
     using Dixin.TestTools.UnitTesting;
+
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     using Enumerable = System.Linq.Enumerable;

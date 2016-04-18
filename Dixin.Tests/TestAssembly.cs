@@ -2,7 +2,9 @@
 {
     using System;
     using System.IO;
+
     using Dixin.Common;
+
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]

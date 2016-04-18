@@ -12,10 +12,18 @@
     public class QueryMethodsTests
     {
         [TestMethod]
-        public void LinqTest()
+        public void NavigationTest()
         {
             QueryMethods.ParentAndAncestors();
-            QueryMethods.InDocumentOrder();
+            QueryMethods.ChildElements();
+            QueryMethods.ChildrenAndDecendants();
+            QueryMethods.ResultObjects();
+        }
+
+        [TestMethod]
+        public void OrderingTest()
+        {
+            QueryMethods.DocumentOrder();
             try
             {
                 QueryMethods.CommonAncestor();
@@ -24,9 +32,6 @@
             {
                 Trace.WriteLine(exception);
             }
-            QueryMethods.Elements();
-            QueryMethods.ChildrenAndDecendants();
-            QueryMethods.ResultXObjects();
         }
 
         [TestMethod]

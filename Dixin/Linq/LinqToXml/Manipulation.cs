@@ -13,10 +13,10 @@
         {
             XElement child = new XElement("child");
             XElement parent1 = new XElement("parent", child); // Child node is attached.
-            Trace.WriteLine(object.ReferenceEquals(child, parent1.Elements().Single())); // True.
+            Trace.WriteLine(object.ReferenceEquals(child, parent1.Elements().Single())); // True
 
             XElement parent2 = new XElement("parent", child); // Child node is already attached, so it is cloned.
-            Trace.WriteLine(object.ReferenceEquals(child, parent2.Elements().Single())); // False.
+            Trace.WriteLine(object.ReferenceEquals(child, parent2.Elements().Single())); // False
         }
 
         internal static void Delete()
@@ -36,12 +36,12 @@
 
             XDocument document = XDocument.Load("https://weblogs.asp.net/dixin/rss");
             XDocument clonedDocument = new XDocument(document);
-            Trace.WriteLine(object.ReferenceEquals(document, clonedDocument)); // False.
-            Trace.WriteLine(object.Equals(document, clonedDocument)); // False.
-            Trace.WriteLine(document.Equals(clonedDocument)); // False.
-            Trace.WriteLine(document == clonedDocument); // False.
-            Trace.WriteLine(XNode.DeepEquals(document, clonedDocument)); // True.
-            Trace.WriteLine(XNode.EqualityComparer.Equals(document, clonedDocument)); // True.
+            Trace.WriteLine(object.ReferenceEquals(document, clonedDocument)); // False
+            Trace.WriteLine(object.Equals(document, clonedDocument)); // False
+            Trace.WriteLine(document.Equals(clonedDocument)); // False
+            Trace.WriteLine(document == clonedDocument); // False
+            Trace.WriteLine(XNode.DeepEquals(document, clonedDocument)); // True
+            Trace.WriteLine(XNode.EqualityComparer.Equals(document, clonedDocument)); // True
         }
 
         internal static void XslTransform()
