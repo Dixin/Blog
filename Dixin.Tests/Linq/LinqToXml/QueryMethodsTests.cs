@@ -37,6 +37,7 @@
         [TestMethod]
         public void XPathTest()
         {
+            QueryMethods.XPathNavigator();
             QueryMethods.XPathQuery();
             try
             {
@@ -47,7 +48,7 @@
             {
                 Trace.WriteLine(exception);
             }            
-            QueryMethods.XPathEvaluateObject();
+            QueryMethods.XPathEvaluateValue();
             QueryMethods.XPathEvaluateSequence();
             QueryMethods.XPathEvaluateSequenceWithNamespace();
         }

@@ -171,12 +171,15 @@
             Trace.WriteLine(rssNavigator.NodeType); // Root
             Trace.WriteLine(rssNavigator.MoveToFirstChild()); // True
             Trace.WriteLine(rssNavigator.Name); // rss
-            IEnumerable<string> categories = rssNavigator
-                .Select(XPathExpression.Compile("/rss/channel/item[guid/@isPermaLink='true']/category/text()"))
+
+            IEnumerable<string> categories = (rssNavigator
+                .Evaluate("/rss/channel/item[guid/@isPermaLink='true']/category") as XPathNodeIterator)
                 .OfType<XPathNavigator>()
+                .Select(categoryNavigator => categoryNavigator.UnderlyingObject)
+                .OfType<XElement>()
                 .GroupBy(
-                    categoryNavigator => categoryNavigator.Value, // Current text node's value.
-                    categoryNavigator => categoryNavigator,
+                    category => category.Value, // Current text node's value.
+                    category => category,
                     (key, group) => new { Name = key, Count = group.Count() },
                     StringComparer.OrdinalIgnoreCase)
                 .OrderByDescending(category => category.Count)
@@ -189,13 +192,18 @@
         internal static void XPathQuery()
         {
             XDocument rss = XDocument.Load("https://weblogs.asp.net/dixin/rss");
-            IEnumerable<XElement> query1 = rss.XPathSelectElements("/rss/channel/item");
-            IEnumerable<XElement> query2 = rss.Element("rss").Element("channel").Elements("item");
-            Trace.WriteLine(query1.SequenceEqual(query2)); // True
-
-            XElement latestItem1 = rss.XPathSelectElement("/rss/channel/item[1]");
-            XElement latestItem2 = rss.Element("rss").Element("channel").Elements("item").First();
-            Trace.WriteLine(object.ReferenceEquals(latestItem1, latestItem2)); // True
+            IEnumerable<string> categories = rss
+                .XPathSelectElements("/rss/channel/item[guid/@isPermaLink='true']/category")
+                .GroupBy(
+                    category => category.Value, // Current text node's value.
+                    category => category,
+                    (key, group) => new { Name = key, Count = group.Count() },
+                    StringComparer.OrdinalIgnoreCase)
+                .OrderByDescending(category => category.Count)
+                .Take(5)
+                .Select(category => $"[{category.Name}]:{category.Count}");
+            Trace.WriteLine(string.Join(" ", categories));
+            // [C#]:9 [LINQ]:6 [.NET]:5 [Functional Programming]:4 [LINQ via C#]:4
         }
 
         internal static void XPathQueryWithNamespace()
@@ -203,17 +211,18 @@
             XDocument rss = XDocument.Load("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2");
             XmlNamespaceManager namespaceManager = rss.CreateNamespaceManager();
             IEnumerable<XElement> query1 = rss.XPathSelectElements("/rss/channel/item/media:category", namespaceManager);
-            Trace.WriteLine(query1.Count());
+            Trace.WriteLine(query1.Count()); // 20
 
             IEnumerable<XElement> query2 = rss.XPathSelectElements("/rss/channel/item/media:category");
             // System.Xml.XPath.XPathException: Namespace Manager or XsltContext needed. This query has a prefix, variable, or user-defined function.
         }
 
-        internal static void XPathEvaluateObject()
+        internal static void XPathEvaluateValue()
         {
             XDocument rss = XDocument.Load("https://weblogs.asp.net/dixin/rss");
             double average1 = (double)rss.XPathEvaluate("count(/rss/channel/item/category) div count(/rss/channel/item)");
             Trace.WriteLine(average1); // 4.65
+
             double average2 = rss
                 .Element("rss")
                 .Element("channel")
@@ -249,7 +258,6 @@
                     rss.CreateNamespaceManager()) as IEnumerable<object>)
                 .OfType<XText>();
             mediaTitles.ForEach(mediaTitle => Trace.WriteLine(mediaTitle.Value));
-            // Chinese President visits Microsoft
             // Chinese President visits Microsoft
             // Satya Nadella, CEO of Microsoft
         }

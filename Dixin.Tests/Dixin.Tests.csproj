@@ -144,8 +144,8 @@
     <Compile Include="Linq\LinqToXml\ManipulationTests.cs" />
     <Compile Include="Linq\LinqToXml\QueryMethodsTests.cs" />
     <Compile Include="Linq\LinqToXml\ModelingTests.cs" />
-    <Compile Include="Linq\LinqToXml\XExtensionsTests.cs" />
-    <Compile Include="Linq\LinqToXml\XPathTests.cs" />
+    <Compile Include="Linq\XExtensionsTests.cs" />
+    <Compile Include="Linq\XExtensionsTests.XPath.cs" />
     <Compile Include="Linq\Parallel\QueryMethods.OrderingTests.cs" />
     <Compile Include="Linq\Parallel\PartitioningTests.cs" />
     <Compile Include="Linq\Parallel\PerformanceTests.cs" />

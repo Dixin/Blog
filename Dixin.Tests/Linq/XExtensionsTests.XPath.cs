@@ -5,12 +5,11 @@ namespace Dixin.Tests.Linq.LinqToXml
     using System.Xml.Linq;
     using System.Xml.XPath;
 
-    using Dixin.Linq.LinqToXml;
+    using Dixin.Linq;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    [TestClass]
-    public class XPathTests
+    public partial class XExtensionsTests
     {
         [TestMethod]
         public void ElementTest()
@@ -195,10 +194,20 @@ namespace Dixin.Tests.Linq.LinqToXml
             XElement element7 = XElement.Parse("<root><element>Text.</element></root>");
             Assert.AreEqual("/element/text()", element7.Elements().Single().Nodes().OfType<XText>().Single().XPath());
             Assert.AreEqual(
-                (element7.XPathEvaluate(element7.Elements().Single().Nodes().OfType<XText>().Single().XPath(), element5.CreateNamespaceManager()) as IEnumerable<object>).Single(),
+                (element7.XPathEvaluate(element7.Elements().Single().Nodes().OfType<XText>().Single().XPath(), element7.CreateNamespaceManager()) as IEnumerable<object>).Single(),
                 element7.Elements().Single().Nodes().OfType<XText>().Single());
             document.Add(element7);
             Assert.AreEqual("/root/element/text()", element7.Elements().Single().Nodes().OfType<XText>().Single().XPath());
+
+            XElement element8 = XElement.Parse(@"<root>1<element></element>2</root>");
+            Assert.AreEqual("/text()[1]", (element8.FirstNode as XText).XPath());
+            Assert.AreEqual(
+                (element8.XPathEvaluate((element8.FirstNode as XText).XPath()) as IEnumerable<object>).Single(),
+                element8.FirstNode);
+            Assert.AreEqual("/text()[2]", (element8.LastNode as XText).XPath());
+            Assert.AreEqual(
+                (element8.XPathEvaluate((element8.LastNode as XText).XPath()) as IEnumerable<object>).Single(),
+                element8.LastNode);
         }
     }
 }

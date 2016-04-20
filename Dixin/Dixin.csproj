@@ -271,7 +271,7 @@
     <Compile Include="Linq\LinqToXml\Dom.cs" />
     <Compile Include="Linq\LinqToXml\Manipulation.cs" />
     <Compile Include="Linq\LinqToXml\QueryMethods.cs" />
-    <Compile Include="Linq\LinqToXml\XExtensions.cs" />
+    <Compile Include="Linq\XExtensions.cs" />
     <Compile Include="Runtime\Serialization\Serializer.cs" />
     <Compile Include="Diagnostics\Tracing\Event.cs" />
     <Compile Include="Linq\LinqToXml\Modeling.cs" />
@@ -336,6 +336,7 @@
     <Content Include="Linq\LinqToSql\AdventureWorks.QueryMethods.sql" />
     <Content Include="Linq\LinqToSql\ExpressionTree.sql" />
     <Content Include="Linq\LinqToSql\Mapping.sql" />
+    <Content Include="Linq\LinqToXml\Flickr.xml" />
     <Content Include="Linq\LinqToXml\Rss.xml" />
     <Content Include="Sql\AdventureWorks.Delete.sql" />
     <Content Include="Sql\AdventureWorks.sql" />

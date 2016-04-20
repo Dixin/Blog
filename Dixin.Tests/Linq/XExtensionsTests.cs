@@ -4,33 +4,55 @@
     using System.Linq;
     using System.Xml.Linq;
 
-    using Dixin.Linq.LinqToXml;
+    using Dixin.Linq;
+    using Dixin.TestTools.UnitTesting;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class XExtensionsTests
+    public partial class XExtensionsTests
     {
         [TestMethod]
         public void ObjectsTest()
         {
             XAttribute attribute = new XAttribute("attribute", "value");
-            Assert.IsTrue(object.ReferenceEquals(attribute.Objects().Single(), attribute));
+            EnumerableAssert.IsEmpty(attribute.DescendantObjects());
 
             XElement element = new XElement("element");
-            Assert.IsTrue(object.ReferenceEquals(element.Objects().Single(), element));
+            EnumerableAssert.IsEmpty(element.DescendantObjects());
 
             XDocument document = new XDocument();
-            Assert.IsTrue(object.ReferenceEquals(document.Objects().Single(), document));
+            EnumerableAssert.IsEmpty(document.DescendantObjects());
 
             element.SetAttributeValue(attribute.Name, attribute.Value);
             element.Add(element);
-            Assert.IsTrue(object.ReferenceEquals(attribute.Objects().Single(), attribute));
-            Assert.AreEqual(4, element.Objects().Count());
+            Assert.AreEqual(3, element.DescendantObjects().Count());
 
             document.Add(element);
             document.Root.Add(new XAttribute(XNamespace.Xmlns + "prefix", "namespace"));
-            Assert.AreEqual(6, document.Objects().Count());
+            Assert.AreEqual(5, document.DescendantObjects().Count());
+        }
+
+        [TestMethod]
+        public void SelfAndObjectsTest()
+        {
+            XAttribute attribute = new XAttribute("attribute", "value");
+            Assert.IsTrue(object.ReferenceEquals(attribute.SelfAndDescendantObjects().Single(), attribute));
+
+            XElement element = new XElement("element");
+            Assert.IsTrue(object.ReferenceEquals(element.SelfAndDescendantObjects().Single(), element));
+
+            XDocument document = new XDocument();
+            Assert.IsTrue(object.ReferenceEquals(document.SelfAndDescendantObjects().Single(), document));
+
+            element.SetAttributeValue(attribute.Name, attribute.Value);
+            element.Add(element);
+            Assert.IsTrue(object.ReferenceEquals(attribute.SelfAndDescendantObjects().Single(), attribute));
+            Assert.AreEqual(4, element.SelfAndDescendantObjects().Count());
+
+            document.Add(element);
+            document.Root.Add(new XAttribute(XNamespace.Xmlns + "prefix", "namespace"));
+            Assert.AreEqual(6, document.SelfAndDescendantObjects().Count());
         }
 
         [TestMethod]
