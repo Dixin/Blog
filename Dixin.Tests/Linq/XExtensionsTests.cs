@@ -1,4 +1,4 @@
-﻿namespace Dixin.Tests.Linq.LinqToXml
+﻿namespace Dixin.Tests.Linq
 {
     using System;
     using System.Linq;

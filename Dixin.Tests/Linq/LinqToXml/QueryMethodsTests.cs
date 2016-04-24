@@ -51,6 +51,7 @@
             QueryMethods.XPathEvaluateValue();
             QueryMethods.XPathEvaluateSequence();
             QueryMethods.XPathEvaluateSequenceWithNamespace();
+            QueryMethods.GenerateXPath();
         }
     }
 }

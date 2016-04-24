@@ -63,13 +63,12 @@
             Func<TOuter, IEnumerable<TInner>, TResult> resultSelector,
             Func<TKey, TKey, bool> equality,
             Func<TKey, int> getHashCode = null)
-            =>
-                outer.GroupJoin(
-                    inner,
-                    outerKeySelector,
-                    innerKeySelector,
-                    resultSelector,
-                    equality.Comparer(getHashCode));
+            => outer.GroupJoin(
+                inner,
+                outerKeySelector,
+                innerKeySelector,
+                resultSelector,
+                equality.Comparer(getHashCode));
 
         public static IEnumerable<TSource> Distinct<TSource>(
             this IEnumerable<TSource> source,

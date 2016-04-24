@@ -336,8 +336,8 @@
     <Content Include="Linq\LinqToSql\AdventureWorks.QueryMethods.sql" />
     <Content Include="Linq\LinqToSql\ExpressionTree.sql" />
     <Content Include="Linq\LinqToSql\Mapping.sql" />
-    <Content Include="Linq\LinqToXml\Flickr.xml" />
-    <Content Include="Linq\LinqToXml\Rss.xml" />
+    <Content Include="Linq\LinqToXml\FlickrRss.xml" />
+    <Content Include="Linq\LinqToXml\AspNetRss.xml" />
     <Content Include="Sql\AdventureWorks.Delete.sql" />
     <Content Include="Sql\AdventureWorks.sql" />
     <Content Include="Sql\Database.sql" />
@@ -490,6 +490,21 @@
     </None>
     <None Include="Linq\Fundamentals\Methods.il" />
     <Compile Include="Linq\LinqToEntities\AdventureWorks.QueryMethods.cs" />
+    <None Include="Linq\LinqToXml\AspNetRss.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Linq\LinqToXml\FlickrRss.dc.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Linq\LinqToXml\FlickrRss.flickr.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Linq\LinqToXml\FlickrRss.media.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Linq\LinqToXml\FlickrRss.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Management\Automation\VirtualHardDisk.ps1" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">

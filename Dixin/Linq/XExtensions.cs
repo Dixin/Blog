@@ -6,6 +6,8 @@
     using System.Xml;
     using System.Xml.Linq;
     using System.Xml.Schema;
+    using System.Xml.Xsl;
+
     using Dixin.Common;
 
     public static partial class XExtensions
@@ -85,6 +87,17 @@
             return namespaceManager;
         }
 
+        public static string XPath(this XName source, XElement container)
+        {
+            source.NotNull(nameof(source));
+            container.NotNull(nameof(container));
+
+            string prefix = source.Namespace == XNamespace.None
+                ? null
+                : container.GetPrefixOfNamespace(source.Namespace); // GetPrefixOfNamespace returns null if not found.
+            return string.IsNullOrEmpty(prefix) ? source.ToString() : $"{prefix}:{source.LocalName}";
+        }
+
         private static string CombineXPath(string xPath1, string xPath2, string predicate = null) =>
             string.Equals(xPath1, "/", StringComparison.Ordinal) || string.IsNullOrEmpty(xPath2)
             ? $"{xPath1}{xPath2}{predicate}"
@@ -92,8 +105,8 @@
 
         private static string XPath<TSource>(
             this TSource source,
-            string parentAxis,
-            string selfAxisOrTest = null,
+            string parentXPath,
+            string selfXPath = null,
             Func<TSource, bool> siblingPredicate = null) where TSource : XNode
         {
             int index = source
@@ -110,18 +123,7 @@
                 ? null
                 : $"[{index + 1}]";
 
-            return CombineXPath(parentAxis ?? source.Parent?.XPath(), selfAxisOrTest, predicate);
-        }
-
-        public static string XPath(this XName source, XElement container)
-        {
-            source.NotNull(nameof(source));
-            container.NotNull(nameof(container));
-
-            string prefix = source.Namespace == XNamespace.None
-                ? null
-                : container.GetPrefixOfNamespace(source.Namespace); // GetPrefixOfNamespace returns null if not found.
-            return string.IsNullOrEmpty(prefix) ? source.ToString() : $"{prefix}:{source.LocalName}";
+            return CombineXPath(parentXPath, selfXPath, predicate);
         }
 
         public static string XPath(this XElement source, string parentXPath = null)
@@ -130,21 +132,24 @@
 
             return string.IsNullOrEmpty(parentXPath) && source.Parent == null && source.Document == null
                 ? "/" // source is an element on the fly, not attached to any parent node.
-                : source.XPath(parentXPath, source.Name.XPath(source), sibling => sibling.Name == source.Name);
+                : source.XPath(
+                    parentXPath ?? source.Parent?.XPath(),
+                    source.Name.XPath(source),
+                    sibling => sibling.Name == source.Name);
         }
 
         public static string XPath(this XComment source, string parentXPath = null)
         {
             source.NotNull(nameof(source));
 
-            return source.XPath(parentXPath, "comment()");
+            return source.XPath(parentXPath ?? source.Parent?.XPath(), "comment()");
         }
 
         public static string XPath(this XText source, string parentXPath = null)
         {
             source.NotNull(nameof(source));
 
-            return source.XPath(parentXPath, "text()");
+            return source.XPath(parentXPath ?? source.Parent?.XPath(), "text()");
         }
 
         public static string XPath(this XProcessingInstruction source, string parentXPath = null)
@@ -152,7 +157,7 @@
             source.NotNull(nameof(source));
 
             return source.XPath(
-                parentXPath,
+                parentXPath ?? source.Parent?.XPath(),
                 $"processing-instruction('{source.Target}')",
                 sibling => string.Equals(sibling.Target, source.Target, StringComparison.Ordinal));
         }
@@ -187,19 +192,43 @@
             return document;
         }
 
-        public static IEnumerable<Tuple<XObject, string, XmlSchemaValidity?>> GetValidities(this XElement source, string parentXPath = null)
+        public static IEnumerable<Tuple<XObject, string, IXmlSchemaInfo>> GetValidities(this XElement source, string parentXPath = null)
         {
             source.NotNull(nameof(source));
 
-            string elementXPth = source.XPath(parentXPath);
-            return Enumerable.Repeat(Tuple.Create((XObject)source, elementXPth, source.GetSchemaInfo()?.Validity), 1).Concat(source.Attributes().Select(attribute => Tuple.Create((XObject)attribute, attribute.XPath(elementXPth), attribute.GetSchemaInfo()?.Validity))).Concat(source.Elements().SelectMany(child => child.GetValidities(elementXPth)));
+            string xPath = source.XPath(parentXPath);
+            return Enumerable
+                .Repeat(Tuple.Create((XObject)source, xPath, source.GetSchemaInfo()), 1)
+                .Concat(source
+                    .Attributes()
+                    .Select(attribute => Tuple.Create((XObject)attribute, attribute.XPath(xPath), attribute.GetSchemaInfo())))
+                .Concat(source
+                    .Elements()
+                    .SelectMany(child => child.GetValidities(xPath)));
         }
 
-        public static IEnumerable<Tuple<XObject, string, XmlSchemaValidity?>> GetValidities(this XDocument source)
+        public static IEnumerable<Tuple<XObject, string, IXmlSchemaInfo>> GetValidities(this XDocument source)
         {
             source.NotNull(nameof(source));
 
             return source.Root.GetValidities();
+        }
+
+        public static XDocument XslTransform(this XNode source, XNode xsl)
+        {
+            source.NotNull(nameof(source));
+            xsl.NotNull(nameof(xsl));
+
+            XDocument result = new XDocument();
+            using (XmlReader sourceReader = source.CreateReader())
+            using (XmlReader xslReader = xsl.CreateReader())
+            using (XmlWriter resultWriter = result.CreateWriter())
+            {
+                XslCompiledTransform transform = new XslCompiledTransform();
+                transform.Load(xslReader);
+                transform.Transform(sourceReader, resultWriter);
+                return result;
+            }
         }
     }
 }

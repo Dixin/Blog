@@ -8,11 +8,19 @@
     public class ManipulationTests
     {
         [TestMethod]
+        public void CloneTest()
+        {
+            Manipulation.ExplicitClone();
+            Manipulation.ImplicitClone();
+        }
+
+        [TestMethod]
         public void ManipulationTest()
         {
-            Manipulation.AddChildNode();
-            Manipulation.Delete();
-            Manipulation.Clone();
+            Manipulation.Manipulate();
+            Manipulation.SetAttributeValue();
+            Manipulation.SetElementValue();
+            Manipulation.Annotation();
         }
 
         [TestMethod]
@@ -25,7 +33,9 @@
         [TestMethod]
         public void ValidateTest()
         {
+            Manipulation.InferSchemas();
             Manipulation.Validate();
+            Manipulation.GetSchemaInfo();
         }
     }
 }

@@ -261,5 +261,31 @@
             // Chinese President visits Microsoft
             // Satya Nadella, CEO of Microsoft
         }
+
+        internal static void GenerateXPath()
+        {
+            XDocument aspNetRss = XDocument.Load("https://weblogs.asp.net/dixin/rss");
+            XElement element1 = aspNetRss
+                .Root
+                .Element("channel")
+                .Elements("item")
+                .Last();
+            Trace.WriteLine(element1.XPath()); // /rss/channel/item[20]
+            XElement element2 = aspNetRss.XPathSelectElement(element1.XPath());
+            Trace.WriteLine(object.ReferenceEquals(element1, element2)); // True
+
+            XDocument flickrRss = XDocument.Load("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2");
+            XAttribute attribute1 = flickrRss
+                .Root
+                .Descendants("author") // <author flickr:profile="https://www.flickr.com/people/dixin/">...</author>.
+                .First()
+                .Attribute(XName.Get("profile", "urn:flickr:user")); // <rss xmlns:flickr="urn:flickr:user">...</rss>.
+            Trace.WriteLine(attribute1.XPath()); // /rss/channel/item[1]/author/@flickr:profile
+            XAttribute attribute2 = (flickrRss
+                .XPathEvaluate(attribute1.XPath(), flickrRss.CreateNamespaceManager()) as IEnumerable<object>)
+                .OfType<XAttribute>()
+                .Single();
+            Trace.WriteLine(object.ReferenceEquals(attribute1, attribute2)); // True
+        }
     }
 }
