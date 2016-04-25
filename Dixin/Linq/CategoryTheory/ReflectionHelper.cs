@@ -30,7 +30,7 @@
 
     public static partial class ReflectionHelper
     {
-#if ERROR
+#if DEMO
         public static IEnumerable<MethodInfo> GetMethods<TAttribute>
             (string assemblyPath, bool isPublicOnly)
             where TAttribute : Attribute =>

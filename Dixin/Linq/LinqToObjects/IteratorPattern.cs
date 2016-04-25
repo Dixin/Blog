@@ -736,7 +736,7 @@
     }
 }
 
-#if ERROR
+#if DEMO
 namespace System.Collections
 {
     public interface IEnumerable // Sequence.

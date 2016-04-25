@@ -199,7 +199,7 @@
 #pragma warning restore 162
         }
 
-#if ERROR
+#if DEMO
         internal static IEnumerable<TSource> CatchWithYield<TSource, TException>(
             this IEnumerable<TSource> source, Func<TException, IEnumerable<TSource>> handler)
             where TException : Exception
@@ -281,7 +281,7 @@
             }
         }
 
-#if ERROR
+#if DEMO
         internal static IEnumerable<TSource> CatchWithYield<TSource>(this IEnumerable<IEnumerable<TSource>> sources)
         {
             Exception lastException = null;
@@ -408,7 +408,7 @@
         internal static IEnumerable<TSource> Retry<TSource>
             (this IEnumerable<TSource> source, int? retryCount = null) => Return(source).Repeat(retryCount).Catch();
 
-#if ERROR
+#if DEMO
         internal static IEnumerable<TSource> OnErrorResumeNextWithYield<TSource>(
             this IEnumerable<IEnumerable<TSource>> sources)
         {

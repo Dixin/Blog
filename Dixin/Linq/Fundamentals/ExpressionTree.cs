@@ -201,7 +201,7 @@
             // Expression tree with a int parameter, and returns a bool value.
             Expression<Func<int, bool>> predicate2 = number => number > 0;
 
-#if ERROR
+#if DEMO
             var predicate3 = number => number > 0;
             dynamic predicate4 = number => number > 0;
 #endif

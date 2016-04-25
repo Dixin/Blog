@@ -130,7 +130,7 @@
     }
 }
 
-#if ERROR
+#if DEMO
 namespace System.Linq
 {
     using System.Collections.Generic;

@@ -111,7 +111,7 @@
             Expression<Func<int, bool>> predicate = number => number > 0;
         }
 
-#if ERROR
+#if DEMO
         internal static void ExpressionTree()
         {
             Expression<Func<int, bool>> statementLambda2 = number =>
@@ -133,7 +133,7 @@
                 number); // number =>
         }
 
-#if ERROR
+#if DEMO
         internal static void Statement()
         {
             Expression<Func<int, bool>> statementLambda1 = number => { return number > 0; };

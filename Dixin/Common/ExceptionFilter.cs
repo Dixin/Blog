@@ -41,7 +41,7 @@
             }
         }
 
-#if ERROR
+#if DEMO
         private static void Filter()
         {
             try

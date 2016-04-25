@@ -133,7 +133,7 @@
     }
 }
 
-#if ERROR
+#if DEMO
 namespace System.Collections.Generic
 {
     public class List<T>

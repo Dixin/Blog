@@ -1,4 +1,4 @@
-﻿#if ERROR
+﻿#if DEMO
 namespace System.Collections.Generic
 {
     public class List<T> : IList<T>, IList, IReadOnlyList<T>
@@ -160,7 +160,7 @@ namespace Dixin.Linq.LinqToObjects
     }
 }
 
-#if ERROR
+#if DEMO
 namespace System.Collections.Generic
 {
     using System.Linq;

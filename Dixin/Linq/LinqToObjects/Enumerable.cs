@@ -1,4 +1,4 @@
-﻿#if ERROR
+﻿#if DEMO
 using System.Collections;
 using System.Collections.Generic;
 

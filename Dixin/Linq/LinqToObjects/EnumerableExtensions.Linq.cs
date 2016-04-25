@@ -122,7 +122,7 @@
         internal static IEnumerable<TSource> AsEnumerable<TSource>
             (this IEnumerable<TSource> source) => source; // Deferred execution.
 
-#if ERROR
+#if DEMO
         internal static IEnumerable<TResult> Cast<TResult>(this IEnumerable source)
         {
             IEnumerable<TResult> generic = source as IEnumerable<TResult>;

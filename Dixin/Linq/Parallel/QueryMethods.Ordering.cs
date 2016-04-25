@@ -117,17 +117,17 @@
             Random random = new Random();
             Func<ParallelQuery<Person>> getOuter = () => Enumerable
                 .Repeat(0, 1000).Select(_ => new Person()
-                {
-                    Age = random.Next(0, 100),
-                    Name = Guid.NewGuid().ToString()
-                })
+                    {
+                        Age = random.Next(0, 100),
+                        Name = Guid.NewGuid().ToString()
+                    })
                 .AsParallel();
             Func<ParallelQuery<Person>> getInner = () => Enumerable
                 .Repeat(0, 10000).Select(_ => new Person()
-                {
-                    Age = random.Next(0, 100),
-                    Name = Guid.NewGuid().ToString()
-                })
+                    {
+                        Age = random.Next(0, 100),
+                        Name = Guid.NewGuid().ToString()
+                    })
                 .AsParallel();
 
             Stopwatch stopwatch = Stopwatch.StartNew();

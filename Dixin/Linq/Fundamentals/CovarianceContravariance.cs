@@ -99,7 +99,7 @@
 
         internal static void InvalidVariance()
         {
-#if ERROR
+#if DEMO
         // baseIn_DerivedOut should output a Derived object, while BaseIn_DerivedOut outputs a Base object. 
         // Base is not Derived, the following binding cannot be compiled.
         BaseIn_DerivedOut baseIn_DerivedOut1 = Methods.BaseIn_BaseOut;
@@ -148,7 +148,7 @@
             Func<Base, Base> baseIn_BaseOut = (Base @in) => new Base();
             Func<Base, Derived> baseIn_DerivedOut = (Base @in) => new Derived();
 
-#if ERROR
+#if DEMO
         // Covariance.
         derivedIn_BaseOut = derivedIn_DerivedOut;
 
@@ -203,7 +203,7 @@
 
     internal static partial class GenericDelegateWithVariances
     {
-#if ERROR
+#if DEMO
         // CS1961 Invalid variance: The type parameter 'TOut' must be covariantly valid on 'GenericDelegateWithVariances.Func<TOut>.Invoke()'. 'TOut' is contravariant.
         internal delegate TOut Func<in TOut>();
 
@@ -395,7 +395,7 @@
 
     internal static partial class HigherOrderFunction
     {
-#if ERROR
+#if DEMO
         internal delegate void ActionIn<in T>(Action<T> action);
 
         internal static void ContravarianceOfInput()
@@ -542,7 +542,7 @@
         {
             object[] objectArray = new object[1];
             int[] int32Array = new int[1];
-#if ERROR
+#if DEMO
             // No covariance.
             objectArray = int32Array;
 #endif

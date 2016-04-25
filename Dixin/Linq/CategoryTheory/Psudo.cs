@@ -1,6 +1,6 @@
 ﻿namespace Dixin.Linq.CategoryTheory
 {
-#if ERROR
+#if DEMO
     public interface IFunctor<in TSourceCategory, out TTargetCategory, TFunctor<>>
         where TSourceCategory : ICategory<TSourceCategory>
         where TTargetCategory : ICategory<TTargetCategory>

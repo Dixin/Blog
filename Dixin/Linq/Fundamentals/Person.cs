@@ -32,7 +32,7 @@ namespace Dixin.Linq.Fundamentals.DataAnnotation
     }
 }
 
-#if ERROR
+#if DEMO
 namespace Dixin.Linq.Fundamentals
 {
     using System;

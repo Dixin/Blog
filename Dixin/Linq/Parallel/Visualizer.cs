@@ -13,7 +13,8 @@ namespace Dixin.Linq.Parallel
 
         internal const string Sequential = nameof(Sequential);
 
-        internal static void Visualize<T>(this IEnumerable<T> source, Action<T> action, string span = Sequential, int category = 0)
+        internal static void Visualize<T>(
+            this IEnumerable<T> source, Action<T> action, string span = Sequential, int category = 0)
         {
             using (Markers.EnterSpan(category, span))
             {
@@ -28,7 +29,8 @@ namespace Dixin.Linq.Parallel
             }
         }
 
-        internal static void Visualize<T>(this ParallelQuery<T> source, Action<T> action, string span = Parallel, int category = 1)
+        internal static void Visualize<T>(
+            this ParallelQuery<T> source, Action<T> action, string span = Parallel, int category = 1)
         {
             using (Markers.EnterSpan(category, span))
             {

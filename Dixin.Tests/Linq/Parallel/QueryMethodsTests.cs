@@ -8,6 +8,16 @@
     public partial class QueryMethodsTests
     {
         [TestMethod]
+        public void QueryTest()
+        {
+            QueryMethods.OptInOutParallel();
+            QueryMethods.QueryExpression();
+            QueryMethods.ForEachForAll();
+            QueryMethods.ForEachForAllTimeSpans();
+            QueryMethods.VisualizeForEachForAll();
+        }
+
+        [TestMethod]
         public void CancelTest()
         {
             QueryMethods.Cancel();
