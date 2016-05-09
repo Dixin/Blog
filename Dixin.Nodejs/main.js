@@ -10,7 +10,7 @@ tumblr.downloadAllAndUnlike({
     appSecretKey: "appSecretKey",
     offset: 5,
     limit: 51,
-    directory: "D:\\Tumblr",
+    directory: "D:\\Dixin\\Downloads\\Tumblr",
     after: 1,
     debug: true,
     fiddler: false

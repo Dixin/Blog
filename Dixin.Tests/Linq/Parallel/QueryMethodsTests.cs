@@ -15,6 +15,7 @@
             QueryMethods.ForEachForAll();
             QueryMethods.ForEachForAllTimeSpans();
             QueryMethods.VisualizeForEachForAll();
+            QueryMethods.WhereSelect();
         }
 
         [TestMethod]
@@ -30,21 +31,27 @@
         }
 
         [TestMethod]
-        public void MergeTest()
-        {
-            QueryMethods.Merge();
-        }
-
-        [TestMethod]
         public void ExecutionModeTest()
         {
             QueryMethods.ExecutionMode();
         }
 
         [TestMethod]
+        public void MergeTest()
+        {
+            QueryMethods.Except();
+            QueryMethods.MergeForSelect();
+            QueryMethods.MergeForTakeWhile();
+            QueryMethods.MergeForOrderBy();
+        }
+
+        [TestMethod]
         public void AggregateTest()
         {
-            QueryMethods.Aggregate();
+            QueryMethods.CommutativeAssociative();
+            QueryMethods.AggregateCorrectness();
+            QueryMethods.VisualizeAggregate();
+            QueryMethods.MergeForAggregate();
         }
     }
 }

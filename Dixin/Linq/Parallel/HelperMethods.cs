@@ -4,11 +4,9 @@ namespace Dixin.Linq.Parallel
 
     internal static partial class HelperMethods
     {
-        private const int IterationCount = 10000000;
-
-        internal static int Computing(int value = 0)
+        internal static int Compute(int value = 0, int iteration = 10000000)
         {
-            Enumerable.Range(0, (value + 1)*IterationCount).ForEach();
+            Enumerable.Range(0, iteration * (value + 1)).ForEach();
             return value;
         }
     }

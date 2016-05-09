@@ -15,12 +15,12 @@
         {
             int[] source = Enumerable.Range(0, Environment.ProcessorCount * 4).ToArray();
             Stopwatch stopwatch = Stopwatch.StartNew();
-            source.ForEach(value => Computing(value));
+            source.ForEach(value => Compute(value));
             stopwatch.Stop();
             Trace.WriteLine($"Sequential LINQ: {stopwatch.ElapsedMilliseconds}");
 
             stopwatch.Restart();
-            source.AsParallel().ForAll(value => Computing(value));
+            source.AsParallel().ForAll(value => Compute(value));
             stopwatch.Stop();
             Trace.WriteLine($"Parallel LINQ: {stopwatch.ElapsedMilliseconds}");
         }
@@ -28,8 +28,8 @@
         internal static void Visualize()
         {
             int[] source = Enumerable.Range(0, Environment.ProcessorCount * 4).ToArray();
-            source.Visualize(value => Computing(value));
-            source.AsParallel().Visualize(value => Computing(value));
+            source.Visualize(value => Compute(value));
+            source.AsParallel().Visualize(value => Compute(value));
         }
     }
 

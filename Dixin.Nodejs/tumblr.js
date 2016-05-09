@@ -99,13 +99,8 @@ var path = require("path"),
         return deferred.promise;
     },
 
-    downloadAllAndUnlike = function (options) {
-        if (options.fiddler) {
-            common.fiddler();
-        }
-
-        getClient(options)// Get tumblr client.
-            .then(getLikes)// Get tumblr liked post.
+    downloadAndUnlike = function(options) {
+        getLikes(options) // Get tumblr liked post.
             .then(function (options) {
                 if (options.likesCount > 0 && options.posts && options.posts.length > 0) {
                     // If there is any liked post.
@@ -129,11 +124,20 @@ var path = require("path"),
                             console.error(errors);
                         }
                     }).then(function () {
-                        downloadAllAndUnlike(options); // Download gain, recursively.
+                        downloadAndUnlike(options); // Download gain, recursively.
                     });
                 }
                 // If there is not any liked post, stop. Recursion terminates.
             });
+    },
+
+    downloadAllAndUnlike = function (options) {
+        if (options.fiddler) {
+            common.fiddler();
+        }
+
+        getClient(options) // Get tumblr client.
+            .then(downloadAndUnlike);
     };
 
 module.exports = {

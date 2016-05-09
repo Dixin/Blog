@@ -13,8 +13,8 @@ namespace Dixin.Linq.Parallel
 
         internal const string Sequential = nameof(Sequential);
 
-        internal static void Visualize<T>(
-            this IEnumerable<T> source, Action<T> action, string span = Sequential, int category = 0)
+        internal static void Visualize<TSource>(
+            this IEnumerable<TSource> source, Action<TSource> action, string span = Sequential, int category = 0)
         {
             using (Markers.EnterSpan(category, span))
             {
@@ -29,8 +29,8 @@ namespace Dixin.Linq.Parallel
             }
         }
 
-        internal static void Visualize<T>(
-            this ParallelQuery<T> source, Action<T> action, string span = Parallel, int category = 1)
+        internal static void Visualize<TSource>(
+            this ParallelQuery<TSource> source, Action<TSource> action, string span = Parallel, int category = 1)
         {
             using (Markers.EnterSpan(category, span))
             {
@@ -48,66 +48,54 @@ namespace Dixin.Linq.Parallel
 
     public static partial class Visualizer
     {
-        internal static void Visualize<T, TResult>(
-            this IEnumerable<T> source, Func<IEnumerable<T>, Func<T, TResult>, IEnumerable<T>> query, Func<T, TResult> func, string span = Sequential, int category = 0)
-        {
-            using (Markers.EnterSpan(category, span))
-            {
-                MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
-                query(
-                    source,
-                    value =>
-                        {
-                            using (markerSeries.EnterSpan(category, value.ToString()))
-                            {
-                                return func(value);
-                            }
-                        })
-                    .ForEach();
-            }
-        }
-
-        internal static void Visualize<T, TResult>(
-            this ParallelQuery<T> source, Func<ParallelQuery<T>, Func<T, TResult>, ParallelQuery<T>> query, Func<T, TResult> func, string span = Parallel, int category = 1)
-        {
-            using (Markers.EnterSpan(category, span))
-            {
-                MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
-                query(
-                    source,
-                    value =>
-                        {
-                            using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, value.ToString()))
-                            {
-                                return func(value);
-                            }
-                        })
-                .ForAll(_ => { });
-            }
-        }
-
-        internal static ParallelQuery<T> VisualizeQuery<T, TResult>(
-            this ParallelQuery<T> source, Func<ParallelQuery<T>, Func<T, TResult>, ParallelQuery<T>> query, Func<T, TResult> func, string span = Parallel)
+        internal static IEnumerable<TResult> Visualize<TSource, TMiddle, TResult>(
+            this IEnumerable<TSource> source,
+            Func<IEnumerable<TSource>, Func<TSource, TMiddle>, IEnumerable<TResult>> query,
+            Func<TSource, TMiddle> func,
+            Func<TSource, string> funcSpan = null,
+            string span = Sequential,
+            int category = 0)
         {
             MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
             return query(
                 source,
                 value =>
-                {
-                    using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, value.ToString()))
                     {
-                        return func(value);
-                    }
-                });
+                        using (markerSeries.EnterSpan(
+                            category, funcSpan?.Invoke(value) ?? value.ToString()))
+                        {
+                            return func(value);
+                        }
+                    });
+        }
+
+        internal static ParallelQuery<TResult> Visualize<TSource, TMiddle, TResult>(
+            this ParallelQuery<TSource> source,
+            Func<ParallelQuery<TSource>, Func<TSource, TMiddle>, ParallelQuery<TResult>> query,
+            Func<TSource, TMiddle> func,
+            Func<TSource, string> funcSpan = null,
+            string span = Parallel)
+        {
+            MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
+            return query(
+                source,
+                value =>
+                    {
+                        using (markerSeries.EnterSpan(
+                            Thread.CurrentThread.ManagedThreadId, funcSpan?.Invoke(value) ?? value.ToString()))
+                        {
+                            return func(value);
+                        }
+                    });
         }
     }
 
     public static partial class Visualizer
     {
-        internal static T Visualize<T>(
-            this ParallelQuery<T> source,
-            Func<ParallelQuery<T>, Func<T, T, T>, T> aggregate,
-            Func<T, T, T> func,
+        internal static TSource Visualize<TSource>(
+            this ParallelQuery<TSource> source,
+            Func<ParallelQuery<TSource>, Func<TSource, TSource, TSource>, TSource> aggregate,
+            Func<TSource, TSource, TSource> func,
             string span = nameof(ParallelEnumerable.Aggregate))
         {
             MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
@@ -122,11 +110,11 @@ namespace Dixin.Linq.Parallel
                 });
         }
 
-        internal static TAccumulate Visualize<T, TAccumulate>(
-            this ParallelQuery<T> source,
-            Func<ParallelQuery<T>, TAccumulate, Func<TAccumulate, T, TAccumulate>, TAccumulate> aggregate,
+        internal static TAccumulate Visualize<TSource, TAccumulate>(
+            this ParallelQuery<TSource> source,
+            Func<ParallelQuery<TSource>, TAccumulate, Func<TAccumulate, TSource, TAccumulate>, TAccumulate> aggregate,
             TAccumulate seed,
-            Func<TAccumulate, T, TAccumulate> func,
+            Func<TAccumulate, TSource, TAccumulate> func,
             string span = nameof(ParallelEnumerable.Aggregate))
         {
             MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
@@ -142,11 +130,11 @@ namespace Dixin.Linq.Parallel
                 });
         }
 
-        internal static TResult Visualize<T, TAccumulate, TResult>(
-            this ParallelQuery<T> source,
-            Func<ParallelQuery<T>, TAccumulate, Func<TAccumulate, T, TAccumulate>, Func<TAccumulate, TResult>, TResult> aggregate,
+        internal static TResult Visualize<TSource, TAccumulate, TResult>(
+            this ParallelQuery<TSource> source,
+            Func<ParallelQuery<TSource>, TAccumulate, Func<TAccumulate, TSource, TAccumulate>, Func<TAccumulate, TResult>, TResult> aggregate,
             TAccumulate seed,
-            Func<TAccumulate, T, TAccumulate> func,
+            Func<TAccumulate, TSource, TAccumulate> func,
             Func<TAccumulate, TResult> resultSelector,
             string span = nameof(ParallelEnumerable.Aggregate))
         {

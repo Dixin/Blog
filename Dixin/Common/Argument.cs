@@ -6,6 +6,7 @@
 
     public static class Argument
     {
+        [ContractArgumentValidator]
         public static void Requires(bool condition, string message, string paramName = null)
         {
             if (!condition)
@@ -16,6 +17,7 @@
             Contract.EndContractBlock();
         }
 
+        [ContractArgumentValidator]
         public static void Range(bool condition, string message, string paramName = null)
         {
             if (!condition)

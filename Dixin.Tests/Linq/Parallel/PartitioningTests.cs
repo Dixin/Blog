@@ -16,21 +16,37 @@
         public void BuiltInPartitioningTest()
         {
             Partitioning.Range();
-            Partitioning.Chunk();
             Partitioning.Strip();
             Partitioning.StripLoadBalance();
-            Partitioning.Hash();
+            Partitioning.StripForArray();
+            Partitioning.HashInGroupBy();
+            Partitioning.HashInJoin();
+            Partitioning.Chunk();
         }
 
         [TestMethod]
-        public void PartitionerTest()
+        public void StaticPartitionerTest()
         {
-            Partitioning.Partition();
+            Partitioning.StaticPartitioner();
 
             int partitionCount = Environment.ProcessorCount * 2;
             int valueCount = partitionCount * 10000;
             IEnumerable<int> source = Enumerable.Range(1, valueCount);
-            IEnumerable<int> partitionsSource = new IxPartitioner<int>(source).GetDynamicPartitions();
+            IEnumerable<int> partitionsSource = new StaticPartitioner<int>(source).GetDynamicPartitions();
+            IEnumerable<int> values = Partitioning.GetPartitions(partitionsSource, partitionCount).Concat().OrderBy(value => value);
+            EnumerableAssert.AreSequentialEqual(source, values);
+        }
+
+        [TestMethod]
+        public void DynamicPartitionerTest()
+        {
+            Partitioning.DynamicPartitioner();
+            Partitioning.VisualizeDynamicPartitioner();
+
+            int partitionCount = Environment.ProcessorCount * 2;
+            int valueCount = partitionCount * 10000;
+            IEnumerable<int> source = Enumerable.Range(1, valueCount);
+            IEnumerable<int> partitionsSource = new DynamicPartitioner<int>(source).GetDynamicPartitions();
             IEnumerable<int> values = Partitioning.GetPartitions(partitionsSource, partitionCount).Concat().OrderBy(value => value);
             EnumerableAssert.AreSequentialEqual(source, values);
         }
