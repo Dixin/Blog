@@ -1,92 +1,110 @@
 ﻿namespace Dixin.Linq.Parallel
 {
     using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Net;
+    using System.Threading;
+    using System.Threading.Tasks;
     using System.Xml.Linq;
+    using Dixin.Common;
+    using Microsoft.ConcurrencyVisualizer.Instrumentation;
 
     using static HelperMethods;
 
-    internal static partial class Performance
+internal static partial class Performance
+{
+    private static void OrderBy(int count, int run, Func<int, int> keySelector)
     {
-        internal static void Benchmark()
-        {
-            int[] source = Enumerable.Range(0, Environment.ProcessorCount * 4).ToArray();
-            Stopwatch stopwatch = Stopwatch.StartNew();
-            source.ForEach(value => Compute(value));
-            stopwatch.Stop();
-            Trace.WriteLine($"Sequential LINQ: {stopwatch.ElapsedMilliseconds}");
-
-            stopwatch.Restart();
-            source.AsParallel().ForAll(value => Compute(value));
-            stopwatch.Stop();
-            Trace.WriteLine($"Parallel LINQ: {stopwatch.ElapsedMilliseconds}");
-        }
-
-        internal static void Visualize()
-        {
-            int[] source = Enumerable.Range(0, Environment.ProcessorCount * 4).ToArray();
-            source.Visualize(value => Compute(value));
-            source.AsParallel().Visualize(value => Compute(value));
-        }
-    }
-
-    internal static partial class Performance
-    {
-        private static void QueryArray(int length, int count)
-        {
-            int[][] arrays = RandomArrays(length, count);
-            new int[0].OrderBy(value => value).ForEach(); // Warm up.
-            new int[0].AsParallel().OrderBy(value => value).ForAll(_ => { }); // Warm up.
-            arrays.Visualize( // array.OrderBy(value => value)
-                array => array.Visualize(Enumerable.OrderBy, value => value),
-                Visualizer.Sequential,
-                0);
-            arrays.Visualize( // array.AsParallel().OrderBy(value => value)
-                array => array.AsParallel().Visualize(ParallelEnumerable.OrderBy, value => value),
-                Visualizer.Parallel,
-                1);
-        }
-
-        internal static void QuerySmallArray() => QueryArray(5, 20000);
-
-        internal static void QueryMediumArray() => QueryArray(100, 1000);
-
-        internal static void QueryLargeArray() => QueryArray(5000, 20);
-    }
-
-    internal static partial class Performance
-    {
-        private static void Download(string url)
-        {
-            using (WebClient webClient = new WebClient())
+        int[] source = EnumerableX.RandomInt32().Take(count).ToArray();
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        Enumerable.Range(0, run).ForEach(_ =>
             {
-                webClient.DownloadData(url);
+                int[] sequential = source.OrderBy(keySelector).ToArray();
+            });
+        stopwatch.Stop();
+        Trace.WriteLine($"Sequential:{stopwatch.ElapsedMilliseconds}");
+
+        stopwatch.Restart();
+        Enumerable.Range(0, run).ForEach(_ =>
+            {
+                int[] parallel1 = source.AsParallel().OrderBy(keySelector).ToArray();
+            });
+        stopwatch.Stop();
+        Trace.WriteLine($"Parallel:{stopwatch.ElapsedMilliseconds}");
+    }
+}
+
+    internal static partial class Performance
+    {
+        internal static void OrderBy()
+        {
+            OrderBy(5, 10000, value => value); // Sequential:11    Parallel:1422
+            OrderBy(5000, 100, value => value); // Sequential:114   Parallel:107
+            OrderBy(500000, 100, value => value); // Sequential:18210 Parallel:8204
+
+            OrderBy(Environment.ProcessorCount, 10, value => value + Compute()); // Sequential:1605  Parallel:737
+        }
+    }
+
+    internal static partial class Performance
+    {
+        private static void Download(string[] urls)
+        {
+            urls.Visualize(url =>
+                {
+                    using (WebClient webClient = new WebClient())
+                    {
+                        webClient.DownloadData(url);
+                    }
+                });
+
+            urls.AsParallel()
+                .WithDegreeOfParallelism(10)
+                .Visualize(url =>
+                    {
+                        using (WebClient webClient = new WebClient())
+                        {
+                            webClient.DownloadData(url);
+                        }
+                    });
+
+            using (Markers.EnterSpan(-1, nameof(Task)))
+            {
+                MarkerSeries markerSeries = Markers.CreateMarkerSeries(nameof(Task));
+                urls.ForceParallel(
+                    url =>
+                        {
+                            using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, url))
+                            using (WebClient webClient = new WebClient())
+                            {
+                                webClient.DownloadData(url);
+                            }
+                        },
+                    urls.Length);
             }
         }
 
-        internal static void DownloadSmallFiles()
+        internal static void Download()
         {
-            string[] urls = XDocument.Load("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2")
-                .Root.Element("channel").Elements("item")
-                .Select(item => item.Element(XNamespace.Get("http://search.yahoo.com/mrss/") + "thumbnail").Attribute("url").Value)
+            string[] thumbnails = XDocument
+                .Load("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2")
+                .Descendants((XNamespace)"http://search.yahoo.com/mrss/" + "thumbnail")
+                .Attributes("url")
+                .Select(url => (string)url)
                 .ToArray();
+            Download(thumbnails);
 
-            urls.Visualize(Download);
-            urls.AsParallel().Visualize(Download);
-        }
-
-        internal static void DownloadLargeFiles()
-        {
-            string[] urls = XDocument.Load("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2")
-                .Root.Element("channel").Elements("item")
-                .Select(item => item.Element((XNamespace)"http://search.yahoo.com/mrss/" + "content").Attribute("url").Value)
+            string[] contents = XDocument
+                .Load("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2")
+                .Descendants((XNamespace)"http://search.yahoo.com/mrss/" + "content")
+                .Attributes("url")
+                .Select(url => (string)url)
                 .ToArray();
-
-            urls.Visualize(Download);
-            urls.AsParallel().Visualize(Download);
+            Download(contents);
         }
 
         internal static void ReadFiles()

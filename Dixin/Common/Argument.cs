@@ -6,7 +6,6 @@
 
     public static class Argument
     {
-        [ContractArgumentValidator]
         public static void Requires(bool condition, string message, string paramName = null)
         {
             if (!condition)
@@ -17,7 +16,6 @@
             Contract.EndContractBlock();
         }
 
-        [ContractArgumentValidator]
         public static void Range(bool condition, string message, string paramName = null)
         {
             if (!condition)
@@ -28,7 +26,6 @@
             Contract.EndContractBlock();
         }
 
-        [ContractArgumentValidator]
         public static void NotNull<T>([ValidatedNotNull]this T value, string name = null)
         {
             if (value == null)
@@ -39,7 +36,6 @@
             Contract.EndContractBlock();
         }
 
-        [ContractArgumentValidator]
         public static void NotNullOrWhiteSpace([ValidatedNotNull]this string value, string name = null)
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -50,7 +46,6 @@
             Contract.EndContractBlock();
         }
 
-        [ContractArgumentValidator]
         public static void NotNullOrEmpty([ValidatedNotNull]this string value, string name = null)
         {
             if (string.IsNullOrEmpty(value))
@@ -61,7 +56,6 @@
             Contract.EndContractBlock();
         }
 
-        [ContractArgumentValidator]
         public static void NotNull<T>(Func<T> value)
         {
             if (value() == null)

@@ -271,6 +271,7 @@
     <Compile Include="Linq\LinqToXml\Dom.cs" />
     <Compile Include="Linq\LinqToXml\Manipulation.cs" />
     <Compile Include="Linq\LinqToXml\QueryMethods.cs" />
+    <Compile Include="Linq\Parallel\ParallelEnumerableX.cs" />
     <Compile Include="Linq\XExtensions.cs" />
     <Compile Include="Runtime\Serialization\Serializer.cs" />
     <Compile Include="Diagnostics\Tracing\Event.cs" />

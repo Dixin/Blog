@@ -250,8 +250,8 @@
         {
             source.NotNull(nameof(source));
             keySelector.NotNull(nameof(keySelector));
-            Argument.Range(
-                percentile >= 0 && percentile <= 1, $"{nameof(percentile)} must be between 0 and 1.", nameof(percentile));
+            Argument.Range(percentile >= 0, $"{nameof(percentile)} must be between 0 and 1.", nameof(percentile));
+            Argument.Range(percentile <= 1, $"{nameof(percentile)} must be between 0 and 1.", nameof(percentile));
 
             // Excel PERCENTILE.EXC function:
             // https://support.office.com/en-us/article/PERCENTILE-EXC-function-bbaa7204-e9e1-4010-85bf-c31dc5dce4ba
@@ -284,8 +284,8 @@
         {
             source.NotNull(nameof(source));
             keySelector.NotNull(nameof(keySelector));
-            Argument.Range(
-                percentile >= 0 && percentile <= 1, $"{nameof(percentile)} must be between 0 and 1.", nameof(percentile));
+            Argument.Range(percentile >= 0, $"{nameof(percentile)} must be between 0 and 1.", nameof(percentile));
+            Argument.Range(percentile <= 1, $"{nameof(percentile)} must be between 0 and 1.", nameof(percentile));
 
             // Excel PERCENTILE.INC function:
             // https://support.office.com/en-us/article/PERCENTILE-INC-Function-DAX-15f69af8-1588-4863-9acf-2acc00384ffd
@@ -317,8 +317,8 @@
         {
             source.NotNull(nameof(source));
             keySelector.NotNull(nameof(keySelector));
-            Argument.Range(
-                percentile >= 0 && percentile <= 1, $"{nameof(percentile)} must be between 0 and 1.", nameof(percentile));
+            Argument.Range(percentile >= 0, $"{nameof(percentile)} must be between 0 and 1.", nameof(percentile));
+            Argument.Range(percentile <= 1, $"{nameof(percentile)} must be between 0 and 1.", nameof(percentile));
 
             // Excel PERCENTILE function:
             // https://support.office.com/en-us/article/PERCENTILE-function-91b43a53-543c-4708-93de-d626debdddca
@@ -344,7 +344,8 @@
             source.NotNull(nameof(source));
             values.NotNull(nameof(values));
 
-            return source.Any(value => values.Contains(value, comparer));
+            TSource[] array = null;
+            return source.Any(value => (array ?? (array = values.ToArray())).Contains(value, comparer));
         }
 
         #endregion

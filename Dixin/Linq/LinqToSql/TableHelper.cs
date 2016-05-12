@@ -8,7 +8,6 @@ namespace Dixin.Linq.LinqToSql
     using System.Linq.Expressions;
 
     using Dixin.Common;
-    using Dixin.Linq.Fundamentals;
 
     public static class TableHelper
     {
@@ -60,15 +59,21 @@ namespace Dixin.Linq.LinqToSql
         {
             MetaType metaType = database.Mapping.GetMetaType(typeof(TEntity));
             Argument.Requires(metaType != null, $"{nameof(TEntity)} must be mapped.", nameof(TEntity));
-            MetaDataMember[] primaryKeys = metaType
-                .Select(type => type.DataMembers)
+            MetaDataMember[] primaryKeys = database
+                .Mapping
+                .GetMetaType(typeof(TEntity))
+                .DataMembers
                 .Where(member => member.IsPrimaryKey)
                 .ToArray();
             Argument.Requires(
-                keys.Length == primaryKeys.Length, $"{nameof(keys)} must have correctnumer of values.", nameof(keys));
+                keys.Length == primaryKeys.Length, $"{nameof(keys)} must have correct number of values.", nameof(keys));
 
             ParameterExpression entity = Expression.Parameter(typeof(TEntity), nameof(entity));
-            Expression predicateBody = primaryKeys
+            Expression predicateBody = database
+                .Mapping
+                .GetMetaType(typeof(TEntity))
+                .DataMembers
+                .Where(member => member.IsPrimaryKey)
                 .Select((primaryKey, index) => Expression.Equal(
                     Expression.Property(entity, primaryKey.Name),
                     Expression.Constant(keys[index])))
