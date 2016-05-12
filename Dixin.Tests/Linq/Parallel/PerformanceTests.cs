@@ -16,8 +16,8 @@
         [TestMethod]
         public void IOTest()
         {
-            Performance.Download();
-
+            Performance.DownloadSmallFiles();
+            Performance.DownloadLargeFiles();
             Performance.ReadFiles();
         }
     }

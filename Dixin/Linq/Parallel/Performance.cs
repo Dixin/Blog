@@ -1,42 +1,39 @@
 ﻿namespace Dixin.Linq.Parallel
 {
     using System;
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
     using System.Net;
     using System.Threading;
-    using System.Threading.Tasks;
     using System.Xml.Linq;
-    using Dixin.Common;
+
     using Microsoft.ConcurrencyVisualizer.Instrumentation;
 
     using static HelperMethods;
 
-internal static partial class Performance
-{
-    private static void OrderBy(int count, int run, Func<int, int> keySelector)
+    internal static partial class Performance
     {
-        int[] source = EnumerableX.RandomInt32().Take(count).ToArray();
-        Stopwatch stopwatch = Stopwatch.StartNew();
-        Enumerable.Range(0, run).ForEach(_ =>
-            {
-                int[] sequential = source.OrderBy(keySelector).ToArray();
-            });
-        stopwatch.Stop();
-        Trace.WriteLine($"Sequential:{stopwatch.ElapsedMilliseconds}");
+        private static void OrderBy(int count, int run, Func<int, int> keySelector)
+        {
+            int[] source = EnumerableX.RandomInt32().Take(count).ToArray();
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            Enumerable.Range(0, run).ForEach(_ =>
+                {
+                    int[] sequential = source.OrderBy(keySelector).ToArray();
+                });
+            stopwatch.Stop();
+            Trace.WriteLine($"Sequential:{stopwatch.ElapsedMilliseconds}");
 
-        stopwatch.Restart();
-        Enumerable.Range(0, run).ForEach(_ =>
-            {
-                int[] parallel1 = source.AsParallel().OrderBy(keySelector).ToArray();
-            });
-        stopwatch.Stop();
-        Trace.WriteLine($"Parallel:{stopwatch.ElapsedMilliseconds}");
+            stopwatch.Restart();
+            Enumerable.Range(0, run).ForEach(_ =>
+                {
+                    int[] parallel1 = source.AsParallel().OrderBy(keySelector).ToArray();
+                });
+            stopwatch.Stop();
+            Trace.WriteLine($"Parallel:{stopwatch.ElapsedMilliseconds}");
+        }
     }
-}
 
     internal static partial class Performance
     {
@@ -72,9 +69,9 @@ internal static partial class Performance
                         }
                     });
 
-            using (Markers.EnterSpan(-1, nameof(Task)))
+            using (Markers.EnterSpan(-1, nameof(ParallelEnumerableX.ForceParallel)))
             {
-                MarkerSeries markerSeries = Markers.CreateMarkerSeries(nameof(Task));
+                MarkerSeries markerSeries = Markers.CreateMarkerSeries(nameof(ParallelEnumerableX.ForceParallel));
                 urls.ForceParallel(
                     url =>
                         {
@@ -84,11 +81,11 @@ internal static partial class Performance
                                 webClient.DownloadData(url);
                             }
                         },
-                    urls.Length);
+                    10);
             }
         }
 
-        internal static void Download()
+        internal static void DownloadSmallFiles()
         {
             string[] thumbnails = XDocument
                 .Load("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2")
@@ -97,7 +94,10 @@ internal static partial class Performance
                 .Select(url => (string)url)
                 .ToArray();
             Download(thumbnails);
+        }
 
+        internal static void DownloadLargeFiles()
+        {
             string[] contents = XDocument
                 .Load("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2")
                 .Descendants((XNamespace)"http://search.yahoo.com/mrss/" + "content")
