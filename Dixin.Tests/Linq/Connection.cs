@@ -9,9 +9,9 @@
     public class ConnectionTests
     {
         [TestMethod]
-        public void ConnectionStringTest()
+        public void ConnectionStringsTest()
         {
-            string connectionString = Connection.String;
+            string connectionString = ConnectionStrings.AdventureWorks;
             Assert.AreEqual(Settings.Default.AdventureWorksConnectionString, connectionString);
         }
     }

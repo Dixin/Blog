@@ -537,7 +537,7 @@ namespace Dixin.Linq.LinqToSql
                 .Reverse()
                 .Select(product => new { Name = product.Name, ListPrice = product.ListPrice }); // Define query.
             products.ForEach(product => Trace.WriteLine($"{product.Name}: {product.ListPrice}")); // Execute query.
-            // NotSupportedException: LINQ to Entities does not recognize the method 'System.Linq.IQueryable`1[Dixin.Linq.LinqToEntities.Product] Reverse[Product](System.Linq.IQueryable`1[Dixin.Linq.LinqToEntities.Product])' method, and this method cannot be translated into a store expression.
+            // NotSupportedException: LINQ to Entities does not recognize the method 'System.Linq.IQueryable`1[Dixin.Linq.EntityFramework.Product] Reverse[Product](System.Linq.IQueryable`1[Dixin.Linq.EntityFramework.Product])' method, and this method cannot be translated into a store expression.
         }
 
         #endregion

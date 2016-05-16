@@ -1,6 +1,6 @@
-﻿namespace Dixin.Tests.Linq.LinqToEntities
+﻿namespace Dixin.Tests.Linq.EntityFramework
 {
-    using Dixin.Linq.LinqToEntities;
+    using Dixin.Linq.EntityFramework;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 

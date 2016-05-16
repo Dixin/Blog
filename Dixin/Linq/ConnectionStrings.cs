@@ -5,9 +5,14 @@
 
     using Dixin.Properties;
 
-    internal static class Connection
+    internal static partial class ConnectionStrings
     {
-        internal static string String { get; } =
+        internal const string LocalDb = @"Data Source=(LocalDB)\MSSQLLocalDB;Integrated Security=True;Connect Timeout=30";
+    }
+
+    internal static partial class ConnectionStrings
+    {
+        internal static string AdventureWorks { get; } =
             ConfigurationManager.ConnectionStrings.OfType<ConnectionStringSettings>().FirstOrDefault()
             ?.ConnectionString ?? Settings.Default.AdventureWorksConnectionString;
     }

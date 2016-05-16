@@ -46,9 +46,9 @@
                 ParameterExpression product = Expression.Parameter(typeof(Product), "product");
 
                 // Define query
-                IQueryable<string> query = adventureWorks.Products
-                    .Where(
-                        // product => product.ProductSubCategory.ProductCategory.Name == closure.categoryName
+                IQueryable<string> query = Queryable.Select(
+                    Queryable.Where(
+                        adventureWorks.Products, 
                         Expression.Lambda<Func<Product, bool>>(
                             Expression.Equal( // => product.ProductSubCategory.ProductCategory.Name == closure.categoryName
                                 Expression.Property(
@@ -60,11 +60,10 @@
                                     Expression.Constant(closure), "categoryName"), // closure.categoryName
                                 false,
                                 typeof(string).GetMethod("op_Equals")), // ==
-                            product)) // product =>
-                    .Select(
-                        Expression.Lambda<Func<Product, string>>( // product => product.ProductName
-                            Expression.Property(product, "ProductName"), // => product.ProductName
-                            product)); // product =>
+                            product)),
+                    Expression.Lambda<Func<Product, string>>( // product => product.ProductName
+                        Expression.Property(product, "ProductName"), // => product.ProductName
+                        product)); // product =>
 
                 // Execute query.
                 return query.ToArray();

@@ -161,73 +161,56 @@ namespace Dixin.Linq.LinqToObjects
 }
 
 #if DEMO
+namespace System.Collections
+{
+	public interface IEnumerable
+	{
+		IEnumerator GetEnumerator();
+	}
+}
+
 namespace System.Collections.Generic
 {
-    using System.Linq;
-
     public interface IEnumerable<out T> : IEnumerable
     {
-        // IEnumerable:
-        // IEnumerator GetEnumerator(); 
-
         IEnumerator<T> GetEnumerator();
-    }
-
-    public interface IQueryable<out T> : IEnumerable<T>, IQueryable, IEnumerable
-    {
-        // IQueryable:
-        // Type ElementType { get; }
-        // Expression Expression { get; }
-        // IQueryProvider Provider { get; }
-
-        // IEnumerable:
-        // IEnumerator GetEnumerator(); 
-
-        // IEnumerable:
-        // IEnumerator<T> GetEnumerator();
     }
 }
 
 namespace System.Linq
 {
+    using System.Collections.Generic;
+
     public static class Enumerable
     {
-        public static IEnumerable<TSource> Concat<TSource>(
-            this IEnumerable<TSource> first, IEnumerable<TSource> second);
-
-        IEnumerable<TSource> Intersect<TSource>(
-            this IEnumerable<TSource> first, IEnumerable<TSource> second);
+        public static IEnumerable<TSource> Where<TSource>(
+            this IEnumerable<TSource> source, Func<TSource, bool> predicate);
 
         public static IEnumerable<TResult> Select<TSource, TResult>(
             this IEnumerable<TSource> source, Func<TSource, TResult> selector);
 
-        public static IEnumerable<TSource> Skip<TSource>(
-            this IEnumerable<TSource> source, int count);
-
-        public static IEnumerable<TSource> Take<TSource>(
-            this IEnumerable<TSource> source, int count);
-
-        public static IEnumerable<TSource> Where<TSource>(
-            this IEnumerable<TSource> source, Func<TSource, bool> predicate);
-
-        bool Any<TSource>(this IEnumerable<TSource> source);
-
-        int Count<TSource>(this IEnumerable<TSource> source);
-
-        public static IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(
-            this IEnumerable<TSource> source, Func<TSource, TKey> keySelector);
-
-        public static IOrderedEnumerable<TSource> OrderByDescending<TSource, TKey>(
-            this IEnumerable<TSource> source, Func<TSource, TKey> keySelector);
-
-        public static IOrderedEnumerable<TSource> ThenBy<TSource, TKey>(
-            this IOrderedEnumerable<TSource> source, Func<TSource, TKey> keySelector);
-
-        public static IOrderedEnumerable<TSource> ThenByDescending<TSource, TKey>(
-            this IOrderedEnumerable<TSource> source, Func<TSource, TKey> keySelector);
+        public static IEnumerable<TSource> Concat<TSource>(
+            this IEnumerable<TSource> first, IEnumerable<TSource> second);
 
         // More query methods...
     }
+}
+
+namespace System.Linq
+{
+    using System.Collections.Generic;
+
+    public static class Enumerable
+    {
+        public static TSource First<TSource>(this IEnumerable<TSource> source);
+
+        public static TSource Last<TSource>(this IEnumerable<TSource> source);
+    }
+}
+
+namespace System.Linq
+{
+    using System.Collections.Generic;
 
     public static class Enumerable
     {
@@ -242,13 +225,14 @@ namespace System.Linq
 
         public static IOrderedEnumerable<TSource> ThenByDescending<TSource, TKey>(
             this IOrderedEnumerable<TSource> source, Func<TSource, TKey> keySelector);
-
-        // Other query methods...
     }
 }
 
 namespace System.Linq
 {
+    using System.Collections;
+    using System.Collections.Generic;
+
     public interface IOrderedEnumerable<TElement> : IEnumerable<TElement>, IEnumerable
     {
         IOrderedEnumerable<TElement> CreateOrderedEnumerable<TKey>(
@@ -256,59 +240,4 @@ namespace System.Linq
     }
 }
 
-namespace System.Linq
-{
-    using System.Linq.Expressions;
-
-    public static class Queryable
-    {
-        public static IQueryable<TSource> Concat<TSource>(
-            this IQueryable<TSource> source1, IEnumerable<TSource> source2);
-
-        public static IQueryable<TSource> Intersect<TSource>(
-            this IQueryable<TSource> source1, IEnumerable<TSource> source2);
-
-        public static IQueryable<TResult> Select<TSource, TResult>(
-            this IQueryable<TSource> source, Expression<Func<TSource, TResult>> selector);
-
-        public static IQueryable<TSource> Skip<TSource>(
-            this IQueryable<TSource> source, int count);
-
-        public static IQueryable<TSource> Take<TSource>(
-            this IQueryable<TSource> source, int count);
-
-        public static IQueryable<TSource> Where<TSource>(
-            this IQueryable<TSource> source, Expression<Func<TSource, bool>> predicate);
-    }
-}
-
-
-namespace System.Linq
-{
-    using System.Collections;
-    using System.Linq.Expressions;
-
-    public interface IOrderedQueryable : IQueryable, IEnumerable
-    {
-    }
-
-    public interface IOrderedQueryable<out T> : IQueryable<T>, IEnumerable<T>, IOrderedQueryable, IQueryable, IEnumerable
-    {
-    }
-
-    public static class Queryable
-    {
-        public static IOrderedQueryable<TSource> OrderBy<TSource, TKey>(
-            this IQueryable<TSource> source, Expression<Func<TSource, TKey>> keySelector);
-
-        public static IOrderedQueryable<TSource> OrderByDescending<TSource, TKey>(
-            this IQueryable<TSource> source, Expression<Func<TSource, TKey>> keySelector);
-
-        public static IOrderedQueryable<TSource> ThenBy<TSource, TKey>(
-            this IOrderedQueryable<TSource> source, Expression<Func<TSource, TKey>> keySelector);
-
-        public static IOrderedQueryable<TSource> ThenByDescending<TSource, TKey>(
-            this IOrderedQueryable<TSource> source, Expression<Func<TSource, TKey>> keySelector);
-    }
-}
 #endif

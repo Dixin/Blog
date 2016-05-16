@@ -32,8 +32,11 @@
             int partitionCount = Environment.ProcessorCount * 2;
             int valueCount = partitionCount * 10000;
             IEnumerable<int> source = Enumerable.Range(1, valueCount);
-            IEnumerable<int> partitionsSource = new StaticPartitioner<int>(source).GetDynamicPartitions();
-            IEnumerable<int> values = Partitioning.GetPartitions(partitionsSource, partitionCount).Concat().OrderBy(value => value);
+            IEnumerable<int> values = new StaticPartitioner<int>(source)
+                .GetPartitions(partitionCount)
+                .Select(partition => EnumerableEx.Create(() => partition))
+                .Concat()
+                .OrderBy(value => value);
             EnumerableAssert.AreSequentialEqual(source, values);
         }
 

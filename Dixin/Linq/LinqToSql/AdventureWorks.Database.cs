@@ -7,7 +7,7 @@
     public partial class AdventureWorks : DataContext
     {
         public AdventureWorks()
-            : base(Linq.Connection.String)
+            : base(Linq.ConnectionStrings.AdventureWorks)
         {
             // if (!this.DatabaseExists())
             // {

@@ -103,8 +103,9 @@
       <HintPath>..\packages\linqtotwitter.3.1.2\lib\net45\LinqToTwitterPcl.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.ConcurrencyVisualizer.Markers">
-      <HintPath>..\Tools\Microsoft.ConcurrencyVisualizer.Markers.dll</HintPath>
+    <Reference Include="Microsoft.ConcurrencyVisualizer.Markers, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\ConcurrencyVisualizer.1.0.1\lib\Microsoft.ConcurrencyVisualizer.Markers.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Data.Edm, Version=5.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -268,6 +269,7 @@
     </Compile>
     <Compile Include="Common\ExceptionFilter.cs" />
     <Compile Include="Common\Int32Extensions.cs" />
+    <Compile Include="Linq\EntityFramework\AdventureWorks.Views.cs" />
     <Compile Include="Linq\LinqToXml\Dom.cs" />
     <Compile Include="Linq\LinqToXml\Manipulation.cs" />
     <Compile Include="Linq\LinqToXml\QueryMethods.cs" />
@@ -288,19 +290,18 @@
     <Compile Include="Common\ExceptionExtensions.cs" />
     <Compile Include="Common\ValidatedNotNullAttribute.cs" />
     <Compile Include="Data\Services\WcfWebSocketService.cs" />
-    <Compile Include="Linq\Connection.cs" />
-    <Compile Include="Linq\LinqToEntities\AdventureWorks.Association.cs" />
-    <Compile Include="Linq\LinqToEntities\AdventureWorks.Changes.cs" />
-    <Compile Include="Linq\LinqToEntities\AdventureWorks.Database.cs" />
-    <Compile Include="Linq\LinqToEntities\AdventureWorks.Laziness.cs" />
-    <Compile Include="Linq\LinqToEntities\AdventureWorks.Inheritance.cs" />
-    <Compile Include="Linq\LinqToEntities\AdventureWorks.Log.cs" />
-    <Compile Include="Linq\LinqToEntities\AdventureWorks.Performance.cs" />
-    <Compile Include="Linq\LinqToEntities\AdventureWorks.Functions.cs" />
-    <Compile Include="Linq\LinqToEntities\AdventureWorks.RemoteMethods.cs" />
-    <Compile Include="Linq\LinqToEntities\AdventureWorks.Tables.cs" />
-    <Compile Include="Linq\LinqToEntities\AdventureWorks.Views.cs" />
-    <Compile Include="Linq\LinqToEntities\DbContextExtensions.cs" />
+    <Compile Include="Linq\ConnectionStrings.cs" />
+    <Compile Include="Linq\EntityFramework\AdventureWorks.Association.cs" />
+    <Compile Include="Linq\EntityFramework\AdventureWorks.Changes.cs" />
+    <Compile Include="Linq\EntityFramework\AdventureWorks.Database.cs" />
+    <Compile Include="Linq\EntityFramework\AdventureWorks.Laziness.cs" />
+    <Compile Include="Linq\EntityFramework\AdventureWorks.Inheritance.cs" />
+    <Compile Include="Linq\EntityFramework\AdventureWorks.Log.cs" />
+    <Compile Include="Linq\EntityFramework\AdventureWorks.Performance.cs" />
+    <Compile Include="Linq\EntityFramework\AdventureWorks.Functions.cs" />
+    <Compile Include="Linq\EntityFramework\AdventureWorks.RemoteMethods.cs" />
+    <Compile Include="Linq\EntityFramework\AdventureWorks.Tables.cs" />
+    <Compile Include="Linq\EntityFramework\DbContextExtensions.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.Changes.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.Laziness.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.Performance.cs" />
@@ -311,7 +312,7 @@
     <Compile Include="Linq\LinqToSql\AdventureWorks.Functions.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.Log.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.Tables.cs" />
-    <Compile Include="Linq\LinqToSql\ExpressionTree.cs" />
+    <Compile Include="Linq\EntityFramework\RemoteQuery.cs" />
     <Compile Include="IO\CustomTextWriter.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.QueryMethods.cs" />
     <Compile Include="Linq\Parallel\Visualizer.cs" />
@@ -322,20 +323,21 @@
     <Compile Include="IO\Video.cs" />
     <Compile Include="Linq\CategoryTheory\Functor.Like.cs" />
     <Compile Include="Linq\CategoryTheory\Monad.Like.cs" />
-    <Content Include="Linq\LinqToEntities\AdventureWorks.RemoteMethods.sql" />
-    <Content Include="Linq\LinqToEntities\AdventureWorks.Performance.sql" />
-    <Content Include="Linq\LinqToEntities\AdventureWorks.Laziness.sql" />
-    <Content Include="Linq\LinqToEntities\AdventureWorks.Functions.sql" />
-    <Content Include="Linq\LinqToEntities\AdventureWorks.Changes.sql" />
-    <Content Include="Linq\LinqToEntities\AdventureWorks.QueryMethods.sql" />
-    <Content Include="Linq\LinqToEntities\Mapping.sql" />
+    <Content Include="Linq\Blog.htm" />
+    <Content Include="Linq\EntityFramework\AdventureWorks.RemoteMethods.sql" />
+    <Content Include="Linq\EntityFramework\AdventureWorks.Performance.sql" />
+    <Content Include="Linq\EntityFramework\AdventureWorks.Laziness.sql" />
+    <Content Include="Linq\EntityFramework\AdventureWorks.Functions.sql" />
+    <Content Include="Linq\EntityFramework\AdventureWorks.Changes.sql" />
+    <Content Include="Linq\EntityFramework\AdventureWorks.QueryMethods.sql" />
+    <Content Include="Linq\EntityFramework\Mapping.sql" />
     <Content Include="Linq\LinqToSql\AdventureWorks.Performance.sql" />
     <Content Include="Linq\LinqToSql\AdventureWorks.Laziness.sql" />
     <Content Include="Linq\LinqToSql\AdventureWorks.Functions.sql" />
     <Content Include="Linq\LinqToSql\AdventureWorks.Changes.sql" />
     <Content Include="Linq\LinqToSql\AdventureWorks.RemoteMethods.sql" />
     <Content Include="Linq\LinqToSql\AdventureWorks.QueryMethods.sql" />
-    <Content Include="Linq\LinqToSql\ExpressionTree.sql" />
+    <Content Include="Linq\EntityFramework\RemoteQuery.sql" />
     <Content Include="Linq\LinqToSql\Mapping.sql" />
     <Content Include="Linq\LinqToXml\FlickrRss.xml" />
     <Content Include="Linq\LinqToXml\AspNetRss.xml" />
@@ -490,7 +492,7 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <None Include="Linq\Fundamentals\Methods.il" />
-    <Compile Include="Linq\LinqToEntities\AdventureWorks.QueryMethods.cs" />
+    <Compile Include="Linq\EntityFramework\AdventureWorks.QueryMethods.cs" />
     <None Include="Linq\LinqToXml\AspNetRss.xsd">
       <SubType>Designer</SubType>
     </None>

@@ -138,7 +138,7 @@
     <Compile Include="Linq\CategoryTheory\LinqHelper.cs" />
     <Compile Include="Linq\Connection.cs" />
     <Compile Include="Linq\Fundamentals\ReflectionHelperTests.cs" />
-    <Compile Include="Linq\LinqToEntities\AdventureWorksTests.Performance.cs" />
+    <Compile Include="Linq\EntityFramework\AdventureWorksTests.Performance.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorksTests.Performance.cs" />
     <Compile Include="Linq\LinqToXml\DomTests.cs" />
     <Compile Include="Linq\LinqToXml\ManipulationTests.cs" />
@@ -182,10 +182,10 @@
     <Compile Include="Linq\Lambda\ChurchTupleTests.cs" />
     <Compile Include="Linq\Lambda\_ListNodeTests.cs" />
     <Compile Include="Linq\Lambda\_NumeralExtensionsTests.cs" />
-    <Compile Include="Linq\LinqToEntities\AdventureWorksTests.Changes.cs" />
-    <Compile Include="Linq\LinqToEntities\AdventureWorksTests.cs" />
-    <Compile Include="Linq\LinqToEntities\AdventureWorksTests.Log.cs" />
-    <Compile Include="Linq\LinqToEntities\AdventureWorksTests.QueryMethods.cs" />
+    <Compile Include="Linq\EntityFramework\AdventureWorksTests.Changes.cs" />
+    <Compile Include="Linq\EntityFramework\AdventureWorksTests.cs" />
+    <Compile Include="Linq\EntityFramework\AdventureWorksTests.Log.cs" />
+    <Compile Include="Linq\EntityFramework\AdventureWorksTests.QueryMethods.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorksTests.Changes.cs" />
     <Compile Include="Linq\LinqToObjects\DeferredExecutionTests.cs" />
     <Compile Include="Linq\LinqToObjects\EnumerableQueryMethodsTests.cs" />
@@ -194,7 +194,7 @@
     <Compile Include="Linq\LinqToSql\AdventureWorksTests.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorksTests.Log.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorksTests.QueryMethods.cs" />
-    <Compile Include="Linq\LinqToSql\BinaryArithmeticTanslatorTests.cs" />
+    <Compile Include="Linq\EntityFramework\BinaryArithmeticTanslatorTests.cs" />
     <Compile Include="Linq\LinqToSql\InfixVisitorTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">

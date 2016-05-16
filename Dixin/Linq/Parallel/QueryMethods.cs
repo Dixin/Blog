@@ -387,6 +387,112 @@ namespace System.Linq
 
     public static class Enumerable
     {
+        public static IEnumerable<TSource> Where<TSource>(
+            this IEnumerable<TSource> source, Func<TSource, bool> predicate);
+
+        public static IEnumerable<TResult> Select<TSource, TResult>(
+            this IEnumerable<TSource> source, Func<TSource, TResult> selector);
+
+        public static IEnumerable<TSource> Concat<TSource>(
+            this IEnumerable<TSource> first, IEnumerable<TSource> second);
+
+        // More query methods...
+    }
+
+    public static class ParallelEnumerable
+    {
+        public static ParallelQuery<TSource> Where<TSource>(
+            this ParallelQuery<TSource> source, Func<TSource, bool> predicate);
+
+        public static ParallelQuery<TResult> Select<TSource, TResult>(
+            this ParallelQuery<TSource> source, Func<TSource, TResult> selector);
+
+        public static ParallelQuery<TSource> Concat<TSource>(
+            this ParallelQuery<TSource> first, ParallelQuery<TSource> second);
+
+        // More query methods...
+    }
+}
+
+namespace System.Linq
+{
+    using System.Collections.Generic;
+
+    public static class Enumerable
+    {
+        public static IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(
+            this IEnumerable<TSource> source, Func<TSource, TKey> keySelector);
+
+        public static IOrderedEnumerable<TSource> OrderByDescending<TSource, TKey>(
+            this IEnumerable<TSource> source, Func<TSource, TKey> keySelector);
+
+        public static IOrderedEnumerable<TSource> ThenBy<TSource, TKey>(
+            this IOrderedEnumerable<TSource> source, Func<TSource, TKey> keySelector);
+
+        public static IOrderedEnumerable<TSource> ThenByDescending<TSource, TKey>(
+            this IOrderedEnumerable<TSource> source, Func<TSource, TKey> keySelector);
+    }
+
+    public static class ParallelEnumerable
+    {
+        public static OrderedParallelQuery<TSource> OrderBy<TSource, TKey>(
+            this ParallelQuery<TSource> source, Func<TSource, TKey> keySelector);
+
+        public static OrderedParallelQuery<TSource> OrderByDescending<TSource, TKey>(
+            this ParallelQuery<TSource> source, Func<TSource, TKey> keySelector);
+
+        public static OrderedParallelQuery<TSource> ThenBy<TSource, TKey>(
+            this OrderedParallelQuery<TSource> source, Func<TSource, TKey> keySelector);
+
+        public static OrderedParallelQuery<TSource> ThenByDescending<TSource, TKey>(
+            this OrderedParallelQuery<TSource> source, Func<TSource, TKey> keySelector);
+    }
+}
+
+namespace System.Linq
+{
+    using System.Collections.Generic;
+
+    public static class EnumerableEx
+    {
+        public static void ForEach<TSource>(this IEnumerable<TSource> source, Action<TSource> onNext);
+    }
+
+    public static class ParallelEnumerable
+    {
+        public static void ForAll<TSource>(this ParallelQuery<TSource> source, Action<TSource> action);
+    }
+}
+
+namespace Microsoft.ConcurrencyVisualizer.Instrumentation
+{
+    public static class Markers
+    {
+        public static Span EnterSpan(int category, string text);
+    }
+
+    public class MarkerSeries
+    {
+        public static Span EnterSpan(int category, string text);
+    }
+}
+
+namespace System.Linq.Parallel
+{
+    internal static class Scheduling
+    {
+        internal static int DefaultDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 512);
+
+        internal static int GetDefaultDegreeOfParallelism() => DefaultDegreeOfParallelism;
+    }
+}
+
+namespace System.Linq
+{
+    using System.Collections.Generic;
+
+    public static class Enumerable
+    {
         public static IEnumerable<TSource> Concat<TSource>(this IEnumerable<TSource> first, IEnumerable<TSource> second);
     }
 
@@ -407,66 +513,6 @@ namespace System.Linq
             Func<TAccumulate, TSource, TAccumulate> updateAccumulatorFunc, 
             Func<TAccumulate, TAccumulate, TAccumulate> combineAccumulatorsFunc, 
             Func<TAccumulate, TResult> resultSelector);
-    }
-}
-#endif
-
-#if DEMO
-namespace System.Linq
-{
-    using System.Collections.Generic;
-
-    public static class EnumerableEx
-    {
-        public static void ForEach<TSource>(this IEnumerable<TSource> source, Action<TSource> onNext);
-    }
-
-    public static class ParallelEnumerable
-    {
-        public static void ForAll<TSource>(this ParallelQuery<TSource> source, Action<TSource> action);
-    }
-}
-#endif
-
-#if DEMO
-namespace Microsoft.ConcurrencyVisualizer.Instrumentation
-{
-    public static class Markers
-    {
-        public static Span EnterSpan(int category, string text);
-    }
-
-    public class MarkerSeries
-    {
-        public static Span EnterSpan(int category, string text);
-    }
-}
-#endif
-
-#if DEMO
-namespace System.Linq
-{
-    using System.Collections.Generic;
-
-    public static class ParallelEnumerable
-    {
-        public static ParallelQuery<TSource> AsParallel<TSource>(this IEnumerable<TSource> source);
-
-        public static IEnumerable<TSource> AsSequential<TSource>(this ParallelQuery<TSource> source);
-
-        
-    }
-}
-#endif
-
-#if DEMO
-namespace System.Linq.Parallel
-{
-    internal static class Scheduling
-    {
-        internal static int DefaultDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 512);
-
-        internal static int GetDefaultDegreeOfParallelism() => DefaultDegreeOfParallelism;
     }
 }
 #endif

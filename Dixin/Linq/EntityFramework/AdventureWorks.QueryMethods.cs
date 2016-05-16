@@ -1,4 +1,4 @@
-﻿namespace Dixin.Linq.LinqToEntities
+﻿namespace Dixin.Linq.EntityFramework
 {
     using System.Collections.Generic;
     using System.Data.Linq.SqlClient;
@@ -137,7 +137,7 @@
                 .Where(product => product.ListPrice > 100)
                 .Select(product => new Product() { ProductID = product.ProductID, Name = product.Name }); // Define query.
             products.ForEach(product => Trace.WriteLine($"{product.ProductID}: {product.Name}")); // Execute query.
-            // NotSupportedException: The entity or complex type 'Dixin.Linq.LinqToEntities.Product' cannot be constructed in a LINQ to Entities query.
+            // NotSupportedException: The entity or complex type 'Dixin.Linq.EntityFramework.Product' cannot be constructed in a LINQ to Entities query.
         }
 
         internal static void SelectEntityObjects()
@@ -539,7 +539,7 @@
                 .Reverse()
                 .Select(product => new { Name = product.Name, ListPrice = product.ListPrice }); // Define query.
             products.ForEach(product => Trace.WriteLine($"{product.Name}: {product.ListPrice}")); // Execute query.
-            // NotSupportedException: LINQ to Entities does not recognize the method 'System.Linq.IQueryable`1[Dixin.Linq.LinqToEntities.Product] Reverse[Product](System.Linq.IQueryable`1[Dixin.Linq.LinqToEntities.Product])' method, and this method cannot be translated into a store expression.
+            // NotSupportedException: LINQ to Entities does not recognize the method 'System.Linq.IQueryable`1[Dixin.Linq.EntityFramework.Product] Reverse[Product](System.Linq.IQueryable`1[Dixin.Linq.EntityFramework.Product])' method, and this method cannot be translated into a store expression.
         }
 
         #endregion
@@ -553,7 +553,7 @@
                 .Where(product => product.Name.StartsWith("Road-750"))
                 .Cast<UniversalProduct>(); // Define query.
             universalProducts.ForEach(product => Trace.WriteLine($"{product.Name}: {product.GetType().Name}")); // Execute query.
-            // NotSupportedException: Unable to cast the type 'Dixin.Linq.LinqToEntities.Product' to type 'Dixin.Linq.LinqToEntities.UniversalProduct'. LINQ to Entities only supports casting EDM primitive or enumeration types.
+            // NotSupportedException: Unable to cast the type 'Dixin.Linq.EntityFramework.Product' to type 'Dixin.Linq.EntityFramework.UniversalProduct'. LINQ to Entities only supports casting EDM primitive or enumeration types.
         }
 
         #endregion
@@ -582,7 +582,7 @@
         {
             IQueryable<Product> source = AdventureWorks.Products;
             Product first = source.Last(); // Execute query.
-            // NotSupportedException: LINQ to Entities does not recognize the method 'Dixin.Linq.LinqToEntities.Product Last[Product](System.Linq.IQueryable`1[Dixin.Linq.LinqToEntities.Product])' method, and this method cannot be translated into a store expression.
+            // NotSupportedException: LINQ to Entities does not recognize the method 'Dixin.Linq.EntityFramework.Product Last[Product](System.Linq.IQueryable`1[Dixin.Linq.EntityFramework.Product])' method, and this method cannot be translated into a store expression.
             Trace.WriteLine($"{first.Name}: {first.ListPrice}");
         }
 
@@ -590,7 +590,7 @@
         {
             IQueryable<Product> source = AdventureWorks.Products;
             Product first = source.LastOrDefault(product => product.ListPrice < 0); // Execute query.
-            // NotSupportedException: LINQ to Entities does not recognize the method 'Dixin.Linq.LinqToEntities.Product LastOrDefault[Product](System.Linq.IQueryable`1[Dixin.Linq.LinqToEntities.Product], System.Linq.Expressions.Expression`1[System.Func`2[Dixin.Linq.LinqToEntities.Product,System.Boolean]])' method, and this method cannot be translated into a store expression.
+            // NotSupportedException: LINQ to Entities does not recognize the method 'Dixin.Linq.EntityFramework.Product LastOrDefault[Product](System.Linq.IQueryable`1[Dixin.Linq.EntityFramework.Product], System.Linq.Expressions.Expression`1[System.Func`2[Dixin.Linq.EntityFramework.Product,System.Boolean]])' method, and this method cannot be translated into a store expression.
             Trace.WriteLine($"{first.Name}: {first.ListPrice}");
         }
 

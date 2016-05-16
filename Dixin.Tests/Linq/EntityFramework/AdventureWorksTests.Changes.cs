@@ -1,11 +1,11 @@
-﻿namespace Dixin.Tests.Linq.LinqToEntities
+﻿namespace Dixin.Tests.Linq.EntityFramework
 {
     using System;
     using System.Data.Entity.Infrastructure;
     using System.Diagnostics;
     using System.Transactions;
 
-    using Dixin.Linq.LinqToEntities;
+    using Dixin.Linq.EntityFramework;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 

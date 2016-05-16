@@ -1,4 +1,4 @@
-﻿namespace Dixin.Linq.LinqToEntities
+﻿namespace Dixin.Linq.EntityFramework
 {
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Core.Objects;

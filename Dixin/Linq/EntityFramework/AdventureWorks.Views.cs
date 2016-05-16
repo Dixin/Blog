@@ -1,10 +1,10 @@
 using System.Data.Entity.Infrastructure.MappingViews;
 
-using Dixin.Linq.LinqToEntities;
+using Dixin.Linq.EntityFramework;
 
-[assembly: DbMappingViewCacheTypeAttribute(typeof(AdventureWorks), typeof(AdventureWorksMappingViewCache))]
+[assembly: DbMappingViewCacheType(typeof(AdventureWorks), typeof(AdventureWorksMappingViewCache))]
 
-namespace Dixin.Linq.LinqToEntities
+namespace Dixin.Linq.EntityFramework
 {
     using System.Collections.Generic;
     using System.Data.Entity.Core.Metadata.Edm;
@@ -59,9 +59,9 @@ namespace Dixin.Linq.LinqToEntities
                             T.Name AS Product_Name, 
                             T.ListPrice AS Product_ListPrice, 
                             True AS _from0, 
-                            CASE WHEN T IS OF (ONLY [Dixin.Linq.LinqToEntities.MenProduct]) THEN True ELSE False END AS _from1, 
-                            CASE WHEN T IS OF (ONLY [Dixin.Linq.LinqToEntities.UniversalProduct]) THEN True ELSE False END AS _from2, 
-                            CASE WHEN T IS OF (ONLY [Dixin.Linq.LinqToEntities.WomenProduct]) THEN True ELSE False END AS _from3
+                            CASE WHEN T IS OF (ONLY [Dixin.Linq.EntityFramework.MenProduct]) THEN True ELSE False END AS _from1, 
+                            CASE WHEN T IS OF (ONLY [Dixin.Linq.EntityFramework.UniversalProduct]) THEN True ELSE False END AS _from2, 
+                            CASE WHEN T IS OF (ONLY [Dixin.Linq.EntityFramework.WomenProduct]) THEN True ELSE False END AS _from3
                         FROM AdventureWorks.Products AS T
                     ) AS T1
                 ) AS T2"),
@@ -89,7 +89,7 @@ namespace Dixin.Linq.LinqToEntities
 
             [$"{nameof(AdventureWorks)}.{nameof(ProductCategory)}"] = new DbMappingView(@"
                 SELECT VALUE -- Constructing ProductCategories
-                    [Dixin.Linq.LinqToEntities.ProductCategory](T1.ProductCategory_ProductCategoryID, T1.ProductCategory_Name)
+                    [Dixin.Linq.EntityFramework.ProductCategory](T1.ProductCategory_ProductCategoryID, T1.ProductCategory_Name)
                 FROM (
                     SELECT 
                         T.ProductCategoryID AS ProductCategory_ProductCategoryID, 
@@ -99,7 +99,7 @@ namespace Dixin.Linq.LinqToEntities
                 ) AS T1"),
             [$"{nameof(AdventureWorks)}.{nameof(ProductSubcategory)}"] = new DbMappingView(@"
                 SELECT VALUE -- Constructing ProductSubcategories
-                    [Dixin.Linq.LinqToEntities.ProductSubcategory](T1.ProductSubcategory_ProductSubcategoryID, T1.ProductSubcategory_ProductCategoryID, T1.ProductSubcategory_Name)
+                    [Dixin.Linq.EntityFramework.ProductSubcategory](T1.ProductSubcategory_ProductSubcategoryID, T1.ProductSubcategory_ProductCategoryID, T1.ProductSubcategory_Name)
                 FROM (
                     SELECT 
                         T.ProductSubcategoryID AS ProductSubcategory_ProductSubcategoryID, 
@@ -111,10 +111,10 @@ namespace Dixin.Linq.LinqToEntities
             [$"{nameof(AdventureWorks)}.{nameof(Product)}"] = new DbMappingView(@"
                 SELECT VALUE -- Constructing Products
                     CASE
-                        WHEN (NOT(T1._from1) AND NOT(T1._from2) AND NOT(T1._from3)) THEN [Dixin.Linq.LinqToEntities.Product](T1.Product_ProductID, T1.Product_ProductSubcategoryID, T1.Product_RowVersion, T1.Product_Name, T1.Product_ListPrice)
-                        WHEN T1._from1 THEN [Dixin.Linq.LinqToEntities.MenProduct](T1.Product_ProductID, T1.Product_ProductSubcategoryID, T1.Product_RowVersion, T1.Product_Name, T1.Product_ListPrice)
-                        WHEN T1._from2 THEN [Dixin.Linq.LinqToEntities.UniversalProduct](T1.Product_ProductID, T1.Product_ProductSubcategoryID, T1.Product_RowVersion, T1.Product_Name, T1.Product_ListPrice)
-                        ELSE [Dixin.Linq.LinqToEntities.WomenProduct](T1.Product_ProductID, T1.Product_ProductSubcategoryID, T1.Product_RowVersion, T1.Product_Name, T1.Product_ListPrice)
+                        WHEN (NOT(T1._from1) AND NOT(T1._from2) AND NOT(T1._from3)) THEN [Dixin.Linq.EntityFramework.Product](T1.Product_ProductID, T1.Product_ProductSubcategoryID, T1.Product_RowVersion, T1.Product_Name, T1.Product_ListPrice)
+                        WHEN T1._from1 THEN [Dixin.Linq.EntityFramework.MenProduct](T1.Product_ProductID, T1.Product_ProductSubcategoryID, T1.Product_RowVersion, T1.Product_Name, T1.Product_ListPrice)
+                        WHEN T1._from2 THEN [Dixin.Linq.EntityFramework.UniversalProduct](T1.Product_ProductID, T1.Product_ProductSubcategoryID, T1.Product_RowVersion, T1.Product_Name, T1.Product_ListPrice)
+                        ELSE [Dixin.Linq.EntityFramework.WomenProduct](T1.Product_ProductID, T1.Product_ProductSubcategoryID, T1.Product_RowVersion, T1.Product_Name, T1.Product_ListPrice)
                     END
                 FROM (
                     SELECT 
@@ -131,7 +131,7 @@ namespace Dixin.Linq.LinqToEntities
                 ) AS T1"),
             [$"{nameof(AdventureWorks)}.{nameof(ProductPhoto)}"] = new DbMappingView(@"
                 SELECT VALUE -- Constructing ProductPhotos
-                    [Dixin.Linq.LinqToEntities.ProductPhoto](T1.ProductPhoto_ProductPhotoID, T1.ProductPhoto_ModifiedDate, T1.ProductPhoto_LargePhotoFileName)
+                    [Dixin.Linq.EntityFramework.ProductPhoto](T1.ProductPhoto_ProductPhotoID, T1.ProductPhoto_ModifiedDate, T1.ProductPhoto_LargePhotoFileName)
                 FROM (
                     SELECT 
                         T.ProductPhotoID AS ProductPhoto_ProductPhotoID, 
@@ -142,7 +142,7 @@ namespace Dixin.Linq.LinqToEntities
                 ) AS T1"),
             [$"{nameof(AdventureWorks)}.{nameof(ProductProductPhoto)}"] = new DbMappingView(@"
                 SELECT VALUE -- Constructing ProductProductPhotoes
-                    [Dixin.Linq.LinqToEntities.ProductProductPhoto](T1.ProductProductPhoto_ProductID, T1.ProductProductPhoto_ProductPhotoID)
+                    [Dixin.Linq.EntityFramework.ProductProductPhoto](T1.ProductProductPhoto_ProductID, T1.ProductProductPhoto_ProductPhotoID)
                 FROM (
                     SELECT 
                         T.ProductID AS ProductProductPhoto_ProductID, 
@@ -153,7 +153,7 @@ namespace Dixin.Linq.LinqToEntities
         };
 
         public override string MappingHashValue { get; } =
-            "846550745fd7bae1187ad80905672cc546f9ed42ef25016f3f9a2bd8d8b95b58";
+            "8b3aa7066a4110e57367047f814c9511f8e1a699ae4c3177fd1dfecbe559ce86";
 
         public override DbMappingView GetView(EntitySetBase extent)
         {

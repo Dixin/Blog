@@ -19,7 +19,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{F59804F9
 		Tools\CodeAnalysisDictionary.xml = Tools\CodeAnalysisDictionary.xml
 		Tools\CommonAssemblyInfo.cs = Tools\CommonAssemblyInfo.cs
 		Tools\CommonAssemblyInfo.fs = Tools\CommonAssemblyInfo.fs
-		Tools\Microsoft.ConcurrencyVisualizer.Markers.dll = Tools\Microsoft.ConcurrencyVisualizer.Markers.dll
 		Tools\Microsoft.NodejsTools.targets = Tools\Microsoft.NodejsTools.targets
 		Tools\Microsoft.NodejsTools.WebRole.dll = Tools\Microsoft.NodejsTools.WebRole.dll
 		Tools\TargetFrameworkVersion.prop = Tools\TargetFrameworkVersion.prop
