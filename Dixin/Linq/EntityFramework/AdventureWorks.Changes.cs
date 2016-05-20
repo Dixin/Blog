@@ -352,12 +352,14 @@
         }
     }
 
+#if DEMO
     public partial class ProductPhoto
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [ConcurrencyCheck]
         public DateTime ModifiedDate { get; set; }
     }
+#endif
 
     internal static partial class Concurrency
     {

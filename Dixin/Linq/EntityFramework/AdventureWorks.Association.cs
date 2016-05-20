@@ -1,8 +1,6 @@
 ﻿namespace Dixin.Linq.EntityFramework
 {
     using System.Collections.Generic;
-    using System.ComponentModel.DataAnnotations;
-    using System.ComponentModel.DataAnnotations.Schema;
 
     public partial class ProductCategory
     {
@@ -11,8 +9,7 @@
 
     public partial class ProductSubcategory
     {
-        public int? ProductCategoryID { get; set; }
-
+        // public int? ProductCategoryID { get; set; }
         public virtual ProductCategory ProductCategory { get; set; }
     }
 
@@ -23,14 +20,8 @@
 
     public partial class Product
     {
+        // public int? ProductSubcategoryID { get; set; }
         public virtual ProductSubcategory ProductSubcategory { get; set; }
-
-        public int? ProductSubcategoryID { get; set; }
-    }
-
-    [Table(nameof(ProductProductPhoto), Schema = AdventureWorks.Production)]
-    public partial class ProductProductPhoto
-    {
     }
 
     public partial class Product
@@ -45,18 +36,10 @@
 
     public partial class ProductProductPhoto
     {
+        // public int ProductID { get; set; }
         public virtual Product Product { get; set; }
 
-        [Key]
-        [Column(Order = 0)]
-        [Index(IsUnique = true, IsClustered = false, Order = 1)]
-        public int ProductID { get; set; }
-
-        public virtual ProductPhoto ProductPhoto { get; set; }
-
-        [Key]
-        [Column(Order = 1)]
-        [Index(IsUnique = true, IsClustered = false, Order = 2)]
-        public int ProductPhotoID { get; set; }
+        // public int ProductPhotoID { get; set; }
+        public virtual ProductPhoto ProductPhoto { get; set; }        
     }
 }

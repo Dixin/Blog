@@ -269,7 +269,13 @@
     </Compile>
     <Compile Include="Common\ExceptionFilter.cs" />
     <Compile Include="Common\Int32Extensions.cs" />
+    <Compile Include="Linq\EntityFramework\AdventureWorks.MappingViews.cs" />
     <Compile Include="Linq\EntityFramework\AdventureWorks.Views.cs" />
+    <Compile Include="Linq\EntityFramework\EntityDataModel\AdventureWorks.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AdventureWorks.edmx</DependentUpon>
+    </Compile>
     <Compile Include="Linq\LinqToXml\Dom.cs" />
     <Compile Include="Linq\LinqToXml\Manipulation.cs" />
     <Compile Include="Linq\LinqToXml\QueryMethods.cs" />
@@ -323,6 +329,7 @@
     <Compile Include="IO\Video.cs" />
     <Compile Include="Linq\CategoryTheory\Functor.Like.cs" />
     <Compile Include="Linq\CategoryTheory\Monad.Like.cs" />
+    <Content Include="Linq\EntityFramework\AdventureWorks.Views.sql" />
     <Content Include="Linq\Blog.htm" />
     <Content Include="Linq\EntityFramework\AdventureWorks.RemoteMethods.sql" />
     <Content Include="Linq\EntityFramework\AdventureWorks.Performance.sql" />
@@ -331,6 +338,7 @@
     <Content Include="Linq\EntityFramework\AdventureWorks.Changes.sql" />
     <Content Include="Linq\EntityFramework\AdventureWorks.QueryMethods.sql" />
     <Content Include="Linq\EntityFramework\Mapping.sql" />
+    <Content Include="Linq\EntityFramework\AdventureWorks.Tables.sql" />
     <Content Include="Linq\LinqToSql\AdventureWorks.Performance.sql" />
     <Content Include="Linq\LinqToSql\AdventureWorks.Laziness.sql" />
     <Content Include="Linq\LinqToSql\AdventureWorks.Functions.sql" />
@@ -490,6 +498,13 @@
     <None Include="Linq\CategoryTheory\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <EntityDeploy Include="Linq\EntityFramework\EntityDataModel\AdventureWorks.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>AdventureWorks.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <None Include="Linq\EntityFramework\EntityDataModel\AdventureWorks.edmx.diagram">
+      <DependentUpon>AdventureWorks.edmx</DependentUpon>
     </None>
     <None Include="Linq\Fundamentals\Methods.il" />
     <Compile Include="Linq\EntityFramework\AdventureWorks.QueryMethods.cs" />

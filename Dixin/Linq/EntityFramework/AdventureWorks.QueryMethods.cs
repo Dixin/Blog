@@ -55,9 +55,9 @@
 
         internal static void WhereWithLike()
         {
-            IQueryable<Product> source = AdventureWorks.Products;
-            IQueryable<Product> products = source.Where(product => product.Name.StartsWith("ML ")); // Define query.
-            products.ForEach(product => Trace.WriteLine($"{product.Name}: {product.ListPrice}")); // Execute query.
+            IQueryable<vProductAndDescription> source = AdventureWorks.ProductAndDescriptions;
+            IQueryable<vProductAndDescription> descriptions = source.Where(description => description.CultureID.StartsWith("zh")); // Define query.
+            descriptions.ForEach(description => Trace.WriteLine($"{description.Name}: {description.Description}")); // Execute query.
         }
 
         internal static void WhereWithLikeMethod()
@@ -244,7 +244,7 @@
             var subcategories = outer.Join(
                 inner,
                 subcategory =>
-                    new { Id = subcategory.ProductCategoryID ?? -1, FirstLetter = subcategory.Name.Substring(0, 1) },
+                    new { Id = subcategory.ProductCategoryID, FirstLetter = subcategory.Name.Substring(0, 1) },
                 category =>
                     new { Id = category.ProductCategoryID, FirstLetter = category.Name.Substring(0, 1) },
                 (subcategory, category) => new { Subcategory = subcategory.Name, Category = category.Name }); // Define query.
