@@ -3,6 +3,7 @@
     using System;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
+    using System.Data.Entity;
 
     public partial class AdventureWorks
     {
@@ -21,6 +22,11 @@
         public string Name { get; set; }
 
         // Other columns are ignored.
+    }
+
+    public partial class AdventureWorks
+    {
+        public DbSet<ProductCategory> ProductCategories { get; set; }
     }
 
     [Table(nameof(ProductSubcategory), Schema = AdventureWorks.Production)]
@@ -80,5 +86,14 @@
         [Key]
         [Column(Order = 1)]
         public int ProductPhotoID { get; set; }
+    }
+
+    public partial class AdventureWorks
+    {
+        public DbSet<ProductSubcategory> ProductSubcategories { get; set; }
+
+        public DbSet<Product> Products { get; set; }
+
+        public DbSet<ProductPhoto> ProductPhotos { get; set; }
     }
 }

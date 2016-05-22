@@ -11,7 +11,7 @@
         {
             Log.ToString();
             Log.DatabaseLog();
-            Log.DbInterception();
+            Log.DbCommandInterceptor();
         }
     }
 }

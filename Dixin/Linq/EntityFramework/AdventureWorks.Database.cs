@@ -12,22 +12,6 @@
         }
     }
 
-    public partial class AdventureWorks
-    {
-        public DbSet<ProductCategory> ProductCategories { get; set; }
-
-        public DbSet<ProductSubcategory> ProductSubcategories { get; set; }
-
-        public DbSet<Product> Products { get; set; }
-
-        public DbSet<ProductPhoto> ProductPhotos { get; set; }
-    }
-
-    public partial class AdventureWorks
-    {
-        public DbSet<vProductAndDescription> ProductAndDescriptions { get; set; }
-    }
-
     internal static class Query
     {
         internal static void Table()
