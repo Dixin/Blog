@@ -46,7 +46,7 @@
     {
         static AdventureWorks()
         {
-            Database.SetInitializer(new NullDatabaseInitializer<AdventureWorks>());
+            Database.SetInitializer(new NullDatabaseInitializer<AdventureWorks>()); // Call once.
             // Equivalent to: Database.SetInitializer<AdventureWorks>(null);
         }
     }

@@ -88,26 +88,27 @@
         }
     }
 
-    internal partial class DbCommandInterceptor
+    internal static partial class Log
     {
-        internal static void Register(Action<string> log = null) => 
-            DbInterception.Add(new DbCommandInterceptor(log ?? (message => Trace.WriteLine(message))));
+        static Log()
+        {
+            DbInterception.Add(new DbCommandInterceptor(message => Trace.WriteLine(message))); // Call once.
+        }
     }
 
     internal static partial class Log
     {
-        internal static void DbInterception()
+        internal static void DbCommandInterceptor()
         {
-            DbCommandInterceptor.Register();
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 IQueryable<ProductCategory> source = adventureWorks.ProductCategories; // Define query.
                 source.ForEach(category => Trace.WriteLine(category.Name)); // Execute query.
-                // DbCommandInterceptor: SELECT 
+                // ReaderExecuting: SELECT 
                 //    [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
                 //    [Extent1].[Name] AS [Name]
                 //    FROM [Production].[ProductCategory] AS [Extent1]
-                // DbCommandInterceptor: Done.
+                // ReaderExecuted
             }
         }
     }
