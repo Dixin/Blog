@@ -15,4 +15,20 @@
             // }
         }
     }
+
+    public partial class AdventureWorks
+    {
+        public Table<ProductCategory> ProductCategories => this.GetTable<ProductCategory>();
+
+        public Table<ProductSubcategory> ProductSubcategories => this.GetTable<ProductSubcategory>();
+
+        public Table<Product> Products => this.GetTable<Product>();
+
+        public Table<ProductPhoto> ProductPhotos => this.GetTable<ProductPhoto>();
+    }
+
+    public partial class AdventureWorks
+    {
+        public Table<vProductAndDescription> ProductAndDescriptions => this.GetTable<vProductAndDescription>();
+    }
 }

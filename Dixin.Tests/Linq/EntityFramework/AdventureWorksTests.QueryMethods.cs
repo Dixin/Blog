@@ -11,6 +11,12 @@
     public partial class AdventureWorksTests
     {
         [TestMethod]
+        public void QueryTable()
+        {
+            Query.Table();
+        }
+
+        [TestMethod]
         public void LocalRemoteMethodTest()
         {
             QueryMethods.InlinePredicate();

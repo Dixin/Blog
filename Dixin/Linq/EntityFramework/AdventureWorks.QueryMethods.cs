@@ -13,9 +13,9 @@
 
         internal static void DefaultIfEmpty()
         {
-            IQueryable<Product> source = AdventureWorks.Products;
-            IQueryable<Product> products = source.DefaultIfEmpty(); // Define query.
-            products.ForEach(product => Trace.WriteLine($"{product?.Name}")); // Execute query.
+            IQueryable<ProductCategory> source = AdventureWorks.ProductCategories;
+            IQueryable<ProductCategory> categories = source.DefaultIfEmpty(); // Define query.
+            categories.ForEach(category => Trace.WriteLine($"{category?.Name}")); // Execute query.
         }
 
         #endregion
@@ -24,9 +24,9 @@
 
         internal static void Where()
         {
-            IQueryable<Product> source = AdventureWorks.Products;
-            IQueryable<Product> products = source.Where(product => product.ListPrice > 100); // Define query.
-            products.ForEach(product => Trace.WriteLine($"{product.Name}: {product.ListPrice}")); // Execute query.
+            IQueryable<ProductCategory> source = AdventureWorks.ProductCategories;
+            IQueryable<ProductCategory> categories = source.Where(category => category.ProductCategoryID > 0); // Define query.
+            categories.ForEach(category => Trace.WriteLine($"{category.ProductCategoryID}: {category.Name}")); // Execute query.
         }
 
         internal static void WhereWithOr()

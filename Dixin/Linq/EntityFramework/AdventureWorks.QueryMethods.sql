@@ -1,18 +1,9 @@
 ﻿-- DefaultIfEmpty
 SELECT 
-    [Project1].[C1] AS [C1], 
-    [Project1].[ProductID] AS [ProductID], 
-    [Project1].[ProductSubcategoryID] AS [ProductSubcategoryID], 
-    [Project1].[Name] AS [Name], 
-    [Project1].[ListPrice] AS [ListPrice]
+    [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
+    [Extent1].[Name] AS [Name]
     FROM   ( SELECT 1 AS X ) AS [SingleRowTable1]
-    LEFT OUTER JOIN  (SELECT 
-        [Extent1].[ProductID] AS [ProductID], 
-        [Extent1].[ProductSubcategoryID] AS [ProductSubcategoryID], 
-        [Extent1].[Name] AS [Name], 
-        [Extent1].[ListPrice] AS [ListPrice], 
-        CASE WHEN (((CASE WHEN ([Extent1].[Style] = N'M ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N'U ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N'W ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN '0X' WHEN ([Extent1].[Style] = N'M ') THEN '0X0X' WHEN ([Extent1].[Style] = N'U ') THEN '0X1X' ELSE '0X2X' END AS [C1]
-        FROM [Production].[Product] AS [Extent1] ) AS [Project1] ON 1 = 1
+    LEFT OUTER JOIN [Production].[ProductCategory] AS [Extent1] ON 1 = 1
 
 -- Where
 SELECT 
@@ -23,6 +14,21 @@ SELECT
     [Extent1].[ListPrice] AS [ListPrice]
     FROM [Production].[Product] AS [Extent1]
     WHERE [Extent1].[ListPrice] > cast(100 as decimal(18))
+
+-- Where
+SELECT
+	CASE
+		WHEN ([Extent1].[Style] IS NULL) THEN '0X'
+		WHEN ([Extent1].[Style] = N'M ') THEN '0X0X'
+		WHEN ([Extent1].[Style] = N'U ') THEN '0X1X'
+		WHEN ([Extent1].[Style] = N'W ') THEN '0X2X'
+	END AS [C1],
+	[Extent1].Style,
+	[Extent1].[ProductID] AS [ProductID],
+	[Extent1].[ProductSubcategoryID] AS [ProductSubcategoryID],
+	[Extent1].[Name] AS [Name],
+	[Extent1].[ListPrice] AS [ListPrice]
+	FROM [Production].[Product] AS [Extent1]
 
 -- WhereWithOr
 SELECT 

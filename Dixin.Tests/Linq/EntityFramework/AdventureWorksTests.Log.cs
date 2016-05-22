@@ -9,7 +9,9 @@
         [TestMethod]
         public void LogTest()
         {
-            Log.WhereWithLog();
+            Log.ToString();
+            Log.DatabaseLog();
+            Log.DbInterception();
         }
     }
 }

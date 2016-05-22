@@ -1,9 +1,9 @@
-﻿namespace Dixin.Tests.Linq.LinqToSql
+﻿namespace Dixin.Tests.Linq.EntityFramework
 {
     using System;
     using System.Linq.Expressions;
 
-    using Dixin.Linq.LinqToSql;
+    using Dixin.Linq.EntityFramework;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 

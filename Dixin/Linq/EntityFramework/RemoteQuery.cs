@@ -1,4 +1,4 @@
-﻿namespace Dixin.Linq.LinqToSql
+﻿namespace Dixin.Linq.EntityFramework
 {
     using System;
     using System.Collections.Generic;

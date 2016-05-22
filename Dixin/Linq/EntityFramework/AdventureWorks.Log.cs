@@ -6,92 +6,150 @@
     using System.Diagnostics;
     using System.Linq;
 
-    internal class CustomDbCommandInterceptor : IDbCommandInterceptor
+    internal static partial class Log
     {
-        private readonly Action<DbCommand> begin;
-
-        private readonly Action end;
-
-        internal CustomDbCommandInterceptor(Action<string> write)
+        internal static void ToString()
         {
-            this.begin = command => write?.Invoke($@"{command.CommandText}{string.Concat(command.Parameters
-                .OfType<DbParameter>()
-                .Select(parameter => $", {parameter.ParameterName}={parameter.Value}"))}");
-            this.end = () => write?.Invoke("Done.");
+            using (AdventureWorks adventureWorks = new AdventureWorks())
+            {
+                IQueryable<ProductCategory> source = adventureWorks.ProductCategories; // Define query.
+                string translatedSql = source.ToString();
+                Trace.WriteLine(translatedSql);
+                // SELECT 
+                //    [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
+                //    [Extent1].[Name] AS [Name]
+                //    FROM [Production].[ProductCategory] AS [Extent1]
+                source.ForEach(category => Trace.WriteLine(category.Name)); // Execute query.
+            }
         }
-
-        public void NonQueryExecuting
-            (DbCommand command, DbCommandInterceptionContext<int> _) => this.begin(command);
-
-        public void NonQueryExecuted
-            (DbCommand command, DbCommandInterceptionContext<int> _) => this.end();
-
-        public void ReaderExecuting
-            (DbCommand command, DbCommandInterceptionContext<DbDataReader> _) => this.begin(command);
-
-        public void ReaderExecuted
-            (DbCommand command, DbCommandInterceptionContext<DbDataReader> _) => this.end();
-
-        public void ScalarExecuting
-            (DbCommand command, DbCommandInterceptionContext<object> _) => this.begin(command);
-
-        public void ScalarExecuted
-            (DbCommand command, DbCommandInterceptionContext<object> _) => this.end();
     }
 
     internal static partial class Log
     {
-        static Log()
-        {
-            // Log with CustomDbCommandInterceptor.
-            DbInterception.Add(new CustomDbCommandInterceptor(log => Trace.WriteLine(log)));
-            // select cast(serverproperty('EngineEdition') as int)
-            // Done.
-            // SELECT 
-            //    CASE WHEN (((CASE WHEN ([Extent1].[Style] = N'M ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N'U ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N'W ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN '0X' WHEN ([Extent1].[Style] = N'M ') THEN '0X0X' WHEN ([Extent1].[Style] = N'U ') THEN '0X1X' ELSE '0X2X' END AS [C1], 
-            //    [Extent1].[ProductID] AS [ProductID], 
-            //    [Extent1].[ProductSubcategoryID] AS [ProductSubcategoryID], 
-            //    [Extent1].[Name] AS [Name], 
-            //    [Extent1].[ListPrice] AS [ListPrice]
-            //    FROM [Production].[Product] AS [Extent1]
-            //    WHERE [Extent1].[ListPrice] > cast(100 as decimal(18))
-            // Done.
-        }
-
-        internal static void WhereWithLog()
+        internal static void DatabaseLog()
         {
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {
-                IQueryable<Product> source = adventureWorks.Products;
-                IQueryable<Product> products = source.Where(product => product.ListPrice > 100); // Define query.
-
-                // Log with DbQuery<T>.ToString.
-                Trace.WriteLine(products.ToString());
-                //  SELECT 
-                //    CASE WHEN (((CASE WHEN ([Extent1].[Style] = N'M ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N'U ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N'W ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN '0X' WHEN ([Extent1].[Style] = N'M ') THEN '0X0X' WHEN ([Extent1].[Style] = N'U ') THEN '0X1X' ELSE '0X2X' END AS [C1], 
-                //    [Extent1].[ProductID] AS [ProductID], 
-                //    [Extent1].[ProductSubcategoryID] AS [ProductSubcategoryID], 
-                //    [Extent1].[Name] AS [Name], 
-                //    [Extent1].[ListPrice] AS [ListPrice]
-                //    FROM [Production].[Product] AS [Extent1]
-                //    WHERE [Extent1].[ListPrice] > cast(100 as decimal(18))
-
-                // Log with Database.Log.
                 adventureWorks.Database.Log = log => Trace.Write(log);
-                // Opened connection at 1/5/2016 9:22:18 AM -08:00
+                IQueryable<ProductCategory> source = adventureWorks.ProductCategories; // Define query.
+                source.ForEach(category => Trace.WriteLine(category.Name)); // Execute query.
+                // Opened connection at 5/21/2016 12:33:34 AM -07:00
                 // SELECT 
-                //    CASE WHEN (((CASE WHEN ([Extent1].[Style] = N'M ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N'U ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N'W ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN '0X' WHEN ([Extent1].[Style] = N'M ') THEN '0X0X' WHEN ([Extent1].[Style] = N'U ') THEN '0X1X' ELSE '0X2X' END AS [C1], 
-                //    [Extent1].[ProductID] AS [ProductID], 
-                //    [Extent1].[ProductSubcategoryID] AS [ProductSubcategoryID], 
-                //    [Extent1].[Name] AS [Name], 
-                //    [Extent1].[ListPrice] AS [ListPrice]
-                //    FROM [Production].[Product] AS [Extent1]
-                //    WHERE [Extent1].[ListPrice] > cast(100 as decimal(18))
-                // -- Executing at 1/5/2016 9:22:20 AM -08:00
-                // -- Completed in 8 ms with result: SqlDataReader
+                //    [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
+                //    [Extent1].[Name] AS [Name]
+                //    FROM [Production].[ProductCategory] AS [Extent1]
+                // -- Executing at 5/21/2016 12:31:58 AM -07:00
+                // -- Completed in 11 ms with result: SqlDataReader4
+                // Closed connection at 5/21/2016 12:33:35 AM -07:00
+            }
+        }
+    }
 
-                products.ForEach(product => Trace.WriteLine($"{product.Name}: {product.ListPrice}")); // Execute query.
+    internal partial class DbCommandInterceptor : IDbCommandInterceptor
+    {
+        private readonly Action<string> log;
+
+        internal DbCommandInterceptor(Action<string> log)
+        {
+            this.log = log;
+        }
+
+        public void NonQueryExecuting(DbCommand command, DbCommandInterceptionContext<int> interceptionContext) =>
+            this.Log(nameof(this.NonQueryExecuting), interceptionContext, command);
+
+        public void NonQueryExecuted(DbCommand command, DbCommandInterceptionContext<int> interceptionContext) =>
+            this.Log(nameof(this.NonQueryExecuting), interceptionContext);
+
+        public void ReaderExecuting(DbCommand command, DbCommandInterceptionContext<DbDataReader> interceptionContext) =>
+            this.Log(nameof(this.ReaderExecuting), interceptionContext, command);
+
+        public void ReaderExecuted(DbCommand command, DbCommandInterceptionContext<DbDataReader> interceptionContext) =>
+            this.Log(nameof(this.ReaderExecuted), interceptionContext);
+
+        public void ScalarExecuting(DbCommand command, DbCommandInterceptionContext<object> interceptionContext) =>
+            this.Log(nameof(this.ScalarExecuting), interceptionContext, command);
+
+        public void ScalarExecuted(DbCommand command, DbCommandInterceptionContext<object> interceptionContext) =>
+            this.Log(nameof(this.ScalarExecuted), interceptionContext);
+
+        private void Log<TResult>(
+            string @event, DbCommandInterceptionContext<TResult> interceptionContext, DbCommand command = null)
+        {
+            if (command != null)
+            {
+                this.log($@"{@event}: {command.CommandText}{string.Concat(command.Parameters
+                    .OfType<DbParameter>()
+                    .Select(parameter => $", {parameter.ParameterName}={parameter.Value}"))}");
+            }
+            else
+            {
+                this.log(interceptionContext.Exception != null ? $"{@event}: {interceptionContext.Exception}" : @event);
+            }
+        }
+    }
+
+    internal partial class DbCommandInterceptor
+    {
+        internal static void Register(Action<string> log = null) => 
+            DbInterception.Add(new DbCommandInterceptor(log ?? (message => Trace.WriteLine(message))));
+    }
+
+    internal static partial class Log
+    {
+        internal static void DbInterception()
+        {
+            DbCommandInterceptor.Register();
+            using (AdventureWorks adventureWorks = new AdventureWorks())
+            {
+                IQueryable<ProductCategory> source = adventureWorks.ProductCategories; // Define query.
+                source.ForEach(category => Trace.WriteLine(category.Name)); // Execute query.
+                // DbCommandInterceptor: SELECT 
+                //    [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
+                //    [Extent1].[Name] AS [Name]
+                //    FROM [Production].[ProductCategory] AS [Extent1]
+                // DbCommandInterceptor: Done.
             }
         }
     }
 }
+
+#if DEMO
+namespace System.Data.Entity
+{
+    using System.Data.Entity.Infrastructure;
+
+    public class DbContext : IDisposable, IObjectContextAdapter
+    {
+        public Database Database { get; }
+
+        // Other members.
+    }
+
+    public class Database
+    {
+        public Action<string> Log { get; set; }
+
+        // Other members.
+    }
+}
+
+namespace System.Data.Entity.Infrastructure.Interception
+{
+    using System.Data.Common;
+
+    public interface IDbCommandInterceptor : IDbInterceptor // IDbInterceptor is an empty interface.
+    {
+        void NonQueryExecuted(DbCommand command, DbCommandInterceptionContext<int> interceptionContext);
+
+        void NonQueryExecuting(DbCommand command, DbCommandInterceptionContext<int> interceptionContext);
+
+        void ReaderExecuted(DbCommand command, DbCommandInterceptionContext<DbDataReader> interceptionContext);
+
+        void ReaderExecuting(DbCommand command, DbCommandInterceptionContext<DbDataReader> interceptionContext);
+
+        void ScalarExecuted(DbCommand command, DbCommandInterceptionContext<object> interceptionContext);
+
+        void ScalarExecuting(DbCommand command, DbCommandInterceptionContext<object> interceptionContext);
+    }
+}
+#endif

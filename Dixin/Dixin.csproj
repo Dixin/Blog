@@ -276,6 +276,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AdventureWorks.edmx</DependentUpon>
     </Compile>
+    <Compile Include="Linq\LinqToSql\AdventureWorks.Views.cs" />
     <Compile Include="Linq\LinqToXml\Dom.cs" />
     <Compile Include="Linq\LinqToXml\Manipulation.cs" />
     <Compile Include="Linq\LinqToXml\QueryMethods.cs" />
@@ -329,6 +330,7 @@
     <Compile Include="IO\Video.cs" />
     <Compile Include="Linq\CategoryTheory\Functor.Like.cs" />
     <Compile Include="Linq\CategoryTheory\Monad.Like.cs" />
+    <Content Include="Linq\EntityFramework\AdventureWorks.Database.sql" />
     <Content Include="Linq\EntityFramework\AdventureWorks.Views.sql" />
     <Content Include="Linq\Blog.htm" />
     <Content Include="Linq\EntityFramework\AdventureWorks.RemoteMethods.sql" />
@@ -346,6 +348,8 @@
     <Content Include="Linq\LinqToSql\AdventureWorks.RemoteMethods.sql" />
     <Content Include="Linq\LinqToSql\AdventureWorks.QueryMethods.sql" />
     <Content Include="Linq\EntityFramework\RemoteQuery.sql" />
+    <Content Include="Linq\LinqToSql\AdventureWorks.Tables.sql" />
+    <Content Include="Linq\LinqToSql\AdventureWorks.Views.sql" />
     <Content Include="Linq\LinqToSql\Mapping.sql" />
     <Content Include="Linq\LinqToXml\FlickrRss.xml" />
     <Content Include="Linq\LinqToXml\AspNetRss.xml" />

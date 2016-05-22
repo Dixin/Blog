@@ -702,7 +702,7 @@
         [DebuggerHidden]
         IEnumerator<TResult> IEnumerable<TResult>.GetEnumerator()
         {
-            if (this.state == -2 && this.initialThreadId == Environment.CurrentManagedThreadId)
+            if (this.state == (int)IteratorState.Create && this.initialThreadId == Environment.CurrentManagedThreadId)
             {
                 this.state = 0;
                 return this;

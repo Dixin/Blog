@@ -2,7 +2,6 @@
 {
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
-    using System.Data.Entity;
     using System.Data.Entity.ModelConfiguration;
 
     [Table(nameof(vProductAndDescription), Schema = AdventureWorks.Production)]
@@ -26,10 +25,5 @@
         {
             this.ToTable(nameof(vProductAndDescription));
         }
-    }
-
-    public partial class AdventureWorks
-    {
-        public DbSet<vProductAndDescription> ProductAndDescriptions { get; set; }
     }
 }

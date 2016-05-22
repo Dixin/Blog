@@ -1,6 +1,6 @@
 ﻿namespace Dixin.Tests.Linq.LinqToSql
 {
-    using Dixin.Linq.EntityFramework;
+    using Dixin.Linq.LinqToSql;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
