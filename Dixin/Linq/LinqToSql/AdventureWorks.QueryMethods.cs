@@ -204,8 +204,8 @@ namespace Dixin.Linq.LinqToSql
                 inner,
                 subcategory => subcategory.ProductCategoryID,
                 category => category.ProductCategoryID,
-                (subcategory, category) => new { Subcategory = subcategory.Name, Category = category.Name }); // Define query.
-            subcategories.ForEach(subcategory => Trace.WriteLine($"{subcategory.Category}: {subcategory.Subcategory}")); // Execute query.
+                (subcategory, category) => new { Expensive = subcategory.Name, Cheap = category.Name }); // Define query.
+            subcategories.ForEach(subcategory => Trace.WriteLine($"{subcategory.Cheap}: {subcategory.Expensive}")); // Execute query.
         }
 
         internal static void InnerJoinWithSelectMany()
@@ -219,9 +219,9 @@ namespace Dixin.Linq.LinqToSql
                 .Where(crossJoinValue =>
                     crossJoinValue.Subcategory.ProductCategoryID == crossJoinValue.Category.ProductCategoryID)
                 .Select(crossJoinValue =>
-                    new { Subcategory = crossJoinValue.Subcategory.Name, Category = crossJoinValue.Category.Name }); // Define query.
+                    new { Expensive = crossJoinValue.Subcategory.Name, Cheap = crossJoinValue.Category.Name }); // Define query.
             subcategories.ForEach(subcategory => Trace.WriteLine(
-                $"{subcategory.Category}: {subcategory.Subcategory}")); // Execute query.
+                $"{subcategory.Cheap}: {subcategory.Expensive}")); // Execute query.
         }
 
         internal static void InnerJoinWithAssociation()
@@ -232,8 +232,8 @@ namespace Dixin.Linq.LinqToSql
                 inner,
                 subcategory => subcategory.ProductCategoryID,
                 category => category.ProductCategoryID,
-                (subcategory, category) => new { Subcategory = subcategory.Name, Category = category.Name }); // Define query.
-            subcategories.ForEach(subcategory => Trace.WriteLine($"{subcategory.Category}: {subcategory.Subcategory}")); // Execute query.
+                (subcategory, category) => new { Expensive = subcategory.Name, Cheap = category.Name }); // Define query.
+            subcategories.ForEach(subcategory => Trace.WriteLine($"{subcategory.Cheap}: {subcategory.Expensive}")); // Execute query.
         }
 
         internal static void InnerJoinWithMultipleKeys()
@@ -246,8 +246,8 @@ namespace Dixin.Linq.LinqToSql
                     new { Id = subcategory.ProductCategoryID ?? -1, FirstLetter = subcategory.Name.Substring(0, 1) },
                 category =>
                     new { Id = category.ProductCategoryID, FirstLetter = category.Name.Substring(0, 1) },
-                (subcategory, category) => new { Subcategory = subcategory.Name, Category = category.Name }); // Define query.
-            subcategories.ForEach(subcategory => Trace.WriteLine($"{subcategory.Category}: {subcategory.Subcategory}")); // Execute query.
+                (subcategory, category) => new { Expensive = subcategory.Name, Cheap = category.Name }); // Define query.
+            subcategories.ForEach(subcategory => Trace.WriteLine($"{subcategory.Cheap}: {subcategory.Expensive}")); // Execute query.
         }
 
         internal static void LeftOuterJoin()
@@ -280,9 +280,9 @@ namespace Dixin.Linq.LinqToSql
                 .SelectMany(
                     subcategory => subcategory.Categories.DefaultIfEmpty(),
                     (subcategory, category) =>
-                        new { Subcategory = subcategory.Subcategory, Category = category.Name }); // Define query.
+                        new { Expensive = subcategory.Subcategory, Cheap = category.Name }); // Define query.
             subcategories.ForEach(subcategory => Trace.WriteLine(
-                $"{subcategory.Category} <- {subcategory.Subcategory}")); // Execute query.
+                $"{subcategory.Cheap} <- {subcategory.Expensive}")); // Execute query.
         }
 
         internal static void LeftOuterJoinWithSelect()
@@ -305,11 +305,11 @@ namespace Dixin.Linq.LinqToSql
             IQueryable<ProductSubcategory> source = AdventureWorks.ProductSubcategories;
             var subcategories = source.Select(subcategory => new
                 {
-                    Subcategory = subcategory.Name,
-                    Category = subcategory.ProductCategory.Name
+                    Expensive = subcategory.Name,
+                    Cheap = subcategory.ProductCategory.Name
                 }); // Define query.
             subcategories.ForEach(subcategory => Trace.WriteLine(
-                $"{subcategory.Category} <- {subcategory.Subcategory}")); // Execute query.
+                $"{subcategory.Cheap} <- {subcategory.Expensive}")); // Execute query.
         }
 
         internal static void CrossJoin()
@@ -331,9 +331,9 @@ namespace Dixin.Linq.LinqToSql
             IQueryable<ProductCategory> inner = AdventureWorks.ProductCategories;
             var subcategories = outer.SelectMany(
                 subcategory => inner,
-                (subcategory, category) => new { Subcategory = subcategory.Name, Category = category.Name }); // Define query.
+                (subcategory, category) => new { Expensive = subcategory.Name, Cheap = category.Name }); // Define query.
             subcategories.ForEach(subcategory => Trace.WriteLine(
-                $"{subcategory.Category} <- {subcategory.Subcategory}")); // Execute query.
+                $"{subcategory.Cheap} <- {subcategory.Expensive}")); // Execute query.
         }
 
         internal static void CrossJoinWithJoin()
@@ -344,9 +344,9 @@ namespace Dixin.Linq.LinqToSql
                 inner,
                 subcategory => true,
                 category => true,
-                (subcategory, category) => new { Subcategory = subcategory.Name, Category = category.Name }); // Define query.
+                (subcategory, category) => new { Expensive = subcategory.Name, Cheap = category.Name }); // Define query.
             subcategories.ForEach(subcategory => Trace.WriteLine(
-                $"{subcategory.Category}: {subcategory.Subcategory}")); // Execute query.
+                $"{subcategory.Cheap}: {subcategory.Expensive}")); // Execute query.
         }
 
         internal static void SelfJoin()

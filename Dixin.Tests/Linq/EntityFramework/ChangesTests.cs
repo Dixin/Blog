@@ -9,7 +9,8 @@
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    public partial class AdventureWorksTests
+    [TestClass]
+    public class ChangesTests
     {
         [TestMethod]
         public void TracingTest()

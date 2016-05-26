@@ -8,7 +8,8 @@
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    public partial class AdventureWorksTests
+    [TestClass]
+    public class QueryMethodsTests
     {
         [TestMethod]
         public void QueryTable()
@@ -102,23 +103,24 @@
         [TestMethod]
         public void GroupingTest()
         {
-            QueryMethods.Grouping();
             QueryMethods.GroupBy();
-            QueryMethods.GroupByWithWhere();
+            QueryMethods.GroupByWithResultSelector();
+            QueryMethods.GroupByAndSelect();
         }
 
         [TestMethod]
         public void JoinTest()
         {
-            QueryMethods.InnerJoin();
+            QueryMethods.InnerJoinWithJoin();
             QueryMethods.InnerJoinWithSelectMany();
             QueryMethods.InnerJoinWithAssociation();
+            QueryMethods.MultipleInnerJoinsWithAssociations();
             QueryMethods.InnerJoinWithMultipleKeys();
-            QueryMethods.LeftOuterJoin();
-            QueryMethods.LeftOuterJoinWithDefaultIfEmpty();
+            QueryMethods.InnerJoinWithGroupJoin();
+            QueryMethods.LeftOuterJoinWithGroupJoin();
+            QueryMethods.LeftOuterJoinWithGroupJoinAndSelectMany();
             QueryMethods.LeftOuterJoinWithSelect();
             QueryMethods.LeftOuterJoinWithAssociation();
-            QueryMethods.CrossJoin();
             QueryMethods.CrossJoinWithSelectMany();
             QueryMethods.CrossJoinWithJoin();
             QueryMethods.SelfJoin();
@@ -135,8 +137,11 @@
         public void SetTest()
         {
             QueryMethods.Distinct();
-            QueryMethods.DistinctWithGroupByAndSelect();
-            QueryMethods.DistinctWithGroupByAndSelectMany();
+            QueryMethods.DistinctWithGroupBy();
+            QueryMethods.DistinctWithGroupByAndFirstOrDefault();
+            QueryMethods.DistinctWithGroupByAndTake();
+            QueryMethods.DistinctWithGroupByAndSelectAndFirstOrDefault();
+            QueryMethods.DistinctWithGroupByAndSelectAndTake();
             QueryMethods.Intersect();
             QueryMethods.Except();
         }
@@ -153,9 +158,9 @@
             {
                 Trace.WriteLine(exception);
             }
-            QueryMethods.OrderBySkip();
+            QueryMethods.OrderByAndSkip();
             QueryMethods.Take();
-            QueryMethods.OrderBySkipTake();
+            QueryMethods.OrderByAndSkipAndTake();
         }
 
         [TestMethod]
@@ -163,8 +168,8 @@
         {
             QueryMethods.OrderBy();
             QueryMethods.OrderByDescending();
-            QueryMethods.OrderByThenBy();
-            QueryMethods.OrderByOrderBy();
+            QueryMethods.OrderByAndThenBy();
+            QueryMethods.OrderByAndOrderBy();
             try
             {
                 QueryMethods.Reverse();
@@ -188,6 +193,7 @@
             {
                 Trace.WriteLine(exception);
             }
+            QueryMethods.AsEnumerableAsQueryable();
         }
 
         [TestMethod]

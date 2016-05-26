@@ -10,7 +10,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public partial class AdventureWorksTests
+    public class DatabaseTests
     {
         [TestMethod]
         public void ContainerTest()

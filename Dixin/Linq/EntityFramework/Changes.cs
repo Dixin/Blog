@@ -139,7 +139,7 @@
                 adventureWorks.ProductCategories.Add(category);
 
                 Trace.WriteLine(category.ProductCategoryID); // 0.
-                Trace.WriteLine(subcategory.ProductCategoryID); // null.
+                Trace.WriteLine(subcategory.ProductCategoryID); // 0.
                 Trace.WriteLine(subcategory.ProductSubcategoryID); // 0.
 
                 Trace.WriteLine(adventureWorks.SaveChanges()); // 2

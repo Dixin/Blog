@@ -45,7 +45,7 @@
         }
     }
 
-    internal partial class DbCommandInterceptor : IDbCommandInterceptor
+    internal class DbCommandInterceptor : IDbCommandInterceptor
     {
         private readonly Action<string> log;
 
@@ -75,24 +75,21 @@
         private void Log<TResult>(
             string @event, DbCommandInterceptionContext<TResult> interceptionContext, DbCommand command = null)
         {
-            if (command != null)
+            Exception exception = interceptionContext.Exception;
+            if (command == null)
+            {
+                this.log(exception == null ? @event : $"{@event}: {exception}");
+            }
+            else
             {
                 this.log($@"{@event}: {command.CommandText}{string.Concat(command.Parameters
                     .OfType<DbParameter>()
                     .Select(parameter => $", {parameter.ParameterName}={parameter.Value}"))}");
+                if (exception != null)
+                {
+                    this.log($@"{@event}: {exception}");
+                }
             }
-            else
-            {
-                this.log(interceptionContext.Exception != null ? $"{@event}: {interceptionContext.Exception}" : @event);
-            }
-        }
-    }
-
-    internal static partial class Log
-    {
-        static Log()
-        {
-            DbInterception.Add(new DbCommandInterceptor(message => Trace.WriteLine(message))); // Call once.
         }
     }
 
@@ -100,6 +97,8 @@
     {
         internal static void DbCommandInterceptor()
         {
+            DbCommandInterceptor dbCommandTrace = new DbCommandInterceptor(message => Trace.WriteLine(message));
+            DbInterception.Add(dbCommandTrace);
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 IQueryable<ProductCategory> source = adventureWorks.ProductCategories; // Define query.
@@ -110,6 +109,7 @@
                 //    FROM [Production].[ProductCategory] AS [Extent1]
                 // ReaderExecuted
             }
+            DbInterception.Remove(dbCommandTrace);
         }
     }
 }

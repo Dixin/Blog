@@ -12,7 +12,18 @@
         }
     }
 
-    internal static class Query
+    internal static partial class Query
+    {
+        internal static void Dispose()
+        {
+            using (AdventureWorks adventureWorks = new AdventureWorks())
+            {
+                // Operations.
+            }
+        }
+    }
+
+    internal static partial class Query
     {
         internal static void Table()
         {

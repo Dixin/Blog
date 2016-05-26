@@ -269,8 +269,9 @@
     </Compile>
     <Compile Include="Common\ExceptionFilter.cs" />
     <Compile Include="Common\Int32Extensions.cs" />
-    <Compile Include="Linq\EntityFramework\AdventureWorks.MappingViews.cs" />
-    <Compile Include="Linq\EntityFramework\AdventureWorks.Views.cs" />
+    <Compile Include="Linq\EntityFramework\MappingViews.cs" />
+    <Compile Include="Linq\EntityFramework\QueryExpressions.cs" />
+    <Compile Include="Linq\EntityFramework\Views.cs" />
     <Compile Include="Linq\EntityFramework\EntityDataModel\AdventureWorks.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -298,16 +299,16 @@
     <Compile Include="Common\ValidatedNotNullAttribute.cs" />
     <Compile Include="Data\Services\WcfWebSocketService.cs" />
     <Compile Include="Linq\ConnectionStrings.cs" />
-    <Compile Include="Linq\EntityFramework\AdventureWorks.Association.cs" />
-    <Compile Include="Linq\EntityFramework\AdventureWorks.Changes.cs" />
-    <Compile Include="Linq\EntityFramework\AdventureWorks.Database.cs" />
-    <Compile Include="Linq\EntityFramework\AdventureWorks.Laziness.cs" />
-    <Compile Include="Linq\EntityFramework\AdventureWorks.Inheritance.cs" />
-    <Compile Include="Linq\EntityFramework\AdventureWorks.Log.cs" />
-    <Compile Include="Linq\EntityFramework\AdventureWorks.Performance.cs" />
-    <Compile Include="Linq\EntityFramework\AdventureWorks.Functions.cs" />
-    <Compile Include="Linq\EntityFramework\AdventureWorks.RemoteMethods.cs" />
-    <Compile Include="Linq\EntityFramework\AdventureWorks.Tables.cs" />
+    <Compile Include="Linq\EntityFramework\Association.cs" />
+    <Compile Include="Linq\EntityFramework\Changes.cs" />
+    <Compile Include="Linq\EntityFramework\Database.cs" />
+    <Compile Include="Linq\EntityFramework\DeferredExecution.cs" />
+    <Compile Include="Linq\EntityFramework\Inheritance.cs" />
+    <Compile Include="Linq\EntityFramework\Log.cs" />
+    <Compile Include="Linq\EntityFramework\Performance.cs" />
+    <Compile Include="Linq\EntityFramework\Functions.cs" />
+    <Compile Include="Linq\EntityFramework\RemoteMethods.cs" />
+    <Compile Include="Linq\EntityFramework\Tables.cs" />
     <Compile Include="Linq\EntityFramework\DbContextExtensions.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.Changes.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.Laziness.cs" />
@@ -330,17 +331,17 @@
     <Compile Include="IO\Video.cs" />
     <Compile Include="Linq\CategoryTheory\Functor.Like.cs" />
     <Compile Include="Linq\CategoryTheory\Monad.Like.cs" />
-    <Content Include="Linq\EntityFramework\AdventureWorks.Database.sql" />
-    <Content Include="Linq\EntityFramework\AdventureWorks.Views.sql" />
+    <Content Include="Linq\EntityFramework\Database.sql" />
+    <Content Include="Linq\EntityFramework\Views.sql" />
     <Content Include="Linq\Blog.htm" />
-    <Content Include="Linq\EntityFramework\AdventureWorks.RemoteMethods.sql" />
-    <Content Include="Linq\EntityFramework\AdventureWorks.Performance.sql" />
-    <Content Include="Linq\EntityFramework\AdventureWorks.Laziness.sql" />
-    <Content Include="Linq\EntityFramework\AdventureWorks.Functions.sql" />
-    <Content Include="Linq\EntityFramework\AdventureWorks.Changes.sql" />
-    <Content Include="Linq\EntityFramework\AdventureWorks.QueryMethods.sql" />
+    <Content Include="Linq\EntityFramework\RemoteMethods.sql" />
+    <Content Include="Linq\EntityFramework\Performance.sql" />
+    <Content Include="Linq\EntityFramework\DeferredExecution.sql" />
+    <Content Include="Linq\EntityFramework\Functions.sql" />
+    <Content Include="Linq\EntityFramework\Changes.sql" />
+    <Content Include="Linq\EntityFramework\QueryMethods.sql" />
     <Content Include="Linq\EntityFramework\Mapping.sql" />
-    <Content Include="Linq\EntityFramework\AdventureWorks.Tables.sql" />
+    <Content Include="Linq\EntityFramework\Tables.sql" />
     <Content Include="Linq\LinqToSql\AdventureWorks.Performance.sql" />
     <Content Include="Linq\LinqToSql\AdventureWorks.Laziness.sql" />
     <Content Include="Linq\LinqToSql\AdventureWorks.Functions.sql" />
@@ -495,7 +496,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Linq\CategoryTheory\Monad.Writer.cs" />
-    <None Include="app.config">
+    <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
     <None Include="Common\ExceptionFIlter.il" />
@@ -511,7 +512,7 @@
       <DependentUpon>AdventureWorks.edmx</DependentUpon>
     </None>
     <None Include="Linq\Fundamentals\Methods.il" />
-    <Compile Include="Linq\EntityFramework\AdventureWorks.QueryMethods.cs" />
+    <Compile Include="Linq\EntityFramework\QueryMethods.cs" />
     <None Include="Linq\LinqToXml\AspNetRss.xsd">
       <SubType>Designer</SubType>
     </None>

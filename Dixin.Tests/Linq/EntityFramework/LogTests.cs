@@ -4,7 +4,8 @@
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    public partial class AdventureWorksTests
+    [TestClass]
+    public class LogTests
     {
         [TestMethod]
         public void LogTest()

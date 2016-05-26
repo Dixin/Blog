@@ -7,13 +7,10 @@ SELECT
 
 -- Where
 SELECT 
-    CASE WHEN (((CASE WHEN ([Extent1].[Style] = N'M ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N'U ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N'W ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN '0X' WHEN ([Extent1].[Style] = N'M ') THEN '0X0X' WHEN ([Extent1].[Style] = N'U ') THEN '0X1X' ELSE '0X2X' END AS [C1], 
-    [Extent1].[ProductID] AS [ProductID], 
-    [Extent1].[ProductSubcategoryID] AS [ProductSubcategoryID], 
-    [Extent1].[Name] AS [Name], 
-    [Extent1].[ListPrice] AS [ListPrice]
-    FROM [Production].[Product] AS [Extent1]
-    WHERE [Extent1].[ListPrice] > cast(100 as decimal(18))
+    [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
+    [Extent1].[Name] AS [Name]
+    FROM [Production].[ProductCategory] AS [Extent1]
+    WHERE [Extent1].[ProductCategoryID] > 0
 
 -- Where
 SELECT
@@ -138,58 +135,45 @@ SELECT
     CASE WHEN ([Extent1].[ListPrice] > cast(0 as decimal(18))) THEN cast(1 as bit) WHEN ( NOT ([Extent1].[ListPrice] > cast(0 as decimal(18)))) THEN cast(0 as bit) END AS [C2]
     FROM [Production].[Product] AS [Extent1]
 
--- Grouping
-SELECT 
-    [Project2].[C2] AS [C1], 
-    [Project2].[C1] AS [C2], 
-    [Project2].[C3] AS [C3], 
-    [Project2].[Name] AS [Name]
-    FROM ( SELECT 
-        [Distinct1].[C1] AS [C1], 
-        1 AS [C2], 
-        [Extent2].[Name] AS [Name], 
-        CASE WHEN ([Extent2].[Name] IS NULL) THEN CAST(NULL AS int) ELSE 1 END AS [C3]
-        FROM   (SELECT DISTINCT 
-            SUBSTRING([Extent1].[Name], 0 + 1, 1) AS [C1]
-            FROM [Production].[Product] AS [Extent1] ) AS [Distinct1]
-        LEFT OUTER JOIN [Production].[Product] AS [Extent2] ON ([Distinct1].[C1] = (SUBSTRING([Extent2].[Name], 0 + 1, 1))) OR (([Distinct1].[C1] IS NULL) AND (SUBSTRING([Extent2].[Name], 0 + 1, 1) IS NULL))
-    )  AS [Project2]
-    ORDER BY [Project2].[C1] ASC, [Project2].[C3] ASC
-
 -- GroupBy
 SELECT 
-    1 AS [C1], 
-    [GroupBy1].[K1] AS [C2], 
-    [GroupBy1].[A1] AS [C3]
+    [Project2].[ProductCategoryID] AS [ProductCategoryID], 
+    [Project2].[C1] AS [C1], 
+    [Project2].[Name] AS [Name]
     FROM ( SELECT 
-        [Extent1].[K1] AS [K1], 
-        COUNT([Extent1].[A1]) AS [A1]
-        FROM ( SELECT 
-            SUBSTRING([Extent1].[Name], 0 + 1, 1) AS [K1], 
-            1 AS [A1]
-            FROM [Production].[Product] AS [Extent1]
-        )  AS [Extent1]
-        GROUP BY [K1]
-    )  AS [GroupBy1]
+        [Distinct1].[ProductCategoryID] AS [ProductCategoryID], 
+        [Extent2].[Name] AS [Name], 
+        CASE WHEN ([Extent2].[ProductCategoryID] IS NULL) THEN CAST(NULL AS int) ELSE 1 END AS [C1]
+        FROM   (SELECT DISTINCT 
+            [Extent1].[ProductCategoryID] AS [ProductCategoryID]
+            FROM [Production].[ProductSubcategory] AS [Extent1] ) AS [Distinct1]
+        LEFT OUTER JOIN [Production].[ProductSubcategory] AS [Extent2] ON [Distinct1].[ProductCategoryID] = [Extent2].[ProductCategoryID]
+    )  AS [Project2]
+    ORDER BY [Project2].[ProductCategoryID] ASC, [Project2].[C1] ASC
 
--- GroupByWithWhere
+-- GroupByWithResultSelector
 SELECT 
-    1 AS [C1], 
-    [GroupBy1].[K1] AS [C2], 
-    [GroupBy1].[A1] AS [C3]
+    [GroupBy1].[K1] AS [ProductCategoryID], 
+    [GroupBy1].[A1] AS [C1]
     FROM ( SELECT 
-        [Extent1].[K1] AS [K1], 
-        COUNT([Extent1].[A1]) AS [A1]
-        FROM ( SELECT 
-            SUBSTRING([Extent1].[Name], 0 + 1, 1) AS [K1], 
-            1 AS [A1]
-            FROM [Production].[Product] AS [Extent1]
-        )  AS [Extent1]
-        GROUP BY [K1]
+        [Extent1].[ProductCategoryID] AS [K1], 
+        COUNT(1) AS [A1]
+        FROM [Production].[ProductSubcategory] AS [Extent1]
+        GROUP BY [Extent1].[ProductCategoryID]
     )  AS [GroupBy1]
-    WHERE [GroupBy1].[A1] > 0
 
--- InnerJoin
+-- GroupByAndSelect
+SELECT 
+    [GroupBy1].[K1] AS [ProductCategoryID], 
+    [GroupBy1].[A1] AS [C1]
+    FROM ( SELECT 
+        [Extent1].[ProductCategoryID] AS [K1], 
+        COUNT(1) AS [A1]
+        FROM [Production].[ProductSubcategory] AS [Extent1]
+        GROUP BY [Extent1].[ProductCategoryID]
+    )  AS [GroupBy1]
+
+-- InnerJoinWithJoin
 SELECT 
     [Extent2].[ProductCategoryID] AS [ProductCategoryID], 
     [Extent1].[Name] AS [Name], 
@@ -207,7 +191,24 @@ SELECT
 
 -- InnerJoinWithAssociation
 SELECT 
-    [Extent2].[ProductCategoryID] AS [ProductCategoryID], 
+    [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
+    [Extent1].[Name] AS [Name], 
+    [Extent2].[Name] AS [Name1]
+    FROM  [Production].[ProductSubcategory] AS [Extent1]
+    INNER JOIN [Production].[ProductCategory] AS [Extent2] ON [Extent1].[ProductCategoryID] = [Extent2].[ProductCategoryID]
+
+-- MultipleInnerJoinsWithAssociations
+SELECT 
+    [Extent1].[ProductID] AS [ProductID], 
+    [Extent1].[Name] AS [Name], 
+    [Extent3].[LargePhotoFileName] AS [LargePhotoFileName]
+    FROM   [Production].[Product] AS [Extent1]
+    INNER JOIN [Production].[ProductProductPhoto] AS [Extent2] ON [Extent1].[ProductID] = [Extent2].[ProductID]
+    INNER JOIN [Production].[ProductPhoto] AS [Extent3] ON [Extent2].[ProductPhotoID] = [Extent3].[ProductPhotoID]
+
+-- InnerJoinWithGroupJoin
+SELECT 
+    [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
     [Extent1].[Name] AS [Name], 
     [Extent2].[Name] AS [Name1]
     FROM  [Production].[ProductSubcategory] AS [Extent1]
@@ -221,78 +222,63 @@ SELECT
     FROM  [Production].[ProductSubcategory] AS [Extent1]
     INNER JOIN [Production].[ProductCategory] AS [Extent2] ON ((CASE WHEN ([Extent1].[ProductCategoryID] IS NULL) THEN -1 ELSE [Extent1].[ProductCategoryID] END) = [Extent2].[ProductCategoryID]) AND (((SUBSTRING([Extent1].[Name], 0 + 1, 1)) = (SUBSTRING([Extent2].[Name], 0 + 1, 1))) OR ((SUBSTRING([Extent1].[Name], 0 + 1, 1) IS NULL) AND (SUBSTRING([Extent2].[Name], 0 + 1, 1) IS NULL)))
 
--- LeftOuterJoin
+-- LeftOuterJoinWithGroupJoin
 SELECT 
-    [Project1].[ProductSubcategoryID] AS [ProductSubcategoryID], 
+    [Project1].[ProductCategoryID] AS [ProductCategoryID], 
     [Project1].[Name] AS [Name], 
     [Project1].[C1] AS [C1], 
     [Project1].[Name1] AS [Name1]
     FROM ( SELECT 
-        [Extent1].[ProductSubcategoryID] AS [ProductSubcategoryID], 
+        [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
         [Extent1].[Name] AS [Name], 
         [Extent2].[Name] AS [Name1], 
         CASE WHEN ([Extent2].[ProductCategoryID] IS NULL) THEN CAST(NULL AS int) ELSE 1 END AS [C1]
-        FROM  [Production].[ProductSubcategory] AS [Extent1]
-        LEFT OUTER JOIN [Production].[ProductCategory] AS [Extent2] ON [Extent1].[ProductCategoryID] = [Extent2].[ProductCategoryID]
+        FROM  [Production].[ProductCategory] AS [Extent1]
+        LEFT OUTER JOIN [Production].[ProductSubcategory] AS [Extent2] ON [Extent1].[ProductCategoryID] = [Extent2].[ProductCategoryID]
     )  AS [Project1]
-    ORDER BY [Project1].[ProductSubcategoryID] ASC, [Project1].[C1] ASC
+    ORDER BY [Project1].[ProductCategoryID] ASC, [Project1].[C1] ASC
 
--- LeftOuterJoinWithDefaultIfEmpty
+-- LeftOuterJoinWithGroupJoinAndSelectMany
 SELECT 
-    1 AS [C1], 
+    [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
     [Extent1].[Name] AS [Name], 
     [Extent2].[Name] AS [Name1]
-    FROM  [Production].[ProductSubcategory] AS [Extent1]
-    LEFT OUTER JOIN [Production].[ProductCategory] AS [Extent2] ON [Extent1].[ProductCategoryID] = [Extent2].[ProductCategoryID]
+    FROM  [Production].[ProductCategory] AS [Extent1]
+    LEFT OUTER JOIN [Production].[ProductSubcategory] AS [Extent2] ON [Extent1].[ProductCategoryID] = [Extent2].[ProductCategoryID]
 
 -- LeftOuterJoinWithSelect
 SELECT 
-    [Project1].[ProductSubcategoryID] AS [ProductSubcategoryID], 
-    [Project1].[Name] AS [Name], 
-    [Project1].[C1] AS [C1], 
-    [Project1].[Name1] AS [Name1]
-    FROM ( SELECT 
-        [Extent1].[ProductSubcategoryID] AS [ProductSubcategoryID], 
-        [Extent1].[Name] AS [Name], 
-        [Extent2].[Name] AS [Name1], 
-        CASE WHEN ([Extent2].[ProductCategoryID] IS NULL) THEN CAST(NULL AS int) ELSE 1 END AS [C1]
-        FROM  [Production].[ProductSubcategory] AS [Extent1]
-        LEFT OUTER JOIN [Production].[ProductCategory] AS [Extent2] ON [Extent1].[ProductCategoryID] = [Extent2].[ProductCategoryID]
-    )  AS [Project1]
-    ORDER BY [Project1].[ProductSubcategoryID] ASC, [Project1].[C1] ASC
+    [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
+    [Extent1].[Name] AS [Name], 
+    [Extent2].[Name] AS [Name1]
+    FROM  [Production].[ProductCategory] AS [Extent1]
+    LEFT OUTER JOIN [Production].[ProductSubcategory] AS [Extent2] ON [Extent2].[ProductCategoryID] = [Extent1].[ProductCategoryID]
 
 -- LeftOuterJoinWithAssociation
 SELECT 
-    1 AS [C1], 
+    [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
     [Extent1].[Name] AS [Name], 
     [Extent2].[Name] AS [Name1]
-    FROM  [Production].[ProductSubcategory] AS [Extent1]
-    LEFT OUTER JOIN [Production].[ProductCategory] AS [Extent2] ON [Extent1].[ProductCategoryID] = [Extent2].[ProductCategoryID]
-
--- CrossJoin
-SELECT 
-    [Extent1].[ProductID] AS [ProductID], 
-    [Extent1].[Name] AS [Name], 
-    [Extent3].[LargePhotoFileName] AS [LargePhotoFileName]
-    FROM   [Production].[Product] AS [Extent1]
-    INNER JOIN [Production].[ProductProductPhoto] AS [Extent2] ON [Extent1].[ProductID] = [Extent2].[ProductID]
-    INNER JOIN [Production].[ProductPhoto] AS [Extent3] ON [Extent2].[ProductPhotoID] = [Extent3].[ProductPhotoID]
+    FROM  [Production].[ProductCategory] AS [Extent1]
+    LEFT OUTER JOIN [Production].[ProductSubcategory] AS [Extent2] ON [Extent2].[ProductCategoryID] = [Extent1].[ProductCategoryID]
 
 -- CrossJoinWithSelectMany
 SELECT 
     1 AS [C1], 
     [Extent1].[Name] AS [Name], 
     [Extent2].[Name] AS [Name1]
-    FROM  [Production].[ProductSubcategory] AS [Extent1]
-    CROSS JOIN [Production].[ProductCategory] AS [Extent2]
+    FROM  [Production].[Product] AS [Extent1]
+    CROSS JOIN [Production].[Product] AS [Extent2]
+    WHERE ([Extent1].[ListPrice] > cast(2000 as decimal(18))) AND ([Extent2].[ListPrice] < cast(100 as decimal(18)))
 
 -- CrossJoinWithJoin
 SELECT 
     1 AS [C1], 
     [Extent1].[Name] AS [Name], 
     [Extent2].[Name] AS [Name1]
-    FROM  [Production].[ProductSubcategory] AS [Extent1]
-    INNER JOIN [Production].[ProductCategory] AS [Extent2] ON 1 = 1
+    FROM  [Production].[Product] AS [Extent1]
+    INNER JOIN [Production].[Product] AS [Extent2] ON 1 = 1
+    WHERE ([Extent1].[ListPrice] > cast(2000 as decimal(18))) AND ([Extent2].[ListPrice] < cast(100 as decimal(18)))
 
 -- SelfJoin
 SELECT 
@@ -315,128 +301,126 @@ SELECT
 
 -- Concat
 SELECT 
-    [UnionAll1].[C1] AS [C1], 
-    [UnionAll1].[Name] AS [C2], 
-    [UnionAll1].[ListPrice] AS [C3]
+    [UnionAll1].[Name] AS [C1]
     FROM  (SELECT 
-        1 AS [C1], 
-        [Extent1].[Name] AS [Name], 
-        [Extent1].[ListPrice] AS [ListPrice]
+        [Extent1].[Name] AS [Name]
         FROM [Production].[Product] AS [Extent1]
         WHERE [Extent1].[ListPrice] < cast(100 as decimal(18))
     UNION ALL
         SELECT 
-        1 AS [C1], 
-        [Extent2].[Name] AS [Name], 
-        [Extent2].[ListPrice] AS [ListPrice]
+        [Extent2].[Name] AS [Name]
         FROM [Production].[Product] AS [Extent2]
-        WHERE [Extent2].[ListPrice] > cast(200 as decimal(18))) AS [UnionAll1]
+        WHERE [Extent2].[ListPrice] > cast(500 as decimal(18))) AS [UnionAll1]
 
 -- ConcatWithSelect
 SELECT 
-    1 AS [C1], 
-    [UnionAll1].[Name] AS [C2], 
-    [UnionAll1].[ListPrice] AS [C3]
+    [UnionAll1].[Name] AS [C1]
     FROM  (SELECT 
-        [Extent1].[Name] AS [Name], 
-        [Extent1].[ListPrice] AS [ListPrice]
+        [Extent1].[Name] AS [Name]
         FROM [Production].[Product] AS [Extent1]
         WHERE [Extent1].[ListPrice] < cast(100 as decimal(18))
     UNION ALL
         SELECT 
-        [Extent2].[Name] AS [Name], 
-        [Extent2].[ListPrice] AS [ListPrice]
+        [Extent2].[Name] AS [Name]
         FROM [Production].[Product] AS [Extent2]
-        WHERE [Extent2].[ListPrice] > cast(200 as decimal(18))) AS [UnionAll1]
+        WHERE [Extent2].[ListPrice] > cast(500 as decimal(18))) AS [UnionAll1]
 
 -- Distinct
 SELECT 
-    [Distinct1].[ProductSubcategoryID] AS [ProductSubcategoryID]
+    [Distinct1].[ProductCategoryID] AS [ProductCategoryID]
     FROM ( SELECT DISTINCT 
-        [Extent1].[ProductSubcategoryID] AS [ProductSubcategoryID]
-        FROM [Production].[Product] AS [Extent1]
+        [Extent1].[ProductCategoryID] AS [ProductCategoryID]
+        FROM [Production].[ProductSubcategory] AS [Extent1]
     )  AS [Distinct1]
 
--- DistinctWithGroupByAndSelect
+-- DistinctWithGroupBy
 SELECT 
-    [Limit1].[C1] AS [C1], 
+    [Distinct1].[ProductCategoryID] AS [ProductCategoryID]
+    FROM ( SELECT DISTINCT 
+        [Extent1].[ProductCategoryID] AS [ProductCategoryID]
+        FROM [Production].[ProductSubcategory] AS [Extent1]
+    )  AS [Distinct1]
+
+-- DistinctWithGroupByAndFirstOrDefault
+SELECT 
     [Limit1].[ProductSubcategoryID] AS [ProductSubcategoryID], 
-    [Limit1].[Name] AS [Name]
+    [Limit1].[Name] AS [Name], 
+    [Limit1].[ProductCategoryID] AS [ProductCategoryID]
     FROM   (SELECT DISTINCT 
-        [Extent1].[ProductSubcategoryID] AS [ProductSubcategoryID]
-        FROM [Production].[Product] AS [Extent1] ) AS [Distinct1]
+        [Extent1].[ProductCategoryID] AS [ProductCategoryID]
+        FROM [Production].[ProductSubcategory] AS [Extent1] ) AS [Distinct1]
     OUTER APPLY  (SELECT TOP (1) 
         [Extent2].[ProductSubcategoryID] AS [ProductSubcategoryID], 
         [Extent2].[Name] AS [Name], 
-        1 AS [C1]
-        FROM [Production].[Product] AS [Extent2]
-        WHERE ([Distinct1].[ProductSubcategoryID] = [Extent2].[ProductSubcategoryID]) OR (([Distinct1].[ProductSubcategoryID] IS NULL) AND ([Extent2].[ProductSubcategoryID] IS NULL)) ) AS [Limit1]
+        [Extent2].[ProductCategoryID] AS [ProductCategoryID]
+        FROM [Production].[ProductSubcategory] AS [Extent2]
+        WHERE [Distinct1].[ProductCategoryID] = [Extent2].[ProductCategoryID] ) AS [Limit1]
 
--- DistinctWithGroupByAndSelectMany
+-- DistinctWithGroupByAndTake
 SELECT 
-    [Limit1].[C1] AS [C1], 
     [Limit1].[ProductSubcategoryID] AS [ProductSubcategoryID], 
-    [Limit1].[Name] AS [Name]
+    [Limit1].[Name] AS [Name], 
+    [Limit1].[ProductCategoryID] AS [ProductCategoryID]
     FROM   (SELECT DISTINCT 
-        [Extent1].[ProductSubcategoryID] AS [ProductSubcategoryID]
-        FROM [Production].[Product] AS [Extent1] ) AS [Distinct1]
+        [Extent1].[ProductCategoryID] AS [ProductCategoryID]
+        FROM [Production].[ProductSubcategory] AS [Extent1] ) AS [Distinct1]
     CROSS APPLY  (SELECT TOP (1) 
         [Extent2].[ProductSubcategoryID] AS [ProductSubcategoryID], 
         [Extent2].[Name] AS [Name], 
-        1 AS [C1]
-        FROM [Production].[Product] AS [Extent2]
-        WHERE ([Distinct1].[ProductSubcategoryID] = [Extent2].[ProductSubcategoryID]) OR (([Distinct1].[ProductSubcategoryID] IS NULL) AND ([Extent2].[ProductSubcategoryID] IS NULL)) ) AS [Limit1]
+        [Extent2].[ProductCategoryID] AS [ProductCategoryID]
+        FROM [Production].[ProductSubcategory] AS [Extent2]
+        WHERE [Distinct1].[ProductCategoryID] = [Extent2].[ProductCategoryID] ) AS [Limit1]
+
+SELECT 
+    (SELECT TOP (1) 
+        [Extent2].[Name] AS [Name]
+        FROM [Production].[ProductSubcategory] AS [Extent2]
+        WHERE [Distinct1].[ProductCategoryID] = [Extent2].[ProductCategoryID]) AS [C1]
+    FROM ( SELECT DISTINCT 
+        [Extent1].[ProductCategoryID] AS [ProductCategoryID]
+        FROM [Production].[ProductSubcategory] AS [Extent1]
+    )  AS [Distinct1]
+
+SELECT 
+    [Limit1].[Name] AS [Name]
+    FROM   (SELECT DISTINCT 
+        [Extent1].[ProductCategoryID] AS [ProductCategoryID]
+        FROM [Production].[ProductSubcategory] AS [Extent1] ) AS [Distinct1]
+    CROSS APPLY  (SELECT TOP (1) 
+        [Extent2].[Name] AS [Name]
+        FROM [Production].[ProductSubcategory] AS [Extent2]
+        WHERE [Distinct1].[ProductCategoryID] = [Extent2].[ProductCategoryID] ) AS [Limit1]
 
 -- Intersect
 SELECT 
-    [Intersect1].[ProductID] AS [C1], 
-    [Intersect1].[Name] AS [C2], 
-    [Intersect1].[ListPrice] AS [C3]
+    [Intersect1].[ProductID] AS [C1]
     FROM  (SELECT 
-        CASE WHEN (((CASE WHEN ([Extent1].[Style] = N'M ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N'U ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N'W ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN '0X' WHEN ([Extent1].[Style] = N'M ') THEN '0X0X' WHEN ([Extent1].[Style] = N'U ') THEN '0X1X' ELSE '0X2X' END AS [C1], 
-        [Extent1].[ProductID] AS [ProductID], 
-        [Extent1].[ProductSubcategoryID] AS [ProductSubcategoryID], 
-        [Extent1].[Name] AS [Name], 
-        [Extent1].[ListPrice] AS [ListPrice]
+        [Extent1].[ProductID] AS [ProductID]
         FROM [Production].[Product] AS [Extent1]
         WHERE [Extent1].[ListPrice] > cast(100 as decimal(18))
     INTERSECT
         SELECT 
-        CASE WHEN (((CASE WHEN ([Extent2].[Style] = N'M ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent2].[Style] = N'U ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent2].[Style] = N'W ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN '0X' WHEN ([Extent2].[Style] = N'M ') THEN '0X0X' WHEN ([Extent2].[Style] = N'U ') THEN '0X1X' ELSE '0X2X' END AS [C1], 
-        [Extent2].[ProductID] AS [ProductID], 
-        [Extent2].[ProductSubcategoryID] AS [ProductSubcategoryID], 
-        [Extent2].[Name] AS [Name], 
-        [Extent2].[ListPrice] AS [ListPrice]
+        [Extent2].[ProductID] AS [ProductID]
         FROM [Production].[Product] AS [Extent2]
-        WHERE [Extent2].[ListPrice] < cast(200 as decimal(18))) AS [Intersect1]
+        WHERE [Extent2].[ListPrice] < cast(500 as decimal(18))) AS [Intersect1]
 	
 -- Except
 SELECT 
-    [Except1].[ProductID] AS [C1], 
-    [Except1].[Name] AS [C2], 
-    [Except1].[ListPrice] AS [C3]
+    [Except1].[ProductID] AS [C1]
     FROM  (SELECT 
-        CASE WHEN (((CASE WHEN ([Extent1].[Style] = N'M ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N'U ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N'W ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN '0X' WHEN ([Extent1].[Style] = N'M ') THEN '0X0X' WHEN ([Extent1].[Style] = N'U ') THEN '0X1X' ELSE '0X2X' END AS [C1], 
-        [Extent1].[ProductID] AS [ProductID], 
-        [Extent1].[ProductSubcategoryID] AS [ProductSubcategoryID], 
-        [Extent1].[Name] AS [Name], 
-        [Extent1].[ListPrice] AS [ListPrice]
+        [Extent1].[ProductID] AS [ProductID]
         FROM [Production].[Product] AS [Extent1]
         WHERE [Extent1].[ListPrice] > cast(100 as decimal(18))
     EXCEPT
         SELECT 
-        CASE WHEN (((CASE WHEN ([Extent2].[Style] = N'M ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent2].[Style] = N'U ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent2].[Style] = N'W ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN '0X' WHEN ([Extent2].[Style] = N'M ') THEN '0X0X' WHEN ([Extent2].[Style] = N'U ') THEN '0X1X' ELSE '0X2X' END AS [C1], 
-        [Extent2].[ProductID] AS [ProductID], 
-        [Extent2].[ProductSubcategoryID] AS [ProductSubcategoryID], 
-        [Extent2].[Name] AS [Name], 
-        [Extent2].[ListPrice] AS [ListPrice]
+        [Extent2].[ProductID] AS [ProductID]
         FROM [Production].[Product] AS [Extent2]
-        WHERE [Extent2].[ListPrice] > cast(200 as decimal(18))) AS [Except1]
+        WHERE [Extent2].[ListPrice] > cast(500 as decimal(18))) AS [Except1]
 
 -- Skip
 -- NotSupportedException.
 
--- OrderBySkip
+-- OrderByAndSkip
 SELECT 
     [Extent1].[Name] AS [Name]
     FROM [Production].[Product] AS [Extent1]
@@ -448,7 +432,7 @@ SELECT TOP (10)
     [c].[Name] AS [Name]
     FROM [Production].[Product] AS [c]
 
--- SkipTake
+-- OrderByAndSkipAndTake
 SELECT 
     [Extent1].[Name] AS [Name]
     FROM [Production].[Product] AS [Extent1]
@@ -481,7 +465,7 @@ SELECT
     )  AS [Project1]
     ORDER BY [Project1].[ListPrice] DESC
 
--- OrderByThenBy
+-- OrderByAndThenBy
 SELECT 
     [Project1].[C1] AS [C1], 
     [Project1].[Name] AS [Name], 
@@ -494,7 +478,7 @@ SELECT
     )  AS [Project1]
     ORDER BY [Project1].[ListPrice] ASC, [Project1].[Name] ASC
 
--- OrderByOrderBy
+-- OrderByAndOrderBy
 SELECT 
     [Project1].[C1] AS [C1], 
     [Project1].[Name] AS [Name], 
@@ -512,6 +496,20 @@ SELECT
 
 -- Cast
 -- NotSupportedException.
+
+-- AsEnumerableAsQueryable
+SELECT 
+    1 AS [C1], 
+    [Extent1].[Name] AS [Name], 
+    [Extent1].[ListPrice] AS [ListPrice]
+    FROM [Production].[Product] AS [Extent1]
+    WHERE [Extent1].[ListPrice] > cast(0 as decimal(18))
+
+SELECT 
+    1 AS [C1], 
+    [Extent1].[Name] AS [Name], 
+    [Extent1].[ListPrice] AS [ListPrice]
+    FROM [Production].[Product] AS [Extent1]
 
 -- First
 SELECT 
