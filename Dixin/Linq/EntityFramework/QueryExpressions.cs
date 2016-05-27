@@ -38,8 +38,9 @@
         internal static void InnerJoinWithAssociation()
         {
             IQueryable<ProductSubcategory> outer = AdventureWorks.ProductSubcategories;
-            var subcategories = outer.Select(subcategory =>
-                new { Subcategory = subcategory.Name, Category = subcategory.ProductCategory.Name }); // Define query.
+            var subcategories = 
+                from subcategory in outer
+                select new { Subcategory = subcategory.Name, Category = subcategory.ProductCategory.Name }; // Define query.
             subcategories.ForEach(subcategory => Trace.WriteLine(
                 $"{subcategory.Category}: {subcategory.Subcategory}")); // Execute query.
         }
@@ -61,20 +62,12 @@
         {
             IQueryable<ProductSubcategory> outer = AdventureWorks.ProductSubcategories;
             IQueryable<ProductCategory> inner = AdventureWorks.ProductCategories;
-            var subcategories = outer
-                .GroupJoin(
-                    inner,
-                    subcategory => subcategory.ProductCategoryID,
-                    category => category.ProductCategoryID,
-                    (subcategory, categories) => new
-                    {
-                        Subcategory = subcategory.Name,
-                        Categories = categories
-                    })
-                .SelectMany(
-                    subcategory => subcategory.Categories,
-                    (subcategory, category) =>
-                        new { Subcategory = subcategory.Subcategory, Category = category.Name }); // Define query.
+            var subcategories =
+                from subcategory in outer
+                join category in inner
+                on subcategory.ProductCategoryID equals category.ProductCategoryID into categories
+                from category in categories
+                select new { Subcategory = subcategory.Name, Category = category.Name }; // Define query.
             subcategories.ForEach(subcategory => Trace.WriteLine(
                 $"{subcategory.Category}: {subcategory.Subcategory}")); // Execute query.
         }

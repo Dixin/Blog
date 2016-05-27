@@ -310,7 +310,7 @@ SELECT
         SELECT 
         [Extent2].[Name] AS [Name]
         FROM [Production].[Product] AS [Extent2]
-        WHERE [Extent2].[ListPrice] > cast(500 as decimal(18))) AS [UnionAll1]
+        WHERE [Extent2].[ListPrice] > cast(2000 as decimal(18))) AS [UnionAll1]
 
 -- ConcatWithSelect
 SELECT 
@@ -323,7 +323,7 @@ SELECT
         SELECT 
         [Extent2].[Name] AS [Name]
         FROM [Production].[Product] AS [Extent2]
-        WHERE [Extent2].[ListPrice] > cast(500 as decimal(18))) AS [UnionAll1]
+        WHERE [Extent2].[ListPrice] > cast(2000 as decimal(18))) AS [UnionAll1]
 
 -- Distinct
 SELECT 
@@ -371,6 +371,7 @@ SELECT
         FROM [Production].[ProductSubcategory] AS [Extent2]
         WHERE [Distinct1].[ProductCategoryID] = [Extent2].[ProductCategoryID] ) AS [Limit1]
 
+-- DistinctWithGroupByAndSelectAndFirstOrDefault
 SELECT 
     (SELECT TOP (1) 
         [Extent2].[Name] AS [Name]
@@ -381,6 +382,7 @@ SELECT
         FROM [Production].[ProductSubcategory] AS [Extent1]
     )  AS [Distinct1]
 
+-- DistinctWithGroupByAndSelectAndTake
 SELECT 
     [Limit1].[Name] AS [Name]
     FROM   (SELECT DISTINCT 
@@ -402,7 +404,7 @@ SELECT
         SELECT 
         [Extent2].[ProductID] AS [ProductID]
         FROM [Production].[Product] AS [Extent2]
-        WHERE [Extent2].[ListPrice] < cast(500 as decimal(18))) AS [Intersect1]
+        WHERE [Extent2].[ListPrice] < cast(2000 as decimal(18))) AS [Intersect1]
 	
 -- Except
 SELECT 
@@ -415,7 +417,7 @@ SELECT
         SELECT 
         [Extent2].[ProductID] AS [ProductID]
         FROM [Production].[Product] AS [Extent2]
-        WHERE [Extent2].[ListPrice] > cast(500 as decimal(18))) AS [Except1]
+        WHERE [Extent2].[ListPrice] > cast(2000 as decimal(18))) AS [Except1]
 
 -- Skip
 -- NotSupportedException.
@@ -533,7 +535,7 @@ SELECT
         [Extent1].[ListPrice] AS [ListPrice], 
         1 AS [C1]
         FROM [Production].[Product] AS [Extent1]
-        WHERE cast(1 as decimal(18)) = [Extent1].[ListPrice]
+        WHERE [Extent1].[ListPrice] > cast(5000 as decimal(18))
     )  AS [Limit1]
 
 -- Single
@@ -551,15 +553,20 @@ SELECT
 
 -- SingleOrDefault
 SELECT 
-    [Limit1].[C1] AS [C1], 
-    [Limit1].[Name] AS [Name], 
-    [Limit1].[ListPrice] AS [ListPrice]
+    [Limit1].[C2] AS [C1], 
+    [Limit1].[ListPrice] AS [ListPrice], 
+    [Limit1].[C1] AS [C2]
     FROM ( SELECT TOP (2) 
-        [Extent1].[Name] AS [Name], 
-        [Extent1].[ListPrice] AS [ListPrice], 
-        1 AS [C1]
-        FROM [Production].[Product] AS [Extent1]
-        WHERE cast(540 as decimal(18)) = [Extent1].[ListPrice]
+        [GroupBy1].[A1] AS [C1], 
+        [GroupBy1].[K1] AS [ListPrice], 
+        1 AS [C2]
+        FROM ( SELECT 
+            [Extent1].[ListPrice] AS [K1], 
+            COUNT(1) AS [A1]
+            FROM [Production].[Product] AS [Extent1]
+            GROUP BY [Extent1].[ListPrice]
+        )  AS [GroupBy1]
+        WHERE [GroupBy1].[A1] > 10
     )  AS [Limit1]
 
 -- Count
@@ -568,7 +575,6 @@ SELECT
     FROM ( SELECT 
         COUNT(1) AS [A1]
         FROM [Production].[Product] AS [Extent1]
-        WHERE cast(0 as decimal(18)) = [Extent1].[ListPrice]
     )  AS [GroupBy1]
 
 -- LongCount
@@ -576,6 +582,15 @@ SELECT
     [GroupBy1].[A1] AS [C1]
     FROM ( SELECT 
         COUNT_BIG(1) AS [A1]
+        FROM [Production].[Product] AS [Extent1]
+        WHERE cast(0 as decimal(18)) = [Extent1].[ListPrice]
+    )  AS [GroupBy1]
+
+-- Max
+SELECT 
+    [GroupBy1].[A1] AS [C1]
+    FROM ( SELECT 
+        MAX([Extent1].[ListPrice]) AS [A1]
         FROM [Production].[Product] AS [Extent1]
     )  AS [GroupBy1]
 
@@ -585,16 +600,7 @@ SELECT
     FROM ( SELECT 
         MIN([Extent1].[ListPrice]) AS [A1]
         FROM [Production].[Product] AS [Extent1]
-        WHERE [Extent1].[ListPrice] > cast(0 as decimal(18))
-    )  AS [GroupBy1]
-
--- Max
-SELECT 
-    [GroupBy1].[A1] AS [C1]
-    FROM ( SELECT 
-        MAX([Extent1].[ListPrice]) AS [A1]
-        FROM [Production].[Product] AS [Extent1]
-        WHERE [Extent1].[Style] = N'U '
+        WHERE [Extent1].[Style] = N'U'
     )  AS [GroupBy1]
 
 -- Sum
@@ -611,7 +617,6 @@ SELECT
     FROM ( SELECT 
         AVG([Extent1].[ListPrice]) AS [A1]
         FROM [Production].[Product] AS [Extent1]
-        WHERE [Extent1].[ListPrice] > cast(0 as decimal(18))
     )  AS [GroupBy1]
 
 -- All
@@ -628,6 +633,7 @@ SELECT
     CASE WHEN ( EXISTS (SELECT 
         1 AS [C1]
         FROM [Production].[Product] AS [Extent1]
+        WHERE [Extent1].[Style] = N'U'
     )) THEN cast(1 as bit) ELSE cast(0 as bit) END AS [C1]
     FROM  ( SELECT 1 AS X ) AS [SingleRowTable1]
 
@@ -636,6 +642,6 @@ SELECT
     CASE WHEN ( EXISTS (SELECT 
         1 AS [C1]
         FROM [Production].[Product] AS [Extent1]
-        WHERE 9.99 = [Extent1].[ListPrice]
+        WHERE cast(100 as decimal(18)) = [Extent1].[ListPrice]
     )) THEN cast(1 as bit) ELSE cast(0 as bit) END AS [C1]
     FROM  ( SELECT 1 AS X ) AS [SingleRowTable1]

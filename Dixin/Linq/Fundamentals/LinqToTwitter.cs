@@ -6,22 +6,20 @@
     using System.Threading.Tasks;
     using global::LinqToTwitter;
 
-    using Settings = Dixin.Properties.Settings;
-
     internal static class LinqToTwitter
     {
         private static readonly SingleUserAuthorizer Authorizer = new SingleUserAuthorizer()
         {
             CredentialStore = new InMemoryCredentialStore()
             {
-                ConsumerKey = Settings.Default.TwitterConsumerKey,
-                ConsumerSecret = Settings.Default.TwitterConsumerSecret,
-                OAuthToken = Settings.Default.TwitterOAuthToken,
-                OAuthTokenSecret = Settings.Default.TwitterOAuthTokenSecret
+                ConsumerKey = "ConsumerKey",
+                ConsumerSecret = "ConsumerSecret",
+                OAuthToken = "OAuthToken",
+                OAuthTokenSecret = "OAuthTokenSecret"
             }
         };
 
-        internal static async Task<IEnumerable<Tuple<string, string>>> SearchAsync(string keyword, int count)
+        internal static async Task<IEnumerable<string>> QueryAsync(string keyword, int count)
         {
             using (TwitterContext twitter = new TwitterContext(Authorizer))
             {
@@ -32,7 +30,7 @@
                                                  select search;
                 Search searchResult = await searchQuery.SingleAsync();
                 return from status in searchResult.Statuses
-                       select Tuple.Create(status.User.ScreenNameResponse, status.Text);
+                       select $"{status.User.ScreenNameResponse}: {status.Text}";
             }
         }
     }

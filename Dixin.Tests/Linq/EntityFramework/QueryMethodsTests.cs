@@ -228,8 +228,8 @@
         {
             QueryMethods.Count();
             QueryMethods.LongCount();
-            QueryMethods.Min();
             QueryMethods.Max();
+            QueryMethods.Min();
             QueryMethods.Sum();
             QueryMethods.Average();
         }

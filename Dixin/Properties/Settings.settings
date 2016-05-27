@@ -16,17 +16,5 @@
 &lt;/SerializableConnectionString&gt;</DesignTimeValue>
       <Value Profile="(Default)">Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\AdventureWorks_Data.mdf;Integrated Security=True;Connect Timeout=30</Value>
     </Setting>
-    <Setting Name="TwitterConsumerKey" Type="System.String" Scope="Application">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="TwitterConsumerSecret" Type="System.String" Scope="Application">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="TwitterOAuthToken" Type="System.String" Scope="Application">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="TwitterOAuthTokenSecret" Type="System.String" Scope="Application">
-      <Value Profile="(Default)" />
-    </Setting>
   </Settings>
 </SettingsFile>
