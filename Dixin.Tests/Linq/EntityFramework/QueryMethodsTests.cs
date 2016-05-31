@@ -78,6 +78,7 @@
             }
             QueryMethods.WhereWithContains();
             QueryMethods.WhereWithNull();
+            QueryMethods.WhereWithIs();
             QueryMethods.OfType();
         }
 
@@ -87,16 +88,6 @@
             QueryMethods.Select();
             QueryMethods.SelectWithStringConcat();
             QueryMethods.SelectAnonymousType();
-            try
-            {
-                QueryMethods.SelectEntity();
-                Assert.Fail();
-            }
-            catch (NotSupportedException exception)
-            {
-                Trace.WriteLine(exception);
-            }
-            QueryMethods.SelectEntityObjects();
             QueryMethods.SelectWithCase();
         }
 
@@ -106,6 +97,8 @@
             QueryMethods.GroupBy();
             QueryMethods.GroupByWithResultSelector();
             QueryMethods.GroupByAndSelect();
+            QueryMethods.GroupByAndSelectMany();
+            QueryMethods.GroupByMultipleKeys();
         }
 
         [TestMethod]
@@ -113,17 +106,31 @@
         {
             QueryMethods.InnerJoinWithJoin();
             QueryMethods.InnerJoinWithSelectMany();
+            QueryMethods.InnerJoinWithGroupJoin();
+            QueryMethods.InnerJoinWithSelect();
             QueryMethods.InnerJoinWithAssociation();
             QueryMethods.MultipleInnerJoinsWithAssociations();
             QueryMethods.InnerJoinWithMultipleKeys();
             QueryMethods.InnerJoinWithGroupJoin();
             QueryMethods.LeftOuterJoinWithGroupJoin();
-            QueryMethods.LeftOuterJoinWithGroupJoinAndSelectMany();
             QueryMethods.LeftOuterJoinWithSelect();
+            QueryMethods.LeftOuterJoinWithGroupJoinAndSelectMany();
+            QueryMethods.LeftOuterJoinWithSelectAndSelectMany();
             QueryMethods.LeftOuterJoinWithAssociation();
             QueryMethods.CrossJoinWithSelectMany();
             QueryMethods.CrossJoinWithJoin();
             QueryMethods.SelfJoin();
+        }
+
+        [TestMethod]
+        public void ApplyTest()
+        {
+            QueryMethods.CrossApplyWithGroupByAndTake();
+            QueryMethods.CrossApplyWithGroupJoinAndTake();
+            QueryMethods.CrossApplyWithAssociationAndTake();
+            QueryMethods.OuterApplyWithGroupByAndFirstOrDefault();
+            QueryMethods.OuterApplyWithGroupJoinAndFirstOrDefault();
+            QueryMethods.OuterApplyWithAssociationAndFirstOrDefault();
         }
 
         [TestMethod]
@@ -138,10 +145,9 @@
         {
             QueryMethods.Distinct();
             QueryMethods.DistinctWithGroupBy();
-            QueryMethods.DistinctWithGroupByAndFirstOrDefault();
-            QueryMethods.DistinctWithGroupByAndTake();
+            QueryMethods.DistinctMultipleKeys();
+            QueryMethods.DistinctMultipleKeysWithGroupBy();
             QueryMethods.DistinctWithGroupByAndSelectAndFirstOrDefault();
-            QueryMethods.DistinctWithGroupByAndSelectAndTake();
             QueryMethods.Intersect();
             QueryMethods.Except();
         }
@@ -194,6 +200,16 @@
                 Trace.WriteLine(exception);
             }
             QueryMethods.AsEnumerableAsQueryable();
+            try
+            {
+                QueryMethods.SelectEntities();
+                Assert.Fail();
+            }
+            catch (NotSupportedException exception)
+            {
+                Trace.WriteLine(exception);
+            }
+            QueryMethods.SelectEntityObjects();
         }
 
         [TestMethod]
@@ -230,16 +246,18 @@
             QueryMethods.LongCount();
             QueryMethods.Max();
             QueryMethods.Min();
-            QueryMethods.Sum();
             QueryMethods.Average();
+            QueryMethods.Sum();
         }
 
         [TestMethod]
         public void QuantifiersTest()
         {
-            QueryMethods.All();
             QueryMethods.Any();
+            QueryMethods.AnyWithPredicate();
             QueryMethods.Contains();
+            QueryMethods.AllNot();
+            QueryMethods.NotAny();
         }
 
         [TestMethod]

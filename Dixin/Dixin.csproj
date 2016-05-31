@@ -265,7 +265,7 @@
     </Compile>
     <Compile Include="Common\ExceptionFilter.cs" />
     <Compile Include="Common\Int32Extensions.cs" />
-    <Compile Include="Linq\EntityFramework\MappingViews.cs" />
+    <Compile Include="Linq\EntityFramework\AdventureWorks.Views.cs" />
     <Compile Include="Linq\EntityFramework\QueryExpressions.cs" />
     <Compile Include="Linq\EntityFramework\Views.cs" />
     <Compile Include="Linq\EntityFramework\EntityDataModel\AdventureWorks.Designer.cs">

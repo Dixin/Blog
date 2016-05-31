@@ -1,5 +1,6 @@
 ﻿namespace Dixin.Linq.EntityFramework
 {
+    using System;
     using System.Collections.Generic;
     using System.Data.Linq.SqlClient;
     using System.Diagnostics;
@@ -59,7 +60,7 @@
 
         internal static void WhereWithLike()
         {
-            IQueryable<vProductAndDescription> source = AdventureWorks.ProductAndDescriptions;
+            IQueryable<vProductAndDescription> source = AdventureWorks.ProductDescriptions;
             IQueryable<vProductAndDescription> descriptions = source.Where(description => description.CultureID.StartsWith("zh")); // Define query.
             descriptions.ForEach(description => Trace.WriteLine($"{description.Name}: {description.Description}")); // Execute query.
         }
@@ -96,6 +97,14 @@
             // NotSupportedException: Method 'Boolean IsNullOrEmpty(System.String)' has no supported translation to SQL.
         }
 
+        internal static void WhereWithIs()
+        {
+            IQueryable<Product> source = AdventureWorks.Products;
+            IQueryable<Product> products = source.Where(product => product is UniversalProduct); // Define query.
+            products.ForEach(product => Trace.WriteLine($"{product.Name}: {product.GetType().Name}")); // Execute query.
+            // NotSupportedException: Method 'Boolean IsNullOrEmpty(System.String)' has no supported translation to SQL.
+        }
+
         internal static void OfType()
         {
             IQueryable<Product> source = AdventureWorks.Products;
@@ -109,50 +118,26 @@
 
         internal static void Select()
         {
-            IQueryable<Product> source = AdventureWorks.Products;
-            IQueryable<string> names = source
-                .Where(product => product.ListPrice > 100)
-                .Select(product => product.ProductID + ": " + product.Name); // Define query.
-            names.ForEach(name => Trace.WriteLine(name)); // Execute query.
+            IQueryable<ProductCategory> source = AdventureWorks.ProductCategories;
+            IQueryable<string> categories = source.Select(category =>
+                category.ProductCategoryID + ": " + category.Name); // Define query.
+            categories.ForEach(category => Trace.WriteLine(category)); // Execute query.
         }
 
         internal static void SelectWithStringConcat()
         {
-            IQueryable<Product> source = AdventureWorks.Products;
-            IQueryable<string> names = source
-                .Where(product => product.ListPrice > 100)
-                .Select(product => string.Concat(product.ProductID, ": ", product.Name)); // Define query.
-            names.ForEach(name => Trace.WriteLine(name)); // Execute query.
+            IQueryable<ProductCategory> source = AdventureWorks.ProductCategories;
+            IQueryable<string> categories = source.Select(category =>
+                string.Concat(category.ProductCategoryID, ": ", category.Name)); // Define query.
+            categories.ForEach(category => Trace.WriteLine(category)); // Execute query.
         }
 
         internal static void SelectAnonymousType()
         {
             IQueryable<Product> source = AdventureWorks.Products;
-            var products = source
-                .Where(product => product.ListPrice > 100)
-                .Select(product => new { Id = product.ProductID, Name = product.Name }); // Define query.
-            products.ForEach(product => Trace.WriteLine($"{product.Id}: {product.Name}")); // Execute query.
-        }
-
-        internal static void SelectEntity()
-        {
-            IQueryable<Product> source = AdventureWorks.Products;
-            IQueryable<Product> products = source
-                .Where(product => product.ListPrice > 100)
-                .Select(product => new Product() { ProductID = product.ProductID, Name = product.Name }); // Define query.
+            var products = source.Select(product =>
+                new { ProductID = product.ProductID, Name = product.Name, Constant = 1 }); // Define query.
             products.ForEach(product => Trace.WriteLine($"{product.ProductID}: {product.Name}")); // Execute query.
-            // NotSupportedException: The entity or complex type 'Dixin.Linq.EntityFramework.Product' cannot be constructed in a LINQ to Entities query.
-        }
-
-        internal static void SelectEntityObjects()
-        {
-            IQueryable<Product> source = AdventureWorks.Products;
-            IEnumerable<Product> products = source
-                .Where(product => product.ListPrice > 100)
-                .Select(product => product.Name) // IQueryable<string>, LINQ to SQL.
-                .AsEnumerable() // IEnumerable<string>, LINQ to Objects.
-                .Select(name => new Product() { Name = name }); // Define query.
-            products.ForEach(product => Trace.WriteLine(product.Name)); // Execute query.
         }
 
         internal static void SelectWithCase()
@@ -183,8 +168,8 @@
             var groups = source.GroupBy(
                 subcategory => subcategory.ProductCategoryID,
                 subcategory => subcategory.Name,
-                (key, values) => new { Key = key, Count = values.Count() }); // Define query.
-            groups.ForEach(group => Trace.WriteLine($"{group.Key}: {group.Count}")); // Execute query.
+                (key, group) => new { CategoryID = key, SubcategoryCount = group.Count() }); // Define query.
+            groups.ForEach(group => Trace.WriteLine($"{group.CategoryID}: {group.SubcategoryCount}")); // Execute query.
         }
 
         internal static void GroupByAndSelect()
@@ -194,8 +179,32 @@
                 .GroupBy(
                     subcategory => subcategory.ProductCategoryID,
                     subcategory => subcategory.Name)
-                .Select(group => new { Key = group.Key, Count = group.Count() }); // Define query.
-            groups.ForEach(group => Trace.WriteLine($"{group.Key}: {group.Count}")); // Execute query.
+                .Select(group => new { CategoryID = group.Key, SubcategoryCount = group.Count() }); // Define query.
+            groups.ForEach(group => Trace.WriteLine($"{group.CategoryID}: {group.SubcategoryCount}")); // Execute query.
+        }
+
+        internal static void GroupByAndSelectMany()
+        {
+            IQueryable<ProductSubcategory> source = AdventureWorks.ProductSubcategories;
+            IQueryable<ProductSubcategory> distinct = source
+                .GroupBy(subcategory => subcategory.ProductCategoryID)
+                .SelectMany(group => group); // Define query.
+            distinct.ForEach(subcategory => Trace.WriteLine(subcategory.Name)); // Execute query.
+        }
+
+        internal static void GroupByMultipleKeys()
+        {
+            IQueryable<Product> source = AdventureWorks.Products;
+            var groups = source.GroupBy(
+                product => new { ProductSubcategoryID = product.ProductSubcategoryID, ListPrice = product.ListPrice },
+                (key, group) => new
+                {
+                    ProductSubcategoryID = key.ProductSubcategoryID,
+                    ListPrice = key.ListPrice,
+                    Count = group.Count()
+                }); // Define query.
+            groups.ForEach(group => Trace.WriteLine(
+                $"{group.ProductSubcategoryID}, {group.ListPrice}: {group.Count}")); // Execute query.
         }
 
         #endregion
@@ -231,6 +240,42 @@
                 $"{subcategory.Category}: {subcategory.Subcategory}")); // Execute query.
         }
 
+        internal static void InnerJoinWithGroupJoin()
+        {
+            IQueryable<ProductSubcategory> outer = AdventureWorks.ProductSubcategories;
+            IQueryable<ProductCategory> inner = AdventureWorks.ProductCategories;
+            var subcategories = outer
+                .GroupJoin(
+                    inner,
+                    subcategory => subcategory.ProductCategoryID,
+                    category => category.ProductCategoryID,
+                    (subcategory, categories) => new { Subcategory = subcategory, Categories = categories })
+                .SelectMany(
+                    subcategory => subcategory.Categories, // LEFT OUTER JOIN if DefaultIfEmpty is called.
+                    (subcategory, category) =>
+                        new { Subcategory = subcategory.Subcategory.Name, Category = category.Name }); // Define query.
+            subcategories.ForEach(subcategory => Trace.WriteLine(
+                $"{subcategory.Category}: {subcategory.Subcategory}")); // Execute query.
+        }
+
+        internal static void InnerJoinWithSelect()
+        {
+            IQueryable<ProductSubcategory> outer = AdventureWorks.ProductSubcategories;
+            IQueryable<ProductCategory> inner = AdventureWorks.ProductCategories;
+            var categories = outer
+                .Select(subcategory => new
+                {
+                    Subcategory = subcategory,
+                    Categories = inner.Where(category => category.ProductCategoryID == subcategory.ProductCategoryID)
+                })
+                .SelectMany(
+                    subcategory => subcategory.Categories, // LEFT OUTER JOIN if DefaultIfEmpty is called.
+                    (subcategory, category) =>
+                        new { Subcategory = subcategory.Subcategory.Name, Category = category.Name }); // Define query.
+            categories.ForEach(category => Trace.WriteLine(
+                $"{category.Category}: {category.Subcategory}")); // Execute query.
+        }
+
         internal static void InnerJoinWithAssociation()
         {
             IQueryable<ProductSubcategory> outer = AdventureWorks.ProductSubcategories;
@@ -253,24 +298,6 @@
             products.ForEach(product => Trace.WriteLine($"{product.Product}: {product.Photo}")); // Execute query.
         }
 
-        internal static void InnerJoinWithGroupJoin()
-        {
-            IQueryable<ProductSubcategory> outer = AdventureWorks.ProductSubcategories;
-            IQueryable<ProductCategory> inner = AdventureWorks.ProductCategories;
-            var subcategories = outer
-                .GroupJoin(
-                    inner,
-                    subcategory => subcategory.ProductCategoryID,
-                    category => category.ProductCategoryID,
-                    (subcategory, categories) => new { Subcategory = subcategory, Categories = categories })
-                .SelectMany(
-                    subcategory => subcategory.Categories,
-                    (subcategory, category) =>
-                        new { Subcategory = subcategory.Subcategory.Name, Category = category.Name }); // Define query.
-            subcategories.ForEach(subcategory => Trace.WriteLine(
-                $"{subcategory.Category}: {subcategory.Subcategory}")); // Execute query.
-        }
-
         internal static void InnerJoinWithMultipleKeys()
         {
             IQueryable<ProductSubcategory> outer = AdventureWorks.ProductSubcategories;
@@ -278,9 +305,9 @@
             var subcategories = outer.Join(
                 inner,
                 subcategory =>
-                    new { Id = subcategory.ProductCategoryID, FirstLetter = subcategory.Name.Substring(0, 1) },
+                    new { ProductCategoryID = subcategory.ProductCategoryID, Name = subcategory.Name },
                 category =>
-                    new { Id = category.ProductCategoryID, FirstLetter = category.Name.Substring(0, 1) },
+                    new { ProductCategoryID = category.ProductCategoryID, Name = category.Name },
                 (subcategory, category) => new { Subcategory = subcategory.Name, Category = category.Name }); // Define query.
             subcategories.ForEach(subcategory => Trace.WriteLine($"{subcategory.Category}: {subcategory.Subcategory}")); // Execute query.
         }
@@ -289,18 +316,33 @@
         {
             IQueryable<ProductCategory> outer = AdventureWorks.ProductCategories;
             IQueryable<ProductSubcategory> inner = AdventureWorks.ProductSubcategories;
-            var categories = outer
-                .GroupJoin(
-                    inner,
-                    category => category.ProductCategoryID,
-                    subcategory => subcategory.ProductCategoryID,
-                    (category, subcategories) => new
-                    {
-                        Category = category.Name,
-                        Subcategories = subcategories.Select(subcategory => subcategory.Name)
-                    }); // Define query.
+            var categories = outer.GroupJoin(
+                inner,
+                category => category.ProductCategoryID,
+                subcategory => subcategory.ProductCategoryID,
+                (category, subcategories) => new
+                {
+                    Category = category.Name,
+                    Subcategories = subcategories.Select(subcategory => subcategory.Name)
+                }); // Define query.
             categories.ForEach(category => Trace.WriteLine(
-                $"{category.Category} <- {string.Join(", ", category.Subcategories)}")); // Execute query.
+                $"{category.Category}: {string.Join(", ", category.Subcategories)}")); // Execute query.
+        }
+
+        internal static void LeftOuterJoinWithSelect()
+        {
+            IQueryable<ProductCategory> outer = AdventureWorks.ProductCategories;
+            IQueryable<ProductSubcategory> inner = AdventureWorks.ProductSubcategories;
+            var categories = outer
+                .Select(category => new
+                {
+                    Category = category.Name,
+                    Subcategories = inner
+                        .Where(subcategory => subcategory.ProductCategoryID == category.ProductCategoryID)
+                        .Select(subcategory => subcategory.Name)
+                }); // Define query.
+            categories.ForEach(category => Trace.WriteLine(
+                $"{category.Category}: {string.Join(", ", category.Subcategories)}")); // Execute query.
         }
 
         internal static void LeftOuterJoinWithGroupJoinAndSelectMany()
@@ -318,10 +360,10 @@
                     (category, subcategory) =>
                         new { Category = category.Category.Name, Subcategory = subcategory.Name }); // Define query.
             categories.ForEach(category => Trace.WriteLine(
-                $"{category.Category} <- {category.Subcategory}")); // Execute query.
+                $"{category.Category}: {category.Subcategory}")); // Execute query.
         }
 
-        internal static void LeftOuterJoinWithSelect()
+        internal static void LeftOuterJoinWithSelectAndSelectMany()
         {
             IQueryable<ProductCategory> outer = AdventureWorks.ProductCategories;
             IQueryable<ProductSubcategory> inner = AdventureWorks.ProductSubcategories;
@@ -329,15 +371,15 @@
                 .Select(category => new
                 {
                     Category = category,
-                    Subategories = inner
+                    Subcategories = inner
                         .Where(subcategory => subcategory.ProductCategoryID == category.ProductCategoryID)
                 })
                 .SelectMany(
-                    category => category.Subategories.DefaultIfEmpty(), // INNER JOIN if DefaultIfEmpty is missing.
+                    category => category.Subcategories.DefaultIfEmpty(), // INNER JOIN if DefaultIfEmpty is missing.
                     (category, subcategory) =>
                         new { Category = category.Category.Name, Subcategory = subcategory.Name }); // Define query.
             categories.ForEach(category => Trace.WriteLine(
-                $"{category.Category} <- {category.Subcategory}")); // Execute query.
+                $"{category.Category}: {category.Subcategory}")); // Execute query.
         }
 
         internal static void LeftOuterJoinWithAssociation()
@@ -348,7 +390,7 @@
                 (category, subcategory) =>
                     new { Category = category.Name, Subcategory = subcategory.Name }); // Define query.
             categories.ForEach(subcategory => Trace.WriteLine(
-                $"{subcategory.Category} <- {subcategory.Subcategory}")); // Execute query.
+                $"{subcategory.Category}: {subcategory.Subcategory}")); // Execute query.
         }
 
         internal static void CrossJoinWithSelectMany()
@@ -379,21 +421,105 @@
         {
             IQueryable<Product> outer = AdventureWorks.Products;
             IQueryable<Product> inner = AdventureWorks.Products;
-            var products = outer
-                .GroupJoin(
-                    inner,
-                    product => product.ListPrice,
-                    product => product.ListPrice,
-                    (product, samePriceProducts) => new
-                    {
-                        Name = product.Name,
-                        ListPrice = product.ListPrice,
-                        SamePriceProducts = samePriceProducts
-                            .Where(samePriceProduct => samePriceProduct.ProductID != product.ProductID)
-                            .Select(samePriceProduct => samePriceProduct.Name)
-                    }); // Define query.
+            var products = outer.GroupJoin(
+                inner,
+                product => product.ListPrice,
+                product => product.ListPrice,
+                (product, samePriceProducts) => new
+                {
+                    Name = product.Name,
+                    ListPrice = product.ListPrice,
+                    SamePriceProducts = samePriceProducts
+                        .Where(samePriceProduct => samePriceProduct.ProductID != product.ProductID)
+                        .Select(samePriceProduct => samePriceProduct.Name)
+                }); // Define query.
             products.ForEach(product => Trace.WriteLine(
                 $"{product.Name} ({product.ListPrice}): {string.Join(", ", product.SamePriceProducts)}")); // Execute query.
+        }
+
+        #endregion
+
+        #region Apply
+
+        internal static void CrossApplyWithGroupByAndTake()
+        {
+            IQueryable<ProductSubcategory> source = AdventureWorks.ProductSubcategories;
+            var categories = source
+                .GroupBy(subcategory => subcategory.ProductCategoryID)
+                .SelectMany(
+                    group => group.Take(1),
+                    (group, subcategory) =>
+                        new { ProductCategoryID = group.Key, FirstSubcategory = subcategory }); // Define query.
+            categories.ForEach(category => Trace.WriteLine(
+                $"{category.ProductCategoryID}: {category.FirstSubcategory?.Name}")); // Execute query.
+        }
+
+        internal static void CrossApplyWithGroupJoinAndTake()
+        {
+            IQueryable<ProductCategory> outer = AdventureWorks.ProductCategories;
+            IQueryable<ProductSubcategory> inner = AdventureWorks.ProductSubcategories;
+            var categories = outer
+                .GroupJoin(
+                    inner,
+                    category => category.ProductCategoryID,
+                    subcategory => subcategory.ProductCategoryID,
+                    (category, subcategories) => new { Category = category, Subcategories = subcategories })
+                .SelectMany(
+                    category => category.Subcategories.Take(1),
+                    (category, subcategory) =>
+                        new { Category = category.Category, FirstSubcategory = subcategory }); // Define query.
+            categories.ForEach(category => Trace.WriteLine(
+                $"{category.Category.Name}: {category.FirstSubcategory?.Name}")); // Execute query.
+        }
+
+        internal static void CrossApplyWithAssociationAndTake()
+        {
+            IQueryable<ProductCategory> source = AdventureWorks.ProductCategories;
+            var categories = source
+                .Select(category => new { Category = category, Subcategories = category.ProductSubcategories })
+                .SelectMany(
+                    category => category.Subcategories.Take(1),
+                    (category, subcategory) =>
+                        new { Category = category.Category, FirstSubcategory = subcategory }); // Define query.
+            categories.ForEach(category => Trace.WriteLine(
+                $"{category.Category.Name}: {category.FirstSubcategory?.Name}")); // Execute query.
+        }
+
+        internal static void OuterApplyWithGroupByAndFirstOrDefault()
+        {
+            IQueryable<ProductSubcategory> source = AdventureWorks.ProductSubcategories;
+            var categories = source.GroupBy(
+                subcategory => subcategory.ProductCategoryID,
+                (key, group) =>
+                    new { ProductCategoryID = key, FirstSubcategory = group.FirstOrDefault() }); // Define query.
+            categories.ForEach(category => Trace.WriteLine(
+                $"{category.ProductCategoryID}: {category.FirstSubcategory?.Name}")); // Execute query.
+        }
+
+        internal static void OuterApplyWithGroupJoinAndFirstOrDefault()
+        {
+            IQueryable<ProductCategory> outer = AdventureWorks.ProductCategories;
+            IQueryable<ProductSubcategory> inner = AdventureWorks.ProductSubcategories;
+            var categories = outer.GroupJoin(
+                inner,
+                category => category.ProductCategoryID,
+                subcategory => subcategory.ProductCategoryID,
+                (category, subcategories) =>
+                    new { Category = category, FirstSubcategory = subcategories.FirstOrDefault() }); // Define query.
+            categories.ForEach(category => Trace.WriteLine(
+                $"{category.Category.Name}: {category.FirstSubcategory?.Name}")); // Execute query.
+        }
+
+        internal static void OuterApplyWithAssociationAndFirstOrDefault()
+        {
+            IQueryable<ProductCategory> source = AdventureWorks.ProductCategories;
+            var categories = source.Select(category => new
+            {
+                Category = category,
+                FirstSubcategory = category.ProductSubcategories.FirstOrDefault()
+            }); // Define query.
+            categories.ForEach(category => Trace.WriteLine(
+                $"{category.Category.Name}: {category.FirstSubcategory?.Name}")); // Execute query.
         }
 
         #endregion
@@ -429,8 +555,10 @@
         internal static void Distinct()
         {
             IQueryable<ProductSubcategory> source = AdventureWorks.ProductSubcategories;
-            IQueryable<int> categories = source.Select(subcategory => subcategory.ProductCategoryID).Distinct(); // Define query.
-            categories.ForEach(category => Trace.WriteLine(category)); // Execute query.
+            IQueryable<int> distinct = source
+                .Select(subcategory => subcategory.ProductCategoryID)
+                .Distinct(); // Define query.
+            distinct.ForEach(value => Trace.WriteLine(value)); // Execute query.
         }
 
         internal static void DistinctWithGroupBy()
@@ -439,25 +567,28 @@
             IQueryable<int> distinct = source.GroupBy(
                 subcategory => subcategory.ProductCategoryID,
                 (key, group) => key); // Define query.
-            distinct.ForEach(category => Trace.WriteLine(category)); // Execute query.
+            distinct.ForEach(value => Trace.WriteLine(value)); // Execute query.
         }
 
-        internal static void DistinctWithGroupByAndFirstOrDefault()
+        internal static void DistinctMultipleKeys()
         {
             IQueryable<ProductSubcategory> source = AdventureWorks.ProductSubcategories;
-            IQueryable<ProductSubcategory> distinct = source.GroupBy(
-                subcategory => subcategory.ProductCategoryID,
-                (key, group) => group.FirstOrDefault()); // Define query.
-            distinct.ForEach(subcategory => Trace.WriteLine(subcategory.Name)); // Execute query.
+            var distinct = source
+                .Select(subcategory =>
+                    new { ProductCategoryID = subcategory.ProductCategoryID, Name = subcategory.Name })
+                .Distinct(); // Define query.
+            distinct.ForEach(subcategory => Trace.WriteLine(
+                $"{subcategory.ProductCategoryID}: {subcategory.Name}")); // Execute query.
         }
 
-        internal static void DistinctWithGroupByAndTake()
+        internal static void DistinctMultipleKeysWithGroupBy()
         {
             IQueryable<ProductSubcategory> source = AdventureWorks.ProductSubcategories;
-            IQueryable<ProductSubcategory> distinct = source
-                .GroupBy(subcategory => subcategory.ProductCategoryID)
-                .SelectMany(group => group.Take(1)); // Define query.
-            distinct.ForEach(subcategory => Trace.WriteLine(subcategory.Name)); // Execute query.
+            var distinct = source.GroupBy(
+                subcategory => new { ProductCategoryID = subcategory.ProductCategoryID, Name = subcategory.Name },
+                (key, group) => key); // Define query.
+            distinct.ForEach(subcategory => Trace.WriteLine(
+                $"{subcategory.ProductCategoryID}: {subcategory.Name}")); // Execute query.
         }
 
         internal static void DistinctWithGroupByAndSelectAndFirstOrDefault()
@@ -469,36 +600,27 @@
             distinct.ForEach(subcategory => Trace.WriteLine(subcategory)); // Execute query.
         }
 
-        internal static void DistinctWithGroupByAndSelectAndTake()
-        {
-            IQueryable<ProductSubcategory> source = AdventureWorks.ProductSubcategories;
-            IQueryable<string> distinct = source
-                .GroupBy(subcategory => subcategory.ProductCategoryID)
-                .SelectMany(group => group.Select(subcategory => subcategory.Name).Take(1)); // Define query.
-            distinct.ForEach(subcategory => Trace.WriteLine(subcategory)); // Execute query.
-        }
-
         internal static void Intersect()
         {
-            IQueryable<int> first = AdventureWorks.Products
+            var first = AdventureWorks.Products
                 .Where(product => product.ListPrice > 100)
-                .Select(product => product.ProductID);
-            IQueryable<int> second = AdventureWorks.Products
+                .Select(product => new { Name = product.Name, ListPrice = product.ListPrice });
+            var second = AdventureWorks.Products
                 .Where(product => product.ListPrice < 2000)
-                .Select(product => product.ProductID);
-            IQueryable<int> union = first.Intersect(second); // Define query.
-            union.ForEach(product => Trace.WriteLine(product)); // Execute query.
+                .Select(product => new { Name = product.Name, ListPrice = product.ListPrice });
+            var intersect = first.Intersect(second); // Define query.
+            intersect.ForEach(product => Trace.WriteLine(product)); // Execute query.
         }
 
         internal static void Except()
         {
-            IQueryable<int> first = AdventureWorks.Products
+            var first = AdventureWorks.Products
                 .Where(product => product.ListPrice > 100)
-                .Select(product => product.ProductID);
-            IQueryable<int> second = AdventureWorks.Products
+                .Select(product => new { Name = product.Name, ListPrice = product.ListPrice });
+            var second = AdventureWorks.Products
                 .Where(product => product.ListPrice > 2000)
-                .Select(product => product.ProductID);
-            IQueryable<int> except = first.Except(second); // Define query.
+                .Select(product => new { Name = product.Name, ListPrice = product.ListPrice });
+            var except = first.Except(second); // Define query.
             except.ForEach(product => Trace.WriteLine(product)); // Execute query.
         }
 
@@ -519,31 +641,31 @@
         internal static void OrderByAndSkip()
         {
             IQueryable<Product> source = AdventureWorks.Products;
-            IQueryable<string> names = source
+            IQueryable<string> products = source
                 .OrderBy(product => product.Name)
                 .Skip(10)
                 .Select(product => product.Name); // Define query.
-            names.ForEach(name => Trace.WriteLine(name)); // Execute query.
+            products.ForEach(product => Trace.WriteLine(product)); // Execute query.
         }
 
         internal static void Take()
         {
             IQueryable<Product> source = AdventureWorks.Products;
-            IQueryable<string> names = source
+            IQueryable<string> products = source
                 .Take(10)
                 .Select(product => product.Name); // Define query.
-            names.ForEach(name => Trace.WriteLine(name)); // Execute query.
+            products.ForEach(product => Trace.WriteLine(product)); // Execute query.
         }
 
         internal static void OrderByAndSkipAndTake()
         {
             IQueryable<Product> source = AdventureWorks.Products;
-            IQueryable<string> names = source
+            IQueryable<string> products = source
                 .OrderBy(product => product.Name)
                 .Skip(20)
                 .Take(10)
                 .Select(product => product.Name); // Define query.
-            names.ForEach(name => Trace.WriteLine(name)); // Execute query.
+            products.ForEach(product => Trace.WriteLine(product)); // Execute query.
         }
 
         #endregion
@@ -574,6 +696,15 @@
             var products = source
                 .OrderBy(product => product.ListPrice)
                 .ThenBy(product => product.Name)
+                .Select(product => new { Name = product.Name, ListPrice = product.ListPrice }); // Define query.
+            products.ForEach(product => Trace.WriteLine($"{product.Name}: {product.ListPrice}")); // Execute query.
+        }
+
+        internal static void OrderByAnonymousType()
+        {
+            IQueryable<Product> source = AdventureWorks.Products;
+            var products = source
+                .OrderBy(product => new { ListPrice = product.ListPrice, Name = product.Name })
                 .Select(product => new { Name = product.Name, ListPrice = product.ListPrice }); // Define query.
             products.ForEach(product => Trace.WriteLine($"{product.Name}: {product.ListPrice}")); // Execute query.
         }
@@ -633,6 +764,38 @@
             query2.ForEach(product => Trace.WriteLine($"{product.Name}: {product.ListPrice}"));
         }
 
+        internal static void SelectEntities()
+        {
+            IQueryable<Product> source = AdventureWorks.Products;
+            IQueryable<Product> products = source
+                .Where(product => product is UniversalProduct)
+                .Select(product => new UniversalProduct()
+                {
+                    ProductID = product.ProductID,
+                    Name = product.Name,
+                    ListPrice = product.ListPrice,
+                    ProductSubcategoryID = product.ProductSubcategoryID
+                }); // Define query.
+            products.ForEach(product => Trace.WriteLine($"{product.ProductID}: {product.Name}")); // Execute query.
+            // NotSupportedException: The entity or complex type 'Dixin.Linq.EntityFramework.UniversalProduct' cannot be constructed in a LINQ to Entities query.
+        }
+
+        internal static void SelectEntityObjects()
+        {
+            IQueryable<Product> source = AdventureWorks.Products;
+            IEnumerable<Product> products = source
+                .Where(product => product is UniversalProduct) // Return IQueryable<Product>. LINQ to Entities.
+                .AsEnumerable() // Return IEnumerable<(int, string)>. LINQ to Objects from here.
+                .Select(product => new UniversalProduct()
+                {
+                    ProductID = product.ProductID,
+                    Name = product.Name,
+                    ListPrice = product.ListPrice,
+                    ProductSubcategoryID = product.ProductSubcategoryID
+                }); // Define query.
+            products.ForEach(product => Trace.WriteLine(product.Name)); // Execute query.
+        }
+
         #endregion
 
         #region Element
@@ -686,7 +849,7 @@
             var singleOrDefault = source
                 .GroupBy(
                     subcategory => subcategory.ListPrice,
-                    (key, values) => new { ListPrice = key, Count = values.Count() })
+                    (key, group) => new { ListPrice = key, Count = group.Count() })
                 .SingleOrDefault(group => group.Count > 10); // Define query.
             Trace.WriteLine($"{singleOrDefault?.ListPrice}");
         }
@@ -697,7 +860,7 @@
 
         internal static void Count()
         {
-            IQueryable<Product> source = AdventureWorks.Products;
+            IQueryable<ProductCategory> source = AdventureWorks.ProductCategories;
             int count = source.Count(); // Execute query.
             Trace.WriteLine(count);
         }
@@ -705,29 +868,22 @@
         internal static void LongCount()
         {
             IQueryable<Product> source = AdventureWorks.Products;
-            long longCount = source.LongCount(product => product.ListPrice == 0); // Execute query.
+            long longCount = source.LongCount(product => product.ListPrice > 0); // Execute query.
             Trace.WriteLine(longCount);
         }
 
         internal static void Max()
         {
-            IQueryable<Product> source = AdventureWorks.Products;
-            decimal min = source.Select(product => product.ListPrice).Max(); // Execute query.
-            Trace.WriteLine(min);
+            IQueryable<ProductPhoto> source = AdventureWorks.ProductPhotos;
+            DateTime max = source.Select(photo => photo.ModifiedDate).Max(); // Execute query.
+            Trace.WriteLine(max);
         }
 
         internal static void Min()
         {
             IQueryable<Product> source = AdventureWorks.Products;
-            decimal max = source.OfType<UniversalProduct>().Min(product => product.ListPrice); // Execute query.
-            Trace.WriteLine(max);
-        }
-
-        internal static void Sum()
-        {
-            IQueryable<Product> source = AdventureWorks.Products;
-            decimal average = source.Sum(product => product.ListPrice); // Execute query.
-            Trace.WriteLine(average);
+            decimal min = source.Min(product => product.ListPrice); // Execute query.
+            Trace.WriteLine(min);
         }
 
         internal static void Average()
@@ -737,21 +893,21 @@
             Trace.WriteLine(average);
         }
 
+        internal static void Sum()
+        {
+            IQueryable<Product> source = AdventureWorks.Products;
+            decimal average = source.Sum(product => product.ListPrice); // Execute query.
+            Trace.WriteLine(average);
+        }
+
         #endregion
 
         #region Quantifiers
 
-        internal static void All()
-        {
-            IQueryable<Product> source = AdventureWorks.Products;
-            bool allPricePositive = source.All(product => product.ListPrice > 0); // Execute query.
-            Trace.WriteLine(allPricePositive);
-        }
-
         internal static void Any()
         {
             IQueryable<Product> source = AdventureWorks.Products;
-            bool anyUniversal = source.OfType<UniversalProduct>().Any(); // Execute query.
+            bool anyUniversal = source.Any(); // Execute query.
             Trace.WriteLine(anyUniversal);
         }
 
@@ -763,6 +919,45 @@
             Trace.WriteLine(contains);
         }
 
+        internal static void AnyWithPredicate()
+        {
+            IQueryable<Product> source = AdventureWorks.Products;
+            bool anyUniversal = source.Any(product => product.ListPrice == 100); // Execute query.
+            Trace.WriteLine(anyUniversal);
+        }
+
+        internal static void AllNot()
+        {
+            IQueryable<Product> source = AdventureWorks.Products;
+            bool allNot = source.All(product => product.ProductSubcategoryID != null); // Execute query.
+            Trace.WriteLine(allNot);
+        }
+
+        internal static void NotAny()
+        {
+            IQueryable<Product> source = AdventureWorks.Products;
+            bool notAny = !source.Any(product => !(product.ProductSubcategoryID != null)); // Execute query.
+            Trace.WriteLine(notAny);
+        }
+
         #endregion
     }
 }
+
+#if DEMO
+namespace System.Linq
+{
+    using System.Collections.Generic;
+
+    public static class Enumerable
+    {
+        public static IEnumerable<TSource> AsEnumerable<TSource>(this IEnumerable<TSource> source) => source;
+    }
+
+    public static class Queryable
+    {
+        public static IQueryable<TElement> AsQueryable<TElement>(this IEnumerable<TElement> source) =>
+            source is IQueryable<TElement> ? (IQueryable<TElement>)source : new EnumerableQuery<TElement>(source);
+    }
+}
+#endif
