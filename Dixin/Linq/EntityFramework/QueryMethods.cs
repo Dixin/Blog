@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Data.Linq.SqlClient;
     using System.Diagnostics;
     using System.Linq;
 
@@ -58,51 +57,11 @@
             categories.ForEach(category => Trace.WriteLine(category.Name)); // Execute query.
         }
 
-        internal static void WhereWithLike()
-        {
-            IQueryable<vProductAndDescription> source = AdventureWorks.ProductDescriptions;
-            IQueryable<vProductAndDescription> descriptions = source.Where(description => description.CultureID.StartsWith("zh")); // Define query.
-            descriptions.ForEach(description => Trace.WriteLine($"{description.Name}: {description.Description}")); // Execute query.
-        }
-
-        internal static void WhereWithLikeMethod()
-        {
-            IQueryable<Product> source = AdventureWorks.Products;
-            IQueryable<Product> products = source.Where(product =>
-                SqlMethods.Like(product.Name, "%Mountain%")); // Define query.
-            products.ForEach(product => Trace.WriteLine($"{product.Name}: {product.ListPrice}")); // Execute query.
-            // NotSupportedException: LINQ to Entities does not recognize the method 'Boolean Like(System.String, System.String)' method, and this method cannot be translated into a store expression.
-        }
-
-        internal static void WhereWithContains()
-        {
-            string[] names = { "Blade", "Chainring", "Freewheel" };
-            IQueryable<Product> source = AdventureWorks.Products;
-            IQueryable<Product> products = source.Where(product => names.Contains(product.Name)); // Define query.
-            products.ForEach(product => Trace.WriteLine($"{product.Name}: {product.ListPrice}")); // Execute query.
-        }
-
-        internal static void WhereWithNull()
-        {
-            IQueryable<Product> source = AdventureWorks.Products;
-            IQueryable<Product> products = source.Where(product => product.ProductSubcategory != null); // Define query.
-            products.ForEach(product => Trace.WriteLine($"{product.Name}: {product.ListPrice}")); // Execute query.
-        }
-
-        internal static void WhereWithStringIsNullOrEmpty()
-        {
-            IQueryable<Product> source = AdventureWorks.Products;
-            IQueryable<Product> products = source.Where(product => string.IsNullOrEmpty(product.Name)); // Define query.
-            products.ForEach(product => Trace.WriteLine($"{product.Name}: {product.ListPrice}")); // Execute query.
-            // NotSupportedException: Method 'Boolean IsNullOrEmpty(System.String)' has no supported translation to SQL.
-        }
-
         internal static void WhereWithIs()
         {
             IQueryable<Product> source = AdventureWorks.Products;
             IQueryable<Product> products = source.Where(product => product is UniversalProduct); // Define query.
             products.ForEach(product => Trace.WriteLine($"{product.Name}: {product.GetType().Name}")); // Execute query.
-            // NotSupportedException: Method 'Boolean IsNullOrEmpty(System.String)' has no supported translation to SQL.
         }
 
         internal static void OfType()
@@ -136,17 +95,8 @@
         {
             IQueryable<Product> source = AdventureWorks.Products;
             var products = source.Select(product =>
-                new { ProductID = product.ProductID, Name = product.Name, Constant = 1 }); // Define query.
-            products.ForEach(product => Trace.WriteLine($"{product.ProductID}: {product.Name}")); // Execute query.
-        }
-
-        internal static void SelectWithCase()
-        {
-            IQueryable<Product> source = AdventureWorks.Products;
-            var products = source.Select(product =>
-                new { Name = product.Name, HasListPrice = product.ListPrice > 0 }); // Define query.
-            products.ForEach(product => Trace.WriteLine(
-                $"{product.Name} has{(product.HasListPrice ? null : " no")} list price.")); // Execute query.
+                new { Name = product.Name, IsExpensive = product.ListPrice > 1000, Constant = 1 }); // Define query.
+            products.ForEach(product => Trace.WriteLine(product.Name)); // Execute query.
         }
 
         #endregion
@@ -734,7 +684,16 @@
 
         #region Conversion
 
-        internal static void Cast()
+        internal static void CastPrimitive()
+        {
+            IQueryable<Product> source = AdventureWorks.Products;
+            IQueryable<string> listPrices = source
+                .Select(product => product.ListPrice)
+                .Cast<string>(); // Define query.
+            listPrices.ForEach(listPrice => Trace.WriteLine(listPrice)); // Execute query.
+        }
+
+        internal static void CastEntity()
         {
             IQueryable<Product> source = AdventureWorks.Products;
             IQueryable<UniversalProduct> universalProducts = source

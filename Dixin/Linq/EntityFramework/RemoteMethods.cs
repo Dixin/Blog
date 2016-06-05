@@ -2,12 +2,53 @@
 {
     using System;
     using System.Data.Entity;
+    using System.Data.Linq.SqlClient;
+    using System.Diagnostics;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
 
     internal static partial class QueryMethods
     {
+        internal static void WhereWithLike()
+        {
+            IQueryable<vProductAndDescription> source = AdventureWorks.ProductDescriptions;
+            IQueryable<vProductAndDescription> descriptions = source.Where(description => description.CultureID.StartsWith("zh")); // Define query.
+            descriptions.ForEach(description => Trace.WriteLine($"{description.Name}: {description.Description}")); // Execute query.
+        }
+
+        internal static void WhereWithLikeMethod()
+        {
+            IQueryable<Product> source = AdventureWorks.Products;
+            IQueryable<Product> products = source.Where(product =>
+                SqlMethods.Like(product.Name, "%Mountain%")); // Define query.
+            products.ForEach(product => Trace.WriteLine($"{product.Name}: {product.ListPrice}")); // Execute query.
+            // NotSupportedException: LINQ to Entities does not recognize the method 'Boolean Like(System.String, System.String)' method, and this method cannot be translated into a store expression.
+        }
+
+        internal static void WhereWithContains()
+        {
+            string[] names = { "Blade", "Chainring", "Freewheel" };
+            IQueryable<Product> source = AdventureWorks.Products;
+            IQueryable<Product> products = source.Where(product => names.Contains(product.Name)); // Define query.
+            products.ForEach(product => Trace.WriteLine($"{product.Name}: {product.ListPrice}")); // Execute query.
+        }
+
+        internal static void WhereWithNull()
+        {
+            IQueryable<Product> source = AdventureWorks.Products;
+            IQueryable<Product> products = source.Where(product => product.ProductSubcategory != null); // Define query.
+            products.ForEach(product => Trace.WriteLine($"{product.Name}: {product.ListPrice}")); // Execute query.
+        }
+
+        internal static void WhereWithStringIsNullOrEmpty()
+        {
+            IQueryable<Product> source = AdventureWorks.Products;
+            IQueryable<Product> products = source.Where(product => string.IsNullOrEmpty(product.Name)); // Define query.
+            products.ForEach(product => Trace.WriteLine($"{product.Name}: {product.ListPrice}")); // Execute query.
+            // NotSupportedException: Method 'Boolean IsNullOrEmpty(System.String)' has no supported translation to SQL.
+        }
+
         internal static void InlinePredicate()
         {
             IQueryable<string> query = AdventureWorks.Products

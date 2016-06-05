@@ -33,39 +33,6 @@ SELECT
     FROM [Production].[ProductCategory] AS [Extent1]
     WHERE ([Extent1].[ProductCategoryID] > 0) AND ([Extent1].[ProductCategoryID] < 5)
 
--- WhereWithLike
-SELECT 
-    [Extent1].[ProductID] AS [ProductID], 
-    [Extent1].[Name] AS [Name], 
-    [Extent1].[ProductModel] AS [ProductModel], 
-    [Extent1].[CultureID] AS [CultureID], 
-    [Extent1].[Description] AS [Description]
-    FROM [Production].[vProductAndDescription] AS [Extent1]
-    WHERE [Extent1].[CultureID] LIKE N'zh%'
-
--- WhereWithLikeMethod
--- NotSupportedException.
-
--- WhereWithContains
-SELECT 
-    CASE WHEN (((CASE WHEN ([Extent1].[Style] = N'M ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N'U ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N'W ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN '0X' WHEN ([Extent1].[Style] = N'M ') THEN '0X0X' WHEN ([Extent1].[Style] = N'U ') THEN '0X1X' ELSE '0X2X' END AS [C1], 
-    [Extent1].[ProductID] AS [ProductID], 
-    [Extent1].[ProductSubcategoryID] AS [ProductSubcategoryID], 
-    [Extent1].[Name] AS [Name], 
-    [Extent1].[ListPrice] AS [ListPrice]
-    FROM [Production].[Product] AS [Extent1]
-    WHERE [Extent1].[Name] IN (N'Blade', N'Chainring', N'Freewheel')
-
--- WhereWithNull
-SELECT 
-    CASE WHEN (((CASE WHEN ([Extent1].[Style] = N'M ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N'U ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N'W ') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN '0X' WHEN ([Extent1].[Style] = N'M ') THEN '0X0X' WHEN ([Extent1].[Style] = N'U ') THEN '0X1X' ELSE '0X2X' END AS [C1], 
-    [Extent1].[ProductID] AS [ProductID], 
-    [Extent1].[ProductSubcategoryID] AS [ProductSubcategoryID], 
-    [Extent1].[Name] AS [Name], 
-    [Extent1].[ListPrice] AS [ListPrice]
-    FROM [Production].[Product] AS [Extent1]
-    WHERE [Extent1].[ProductSubcategoryID] IS NOT NULL
-
 -- WhereWithIs
 SELECT 
     '0X0X' AS [C1], 
@@ -100,9 +67,12 @@ SELECT
 
 -- SelectAnonymousType
 SELECT 
-    [Extent1].[ProductID] AS [ProductID], 
+    1 AS [C1], 
     [Extent1].[Name] AS [Name], 
-    1 AS [C1]
+    CASE 
+		WHEN ([Extent1].[ListPrice] > cast(1000 as decimal(18))) THEN cast(1 as bit) 
+		WHEN ( NOT ([Extent1].[ListPrice] > cast(1000 as decimal(18)))) THEN cast(0 as bit) 
+	END AS [C2]
     FROM [Production].[Product] AS [Extent1]
 
 -- SelectWithCase
@@ -637,6 +607,11 @@ SELECT
 -- NotSupportedException.
 
 -- Cast
+SELECT 
+     CAST( [Extent1].[ListPrice] AS nvarchar(max)) AS [C1]
+    FROM [Production].[Product] AS [Extent1]
+
+-- CastEntity
 -- NotSupportedException.
 
 -- AsEnumerableAsQueryable

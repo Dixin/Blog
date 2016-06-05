@@ -18,42 +18,6 @@
         }
 
         [TestMethod]
-        public void LocalRemoteMethodTest()
-        {
-            QueryMethods.InlinePredicate();
-            QueryMethods.InlinePredicateCompiled();
-            try
-            {
-                QueryMethods.MethodPredicate();
-                Assert.Fail();
-            }
-            catch (NotSupportedException exception)
-            {
-                Trace.WriteLine(exception);
-            }
-            try
-            {
-                QueryMethods.MethodPredicateCompiled();
-                Assert.Fail();
-            }
-            catch (NotSupportedException exception)
-            {
-                Trace.WriteLine(exception);
-            }
-            try
-            {
-                QueryMethods.MethodSelector();
-                Assert.Fail();
-            }
-            catch (NotSupportedException exception)
-            {
-                Trace.WriteLine(exception);
-            }
-            QueryMethods.LocalSelector();
-            QueryMethods.RemoteMethod();
-        }
-
-        [TestMethod]
         public void GenerationTest()
         {
             QueryMethods.DefaultIfEmpty();
@@ -66,18 +30,6 @@
             QueryMethods.WhereWithOr();
             QueryMethods.WhereWithAnd();
             QueryMethods.WhereAndWhere();
-            QueryMethods.WhereWithLike();
-            try
-            {
-                QueryMethods.WhereWithLikeMethod();
-                Assert.Fail();
-            }
-            catch (NotSupportedException exception)
-            {
-                Trace.WriteLine(exception);
-            }
-            QueryMethods.WhereWithContains();
-            QueryMethods.WhereWithNull();
             QueryMethods.WhereWithIs();
             QueryMethods.OfType();
         }
@@ -88,7 +40,6 @@
             QueryMethods.Select();
             QueryMethods.SelectWithStringConcat();
             QueryMethods.SelectAnonymousType();
-            QueryMethods.SelectWithCase();
         }
 
         [TestMethod]
@@ -190,9 +141,10 @@
         [TestMethod]
         public void ConversionTest()
         {
+            QueryMethods.CastPrimitive();
             try
             {
-                QueryMethods.Cast();
+                QueryMethods.CastEntity();
                 Assert.Fail();
             }
             catch (NotSupportedException exception)
@@ -258,6 +210,54 @@
             QueryMethods.Contains();
             QueryMethods.AllNot();
             QueryMethods.NotAny();
+        }
+
+        [TestMethod]
+        public void LocalRemoteMethodTest()
+        {
+            QueryMethods.WhereWithLike();
+            try
+            {
+                QueryMethods.WhereWithLikeMethod();
+                Assert.Fail();
+            }
+            catch (NotSupportedException exception)
+            {
+                Trace.WriteLine(exception);
+            }
+            QueryMethods.WhereWithContains();
+            QueryMethods.WhereWithNull();
+            QueryMethods.InlinePredicate();
+            QueryMethods.InlinePredicateCompiled();
+            try
+            {
+                QueryMethods.MethodPredicate();
+                Assert.Fail();
+            }
+            catch (NotSupportedException exception)
+            {
+                Trace.WriteLine(exception);
+            }
+            try
+            {
+                QueryMethods.MethodPredicateCompiled();
+                Assert.Fail();
+            }
+            catch (NotSupportedException exception)
+            {
+                Trace.WriteLine(exception);
+            }
+            try
+            {
+                QueryMethods.MethodSelector();
+                Assert.Fail();
+            }
+            catch (NotSupportedException exception)
+            {
+                Trace.WriteLine(exception);
+            }
+            QueryMethods.LocalSelector();
+            QueryMethods.RemoteMethod();
         }
 
         [TestMethod]
