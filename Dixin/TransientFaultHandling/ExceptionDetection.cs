@@ -15,4 +15,12 @@
 
         public bool IsTransient(Exception exception) => this.isTransient(exception);
     }
+
+    public class TransientDetection<TException> : ExceptionDetection
+        where TException : Exception
+    {
+        public TransientDetection() : base(exception => exception is TException)
+        {
+        }
+    }
 }

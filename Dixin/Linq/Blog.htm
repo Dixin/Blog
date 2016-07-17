@@ -144,24 +144,25 @@
                             <li>Delegate and named method
                             <li>Anonymous method
                             <li>Lambda expression
-                            <li>Call anonymous function</li>
+                            <li>Anonymous function</li>
                         </ul>
                     <li>Expression bodied method-like member
                     <li>Func and Action generic delegate types
                     <li>
                         Lambda expression as expression tree
                         <ul>
-                            <li>Code as data</li>
+                            <li>Code as data
+                            <li>.NET expressions</li>
                         </ul>
                     <li>
                         Compile expression tree at runtime
                         <ul>
                             <li>Traverse expression tree
-                            <li>Built-in expression tree visitor
+                            <li>.NET built-in expression tree visitor
                             <li>Compile expression tree to IL at runtime
                             <li>Compile expression tree to executable method at runtime
                             <li>.NET built-in compiler
-                            <li>Compile expression tree to other languages
+                            <li>Convert expression tree to other languages
                             <li>Decompile anonymous method to expression tree?</li>
                         </ul>
                     <li>Type inference of lambda expression</li>
@@ -525,6 +526,192 @@
                     <li>Sequential vs. parallel
                     <li>CPU bound vs. IO bound
                     <li>Conclusion</li>
+                </ul>
+            </li>
+        </ol>
+    <li>
+        <h1><a href="https://weblogs.asp.net/dixin/Tags/Entity%20Framework" target="_blank">Entity Framework and LINQ to Entities</a></h1>
+        <ol>
+            <li>
+                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-and-linq-to-entities-1-iqueryable-t-and-remote-query" target="_blank">IQueryable&lt;T&gt; and Remote Query</a></h2>
+                <ul>
+                    <li>Remote query vs. local query
+                    <li>Function vs. expression tree
+                    <li>Trace SQL query execution</li>
+                </ul>
+            <li>
+                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-and-linq-to-entities-2-object-relational-mapping" target="_blank">Object-Relational Mapping</a></h2>
+                <ul>
+                    <li>Data types
+                    <li>Database
+                    <li>Tables</li>
+                    <li>
+                        Relationships
+                        <ul>
+                            <li>One-to-many
+                            <li>Many-to-many</li>
+                        </ul>
+                    <li>Inheritance
+                    <li>Views
+                    <li>Stored procedures and functions</li>
+                </ul>
+            <li>
+                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-and-linq-to-entities-3-logging" target="_blank">Logging</a></h2>
+                <ul>
+                    <li>DbQuery&lt;T&gt;.ToString
+                    <li>Database.Log
+                    <li>IDbCommandInterceptor</li>
+                </ul>
+            <li>
+                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-and-linq-to-entities-4-query-methods" target="_blank">Query Methods</a></h2>
+                <ul>
+                    <li>
+                        Return a new IEnumerable&lt;T&gt; sequence
+                        <ul>
+                            <li>Generation: DefaultIfEmpty
+                            <li>Filtering (restriction): Where, OfType
+                            <li>Mapping (projection): Select
+                            <li>Grouping: GroupBy
+                            <li>
+                                Join
+                                <ul>
+                                    <li>Inner join: Join, SelectMany, GroupJoin, Select
+                                    <li>Outer join: GroupJoin, Select, SelectMany
+                                    <li>Cross join: SelectMany, Join
+                                    <li>Self join: GroupJoin</li>
+                                </ul>
+                            <li>
+                                Apply
+                                <ul>
+                                    <li>Cross apply: GroupBy, Join
+                                    <li>Outer apply: GroupBy, Join</li>
+                                </ul>
+                            <li>Concatenation: Concat
+                            <li>Set: Distinct, Union, Intersect, Except
+                            <li>Partitioning: Take, Skip
+                            <li>Ordering: OrderBy, ThenBy, OrderByDescending, ThenByDescending
+                            <li>Conversion: Cast, AsQueryable</li>
+                        </ul>
+                    <li>
+                        Return a single value
+                        <ul>
+                            <li>Element: First, FirstOrDefault, Single, SingleOrDefault
+                            <li>Aggregation: Count, LongCount, Min, Max, Sum, Average
+                            <li>Quantifier: All, Any, Contains</li>
+                        </ul>
+                    </li>
+                </ul>
+            <li>
+                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-and-linq-to-entities-5-query-translation" target="_blank">Query Translation</a></h2>
+                <ul>
+                    <li>
+                        Code to expression tree
+                        <ul>
+                            <li>IQueryable&lt;T&gt; and IQueryProvider
+                            <li>Queryable methods
+                            <li>Build LINQ to Entities queries and expressions</li>
+                        </ul>
+                    <li>
+                        Expression tree to database command tree
+                        <ul>
+                            <li>DbExpression and DbCommandTree
+                            <li>Convert Expression to DbExpression
+                            <li>Query methods translation
+                            <li>.NET APIs translation
+                            <li>Remote method call vs. local method call
+                            <li>Database functions translation</li>
+                        </ul>
+                    <li>
+                        Database command tree to SQL
+                        <ul>
+                            <li>DbExpressionVisitor&lt;TResultType&gt; and SqlGenerator
+                            <li>Database command tree to SQL</li>
+                        </ul>
+                    <li>
+                        Log the translation
+                        <ul>
+                            <li>DbProviderServices and SqlProviderServices
+                            <li>Log database command tree</li>
+                        </ul>
+                    </li>
+                </ul>
+            <li>
+                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-and-linq-to-entities-6-deferred-execution-laziness-loading-and-eager-loading" target="_blank">Deferred Execution, Laziness Loading and Eager Loading</a></h2>
+                <ul>
+                    <li>
+                        Deferred execution
+                        <ul>
+                            <li>Iterator pattern
+                            <li>Lazy/eager evaluation</li>
+                        </ul>
+                    <li>
+                        Lazy loading and eager loading
+                        <ul>
+                            <li>Implicit and explicit lazy loading
+                            <li>Eager loading
+                            <li>The N + 1 problem
+                            <li>Disable lazy loading</li>
+                        </ul>
+                    </li>
+                </ul>
+            <li>
+                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-and-linq-to-entities-7-data-changes" target="_blank">Data Changes</a></h2>
+                <ul>
+                    <li>Repository pattern and unit of work pattern
+                    <li>
+                        Track entities and changes
+                        <ul>
+                            <li>Track entities
+                            <li>Track entity changes and property changes
+                            <li>Track association changes
+                            <li>Disable tracking</li>
+                        </ul>
+                    <li>Change data
+                        <ul>
+                            <li>Create
+                            <li>Update
+                            <li>Delete</li>
+                        </ul>
+                    </li>
+                </ul>
+            <li>
+                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-and-linq-to-entities-8-transactions" target="_blank">Transactions</a></h2>
+                <ul>
+                    <li>DbContextTransaction
+                    <li>DbTransaction
+                    <li>TransactionScope</li>
+                </ul>
+            <li>
+                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-and-linq-to-entities-9-optimistic-concurrency" target="_blank">Optimistic Concurrency</a></h2>
+                <ul>
+                    <li>Detect Concurrency conflicts
+                    <li>
+                        Resolve concurrency conflicts
+                        <ul>
+                            <li>Retain database values (database wins)
+                            <li>Overwrite database values (client wins)
+                            <li>Merge with database values</li>
+                        </ul>
+                    <li>SaveChanges with concurrency conflict handling</li>
+                </ul>
+            <li>
+                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-and-linq-to-entities-10-performance" target="_blank">Performance</a></h2>
+                <ul>
+                    <li>
+                        Initialization
+                        <ul>
+                            <li>Provider manifest initialization
+                            <li>Database initialization
+                            <li>Mapping views initialization</li>
+                        </ul>
+                    <li>
+                        Cache
+                        <ul>
+                            <li>Entity cache
+                            <li>LINQ query translation cache
+                            <li>SQL query plan cache</li>
+                        </ul>
+                    <li>Asynchrony</li>
                 </ul>
             </li>
         </ol>

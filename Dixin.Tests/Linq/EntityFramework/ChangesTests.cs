@@ -3,7 +3,6 @@
     using System;
     using System.Data.Entity.Infrastructure;
     using System.Diagnostics;
-    using System.Transactions;
 
     using Dixin.Linq.EntityFramework;
 
@@ -15,62 +14,44 @@
         [TestMethod]
         public void TracingTest()
         {
-            Tracking.EntitiesFromSameContext();
-            Tracking.MappingsFromSameContext();
-            Tracking.EntitiesFromContexts();
-            Tracking.Changes();
+            Tracking.EntitiesFromSameDbContext();
+            Tracking.ObjectsFromSameContext();
+            Tracking.EntitiesFromDbContexts();
+            Tracking.EntityChanges();
             Tracking.Attach();
             Tracking.AssociationChanges();
+            Tracking.AsNoTracking();
+            Tracking.DetectChanges();
         }
 
         [TestMethod]
         public void ChangesTest()
         {
-            using (TransactionScope scope = new TransactionScope())
-            {
-                int subcategoryId = Changes.Insert();
-                Changes.Update();
-                Changes.UpdateWithNoChange();
-                Changes.Delete();
-                Changes.DeleteWithNoQuery(subcategoryId);
-                Changes.DeleteWithAssociation();
-                try
-                {
-                    Changes.UntrackedChanges();
-                    Assert.Fail();
-                }
-                catch (InvalidOperationException exception)
-                {
-                    Trace.WriteLine(exception);
-                }
-                scope.Complete();
-            }
-        }
-
-        [TestMethod]
-        public void TransactionTest()
-        {
-            Transactions.Implicit();
-            Transactions.ExplicitLocal();
-            Transactions.ExplicitDistributable();
-        }
-
-        [TestMethod]
-        public void ConflictTest()
-        {
-            Concurrency.DefaultControl();
+            ProductCategory category = Changes.Create();
+            Changes.Update();
+            Changes.SaveNoChanges();
+            Changes.UpdateWithoutRead(category.ProductCategoryID);
+            Changes.Delete();
+            Changes.DeleteWithoutRead(category.ProductCategoryID);
             try
             {
-                Concurrency.CheckModifiedDate();
+                Changes.DeleteWithAssociation();
                 Assert.Fail();
             }
-            catch (DbUpdateConcurrencyException exception)
+            catch (DbUpdateException exception)
             {
                 Trace.WriteLine(exception);
             }
-            Concurrency.DatabaseWins();
-            Concurrency.ClientWins();
-            Concurrency.MergeClientAndDatabase();
+            Changes.DeleteAllAssociated();
+            try
+            {
+                Changes.UntrackedChanges();
+                Assert.Fail();
+            }
+            catch (InvalidOperationException exception)
+            {
+                Trace.WriteLine(exception);
+            }
         }
     }
 }

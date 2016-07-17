@@ -137,6 +137,11 @@
     <Compile Include="Common\Int32ExtensionsTests.cs" />
     <Compile Include="Linq\CategoryTheory\LinqHelper.cs" />
     <Compile Include="Linq\Connection.cs" />
+    <Compile Include="Linq\EntityFramework\ConcurrencyTests.cs" />
+    <Compile Include="Linq\EntityFramework\LazinessTests.cs" />
+    <Compile Include="Linq\EntityFramework\SaveChangesTests.cs" />
+    <Compile Include="Linq\EntityFramework\TransactionTests.cs" />
+    <Compile Include="Linq\EntityFramework\TranslationTests.cs" />
     <Compile Include="Linq\Fundamentals\ReflectionHelperTests.cs" />
     <Compile Include="Linq\EntityFramework\PerformanceTests.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorksTests.Performance.cs" />

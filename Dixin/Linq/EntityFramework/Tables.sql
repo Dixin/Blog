@@ -44,9 +44,12 @@ CREATE TABLE [Production].[Product](
 
     [Style] nchar(2) NULL
 	    CONSTRAINT [CK_Product_Style] 
-        CHECK (UPPER([Style]) = N'U' OR UPPER([Style]) = N'M' OR UPPER([Style]) = N'W' OR [Style] IS NULL),
+        CHECK (UPPER([Style]) = N'U' OR UPPER([Style]) = N'M' OR UPPER([Style]) = N'W' OR [Style] IS NULL)
     
 	/* Other ignored columns. */)
+GO
+
+ALTER TABLE [Production].[Product] ADD [RowVersion] rowversion NOT NULL
 GO
 
 CREATE TABLE [Production].[ProductPhoto](

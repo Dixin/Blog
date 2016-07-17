@@ -10,7 +10,7 @@
         [TestMethod]
         public void LogTest()
         {
-            Log.ToString();
+            Log.DbQueryToString();
             Log.DatabaseLog();
             Log.DbCommandInterceptor();
         }

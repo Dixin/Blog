@@ -71,21 +71,8 @@
         [MaxLength(50)]
         public string LargePhotoFileName { get; set; }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         [ConcurrencyCheck]
         public DateTime ModifiedDate { get; set; }
-    }
-
-    [Table(nameof(ProductProductPhoto), Schema = AdventureWorks.Production)]
-    public partial class ProductProductPhoto
-    {
-        [Key]
-        [Column(Order = 0)]
-        public int ProductID { get; set; }
-
-        [Key]
-        [Column(Order = 1)]
-        public int ProductPhotoID { get; set; }
     }
 
     public partial class AdventureWorks

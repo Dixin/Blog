@@ -11,7 +11,7 @@ using System.Data.Entity.Infrastructure.MappingViews;
 
 [assembly: DbMappingViewCacheTypeAttribute(
     typeof(Dixin.Linq.EntityFramework.AdventureWorks),
-    typeof(Edm_EntityMappingGeneratedViews.ViewsForBaseEntitySetsa46fed63c4d6bed759292726094f2b899be27cc86c9c4c925aa9d54397f6beb3))]
+    typeof(Edm_EntityMappingGeneratedViews.ViewsForBaseEntitySets79121f296bdcf11a0b5f3617c0bda39073d124ab3942884887a87880e7064a0f))]
 
 namespace Edm_EntityMappingGeneratedViews
 {
@@ -23,14 +23,14 @@ namespace Edm_EntityMappingGeneratedViews
     /// Implements a mapping view cache.
     /// </summary>
     [GeneratedCode("Entity Framework Power Tools", "0.9.0.0")]
-    internal sealed class ViewsForBaseEntitySetsa46fed63c4d6bed759292726094f2b899be27cc86c9c4c925aa9d54397f6beb3 : DbMappingViewCache
+    internal sealed class ViewsForBaseEntitySets79121f296bdcf11a0b5f3617c0bda39073d124ab3942884887a87880e7064a0f : DbMappingViewCache
     {
         /// <summary>
         /// Gets a hash value computed over the mapping closure.
         /// </summary>
         public override string MappingHashValue
         {
-            get { return "a46fed63c4d6bed759292726094f2b899be27cc86c9c4c925aa9d54397f6beb3"; }
+            get { return "79121f296bdcf11a0b5f3617c0bda39073d124ab3942884887a87880e7064a0f"; }
         }
 
         /// <summary>
@@ -47,62 +47,62 @@ namespace Edm_EntityMappingGeneratedViews
 
             var extentName = extent.EntityContainer.Name + "." + extent.Name;
 
-            if (extentName == "CodeFirstDatabase.ProductCategory")
+            if (extentName == "CodeFirstDatabase.vProductAndDescription")
             {
                 return GetView0();
             }
 
-            if (extentName == "CodeFirstDatabase.ProductSubcategory")
+            if (extentName == "AdventureWorks.ProductAndDescriptions")
             {
                 return GetView1();
             }
 
-            if (extentName == "CodeFirstDatabase.Product")
+            if (extentName == "CodeFirstDatabase.ProductCategory")
             {
                 return GetView2();
             }
 
-            if (extentName == "CodeFirstDatabase.ProductProductPhoto")
+            if (extentName == "CodeFirstDatabase.ProductSubcategory")
             {
                 return GetView3();
             }
 
-            if (extentName == "CodeFirstDatabase.ProductPhoto")
+            if (extentName == "CodeFirstDatabase.Product")
             {
                 return GetView4();
             }
 
-            if (extentName == "AdventureWorks.ProductCategories")
+            if (extentName == "CodeFirstDatabase.ProductProductPhoto")
             {
                 return GetView5();
             }
 
-            if (extentName == "AdventureWorks.ProductSubcategories")
+            if (extentName == "CodeFirstDatabase.ProductPhoto")
             {
                 return GetView6();
             }
 
-            if (extentName == "AdventureWorks.Products")
+            if (extentName == "AdventureWorks.ProductCategories")
             {
                 return GetView7();
             }
 
-            if (extentName == "AdventureWorks.ProductProductPhotoes")
+            if (extentName == "AdventureWorks.ProductSubcategories")
             {
                 return GetView8();
             }
 
-            if (extentName == "AdventureWorks.ProductPhotos")
+            if (extentName == "AdventureWorks.Products")
             {
                 return GetView9();
             }
 
-            if (extentName == "CodeFirstDatabase.vProductAndDescription")
+            if (extentName == "AdventureWorks.ProductProductPhotoes")
             {
                 return GetView10();
             }
 
-            if (extentName == "AdventureWorks.ProductDescriptions")
+            if (extentName == "AdventureWorks.ProductPhotos")
             {
                 return GetView11();
             }
@@ -111,10 +111,52 @@ namespace Edm_EntityMappingGeneratedViews
         }
 
         /// <summary>
-        /// Gets the view for CodeFirstDatabase.ProductCategory.
+        /// Gets the view for CodeFirstDatabase.vProductAndDescription.
         /// </summary>
         /// <returns>The mapping view.</returns>
         private static DbMappingView GetView0()
+        {
+            return new DbMappingView(@"
+    SELECT VALUE -- Constructing vProductAndDescription
+        [CodeFirstDatabaseSchema.vProductAndDescription](T1.vProductAndDescription_ProductID, T1.vProductAndDescription_Name, T1.vProductAndDescription_ProductModel, T1.vProductAndDescription_CultureID, T1.vProductAndDescription_Description)
+    FROM (
+        SELECT 
+            T.ProductID AS vProductAndDescription_ProductID, 
+            T.Name AS vProductAndDescription_Name, 
+            T.ProductModel AS vProductAndDescription_ProductModel, 
+            T.CultureID AS vProductAndDescription_CultureID, 
+            T.Description AS vProductAndDescription_Description, 
+            True AS _from0
+        FROM AdventureWorks.ProductAndDescriptions AS T
+    ) AS T1");
+        }
+
+        /// <summary>
+        /// Gets the view for AdventureWorks.ProductAndDescriptions.
+        /// </summary>
+        /// <returns>The mapping view.</returns>
+        private static DbMappingView GetView1()
+        {
+            return new DbMappingView(@"
+    SELECT VALUE -- Constructing ProductAndDescriptions
+        [Dixin.Linq.EntityFramework.vProductAndDescription](T1.vProductAndDescription_ProductID, T1.vProductAndDescription_Name, T1.vProductAndDescription_ProductModel, T1.vProductAndDescription_CultureID, T1.vProductAndDescription_Description)
+    FROM (
+        SELECT 
+            T.ProductID AS vProductAndDescription_ProductID, 
+            T.Name AS vProductAndDescription_Name, 
+            T.ProductModel AS vProductAndDescription_ProductModel, 
+            T.CultureID AS vProductAndDescription_CultureID, 
+            T.Description AS vProductAndDescription_Description, 
+            True AS _from0
+        FROM CodeFirstDatabase.vProductAndDescription AS T
+    ) AS T1");
+        }
+
+        /// <summary>
+        /// Gets the view for CodeFirstDatabase.ProductCategory.
+        /// </summary>
+        /// <returns>The mapping view.</returns>
+        private static DbMappingView GetView2()
         {
             return new DbMappingView(@"
     SELECT VALUE -- Constructing ProductCategory
@@ -132,7 +174,7 @@ namespace Edm_EntityMappingGeneratedViews
         /// Gets the view for CodeFirstDatabase.ProductSubcategory.
         /// </summary>
         /// <returns>The mapping view.</returns>
-        private static DbMappingView GetView1()
+        private static DbMappingView GetView3()
         {
             return new DbMappingView(@"
     SELECT VALUE -- Constructing ProductSubcategory
@@ -151,7 +193,7 @@ namespace Edm_EntityMappingGeneratedViews
         /// Gets the view for CodeFirstDatabase.Product.
         /// </summary>
         /// <returns>The mapping view.</returns>
-        private static DbMappingView GetView2()
+        private static DbMappingView GetView4()
         {
             return new DbMappingView(@"
     SELECT VALUE -- Constructing Product
@@ -188,7 +230,7 @@ namespace Edm_EntityMappingGeneratedViews
         /// Gets the view for CodeFirstDatabase.ProductProductPhoto.
         /// </summary>
         /// <returns>The mapping view.</returns>
-        private static DbMappingView GetView3()
+        private static DbMappingView GetView5()
         {
             return new DbMappingView(@"
     SELECT VALUE -- Constructing ProductProductPhoto
@@ -206,7 +248,7 @@ namespace Edm_EntityMappingGeneratedViews
         /// Gets the view for CodeFirstDatabase.ProductPhoto.
         /// </summary>
         /// <returns>The mapping view.</returns>
-        private static DbMappingView GetView4()
+        private static DbMappingView GetView6()
         {
             return new DbMappingView(@"
     SELECT VALUE -- Constructing ProductPhoto
@@ -225,7 +267,7 @@ namespace Edm_EntityMappingGeneratedViews
         /// Gets the view for AdventureWorks.ProductCategories.
         /// </summary>
         /// <returns>The mapping view.</returns>
-        private static DbMappingView GetView5()
+        private static DbMappingView GetView7()
         {
             return new DbMappingView(@"
     SELECT VALUE -- Constructing ProductCategories
@@ -243,7 +285,7 @@ namespace Edm_EntityMappingGeneratedViews
         /// Gets the view for AdventureWorks.ProductSubcategories.
         /// </summary>
         /// <returns>The mapping view.</returns>
-        private static DbMappingView GetView6()
+        private static DbMappingView GetView8()
         {
             return new DbMappingView(@"
     SELECT VALUE -- Constructing ProductSubcategories
@@ -262,7 +304,7 @@ namespace Edm_EntityMappingGeneratedViews
         /// Gets the view for AdventureWorks.Products.
         /// </summary>
         /// <returns>The mapping view.</returns>
-        private static DbMappingView GetView7()
+        private static DbMappingView GetView9()
         {
             return new DbMappingView(@"
     SELECT VALUE -- Constructing Products
@@ -291,7 +333,7 @@ namespace Edm_EntityMappingGeneratedViews
         /// Gets the view for AdventureWorks.ProductProductPhotoes.
         /// </summary>
         /// <returns>The mapping view.</returns>
-        private static DbMappingView GetView8()
+        private static DbMappingView GetView10()
         {
             return new DbMappingView(@"
     SELECT VALUE -- Constructing ProductProductPhotoes
@@ -309,7 +351,7 @@ namespace Edm_EntityMappingGeneratedViews
         /// Gets the view for AdventureWorks.ProductPhotos.
         /// </summary>
         /// <returns>The mapping view.</returns>
-        private static DbMappingView GetView9()
+        private static DbMappingView GetView11()
         {
             return new DbMappingView(@"
     SELECT VALUE -- Constructing ProductPhotos
@@ -321,48 +363,6 @@ namespace Edm_EntityMappingGeneratedViews
             T.ModifiedDate AS ProductPhoto_ModifiedDate, 
             True AS _from0
         FROM CodeFirstDatabase.ProductPhoto AS T
-    ) AS T1");
-        }
-
-        /// <summary>
-        /// Gets the view for CodeFirstDatabase.vProductAndDescription.
-        /// </summary>
-        /// <returns>The mapping view.</returns>
-        private static DbMappingView GetView10()
-        {
-            return new DbMappingView(@"
-    SELECT VALUE -- Constructing vProductAndDescription
-        [CodeFirstDatabaseSchema.vProductAndDescription](T1.vProductAndDescription_ProductID, T1.vProductAndDescription_Name, T1.vProductAndDescription_ProductModel, T1.vProductAndDescription_CultureID, T1.vProductAndDescription_Description)
-    FROM (
-        SELECT 
-            T.ProductID AS vProductAndDescription_ProductID, 
-            T.Name AS vProductAndDescription_Name, 
-            T.ProductModel AS vProductAndDescription_ProductModel, 
-            T.CultureID AS vProductAndDescription_CultureID, 
-            T.Description AS vProductAndDescription_Description, 
-            True AS _from0
-        FROM AdventureWorks.ProductDescriptions AS T
-    ) AS T1");
-        }
-
-        /// <summary>
-        /// Gets the view for AdventureWorks.ProductDescriptions.
-        /// </summary>
-        /// <returns>The mapping view.</returns>
-        private static DbMappingView GetView11()
-        {
-            return new DbMappingView(@"
-    SELECT VALUE -- Constructing ProductDescriptions
-        [Dixin.Linq.EntityFramework.vProductAndDescription](T1.vProductAndDescription_ProductID, T1.vProductAndDescription_Name, T1.vProductAndDescription_ProductModel, T1.vProductAndDescription_CultureID, T1.vProductAndDescription_Description)
-    FROM (
-        SELECT 
-            T.ProductID AS vProductAndDescription_ProductID, 
-            T.Name AS vProductAndDescription_Name, 
-            T.ProductModel AS vProductAndDescription_ProductModel, 
-            T.CultureID AS vProductAndDescription_CultureID, 
-            T.Description AS vProductAndDescription_Description, 
-            True AS _from0
-        FROM CodeFirstDatabase.vProductAndDescription AS T
     ) AS T1");
         }
     }

@@ -1,0 +1,12 @@
+﻿Expression<Func<int, bool>> (NodeType = Lambda, Type = Func<int, bool>)
+|_Parameters
+| |_ParameterExpression (NodeType = Parameter, Type = int)
+|   |_Name = "int32"
+|_Body
+  |_BinaryExpression (NodeType = GreaterThan, Type = bool)
+    |_Left
+    | |_ParameterExpression (NodeType = Parameter, Type = int)
+    |   |_Name = "int32"
+    |_Right
+      |_ConstantExpression (NodeType = Constant, Type = int)
+        |_Value = 0

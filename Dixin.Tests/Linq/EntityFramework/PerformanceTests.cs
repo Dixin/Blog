@@ -1,7 +1,8 @@
 ﻿namespace Dixin.Tests.Linq.EntityFramework
 {
     using System.Linq;
-
+    using System.Threading.Tasks;
+    using System.Transactions;
     using Dixin.Linq.EntityFramework;
     using Dixin.TestTools.UnitTesting;
 
@@ -23,16 +24,42 @@
         [TestMethod]
         public void ViewsTest()
         {
-            Performance.PrintViews();
-            Performance.QueryPlanCache();
+            Performance.MappingViews();
         }
 
         [TestMethod]
         public void PerformanceTest()
         {
-            Performance.ObjectCache();
-            Performance.QueryPlanCache();
-            Performance.Async().Wait();
+            Performance.AddRange();
+            Performance.RemoveRange();
+        }
+
+        [TestMethod]
+        public void CacheTest()
+        {
+            Performance.CachedEntity();
+            Performance.UncachedEntity();
+            Performance.Find();
+            Performance.TranslationCache();
+            Performance.UncachedTranslation();
+            Performance.CachedTranslation();
+            Performance.CompiledCachedTranslation();
+            Performance.Translation();
+            Performance.UncachedSkipTake();
+            Performance.CachedSkipTake();
+        }
+
+        [TestMethod]
+        public async Task AsyncTest()
+        {
+            using (new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                await Performance.Async();
+            }
+            using (new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
+            {
+                await Performance.SaveChangesAsync();
+            }
         }
     }
 }

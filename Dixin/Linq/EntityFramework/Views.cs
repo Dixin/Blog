@@ -30,6 +30,6 @@
 
     public partial class AdventureWorks
     {
-        public DbSet<vProductAndDescription> ProductDescriptions { get; set; }
+        public DbSet<vProductAndDescription> ProductAndDescriptions { get; set; }
     }
 }

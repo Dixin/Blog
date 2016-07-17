@@ -178,10 +178,10 @@
                     // Reverse evaluated 5 value(s) in source sequence.
                     // Reverse is yielding position 4 of source sequence.
                     Trace.WriteLine(reverseIterator.Current); // 16.
-                    if (reverseIterator.MoveNext())
+                    while (reverseIterator.MoveNext())
                     {
-                        // Reverse is yielding position 3 of source sequence.
-                        Trace.WriteLine(reverseIterator.Current); // 9.
+                        // Reverse is yielding position 3 of source sequence...
+                        Trace.WriteLine(reverseIterator.Current); // 9...
                     }
                 }
             }

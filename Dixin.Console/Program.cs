@@ -2,18 +2,22 @@
 {
     using System;
     using System.Diagnostics;
-    using System.Linq;
+    using System.IO;
     using System.Threading;
-    using Dixin.Linq.Fundamentals;
+
+    using Dixin.Common;
 
     internal static class Program
     {
         private static void Main()
         {
-            using (TextWriterTraceListener traceListener = new TextWriterTraceListener(@"D:\Temp\Trace.txt"))
+            AppDomainData.DataDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\Data");
+            using (TextWriterTraceListener traceListener = new TextWriterTraceListener(Path.Combine(Path.GetTempPath(), "Trace.txt")))
             {
                 Trace.Listeners.Add(traceListener);
                 Thread.Sleep(TimeSpan.FromSeconds(2));
+
+                Trace.Listeners.Remove(traceListener);
             }
         }
     }

@@ -50,12 +50,10 @@
         internal static void MethodPredicateCompiled()
         {
             ParameterExpression product = Expression.Parameter(typeof(Product), nameof(product));
+            Func<Product, bool> isValidMethod = IsValid;
             IQueryable<string> query = AdventureWorks.Products
                 .Where(Expression.Lambda<Func<Product, bool>>( // product => product.IsValid().
-                    Expression.Call(
-                        null,
-                        typeof(QueryMethods).GetMethod(nameof(IsValid), BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.InvokeMethod),
-                        product), // IsValid has no SQL translation.
+                    Expression.Call(isValidMethod.Method, product), // IsValid has no SQL translation.
                     product))
                 .Select(Expression.Lambda<Func<Product, string>>(
                     Expression.Property(product, nameof(Product.Name)),

@@ -266,13 +266,38 @@
     <Compile Include="Common\ExceptionFilter.cs" />
     <Compile Include="Common\Int32Extensions.cs" />
     <Compile Include="Linq\EntityFramework\AdventureWorks.Views.cs" />
+    <Compile Include="Linq\EntityFramework\Concurrency.cs" />
+    <Compile Include="Linq\EntityFramework\FullWithViews\FullAdventureWorksWithViews.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FullAdventureWorksWithViews.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Linq\EntityFramework\FullWithViews\FullAdventureWorksWithViews.Views.cs" />
+    <Compile Include="Linq\EntityFramework\Full\FullAdventureWorks.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FullAdventureWorks.tt</DependentUpon>
+    </Compile>
     <Compile Include="Linq\EntityFramework\QueryExpressions.cs" />
+    <Compile Include="Linq\EntityFramework\Tracking.cs" />
+    <Compile Include="Linq\EntityFramework\Transactions.cs" />
     <Compile Include="Linq\EntityFramework\Views.cs" />
     <Compile Include="Linq\EntityFramework\EntityDataModel\AdventureWorks.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>AdventureWorks.edmx</DependentUpon>
     </Compile>
+    <Content Include="Linq\EntityFramework\Concurrency.sql" />
+    <Content Include="Linq\EntityFramework\FullWithViews\FullAdventureWorksWithViews.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>FullAdventureWorksWithViews.cs</LastGenOutput>
+    </Content>
+    <Content Include="Linq\EntityFramework\Full\FullAdventureWorks.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>FullAdventureWorks.cs</LastGenOutput>
+    </Content>
+    <Content Include="Linq\Fundamentals\LambdaExpression.txt" />
+    <Compile Include="Linq\IteratorPattern.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.Views.cs" />
     <Compile Include="Linq\LinqToXml\Dom.cs" />
     <Compile Include="Linq\LinqToXml\Manipulation.cs" />
@@ -298,12 +323,12 @@
     <Compile Include="Linq\EntityFramework\Association.cs" />
     <Compile Include="Linq\EntityFramework\Changes.cs" />
     <Compile Include="Linq\EntityFramework\Database.cs" />
-    <Compile Include="Linq\EntityFramework\DeferredExecution.cs" />
+    <Compile Include="Linq\EntityFramework\Laziness.cs" />
     <Compile Include="Linq\EntityFramework\Inheritance.cs" />
     <Compile Include="Linq\EntityFramework\Log.cs" />
     <Compile Include="Linq\EntityFramework\Performance.cs" />
     <Compile Include="Linq\EntityFramework\Functions.cs" />
-    <Compile Include="Linq\EntityFramework\RemoteMethods.cs" />
+    <Compile Include="Linq\EntityFramework\Translation.cs" />
     <Compile Include="Linq\EntityFramework\Tables.cs" />
     <Compile Include="Linq\EntityFramework\DbContextExtensions.cs" />
     <Compile Include="Linq\LinqToSql\AdventureWorks.Changes.cs" />
@@ -328,11 +353,11 @@
     <Compile Include="Linq\CategoryTheory\Functor.Like.cs" />
     <Compile Include="Linq\CategoryTheory\Monad.Like.cs" />
     <Content Include="Linq\EntityFramework\Database.sql" />
+    <Content Include="Linq\EntityFramework\Translation.txt" />
     <Content Include="Linq\EntityFramework\Views.sql" />
     <Content Include="Linq\Blog.htm" />
-    <Content Include="Linq\EntityFramework\RemoteMethods.sql" />
     <Content Include="Linq\EntityFramework\Performance.sql" />
-    <Content Include="Linq\EntityFramework\DeferredExecution.sql" />
+    <Content Include="Linq\EntityFramework\Laziness.sql" />
     <Content Include="Linq\EntityFramework\Functions.sql" />
     <Content Include="Linq\EntityFramework\Changes.sql" />
     <Content Include="Linq\EntityFramework\QueryMethods.sql" />
@@ -507,6 +532,10 @@
     <None Include="Linq\EntityFramework\EntityDataModel\AdventureWorks.edmx.diagram">
       <DependentUpon>AdventureWorks.edmx</DependentUpon>
     </None>
+    <None Include="Linq\EntityFramework\FullWithViews\EF.Reverse.POCO.Core.ttinclude" />
+    <None Include="Linq\EntityFramework\FullWithViews\EF.Reverse.POCO.ttinclude" />
+    <None Include="Linq\EntityFramework\Full\EF.Reverse.POCO.Core.ttinclude" />
+    <None Include="Linq\EntityFramework\Full\EF.Reverse.POCO.ttinclude" />
     <None Include="Linq\Fundamentals\Methods.il" />
     <Compile Include="Linq\EntityFramework\QueryMethods.cs" />
     <None Include="Linq\LinqToXml\AspNetRss.xsd">

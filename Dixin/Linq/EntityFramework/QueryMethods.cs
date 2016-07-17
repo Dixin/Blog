@@ -21,6 +21,24 @@
             categories.ForEach(category => Trace.WriteLine(category?.Name)); // Execute query.
         }
 
+        internal static void DefaultIfEmptyWithPrimitive()
+        {
+            IQueryable<ProductCategory> source = AdventureWorks.ProductCategories;
+            IQueryable<int> categories = source
+                .Select(category => category.ProductCategoryID)
+                .DefaultIfEmpty(-1); // Define query.
+            categories.ForEach(category => Trace.WriteLine(category)); // Execute query.
+        }
+
+        internal static void DefaultIfEmptyWithEntity()
+        {
+            ProductCategory defaultCategory = new ProductCategory();
+            IQueryable<ProductCategory> source = AdventureWorks.ProductCategories;
+            IQueryable<ProductCategory> categories = source.DefaultIfEmpty(defaultCategory); // Define query.
+            categories.ForEach(category => Trace.WriteLine(category?.Name)); // Execute query.
+            // NotSupportedException: Unable to create a constant value of type 'Dixin.Linq.EntityFramework.ProductCategory'. Only primitive types or enumeration types are supported in this context.
+        }
+
         #endregion
 
         #region Filtering
@@ -64,11 +82,19 @@
             products.ForEach(product => Trace.WriteLine($"{product.Name}: {product.GetType().Name}")); // Execute query.
         }
 
-        internal static void OfType()
+        internal static void OfTypeWithEntiy()
         {
             IQueryable<Product> source = AdventureWorks.Products;
             IQueryable<UniversalProduct> products = source.OfType<UniversalProduct>(); // Define query.
             products.ForEach(product => Trace.WriteLine($"{product.Name}: {product.GetType().Name}")); // Execute query.
+        }
+
+        internal static void OfTypeWithPromitive()
+        {
+            IQueryable<Product> source = AdventureWorks.Products;
+            IQueryable<int> products = source.Select(p => p.ProductID).OfType<int>(); // Define query.
+            products.ForEach(product => Trace.WriteLine(product)); // Execute query.
+            // NotSupportedException: 'System.Int32' is not a valid metadata type for type filtering operations. Type filtering is only valid on entity types and complex types.
         }
 
         #endregion
@@ -79,7 +105,7 @@
         {
             IQueryable<ProductCategory> source = AdventureWorks.ProductCategories;
             IQueryable<string> categories = source.Select(category =>
-                category.ProductCategoryID + ": " + category.Name); // Define query.
+                category.Name + category.Name); // Define query.
             categories.ForEach(category => Trace.WriteLine(category)); // Execute query.
         }
 
@@ -87,7 +113,7 @@
         {
             IQueryable<ProductCategory> source = AdventureWorks.ProductCategories;
             IQueryable<string> categories = source.Select(category =>
-                string.Concat(category.ProductCategoryID, ": ", category.Name)); // Define query.
+                string.Concat(category.Name, category.Name)); // Define query.
             categories.ForEach(category => Trace.WriteLine(category)); // Execute query.
         }
 

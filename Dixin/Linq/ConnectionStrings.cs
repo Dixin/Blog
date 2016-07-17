@@ -13,8 +13,9 @@
     internal static partial class ConnectionStrings
     {
         internal static string AdventureWorks { get; } =
-            ConfigurationManager.ConnectionStrings.OfType<ConnectionStringSettings>().FirstOrDefault()
-            ?.ConnectionString ?? Settings.Default.AdventureWorksConnectionString;
+            ConfigurationManager.ConnectionStrings.OfType<ConnectionStringSettings>().FirstOrDefault()?
+                .ConnectionString ?? Settings.Default.AdventureWorksConnectionString;
+            // @"Data Source=192.168.0.200;Initial Catalog=AdventureWorks;User ID=sa;Password=";
     }
 
 #if DEMO

@@ -207,30 +207,32 @@
             }
         }
 
-        // private static byte[] HtmlToWord(string html, string fileName)
-        // {
-        //    using (MemoryStream memoryStream = new MemoryStream())
+#if DEMO
+        private static byte[] HtmlToWord(string html, string fileName)
+        {
+            using (MemoryStream memoryStream = new MemoryStream())
 
-        //    using (WordprocessingDocument wordDocument = WordprocessingDocument.Create(
-        //        memoryStream, WordprocessingDocumentType.Document))
-        //    {
-        //        MainDocumentPart mainPart = wordDocument.MainDocumentPart;
-        //        if (mainPart == null)
-        //        {
-        //            mainPart = wordDocument.AddMainDocumentPart();
-        //            new Document(new Body()).Save(mainPart);
-        //        }
+            using (WordprocessingDocument wordDocument = WordprocessingDocument.Create(
+                memoryStream, WordprocessingDocumentType.Document))
+            {
+                MainDocumentPart mainPart = wordDocument.MainDocumentPart;
+                if (mainPart == null)
+                {
+                    mainPart = wordDocument.AddMainDocumentPart();
+                    new Document(new Body()).Save(mainPart);
+                }
 
-        //        HtmlConverter converter = new HtmlConverter(mainPart);
-        //        converter.ImageProcessing = ImageProcessing.AutomaticDownload;
-        //        Body body = mainPart.Document.Body;
+                HtmlConverter converter = new HtmlConverter(mainPart);
+                converter.ImageProcessing = ImageProcessing.AutomaticDownload;
+                Body body = mainPart.Document.Body;
 
-        //        IList<OpenXmlCompositeElement> paragraphs = converter.Parse(html);
-        //        body.Append(paragraphs);
+                IList<OpenXmlCompositeElement> paragraphs = converter.Parse(html);
+                body.Append(paragraphs);
 
-        //        mainPart.Document.Save();
-        //        return memoryStream.ToArray();
-        //    }
-        // }
+                mainPart.Document.Save();
+                return memoryStream.ToArray();
+            }
+        }
+#endif
     }
 }

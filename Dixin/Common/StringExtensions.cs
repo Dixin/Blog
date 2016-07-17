@@ -15,7 +15,7 @@ namespace Dixin.Common
     using System.Linq;
     using System.Text.RegularExpressions;
 
-    public static class StringExtensions
+    public static partial class StringExtensions
     {
         public static string With
                 (this string format, params object[] args) => string.Format(CultureInfo.InvariantCulture, format, args);
@@ -52,5 +52,12 @@ namespace Dixin.Common
             && value.Any(@char => char.GetUnicodeCategory(@char) == category);
 
         public static bool HasOtherLetter(this string value) => value.Any(UnicodeCategory.OtherLetter);
+    }
+
+    public static partial class StringExtensions
+    {
+        public static string ToRowVersionString(this byte[] rowVersion) =>
+            $"0x{BitConverter.ToString(rowVersion).Replace("-", string.Empty)}";
+        // $"0x{BitConverter.ToUInt64(rowVersion.Reverse().ToArray(), 0).ToString("X16")}";
     }
 }

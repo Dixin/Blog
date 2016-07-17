@@ -1,7 +1,6 @@
 ﻿namespace Dixin.Tests.Linq.EntityFramework
 {
     using System;
-    using System.Data.Entity.Core;
     using System.Diagnostics;
 
     using Dixin.Linq.EntityFramework;
@@ -21,6 +20,16 @@
         public void GenerationTest()
         {
             QueryMethods.DefaultIfEmpty();
+            QueryMethods.DefaultIfEmptyWithPrimitive();
+            try
+            {
+                QueryMethods.DefaultIfEmptyWithEntity();
+                Assert.Fail();
+            }
+            catch (NotSupportedException exception)
+            {
+                Trace.WriteLine(exception);
+            }
         }
 
         [TestMethod]
@@ -31,7 +40,16 @@
             QueryMethods.WhereWithAnd();
             QueryMethods.WhereAndWhere();
             QueryMethods.WhereWithIs();
-            QueryMethods.OfType();
+            QueryMethods.OfTypeWithEntiy();
+            try
+            {
+                QueryMethods.OfTypeWithPromitive();
+                Assert.Fail();
+            }
+            catch (NotSupportedException exception)
+            {
+                Trace.WriteLine(exception);
+            }
         }
 
         [TestMethod]
@@ -211,89 +229,5 @@
             QueryMethods.AllNot();
             QueryMethods.NotAny();
         }
-
-        [TestMethod]
-        public void LocalRemoteMethodTest()
-        {
-            QueryMethods.WhereWithLike();
-            try
-            {
-                QueryMethods.WhereWithLikeMethod();
-                Assert.Fail();
-            }
-            catch (NotSupportedException exception)
-            {
-                Trace.WriteLine(exception);
-            }
-            QueryMethods.WhereWithContains();
-            QueryMethods.WhereWithNull();
-            QueryMethods.InlinePredicate();
-            QueryMethods.InlinePredicateCompiled();
-            try
-            {
-                QueryMethods.MethodPredicate();
-                Assert.Fail();
-            }
-            catch (NotSupportedException exception)
-            {
-                Trace.WriteLine(exception);
-            }
-            try
-            {
-                QueryMethods.MethodPredicateCompiled();
-                Assert.Fail();
-            }
-            catch (NotSupportedException exception)
-            {
-                Trace.WriteLine(exception);
-            }
-            try
-            {
-                QueryMethods.MethodSelector();
-                Assert.Fail();
-            }
-            catch (NotSupportedException exception)
-            {
-                Trace.WriteLine(exception);
-            }
-            QueryMethods.LocalSelector();
-            QueryMethods.RemoteMethod();
-        }
-
-        [TestMethod]
-        public void LazinessTest()
-        {
-            try
-            {
-                UI.ViewCategoryProducts("Bikes");
-                Assert.Fail();
-            }
-            catch (InvalidOperationException exception)
-            {
-                Trace.WriteLine(exception);
-            }
-            try
-            {
-                QueryMethods.LazyLoading();
-            }
-            catch (EntityCommandExecutionException exception)
-            {
-                Trace.WriteLine(exception);
-            }
-            QueryMethods.LazyLoadingWithToArray();
-            QueryMethods.EagerLoadingWithSelect();
-            QueryMethods.EagerLoadingWithAssociation();
-            try
-            {
-                QueryMethods.ConditionalEagerLoading();
-            }
-            catch (ArgumentException exception)
-            {
-                Trace.WriteLine(exception);
-            }
-            QueryMethods.ConditionalEagerLoadingWithSelect();
-            QueryMethods.NoLoading();
-        }
-
     }
 }

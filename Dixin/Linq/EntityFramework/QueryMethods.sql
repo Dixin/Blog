@@ -5,6 +5,18 @@ SELECT
     FROM   ( SELECT 1 AS X ) AS [SingleRowTable1]
     LEFT OUTER JOIN [Production].[ProductCategory] AS [Extent1] ON 1 = 1
 
+-- DefaultIfEmptyWithPrimitive
+SELECT 
+    CASE WHEN ([Project1].[C1] IS NULL) THEN -1 ELSE [Project1].[ProductCategoryID] END AS [C1]
+    FROM   ( SELECT 1 AS X ) AS [SingleRowTable1]
+    LEFT OUTER JOIN  (SELECT 
+        [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
+        cast(1 as tinyint) AS [C1]
+        FROM [Production].[ProductCategory] AS [Extent1] ) AS [Project1] ON 1 = 1
+
+-- DefaultIfEmptyWithEntity
+-- NotSupportedException.
+
 -- Where
 SELECT 
     [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
@@ -44,7 +56,7 @@ SELECT
     FROM [Production].[Product] AS [Extent1]
     WHERE [Extent1].[Style] = N'U'
 
--- OfType
+-- OfTypeWithEntiy
 SELECT 
     '0X0X' AS [C1], 
     [Extent1].[ProductID] AS [ProductID], 
@@ -55,15 +67,18 @@ SELECT
     FROM [Production].[Product] AS [Extent1]
     WHERE [Extent1].[Style] = N'U'
 
+-- OfTypeWithPromitive
+-- NotSupportedException.
+
 -- Select
 SELECT 
-     CAST( [Extent1].[ProductID] AS nvarchar(max)) + N': ' + [Extent1].[Name] AS [C1]
-    FROM [Production].[Product] AS [Extent1]
+    [Extent1].[Name] + [Extent1].[Name] AS [C1]
+    FROM [Production].[ProductCategory] AS [Extent1]
 
 -- SelectWithStringConcat
 SELECT 
-     CAST( [Extent1].[ProductID] AS nvarchar(max)) + N': ' + [Extent1].[Name] AS [C1]
-    FROM [Production].[Product] AS [Extent1]
+    [Extent1].[Name] + [Extent1].[Name] AS [C1]
+    FROM [Production].[ProductCategory] AS [Extent1]
 
 -- SelectAnonymousType
 SELECT 

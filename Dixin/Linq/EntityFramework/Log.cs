@@ -8,7 +8,7 @@
 
     internal static partial class Log
     {
-        internal static void ToString()
+        internal static void DbQueryToString()
         {
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {
