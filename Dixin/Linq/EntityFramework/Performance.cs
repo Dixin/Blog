@@ -2,21 +2,24 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Data.Common;
     using System.Data.Entity;
     using System.Data.Entity.Core.EntityClient;
     using System.Data.Entity.Core.Objects;
     using System.Data.Entity.Infrastructure;
+    using System.Data.SqlClient;
     using System.Diagnostics;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
-
+    using System.Transactions;
     using Dixin.Common;
     using Dixin.Linq.EntityFramework.Full;
     using Dixin.Linq.EntityFramework.FullWithViews;
 
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+    using IsolationLevel = System.Data.IsolationLevel;
 
     public class LegacyAdventureWorks : ObjectContext
     {
@@ -499,6 +502,116 @@
                 productCopy2.Name = nameof(adventureWorks2);
                 productCopy2.ProductSubcategoryID = 1;
                 await adventureWorks2.SaveChangesAsync(RefreshConflict.MergeClinetAndStore);
+            }
+        }
+
+        internal static async Task DbContextTransactionAsync()
+        {
+            using (AdventureWorks adventureWorks = new AdventureWorks())
+            using (DbContextTransaction transaction = adventureWorks.Database.BeginTransaction(
+                IsolationLevel.ReadUncommitted))
+            {
+                try
+                {
+                    Trace.WriteLine(adventureWorks.QueryCurrentIsolationLevel()); // ReadUncommitted
+
+                    ProductCategory category = new ProductCategory() { Name = nameof(ProductCategory) };
+                    adventureWorks.ProductCategories.Add(category);
+                    Trace.WriteLine(await adventureWorks.SaveChangesAsync()); // 1
+
+                    Trace.WriteLine(await adventureWorks.Database.ExecuteSqlCommandAsync(
+                        "DELETE FROM [Production].[ProductCategory] WHERE [Name] = {0}",
+                        nameof(ProductCategory))); // 1
+                    transaction.Commit();
+                }
+                catch
+                {
+                    transaction.Rollback();
+                    throw;
+                }
+            }
+        }
+
+        internal static async Task DbTransactionAsync()
+        {
+            using (SqlConnection connection = new SqlConnection(ConnectionStrings.AdventureWorks))
+            {
+                await connection.OpenAsync();
+                using (DbTransaction transaction = connection.BeginTransaction(IsolationLevel.Serializable))
+                {
+                    try
+                    {
+                        using (AdventureWorks adventureWorks = new AdventureWorks(connection))
+                        {
+                            adventureWorks.Database.UseTransaction(transaction);
+                            Trace.WriteLine(adventureWorks.QueryCurrentIsolationLevel()); // Serializable
+
+                            ProductCategory category = new ProductCategory() { Name = nameof(ProductCategory) };
+                            adventureWorks.ProductCategories.Add(category);
+                            Trace.WriteLine(await adventureWorks.SaveChangesAsync()); // 1.
+                        }
+
+                        using (DbCommand command = connection.CreateCommand())
+                        {
+                            command.CommandText = "DELETE FROM [Production].[ProductCategory] WHERE [Name] = @p0";
+                            DbParameter parameter = command.CreateParameter();
+                            parameter.ParameterName = "@p0";
+                            parameter.Value = nameof(ProductCategory);
+                            command.Parameters.Add(parameter);
+                            command.Transaction = transaction;
+                            Trace.WriteLine(await command.ExecuteNonQueryAsync()); // 1
+                        }
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+            }
+        }
+
+        internal static async Task TransactionScopeAsync()
+        {
+            using (TransactionScope scope = new TransactionScope(
+                TransactionScopeOption.Required,
+                new TransactionOptions() { IsolationLevel = System.Transactions.IsolationLevel.RepeatableRead },
+                TransactionScopeAsyncFlowOption.Enabled))
+            {
+                using (DbConnection connection = new SqlConnection(ConnectionStrings.AdventureWorks))
+                using (DbCommand command = connection.CreateCommand())
+                {
+                    command.CommandText = DbContextExtensions.CurrentIsolationLevelSql;
+                    await connection.OpenAsync();
+                    using (DbDataReader reader = await command.ExecuteReaderAsync())
+                    {
+                        await reader.ReadAsync();
+                        Trace.WriteLine(reader[0]); // RepeatableRead
+                    }
+                }
+
+                using (AdventureWorks adventureWorks = new AdventureWorks())
+                {
+                    ProductCategory category = new ProductCategory() { Name = nameof(ProductCategory) };
+                    adventureWorks.ProductCategories.Add(category);
+                    Trace.WriteLine(await adventureWorks.SaveChangesAsync()); // 1
+                }
+
+                using (DbConnection connection = new SqlConnection(ConnectionStrings.AdventureWorks))
+                using (DbCommand command = connection.CreateCommand())
+                {
+                    command.CommandText = "DELETE FROM [Production].[ProductCategory] WHERE [Name] = @p0";
+                    DbParameter parameter = command.CreateParameter();
+                    parameter.ParameterName = "@p0";
+                    parameter.Value = nameof(ProductCategory);
+                    command.Parameters.Add(parameter);
+
+                    await connection.OpenAsync();
+                    Trace.WriteLine(await command.ExecuteNonQueryAsync()); // 1
+                }
+
+                scope.Complete();
             }
         }
     }

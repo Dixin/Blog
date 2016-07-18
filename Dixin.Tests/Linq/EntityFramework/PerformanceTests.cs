@@ -56,10 +56,23 @@
             {
                 await Performance.Async();
             }
+        }
+
+        [TestMethod]
+        public async Task AsyncConcurrencyTest()
+        {
             using (new TransactionScope(TransactionScopeAsyncFlowOption.Enabled))
             {
                 await Performance.SaveChangesAsync();
             }
+        }
+
+        [TestMethod]
+        public async Task AsyncTransactionTest()
+        {
+            await Performance.DbContextTransactionAsync();
+            await Performance.DbTransactionAsync();
+            await Performance.TransactionScopeAsync();
         }
     }
 }
