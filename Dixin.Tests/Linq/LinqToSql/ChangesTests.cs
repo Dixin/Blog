@@ -1,24 +1,33 @@
 ﻿namespace Dixin.Tests.Linq.LinqToSql
 {
     using System;
-    using System.Data.Linq;
     using System.Diagnostics;
     using System.Transactions;
     using Dixin.Linq.LinqToSql;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    public partial class AdventureWorksTests
+    [TestClass]
+    public class ChangesTests
     {
         [TestMethod]
         public void TracingTest()
         {
-            Tracking.EntitiesFromSameContext();
-            Tracking.MappingsFromSameContext();
-            Tracking.EntitiesFromContexts();
-            Tracking.Changes();
+            Tracking.EntitiesFromSameDataContext();
+            Tracking.ObjectsFromSameDataContext();
+            Tracking.EntitiesFromDataContexts();
+            Tracking.EntityChanges();
             Tracking.Attach();
             Tracking.AssociationChanges();
+            try
+            {
+                Tracking.DisableObjectTracking();
+                Assert.Fail();
+            }
+            catch (InvalidOperationException exception)
+            {
+                Trace.WriteLine(exception);
+            }
         }
 
         [TestMethod]
@@ -26,7 +35,7 @@
         {
             using (TransactionScope scope = new TransactionScope())
             {
-                int subcategoryId = Changes.Insert();
+                int subcategoryId = Changes.Create();
                 Changes.Update();
                 Changes.UpdateWithNoChange();
                 Changes.Delete();
@@ -43,32 +52,6 @@
                 }
                 scope.Complete();
             }
-        }
-
-        [TestMethod]
-        public void TransactionTest()
-        {
-            Transactions.Implicit();
-            Transactions.ExplicitLocal();
-            Transactions.ExplicitDistributable();
-        }
-
-        [TestMethod]
-        public void ConflictTest()
-        {
-            Concurrency.DefaultControl();
-            try
-            {
-                Concurrency.CheckModifiedDate();
-                Assert.Fail();
-            }
-            catch (ChangeConflictException exception)
-            {
-                Trace.WriteLine(exception);
-            }
-            Concurrency.DatabaseWins();
-            Concurrency.ClientWins();
-            Concurrency.MergeClientAndDatabase();
         }
     }
 }

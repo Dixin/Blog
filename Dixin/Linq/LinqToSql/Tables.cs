@@ -1,5 +1,7 @@
 ﻿namespace Dixin.Linq.LinqToSql
 {
+    using System;
+    using System.Data.Linq;
     using System.Data.Linq.Mapping;
 
     [Table(Name = "[Production].[ProductCategory]")]
@@ -9,8 +11,10 @@
             IsPrimaryKey = true, IsDbGenerated = true, AutoSync = AutoSync.OnInsert)]
         public int ProductCategoryID { get; set; }
 
-        [Column(DbType = "nvarchar(50) NOT NULL")]
+        [Column(DbType = "nvarchar(50) NOT NULL", UpdateCheck = UpdateCheck.Never)]
         public string Name { get; set; }
+
+        // Other columns are ignored.
     }
 
     [Table(Name = "[Production].[ProductSubcategory]")]
@@ -22,6 +26,8 @@
 
         [Column(DbType = "nvarchar(50) NOT NULL", UpdateCheck = UpdateCheck.Never)]
         public string Name { get; set; }
+
+        // public int ProductCategoryID { get; set; }
     }
 
     [Table(Name = "[Production].[Product]")]
@@ -31,11 +37,15 @@
             IsPrimaryKey = true, IsDbGenerated = true, AutoSync = AutoSync.OnInsert)]
         public int ProductID { get; set; }
 
-        [Column(DbType = "nvarchar(50) NOT NULL")]
+        [Column(DbType = "nvarchar(50) NOT NULL", UpdateCheck = UpdateCheck.Never)]
         public string Name { get; set; }
 
-        [Column(DbType = "money NOT NULL")]
+        [Column(DbType = "money NOT NULL", UpdateCheck = UpdateCheck.Never)]
         public decimal ListPrice { get; set; }
+
+        // public int? ProductSubcategoryID { get; set; }
+
+        // public string Style { get; set; }
     }
 
     [Table(Name = "[Production].[ProductPhoto]")]
@@ -47,5 +57,19 @@
 
         [Column(DbType = "nvarchar(50)", UpdateCheck = UpdateCheck.Never)]
         public string LargePhotoFileName { get; set; }
+
+        [Column(DbType = "datetime NOT NULL", UpdateCheck = UpdateCheck.Always)]
+        public DateTime ModifiedDate { get; set; }
+    }
+
+    public partial class AdventureWorks
+    {
+        public Table<ProductCategory> ProductCategories => this.GetTable<ProductCategory>();
+
+        public Table<ProductSubcategory> ProductSubcategories => this.GetTable<ProductSubcategory>();
+
+        public Table<Product> Products => this.GetTable<Product>();
+
+        public Table<ProductPhoto> ProductPhotos => this.GetTable<ProductPhoto>();
     }
 }

@@ -7,59 +7,31 @@
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    public partial class AdventureWorksTests
+    [TestClass]
+    public class QueryMethodsTests
     {
-        [TestMethod]
-        public void LazinessTest()
-        {
-            try
-            {
-                UI.ViewCategoryProducts("Bikes");
-                Assert.Fail();
-            }
-            catch (ObjectDisposedException exception)
-            {
-                Trace.WriteLine(exception);
-            }
-            QueryMethods.DeferredLoading();
-            QueryMethods.EagerLoadingWithSelect();
-            QueryMethods.EagerLoadingWithAssociation();
-            QueryMethods.ConditionalEagerLoading();
-            QueryMethods.NoLoading();
-        }
-
-        [TestMethod]
-        public void LocalRemoteMethodTest()
-        {
-            QueryMethods.InlinePredicate();
-            QueryMethods.InlinePredicateCompiled();
-            try
-            {
-                QueryMethods.MethodPredicate();
-                Assert.Fail();
-            }
-            catch (NotSupportedException exception)
-            {
-                Trace.WriteLine(exception);
-            }
-            try
-            {
-                QueryMethods.MethodPredicateCompiled();
-                Assert.Fail();
-            }
-            catch (NotSupportedException exception)
-            {
-                Trace.WriteLine(exception);
-            }
-            QueryMethods.MethodSelector();
-            QueryMethods.LocalSelector();
-            QueryMethods.RemoteMethod();
-        }
-
         [TestMethod]
         public void GenerationTest()
         {
             QueryMethods.DefaultIfEmpty();
+            try
+            {
+                QueryMethods.DefaultIfEmptyWithPrimitive(); // TODO.
+                Assert.Fail();
+            }
+            catch (NotSupportedException exception)
+            {
+                Trace.WriteLine(exception);
+            }
+            try
+            {
+                QueryMethods.DefaultIfEmptyWithEntity();
+                Assert.Fail();
+            }
+            catch (NotSupportedException exception)
+            {
+                Trace.WriteLine(exception);
+            }
         }
 
         [TestMethod]
@@ -69,11 +41,9 @@
             QueryMethods.WhereWithOr();
             QueryMethods.WhereWithAnd();
             QueryMethods.WhereAndWhere();
-            QueryMethods.WhereWithLike();
-            QueryMethods.WhereWithLikeMethod();
-            QueryMethods.WhereWithContains();
-            QueryMethods.WhereWithNull();
-            QueryMethods.OfType();
+            QueryMethods.WhereWithIs();
+            QueryMethods.OfTypeWithEntiy();
+            QueryMethods.OfTypeWithPromitive(); // TODO.
         }
 
         [TestMethod]
@@ -82,42 +52,48 @@
             QueryMethods.Select();
             QueryMethods.SelectWithStringConcat();
             QueryMethods.SelectAnonymousType();
-            try
-            {
-                QueryMethods.SelectEntity();
-                Assert.Fail();
-            }
-            catch (NotSupportedException exception)
-            {
-                Trace.WriteLine(exception);
-            }
-            QueryMethods.SelectEntityObjects();
-            QueryMethods.SelectWithCase();
         }
 
         [TestMethod]
         public void GroupingTest()
         {
-            QueryMethods.Grouping();
-            QueryMethods.GroupBy();
-            QueryMethods.GroupByWithWhere();
+            QueryMethods.GroupBy(); // TODO. N+!.
+            QueryMethods.GroupByWithResultSelector();
+            QueryMethods.GroupByAndSelect();
+            QueryMethods.GroupByAndSelectMany();
+            QueryMethods.GroupByMultipleKeys();
         }
 
         [TestMethod]
         public void JoinTest()
         {
-            QueryMethods.InnerJoin();
+            QueryMethods.InnerJoinWithJoin();
             QueryMethods.InnerJoinWithSelectMany();
+            QueryMethods.InnerJoinWithGroupJoin();
+            QueryMethods.InnerJoinWithSelect();
             QueryMethods.InnerJoinWithAssociation();
+            QueryMethods.MultipleInnerJoinsWithAssociations();
             QueryMethods.InnerJoinWithMultipleKeys();
-            QueryMethods.LeftOuterJoin();
-            QueryMethods.LeftOuterJoinWithDefaultIfEmpty();
+            QueryMethods.InnerJoinWithGroupJoin();
+            QueryMethods.LeftOuterJoinWithGroupJoin();
             QueryMethods.LeftOuterJoinWithSelect();
+            QueryMethods.LeftOuterJoinWithGroupJoinAndSelectMany();
+            QueryMethods.LeftOuterJoinWithSelectAndSelectMany();
             QueryMethods.LeftOuterJoinWithAssociation();
-            QueryMethods.CrossJoin();
             QueryMethods.CrossJoinWithSelectMany();
             QueryMethods.CrossJoinWithJoin();
             QueryMethods.SelfJoin();
+        }
+
+        [TestMethod]
+        public void ApplyTest()
+        {
+            QueryMethods.CrossApplyWithGroupByAndTake();
+            QueryMethods.CrossApplyWithGroupJoinAndTake();
+            QueryMethods.CrossApplyWithAssociationAndTake();
+            QueryMethods.OuterApplyWithGroupByAndFirstOrDefault(); // TODO.N+1.
+            QueryMethods.OuterApplyWithGroupJoinAndFirstOrDefault(); // TODO.N+1.
+            QueryMethods.OuterApplyWithAssociationAndFirstOrDefault(); // TODO.N+1.
         }
 
         [TestMethod]
@@ -131,8 +107,10 @@
         public void SetTest()
         {
             QueryMethods.Distinct();
-            QueryMethods.DistinctWithGroupByAndSelect();
-            QueryMethods.DistinctWithGroupByAndSelectMany();
+            QueryMethods.DistinctWithGroupBy();
+            QueryMethods.DistinctMultipleKeys();
+            QueryMethods.DistinctMultipleKeysWithGroupBy();
+            QueryMethods.DistinctWithGroupByAndSelectAndFirstOrDefault();
             QueryMethods.Intersect();
             QueryMethods.Except();
         }
@@ -140,10 +118,10 @@
         [TestMethod]
         public void PartitioningTest()
         {
-            QueryMethods.Skip();
-            QueryMethods.OrderBySkip();
+            QueryMethods.Skip(); // TODO.
+            QueryMethods.OrderByAndSkip();
             QueryMethods.Take();
-            QueryMethods.OrderBySkipTake();
+            QueryMethods.OrderByAndSkipAndTake();
         }
 
         [TestMethod]
@@ -151,8 +129,17 @@
         {
             QueryMethods.OrderBy();
             QueryMethods.OrderByDescending();
-            QueryMethods.OrderByThenBy();
-            QueryMethods.OrderByOrderBy();
+            QueryMethods.OrderByAndThenBy();
+            try
+            {
+                QueryMethods.OrderByAnonymousType();
+                Assert.Fail();
+            }
+            catch (InvalidOperationException exception)
+            {
+                Trace.WriteLine(exception);
+            }
+            QueryMethods.OrderByAndOrderBy();
             try
             {
                 QueryMethods.Reverse();
@@ -167,7 +154,27 @@
         [TestMethod]
         public void ConversionTest()
         {
-            QueryMethods.Cast();
+            try
+            {
+                QueryMethods.CastPrimitive(); // TODO.
+                Assert.Fail();
+            }
+            catch (InvalidOperationException exception)
+            {
+                Trace.WriteLine(exception);
+            }
+            QueryMethods.CastEntity(); // TODO.
+            QueryMethods.AsEnumerableAsQueryable();
+            try
+            {
+                QueryMethods.SelectEntities();
+                Assert.Fail();
+            }
+            catch (NotSupportedException exception)
+            {
+                Trace.WriteLine(exception);
+            }
+            QueryMethods.SelectEntityObjects();
         }
 
         [TestMethod]
@@ -202,18 +209,20 @@
         {
             QueryMethods.Count();
             QueryMethods.LongCount();
-            QueryMethods.Min();
             QueryMethods.Max();
-            QueryMethods.Sum();
+            QueryMethods.Min();
             QueryMethods.Average();
+            QueryMethods.Sum();
         }
 
         [TestMethod]
         public void QuantifiersTest()
         {
-            QueryMethods.All();
             QueryMethods.Any();
+            QueryMethods.AnyWithPredicate();
             QueryMethods.Contains();
+            QueryMethods.AllNot();
+            QueryMethods.NotAny();
         }
     }
 }

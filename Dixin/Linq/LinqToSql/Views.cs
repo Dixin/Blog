@@ -21,4 +21,9 @@
         [Column(DbType = "nvarchar(400) NOT NULL")]
         public string Description { get; set; }
     }
+
+    public partial class AdventureWorks
+    {
+        public Table<vProductAndDescription> ProductAndDescriptions => this.GetTable<vProductAndDescription>();
+    }
 }

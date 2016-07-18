@@ -90,13 +90,6 @@ SELECT
 	END AS [C2]
     FROM [Production].[Product] AS [Extent1]
 
--- SelectWithCase
-SELECT 
-    1 AS [C1], 
-    [Extent1].[Name] AS [Name], 
-    CASE WHEN ([Extent1].[ListPrice] > cast(0 as decimal(18))) THEN cast(1 as bit) WHEN ( NOT ([Extent1].[ListPrice] > cast(0 as decimal(18)))) THEN cast(0 as bit) END AS [C2]
-    FROM [Production].[Product] AS [Extent1]
-
 -- GroupBy
 SELECT 
     [Project2].[ProductCategoryID] AS [ProductCategoryID], 
@@ -621,7 +614,7 @@ SELECT
 -- Reverse
 -- NotSupportedException.
 
--- Cast
+-- CastPrimitive
 SELECT 
      CAST( [Extent1].[ListPrice] AS nvarchar(max)) AS [C1]
     FROM [Production].[Product] AS [Extent1]

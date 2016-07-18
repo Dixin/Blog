@@ -9,8 +9,9 @@ namespace Dixin.Linq.EntityFramework
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
-    using System.Threading.Tasks;
+
     using Dixin.Common;
+
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
     internal partial class DbReaderWriter : IDisposable

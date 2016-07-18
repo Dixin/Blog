@@ -1,4 +1,4 @@
-﻿-- DeferredLoading
+﻿-- DeferredExecution
 SELECT [t0].[ProductCategoryID], [t0].[ProductSubcategoryID], [t0].[Name]
 FROM [Production].[ProductSubcategory] AS [t0]
 
@@ -47,6 +47,6 @@ FROM [Production].[ProductSubcategory] AS [t0]
 LEFT OUTER JOIN [Production].[Product] AS [t1] ON ([t1].[ListPrice] > @p0) AND ([t1].[ProductSubcategoryID] = ([t0].[ProductSubcategoryID]))
 ORDER BY [t0].[ProductSubcategoryID], [t1].[ProductID]',N'@p0 decimal(33,4)',@p0=0
 
--- NoLoading
+-- DisableDeferredLoading
 SELECT [t0].[ProductCategoryID], [t0].[ProductSubcategoryID], [t0].[Name]
 FROM [Production].[ProductSubcategory] AS [t0]

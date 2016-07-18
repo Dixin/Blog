@@ -29,7 +29,7 @@
         private EntityRef<ProductCategory> productCategory = default(EntityRef<ProductCategory>);
 
         [Column(DbType = "int NOT NULL", Storage = nameof(productCategoryId), UpdateCheck = UpdateCheck.Never)]
-        public int? ProductCategoryID
+        public int? ProductCategoryID // Foreign key must be null.
         {
             get { return this.productCategoryId; }
             set

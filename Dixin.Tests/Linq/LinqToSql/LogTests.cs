@@ -4,12 +4,15 @@
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    public partial class AdventureWorksTests
+    [TestClass]
+    public class LogsTests
     {
         [TestMethod]
         public void LogTest()
         {
-            Log.WhereWithLog();
+            Log.DataQueryToString();
+            Log.DataContextLog();
+            Log.DataContexGetCommand();
         }
     }
 }

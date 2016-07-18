@@ -144,6 +144,7 @@
             QueryMethods.OrderBy();
             QueryMethods.OrderByDescending();
             QueryMethods.OrderByAndThenBy();
+            QueryMethods.OrderByAnonymousType();
             QueryMethods.OrderByAndOrderBy();
             try
             {

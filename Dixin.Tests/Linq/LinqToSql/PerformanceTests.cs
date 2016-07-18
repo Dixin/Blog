@@ -7,7 +7,8 @@
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    public partial class AdventureWorksTests
+    [TestClass]
+    public class PerformanceTests
     {
         [TestMethod]
         public void CompiedQuery()

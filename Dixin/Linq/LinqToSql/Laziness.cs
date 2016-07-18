@@ -4,30 +4,11 @@
     using System.Diagnostics;
     using System.Linq;
 
-    internal static class DataAccess
+    internal static partial class Laziness
     {
-        internal static IQueryable<Product> QueryCategoryProducts(string category)
-        {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                return adventureWorks.Products.Where(
-                    product => product.ProductSubcategory.ProductCategory.Name == category);
-            }
-        }
-    }
+        private static readonly AdventureWorks AdventureWorks = new AdventureWorks();
 
-    internal static class UI
-    {
-        internal static void ViewCategoryProducts(string category) => DataAccess
-            .QueryCategoryProducts(category)
-            .Select(product => product.Name)
-            .ForEach(name => Trace.WriteLine(name));
-        // ObjectDisposedException: Cannot access a disposed object. Object name: 'DataContext accessed after Dispose.'.
-    }
-
-    internal static partial class QueryMethods
-    {
-        internal static void DeferredLoading()
+        internal static void DeferredExecution()
         {
             IQueryable<ProductSubcategory> subcategories = AdventureWorks.ProductSubcategories;
             subcategories.ForEach(subcategory => Trace.WriteLine(
@@ -79,7 +60,7 @@
             }
         }
 
-        internal static void NoLoading()
+        internal static void DisableDeferredLoading()
         {
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {

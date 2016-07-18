@@ -4,10 +4,11 @@
     using System.Data.Linq.SqlClient;
     using System.Linq;
     using System.Linq.Expressions;
-    using System.Reflection;
 
-    internal static partial class QueryMethods
+    internal static partial class Translation
     {
+        private static readonly AdventureWorks AdventureWorks = new AdventureWorks();
+
         internal static void InlinePredicate()
         {
             IQueryable<string> query = AdventureWorks.Products

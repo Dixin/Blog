@@ -15,7 +15,7 @@
         public void TracingTest()
         {
             Tracking.EntitiesFromSameDbContext();
-            Tracking.ObjectsFromSameContext();
+            Tracking.ObjectsFromSameDbContext();
             Tracking.EntitiesFromDbContexts();
             Tracking.EntityChanges();
             Tracking.Attach();

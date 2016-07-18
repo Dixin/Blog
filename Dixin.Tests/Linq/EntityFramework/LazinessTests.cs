@@ -65,6 +65,11 @@
             {
                 Trace.WriteLine(exception);
             }
+        }
+
+        [TestMethod]
+        public void DisableLazyLoadingTest()
+        {
             Laziness.DisableLazyLoading();
             Laziness.DisableProxy();
         }

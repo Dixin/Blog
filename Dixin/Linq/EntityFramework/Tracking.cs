@@ -24,7 +24,7 @@ namespace Dixin.Linq.EntityFramework
 
     internal static partial class Tracking
     {
-        internal static void ObjectsFromSameContext()
+        internal static void ObjectsFromSameDbContext()
         {
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {
