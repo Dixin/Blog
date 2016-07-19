@@ -35,24 +35,24 @@
         internal static void DefaultControl() // Check all columns, first client wins.
         {
             using (new TransactionScope()) // BEGIN TRANSACTION.
-            using (DbReaderWriter client1 = new DbReaderWriter(new AdventureWorks()))
-            using (DbReaderWriter client2 = new DbReaderWriter(new AdventureWorks()))
-            using (DbReaderWriter client3 = new DbReaderWriter(new AdventureWorks()))
+            using (DbReaderWriter readerWriter1 = new DbReaderWriter(new AdventureWorks()))
+            using (DbReaderWriter readerWriter2 = new DbReaderWriter(new AdventureWorks()))
+            using (DbReaderWriter readerWriter3 = new DbReaderWriter(new AdventureWorks()))
             {
                 const int id = 1;
-                ProductCategory category1 = client1.Read<ProductCategory>(id);
-                ProductCategory category2 = client2.Read<ProductCategory>(id);
-                client1.Write(() => category1.Name = nameof(client1));
+                ProductCategory category1 = readerWriter1.Read<ProductCategory>(id);
+                ProductCategory category2 = readerWriter2.Read<ProductCategory>(id);
+                readerWriter1.Write(() => category1.Name = nameof(readerWriter1));
                 try
                 {
-                    client2.Write(() => category2.Name = nameof(client2));
+                    readerWriter2.Write(() => category2.Name = nameof(readerWriter2));
                 }
                 catch (ChangeConflictException exception)
                 {
                     Trace.WriteLine(exception); // Row not found or changed.
                 }
 
-                Trace.WriteLine(client3.Read<ProductCategory>(id).Name); // client1.
+                Trace.WriteLine(readerWriter3.Read<ProductCategory>(id).Name); // client1.
             } // ROLLBACK TRANSACTION.
         }
     }
@@ -70,14 +70,14 @@
         internal static void CheckModifiedDate()
         {
             using (new TransactionScope()) // BEGIN TRANSACTION.
-            using (DbReaderWriter client1 = new DbReaderWriter(new AdventureWorks()))
-            using (DbReaderWriter client2 = new DbReaderWriter(new AdventureWorks()))
+            using (DbReaderWriter readerWriter1 = new DbReaderWriter(new AdventureWorks()))
+            using (DbReaderWriter readerWriter2 = new DbReaderWriter(new AdventureWorks()))
             {
                 const int id = 1;
-                ProductPhoto photo1 = client1.Read<ProductPhoto>(id);
-                ProductPhoto photo2 = client2.Read<ProductPhoto>(id);
-                client1.Write(() => photo1.LargePhotoFileName = nameof(client1));
-                client2.Write(() => photo2.LargePhotoFileName = nameof(client2)); // ChangeConflictException.
+                ProductPhoto photo1 = readerWriter1.Read<ProductPhoto>(id);
+                ProductPhoto photo2 = readerWriter2.Read<ProductPhoto>(id);
+                readerWriter1.Write(() => photo1.LargePhotoFileName = nameof(readerWriter1));
+                readerWriter2.Write(() => photo2.LargePhotoFileName = nameof(readerWriter2)); // ChangeConflictException.
             } // ROLLBACK TRANSACTION.
         }
     }
@@ -116,20 +116,20 @@
         internal static void Conflict(Action<ChangeConflictCollection> resolve)
         {
             using (new TransactionScope()) // BEGIN TRANSACTION.
-            using (DbReaderWriter client1 = new DbReaderWriter(new AdventureWorks()))
-            using (DbReaderWriter client2 = new DbReaderWriter(new AdventureWorks()))
-            using (DbReaderWriter client3 = new DbReaderWriter(new AdventureWorks()))
-            using (DbReaderWriter client4 = new DbReaderWriter(new AdventureWorks()))
+            using (DbReaderWriter readerWriter1 = new DbReaderWriter(new AdventureWorks()))
+            using (DbReaderWriter readerWriter2 = new DbReaderWriter(new AdventureWorks()))
+            using (DbReaderWriter readerWriter3 = new DbReaderWriter(new AdventureWorks()))
+            using (DbReaderWriter readerWriter4 = new DbReaderWriter(new AdventureWorks()))
             {
                 const int id = 999;
-                Product product1 = client1.Read<Product>(id);
-                Product product2 = client2.Read<Product>(id);
-                client1.Write(() => { product1.Name = nameof(client1); product1.ListPrice = 0; });
-                Product product4 = client4.Read<Product>(id);
+                Product product1 = readerWriter1.Read<Product>(id);
+                Product product2 = readerWriter2.Read<Product>(id);
+                readerWriter1.Write(() => { product1.Name = nameof(readerWriter1); product1.ListPrice = 0; });
+                Product product4 = readerWriter4.Read<Product>(id);
                 Trace.WriteLine($"({product4.Name}, {product4.ListPrice}, {product4.ProductSubcategoryID})");
-                client2.Write(() => { product2.Name = nameof(client2); product2.ProductSubcategoryID = null; }, resolve);
+                readerWriter2.Write(() => { product2.Name = nameof(readerWriter2); product2.ProductSubcategoryID = null; }, resolve);
 
-                Product product3 = client3.Read<Product>(id);
+                Product product3 = readerWriter3.Read<Product>(id);
                 Trace.WriteLine($"({product3.Name}, {product3.ListPrice}, {product3.ProductSubcategoryID})");
             } // ROLLBACK TRANSACTION.
         }
