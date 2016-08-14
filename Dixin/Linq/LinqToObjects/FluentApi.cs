@@ -145,18 +145,6 @@ namespace Dixin.Linq.LinqToObjects
                                     value => Trace.WriteLine(value))
                                 );
         }
-
-        internal static void Debug()
-        {
-            Person[] persons =
-                {
-                    new Person() { Age = 25, Name = "Anna" },
-                    new Person() { Age = 30, Name = "Bob" },
-                    new Person() { Age = 35, Name = "Charlie" },
-                    new Person() { Age = 30, Name = "Dixin" },
-                };
-            LinqToObjects.FilterAndSort(persons);
-        }
     }
 }
 

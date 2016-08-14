@@ -7,7 +7,7 @@
     using System.Linq;
     using System.Threading;
 
-    using Person = Dixin.Linq.Fundamentals.Person;
+    using Model = Dixin.Linq.Fundamentals.Model;
 
     using static HelperMethods;
 
@@ -39,19 +39,15 @@
         internal static void AsUnordered()
         {
             Random random = new Random();
-            Person[] source = Enumerable
+            Model[] source = Enumerable
                 .Range(0, Environment.ProcessorCount * 10000)
-                .Select(_ => new Person()
-                {
-                    Age = random.Next(0, 100),
-                    Name = Guid.NewGuid().ToString()
-                })
+                .Select(_ => new Model(name: Guid.NewGuid().ToString(), weight: random.Next(1, 100)))
                 .ToArray();
 
             Stopwatch stopwatch = Stopwatch.StartNew();
             source
                 .AsParallel()
-                .GroupBy(person => person.Age, person => person.Name)
+                .GroupBy(model => model.Weight, model => model.Name)
                 .ForAll(_ => { });
             stopwatch.Stop();
             Trace.WriteLine(stopwatch.ElapsedMilliseconds); // 35.
@@ -60,7 +56,7 @@
             source
                 .AsParallel()
                 .AsUnordered()
-                .GroupBy(person => person.Age, person => person.Name)
+                .GroupBy(model => model.Weight, model => model.Name)
                 .ForAll(_ => { });
             stopwatch.Stop();
             Trace.WriteLine(stopwatch.ElapsedMilliseconds); // 2.
@@ -135,29 +131,21 @@
         {
             int count = Environment.ProcessorCount * 10000;
             Random random = new Random();
-            ParallelQuery<Person> outer = Enumerable
+            ParallelQuery<Model> outer = Enumerable
                 .Repeat(0, count)
-                .Select(_ => new Person()
-                {
-                    Age = random.Next(0, 100),
-                    Name = Guid.NewGuid().ToString()
-                })
+                .Select(_ => new Model(name: Guid.NewGuid().ToString(), weight: random.Next(1, 100)))
                 .AsParallel();
-            ParallelQuery<Person> inner = Enumerable
+            ParallelQuery<Model> inner = Enumerable
                 .Repeat(0, count)
-                .Select(_ => new Person()
-                {
-                    Age = random.Next(0, 100),
-                    Name = Guid.NewGuid().ToString()
-                })
+                .Select(_ => new Model(name: Guid.NewGuid().ToString(), weight: random.Next(1, 100)))
                 .AsParallel();
 
             Stopwatch stopwatch = Stopwatch.StartNew();
             outer
                 .Join(
                     inner,
-                    outerPerson => Tuple.Create(outerPerson.Age, outerPerson.Name.Substring(0, 2)),
-                    innerPerson => Tuple.Create(innerPerson.Age + 1, innerPerson.Name.Substring(2, 4)),
+                    outerPerson => Tuple.Create(outerPerson.Weight, outerPerson.Name.Substring(0, 2)),
+                    innerPerson => Tuple.Create(innerPerson.Weight + 1, innerPerson.Name.Substring(2, 4)),
                     (outerPerson, innerPerson) => new { Outer = outerPerson, Inner = innerPerson })
                 .ForAll(_ => { });
             stopwatch.Stop();
@@ -167,8 +155,8 @@
             outer.AsUnordered()
                 .Join(
                     inner,
-                    outerPerson => Tuple.Create(outerPerson.Age, outerPerson.Name.Substring(0, 2)),
-                    innerPerson => Tuple.Create(innerPerson.Age + 1, innerPerson.Name.Substring(2, 4)),
+                    outerPerson => Tuple.Create(outerPerson.Weight, outerPerson.Name.Substring(0, 2)),
+                    innerPerson => Tuple.Create(innerPerson.Weight + 1, innerPerson.Name.Substring(2, 4)),
                     (outerPerson, innerPerson) => new { Outer = outerPerson, Inner = innerPerson })
                 .ForAll(_ => { });
             stopwatch.Stop();
@@ -178,8 +166,8 @@
             outer.AsUnordered()
                 .Join(
                     inner.AsUnordered(),
-                    outerPerson => Tuple.Create(outerPerson.Age, outerPerson.Name.Substring(0, 2)),
-                    innerPerson => Tuple.Create(innerPerson.Age + 1, innerPerson.Name.Substring(2, 4)),
+                    outerPerson => Tuple.Create(outerPerson.Weight, outerPerson.Name.Substring(0, 2)),
+                    innerPerson => Tuple.Create(innerPerson.Weight + 1, innerPerson.Name.Substring(2, 4)),
                     (outerPerson, innerPerson) => new { Outer = outerPerson, Inner = innerPerson })
                 .ForAll(_ => { });
             stopwatch.Stop();

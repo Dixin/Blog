@@ -142,6 +142,8 @@
     <Compile Include="Linq\EntityFramework\SaveChangesTests.cs" />
     <Compile Include="Linq\EntityFramework\TransactionTests.cs" />
     <Compile Include="Linq\EntityFramework\TranslationTests.cs" />
+    <Compile Include="Linq\Fundamentals\ContactTests.cs" />
+    <Compile Include="Linq\Fundamentals\ImperativeTests.cs" />
     <Compile Include="Linq\Fundamentals\ReflectionHelperTests.cs" />
     <Compile Include="Linq\EntityFramework\PerformanceTests.cs" />
     <Compile Include="Linq\LinqToSql\ConcurrencyTests.cs" />

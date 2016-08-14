@@ -24,7 +24,7 @@
         }
 
         [TestMethod]
-        public void Filtering()
+        public void FilteringTest()
         {
             Where();
             WhereWithIndex();
@@ -87,7 +87,7 @@
         }
 
         [TestMethod]
-        public void Convolution()
+        public void ConvolutionTest()
         {
             Zip();
         }

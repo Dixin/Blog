@@ -120,16 +120,16 @@
   <data name="AgeRequired" xml:space="preserve">
     <value />
   </data>
+  <data name="EmailInvalid" xml:space="preserve">
+    <value>Email is invalid.</value>
+  </data>
   <data name="InvalidAge" xml:space="preserve">
     <value />
   </data>
-  <data name="InvalidEmail" xml:space="preserve">
-    <value />
-  </data>
-  <data name="InvalidName" xml:space="preserve">
-    <value />
+  <data name="NameInvalid" xml:space="preserve">
+    <value>Name is invalid.</value>
   </data>
   <data name="NameRequired" xml:space="preserve">
-    <value />
+    <value>Name is required.</value>
   </data>
 </root>

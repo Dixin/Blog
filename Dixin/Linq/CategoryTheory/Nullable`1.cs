@@ -17,7 +17,8 @@
             [Pure]
             get
             {
-                return this.factory?.Value != null && this.factory.Value.Item1 && this.factory.Value.Item2 != null;
+                Tuple<bool, T> result = this.factory?.Value;
+                return result != null && result.Item1 && result.Item2 != null;
             }
         }
 

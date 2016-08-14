@@ -1,35 +1,71 @@
 ﻿namespace Dixin.Linq.Fundamentals
 {
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
-    using System.Threading.Tasks;
+
     using global::LinqToTwitter;
 
-    internal static class LinqToTwitter
+    internal static partial class LinqToTwitter
     {
-        private static readonly SingleUserAuthorizer Authorizer = new SingleUserAuthorizer()
+        internal static void QueryExpression()
         {
-            CredentialStore = new InMemoryCredentialStore()
+            SingleUserAuthorizer credentials = new SingleUserAuthorizer()
             {
-                ConsumerKey = "ConsumerKey",
-                ConsumerSecret = "ConsumerSecret",
-                OAuthToken = "OAuthToken",
-                OAuthTokenSecret = "OAuthTokenSecret"
+                CredentialStore = new InMemoryCredentialStore()
+                {
+                    ConsumerKey = "ConsumerKey",
+                    ConsumerSecret = "ConsumerSecret",
+                    OAuthToken = "OAuthToken",
+                    OAuthTokenSecret = "OAuthTokenSecret"
+                }
+            };
+            using (TwitterContext twitter = new TwitterContext(credentials))
+            {
+                IQueryable<Search> source = twitter.Search; // Get source.
+                IQueryable<List<Status>> query = from search in source
+                                                 where search.Type == SearchType.Search && search.Query == "LINQ"
+                                                 orderby search.SearchMetaData.Count
+                                                 select search.Statuses; // Define query.
+                foreach (List<Status> search in query) // Execute query.
+                {
+                    foreach (Status status in search)
+                    {
+                        Trace.WriteLine(status.Text);
+                    }
+                }
             }
-        };
+        }
+    }
 
-        internal static async Task<IEnumerable<string>> QueryAsync(string keyword, int count)
+    internal static partial class LinqToTwitter
+    {
+        internal static void QueryMethods()
         {
-            using (TwitterContext twitter = new TwitterContext(Authorizer))
+            SingleUserAuthorizer credentials = new SingleUserAuthorizer()
             {
-                IQueryable<Search> searchQuery = from search in twitter.Search
-                                                 where search.Type == SearchType.Search
-                                                     && search.Query == keyword
-                                                     && search.Count == count
-                                                 select search;
-                Search searchResult = await searchQuery.SingleAsync();
-                return from status in searchResult.Statuses
-                       select $"{status.User.ScreenNameResponse}: {status.Text}";
+                CredentialStore = new InMemoryCredentialStore()
+                {
+                    ConsumerKey = "ConsumerKey",
+                    ConsumerSecret = "ConsumerSecret",
+                    OAuthToken = "OAuthToken",
+                    OAuthTokenSecret = "OAuthTokenSecret"
+                }
+            };
+            using (TwitterContext twitter = new TwitterContext(credentials))
+            {
+                IQueryable<Search> source = twitter.Search; // Get source.
+                IQueryable<List<Status>> query = source
+                    .Where(search => search.Type == SearchType.Search && search.Query == "LINQ")
+                    .OrderBy(search => search.SearchMetaData.Count)
+                    .Select(search => search.Statuses); // Define query.
+                foreach (List<Status> search in query) // Execute query.
+                {
+                    foreach (Status status in search)
+                    {
+                        Trace.WriteLine(status.Text);
+                    }
+                }
             }
         }
     }

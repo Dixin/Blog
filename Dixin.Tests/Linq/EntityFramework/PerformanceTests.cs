@@ -12,7 +12,7 @@
     public class PerformanceTests
     {
         [TestMethod]
-        public void CompiedQuery()
+        public void CompiedQueryTest()
         {
             using (LegacyAdventureWorks adventureWorks = new LegacyAdventureWorks())
             {

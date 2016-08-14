@@ -17,7 +17,7 @@
     <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-    <CodeContractsAssemblyMode>0</CodeContractsAssemblyMode>
+    <CodeContractsAssemblyMode>1</CodeContractsAssemblyMode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -28,7 +28,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>..\Tools\CodeAnalysis.ruleset</CodeAnalysisRuleSet>
-    <CodeContractsEnableRuntimeChecking>True</CodeContractsEnableRuntimeChecking>
+    <CodeContractsEnableRuntimeChecking>False</CodeContractsEnableRuntimeChecking>
     <CodeContractsRuntimeOnlyPublicSurface>False</CodeContractsRuntimeOnlyPublicSurface>
     <CodeContractsRuntimeThrowOnFailure>True</CodeContractsRuntimeThrowOnFailure>
     <CodeContractsRuntimeCallSiteRequires>False</CodeContractsRuntimeCallSiteRequires>
@@ -99,6 +99,10 @@
       <HintPath>..\packages\linqtotwitter.4.1.0\lib\net45\LinqToTwitter.net.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.Azure.Documents.Client, Version=1.9.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Azure.DocumentDB.1.9.2\lib\net45\Microsoft.Azure.Documents.Client.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.ConcurrencyVisualizer.Markers, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\ConcurrencyVisualizer.1.0.1\lib\Microsoft.ConcurrencyVisualizer.Markers.dll</HintPath>
       <Private>True</Private>
@@ -146,25 +150,29 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Cecil, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.9.6.3\lib\net45\Mono.Cecil.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Cecil.Mdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Mdb.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.9.6.3\lib\net45\Mono.Cecil.Mdb.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Cecil.Pdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Pdb.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.9.6.3\lib\net45\Mono.Cecil.Pdb.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Cecil.Rocks, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Rocks.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.9.6.3\lib\net45\Mono.Cecil.Rocks.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="System" />
-    <Reference Include="System.Collections.Immutable, Version=1.1.37.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Collections.Immutable.1.1.37\lib\dotnet\System.Collections.Immutable.dll</HintPath>
+    <Reference Include="System.Collections.Immutable, Version=1.2.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Collections.Immutable.1.2.0\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -293,6 +301,11 @@
       <LastGenOutput>FullAdventureWorks.cs</LastGenOutput>
     </Content>
     <Content Include="Linq\Fundamentals\LambdaExpression.txt" />
+    <Compile Include="Linq\Fundamentals\LinqToDataSets.cs" />
+    <Compile Include="Linq\Fundamentals\LinqToDocumentDB.cs" />
+    <Compile Include="Linq\Fundamentals\LinqToJson.cs" />
+    <Compile Include="Linq\Fundamentals\LinqToSql.cs" />
+    <Compile Include="Linq\Fundamentals\ParallelLinq.cs" />
     <Compile Include="Linq\IteratorPattern.cs" />
     <Compile Include="Linq\LinqToSql\Concurrency.cs" />
     <Compile Include="Linq\LinqToSql\Tracking.cs" />
@@ -362,6 +375,8 @@
     <Content Include="Linq\EntityFramework\QueryMethods.sql" />
     <Content Include="Linq\EntityFramework\Mapping.sql" />
     <Content Include="Linq\EntityFramework\Tables.sql" />
+    <Content Include="Linq\Fundamentals\LinqToDocumentDB.sql" />
+    <Content Include="Linq\Fundamentals\LinqToXml.xml" />
     <Content Include="Linq\LinqToSql\Performance.sql" />
     <Content Include="Linq\LinqToSql\Laziness.sql" />
     <Content Include="Linq\LinqToSql\Functions.sql" />
@@ -372,6 +387,7 @@
     <Content Include="Linq\LinqToSql\Mapping.sql" />
     <Content Include="Linq\LinqToXml\FlickrRss.xml" />
     <Content Include="Linq\LinqToXml\AspNetRss.xml" />
+    <Content Include="Linq\Text.txt" />
     <Content Include="Sql\AdventureWorks.Delete.sql" />
     <Content Include="Sql\AdventureWorks.sql" />
     <Content Include="Sql\Database.sql" />
@@ -443,10 +459,10 @@
     <Compile Include="Linq\LinqToObjects\IteratorPattern.cs" />
     <Compile Include="Linq\Fundamentals\LambdaExpression.cs" />
     <Compile Include="Linq\Fundamentals\LinqToObjects.cs" />
-    <Compile Include="Linq\Fundamentals\LinqToSql.cs" />
+    <Compile Include="Linq\Fundamentals\LinqToEntities.cs" />
     <Compile Include="Linq\Fundamentals\LinqToTwitter.cs" />
     <Compile Include="Linq\Fundamentals\LinqToXml.cs" />
-    <Compile Include="Linq\Fundamentals\Person.cs" />
+    <Compile Include="Linq\Fundamentals\Declaratice.cs" />
     <Compile Include="Linq\Fundamentals\QueryExpression.cs" />
     <Compile Include="Linq\Fundamentals\QueryExpressionPattern.cs" />
     <Compile Include="Linq\Fundamentals\Resources.Designer.cs">
@@ -533,6 +549,8 @@
     <None Include="Linq\EntityFramework\FullWithViews\EF.Reverse.POCO.ttinclude" />
     <None Include="Linq\EntityFramework\Full\EF.Reverse.POCO.Core.ttinclude" />
     <None Include="Linq\EntityFramework\Full\EF.Reverse.POCO.ttinclude" />
+    <None Include="Linq\Fundamentals\LinqToDocumentDB.json" />
+    <None Include="Linq\Fundamentals\LinqToJson.json" />
     <None Include="Linq\Fundamentals\Methods.il" />
     <Compile Include="Linq\EntityFramework\QueryMethods.cs" />
     <None Include="Linq\LinqToXml\AspNetRss.xsd">
@@ -560,6 +578,7 @@
   <ItemGroup>
     <Service Include="{3259AA49-8AA1-44D3-9025-A0B520596A8C}" />
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Linq\Fundamentals\Resources.resx">
@@ -589,10 +608,12 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Azure.DocumentDB.1.9.2\build\Microsoft.Azure.DocumentDB.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Azure.DocumentDB.1.9.2\build\Microsoft.Azure.DocumentDB.targets'))" />
   </Target>
   <PropertyGroup>
     <SsdtUnitTestVersion>2.0</SsdtUnitTestVersion>
   </PropertyGroup>
+  <Import Project="..\packages\Microsoft.Azure.DocumentDB.1.9.2\build\Microsoft.Azure.DocumentDB.targets" Condition="Exists('..\packages\Microsoft.Azure.DocumentDB.1.9.2\build\Microsoft.Azure.DocumentDB.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

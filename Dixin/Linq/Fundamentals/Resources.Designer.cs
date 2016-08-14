@@ -70,6 +70,15 @@ namespace Dixin.Linq.Fundamentals {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Email is invalid..
+        /// </summary>
+        internal static string EmailInvalid {
+            get {
+                return ResourceManager.GetString("EmailInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to .
         /// </summary>
         internal static string InvalidAge {
@@ -79,25 +88,16 @@ namespace Dixin.Linq.Fundamentals {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to Name is invalid..
         /// </summary>
-        internal static string InvalidEmail {
+        internal static string NameInvalid {
             get {
-                return ResourceManager.GetString("InvalidEmail", resourceCulture);
+                return ResourceManager.GetString("NameInvalid", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
-        /// </summary>
-        internal static string InvalidName {
-            get {
-                return ResourceManager.GetString("InvalidName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to Name is required..
         /// </summary>
         internal static string NameRequired {
             get {

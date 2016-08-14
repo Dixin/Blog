@@ -11,7 +11,7 @@
     public class PerformanceTests
     {
         [TestMethod]
-        public void CompiedQuery()
+        public void CompiedQueryTest()
         {
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {
