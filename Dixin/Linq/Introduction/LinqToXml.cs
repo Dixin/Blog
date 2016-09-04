@@ -1,4 +1,4 @@
-﻿namespace Dixin.Linq.Fundamentals
+﻿namespace Dixin.Linq.Introduction
 {
     using System;
     using System.Collections.Generic;
@@ -38,18 +38,6 @@
             {
                 Trace.WriteLine(result);
             }
-        }
-    }
-
-    internal static partial class LinqToXml
-    {
-        internal static IEnumerable<string> Titles(string rss, params string[] categories)
-        {
-            return from item in XDocument.Load(rss).Root.Element("channel").Elements("item")
-                   where !categories.Any()
-                       || item.Elements("category").Any(category => categories.Contains(category.Value))
-                   orderby DateTime.Parse(item.Element("pubDate").Value, CultureInfo.InvariantCulture)
-                   select item.Element("title").Value;
         }
     }
 }

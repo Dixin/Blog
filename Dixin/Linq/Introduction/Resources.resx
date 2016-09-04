@@ -117,14 +117,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AgeRequired" xml:space="preserve">
-    <value />
-  </data>
   <data name="EmailInvalid" xml:space="preserve">
     <value>Email is invalid.</value>
-  </data>
-  <data name="InvalidAge" xml:space="preserve">
-    <value />
   </data>
   <data name="NameInvalid" xml:space="preserve">
     <value>Name is invalid.</value>

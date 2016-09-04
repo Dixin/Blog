@@ -1,4 +1,4 @@
-﻿namespace Dixin.Linq.Fundamentals
+﻿namespace Dixin.Linq.CSharp
 {
     using System;
     using System.Diagnostics;
@@ -108,6 +108,7 @@
     {
         internal static void ExpressionLambda()
         {
+            Func<int, bool> isPositive = int32 => int32 > 0;
             Expression<Func<int, bool>> isPositiveExpression = int32 => int32 > 0;
         }
     }

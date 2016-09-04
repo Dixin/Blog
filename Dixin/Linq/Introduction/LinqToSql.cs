@@ -1,4 +1,4 @@
-namespace Dixin.Linq.Fundamentals
+namespace Dixin.Linq.Introduction
 {
     using System.Diagnostics;
     using System.Linq;

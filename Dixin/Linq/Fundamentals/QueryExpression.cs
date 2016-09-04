@@ -78,7 +78,7 @@
     internal static partial class LinqToObjects
     {
         internal static IEnumerable<Person> Where
-            (IEnumerable<Person> source) => source.Where((person, index) => person.Age >= 18 && index % 2 == 0);
+            (IEnumerable<Person> source) => source.Where((person, index) => person.Name.StartsWith("A", StringComparison.Ordinal) && index % 2 == 0);
     }
 
     internal static partial class Int32Extensions
@@ -102,10 +102,9 @@
     {
         internal static void QueryMethod()
         {
-            int query1 = Int32Extensions.Select(default(int), zero => zero);
+            int query1 = default(int).Select(zero => zero);
 
-            string query2 = Int32Extensions.Select(
-                1 + 2, three => (three + 4).ToString(CultureInfo.InvariantCulture)); // "7"
+            string query2 = (1 + 2).Select(three => (three + 4).ToString(CultureInfo.InvariantCulture)); // "7"
         }
     }
 
@@ -124,7 +123,7 @@
 
         internal static void QueryMethod()
         {
-            string query = ObjectExtensions.Select(Guid.NewGuid(), newGuild => newGuild.ToString());
+            string query = Guid.NewGuid().Select(newGuild => newGuild.ToString());
         }
     }
 }

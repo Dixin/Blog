@@ -1,9 +1,11 @@
-﻿namespace Dixin.Linq.Fundamentals
+﻿namespace Dixin.Linq.Introduction
 {
     using System.Diagnostics;
     using System.Linq;
 
     using Dixin.Linq.EntityFramework;
+
+    using Product = Dixin.Linq.EntityFramework.Product;
 
     internal static partial class LinqToEntities
     {

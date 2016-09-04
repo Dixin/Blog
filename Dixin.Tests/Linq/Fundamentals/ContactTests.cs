@@ -3,8 +3,10 @@
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.Linq;
-    using Dixin.Linq.Fundamentals;
+
+    using Dixin.Linq.Introduction;
     using Dixin.TestTools.UnitTesting;
+
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]

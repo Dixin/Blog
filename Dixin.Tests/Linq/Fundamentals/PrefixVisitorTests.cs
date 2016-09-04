@@ -3,7 +3,7 @@
     using System;
     using System.Linq.Expressions;
 
-    using Dixin.Linq.Fundamentals;
+    using Dixin.Linq.CSharp;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 

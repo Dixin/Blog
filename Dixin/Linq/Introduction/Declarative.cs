@@ -1,4 +1,4 @@
-﻿namespace Dixin.Linq.Fundamentals
+﻿namespace Dixin.Linq.Introduction
 {
     using System;
     using System.ComponentModel.DataAnnotations;
@@ -68,17 +68,5 @@
                 return this.weight;
             }
         }
-    }
-
-    internal partial class Person
-    {
-        internal string Name { get; set; }
-
-        internal int Age { get; set; }
-    }
-
-    internal partial class Person
-    {
-        internal string PlaceOfBirth { get; set; }
     }
 }

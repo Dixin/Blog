@@ -10,7 +10,7 @@
     using System.Reflection;
     using System.Reflection.Emit;
 
-    using Dixin.Linq.Fundamentals;
+    using Dixin.Linq.CSharp;
 
     using Array = System.Array;
 

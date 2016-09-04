@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Dixin.Linq.Fundamentals {
+namespace Dixin.Linq.Introduction {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Dixin.Linq.Fundamentals {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Dixin.Linq.Fundamentals.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Dixin.Linq.Introduction.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,29 +61,11 @@ namespace Dixin.Linq.Fundamentals {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
-        /// </summary>
-        internal static string AgeRequired {
-            get {
-                return ResourceManager.GetString("AgeRequired", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Email is invalid..
         /// </summary>
         internal static string EmailInvalid {
             get {
                 return ResourceManager.GetString("EmailInvalid", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to .
-        /// </summary>
-        internal static string InvalidAge {
-            get {
-                return ResourceManager.GetString("InvalidAge", resourceCulture);
             }
         }
         

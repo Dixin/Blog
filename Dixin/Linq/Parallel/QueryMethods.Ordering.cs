@@ -7,8 +7,6 @@
     using System.Linq;
     using System.Threading;
 
-    using Model = Dixin.Linq.Fundamentals.Model;
-
     using static HelperMethods;
 
     internal static partial class QueryMethods
@@ -18,6 +16,7 @@
                 .AsParallel()
                 .Select((value, index) => $"[{index}]={value}")
                 .ForEach(valueWithIndex => Trace.WriteLine(valueWithIndex));
+
         // [0]=0 [1]=2 [2]=4 [3]=5 [4]=6 [5]=1 [6]=3 [7]=7
 
         internal static void AsOrdered()
@@ -126,7 +125,23 @@
                     (a, b) => $"({a}, {b})") // Expected: (0, 0) ... (15, 15).
                 .ForEach(value => Trace.WriteLine(value)); // Actual: (3, 8) (0, 12) (1, 0) (2, 4) (6, 9) (7, 13) ...
         }
+    }
 
+    public class Model
+    {
+        public Model(string name, int weight)
+        {
+            this.Name = name;
+            this.Weight = weight;
+        }
+
+        public string Name { get; }
+
+        public int Weight { get; }
+    }
+
+    internal static partial class QueryMethods
+    {
         internal static void JoinAsUnordered()
         {
             int count = Environment.ProcessorCount * 10000;

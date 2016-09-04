@@ -1,4 +1,4 @@
-﻿namespace Dixin.Linq.Fundamentals
+﻿namespace Dixin.Linq.CSharp
 {
     using System;
     using System.Collections.Generic;

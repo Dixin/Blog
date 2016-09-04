@@ -1,4 +1,4 @@
-﻿namespace Dixin.Linq.Fundamentals
+﻿namespace Dixin.Linq.Introduction
 {
     using System;
     using System.Collections;
@@ -127,16 +127,6 @@
             // 1 System.Runtime.InteropServices: ObjectCreationDelegate
             // 1 System.Runtime.Remoting.Contexts: CrossContextDelegate
         }
-
-        internal static int Add(int a, int b)
-        {
-            return a + b;
-        }
-
-        internal static void AddToConsole(int a, int b)
-        {
-            Console.WriteLine("{0} => {1}", DateTime.Now.ToString("o"), a + b);
-        }
     }
 
     internal class WebContentDownloader
@@ -191,77 +181,6 @@
             DocumentBuilder builder = new DocumentBuilder(
                 new WebContentDownloader(), new WordConverter(), new OneDriveUploader());
             builder.Build("https://weblogs.asp.net/dixin/linq-via-csharp");
-        }
-    }
-
-    internal partial class Imperative
-    {
-        internal static List<Person> FilterAndOrderByAge(IEnumerable<Person> source)
-        {
-            List<Person> results = new List<Person>();
-            foreach (Person person in source)
-            {
-                if (person.Age >= 18)
-                {
-                    results.Add(person);
-                }
-            }
-
-            Comparison<Person> personComparison = delegate (Person a, Person b)
-            {
-                int ageComparison = 0 - a.Age.CompareTo(b.Age);
-                return ageComparison != 0
-                    ? ageComparison
-                    : string.Compare(a.Name, b.Name, StringComparison.Ordinal);
-            };
-            results.Sort(personComparison);
-
-            return results;
-        }
-    }
-
-    internal static partial class Imperative
-    {
-        internal static IEnumerable<Type> GetTypes<TType>(Assembly assembly, bool isPublicOnly = false)
-        {
-            foreach (Type type in assembly.GetTypes())
-            {
-                if ((!isPublicOnly || type.IsPublic) && typeof(TType).IsAssignableFrom(type))
-                {
-                    yield return type;
-                }
-            }
-        }
-    }
-
-    internal static partial class Imperative
-    {
-        internal static IEnumerable<int> Positive(IEnumerable<int> source)
-        {
-            foreach (int value in source)
-            {
-                if (value > 0)
-                {
-                    yield return value;
-                }
-            }
-        }
-    }
-
-    internal static partial class Imperative
-    {
-        internal static List<int> GetPositive(IEnumerable<int> source)
-        {
-            List<int> resullt = new List<int>();
-            foreach (int value in source)
-            {
-                if (value > 0)
-                {
-                    resullt.Add(value);
-                }
-            }
-
-            return resullt;
         }
     }
 }

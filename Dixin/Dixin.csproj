@@ -17,7 +17,7 @@
     <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-    <CodeContractsAssemblyMode>1</CodeContractsAssemblyMode>
+    <CodeContractsAssemblyMode>0</CodeContractsAssemblyMode>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -72,6 +72,7 @@
     <CodeContractsReferenceAssembly>DoNotBuild</CodeContractsReferenceAssembly>
     <CodeContractsAnalysisWarningLevel>3</CodeContractsAnalysisWarningLevel>
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -80,6 +81,49 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <CodeContractsEnableRuntimeChecking>False</CodeContractsEnableRuntimeChecking>
+    <CodeContractsRuntimeOnlyPublicSurface>False</CodeContractsRuntimeOnlyPublicSurface>
+    <CodeContractsRuntimeThrowOnFailure>True</CodeContractsRuntimeThrowOnFailure>
+    <CodeContractsRuntimeCallSiteRequires>False</CodeContractsRuntimeCallSiteRequires>
+    <CodeContractsRuntimeSkipQuantifiers>False</CodeContractsRuntimeSkipQuantifiers>
+    <CodeContractsRunCodeAnalysis>False</CodeContractsRunCodeAnalysis>
+    <CodeContractsNonNullObligations>True</CodeContractsNonNullObligations>
+    <CodeContractsBoundsObligations>True</CodeContractsBoundsObligations>
+    <CodeContractsArithmeticObligations>True</CodeContractsArithmeticObligations>
+    <CodeContractsEnumObligations>True</CodeContractsEnumObligations>
+    <CodeContractsRedundantAssumptions>True</CodeContractsRedundantAssumptions>
+    <CodeContractsAssertsToContractsCheckBox>True</CodeContractsAssertsToContractsCheckBox>
+    <CodeContractsRedundantTests>True</CodeContractsRedundantTests>
+    <CodeContractsMissingPublicRequiresAsWarnings>True</CodeContractsMissingPublicRequiresAsWarnings>
+    <CodeContractsMissingPublicEnsuresAsWarnings>False</CodeContractsMissingPublicEnsuresAsWarnings>
+    <CodeContractsInferRequires>True</CodeContractsInferRequires>
+    <CodeContractsInferEnsures>False</CodeContractsInferEnsures>
+    <CodeContractsInferEnsuresAutoProperties>True</CodeContractsInferEnsuresAutoProperties>
+    <CodeContractsInferObjectInvariants>False</CodeContractsInferObjectInvariants>
+    <CodeContractsSuggestAssumptions>False</CodeContractsSuggestAssumptions>
+    <CodeContractsSuggestAssumptionsForCallees>False</CodeContractsSuggestAssumptionsForCallees>
+    <CodeContractsSuggestRequires>False</CodeContractsSuggestRequires>
+    <CodeContractsNecessaryEnsures>True</CodeContractsNecessaryEnsures>
+    <CodeContractsSuggestObjectInvariants>False</CodeContractsSuggestObjectInvariants>
+    <CodeContractsSuggestReadonly>True</CodeContractsSuggestReadonly>
+    <CodeContractsRunInBackground>True</CodeContractsRunInBackground>
+    <CodeContractsShowSquigglies>True</CodeContractsShowSquigglies>
+    <CodeContractsUseBaseLine>False</CodeContractsUseBaseLine>
+    <CodeContractsEmitXMLDocs>False</CodeContractsEmitXMLDocs>
+    <CodeContractsCustomRewriterAssembly />
+    <CodeContractsCustomRewriterClass />
+    <CodeContractsLibPaths />
+    <CodeContractsExtraRewriteOptions />
+    <CodeContractsExtraAnalysisOptions />
+    <CodeContractsSQLServerOption />
+    <CodeContractsBaseLineFile />
+    <CodeContractsCacheAnalysisResults>True</CodeContractsCacheAnalysisResults>
+    <CodeContractsSkipAnalysisIfCannotConnectToCache>False</CodeContractsSkipAnalysisIfCannotConnectToCache>
+    <CodeContractsFailBuildOnWarnings>False</CodeContractsFailBuildOnWarnings>
+    <CodeContractsBeingOptimisticOnExternal>True</CodeContractsBeingOptimisticOnExternal>
+    <CodeContractsRuntimeCheckingLevel>Full</CodeContractsRuntimeCheckingLevel>
+    <CodeContractsReferenceAssembly>%28none%29</CodeContractsReferenceAssembly>
+    <CodeContractsAnalysisWarningLevel>0</CodeContractsAnalysisWarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
@@ -269,6 +313,9 @@
     </Compile>
     <Compile Include="Common\ExceptionFilter.cs" />
     <Compile Include="Common\Int32Extensions.cs" />
+    <Compile Include="Linq\CSharp\AnonymousFunction.cs" />
+    <Compile Include="Linq\CSharp\FunctionType.cs" />
+    <Compile Include="Linq\CSharp\NamedFunction.cs" />
     <Compile Include="Linq\EntityFramework\AdventureWorks.Views.cs" />
     <Compile Include="Linq\EntityFramework\Concurrency.cs" />
     <Compile Include="Linq\EntityFramework\FullWithViews\FullAdventureWorksWithViews.cs">
@@ -291,6 +338,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AdventureWorks.edmx</DependentUpon>
     </Compile>
+    <Content Include="Linq\CSharp\AnonymousFunction.js" />
     <Content Include="Linq\EntityFramework\Concurrency.sql" />
     <Content Include="Linq\EntityFramework\FullWithViews\FullAdventureWorksWithViews.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
@@ -300,12 +348,16 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>FullAdventureWorks.cs</LastGenOutput>
     </Content>
-    <Content Include="Linq\Fundamentals\LambdaExpression.txt" />
-    <Compile Include="Linq\Fundamentals\LinqToDataSets.cs" />
-    <Compile Include="Linq\Fundamentals\LinqToDocumentDB.cs" />
-    <Compile Include="Linq\Fundamentals\LinqToJson.cs" />
-    <Compile Include="Linq\Fundamentals\LinqToSql.cs" />
+    <Compile Include="Linq\CSharp\ExpressionTreeVisitor.cs" />
+    <Compile Include="Linq\Introduction\Functional.cs" />
+    <Compile Include="Linq\CSharp\Syntax.cs" />
+    <Compile Include="Linq\Introduction\Functions.cs" />
+    <Compile Include="Linq\Introduction\LinqToDataSets.cs" />
+    <Compile Include="Linq\Introduction\LinqToDocumentDB.cs" />
+    <Compile Include="Linq\Introduction\LinqToJson.cs" />
+    <Compile Include="Linq\Introduction\LinqToSql.cs" />
     <Compile Include="Linq\Fundamentals\ParallelLinq.cs" />
+    <Compile Include="Linq\Fundamentals\Person.cs" />
     <Compile Include="Linq\IteratorPattern.cs" />
     <Compile Include="Linq\LinqToSql\Concurrency.cs" />
     <Compile Include="Linq\LinqToSql\Tracking.cs" />
@@ -375,8 +427,9 @@
     <Content Include="Linq\EntityFramework\QueryMethods.sql" />
     <Content Include="Linq\EntityFramework\Mapping.sql" />
     <Content Include="Linq\EntityFramework\Tables.sql" />
-    <Content Include="Linq\Fundamentals\LinqToDocumentDB.sql" />
-    <Content Include="Linq\Fundamentals\LinqToXml.xml" />
+    <Content Include="Linq\CSharp\LambdaExpression.txt" />
+    <Content Include="Linq\Introduction\LinqToDocumentDB.sql" />
+    <Content Include="Linq\Introduction\LinqToXml.xml" />
     <Content Include="Linq\LinqToSql\Performance.sql" />
     <Content Include="Linq\LinqToSql\Laziness.sql" />
     <Content Include="Linq\LinqToSql\Functions.sql" />
@@ -443,8 +496,6 @@
     <Compile Include="Linq\Fundamentals\AssemblyExtensions.cs" />
     <Compile Include="Linq\Fundamentals\Closure.cs" />
     <Compile Include="Linq\Fundamentals\CovarianceContravariance.cs" />
-    <Compile Include="Linq\Fundamentals\ExpressionTree.cs" />
-    <Compile Include="Linq\Fundamentals\ExtensionMethods.cs" />
     <Compile Include="Linq\Fundamentals\HigherOrderFunction.cs" />
     <Compile Include="Linq\LinqToObjects\DeferredExecution.cs" />
     <Compile Include="Linq\EnumerableX.List.cs" />
@@ -454,18 +505,18 @@
     <Compile Include="Linq\EnumerableX.cs" />
     <Compile Include="Linq\LinqToObjects\EnumerableExtensions.Interactive.cs" />
     <Compile Include="Linq\LinqToObjects\FluentApi.cs" />
-    <Compile Include="Linq\Fundamentals\Imperative.cs" />
+    <Compile Include="Linq\Introduction\Imperative.cs" />
     <Compile Include="Linq\LinqToObjects\HashSet`1.cs" />
     <Compile Include="Linq\LinqToObjects\IteratorPattern.cs" />
-    <Compile Include="Linq\Fundamentals\LambdaExpression.cs" />
-    <Compile Include="Linq\Fundamentals\LinqToObjects.cs" />
-    <Compile Include="Linq\Fundamentals\LinqToEntities.cs" />
-    <Compile Include="Linq\Fundamentals\LinqToTwitter.cs" />
-    <Compile Include="Linq\Fundamentals\LinqToXml.cs" />
-    <Compile Include="Linq\Fundamentals\Declaratice.cs" />
+    <Compile Include="Linq\CSharp\ExpressionTree.cs" />
+    <Compile Include="Linq\Introduction\LinqToObjects.cs" />
+    <Compile Include="Linq\Introduction\LinqToEntities.cs" />
+    <Compile Include="Linq\Introduction\LinqToTwitter.cs" />
+    <Compile Include="Linq\Introduction\LinqToXml.cs" />
+    <Compile Include="Linq\Introduction\Declarative.cs" />
     <Compile Include="Linq\Fundamentals\QueryExpression.cs" />
     <Compile Include="Linq\Fundamentals\QueryExpressionPattern.cs" />
-    <Compile Include="Linq\Fundamentals\Resources.Designer.cs">
+    <Compile Include="Linq\Introduction\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
@@ -542,6 +593,7 @@
       <Generator>EntityModelCodeGenerator</Generator>
       <LastGenOutput>AdventureWorks.Designer.cs</LastGenOutput>
     </EntityDeploy>
+    <None Include="Linq\CSharp\Data.il" />
     <None Include="Linq\EntityFramework\EntityDataModel\AdventureWorks.edmx.diagram">
       <DependentUpon>AdventureWorks.edmx</DependentUpon>
     </None>
@@ -549,9 +601,8 @@
     <None Include="Linq\EntityFramework\FullWithViews\EF.Reverse.POCO.ttinclude" />
     <None Include="Linq\EntityFramework\Full\EF.Reverse.POCO.Core.ttinclude" />
     <None Include="Linq\EntityFramework\Full\EF.Reverse.POCO.ttinclude" />
-    <None Include="Linq\Fundamentals\LinqToDocumentDB.json" />
-    <None Include="Linq\Fundamentals\LinqToJson.json" />
-    <None Include="Linq\Fundamentals\Methods.il" />
+    <None Include="Linq\Introduction\LinqToDocumentDB.json" />
+    <None Include="Linq\Introduction\LinqToJson.json" />
     <Compile Include="Linq\EntityFramework\QueryMethods.cs" />
     <None Include="Linq\LinqToXml\AspNetRss.xsd">
       <SubType>Designer</SubType>
@@ -581,7 +632,7 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Linq\Fundamentals\Resources.resx">
+    <EmbeddedResource Include="Linq\Introduction\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>

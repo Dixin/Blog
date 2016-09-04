@@ -1,4 +1,4 @@
-﻿namespace Dixin.Linq.Fundamentals
+﻿namespace Dixin.Linq.Introduction
 {
     using System;
     using System.Collections.Generic;
@@ -101,27 +101,6 @@
 
     internal partial class LinqToObjects
     {
-        internal static IEnumerable<Person> FilterAndOrderByAge(IEnumerable<Person> source)
-        {
-            return source
-                .Where(person => person.Age >= 18)
-                .OrderByDescending(person => person.Age)
-                .ThenBy(person => person.Name);
-        }
-    }
-
-    internal static partial class LinqToObjects
-    {
-        internal static IEnumerable<int> Positive(IEnumerable<int> source)
-        {
-            return from value in source
-                   where value > 0
-                   select value;
-        }
-    }
-
-    internal partial class LinqToObjects
-    {
         internal static void CompiledDelegateTypes()
         {
             Assembly mscorlib = typeof(object).Assembly;
@@ -148,15 +127,6 @@
                 }
                 Trace.WriteLine(null);
             }
-        }
-
-        internal static IEnumerable<string> FilterAndSort(IEnumerable<Person> source)
-        {
-            return source
-                .Where(person => person.Age >= 18)
-                .OrderByDescending(person => person.Age)
-                .ThenBy(person => person.Name)
-                .Select(person => person.Name);
         }
     }
 }

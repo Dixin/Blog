@@ -496,7 +496,7 @@
         // ...
     }
 
-    internal static partial class Array
+    internal static partial class ArrayVariance
     {
         internal static void Covariance()
         {
@@ -522,7 +522,7 @@
         }
     }
 
-    internal static partial class Array
+    internal static partial class ArrayVariance
     {
         internal static void ProcessArray(Base[] array)
         {
@@ -536,7 +536,7 @@
         }
     }
 
-    internal static partial class Array
+    internal static partial class ArrayVariance
     {
         internal static void ValueType()
         {

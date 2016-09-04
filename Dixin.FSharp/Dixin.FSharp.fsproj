@@ -45,6 +45,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
@@ -54,6 +55,7 @@
     <Compile Include="..\Tools\CommonAssemblyInfo.fs">
       <Link>Properties\CommonAssemblyInfo.fs</Link>
     </Compile>
+    <Compile Include="Linq\CSharp\AnonymousFunction.fs" />
     <Compile Include="Linq\LinqToObjects\FSharpQueryExpressions.fs" />
     <Compile Include="Linq\Maybe.fs" />
     <Compile Include="Program.fs" />
