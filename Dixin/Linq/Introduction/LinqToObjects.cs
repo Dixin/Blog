@@ -11,10 +11,10 @@
         internal static void QueryExpression()
         {
             IEnumerable<int> source = new int[] { 4, 3, 2, 1, 0, -1 }; // Get source.
-            IEnumerable<double> query = from value in source
-                                        where value > 0
-                                        orderby value
-                                        select Math.Sqrt(value); // Create query.
+            IEnumerable<double> query = from int32 in source
+                                        where int32 > 0
+                                        orderby int32
+                                        select Math.Sqrt(int32); // Create query.
             foreach (double result in query) // Execute query.
             {
                 Trace.WriteLine(result);
@@ -28,9 +28,9 @@
         {
             IEnumerable<int> source = new int[] { 4, 3, 2, 1, 0, -1 }; // Get source.
             IEnumerable<double> query = source
-                .Where(value => value > 0)
-                .OrderBy(value => value)
-                .Select(value => Math.Sqrt(value)); // Create query.
+                .Where(int32 => int32 > 0)
+                .OrderBy(int32 => int32)
+                .Select(int32 => Math.Sqrt(int32)); // Create query.
             foreach (double result in query) // Execute query.
             {
                 Trace.WriteLine(result);

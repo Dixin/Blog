@@ -3,112 +3,12 @@
     using System;
     using System.Diagnostics;
     using System.Linq.Expressions;
-    using System.Runtime.CompilerServices;
-
-    internal static partial class Anonymous
-    {
-        internal static bool IsPositive(int int32)
-        {
-            return int32 > 0;
-        }
-
-        internal static void Delegate()
-        {
-            Func<int, bool> isPositive1 = new Func<int, bool>(IsPositive);
-            Func<int, bool> isPositive2 = IsPositive;
-        }
-
-        internal static void AnonymousMethod()
-        {
-            Func<int, bool> isPositive = delegate (int int32)
-                {
-                    return int32 > 0;
-                };
-
-            AppDomain.CurrentDomain.UnhandledException += delegate (object sender, UnhandledExceptionEventArgs e)
-                {
-                    Trace.WriteLine(e.ExceptionObject);
-                };
-        }
-
-        internal static void Lambda()
-        {
-            Func<int, bool> isPositive = (int int32) =>
-                {
-                    return int32 > 0;
-                };
-
-            AppDomain.CurrentDomain.UnhandledException += (object sender, UnhandledExceptionEventArgs e) =>
-                {
-                    Trace.WriteLine(e.ExceptionObject);
-                };
-        }
-
-        internal static void ExpressionLambda()
-        {
-            Func<int, bool> isPositive = int32 => int32 > 0;
-
-            AppDomain.CurrentDomain.UnhandledException += (sender, e) => Trace.WriteLine(e.ExceptionObject);
-        }
-
-        internal static void StatementLambda()
-        {
-            Func<int, bool> isPositive = int32 =>
-                {
-                    Console.WriteLine(int32);
-                    return int32 > 0;
-                };
-        }
-
-        internal static void CallAnonymousMethod()
-        {
-            bool isPositive = new Func<int, bool>(delegate (int int32) { return int32 > 0; })(1);
-
-            new Action<bool>(delegate (bool value) { Trace.WriteLine(value); })(isPositive);
-        }
-
-        internal static void CallLambda()
-        {
-            bool isPositive = new Func<int, bool>(int32 => int32 > 0)(1);
-
-            new Action<bool>(value => Trace.WriteLine(value))(isPositive);
-        }
-    }
-
-    internal static class CompiledAnonymous
-    {
-        [CompilerGenerated]
-        private static Func<int, bool> cachedAnonymousMethodDelegate0;
-
-        [CompilerGenerated]
-        private static UnhandledExceptionEventHandler cachedAnonymousMethodDelegate1;
-
-        [CompilerGenerated]
-        private static bool AnonymousMethod0(int int32)
-        {
-            return int32 > 0;
-        }
-
-        [CompilerGenerated]
-        private static void AnonymousMethod1(object sender, UnhandledExceptionEventArgs e)
-        {
-            Trace.WriteLine(e.ExceptionObject);
-        }
-
-        internal static void AnonymousMethod()
-        {
-            Func<int, bool> isPositive = cachedAnonymousMethodDelegate0
-                ?? (cachedAnonymousMethodDelegate0 = new Func<int, bool>(AnonymousMethod0));
-            AppDomain.CurrentDomain.UnhandledException += cachedAnonymousMethodDelegate1
-                ?? (cachedAnonymousMethodDelegate1 = new UnhandledExceptionEventHandler(AnonymousMethod1));
-        }
-    }
 
     internal static partial class ExpressionTree
     {
         internal static void ExpressionLambda()
         {
-            Func<int, bool> isPositive = int32 => int32 > 0;
+            // Func<int, bool> isPositive = int32 => int32 > 0;
             Expression<Func<int, bool>> isPositiveExpression = int32 => int32 > 0;
         }
     }
@@ -117,50 +17,45 @@
     {
         internal static void CompiledExpressionLambda()
         {
-            ParameterExpression parameterExpression = Expression.Parameter(typeof(int), "int32"); // int32
+            ParameterExpression parameterExpression = Expression.Parameter(typeof(int), "int32"); // int32 parameter.
             ConstantExpression constantExpression = Expression.Constant(0, typeof(int)); // 0
             BinaryExpression greaterThanExpression = Expression.GreaterThan(
                 left: parameterExpression, right: constantExpression); // int32 > 0
 
             Expression<Func<int, bool>> isPositiveExpression = Expression.Lambda<Func<int, bool>>(
-                body: greaterThanExpression, // => int32 > 0
-                parameters: parameterExpression); // int32 =>
+                body: greaterThanExpression, // ... => int32 > 0
+                parameters: parameterExpression); // int32 => ...
         }
 
 #if DEMO
         internal static void StatementLambda()
         {
-            Expression<Func<int, bool>> statementLambda1 = int32 => { return int32 > 0; };
-
-            Expression<Func<int, bool>> statementLambda2 = int32 =>
-                {
-                    Console.WriteLine(int32);
-                    return int32 > 0;
-                };
+            Expression<Func<int, bool>> isPositiveExpression = int32 =>
+            {
+                Console.WriteLine(int32);
+                return int32 > 0;
+            };
         }
 #endif
 
         internal static void StatementLambda()
         {
-            // For single statement, syntactic sugar works.
-            Expression<Func<int, bool>> statementLambda1 = int32 => int32 > 0;
-
-            // Above lambda expression is compiled to:
-            ParameterExpression int32Parameter = Expression.Parameter(typeof(int), "int32");
-            Expression<Func<int, bool>> compiledStatementLambda1 = Expression.Lambda<Func<int, bool>>(
-                Expression.GreaterThan(int32Parameter, Expression.Constant(0, typeof(int))), // int32 > 0
-                int32Parameter); // int32 =>
-
-            // For multiple statements, syntactic sugar is not available. The expression tree has to be built manually.
-            Expression<Func<int, bool>> statementLambda2 = Expression.Lambda<Func<int, bool>>(
-                // {
+            ParameterExpression parameterExpression = Expression.Parameter(typeof(int), "int32"); // int32 parameter.
+            Expression<Func<int, bool>> isPositiveExpression = Expression.Lambda<Func<int, bool>>(
+                // ... => {
                 Expression.Block(
-                    // Console.WriteLine(int32);
-                    Expression.Call(new Action<int>(Console.WriteLine).Method, int32Parameter),
+                    // Trace.WriteLine(int32);
+                    Expression.Call(new Action<int>(Console.WriteLine).Method, parameterExpression),
                     // return int32 > 0;
-                    Expression.GreaterThan(int32Parameter, Expression.Constant(0, typeof(int)))),
+                    Expression.GreaterThan(parameterExpression, Expression.Constant(0, typeof(int)))),
                 // }
-                int32Parameter); // int32 =>
+                parameterExpression); // int32 => ...
+        }
+
+        internal static void ArithmeticalExpression()
+        {
+            Expression<Func<double, double, double, double, double, double>> expression =
+                (a, b, c, d, e) => a + b - c * d / 2 + e * 3;
         }
     }
 }
@@ -254,7 +149,7 @@ namespace System.Linq.Expressions
 
         public static BlockExpression Block(params Expression[] expressions);
 
-        // Other methods.
+        // Other members.
     }
 }
 #endif

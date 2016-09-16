@@ -722,17 +722,17 @@ namespace Dixin.Linq.CSharp
             }
         }
 
-        internal static int AddWithLog(int value1, int value2)
+        internal static int AddWithLog(int int32A, int int32B)
         {
-            int sum = value1 + value2;
-            Trace.WriteLine(string.Format("{0}: {1} + {2} => {3}", DateTime.Now.ToString("o"), value1, value2, sum));
+            int sum = int32A + int32B;
+            Trace.WriteLine(string.Format("{0}: {1} + {2} => {3}", DateTime.Now.ToString("o"), int32A, int32B, sum));
             return sum;
         }
 
-        internal static int StringInterpolation(int value1, int value2)
+        internal static int StringInterpolation(int int32A, int int32B)
         {
-            int sum = value1 + value2;
-            Trace.WriteLine($"{DateTime.Now.ToString("o")}: {value1} + {value2} => {sum}");
+            int sum = int32A + int32B;
+            Trace.WriteLine($"{DateTime.Now.ToString("o")}: {int32A} + {int32B} => {sum}");
             return sum;
         }
     }

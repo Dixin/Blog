@@ -28,10 +28,10 @@
 
     internal partial class Data
     {
-        public static Data operator +(Data value1, Data value2)
+        public static Data operator +(Data data1, Data data2)
         {
             Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Addition
-            return new Data(value1.value + value2.value);
+            return new Data(data1.value + data2.value);
         }
 
         public static explicit operator int(Data value)
@@ -49,31 +49,31 @@
 
     internal partial class CompiledData
     {
-        public static Data op_Addition(Data value1, Data value2)
+        public static Data op_Addition(Data data1, Data data2)
         {
             Trace.WriteLine(MethodBase.GetCurrentMethod().Name);
-            return new Data(value1.value + value2.value);
+            return new Data(data1.value + data2.value);
         }
 
-        public static int op_Explicit(Data value)
+        public static int op_Explicit(Data data)
         {
             Trace.WriteLine(MethodBase.GetCurrentMethod().Name);
-            return value.value;
+            return data.value;
         }
 
-        public static Data op_Implicit(int value)
+        public static Data op_Implicit(int data)
         {
             Trace.WriteLine(MethodBase.GetCurrentMethod().Name);
-            return new Data(value);
+            return new Data(data);
         }
     }
 
     internal static partial class Functions
     {
-        internal static void Operators(Data value1, Data value2)
+        internal static void Operators(Data data1, Data data2)
         {
-            Data result = value1 + value2; // Compiled to Data.op_Addition(value1, value2).
-            int int32 = (int)value1; // Compiled to Data.op_Explicit(value1).
+            Data result = data1 + data2; // Compiled to Data.op_Addition(data1, data2).
+            int int32 = (int)data1; // Compiled to Data.op_Explicit(data1).
             Data data = 1; // Compiled to Data.op_Implicit(1).
         }
     }
@@ -343,9 +343,14 @@
         }
     }
 
-    internal partial class Data
+    internal partial class Data : IEquatable<Data>
     {
-        internal bool Equals(Data other)
+        public override bool Equals(object obj)
+        {
+            return obj is Data && this.Equals((Data)obj);
+        }
+
+        public bool Equals(Data other) // Member of IEquatable<T>.
         {
             return this.value == other.value;
         }
@@ -361,10 +366,11 @@
 
     internal static partial class Functions
     {
-        internal static void CallMethods(Data value1, Data value2)
+        internal static void CallMethods(Data data1, Data data2)
         {
-            bool result1 = value1.Equals(value2); // Data.Equals.
-            bool result2 = DataExtensions.Equals(value1, value2); // DataExtensions.Equals.
+            bool result1 = data1.Equals(string.Empty); // object.Equals.
+            bool result2 = data1.Equals(data2); // Data.Equals.
+            bool result3 = DataExtensions.Equals(data1, data2); // DataExtensions.Equals.
         }
     }
 
@@ -385,9 +391,9 @@
 
     internal partial class Data
     {
-        internal bool InstanceEqual(Data other) => this.value == other.value;
+        internal bool InstanceEquals(Data other) => this.value == other.value;
 
-        internal static bool StaticEqual(Data @this, Data other) => @this.value == other.value;
+        internal static bool StaticEquals(Data @this, Data other) => @this.value == other.value;
     }
 
     internal static partial class DataExtensions
@@ -400,10 +406,15 @@
         internal void TraceLine() => Trace.WriteLine(this.value);
     }
 
+    internal partial class Data : IComparable<Data>
+    {
+        int IComparable<Data>.CompareTo(Data other) => this.value.CompareTo(other.value);
+    }
+
 #if DEMO
     internal partial class Data
     {
-        public static Data operator +(Data value1, Data value2) => new Data(value1.value + value2.value); // op_Addition method.
+        public static Data operator +(Data data1, Data data2) => new Data(data1.value + data2.value); // op_Addition method.
 
         public static explicit operator int(Data value) => value.value; // op_Explicit method.
 
@@ -468,9 +479,9 @@ namespace Dixin.Linq.CSharp
 
     internal static partial class Functions
     {
-        internal static void UsingStatic(int value1, int value2)
+        internal static void UsingStatic(int int32A, int int32B)
         {
-            int result = Max(value1, value2); // Compiled to Math.Max(value1, value2).
+            int result = Max(int32A, int32B); // Compiled to Math.Max(int32A, int32B).
             WriteLine(Monday); // Compiled to Trace.WriteLine(DayOfWeek.Monday).
         }
     }

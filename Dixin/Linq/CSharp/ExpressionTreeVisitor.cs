@@ -116,9 +116,9 @@
                     .Concat(EnumerableEx.Return(Tuple.Create(postfix, (double?)null))); // left, right, postfix
     }
 
-    internal static partial class AnonymousFunction
+    internal static partial class ExpressionTree
     {
-        internal static void IL()
+        internal static void Cil()
         {
             Expression<Func<double, double, double, double, double, double>> infix =
                 (a, b, c, d, e) => a + b - c * d / 2 + e * 3;
@@ -129,6 +129,19 @@
             {
                 Trace.WriteLine($"{code.Item1} {code.Item2}");
             }
+            // ldarg.s 0
+            // ldarg.s 1
+            // add
+            // ldarg.s 2
+            // ldarg.s 3 
+            // mul 
+            // ldc.r8 2 
+            // div 
+            // sub 
+            // ldarg.s 4 
+            // ldc.r8 3 
+            // mul 
+            // add
         }
     }
 
@@ -173,38 +186,23 @@
         }
     }
 
-    internal static partial class AnonymousFunction
+    internal static partial class ExpressionTree
     {
-        internal static void Method()
+        internal static void Function()
         {
             Expression<Func<double, double, double, double, double, double>> expression =
                 (a, b, c, d, e) => a + b - c * d / 2 + e * 3;
-
-            Func<double, double, double, double, double, double> method = BinaryArithmeticCompiler.Compile(expression);
-            double result = method(1, 2, 3, 4, 5); // 12
+            Func<double, double, double, double, double, double> function = 
+                BinaryArithmeticCompiler.Compile(expression);
+            double result = function(1, 2, 3, 4, 5); // 12
         }
 
         internal static void BuiltInCompile()
         {
             Expression<Func<double, double, double, double, double, double>> infix =
                 (a, b, c, d, e) => a + b - c * d / 2 + e * 3;
-
-            Func<double, double, double, double, double, double> method = infix.Compile();
-            double result = method(1, 2, 3, 4, 5); // 12
-        }
-
-        internal static void TypeInference()
-        {
-            // Anonymous method with a int parameter, and returns a bool value.
-            Func<int, bool> predicate1 = number => number > 0;
-
-            // Expression tree with a int parameter, and returns a bool value.
-            Expression<Func<int, bool>> predicate2 = number => number > 0;
-
-#if DEMO
-            var predicate3 = number => number > 0;
-            dynamic predicate4 = number => number > 0;
-#endif
+            Func<double, double, double, double, double, double> function = infix.Compile();
+            double result = function(1, 2, 3, 4, 5); // 12
         }
     }
 }

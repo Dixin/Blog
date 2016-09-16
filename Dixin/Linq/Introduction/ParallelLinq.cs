@@ -1,4 +1,4 @@
-namespace Dixin.Linq.Fundamentals
+namespace Dixin.Linq.Introduction
 {
     using System;
     using System.Diagnostics;
@@ -10,10 +10,10 @@ namespace Dixin.Linq.Fundamentals
         {
             int[] values = { 4, 3, 2, 1, 0, -1 };
             ParallelQuery<int> source = values.AsParallel(); // Get source.
-            ParallelQuery<double> query = from value in source
-                where value > 0
-                orderby value
-                select Math.Sqrt(value); // Create query.
+            ParallelQuery<double> query = from int32 in source
+                                          where int32 > 0
+                                          orderby int32
+                                          select Math.Sqrt(int32); // Create query.
             query.ForAll(result => Trace.WriteLine(result)); // Execute query.
         }
 
@@ -22,9 +22,9 @@ namespace Dixin.Linq.Fundamentals
             int[] values = { 4, 3, 2, 1, 0, -1 };
             ParallelQuery<int> source = values.AsParallel(); // Get source.
             ParallelQuery<double> query = source
-                .Where(value => value > 0)
-                .OrderBy(value => value)
-                .Select(value => Math.Sqrt(value)); // Create query.
+                .Where(int32 => int32 > 0)
+                .OrderBy(int32 => int32)
+                .Select(int32 => Math.Sqrt(int32)); // Create query.
             query.ForAll(result => Trace.WriteLine(result)); // Execute query.
         }
     }

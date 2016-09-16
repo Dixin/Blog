@@ -55,7 +55,7 @@
     <Compile Include="..\Tools\CommonAssemblyInfo.fs">
       <Link>Properties\CommonAssemblyInfo.fs</Link>
     </Compile>
-    <Compile Include="Linq\CSharp\AnonymousFunction.fs" />
+    <Compile Include="Linq\CSharp\Functions.fs" />
     <Compile Include="Linq\LinqToObjects\FSharpQueryExpressions.fs" />
     <Compile Include="Linq\Maybe.fs" />
     <Compile Include="Program.fs" />

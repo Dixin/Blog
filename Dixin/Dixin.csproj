@@ -313,6 +313,12 @@
     </Compile>
     <Compile Include="Common\ExceptionFilter.cs" />
     <Compile Include="Common\Int32Extensions.cs" />
+    <Compile Include="Linq\CSharp\Composition.cs" />
+    <Compile Include="Linq\CSharp\Curry.cs" />
+    <Compile Include="Linq\ActionFunc.Composite.cs" />
+    <Compile Include="Linq\CSharp\Immutability.cs" />
+    <Compile Include="Linq\CSharp\PureFunction.cs" />
+    <Compile Include="Linq\TraceHelper.cs" />
     <Compile Include="Linq\CSharp\AnonymousFunction.cs" />
     <Compile Include="Linq\CSharp\FunctionType.cs" />
     <Compile Include="Linq\CSharp\NamedFunction.cs" />
@@ -356,7 +362,7 @@
     <Compile Include="Linq\Introduction\LinqToDocumentDB.cs" />
     <Compile Include="Linq\Introduction\LinqToJson.cs" />
     <Compile Include="Linq\Introduction\LinqToSql.cs" />
-    <Compile Include="Linq\Fundamentals\ParallelLinq.cs" />
+    <Compile Include="Linq\Introduction\ParallelLinq.cs" />
     <Compile Include="Linq\Fundamentals\Person.cs" />
     <Compile Include="Linq\IteratorPattern.cs" />
     <Compile Include="Linq\LinqToSql\Concurrency.cs" />
@@ -494,9 +500,9 @@
     <Compile Include="Linq\Functional\Lookup`1.cs" />
     <Compile Include="Linq\Fundamentals\AnonymousType.cs" />
     <Compile Include="Linq\Fundamentals\AssemblyExtensions.cs" />
-    <Compile Include="Linq\Fundamentals\Closure.cs" />
+    <Compile Include="Linq\CSharp\Closure.cs" />
     <Compile Include="Linq\Fundamentals\CovarianceContravariance.cs" />
-    <Compile Include="Linq\Fundamentals\HigherOrderFunction.cs" />
+    <Compile Include="Linq\CSharp\HigherOrder.cs" />
     <Compile Include="Linq\LinqToObjects\DeferredExecution.cs" />
     <Compile Include="Linq\EnumerableX.List.cs" />
     <Compile Include="Linq\LinqToObjects\Enumerable.cs" />
@@ -542,10 +548,9 @@
     <Compile Include="Linq\Combinators\SkiCombinators.cs" />
     <Compile Include="Linq\Combinators\YCombinator.cs" />
     <Compile Include="Linq\Lambda\Equivalence.cs" />
-    <Compile Include="Linq\ActionExtensions.Forward.cs" />
     <Compile Include="Linq\FuncExtensions.Composition.cs" />
-    <Compile Include="Linq\FuncExtensions.Curry.cs" />
-    <Compile Include="Linq\FuncExtensions.Forward.cs" />
+    <Compile Include="Linq\ActionFunc.Curry.cs" />
+    <Compile Include="Linq\ActionFunc.Forward.cs" />
     <Compile Include="Linq\Functional\EnumerableExtensions.cs" />
     <Compile Include="Linq\LinqToObjects\EmptyArray.cs" />
     <Compile Include="Linq\LinqToObjects\EnumerableExtensions.Linq.cs" />
@@ -593,7 +598,9 @@
       <Generator>EntityModelCodeGenerator</Generator>
       <LastGenOutput>AdventureWorks.Designer.cs</LastGenOutput>
     </EntityDeploy>
+    <None Include="Linq\CSharp\Composition.hs" />
     <None Include="Linq\CSharp\Data.il" />
+    <None Include="Linq\CSharp\HigherOrder.hs" />
     <None Include="Linq\EntityFramework\EntityDataModel\AdventureWorks.edmx.diagram">
       <DependentUpon>AdventureWorks.edmx</DependentUpon>
     </None>
