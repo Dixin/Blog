@@ -345,6 +345,7 @@
       <DependentUpon>AdventureWorks.edmx</DependentUpon>
     </Compile>
     <Content Include="Linq\CSharp\AnonymousFunction.js" />
+    <None Include="Linq\CSharp\Func.il" />
     <Content Include="Linq\EntityFramework\Concurrency.sql" />
     <Content Include="Linq\EntityFramework\FullWithViews\FullAdventureWorksWithViews.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
@@ -501,7 +502,7 @@
     <Compile Include="Linq\Fundamentals\AnonymousType.cs" />
     <Compile Include="Linq\Fundamentals\AssemblyExtensions.cs" />
     <Compile Include="Linq\CSharp\Closure.cs" />
-    <Compile Include="Linq\Fundamentals\CovarianceContravariance.cs" />
+    <Compile Include="Linq\CSharp\Variance.cs" />
     <Compile Include="Linq\CSharp\HigherOrder.cs" />
     <Compile Include="Linq\LinqToObjects\DeferredExecution.cs" />
     <Compile Include="Linq\EnumerableX.List.cs" />
@@ -520,8 +521,8 @@
     <Compile Include="Linq\Introduction\LinqToTwitter.cs" />
     <Compile Include="Linq\Introduction\LinqToXml.cs" />
     <Compile Include="Linq\Introduction\Declarative.cs" />
-    <Compile Include="Linq\Fundamentals\QueryExpression.cs" />
-    <Compile Include="Linq\Fundamentals\QueryExpressionPattern.cs" />
+    <Compile Include="Linq\CSharp\QueryExpression.cs" />
+    <Compile Include="Linq\CSharp\QueryExpressionPattern.cs" />
     <Compile Include="Linq\Introduction\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

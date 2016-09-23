@@ -125,3 +125,87 @@
         }
     }
 }
+
+#if DEMO
+namespace System.Collections.Generic
+{
+    public interface IEnumerable<out T> : IEnumerable
+    {
+        IEnumerator<T> GetEnumerator();
+    }
+}
+
+namespace System.Linq
+{
+    using System.Collections.Generic;
+
+    public static class Enumerable
+    {
+        public static IEnumerable<TSource> Where<TSource>(
+            this IEnumerable<TSource> source, Func<TSource, bool> predicate);
+
+        public static IEnumerable<TResult> Select<TSource, TResult>(
+            this IEnumerable<TSource> source, Func<TSource, TResult> selector);
+
+        // Other members...
+    }
+}
+
+namespace System.Linq
+{
+    using System.Collections;
+    using System.Collections.Generic;
+
+    public interface IOrderedEnumerable<TElement> : IEnumerable<TElement>, IEnumerable
+    {
+        IOrderedEnumerable<TElement> CreateOrderedEnumerable<TKey>(
+            Func<TElement, TKey> keySelector, IComparer<TKey> comparer, bool descending);
+    }
+
+    public static class Enumerable
+    {
+        public static IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(
+            this IEnumerable<TSource> source, Func<TSource, TKey> keySelector);
+
+        public static IOrderedEnumerable<TSource> OrderByDescending<TSource, TKey>(
+            this IEnumerable<TSource> source, Func<TSource, TKey> keySelector);
+
+        public static IOrderedEnumerable<TSource> ThenBy<TSource, TKey>(
+            this IOrderedEnumerable<TSource> source, Func<TSource, TKey> keySelector);
+
+        public static IOrderedEnumerable<TSource> ThenByDescending<TSource, TKey>(
+            this IOrderedEnumerable<TSource> source, Func<TSource, TKey> keySelector);
+    }
+}
+
+namespace System.Linq
+{
+    public static class ParallelEnumerable
+    {
+        public static ParallelQuery<TSource> Where<TSource>(
+            this ParallelQuery<TSource> source, Func<TSource, bool> predicate);
+
+        public static OrderedParallelQuery<TSource> OrderBy<TSource, TKey>(
+            this ParallelQuery<TSource> source, Func<TSource, TKey> keySelector);
+
+        public static ParallelQuery<TResult> Select<TSource, TResult>(
+            this ParallelQuery<TSource> source, Func<TSource, TResult> selector);
+
+        // Other members...
+    }
+
+    public static class Queryable
+    {
+        public static IQueryable<TSource> Where<TSource>(
+            this IQueryable<TSource> source, Func<TSource, bool> predicate);
+
+        public static IOrderedQueryable<TSource> OrderBy<TSource, TKey>(
+            this IQueryable<TSource> source, Func<TSource, TKey> keySelector);
+
+        public static IQueryable<TResult> Select<TSource, TResult>(
+            this IQueryable<TSource> source, Func<TSource, TResult> selector);
+
+        // Other members...
+    }
+}
+#endif

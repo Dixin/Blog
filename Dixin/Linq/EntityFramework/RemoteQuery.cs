@@ -14,7 +14,7 @@
 
     using Array = System.Array;
 
-    public class InfixVisitor : BinaryArithmeticExpressionVisitor<string>
+    internal class InfixVisitor : BinaryArithmeticExpressionVisitor<string>
     {
         protected override string VisitAdd
             (BinaryExpression add, LambdaExpression expression) => this.VisitBinary(add, "+", expression);

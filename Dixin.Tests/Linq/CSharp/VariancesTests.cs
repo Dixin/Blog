@@ -1,20 +1,19 @@
-﻿namespace Dixin.Tests.Linq.Fundamentals
+﻿namespace Dixin.Tests.Linq.CSharp
 {
     using System;
     using System.Collections.Generic;
-
-    using Dixin.Linq.Fundamentals;
+    using Dixin.Linq.CSharp;
     using Dixin.TestTools.UnitTesting;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class ReflectionHelperTests
+    public class VariancesTests
     {
         [TestMethod]
         public void GetTypesWithVarianceTest()
         {
-            IEnumerable<Type> typesWithVariance = ReflectionHelper.GetTypesWithVariance();
+            IEnumerable<Type> typesWithVariance = Variances.GetTypesWithVariance();
             EnumerableAssert.Multiple(typesWithVariance);
         }
     }

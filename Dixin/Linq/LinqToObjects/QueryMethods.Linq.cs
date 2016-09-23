@@ -15,6 +15,7 @@
     using System.Runtime.CompilerServices;
     using System.Web.Profile;
 
+    using Dixin.Linq.CSharp;
     using Dixin.Linq.Fundamentals;
     using Dixin.Properties;
     using Dixin.Reflection;

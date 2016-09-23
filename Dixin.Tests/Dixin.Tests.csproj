@@ -185,11 +185,11 @@
     <Compile Include="Linq\EntityFramework\SaveChangesTests.cs" />
     <Compile Include="Linq\EntityFramework\TransactionTests.cs" />
     <Compile Include="Linq\EntityFramework\TranslationTests.cs" />
-    <Compile Include="Linq\Fundamentals\ContactTests.cs" />
-    <Compile Include="Linq\Fundamentals\ImperativeTests.cs" />
-    <Compile Include="Linq\Fundamentals\ReflectionHelperTests.cs" />
+    <Compile Include="Linq\CSharp\ContactTests.cs" />
+    <Compile Include="Linq\CSharp\ImperativeTests.cs" />
+    <Compile Include="Linq\CSharp\VariancesTests.cs" />
     <Compile Include="Linq\EntityFramework\PerformanceTests.cs" />
-    <Compile Include="Linq\Fundamentals\GenericTests.cs" />
+    <Compile Include="Linq\CSharp\GenericTests.cs" />
     <Compile Include="Linq\LinqToSql\ConcurrencyTests.cs" />
     <Compile Include="Linq\LinqToSql\PerformanceTests.cs" />
     <Compile Include="Linq\LinqToSql\LazinessTests.cs" />
@@ -228,8 +228,8 @@
     <Compile Include="Linq\Combinators\SkiCombinatorsTests.cs" />
     <Compile Include="Linq\EnumerableXTests.cs" />
     <Compile Include="Linq\Functional\FunctionalQueryMethodsTests.cs" />
-    <Compile Include="Linq\Fundamentals\BinaryArithmeticCompilerTests.cs" />
-    <Compile Include="Linq\Fundamentals\PrefixVisitorTests.cs" />
+    <Compile Include="Linq\CSharp\BinaryArithmeticCompilerTests.cs" />
+    <Compile Include="Linq\CSharp\PrefixVisitorTests.cs" />
     <Compile Include="Linq\Lambda\ChurchBooleanTests.cs" />
     <Compile Include="Linq\Lambda\ChurchListTests.cs" />
     <Compile Include="Linq\Lambda\ChurchPredicatesTests.cs" />
@@ -286,6 +286,7 @@
       <Link>Properties\CodeAnalysisDictionary.xml</Link>
     </CodeAnalysisDictionary>
   </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
       <ItemGroup>

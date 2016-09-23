@@ -7,9 +7,9 @@
     using System.Linq.Expressions;
     using System.Reflection.Emit;
 
-    public abstract class BinaryArithmeticExpressionVisitor<TResult>
+    internal abstract class BinaryArithmeticExpressionVisitor<TResult>
     {
-        public TResult VisitBody(LambdaExpression expression) => this.VisitNode(expression.Body, expression);
+        internal TResult VisitBody(LambdaExpression expression) => this.VisitNode(expression.Body, expression);
 
         protected TResult VisitNode(Expression node, LambdaExpression expression)
         {
@@ -52,7 +52,7 @@
         protected abstract TResult VisitSubtract(BinaryExpression subtract, LambdaExpression expression);
     }
 
-    public class PrefixVisitor : BinaryArithmeticExpressionVisitor<string>
+    internal class PrefixVisitor : BinaryArithmeticExpressionVisitor<string>
     {
         protected override string VisitAdd
             (BinaryExpression add, LambdaExpression expression) => this.VisitBinary(add, "add", expression);
@@ -74,12 +74,62 @@
             (BinaryExpression subtract, LambdaExpression expression) =>
                 this.VisitBinary(subtract, "sub", expression);
 
-        private string VisitBinary // Recursive: operator(left, right)
-            (BinaryExpression binary, string @operator, LambdaExpression expression) =>
+        private string VisitBinary( // Recursion: operator(left, right)
+            BinaryExpression binary, string @operator, LambdaExpression expression) =>
                 $"{@operator}({this.VisitNode(binary.Left, expression)}, {this.VisitNode(binary.Right, expression)})";
     }
 
-    public class PostfixVisitor : BinaryArithmeticExpressionVisitor<IEnumerable<Tuple<OpCode, double?>>>
+    internal static partial class ExpressionTree
+    {
+        internal static void Preix()
+        {
+            Expression<Func<double, double, double, double, double, double>> infix =
+                (a, b, c, d, e) => a + b - c * d / 2 + e * 3;
+            PrefixVisitor prefixVisitor = new PrefixVisitor();
+            string prefix = prefixVisitor.VisitBody(infix); // add(sub(add(a, b), div(mul(c, d), 2)), mul(e, 3))
+        }
+    }
+
+    internal class PostfixVisitor : BinaryArithmeticExpressionVisitor<List<Tuple<OpCode, double?>>>
+    {
+        protected override List<Tuple<OpCode, double?>> VisitAdd
+            (BinaryExpression add, LambdaExpression expression) => this.VisitBinary(add, OpCodes.Add, expression);
+
+        protected override List<Tuple<OpCode, double?>> VisitConstant(
+            ConstantExpression constant, LambdaExpression expression) => 
+                new List<Tuple<OpCode, double?>>() { Tuple.Create(OpCodes.Ldc_R8, (double?)constant.Value) };
+
+        protected override List<Tuple<OpCode, double?>> VisitDivide
+            (BinaryExpression divide, LambdaExpression expression) =>
+                this.VisitBinary(divide, OpCodes.Div, expression);
+
+        protected override List<Tuple<OpCode, double?>> VisitMultiply
+            (BinaryExpression multiply, LambdaExpression expression) =>
+                this.VisitBinary(multiply, OpCodes.Mul, expression);
+
+        protected override List<Tuple<OpCode, double?>> VisitParameter(
+            ParameterExpression parameter, LambdaExpression expression)
+        {
+            int index = expression.Parameters.IndexOf(parameter);
+            return new List<Tuple<OpCode, double?>>() { Tuple.Create(OpCodes.Ldarg_S, (double?)index) };
+        }
+
+        protected override List<Tuple<OpCode, double?>> VisitSubtract
+            (BinaryExpression subtract, LambdaExpression expression) =>
+                this.VisitBinary(subtract, OpCodes.Sub, expression);
+
+        private List<Tuple<OpCode, double?>> VisitBinary( // Recursion: left, right, operator
+            BinaryExpression binary, OpCode postfix, LambdaExpression expression)
+        {
+            List < Tuple < OpCode, double?>>  cils = this.VisitNode(binary.Left, expression);
+            cils.AddRange(this.VisitNode(binary.Right, expression));
+            cils.Add(Tuple.Create(postfix, (double?)null));
+            return cils;
+        }
+    }
+
+#if DEMO
+    internal class PostfixVisitor : BinaryArithmeticExpressionVisitor<IEnumerable<Tuple<OpCode, double?>>>
     {
         protected override IEnumerable<Tuple<OpCode, double?>> VisitAdd
             (BinaryExpression add, LambdaExpression expression) => this.VisitBinary(add, OpCodes.Add, expression);
@@ -109,12 +159,13 @@
             (BinaryExpression subtract, LambdaExpression expression) =>
                 this.VisitBinary(subtract, OpCodes.Sub, expression);
 
-        private IEnumerable<Tuple<OpCode, double?>> VisitBinary // Recursive: left, right, operator
-            (BinaryExpression binary, OpCode postfix, LambdaExpression expression) =>
+        private IEnumerable<Tuple<OpCode, double?>> VisitBinary( // Recursion: left, right, operator
+            BinaryExpression binary, OpCode postfix, LambdaExpression expression) =>
                 this.VisitNode(binary.Left, expression)
                     .Concat(this.VisitNode(binary.Right, expression))
                     .Concat(EnumerableEx.Return(Tuple.Create(postfix, (double?)null))); // left, right, postfix
     }
+#endif
 
     internal static partial class ExpressionTree
     {
@@ -145,20 +196,18 @@
         }
     }
 
-    public static class BinaryArithmeticCompiler
+    internal static class BinaryArithmeticCompiler
     {
-        private static readonly PostfixVisitor PostfixVisitor = new PostfixVisitor();
-
-        public static TDelegate Compile<TDelegate>(Expression<TDelegate> expression)
+        internal static TDelegate Compile<TDelegate>(Expression<TDelegate> expression)
             where TDelegate : class
         {
-            DynamicMethod dynamicMethod = new DynamicMethod(
-                string.Empty,
-                expression.ReturnType,
-                expression.Parameters.Select(parameter => parameter.Type).ToArray(),
-                typeof(BinaryArithmeticCompiler).Module);
-            EmitIL(dynamicMethod.GetILGenerator(), PostfixVisitor.VisitBody(expression));
-            return dynamicMethod.CreateDelegate(typeof(TDelegate)) as TDelegate;
+            DynamicMethod dynamicFunction = new DynamicMethod(
+                name: string.Empty,
+                returnType: expression.ReturnType,
+                parameterTypes: expression.Parameters.Select(parameter => parameter.Type).ToArray(),
+                m: typeof(BinaryArithmeticCompiler).Module);
+            EmitIL(dynamicFunction.GetILGenerator(), new PostfixVisitor().VisitBody(expression));
+            return dynamicFunction.CreateDelegate(typeof(TDelegate)) as TDelegate;
         }
 
         private static void EmitIL(ILGenerator ilGenerator, IEnumerable<Tuple<OpCode, double?>> codes)
@@ -188,11 +237,11 @@
 
     internal static partial class ExpressionTree
     {
-        internal static void Function()
+        internal static void Compile()
         {
             Expression<Func<double, double, double, double, double, double>> expression =
                 (a, b, c, d, e) => a + b - c * d / 2 + e * 3;
-            Func<double, double, double, double, double, double> function = 
+            Func<double, double, double, double, double, double> function =
                 BinaryArithmeticCompiler.Compile(expression);
             double result = function(1, 2, 3, 4, 5); // 12
         }

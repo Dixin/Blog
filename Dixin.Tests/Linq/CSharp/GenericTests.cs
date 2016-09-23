@@ -1,4 +1,4 @@
-﻿namespace Dixin.Tests.Linq.Fundamentals
+﻿namespace Dixin.Tests.Linq.CSharp
 {
     using System;
     using System.Diagnostics;
