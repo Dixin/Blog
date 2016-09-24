@@ -26,8 +26,6 @@ namespace Dixin.Linq.LinqToObjects
     using System.Collections.Generic;
     using System.Diagnostics;
 
-    using Dixin.Linq.Fundamentals;
-
     internal class FluentList<T> : List<T>
     {
         internal new FluentList<T> Add(T item) { base.Add(item); return this; }

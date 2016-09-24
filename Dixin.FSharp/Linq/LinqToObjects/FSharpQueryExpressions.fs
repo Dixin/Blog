@@ -4,7 +4,6 @@
     open System.Linq
     open System.Reflection
 
-    open Dixin.Linq.Fundamentals
     open Dixin.Reflection
 
     open Microsoft.FSharp.Linq

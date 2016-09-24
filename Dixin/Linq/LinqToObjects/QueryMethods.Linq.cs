@@ -16,12 +16,64 @@
     using System.Web.Profile;
 
     using Dixin.Linq.CSharp;
-    using Dixin.Linq.Fundamentals;
     using Dixin.Properties;
     using Dixin.Reflection;
 
     using Microsoft.TeamFoundation.Client;
     using Microsoft.TeamFoundation.WorkItemTracking.Client;
+
+    internal class Person
+    {
+        internal Person(string name, string placeOfBirth)
+        {
+            this.Name = name;
+            this.PlaceOfBirth = placeOfBirth;
+        }
+
+        internal string Name { get; }
+
+        internal string PlaceOfBirth { get; }
+    }
+
+    internal static partial class QueryMethods
+    {
+        internal static IEnumerable<Person> Persons() => new Person[]
+            {
+                new Person(name: "Robert Downey Jr.", placeOfBirth: "US"),
+                new Person(name:  "Tom Hiddleston", placeOfBirth: "UK"),
+                new Person(name: "Chris Hemsworth", placeOfBirth: "AU"),
+                new Person(name: "Chris Evans", placeOfBirth: "US"),
+                new Person(name: "Paul Bettany", placeOfBirth:  "UK")
+            };
+    }
+
+    internal partial class Character
+    {
+        internal Character(string name, string placeOfBirth, string starring)
+        {
+            this.Name = name;
+            this.PlaceOfBirth = placeOfBirth;
+            this.Starring = starring;
+        }
+
+        internal string Name { get; }
+
+        internal string PlaceOfBirth { get; }
+
+        internal string Starring { get; }
+    }
+
+    internal static partial class QueryMethods
+    {
+        internal static IEnumerable<Character> Characters() => new Character[]
+            {
+                new Character(name: "Tony Stark", placeOfBirth: "US", starring: "Robert Downey Jr."),
+                new Character(name:  "Thor", placeOfBirth:  "Asgard" , starring: "Chris Hemsworth"),
+                new Character(name:  "Steve Rogers", placeOfBirth:  "US", starring: "Chris Evans" ),
+                new Character(name:  "Vision", placeOfBirth:  "KR", starring: "Paul Bettany" ),
+                new Character(name:  "JARVIS", placeOfBirth: "US", starring: "Paul Bettany")
+            };
+    }
 
     internal static partial class QueryMethods
     {
@@ -366,29 +418,8 @@
         }
 
         #endregion
-    }
 
-    internal partial class Character
-    {
-        internal string Name { get; set; }
-
-        internal string PlaceOfBirth { get; set; }
-
-        internal string Starring { get; set; }
-    }
-
-    internal static partial class QueryMethods
-    {
         #region Join
-
-        internal static IEnumerable<Character> Characters() => new Character[]
-            {
-                new Character() { Name = "Tony Stark", Starring = "Robert Downey Jr.", PlaceOfBirth = "US" },
-                new Character() { Name = "Thor", Starring = "Chris Hemsworth", PlaceOfBirth = "Asgard" },
-                new Character() { Name = "Steve Rogers", Starring = "Chris Evans", PlaceOfBirth = "US" },
-                new Character() { Name = "Vision", Starring = "Paul Bettany", PlaceOfBirth = "KR" },
-                new Character() { Name = "JARVIS", Starring = "Paul Bettany", PlaceOfBirth = "US" }
-            };
 
         internal static void InnerJoin()
         {
@@ -504,7 +535,7 @@
             IEnumerable<Character> inner = Characters();
             var leftOuterJoin = outer
                 .GroupJoin(
-                    inner, 
+                    inner,
                     person => person.Name, character => character.Starring,
                     (person, charactersGroup) => new { Person = person, Characters = charactersGroup })
                 .SelectMany(
@@ -824,15 +855,6 @@
             }
             // Two Zero four one three
         }
-
-        internal static IEnumerable<Person> Persons() => new Person[]
-            {
-                new Person() { Name = "Robert Downey Jr.", PlaceOfBirth = "US" },
-                new Person() { Name = "Tom Hiddleston", PlaceOfBirth = "UK" },
-                new Person() { Name = "Chris Hemsworth", PlaceOfBirth = "AU" },
-                new Person() { Name = "Chris Evans", PlaceOfBirth = "US" },
-                new Person() { Name = "Paul Bettany", PlaceOfBirth = "UK" }
-            };
 
         internal static void ThenBy()
         {

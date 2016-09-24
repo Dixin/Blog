@@ -364,7 +364,6 @@
     <Compile Include="Linq\Introduction\LinqToJson.cs" />
     <Compile Include="Linq\Introduction\LinqToSql.cs" />
     <Compile Include="Linq\Introduction\ParallelLinq.cs" />
-    <Compile Include="Linq\Fundamentals\Person.cs" />
     <Compile Include="Linq\IteratorPattern.cs" />
     <Compile Include="Linq\LinqToSql\Concurrency.cs" />
     <Compile Include="Linq\LinqToSql\Tracking.cs" />
@@ -499,8 +498,6 @@
     <Compile Include="Linq\Functional\Sequence`1.cs" />
     <Compile Include="Linq\Functional\EnumerableExtensions.Linq.cs" />
     <Compile Include="Linq\Functional\Lookup`1.cs" />
-    <Compile Include="Linq\Fundamentals\AnonymousType.cs" />
-    <Compile Include="Linq\Fundamentals\AssemblyExtensions.cs" />
     <Compile Include="Linq\CSharp\Closure.cs" />
     <Compile Include="Linq\CSharp\Variance.cs" />
     <Compile Include="Linq\CSharp\HigherOrder.cs" />

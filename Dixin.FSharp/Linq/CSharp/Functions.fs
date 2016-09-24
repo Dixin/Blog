@@ -68,12 +68,11 @@
                 Trace.WriteLine result
             ()
 #if DEMO
-    module A =
-        let ForwardAndPartialApply : unit -> unit = fun () ->
+        let ValueAndVariable : unit -> unit = fun () ->
             let value = new Uri("https://weblogs.asp.net/dixin") // Immutable value.
-            value <- null // Cannot be compiled.
+            value <- null // Mutation cannot be compiled.
 
             let mutable variable = new Uri("https://weblogs.asp.net/dixin") // Mutable variable.
-            variable <- null
+            variable <- null // Mutation can be compiled.
             ()
 #endif

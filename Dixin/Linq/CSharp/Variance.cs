@@ -453,7 +453,7 @@ namespace System.Collections.Generic
     public interface IEnumerable<out T> : IEnumerable
     {
         IEnumerator<T> GetEnumerator(); // Func<T> GetEnumerator();
-        // T is covariant for higher-order function type ToFunc<T>.
+        // T is covariant for higher-order function type Func<Func<T>>.
     }
 }
 

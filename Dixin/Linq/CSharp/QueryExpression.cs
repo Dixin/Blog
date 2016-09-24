@@ -6,6 +6,7 @@
 
     using Dixin.Linq.EntityFramework;
 
+#if DEMO
     internal static partial class Int32Extensions
     {
         internal static TResult Select<TResult>(this int int32, Func<int, TResult> selector) => selector(int32);
@@ -50,6 +51,7 @@
             string mapped = Guid.NewGuid().Select(newGuid => newGuid.ToString());
         }
     }
+#endif
 
     internal static partial class QueryExpression
     {

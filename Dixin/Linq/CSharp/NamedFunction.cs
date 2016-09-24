@@ -580,21 +580,7 @@ namespace System
     [Serializable]
     public class Tuple<T1, T2, T3, T4> : IStructuralEquatable, IStructuralComparable, IComparable, ITuple
     {
-        private readonly T1 m_Item1;
-
-        private readonly T2 m_Item2;
-
-        private readonly T3 m_Item3;
-
-        private readonly T4 m_Item4;
-
-        public Tuple(T1 item1, T2 item2, T3 item3, T4 item4)
-        {
-            this.m_Item1 = item1;
-            this.m_Item2 = item2;
-            this.m_Item3 = item3;
-            this.m_Item4 = item4;
-        }
+        public Tuple(T1 item1, T2 item2, T3 item3, T4 item4);
 
         // Other members.
     }
