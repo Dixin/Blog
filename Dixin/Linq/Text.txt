@@ -1,2 +1,4 @@
+Install-Package DotNet.Contracts
+Install-Package Mono.Cecil
 Install-Package EntityFramework
 Install-Package EnterpriseLibrary.TransientFaultHandling

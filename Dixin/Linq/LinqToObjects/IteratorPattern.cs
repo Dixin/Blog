@@ -19,7 +19,7 @@
     internal class Iterator
     {
         [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
-        public bool MoveNext() => false;
+        public bool MoveNext() => default(bool);
 
         public object Current { get; }
     }
@@ -33,26 +33,26 @@
     internal class GenericIterator<T>
     {
         [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
-        public bool MoveNext() => false;
+        public bool MoveNext() => default(bool);
 
         public T Current { get; }
     }
 
     internal static partial class IteratorPattern
     {
-        internal static void ForEach<T>(Sequence sequence, Action<T> processValue)
+        internal static void ForEach<T>(Sequence sequence, Action<T> next)
         {
             foreach (T value in sequence)
             {
-                processValue(value);
+                next(value);
             }
         }
 
-        internal static void ForEach<T>(GenericSequence<T> sequence, Action<T> processValue)
+        internal static void ForEach<T>(GenericSequence<T> sequence, Action<T> next)
         {
             foreach (T value in sequence)
             {
-                processValue(value);
+                next(value);
             }
         }
     }
@@ -133,7 +133,7 @@
         internal static void Iterate<T>
             (GenericSequence<T> sequence, Action<T> next) => Iterate(sequence.GetEnumerator(), next);
 
-        internal static void Iterate<T>(GenericIterator<T> iterator, Action<T> next)
+        private static void Iterate<T>(GenericIterator<T> iterator, Action<T> next)
         {
             if (iterator.MoveNext())
             {

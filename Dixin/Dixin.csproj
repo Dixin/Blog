@@ -318,6 +318,7 @@
     <Compile Include="Linq\ActionFunc.Composite.cs" />
     <Compile Include="Linq\CSharp\Immutability.cs" />
     <Compile Include="Linq\CSharp\PureFunction.cs" />
+    <Compile Include="Linq\CSharp\Purity.cs" />
     <Compile Include="Linq\TraceHelper.cs" />
     <Compile Include="Linq\CSharp\AnonymousFunction.cs" />
     <Compile Include="Linq\CSharp\FunctionType.cs" />
