@@ -249,12 +249,16 @@
         <h1><a href="https://weblogs.asp.net/dixin/Tags/LINQ%20to%20Objects" target="_blank">LINQ to Objects</a></h1>
         <ol>
             <li>
-                <h2><a href="https://weblogs.asp.net/dixin/understanding-linq-to-objects-1-fluent-query" target="_blank">Fluent Query</a></h2>
+                <h2><a href="https://weblogs.asp.net/dixin/understanding-linq-to-objects-1-local-sequential-query" target="_blank">Local Sequential Query</a></h2>
                 <ul>
-                    <li>Regular API design vs. fluent API design
-                    <li>Fluent extension methods
-                    <li>IEnumerable&lt;T&gt; and IQueryable&lt;T&gt; query methods
-                    <li>LINQ to Objects source sequences in .NET</li>
+                    <li>Iteration pattern and foreach statement
+                    <li>
+                        IEnumerable&lt;T&gt; and IEnumerator&lt;T&gt;
+                        <ul>
+                            <li>EnumerableAssert class
+                            <li>foreach loop vs. for loop</li>
+                        </ul>
+                    <li>LINQ to Objects queryable types</li>
                 </ul>
             <li>
                 <h2><a href="https://weblogs.asp.net/dixin/understanding-linq-to-objects-2-query-methods-and-query-expressions" target="_blank">Query Methods and Query Expressions</a></h2>
@@ -294,19 +298,6 @@
                             <li>Equality: SequenceEqual</li>
                         </ul>
                     <li>Queries in other languages</li>
-                </ul>
-            <li>
-                <h2><a href="https://weblogs.asp.net/dixin/understanding-linq-to-objects-3-iterator-pattern-and-foreach" target="_blank">Iterator Pattern and foreach</a></h2>
-                <ul>
-                    <li>Iteration pattern
-                    <li>The foreach and in keywords
-                    <li>
-                        IEnumerable&lt;T&gt; and IEnumerator&lt;T&gt;
-                        <ul>
-                            <li>foreach loop vs. for loop
-                            <li>Non-generic vs. generic sequence</li>
-                        </ul>
-                    <li>EnumerableAssert class</li>
                 </ul>
             <li>
                 <h2><a href="https://weblogs.asp.net/dixin/understanding-linq-to-objects-4-generator-and-yield" target="_blank">Generator and yeild</a></h2>
@@ -464,7 +455,7 @@
         <h1><a href="https://weblogs.asp.net/dixin/Tags/Parallel%20LINQ" target="_blank">Parallel LINQ</a></h1>
         <ol>
             <li>
-                <h2><a href="https://weblogs.asp.net/dixin/parallel-linq-1-parallel-query-and-visualization" target="_blank">Parallel Query and Visualization</a></h2>
+                <h2><a href="https://weblogs.asp.net/dixin/parallel-linq-1-local-parallel-query-and-visualization" target="_blank">Local Parallel Query and Visualization</a></h2>
                 <ul>
                     <li>Parallel LINQ classes and methods
                     <li>Parallel query vs. sequential query
@@ -537,7 +528,7 @@
         <h1><a href="https://weblogs.asp.net/dixin/Tags/Entity%20Framework" target="_blank">Entity Framework and LINQ to Entities</a></h1>
         <ol>
             <li>
-                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-and-linq-to-entities-1-iqueryable-t-and-remote-query" target="_blank">IQueryable&lt;T&gt; and Remote Query</a></h2>
+                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-and-linq-to-entities-1-remote-query" target="_blank">Remote Query</a></h2>
                 <ul>
                     <li>Remote query vs. local query
                     <li>Function vs. expression tree
@@ -727,6 +718,7 @@
                 </ul>
             </li>
         </ol>
+    <!--
     <li>
         <h1>LINQ to SQL</h1>
         <ol>
@@ -964,7 +956,7 @@
                     </li>
                 </ul>
             </li>
-        </ol>
+        </ol>-->
     <li>
         <h1><a href="http://weblogs.asp.net/dixin/Tags/Lambda%20Calculus" target="_blank">Lambda Calculus</a></h1>
         <ol>

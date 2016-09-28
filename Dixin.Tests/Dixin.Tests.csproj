@@ -190,6 +190,7 @@
     <Compile Include="Linq\CSharp\VariancesTests.cs" />
     <Compile Include="Linq\EntityFramework\PerformanceTests.cs" />
     <Compile Include="Linq\CSharp\GenericTests.cs" />
+    <Compile Include="Linq\LinqToObjects\LinkedListSequenceTests.cs" />
     <Compile Include="Linq\LinqToSql\ConcurrencyTests.cs" />
     <Compile Include="Linq\LinqToSql\PerformanceTests.cs" />
     <Compile Include="Linq\LinqToSql\LazinessTests.cs" />

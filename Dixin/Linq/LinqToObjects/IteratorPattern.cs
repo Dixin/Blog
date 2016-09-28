@@ -10,56 +10,56 @@
 
     using Dixin.Reflection;
 
-    internal class Sequence
+    internal abstract class Sequence
     {
         [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
-        public Iterator GetEnumerator() => new Iterator();
+        public abstract Iterator GetEnumerator(); // Must be public.
     }
 
-    internal class Iterator
+    internal abstract class Iterator
     {
         [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
-        public bool MoveNext() => default(bool);
+        public abstract bool MoveNext(); // Must be public.
 
-        public object Current { get; }
+        public abstract object Current { get; } // Must be public.
     }
 
-    internal class GenericSequence<T>
+    internal abstract class GenericSequence<T>
     {
         [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
-        public GenericIterator<T> GetEnumerator() => new GenericIterator<T>();
+        public abstract GenericIterator<T> GetEnumerator(); // Must be public.
     }
 
-    internal class GenericIterator<T>
+    internal abstract class GenericIterator<T>
     {
         [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
-        public bool MoveNext() => default(bool);
+        public abstract bool MoveNext(); // Must be public.
 
-        public T Current { get; }
+        public abstract T Current { get; } // Must be public.
     }
 
     internal static partial class IteratorPattern
     {
-        internal static void ForEach<T>(Sequence sequence, Action<T> next)
+        internal static void ForEach<T>(Sequence sequence, Action<T> processNext)
         {
             foreach (T value in sequence)
             {
-                next(value);
+                processNext(value);
             }
         }
 
-        internal static void ForEach<T>(GenericSequence<T> sequence, Action<T> next)
+        internal static void ForEach<T>(GenericSequence<T> sequence, Action<T> processNext)
         {
             foreach (T value in sequence)
             {
-                next(value);
+                processNext(value);
             }
         }
     }
 
     internal static partial class IteratorPattern
     {
-        internal static void CompiledForEach<T>(Sequence sequence, Action<T> next)
+        internal static void CompiledForEach<T>(Sequence sequence, Action<T> processNext)
         {
             Iterator iterator = sequence.GetEnumerator();
             try
@@ -67,7 +67,7 @@
                 while (iterator.MoveNext())
                 {
                     T value = (T)iterator.Current;
-                    next(value);
+                    processNext(value);
                 }
             }
             finally
@@ -76,54 +76,113 @@
             }
         }
 
-        internal static void CompiledForEach<T>(GenericSequence<T> sequence, Action<T> next)
+        internal static void CompiledForEach<T>(GenericSequence<T> sequence, Action<T> processNext)
         {
-            GenericIterator<T> genericIterator = sequence.GetEnumerator();
+            GenericIterator<T> iterator = sequence.GetEnumerator();
             try
             {
-                while (genericIterator.MoveNext())
+                while (iterator.MoveNext())
                 {
-                    T value = genericIterator.Current;
-                    next(value);
+                    T value = iterator.Current;
+                    processNext(value);
                 }
             }
             finally
             {
-                (genericIterator as IDisposable)?.Dispose();
+                (iterator as IDisposable)?.Dispose();
+            }
+        }
+    }
+
+    internal class SinglyLinkedListNode<T>
+    {
+        internal SinglyLinkedListNode(T value, SinglyLinkedListNode<T> next = null)
+        {
+            this.Value = value;
+            this.Next = next;
+        }
+
+        public T Value { get; }
+
+        public SinglyLinkedListNode<T> Next { get; }
+    }
+
+    internal class LinkedListSequence<T> : GenericSequence<T>
+    {
+        private readonly SinglyLinkedListNode<T> head;
+
+        internal LinkedListSequence(SinglyLinkedListNode<T> head)
+        {
+            this.head = head;
+        }
+
+        public override GenericIterator<T> GetEnumerator() => new LinkedListIterator<T>(this.head);
+    }
+
+    internal class LinkedListIterator<T> : GenericIterator<T>
+    {
+        private SinglyLinkedListNode<T> node;
+
+        internal LinkedListIterator(SinglyLinkedListNode<T> head)
+        {
+            this.node = new SinglyLinkedListNode<T>(default(T), head);
+        }
+
+        public override bool MoveNext()
+        {
+            if (this.node.Next != null)
+            {
+                this.node = this.node.Next;
+                return true;
+            }
+            return false;
+        }
+
+        public override T Current => this.node.Value;
+    }
+
+    internal static partial class IteratorPattern
+    {
+        internal static void ForEach(SinglyLinkedListNode<int> head)
+        {
+            LinkedListSequence<int> sequence = new LinkedListSequence<int>(head);
+            foreach (int value in sequence)
+            {
+                Trace.WriteLine(value);
             }
         }
 
-        internal static void ForEach<T>(T[] array, Action<T> next)
+        internal static void ForEach<T>(T[] array, Action<T> processNext)
         {
             foreach (T value in array)
             {
-                next(value);
+                processNext(value);
             }
         }
 
-        internal static void CompiledForEach<T>(T[] array, Action<T> next)
+        internal static void CompiledForEach<T>(T[] array, Action<T> processNext)
         {
             for (int index = 0; index < array.Length; index++)
             {
                 T value = array[index];
-                next(value);
+                processNext(value);
             }
         }
 
-        internal static void ForEach(string @string, Action<char> next)
+        internal static void ForEach(string @string, Action<char> processNext)
         {
             foreach (char value in @string)
             {
-                next(value);
+                processNext(value);
             }
         }
 
-        internal static void CompiledForEach(string @string, Action<char> next)
+        internal static void CompiledForEach(string @string, Action<char> processNext)
         {
             for (int index = 0; index < @string.Length; index++)
             {
                 char value = @string[index];
-                next(value);
+                processNext(value);
             }
         }
     }
@@ -131,14 +190,14 @@
     internal static partial class IteratorPattern
     {
         internal static void Iterate<T>
-            (GenericSequence<T> sequence, Action<T> next) => Iterate(sequence.GetEnumerator(), next);
+            (GenericSequence<T> sequence, Action<T> processNext) => Iterate(sequence.GetEnumerator(), processNext);
 
-        private static void Iterate<T>(GenericIterator<T> iterator, Action<T> next)
+        private static void Iterate<T>(GenericIterator<T> iterator, Action<T> processNext)
         {
             if (iterator.MoveNext())
             {
-                next(iterator.Current);
-                Iterate(iterator, next); // Recursion.
+                processNext(iterator.Current);
+                Iterate(iterator, processNext); // Recursion.
             }
         }
     }
@@ -509,12 +568,14 @@
 
         TResult IEnumerator<TResult>.Current
         {
-            [DebuggerHidden]get { return this.current; }
+            [DebuggerHidden]
+            get { return this.current; }
         }
 
         object IEnumerator.Current
         {
-            [DebuggerHidden]get { return this.current; }
+            [DebuggerHidden]
+            get { return this.current; }
         }
 
         bool IEnumerator.MoveNext()
@@ -607,7 +668,7 @@ namespace System.Collections
 
         bool MoveNext();
 
-        void Reset(); // Only for COM interoperability.
+        void Reset(); // For COM interoperability.
     }
 }
 
