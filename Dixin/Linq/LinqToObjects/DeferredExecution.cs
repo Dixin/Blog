@@ -32,8 +32,8 @@
                             Trace.WriteLine("Select query starts.");
                             sourceIterator = source.GetEnumerator();
                         },
-                    hasNext: () => sourceIterator.MoveNext(),
-                    next: () =>
+                    moveNext: () => sourceIterator.MoveNext(),
+                    getCurrent: () =>
                         {
                             Trace.WriteLine($"Select is calling selector with {sourceIterator.Current}.");
                             return selector(sourceIterator.Current);
@@ -145,8 +145,8 @@
                             Trace.WriteLine($"Reverse evaluated {array.Length} value(s) in source sequence.");
                             data = Tuple.Create(array, array.Length - 1);
                         },
-                    hasNext: () => data.Item2 >= 0,
-                    next: () =>
+                    moveNext: () => data.Item2 >= 0,
+                    getCurrent: () =>
                         {
                             int index = data.Item2;
                             data = Tuple.Create(data.Item1, index - 1);

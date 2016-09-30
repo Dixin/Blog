@@ -14,12 +14,12 @@
         {
             EnumerableAssert.AreSequentialEqual(
                 EnumerableEx.Return(1),
-                IteratorPattern.Enumerable(1));
+                IteratorPattern.FromValue(1));
 
             object value = new object();
             EnumerableAssert.AreSequentialEqual(
                 EnumerableEx.Return(value),
-                IteratorPattern.Enumerable(value));
+                IteratorPattern.FromValue(value));
         }
 
         [TestMethod]

@@ -34,7 +34,7 @@
                             sql.Parameters.OfType<DbParameter>().Select(parameter => parameter.Value).ToArray());
                         sqlReader = sqlQuery.GetEnumerator();
                     },
-                hasNext: () =>
+                moveNext: () =>
                     {
                         if (!isSqlExecuted)
                         {
@@ -44,8 +44,8 @@
                         Trace.WriteLine($"|_Try reading a row and materializing to {typeof(TSource).Name} object.");
                         return sqlReader.MoveNext();
                     },
-                next: () => sqlReader.Current,
-                dispose: () => sqlReader.Dispose()).StartState();
+                getCurrent: () => sqlReader.Current,
+                dispose: () => sqlReader.Dispose()).SetStateToStart();
         }
     }
 

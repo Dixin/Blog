@@ -319,6 +319,7 @@
     <Compile Include="Linq\CSharp\Immutability.cs" />
     <Compile Include="Linq\CSharp\PureFunction.cs" />
     <Compile Include="Linq\CSharp\Purity.cs" />
+    <Compile Include="Linq\LinqToObjects\Generator.cs" />
     <Compile Include="Linq\TraceHelper.cs" />
     <Compile Include="Linq\CSharp\AnonymousFunction.cs" />
     <Compile Include="Linq\CSharp\FunctionType.cs" />
@@ -365,7 +366,7 @@
     <Compile Include="Linq\Introduction\LinqToJson.cs" />
     <Compile Include="Linq\Introduction\LinqToSql.cs" />
     <Compile Include="Linq\Introduction\ParallelLinq.cs" />
-    <Compile Include="Linq\IteratorPattern.cs" />
+    <Compile Include="Linq\Generator.cs" />
     <Compile Include="Linq\LinqToSql\Concurrency.cs" />
     <Compile Include="Linq\LinqToSql\Tracking.cs" />
     <Compile Include="Linq\LinqToSql\Transactions.cs" />

@@ -146,8 +146,32 @@
         // Other members.
     }
 
+    internal class Generic<T>
+    {
+        internal Generic(T value)
+        {
+        }
+    }
+
+    internal class Generic // Not Generic<T>.
+    {
+        internal static Generic<T> Create<T>(T value) => new Generic<T>(value); // T can be inferred.
+    }
+
     internal static partial class Immutability
     {
+#if DEMO
+        internal static void GenericWithAnonymousType()
+        {
+            var generic = new Generic(new { Name = "Surface Book", Price = 1349.00M });
+        }
+#endif
+
+        internal static void GenericWithAnonymousType()
+        {
+            var generic = Generic.Create(new { Name = "Surface Book", Price = 1349.00M });
+        }
+
         internal static void LocalVariable(IEnumerable<int> source, string path)
         {
             var a = default(int); // int.
