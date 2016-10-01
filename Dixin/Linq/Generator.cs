@@ -5,7 +5,7 @@
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
 
-    internal enum IteratorState
+    public enum IteratorState
     {
         Create = -2,
         Start = 0,
@@ -27,12 +27,14 @@
         private readonly Action end;
 
         public Iterator(
+            IteratorState state = IteratorState.Create,
             Action start = null,
             Func<bool> moveNext = null,
             Func<T> getCurrent = null,
             Action dispose = null,
             Action end = null)
         {
+            this.State = state;
             this.start = start ?? (() => { });
             this.moveNext = moveNext ?? (() => false);
             this.getCurrent = getCurrent ?? (() => default(T));
@@ -44,7 +46,7 @@
 
         object IEnumerator.Current => this.Current;
 
-        internal IteratorState State { get; private set; } = IteratorState.Create; // IteratorState: Create.
+        internal IteratorState State { get; private set; } // IteratorState: Create.
 
         public bool MoveNext()
         {

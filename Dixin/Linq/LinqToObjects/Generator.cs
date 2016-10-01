@@ -45,7 +45,7 @@
                 }
             }
 
-            // Control flow with FromValue is equivalent to:
+            // Virtual control flow when iterating the returned sequence:
             // bool isValueIterated = false;
             // while (!isValueIterated)
             // {
@@ -72,7 +72,7 @@
                 }
             }
 
-            // Control flow with Repeat is equivalent to:
+            // Virtual control flow when iterating the returned sequence:
             // int index = 0;
             // while (index++ < count)
             // {
@@ -103,7 +103,7 @@
                 }
             } // dispose: sourceIterator?.Dispose();
 
-            // Control flow with Select is equivalent to:
+            // Virtual control flow when iterating the returned sequence:
             // IEnumerator<TSource> sourceIterator = null;
             // try
             // {
@@ -153,7 +153,7 @@
                 }
             } // dispose: sourceIterator?.Dispose();
 
-            // Control flow with Where is equivalent to:
+            // Virtual control flow when iterating the returned sequence:
             // IEnumerator<TSource> sourceIterator = null;
             // try
             // {
@@ -174,7 +174,7 @@
 
         internal static IEnumerable<TSource> FromValueGenerator<TSource>(TSource value)
         {
-            // Control flow when iterating the returned sequence:
+            // Virtual control flow when iterating the returned sequence:
             // bool isValueIterated = false;
             // while (!isValueIterated)
             // {
@@ -192,7 +192,7 @@
 
         internal static IEnumerable<TSource> RepeatGenerator<TSource>(TSource value, int count)
         {
-            // Control flow when iterating the returned sequence:
+            // Virtual control flow when iterating the returned sequence:
             // int index = 0;
             // while (index++ < count)
             // {
@@ -209,7 +209,7 @@
         internal static IEnumerable<TResult> SelectGenerator<TSource, TResult>(
             IEnumerable<TSource> source, Func<TSource, TResult> selector)
         {
-            // Control flow when iterating the returned sequence:
+            // Virtual control flow when iterating the returned sequence:
             // IEnumerator<TSource> sourceIterator = null;
             // try
             // {
@@ -242,7 +242,7 @@
         internal static IEnumerable<TSource> WhereGenerator<TSource>(
             IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
-            // Control flow when iterating the returned sequence:
+            // Virtual control flow when iterating the returned sequence:
             // IEnumerator<TSource> sourceIterator = null;
             // try
             // {
@@ -406,6 +406,7 @@
         {
             bool isValueIterated = false;
             return new Iterator<TSource>(
+                state: IteratorState.Start,
                 moveNext: () =>
                 {
                     while (!isValueIterated)
@@ -422,6 +423,7 @@
         {
             int index = 0;
             return new Iterator<TSource>(
+                state: IteratorState.Start,
                 moveNext: () => index++ < count,
                 getCurrent: () => value);
         }
@@ -431,6 +433,7 @@
         {
             IEnumerator<TSource> sourceIterator = null;
             return new Iterator<TResult>(
+                state: IteratorState.Start,
                 start: () => sourceIterator = source.GetEnumerator(),
                 moveNext: () => sourceIterator.MoveNext(),
                 getCurrent: () => selector(sourceIterator.Current),
@@ -442,6 +445,7 @@
         {
             IEnumerator<TSource> sourceIterator = null;
             return new Iterator<TSource>(
+                state: IteratorState.Start,
                 start: () => sourceIterator = source.GetEnumerator(),
                 moveNext: () =>
                 {

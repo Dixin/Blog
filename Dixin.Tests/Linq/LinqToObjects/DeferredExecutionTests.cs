@@ -15,12 +15,12 @@ namespace Dixin.Tests.Linq.LinqToObjects
             int[] enumerable = new int[] { 0, 1, 2 };
             EnumerableAssert.AreSequentialEqual(
                 Enumerable.Reverse(enumerable),
-                DeferredExecution.Reverse2(enumerable));
+                DeferredExecution.CompiledReverseGenerator(enumerable));
 
             enumerable = new int[] { };
             EnumerableAssert.AreSequentialEqual(
                 Enumerable.Reverse(enumerable),
-                DeferredExecution.Reverse2(enumerable));
+                DeferredExecution.CompiledReverseGenerator(enumerable));
         }
     }
 }

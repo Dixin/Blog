@@ -22,6 +22,7 @@
             IEnumerator<TSource> sqlReader = null;
             bool isSqlExecuted = false;
             return new Iterator<TSource>(
+                state: IteratorState.Start,
                 start: () =>
                     {
                         Trace.WriteLine("|_Convert expression tree to database command tree.");
@@ -45,7 +46,7 @@
                         return sqlReader.MoveNext();
                     },
                 getCurrent: () => sqlReader.Current,
-                dispose: () => sqlReader.Dispose()).SetStateToStart();
+                dispose: () => sqlReader.Dispose());
         }
     }
 
