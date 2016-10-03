@@ -351,7 +351,7 @@
         {
             try
             {
-                return assembly.ExportedTypes
+                return assembly.GetExportedTypes()
                     .Where(type => type.IsGenericTypeDefinition && type.GetGenericArguments().Any(argument =>
                         (argument.GenericParameterAttributes & GenericParameterAttributes.Covariant)
                         == GenericParameterAttributes.Covariant

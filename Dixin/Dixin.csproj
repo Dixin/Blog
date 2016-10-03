@@ -565,7 +565,6 @@
     </Compile>
     <Compile Include="Reflection\FieldInfoExtensions.cs" />
     <Compile Include="Common\StringExtensions.cs" />
-    <Compile Include="Reflection\MemberInfoExtensions.cs" />
     <Compile Include="Reflection\TypeExtensions.cs" />
     <Compile Include="Dynamic\DynamicWrapperExtensions.cs" />
     <Compile Include="Dynamic\DynamicWrapper`1.cs" />

@@ -17,7 +17,7 @@ namespace Dixin.Linq.Parallel
 
         internal static void OptInOutParallel()
         {
-            IEnumerable<string> obsoleteTypes = mscorlib.ExportedTypes // Return IEnumerable<Type>.
+            IEnumerable<string> obsoleteTypes = mscorlib.GetExportedTypes() // Return IEnumerable<Type>.
                 .AsParallel() // Return ParallelQuery<Type>.
                 .Where(type => type.GetCustomAttribute<ObsoleteAttribute>() != null) // ParallelEnumerable.Where.
                 .Select(type => type.FullName) // ParallelEnumerable.Select.
@@ -33,7 +33,7 @@ namespace Dixin.Linq.Parallel
         {
             IEnumerable<string> obsoleteTypes =
                 from name in
-                    (from type in mscorlib.ExportedTypes.AsParallel()
+                    (from type in mscorlib.GetExportedTypes().AsParallel()
                      where type.GetCustomAttribute<ObsoleteAttribute>() != null
                      select type.FullName).AsSequential()
                 orderby name

@@ -139,27 +139,6 @@ namespace Dixin.Reflection
 
     public static partial class TypeExtensions
     {
-        public static MemberInfo[] GetPublicDeclaredMembers(this Type type)
-        {
-            type.NotNull(nameof(type));
-
-            return type.GetMembers(
-                BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly);
-        }
-    }
-
-    public static partial class TypeExtensions
-    {
-        public static MemberInfo[] GetPublicMembers(this Type type)
-        {
-            type.NotNull(nameof(type));
-
-            return type.GetMembers(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance);
-        }
-    }
-
-    public static partial class TypeExtensions
-    {
         public static bool IsAssignableTo(this Type from, Type to)
         {
             to.NotNull(nameof(to));

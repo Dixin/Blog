@@ -4,8 +4,9 @@
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Diagnostics.Contracts;
-
+    using System.Net;
     using Microsoft.TeamFoundation;
+    using Microsoft.TeamFoundation.Client;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     using static Dixin.Linq.LinqToObjects.QueryMethods;
@@ -38,9 +39,8 @@
             SelectWithIndex();
             Let();
             SelectMany();
-            SelectMany2();
-            SelectManyFluent();
-            SelectManyWithResultSelector2();
+            FluentSelectMany();
+            CompiledSelectManyWithResultSelector();
             SelectManyWithResultSelector();
         }
 
@@ -49,8 +49,8 @@
         {
             GroupBy();
             GroupByWithResultSelector();
-            GroupBySelect();
-            GroupBySelect2();
+            GroupByAndSelect();
+            FluentGroupByAndSelect();
             GroupByWithElementSelector();
             GroupByWithElementAndResultSelector();
             GroupByWithEqualityComparer();
@@ -107,7 +107,7 @@
             OrderByDescending();
             OrderByWithComparer();
             ThenBy();
-            OrderByOrderBy();
+            OrderByAndOrderBy();
             Reverse();
         }
 
@@ -116,7 +116,8 @@
         {
             try
             {
-                CastNonGenericIEnumerable();
+                CastNonGenericIEnumerable(new TfsClientCredentials(new BasicAuthCredential(
+                    new NetworkCredential("dixinyan@live.com", string.Empty))) { AllowInteractive = false });
                 Assert.Fail();
             }
             catch (TeamFoundationServerUnauthorizedException exception)
@@ -150,7 +151,7 @@
             }
             try
             {
-                DictionaryLookup();
+                LookupDictionary();
                 Assert.Fail();
             }
             catch (KeyNotFoundException exception)
@@ -159,7 +160,7 @@
             }
             try
             {
-                DictionaryLookupNullKey();
+                LookupDictionaryNullKey();
                 Assert.Fail();
             }
             catch (ArgumentNullException exception)
@@ -249,9 +250,9 @@
             {
                 Trace.WriteLine(exception);
             }
-            MinMaxWithSelector();
-            OrderByDescending2();
-            AggregateWithSeed2();
+            MaxWithSelector();
+            OrderByDescendingAndTakeWhile();
+            AggregateWithAnonymousTypeSeed();
             Except2();
             MinMaxGeneric();
             try

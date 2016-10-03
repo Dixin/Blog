@@ -1,6 +1,7 @@
 ﻿#if DEMO
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace System.Linq
 {
@@ -306,14 +307,17 @@ namespace System.Linq
 
 namespace System.Collections.Generic
 {
-    public class Dictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>> // ...
-    {
+    public class Dictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>, IEnumerable, 
+        IDictionary<TKey, TValue>, IDictionary, ICollection<KeyValuePair<TKey, TValue>>, ICollection, 
+        IReadOnlyDictionary<TKey, TValue>, IReadOnlyCollection<KeyValuePair<TKey, TValue>>, 
+        ISerializable, IDeserializationCallback
+	{
     }
 }
 
 namespace System.Linq
 {
-    public interface ILookup<TKey, TElement> : IEnumerable<IGrouping<TKey, TElement>> // ...
+    public interface ILookup<TKey, TElement> : IEnumerable<IGrouping<TKey, TElement>>, IEnumerable
     {
         IEnumerable<TElement> this[TKey key] { get; }
 

@@ -7,8 +7,6 @@
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
 
-    using Dixin.Reflection;
-
     internal static partial class QueryMethods
     {
         #region Generation
@@ -576,7 +574,7 @@
 
         internal static void MaxBy()
         {
-            IList<Type> maxTypes = mscorlib.ExportedTypes.MaxBy(type => type.GetPublicMembers().Length);
+            IList<Type> maxTypes = mscorlib.GetExportedTypes().MaxBy(type => type.GetMembers().Length);
             // { System.Convert }.
         }
 

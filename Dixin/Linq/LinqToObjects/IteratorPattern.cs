@@ -207,13 +207,10 @@
         {
             Type nonGenericEnumerable = typeof(IEnumerable);
             Type genericEnumerable = typeof(IEnumerable<>);
-
             return assembly
-                .ExportedTypes
+                .GetExportedTypes()
                 .Where(type => type != nonGenericEnumerable && nonGenericEnumerable.IsAssignableFrom(type))
-                .Except(assembly
-                .ExportedTypes
-                    .Where(type => type.IsAssignableTo(genericEnumerable)))
+                .Except(assembly.GetExportedTypes().Where(type => type.IsAssignableTo(genericEnumerable)))
                 .OrderBy(type => type.FullName);
         }
 

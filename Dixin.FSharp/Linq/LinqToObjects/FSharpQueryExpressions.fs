@@ -30,9 +30,9 @@
 
         let selectMany: seq<MemberInfo> = 
             query {
-                for type' in typeof<Object>.Assembly.ExportedTypes do
-                for member' in type'.GetPublicDeclaredMembers() do
-                where (member'.IsObsolete())
+                for type' in typeof<Object>.Assembly.GetExportedTypes() do
+                for member' in type'.GetMembers() do
+                where (QueryMethods.IsObsolete member')
                 select member'                
             }
 
