@@ -1,5 +1,6 @@
 namespace Dixin.Linq.LinqToObjects
 {
+    using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
@@ -46,6 +47,6 @@ namespace Dixin.Linq.LinqToObjects
         public IEnumerable<TElement> this[TKey key] => this.Contains(key)
             ? (key == null ? this.groupWithNullKey : this.groupsWithNonNullKey[key])
             // When key does not exist in lookup, return an empty sequence.
-            : EmptyArray<TElement>.Cache as IEnumerable<TElement>;
+            : (IEnumerable<TElement>)Array.Empty<TElement>();
     }
 }

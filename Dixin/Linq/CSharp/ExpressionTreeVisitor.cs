@@ -17,22 +17,22 @@
             switch (node.NodeType)
             {
                 case ExpressionType.Add:
-                    return this.VisitAdd(node as BinaryExpression, expression);
+                    return this.VisitAdd((BinaryExpression)node, expression);
 
                 case ExpressionType.Constant:
-                    return this.VisitConstant(node as ConstantExpression, expression);
+                    return this.VisitConstant((ConstantExpression)node, expression);
 
                 case ExpressionType.Divide:
-                    return this.VisitDivide(node as BinaryExpression, expression);
+                    return this.VisitDivide((BinaryExpression)node, expression);
 
                 case ExpressionType.Multiply:
-                    return this.VisitMultiply(node as BinaryExpression, expression);
+                    return this.VisitMultiply((BinaryExpression)node, expression);
 
                 case ExpressionType.Parameter:
-                    return this.VisitParameter(node as ParameterExpression, expression);
+                    return this.VisitParameter((ParameterExpression)node, expression);
 
                 case ExpressionType.Subtract:
-                    return this.VisitSubtract(node as BinaryExpression, expression);
+                    return this.VisitSubtract((BinaryExpression)node, expression);
 
                 default:
                     throw new ArgumentOutOfRangeException(nameof(node));

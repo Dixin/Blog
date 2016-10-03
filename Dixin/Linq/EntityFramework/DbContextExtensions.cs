@@ -33,7 +33,7 @@
             // List<ProviderCommandInfo> providerCommands;
             // PlanCompiler.Compile(
             //    commandTree, out providerCommands, out columnMap, out columnCount, out entitySets);
-            // return providerCommands.Single().CommandTree as DbQueryCommandTree;
+            // return (DbQueryCommandTree)providerCommands.Single().CommandTree;
             // ExpressionConverter, Funcletizer and PlanCompiler are not public. Reflection is needed:
             Assembly entityFrmaeworkAssembly = typeof(DbContext).Assembly;
             Type funcletizerType = entityFrmaeworkAssembly.GetType(
@@ -52,7 +52,7 @@
             object funcletizer = createQueryFuncletizerMethod.Invoke(null, new object[] { objectContext });
             object expressionConverter = expressionConverterConstructor.Invoke(
                 new object[] { funcletizer, expression });
-            DbExpression dbExpression = convertMethod.Invoke(expressionConverter, new object[0]) as DbExpression;
+            DbExpression dbExpression = (DbExpression)convertMethod.Invoke(expressionConverter, new object[0]);
             DbQueryCommandTree commandTree = objectContext.MetadataWorkspace.CreateQueryCommandTree(dbExpression);
             Type planCompilerType = entityFrmaeworkAssembly.GetType(
                 "System.Data.Entity.Core.Query.PlanCompiler.PlanCompiler");
@@ -64,8 +64,8 @@
                 "System.Data.Entity.Core.Query.PlanCompiler.ProviderCommandInfo");
             PropertyInfo commandTreeProperty = providerCommandInfoType.GetProperty(
                 "CommandTree", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
-            object providerCommand = (arguments[1] as IEnumerable<object>).Single();
-            return commandTreeProperty.GetValue(providerCommand) as DbQueryCommandTree;
+            object providerCommand = ((IEnumerable<object>)arguments[1]).Single();
+            return (DbQueryCommandTree)commandTreeProperty.GetValue(providerCommand);
         }
     }
 
@@ -81,7 +81,7 @@
             DbCommandDefinition commandDefinition = SqlProviderServices.Instance
                 .CreateCommandDefinition(itemCollection.ProviderManifest, commandTree);
             return commandDefinition.CreateCommand();
-            // SqlVersion sqlVersion = (itemCollection.ProviderManifest as SqlProviderManifest).SqlVersion;
+            // SqlVersion sqlVersion = ((SqlProviderManifest)itemCollection.ProviderManifest).SqlVersion;
             // SqlGenerator sqlGenerator = new SqlGenerator(sqlVersion);
             // HashSet<string> paramsToForceNonUnicode;
             // string sql = sqlGenerator.GenerateSql(commandTree, out paramsToForceNonUnicode)
@@ -91,7 +91,7 @@
     public static partial class DbContextExtensions
     {
         public static EntityContainer Container
-            (this DbContext context) => (context as IObjectContextAdapter)
+            (this DbContext context) => ((IObjectContextAdapter)context)
                 .ObjectContext
                 .MetadataWorkspace
                 .GetItemCollection(DataSpace.CSpace)
@@ -99,11 +99,11 @@
                 .Single();
 
         public static ObjectContext ObjectContext
-            (this DbContext context) => (context as IObjectContextAdapter).ObjectContext;
+            (this DbContext context) => ((IObjectContextAdapter)context).ObjectContext;
 
         public static TDbConnection Connection<TDbConnection>(this DbContext context)
             where TDbConnection : DbConnection =>
-                (context.ObjectContext().Connection as EntityConnection)?.StoreConnection as TDbConnection;
+                ((EntityConnection)context.ObjectContext().Connection)?.StoreConnection as TDbConnection;
     }
 
     public static partial class DbContextExtensions

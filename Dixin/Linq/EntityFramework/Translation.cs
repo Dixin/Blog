@@ -39,10 +39,10 @@
         {
             IQueryable<Product> sourceQueryable = AdventureWorks.Products; // DbSet<Product>.
 
-            // MethodCallExpression sourceMergeAsCallExpression = sourceQuery.Expression as MethodCallExpression;
+            // MethodCallExpression sourceMergeAsCallExpression = (MethodCallExpression)sourceQuery.Expression;
             ObjectQuery<Product> objectQuery = new ObjectQuery<Product>(
                 $"[{nameof(AdventureWorks)}].[{nameof(AdventureWorks.Products)}]",
-                (AdventureWorks as IObjectContextAdapter).ObjectContext,
+                ((IObjectContextAdapter)AdventureWorks).ObjectContext,
                 MergeOption.AppendOnly);
             MethodInfo mergeAsMethod = typeof(ObjectQuery<Product>)
                 .GetTypeInfo().GetDeclaredMethods("MergeAs").Single();
@@ -119,7 +119,7 @@
 
         internal static DbQueryCommandTree WhereAndSelectDbExpressions()
         {
-            MetadataWorkspace metadata = (AdventureWorks as IObjectContextAdapter).ObjectContext.MetadataWorkspace;
+            MetadataWorkspace metadata = ((IObjectContextAdapter)AdventureWorks).ObjectContext.MetadataWorkspace;
             TypeUsage stringTypeUsage = TypeUsage.CreateDefaultTypeUsage(metadata
                 .GetPrimitiveTypes(DataSpace.CSpace)
                 .Single(type => type.ClrEquivalentType == typeof(string)));
@@ -183,7 +183,7 @@
             // value(System.Data.Entity.Core.Objects.ObjectQuery`1[Dixin.Linq.EntityFramework.Product])
             //    .MergeAs(AppendOnly)
             //    .Select(product => product.Name)
-            MethodCallExpression selectCallExpression = selectQueryable.Expression as MethodCallExpression;
+            MethodCallExpression selectCallExpression = (MethodCallExpression)selectQueryable.Expression;
             IQueryProvider selectQueryProvider = selectQueryable.Provider; // DbQueryProvider.
 
             // string first = selectQueryable.First();
@@ -227,8 +227,8 @@
                 .MakeGenericMethod(typeof(string));
             object internalQuery = internalQueryField.GetValue(selectQueryable.Provider);
             object objectProvider = objectQueryProviderProperty.GetValue(internalQuery);
-            IQueryable<string> firstQueryable = createQueryMethod.Invoke(
-                objectProvider, new object[] { firstCallExpression }) as IQueryable<string>;
+            IQueryable<string> firstQueryable = (IQueryable<string>)createQueryMethod.Invoke(
+                objectProvider, new object[] { firstCallExpression });
 
             Func<IEnumerable<string>, string> firstMappingMethod = Enumerable.First;
             string first = firstMappingMethod(firstQueryable); // Execute query.
@@ -237,7 +237,7 @@
 
         internal static DbQueryCommandTree SelectAndFirstDbExpressions()
         {
-            MetadataWorkspace metadata = (AdventureWorks as IObjectContextAdapter).ObjectContext.MetadataWorkspace;
+            MetadataWorkspace metadata = ((IObjectContextAdapter)AdventureWorks).ObjectContext.MetadataWorkspace;
             TypeUsage stringTypeUsage = TypeUsage.CreateDefaultTypeUsage(metadata
                 .GetPrimitiveTypes(DataSpace.CSpace)
                 .Single(type => type.ClrEquivalentType == typeof(string)));

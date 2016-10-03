@@ -26,7 +26,7 @@
         private ObjectSet<Product> products;
 
         public LegacyAdventureWorks()
-            : base(new AdventureWorks().ObjectContext().Connection as EntityConnection)
+            : base((EntityConnection)new AdventureWorks().ObjectContext().Connection)
         {
         }
 

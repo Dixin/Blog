@@ -80,7 +80,7 @@ namespace Dixin.Linq.EntityFramework
                                 Trace.WriteLine($"{tracking.State}: ({changed.ProductID}, {changed.Name}, {changed.ListPrice})");
                                 break;
                             case EntityState.Modified:
-                                Product original = tracking.OriginalValues.ToObject() as Product;
+                                Product original = (Product)tracking.OriginalValues.ToObject();
                                 Trace.WriteLine(
                                     $"{tracking.State}: ({original.ProductID}, {original.Name}, {original.ListPrice}) => ({changed.ProductID}, {changed.Name}, {changed.ListPrice})");
                                 break;
@@ -130,7 +130,7 @@ namespace Dixin.Linq.EntityFramework
                     .All(product => product.ProductSubcategory == null)); // True
                 adventureWorks.ChangeTracker.Entries<Product>().ForEach(tracking =>
                     {
-                        Product original = tracking.OriginalValues.ToObject() as Product;
+                        Product original = (Product)tracking.OriginalValues.ToObject();
                         Product changed = tracking.Entity;
                         Trace.WriteLine(
                             $"{tracking.State}: ({original.ProductID}, {original.Name}, {original.ProductSubcategoryID}) => ({changed.ProductID}, {changed.Name}, {changed.ProductSubcategoryID})");

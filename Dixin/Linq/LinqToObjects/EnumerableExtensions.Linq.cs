@@ -151,7 +151,7 @@
 
         #region Generation
 
-        internal static IEnumerable<TResult> Empty<TResult>() => EmptyArray<TResult>.Cache;
+        internal static IEnumerable<TResult> Empty<TResult>() => Array.Empty<TResult>();
 
         internal static IEnumerable<TResult> Empty2<TResult>()
         {
