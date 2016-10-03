@@ -172,7 +172,7 @@
         {
             XDocument aspNetRss = XDocument.Load("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2");
             XmlSchemaSet schemaSet = aspNetRss.InferSchema();
-            schemaSet.Schemas().OfType<XmlSchema>().ForEach(schema => Trace.WriteLine(schema.ToXDocument()));
+            schemaSet.Schemas().Cast<XmlSchema>().ForEach(schema => Trace.WriteLine(schema.ToXDocument()));
         }
 
         internal static void Validate()

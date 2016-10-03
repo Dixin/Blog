@@ -9,6 +9,7 @@ namespace Dixin.Linq.LinqToObjects
     using System.Web.Profile;
 
     using Dixin.Linq.CSharp;
+
     using Microsoft.TeamFoundation.Client;
     using Microsoft.TeamFoundation.WorkItemTracking.Client;
 

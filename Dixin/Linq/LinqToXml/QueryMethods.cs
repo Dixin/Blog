@@ -174,9 +174,9 @@
 
             IEnumerable<string> categories = (rssNavigator
                 .Evaluate("/rss/channel/item[guid/@isPermaLink='true']/category") as XPathNodeIterator)
-                .OfType<XPathNavigator>()
+                .Cast<XPathNavigator>()
                 .Select(categoryNavigator => categoryNavigator.UnderlyingObject)
-                .OfType<XElement>()
+                .Cast<XElement>()
                 .GroupBy(
                     category => category.Value, // Current text node's value.
                     category => category,
@@ -236,7 +236,7 @@
             XDocument rss = XDocument.Load("https://weblogs.asp.net/dixin/rss");
             IEnumerable<string> categories = (rss
                 .XPathEvaluate("/rss/channel/item[guid/@isPermaLink='true']/category/text()") as IEnumerable<object>)
-                .OfType<XText>()
+                .Cast<XText>()
                 .GroupBy(
                     categoryTextNode => categoryTextNode.Value, // Current text node's value.
                     categoryTextNode => categoryTextNode,
@@ -256,7 +256,7 @@
                 .XPathEvaluate(
                     "/rss/channel/item[contains(media:category/text(), 'microsoft')]/media:title/text()",
                     rss.CreateNamespaceManager()) as IEnumerable<object>)
-                .OfType<XText>();
+                .Cast<XText>();
             mediaTitles.ForEach(mediaTitle => Trace.WriteLine(mediaTitle.Value));
             // Chinese President visits Microsoft
             // Satya Nadella, CEO of Microsoft
@@ -283,7 +283,7 @@
             Trace.WriteLine(attribute1.XPath()); // /rss/channel/item[1]/author/@flickr:profile
             XAttribute attribute2 = (flickrRss
                 .XPathEvaluate(attribute1.XPath(), flickrRss.CreateNamespaceManager()) as IEnumerable<object>)
-                .OfType<XAttribute>()
+                .Cast<XAttribute>()
                 .Single();
             Trace.WriteLine(object.ReferenceEquals(attribute1, attribute2)); // True
         }

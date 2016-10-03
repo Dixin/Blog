@@ -136,7 +136,7 @@
         private static void FormatDocument(Document document, Html html, string template, string author = "Dixin Yan", int downloadThreadPerProcessor = 10)
         {
             document.InlineShapes
-                    .OfType<InlineShape>()
+                    .Cast<InlineShape>()
                     .Where(shape => shape.Type == WdInlineShapeType.wdInlineShapeLinkedPicture)
                     .AsParallel()
                     .WithDegreeOfParallelism(Environment.ProcessorCount * downloadThreadPerProcessor)
@@ -170,7 +170,7 @@
             range = document.Range(table.Range.End, table.Range.End);
             range.InsertBreak(WdBreakType.wdPageBreak);
 
-            document.Sections.OfType<Section>().ForEach(section =>
+            document.Sections.Cast<Section>().ForEach(section =>
                 {
                     range = section.Headers[WdHeaderFooterIndex.wdHeaderFooterPrimary].Range;
                     range.Fields.Add(range, WdFieldType.wdFieldStyleRef, @"""Heading 1""", true);

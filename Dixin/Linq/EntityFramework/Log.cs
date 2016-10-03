@@ -83,7 +83,7 @@
             else
             {
                 this.log($@"{@event}: {command.CommandText}{string.Concat(command.Parameters
-                    .OfType<DbParameter>()
+                    .Cast<DbParameter>()
                     .Select(parameter => $", {parameter.ParameterName}={parameter.Value}"))}");
                 if (exception != null)
                 {

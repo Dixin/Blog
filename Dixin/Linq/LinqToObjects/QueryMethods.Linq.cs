@@ -718,7 +718,7 @@
 
         #endregion
 
-        #region Partioning
+        #region Partitioning
 
         internal static void SkipTake()
         {

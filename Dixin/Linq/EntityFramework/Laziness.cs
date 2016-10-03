@@ -32,7 +32,7 @@
                         Trace.WriteLine("|_Build SQL query.");
                         IEnumerable<TSource> sqlQuery = dbContext.Database.SqlQuery<TSource>(
                             sql.CommandText,
-                            sql.Parameters.OfType<DbParameter>().Select(parameter => parameter.Value).ToArray());
+                            sql.Parameters.Cast<DbParameter>().Select(parameter => parameter.Value).ToArray());
                         sqlReader = sqlQuery.GetEnumerator();
                     },
                 moveNext: () =>

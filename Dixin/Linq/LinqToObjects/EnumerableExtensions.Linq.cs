@@ -41,14 +41,12 @@
                 {
                     if (array.Length == length)
                     {
-                        Array.Resize(ref array, checked(length * 2)); // Doubles size when full.
+                        Array.Resize(ref array, checked(length * 2)); // Double the size when full.
                     }
-
                     array[length++] = iterator.Current;
                 }
                 while (iterator.MoveNext());
-
-                Array.Resize(ref array, length); // Finalizes size when done.
+                Array.Resize(ref array, length); // Finalize the size when done.
                 return array;
             }
         }

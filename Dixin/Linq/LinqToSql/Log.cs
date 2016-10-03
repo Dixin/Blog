@@ -40,7 +40,7 @@
                 IQueryable<ProductCategory> source = adventureWorks.ProductCategories; // Define query.
                 DbCommand command = adventureWorks.GetCommand(source);
                 Trace.WriteLine($@"{command.CommandText}{string.Concat(command.Parameters
-                    .OfType<DbParameter>()
+                    .Cast<DbParameter>()
                     .Select(parameter => $", {parameter.ParameterName}={parameter.Value}"))}");
                 // TODO.
             }
