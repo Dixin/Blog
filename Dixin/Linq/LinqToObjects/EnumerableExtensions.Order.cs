@@ -49,7 +49,7 @@
 
         private readonly Func<TSource, TKey> keySelector;
 
-        private readonly Func<TSource[], Comparison<int>> previousGetComparison;
+        private readonly Func<TSource[], Comparison<int>> previousGetComparison; // Comparison<int> is Func<int, int, int>.
 
         internal OrderedSequence(
             IEnumerable<TSource> source,
@@ -60,7 +60,7 @@
             // previousGetComparison is only specified in CreateOrderedEnumerable, 
             // and CreateOrderedEnumerable is only called by ThenBy/ThenByDescending.
             // When OrderBy/OrderByDescending is called, previousGetComparison is not specified.
-            Func<TSource[], Comparison<int>> previousGetComparison = null)
+            Func<TSource[], Comparison<int>> previousGetComparison = null) // Comparison<int> is Func<int, int, int>.
         {
             this.source = source;
             this.keySelector = keySelector;
@@ -85,7 +85,7 @@
             }
 
             // GetComparison is only called once for each generator instance.
-            Comparison<int> comparison = this.GetComparison(values);
+            Comparison<int> comparison = this.GetComparison(values); // Comparison<int> is Func<int, int, int>.
             Array.Sort(indexMap, (index1, index2) => // index1 < index2
                 {
                     // Format the compareResult. 
@@ -113,15 +113,15 @@
         {
             int count = values.Length;
             TKey[] keys = new TKey[count];
-            for (int i = 0; i < count; i++)
+            for (int index = 0; index < count; index++)
             {
-                keys[i] = this.keySelector(values[i]);
+                keys[index] = this.keySelector(values[index]);
             }
 
             return keys;
         }
 
-        private Comparison<int> GetComparison(TSource[] values)
+        private Comparison<int> GetComparison(TSource[] values) // Comparison<int> is Func<int, int, int>.
         {
             // GetComparison is only called once for each generator instance,
             // so GetKeys is only called once during the ordering query execution.
@@ -137,19 +137,19 @@
             // In ThenBy/ThenByDescending.
             Comparison<int> previousComparison = this.previousGetComparison(values);
             return (index1, index2) =>
-                {
+            {
                 // Only when previousCompareResult is equal, 
                 // ThenBy/ThenByDescending needs to compare keys of 2 values.
                 int previousCompareResult = previousComparison(index1, index2);
                     return previousCompareResult == 0
                         ? this.CompareKeys(keys, index1, index2)
                         : previousCompareResult;
-                };
+            };
         }
 
         private int CompareKeys(TKey[] keys, int index1, int index2)
         {
-            // Format the compareResult, so always return 0, -1, or 1.
+            // Format the compareResult to always be 0, -1, or 1.
             int compareResult = this.comparer.Compare(keys[index1], keys[index2]);
             return compareResult == 0
                 ? 0

@@ -126,7 +126,7 @@
             IEnumerable<TResult> generic = source as IEnumerable<TResult>;
             if (generic != null)
             {
-                return generic; // Deferred execution.
+                return generic; // Cannot be compiled.
             }
 
             foreach (object value in source)
@@ -136,10 +136,10 @@
         }
 #endif
 
-        internal static IEnumerable<TResult> Cast<TResult>
-            (this IEnumerable source) => source as IEnumerable<TResult> ?? source.CastGenerator<TResult>();  // Deferred execution.
+        internal static IEnumerable<TResult> Cast<TResult>(this IEnumerable source) => 
+            source as IEnumerable<TResult> ?? source.CastGenerator<TResult>(); // Deferred execution.
 
-        internal static IEnumerable<TResult> CastGenerator<TResult>(this IEnumerable source)
+        private static IEnumerable<TResult> CastGenerator<TResult>(this IEnumerable source)
         {
             foreach (object value in source)
             {

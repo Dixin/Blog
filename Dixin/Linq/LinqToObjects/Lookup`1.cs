@@ -5,7 +5,7 @@ namespace Dixin.Linq.LinqToObjects
     using System.Collections.Generic;
     using System.Linq;
 
-    public class Lookup<TKey, TElement> : ILookup<TKey, TElement>
+    internal class Lookup<TKey, TElement> : ILookup<TKey, TElement>
     {
         private readonly IDictionary<TKey, IGrouping<TKey, TElement>> groupsWithNonNullKey;
 
@@ -13,7 +13,7 @@ namespace Dixin.Linq.LinqToObjects
 
         private readonly bool hasGroupWithNullKey;
 
-        public Lookup(
+        internal Lookup(
             IDictionary<TKey, IGrouping<TKey, TElement>> groupsWithNonNullKey, 
             IGrouping<TKey, TElement> groupWithNullKey, 
             bool hasElementWithNullKey)
