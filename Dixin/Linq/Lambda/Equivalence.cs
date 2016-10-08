@@ -1,13 +1,15 @@
 ﻿namespace Dixin.Linq.Lambda
 {
     using System;
+
     using Dixin.Linq.Combinators;
+
+    using static ChurchBoolean;
 
     public static partial class ChurchBoolean
     {
-        // Sequence = False
-        public static Func<T2, T2> Sequence<T1, T2>
-            (T1 arg1) => arg2 => arg2;
+        // Sequence is equivalent to False.
+        public static Func<T2, T2> Sequence<T1, T2>(T1 value1) => value2 => value2;
     }
 
     internal abstract class Halting
@@ -18,9 +20,9 @@
         // IsNotHalting = f => If(IsHalting(f)(f))(_ => Sequence(Ω())(False))(_ => True)
         internal Boolean IsNotHalting<T>
             (ω<T> f) =>
-                ChurchBoolean.If<Boolean>(this.IsHalting(new Func<ω<T>, T>(f))(f))
-                    (_ => ChurchBoolean.Sequence<T, Boolean>(OmegaCombinators.Ω<T>())(ChurchBoolean.False))
-                    (_ => ChurchBoolean.True);
+                ChurchBoolean<Boolean>.If(this.IsHalting(new Func<ω<T>, T>(f))(f))
+                    (_ => Sequence<T, Boolean>(OmegaCombinators<T>.Ω(__ => __))(False))
+                    (_ => True);
     }
 
     internal abstract class Equivalence
@@ -32,7 +34,7 @@
         internal Func<T, Boolean> IsHalting<T, TResult>
             (Func<T, TResult> f) => x =>
                 this.IsEquivalent<T, Boolean>
-                    (_ => ChurchBoolean.Sequence<TResult, Boolean>(f(x))(ChurchBoolean.True))
-                    (_ => ChurchBoolean.True);
+                    (_ => Sequence<TResult, Boolean>(f(x))(True))
+                    (_ => True);
     }
 }

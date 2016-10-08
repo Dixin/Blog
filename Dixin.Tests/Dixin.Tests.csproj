@@ -237,11 +237,11 @@
     <Compile Include="Linq\CSharp\PrefixVisitorTests.cs" />
     <Compile Include="Linq\Lambda\ChurchBooleanTests.cs" />
     <Compile Include="Linq\Lambda\ChurchListTests.cs" />
-    <Compile Include="Linq\Lambda\ChurchPredicatesTests.cs" />
+    <Compile Include="Linq\Lambda\ChurchPredicateTests.cs" />
     <Compile Include="Linq\Lambda\ChurchSignedNumeralTests.cs" />
     <Compile Include="Linq\Lambda\ChurchTupleTests.cs" />
-    <Compile Include="Linq\Lambda\_ListNodeTests.cs" />
-    <Compile Include="Linq\Lambda\_NumeralExtensionsTests.cs" />
+    <Compile Include="Linq\Lambda\ChurchAggregateListTests.cs" />
+    <Compile Include="Linq\Lambda\ChurchNumeralTests.cs" />
     <Compile Include="Linq\EntityFramework\ChangesTests.cs" />
     <Compile Include="Linq\EntityFramework\DatabaseTests.cs" />
     <Compile Include="Linq\EntityFramework\LogTests.cs" />

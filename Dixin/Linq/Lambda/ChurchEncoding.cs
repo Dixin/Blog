@@ -1,29 +1,27 @@
 namespace Dixin.Linq.Lambda
 {
+    using static ChurchBoolean;
+    using static Numeral;
+
     public static partial class ChurchEncoding
     {
-        // System.Boolean to Boolean
-        public static Boolean _Church
-            (this bool boolean) => boolean ? new Boolean(ChurchBoolean.True) : ChurchBoolean.False;
+        // System.Boolean structure to Boolean function.
+        public static Boolean Church(this bool @bool) => @bool ? True : False;
 
-        // Boolean to System.Boolean
-        public static bool _Unchurch
-            (this Boolean boolean) => (bool)boolean(true)(false);
+        // Boolean function to System.Boolean structure.
+        public static bool Unchurch(this Boolean boolean) => (bool)boolean(true)(false);
     }
 
     public static partial class ChurchEncoding
     {
-        public static _Numeral _Church
-            (this uint n) => n > 0 ? new _Numeral(_Church(n - 1)) : _Numeral.Zero;
+        public static Numeral Church(this uint n) => n > 0 ? new Numeral(Church(n - 1)) : Zero;
 
-        public static uint _Unchurch
-            (this _Numeral numeral) => numeral.Numeral<uint>()(x => x + 1)(0);
+        public static uint Unchurch(this Numeral numeral) => numeral.Invoke<uint>(x => x + 1)(0);
     }
 
     public static partial class ChurchEncoding
     {
-        public static string Visualize
-        (this _Numeral numeral) =>
-            numeral.Numeral<string>()(x => string.Concat(x, "#"))(string.Empty);
+        public static string Visualize(this Numeral numeral) => 
+            numeral.Invoke<string>(x => string.Concat(x, "*"))(string.Empty);
     }
 }

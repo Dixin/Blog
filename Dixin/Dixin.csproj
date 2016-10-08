@@ -319,6 +319,7 @@
     <Compile Include="Linq\CSharp\Immutability.cs" />
     <Compile Include="Linq\CSharp\PureFunction.cs" />
     <Compile Include="Linq\CSharp\Purity.cs" />
+    <Compile Include="Linq\Lambda\Expression.cs" />
     <Compile Include="Linq\LinqToObjects\Generator.cs" />
     <Compile Include="Linq\TraceHelper.cs" />
     <Compile Include="Linq\CSharp\AnonymousFunction.cs" />
@@ -532,13 +533,12 @@
     <Compile Include="Linq\Lambda\ChurchBoolean.Generic.cs" />
     <Compile Include="Linq\Lambda\ChurchEncoding.cs" />
     <Compile Include="Linq\Lambda\ChurchList.cs" />
-    <Compile Include="Linq\Lambda\ChurchList2.cs" />
-    <Compile Include="Linq\Lambda\ChurchList`1.cs" />
+    <Compile Include="Linq\Lambda\ChurchNestedList.cs" />
+    <Compile Include="Linq\Lambda\ChurchAggregateList.cs" />
     <Compile Include="Linq\Lambda\ChurchNumeral.Arithmetic.cs" />
     <Compile Include="Linq\Lambda\ChurchNumeral.Arithmetic.Tuple.cs" />
     <Compile Include="Linq\Lambda\ChurchNumeral.Boolean.cs" />
     <Compile Include="Linq\Lambda\ChurchNumeral.cs" />
-    <Compile Include="Linq\Lambda\ChurchNumeral.Obsolete.cs" />
     <Compile Include="Linq\Lambda\ChurchPredicates.cs" />
     <Compile Include="Linq\Lambda\ChurchTuple.cs" />
     <Compile Include="Linq\Lambda\ChurchNumeral.Predicate.cs" />
@@ -548,7 +548,6 @@
     <Compile Include="Linq\Combinators\SkiCombinators.cs" />
     <Compile Include="Linq\Combinators\YCombinator.cs" />
     <Compile Include="Linq\Lambda\Equivalence.cs" />
-    <Compile Include="Linq\FuncExtensions.Composition.cs" />
     <Compile Include="Linq\ActionFunc.Curry.cs" />
     <Compile Include="Linq\ActionFunc.Forward.cs" />
     <Compile Include="Linq\Functional\EnumerableExtensions.cs" />

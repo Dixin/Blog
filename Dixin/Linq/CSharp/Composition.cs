@@ -23,10 +23,22 @@
             Func<double, double> abs = Math.Abs;
 
             Func<double, double> absSqrt1 = sqrt.After(abs);
-            Trace.WriteLine(absSqrt1(-2D));
+            Trace.WriteLine(absSqrt1(-2D)); // 1.4142135623731
 
             Func<double, double> absSqrt2 = abs.Before(sqrt);
-            Trace.WriteLine(absSqrt2(-2D));
+            Trace.WriteLine(absSqrt2(-2D)); // 1.4142135623731
+        }
+
+        internal static void Linq()
+        {
+            Func<IEnumerable<int>, IEnumerable<int>> filter = source => Enumerable.Where(source, int32 => int32 > 0);
+            Func<IEnumerable<int>, IEnumerable<int>> sort = filtered => Enumerable.OrderBy(filtered, int32 => int32);
+            Func<IEnumerable<int>, IEnumerable<double>> map = sorted => Enumerable.Select(sorted, int32 => Math.Sqrt(int32));
+            IEnumerable<double> query = map(sort(filter(new int[] { 4, 3, 2, 1, 0, -1 })));
+            foreach (double result in query) // Execute query.
+            {
+                Trace.WriteLine(result);
+            }
         }
 
         internal static void CompositeLinq()

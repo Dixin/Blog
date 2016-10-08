@@ -52,7 +52,7 @@ namespace Dixin.Linq.Combinators
 
         // K = x => _ => x
         public static Func<T2, T1> _K<T1, T2>
-            (T1 x) => BckwCombinators.K<T1, T2>(x);
+            (T1 x) => BckwCombinators<T1, T2>.K(x);
 
         // I = x => x
         public static T _I<T>
@@ -63,64 +63,67 @@ namespace Dixin.Linq.Combinators
 
     public static partial class SkiCombinators
     {
-        public static Func<dynamic, Func<dynamic, Func<dynamic, dynamic>>>
+        public static readonly Func<dynamic, Func<dynamic, Func<dynamic, dynamic>>>
             S = x => y => z => x(z)(y(z));
 
-        public static Func<dynamic, Func<dynamic, dynamic>>
+        public static readonly  Func<dynamic, Func<dynamic, dynamic>>
             K = x => y => x;
 
-        public static Func<dynamic, dynamic>
+        public static readonly  Func<dynamic, dynamic>
             I = x => x;
 
-        public static Boolean
+        public static readonly  Boolean
             True = new Boolean(K);
 
-        public static Boolean
+        public static readonly  Boolean
             False = new Boolean(S(K));
 
-        public static Func<dynamic, dynamic>
+        public static readonly  Func<dynamic, dynamic>
             I2 = S(K)(K);
 
-        public static Func<dynamic, dynamic>
+        public static readonly  Func<dynamic, dynamic>
             I3 = S(K)(S);
 
-        public static Func<Boolean, Boolean>
+        public static readonly  Func<Boolean, Boolean>
             Not = boolean => boolean(S(K))(K);
-        public static Func<Boolean, Func<Boolean, Boolean>>
+
+        public static readonly  Func<Boolean, Func<Boolean, Boolean>>
             Or = a => b => a(K)(b);
-        public static Func<Boolean, Func<Boolean, Boolean>>
+
+        public static readonly  Func<Boolean, Func<Boolean, Boolean>>
             And = a => b => a(b)(S(K));
-        public static Func<Boolean, Func<Boolean, Boolean>>
+
+        public static readonly  Func<Boolean, Func<Boolean, Boolean>>
             Xor = a => b => a(b(S(K))(K))(b(K)(S(K)));
 
-        public static Func<dynamic, dynamic>
+        public static readonly  Func<dynamic, dynamic>
             Compose = S(K(S))(K);
 
-        public static Func<dynamic, dynamic>
+        public static readonly  Func<dynamic, dynamic>
             Zero = K(I);
 
-        public static Func<dynamic, dynamic>
+        public static readonly  Func<dynamic, dynamic>
             One = I;
 
-        public static Func<dynamic, dynamic>
+        public static readonly  Func<dynamic, dynamic>
             Two = S(Compose)(I);
 
-        public static Func<dynamic, dynamic>
+        public static readonly  Func<dynamic, dynamic>
             Three = S(Compose)(S(Compose)(I));
 
-        public static Func<dynamic, Func<dynamic, dynamic>>
+        public static readonly  Func<dynamic, Func<dynamic, dynamic>>
             Increase = S(Compose);
 
-        public static Func<dynamic, bool>
+        public static readonly  Func<dynamic, bool>
             _UnchurchBoolean = boolean => (bool)boolean(true)(false);
 
-        public static Func<dynamic, uint>
+        public static readonly  Func<dynamic, uint>
             _UnchurchNumeral = numeral => numeral(new Func<uint, uint>(x => x + 1))(0U);
 
-        public static Func<dynamic, dynamic>
+        public static readonly  Func<dynamic, dynamic>
             ω = S(I)(I);
 
-        public static Func<dynamic, dynamic>
-            Ω = _ => ω(ω); // Ω = ω(ω) throws exception.
+        public static readonly  Func<dynamic, dynamic>
+            Ω = _ => ω(ω); // Ω = ω(ω) start execution immediately and throws exception. Ω = _ => ω(ω) defers the execution.
     }
 }

@@ -1,16 +1,47 @@
-﻿f ∘ (g ∘ h) = (f ∘ g) ∘ h
+﻿  (λx.λy.1 + x) ((λa.2 + a) 3) ((λb.4 + b) 5)
+≡ 1 + ((λa.2 + a) 3)
+≡ 1 + (2 + 3)
+≡ 1 + 5
+≡ 6
+
+  (λx.λy.1 + x) ((λa.2 + a) 3) ((λb.4 + b) 5)
+≡ (λx.λy.1 + x) (2 + 3) (4 + 5)
+≡ (λx.λy => 1 + x) 5 9
+≡ 1 + 5
+≡ 6
+
+(f2 ∘ f1) x := f2 (f1 x)
 
   ((f3 ∘ f2) ∘ f1) (x)
-= (f3 ∘ f2) (f1 (x))
-= f3 (f2 (f1 (x)))
+≡ (f3 ∘ f2) (f1 (x))
+≡ f3 (f2 (f1 (x)))
 
   f3 ∘ (f2 ∘ f1)
-= f3 ∘ (f2 (f1 (x)))
-= f3 (f2 (f1 (x)))
+≡ f3 ∘ (f2 (f1 (x)))
+≡ f3 (f2 (f1 (x)))
 
-True := λt.λf.t
+Id := λx.x
+
+f ∘ Id ≡ f
+Id ∘ f ≡ f
+
+  (f ∘ Id) x
+≡ f (Id x)
+≡ f x
+
+  (Id ∘ f) x
+≡ Id (f x)
+≡ f x
+
+If := λb.λt.λf.b t f
+
+If := λb.λt.λf.b t f Id
+
+True := λt.λf.t (x)
 Sequence := λa.λb.b
 False    := λt.λf.f
+
+And :=  λab.a b (λtf.f)
 
 If := λc.λt.λf.c t f (λx.x)
 
