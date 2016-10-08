@@ -2,6 +2,8 @@ namespace Dixin.Linq.Lambda
 {
     using System;
 
+    using static ChurchBoolean;
+
 #if DEMO
     using static Dixin.Linq.Lambda.Boolean;
 #endif
@@ -21,7 +23,6 @@ namespace Dixin.Linq.Lambda
             False = @true => @false => @false;
     }
 
-#if DEMO
     public static partial class ChurchBoolean
     {
         // And = a => b => a(b)(False)
@@ -32,9 +33,11 @@ namespace Dixin.Linq.Lambda
 
     public static partial class ChurchBoolean
     {
+#if DEMO
         // And = a => b => a(b)(true => false => false)
         public static Func<Boolean, Func<Boolean, Boolean>>
             And = a => b => (Boolean)a(b)(new Boolean(@true => @false => @false));
+#endif
 
         // Or = a => b => a(True)(b)
         public static Func<Boolean, Func<Boolean, Boolean>> 
@@ -48,12 +51,11 @@ namespace Dixin.Linq.Lambda
         public static Func<Boolean, Func<Boolean, Boolean>>
             Xor = a => b => (Boolean)a(b(False)(True))(b(True)(False));
     }
-#endif
 
-    public static partial class ChurchBoolean
+    public static partial class BooleanExtensions
     {
         // And = a => b => a(b)(False)
-        public static Boolean And(this Boolean a, Boolean b) => (Boolean)a(b)(False);
+        public static Boolean And(this Boolean a, Boolean b) => ChurchBoolean.And(a)(b);
 
         internal static void CallAnd()
         {
@@ -65,14 +67,13 @@ namespace Dixin.Linq.Lambda
         }
 
         // Or = a => b => a(True)(b)
-        public static Boolean Or(this Boolean a, Boolean b) => (Boolean)a(True)(b);
+        public static Boolean Or(this Boolean a, Boolean b) => ChurchBoolean.Or(a)(b);
 
         // Not = boolean => boolean(False)(True)
-        public static Boolean Not(this Boolean a) => (Boolean)a(False)(True);
+        public static Boolean Not(this Boolean a) => ChurchBoolean.Not(a);
 
         // Xor = a => b => a(b(False)(True))(b(True)(False))
-        public static Boolean Xor(this Boolean a, Boolean b) =>
-            (Boolean)a(b(False)(True))(b(True)(False));
+        public static Boolean Xor(this Boolean a, Boolean b) => ChurchBoolean.Xor(a)(b);
     }
 
     public static partial class ChurchBoolean<T>
@@ -108,60 +109,4 @@ namespace Dixin.Linq.Lambda
                 (_ => a.Or(b)); // else.
         }
     }
-
-#if DEMO
-    public abstract partial class Boolean
-    {
-        public abstract Func<TFalse, object> Invoke<TTrue, TFalse>(TTrue @true);
-
-        public Func<T, T> Invoke<T>(T @true) => @false => (T)this.Invoke<T, T>(@true)(@false);
-    }
-
-    public abstract partial class Boolean
-    {
-        private class TrueBoolean : Boolean
-        {
-            public override Func<TFalse, object> Invoke<TTrue, TFalse>(TTrue @true) => @false => @true;
-        }
-
-        private class FalseBoolean : Boolean
-        {
-            public override Func<TFalse, object> Invoke<TTrue, TFalse>(TTrue @true) => @false => @false;
-        }
-
-        public static Boolean True { get; } = new TrueBoolean();
-
-        public static Boolean False { get; } = new FalseBoolean();
-    }
-
-    public static class BooleanExtensions
-    {
-        // And = a => b => a(b)(False)
-        public static Boolean And(this Boolean a, Boolean b) => a.Invoke(b)(False);
-
-        // Or = a => b => a(True)(b)
-        public static Boolean Or(this Boolean a, Boolean b) => a.Invoke(True)(b);
-
-        // Not = boolean => boolean(False)(True)
-        public static Boolean Not(this Boolean boolean) => boolean.Invoke(False)(True);
-
-        // Xor = a => b => a(b(False)(True))(b(True)(False))
-        public static Boolean Xor(this Boolean a, Boolean b) => a.Invoke(b.Invoke(False)(True))(b.Invoke(True)(False));
-    }
-
-    public static partial class ChurchBoolean<T>
-    {
-        public static readonly Func<Boolean, Func<Func<Unit<T>, T>, Func<Func<Unit<T>, T>, T>>>
-            If = condition => then => @else => condition.Invoke(then)(@else)(_ => _);
-    }
-
-    public static partial class ChurchEncoding
-    {
-        // System.Boolean to Boolean
-        public static Boolean Church(this bool boolean) => boolean ? True : False;
-
-        // Boolean to System.Boolean
-        public static bool Unchurch(this Boolean boolean) => boolean.Invoke(true)(false);
-    }
-#endif
-    }
+}

@@ -1,7 +1,6 @@
 namespace Dixin.Linq.Lambda
 {
     using static ChurchBoolean;
-    using static Numeral;
 
     public static partial class ChurchEncoding
     {
@@ -14,14 +13,11 @@ namespace Dixin.Linq.Lambda
 
     public static partial class ChurchEncoding
     {
-        public static Numeral Church(this uint n) => n > 0 ? new Numeral(Church(n - 1)) : Zero;
+        public static Numeral Church(this uint n) => n > 0U ? Church(n - 1U).Increase() : ChurchNumeral.Zero;
 
-        public static uint Unchurch(this Numeral numeral) => numeral.Invoke<uint>(x => x + 1)(0);
-    }
+        public static uint Unchurch(this Numeral numeral) => (uint)numeral(x => (uint)x + 1U)(0U);
 
-    public static partial class ChurchEncoding
-    {
-        public static string Visualize(this Numeral numeral) => 
-            numeral.Invoke<string>(x => string.Concat(x, "*"))(string.Empty);
+        public static string Visualize(this Numeral numeral) =>
+            (string)numeral(x => string.Concat((string)x, "*"))(string.Empty);
     }
 }

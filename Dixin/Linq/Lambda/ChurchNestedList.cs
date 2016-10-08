@@ -47,7 +47,7 @@ namespace Dixin.Linq.Lambda
     public static partial class ChurchNestedList
     {
         // Index = start => index = index(Next)(start)
-        public static NestedListNode<T> Index<T>(this NestedListNode<T> start, Numeral index) => 
-            index.Invoke<NestedListNode<T>>(Next)(start);
+        public static NestedListNode<T> Index<T>(this NestedListNode<T> start, Numeral index) =>
+            (NestedListNode<T>)index(node => Next((NestedListNode<T>)node))(start);
     }
 }

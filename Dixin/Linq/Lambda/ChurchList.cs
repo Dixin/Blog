@@ -41,6 +41,6 @@ namespace Dixin.Linq.Lambda
 
         // Index = start => index => index(Next)(start)
         public static ListNode<T> Index<T>(this ListNode<T> start, Numeral index) =>
-            index.Invoke<ListNode<T>>(Next)(start);
+            (ListNode<T>)index(x=>Next((ListNode<T>)x))(start);
     }
 }

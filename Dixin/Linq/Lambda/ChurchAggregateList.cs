@@ -4,85 +4,47 @@
 
     using static ChurchBoolean;
 
-    // Curried from TResult ListNode<out T, TResult>(Func<T, TResult, TResult> f, TResult x)
-    // ListNode is the alias of Func<Func<T, Func<TResult, TResult>>, Func<TResult, TResult>>
-    public delegate Func<TAccumulate, TAccumulate> AggregateListNode<out T, TAccumulate>(Func<TAccumulate, Func<T, TAccumulate>> f);
+    // Curried from object AggregateListNode<out T>(Func<T, object, object> f, object x)
+    // AggregateListNode is the alias of Func<Func<T, Func<object, object>>, Func<object, object>>
+    public delegate Func<object, object> AggregateListNode<out T>(Func<object, Func<T, object>> f);
 
-    public partial class AggregateListNode<T>
+    public partial class ChurchAggregateList<T>
     {
-        private readonly T value;
-
-        private readonly AggregateListNode<T> next;
-
-        public AggregateListNode(T value, AggregateListNode<T> next)
-        {
-            this.value = value;
-            this.next = next;
-        }
-
-        protected virtual AggregateListNode<T> Next => this.next;
-
-        public virtual Func<TAccumulate, TAccumulate> Invoke<TAccumulate>(
-            Func<TAccumulate, Func<T, TAccumulate>> f) =>
-                x => f(this.Next.Invoke(f)(x))(this.value);
-    }
-
-    public partial class AggregateListNode<T>
-    {
-        private AggregateListNode()
-        {
-        }
-
-        private class NullAggregateListNode : AggregateListNode<T>
-        {
-            protected override AggregateListNode<T> Next => this;
-
-            public override Func<TAccumulate, TAccumulate> Invoke<TAccumulate>(
-                Func<TAccumulate, Func<T, TAccumulate>> f) =>
-                    x => x;
-        }
-
-        public static AggregateListNode<T> Null { get; } = new NullAggregateListNode();
-    }
-
-    public static partial class ChurchAggregateList
-    {
-        // IsNull = node => node(value => _ => False)(True)
-        public static Boolean IsNull<T>(this AggregateListNode<T> node) =>
-            node.Invoke<Boolean>(value => _ => False)(True);
-    }
-
-    public partial class AggregateListNode<T>
-    {
-        // Create = value => next => f => x => f(value)(next(f)(x))
         public static readonly Func<T, Func<AggregateListNode<T>, AggregateListNode<T>>>
-            Create = value => next => new AggregateListNode<T>(value, next);
-    }
+            Create = value => next => f => x => f(next(f)(x))(value);
 
-    public static partial class ChurchAggregateList
-    {
-        // Value = node => ignore => node(value => _ => value)(ignore)
-        public static T Value<T>(this AggregateListNode<T> node, T ignore = default(T)) =>
-            node.Invoke<T>(_ => value => value)(ignore);
+        public static readonly AggregateListNode<T>
+            Null = f => x => x;
+
+        // IsNull = node => node(value => _ => False)(True)
+        public static readonly Func<AggregateListNode<T>, Boolean>
+            IsNull = node => (Boolean)node(value => _ => False)(True);
+
+        // Index = start => index => index(Next)(start)
+        public static readonly Func<AggregateListNode<T>, Func<Numeral, AggregateListNode<T>>>
+            Index = start => index => (AggregateListNode<T>)index(node => ((AggregateListNode<T>)node).Next())(start);
+
+        public static readonly Func<AggregateListNode<T>, T>
+            Value = node => (T)node(_ => value => value)(Functions<T>.Id);
 
         // https://books.google.com/books?id=1Sm6BQAAQBAJ&pg=PA172&lpg=PA172&dq=church+list+fold+haskell&source=bl&ots=gJccvSeeWw&sig=Zsqfb94JjyF0lWt1veJEfREhHsg&hl=en&sa=X&ei=S07HVMy7EIzjoAT1tID4BQ&ved=0CEYQ6AEwBzgK#v=onepage&q=church%20list%20fold%20haskell&f=false
-        // Next = node => node(value => tuple => tuple.Shift(Create(value)))(ChurchTuple.Create(Null)(Null)).Item1()
-        public static AggregateListNode<T> Next<T>(this AggregateListNode<T> node) =>
-            node.Invoke<Tuple<AggregateListNode<T>, AggregateListNode<T>>>
-                (tuple => value => tuple.Shift(AggregateListNode<T>.Create(value)))
-                (ChurchTuple<AggregateListNode<T>, AggregateListNode<T>>.Create(AggregateListNode<T>.Null)(AggregateListNode<T>.Null))
+        // Next = node => node(tuple => value => tuple.Shift(Create(value)))(ChurchTuple.Create(Null)(Null)).Item1()
+        public static readonly Func<AggregateListNode<T>, AggregateListNode<T>> 
+            Next = node  =>
+                ((Tuple<AggregateListNode<T>, AggregateListNode<T>>)node
+                    (tuple => value => ((Tuple<AggregateListNode<T>, AggregateListNode<T>>)tuple).Shift(Create(value)))
+                    (ChurchTuple<AggregateListNode<T>, AggregateListNode<T>>.Create(Null)(Null)))
                 .Item1();
     }
 
-    public static partial class ChurchAggregateList
+    public static class AggregateListNodeExtensions
     {
-        // Index = start => index => index(Next)(start)
-        public static AggregateListNode<T> Index<T>(this AggregateListNode<T> start, Numeral index) => 
-            index.Invoke<AggregateListNode<T>>(Next)(start);
-    }
+        public static Boolean IsNull<T>(this AggregateListNode<T> node) => ChurchAggregateList<T>.IsNull(node);
 
-    public partial class AggregateListNode<T>
-    {
-        public static AggregateListNode<T> operator ++ (AggregateListNode<T> node) => node.Next();
+        public static T Value<T>(this AggregateListNode<T> node) => ChurchAggregateList<T>.Value(node);
+
+        public static AggregateListNode<T> Next<T>(this AggregateListNode<T> node) => ChurchAggregateList<T>.Next(node);
+
+        public static AggregateListNode<T> Index<T>(this AggregateListNode<T> start, Numeral index) => ChurchAggregateList<T>.Index(start)(index);
     }
 }

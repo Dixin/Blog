@@ -5,37 +5,37 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class ChurchAggregateListTests
+    public class AggregateListNodeTests
     {
         [TestMethod]
         public void CreateValueNextTest()
         {
-            AggregateListNode<int> node1 = AggregateListNode<int>.Create(1)(AggregateListNode<int>.Null);
-            AggregateListNode<int> node2 = AggregateListNode<int>.Create(2)(node1);
-            AggregateListNode<int> node3 = AggregateListNode<int>.Create(3)(node2);
+            AggregateListNode<int> node1 = ChurchAggregateList<int>.Create(1)(ChurchAggregateList<int>.Null);
+            AggregateListNode<int> node2 = ChurchAggregateList<int>.Create(2)(node1);
+            AggregateListNode<int> node3 = ChurchAggregateList<int>.Create(3)(node2);
             Assert.AreEqual(1, node1.Value());
-            Assert.AreEqual(AggregateListNode<int>.Null, node1.Next());
+            Assert.AreEqual(ChurchAggregateList<int>.Null, node1.Next());
             Assert.AreEqual(2, node2.Value());
             Assert.AreEqual(node1.Value(), node2.Next().Value());
             Assert.AreEqual(3, node3.Value());
             Assert.AreEqual(node2.Value(), node3.Next().Value());
-            Assert.IsTrue(AggregateListNode<int>.Null.Next().IsNull().Unchurch());
+            Assert.IsTrue(ChurchAggregateList<int>.Null.Next().IsNull().Unchurch());
         }
 
         [TestMethod]
         public void NullIsNullTest()
         {
-            AggregateListNode<int> node = AggregateListNode<int>.Create(1)(AggregateListNode<int>.Null);
-            Assert.IsTrue(AggregateListNode<int>.Null.IsNull().Unchurch());
+            AggregateListNode<int> node = ChurchAggregateList<int>.Create(1)(ChurchAggregateList<int>.Null);
+            Assert.IsTrue(ChurchAggregateList<int>.Null.IsNull().Unchurch());
             Assert.IsFalse(node.IsNull().Unchurch());
         }
 
         [TestMethod]
         public void IndexTest()
         {
-            AggregateListNode<int> node1 = AggregateListNode<int>.Create(1)(AggregateListNode<int>.Null);
-            AggregateListNode<int> node2 = AggregateListNode<int>.Create(2)(node1);
-            AggregateListNode<int> node3 = AggregateListNode<int>.Create(3)(node2);
+            AggregateListNode<int> node1 = ChurchAggregateList<int>.Create(1)(ChurchAggregateList<int>.Null);
+            AggregateListNode<int> node2 = ChurchAggregateList<int>.Create(2)(node1);
+            AggregateListNode<int> node3 = ChurchAggregateList<int>.Create(3)(node2);
             Assert.AreEqual(node3.Value(), node3.Index(0U.Church()).Value());
             Assert.AreEqual(node2.Value(), node3.Index(1U.Church()).Value());
             Assert.AreEqual(node1.Value(), node3.Index(2U.Church()).Value());

@@ -319,6 +319,8 @@
     <Compile Include="Linq\CSharp\Immutability.cs" />
     <Compile Include="Linq\CSharp\PureFunction.cs" />
     <Compile Include="Linq\CSharp\Purity.cs" />
+    <Compile Include="Linq\Lambda\ChurchAggregateList.Generic.cs" />
+    <Compile Include="Linq\Lambda\ChurchNumeral.Generic.cs" />
     <Compile Include="Linq\Lambda\Expression.cs" />
     <Compile Include="Linq\LinqToObjects\Generator.cs" />
     <Compile Include="Linq\TraceHelper.cs" />
@@ -535,13 +537,9 @@
     <Compile Include="Linq\Lambda\ChurchList.cs" />
     <Compile Include="Linq\Lambda\ChurchNestedList.cs" />
     <Compile Include="Linq\Lambda\ChurchAggregateList.cs" />
-    <Compile Include="Linq\Lambda\ChurchNumeral.Arithmetic.cs" />
-    <Compile Include="Linq\Lambda\ChurchNumeral.Arithmetic.Tuple.cs" />
-    <Compile Include="Linq\Lambda\ChurchNumeral.Boolean.cs" />
     <Compile Include="Linq\Lambda\ChurchNumeral.cs" />
     <Compile Include="Linq\Lambda\ChurchPredicates.cs" />
     <Compile Include="Linq\Lambda\ChurchTuple.cs" />
-    <Compile Include="Linq\Lambda\ChurchNumeral.Predicate.cs" />
     <Compile Include="Linq\Lambda\ChurchSignedNumeral.cs" />
     <Compile Include="Linq\Combinators\IotaCombinator.cs" />
     <Compile Include="Linq\Combinators\OmegaCombinators.cs" />

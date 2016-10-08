@@ -1,6 +1,6 @@
 ﻿namespace Dixin.Linq.Lambda
 {
-    using static Numeral;
+    using static ChurchNumeral;
 
     // SignedNumeral is the alias of Tuple<_Numeral, _Numeral>.
     public delegate object SignedNumeral(Either<Numeral, Numeral> f);
@@ -26,38 +26,38 @@
     {
         // FormatWithZero = signed => If(positive == negative)(_ => Zero.Sign())(_ => If(positive > negative)(__ => (positive - negative).Sign())(__ => (negative - positive).Sign().Negate()))
         public static SignedNumeral FormatWithZero(this SignedNumeral signed) => 
-            ChurchBoolean<SignedNumeral>.If(signed.Positive() == signed.Negative())
+            ChurchBoolean<SignedNumeral>.If(signed.Positive().Equal(signed.Negative()))
                 (_ => Zero.Sign())
-                (_ => ChurchBoolean<SignedNumeral>.If(signed.Positive() > signed.Negative())
-                    (__ => (signed.Positive() - signed.Negative()).Sign())
-                    (__ => (signed.Negative() - signed.Positive()).Sign().Negate()));
+                (_ => ChurchBoolean<SignedNumeral>.If(signed.Positive().Greater(signed.Negative()))
+                    (__ => signed.Positive().Subtract(signed.Negative()).Sign())
+                    (__ => signed.Negative().Subtract(signed.Positive()).Sign().Negate()));
 
         // Add = a => b => ChurchTuple.Create(a.Positive() + b.Positive())(a.Negative() + b.Negative()).FormatWithZero()
         public static SignedNumeral Add(this SignedNumeral a, SignedNumeral b) =>
             new SignedNumeral(ChurchTuple<Numeral, Numeral>.Create
-                (a.Positive() + b.Positive())
-                (a.Negative() + b.Negative()))
+                (a.Positive().Add(b.Positive()))
+                (a.Negative().Add(b.Negative())))
             .FormatWithZero();
 
         // Subtract = a => b => ChurchTuple.Create(a.Positive() + b.Negative())(a.Negative() + b.Positive()).FormatWithZero()
         public static SignedNumeral Subtract(this SignedNumeral a, SignedNumeral b) =>
             new SignedNumeral(ChurchTuple<Numeral, Numeral>.Create
-                (a.Positive() + b.Negative())
-                (a.Negative() + b.Positive()))
+                (a.Positive().Add(b.Negative()))
+                (a.Negative().Add(b.Positive())))
             .FormatWithZero();
 
         // Multiply = a => b => ChurchTuple.Create(a.Positive() * b.Positive() + a.Negative() + b.Negative())(a.Positive() * b.Negative() + a.Negative() * b.Positive()).FormatWithZero()
         public static SignedNumeral Multiply(this SignedNumeral a, SignedNumeral b) =>
             new SignedNumeral(ChurchTuple<Numeral, Numeral>.Create
-                (a.Positive() * b.Positive() + a.Negative() * b.Negative())
-                (a.Positive() * b.Negative() + a.Negative() * b.Positive()))
+                (a.Positive().Multiply(b.Positive()).Add(a.Negative().Multiply(b.Negative())))
+                (a.Positive().Multiply(b.Negative()).Add(a.Negative().Multiply(b.Positive()))))
             .FormatWithZero();
 
         // DivideBy = dividend => divisor => ChurchTuple.Create((dividend.Positive() | divisor.Positive()) + (dividend.Negative() | divisor.Negative()))((dividend.Positive() | divisor.Negative()) + (dividend.Negative() | divisor.Positive()))).FormatWithZero();
         public static SignedNumeral DivideBy(this SignedNumeral dividend, SignedNumeral divisor) =>
             new SignedNumeral(ChurchTuple<Numeral, Numeral>.Create
-                ((dividend.Positive() | divisor.Positive()) + (dividend.Negative() | divisor.Negative()))
-                ((dividend.Positive() | divisor.Negative()) + (dividend.Negative() | divisor.Positive())))
+                (dividend.Positive().DivideByIgnoreZero(divisor.Positive()).Add(dividend.Negative().DivideByIgnoreZero(divisor.Negative())))
+                (dividend.Positive().DivideByIgnoreZero(divisor.Negative()).Add(dividend.Negative().DivideByIgnoreZero(divisor.Positive()))))
             .FormatWithZero();
     }
 
@@ -67,11 +67,6 @@
         public static Numeral DivideByIgnoreZero(this Numeral dividend, Numeral divisor) =>
             ChurchBoolean<Numeral>.If(divisor.IsZero())
                 (_ => Zero)
-                (_ => dividend._DivideBy(divisor));
-    }
-
-    public partial class Numeral
-    {
-        public static Numeral operator | (Numeral dividend, Numeral divisor) => dividend.DivideByIgnoreZero(divisor);
+                (_ => dividend.DivideBy(divisor));
     }
 }
