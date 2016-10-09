@@ -44,7 +44,7 @@
         public static NumeralWrapper One { get; } = Zero.Increase();
     }
 
-    public static partial class ChurchNumeral
+    public static partial class NumeralWrapperExtensions
     {
         // Increase = n => new Numeral(n)
         public static NumeralWrapper Increase(this NumeralWrapper numeral) => new NumeralWrapper(numeral);
@@ -53,7 +53,7 @@
         public static NumeralWrapper Add(this NumeralWrapper a, NumeralWrapper b) => a.Invoke<NumeralWrapper>(Increase)(b);
     }
 
-    public static partial class ChurchNumeral
+    public static partial class NumeralWrapperExtensions
     {
         // ...
 
@@ -67,7 +67,7 @@
         public static NumeralWrapper Subtract(this NumeralWrapper a, NumeralWrapper b) => b.Invoke<NumeralWrapper>(Decrease)(a);
     }
 
-    public static partial class ChurchNumeral
+    public static partial class NumeralWrapperExtensions
     {
         // Multiply = a => b => a(x => b.Add(x))(Zero)
         public static NumeralWrapper Multiply(this NumeralWrapper a, NumeralWrapper b) => a.Invoke<NumeralWrapper>(b.Add)(NumeralWrapper.Zero);
@@ -143,14 +143,14 @@
         }
     }
 
-    public static partial class ChurchPredicates
+    public static partial class NumeralWrapperExtensions
     {
         // IsZero = n => n(_ => False)(True)
         public static Boolean IsZero(this NumeralWrapper numeral) =>
             numeral.Invoke<Boolean>(_ => False)(True);
     }
 
-    public static partial class ChurchPredicates
+    public static partial class NumeralWrapperExtensions
     {
         // IsLessOrEqual = a => b => a.Subtract(b).IsZero()
         [SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "LessOr")]
@@ -179,7 +179,7 @@
         public static NumeralWrapper operator |(NumeralWrapper dividend, NumeralWrapper divisor) => dividend.DivideByIgnoreZero(divisor);
     }
 
-    public static partial class ChurchNumeral
+    public static partial class NumeralWrapperExtensions
     {
         // DivideByIgnoreZero = dividend => divisor => If(divisor.IsZero())(_ => Zero)(_ => dividend._DivideBy(divisor))
         public static NumeralWrapper DivideByIgnoreZero(this NumeralWrapper dividend, NumeralWrapper divisor) =>

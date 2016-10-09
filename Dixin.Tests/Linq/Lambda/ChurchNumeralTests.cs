@@ -6,21 +6,8 @@
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    internal static class UInt32Extensions
-    {
-        internal static uint Pow(this uint mantissa, uint exponent)
-        {
-            uint result = 1;
-            for (int i = 0; i < exponent; i++)
-            {
-                result *= mantissa;
-            }
-            return result;
-        }
-    }
-
     [TestClass]
-    public class ChurchNumeralTests
+    public partial class ChurchNumeralTests
     {
         [TestMethod]
         public void IncreaseTest()
@@ -77,30 +64,44 @@
         [TestMethod]
         public void MultiplyTest()
         {
-            Assert.AreEqual(0U * 0U, 0U.Church().Multiply(0U.Church()).Unchurch());
-            Assert.AreEqual(0U * 1U, 0U.Church().Multiply(1U.Church()).Unchurch());
-            Assert.AreEqual(10U * 0U, 10U.Church().Multiply(0U.Church()).Unchurch());
-            Assert.AreEqual(0U * 10U, 0U.Church().Multiply(10U.Church()).Unchurch());
-            Assert.AreEqual(1U * 1U, 1U.Church().Multiply(1U.Church()).Unchurch());
-            Assert.AreEqual(10U * 1U, 10U.Church().Multiply(1U.Church()).Unchurch());
-            Assert.AreEqual(1U * 10U, 1U.Church().Multiply(10U.Church()).Unchurch());
-            Assert.AreEqual(3U * 5U, 3U.Church().Multiply(5U.Church()).Unchurch());
-            Assert.AreEqual(12U * 23U, 12U.Church().Multiply(23U.Church()).Unchurch());
+            Assert.AreEqual(0U*0U, 0U.Church().Multiply(0U.Church()).Unchurch());
+            Assert.AreEqual(0U*1U, 0U.Church().Multiply(1U.Church()).Unchurch());
+            Assert.AreEqual(10U*0U, 10U.Church().Multiply(0U.Church()).Unchurch());
+            Assert.AreEqual(0U*10U, 0U.Church().Multiply(10U.Church()).Unchurch());
+            Assert.AreEqual(1U*1U, 1U.Church().Multiply(1U.Church()).Unchurch());
+            Assert.AreEqual(10U*1U, 10U.Church().Multiply(1U.Church()).Unchurch());
+            Assert.AreEqual(1U*10U, 1U.Church().Multiply(10U.Church()).Unchurch());
+            Assert.AreEqual(3U*5U, 3U.Church().Multiply(5U.Church()).Unchurch());
+            Assert.AreEqual(12U*23U, 12U.Church().Multiply(23U.Church()).Unchurch());
         }
 
         [TestMethod]
         public void PowTest()
         {
-            Assert.AreEqual(0U.Pow(1U), 0U.Church().Pow(1U.Church()).Unchurch());
-            Assert.AreEqual(10U.Pow(0U), 10U.Church().Pow(0U.Church()).Unchurch());
-            Assert.AreEqual(0U.Pow(10U), 0U.Church().Pow(10U.Church()).Unchurch());
-            Assert.AreEqual(1U.Pow(1U), 1U.Church().Pow(1U.Church()).Unchurch());
-            Assert.AreEqual(10U.Pow(1U), 10U.Church().Pow(1U.Church()).Unchurch());
-            Assert.AreEqual(1U.Pow(10U), 1U.Church().Pow(10U.Church()).Unchurch());
-            Assert.AreEqual(3U.Pow(5U), 3U.Church().Pow(5U.Church()).Unchurch());
-            Assert.AreEqual(5U.Pow(3U), 5U.Church().Pow(3U.Church()).Unchurch());
+            Assert.AreEqual(Math.Pow(0U, 1U), 0U.Church().Pow(1U.Church()).Unchurch());
+            Assert.AreEqual(Math.Pow(10U, 0U), 10U.Church().Pow(0U.Church()).Unchurch());
+            Assert.AreEqual(Math.Pow(0U, 10U), 0U.Church().Pow(10U.Church()).Unchurch());
+            Assert.AreEqual(Math.Pow(1U, 1U), 1U.Church().Pow(1U.Church()).Unchurch());
+            Assert.AreEqual(Math.Pow(10U, 1U), 10U.Church().Pow(1U.Church()).Unchurch());
+            Assert.AreEqual(Math.Pow(1U, 10U), 1U.Church().Pow(10U.Church()).Unchurch());
+            Assert.AreEqual(Math.Pow(3U, 5U), 3U.Church().Pow(5U.Church()).Unchurch());
+            Assert.AreEqual(Math.Pow(5U, 3U), 5U.Church().Pow(3U.Church()).Unchurch());
         }
 
+        [TestMethod]
+        public void DivideByRecursionTest()
+        {
+            Assert.AreEqual(1U/1U, 1U.Church().DivideByRecursion(1U.Church()).Unchurch());
+            Assert.AreEqual(1U/2U, 1U.Church().DivideByRecursion(2U.Church()).Unchurch());
+            Assert.AreEqual(2U/2U, 2U.Church().DivideByRecursion(2U.Church()).Unchurch());
+            Assert.AreEqual(2U/1U, 2U.Church().DivideByRecursion(1U.Church()).Unchurch());
+            Assert.AreEqual(10U/3U, 10U.Church().DivideByRecursion(3U.Church()).Unchurch());
+            Assert.AreEqual(3U/10U, 3U.Church().DivideByRecursion(10U.Church()).Unchurch());
+        }
+    }
+
+    public partial class ChurchNumeralTests
+    {
         [TestMethod]
         public void FactorialTest()
         {

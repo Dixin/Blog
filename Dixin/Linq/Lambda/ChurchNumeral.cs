@@ -1,12 +1,14 @@
 ﻿namespace Dixin.Linq.Lambda
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
+    using static ChurchBoolean;
 
     // Curried from object Numeral(Func<object, object> f, object x).
-    // Numeral is the alias for FuncFunc<object, object>, Func<object, object>>.
+    // Numeral is the alias for Func<Func<object, object>, Func<object, object>>.
     public delegate Func<object, object> Numeral(Func<object, object> f);
-    
-    public static class ChurchNumeral<T>
+
+    public static partial class ChurchNumeral
     {
         // Zero = f => x => x
         public static readonly Numeral
@@ -16,25 +18,30 @@
         public static readonly Numeral
             One = f => x => f(x);
 
-        // One2 = f => f ^ 1
-        public static readonly Numeral
-            One2 = f => f;
-
         // Two = f => x => f(f(x))
         public static readonly Numeral
             Two = f => x => f(f(x));
-
-        // Two2 = f => f ^ 2
-        public static readonly Numeral
-            Two2 = f => f.o(f);
 
         // Three = f => x => f(f(f(x)))
         public static readonly Numeral
             Three = f => x => f(f(f(x)));
 
-        // Three2 = f => f ^ 3
+        // ...
+    }
+
+    public static partial class ChurchNumeral
+    {
+        // One = f => f
         public static readonly Numeral
-            Three2 = f => f.o(f).o(f);
+            OneWithComposition = f => f;
+
+        // Two = f => f o f
+        public static readonly Numeral
+            TwoWithComposition = f => f.o(f);
+
+        // Three = f => f o f o f
+        public static readonly Numeral
+            ThreeWithComposition = f => f.o(f).o(f);
 
         // ...
     }
@@ -42,46 +49,135 @@
     public static partial class ChurchNumeral
     {
         // Increase = n => f => x => f(n(f)(x))
-        public static Numeral Increase(this Numeral numeral) => f => x => f(numeral(f)(x));
+        public static readonly Func<Numeral, Numeral>
+            Increase = n => f => x => f(n(f)(x));
 
-        // Increase2 = n => f => f ^ (n + 1)
-        public static Numeral IncreaseWithComposition(this Numeral numeral) => f => f.o(numeral(f));
-
-        // Add = a => b => f => x => a(f)(b(f)(x))
-        public static Numeral Add(this Numeral a, Numeral b) => f => x => a(f)(b(f)(x));
-
-        // Add2 = a => b => f => f ^ (a + b)
-        public static Numeral AddWithComposition(this Numeral a, Numeral b) => f => a(f).o(b(f));
-
-        // Add3 = a => b => a(Increase)(b)
-        public static Numeral AddWithIncrease(this Numeral a, Numeral b) => (Numeral)a(x => Increase((Numeral)x))(b);
+        // Increase = n => f => f ^ (n + 1)
+        public static readonly Func<Numeral, Numeral>
+            IncreaseWithComposition = n => f => f.o(n(f));
 
         // Decrease = n => f => x => n(g => h => h(g(f)))(_ => x)(_ => _)
-        public static Numeral Decrease(this Numeral numeral) =>
-            f => (x => ((Func<Func<object, object>, object>)numeral(y => new Func<Func<Func<object, object>, object>, Func<Func<object, object>, object>>(g => h => h(g(f)))((Func<Func<object, object>, object>)y))(new Func<Func<object, object>, object>(_ => x)))(_ => _));
+        public static readonly Func<Numeral, Numeral> Decrease =
+            n => f => (x => ((Func<Func<object, object>, object>)n(y => new Func<Func<Func<object, object>, object>, Func<Func<object, object>, object>>(g => h => h(g(f)))((Func<Func<object, object>, object>)y))(new Func<Func<object, object>, object>(_ => x)))(v => v));
 
-        // Subtract = a => b => b(Decrease)(a)
-        public static Numeral Subtract(this Numeral a, Numeral b) => (Numeral)b(x => Decrease((Numeral)x))(a);// Multiply = a => b => a(x => b.Add(x))(Zero)
+        // Add = a => b => f => x => a(f)(b(f)(x))
+        public static readonly Func<Numeral, Func<Numeral, Numeral>>
+            Add = a => b => f => x => b(f)(a(f)(x));
 
-        public static Numeral Multiply(this Numeral a, Numeral b) => (Numeral)a(n => b.Add((Numeral)n))(Zero);
-
-        // Power = m => e => e(x => m.Multiply(x))(1)
-        public static Numeral Pow(this Numeral mantissa, Numeral exponent) =>
-            (Numeral)exponent(n => mantissa.Multiply((Numeral)n))(One);
-
-        public static readonly Numeral Zero = f => x => x;
-
-        public static readonly Numeral One = Zero.Increase();
+        // Add = a => b => f => f ^ (a + b)
+        public static readonly Func<Numeral, Func<Numeral, Numeral>>
+            AddWithComposition = a => b => f => a(f).o(b(f));
 
 #if DEMO
-        // _DivideBy = dividend => divisor => 
-        //    If(dividend.IsGreaterOrEqual(divisor))
-        //        (_ => One + (dividend - divisor)._DivideBy(divisor))
-        //        (_ => Zero);
-        public static Numeral DivideBy(this Numeral dividend, Numeral divisor) =>
-            ChurchBoolean<Numeral>.If(dividend.IsGreaterOrEqual(divisor))
-                (_ => One.Add(dividend.Subtract(divisor).DivideBy(divisor)))
-                (_ => Zero);
+        // Add = a => b => b(Increase)(a)
+        public static readonly Func<Numeral, Func<Numeral, Numeral>>
+            AddWithIncrease = a => b => (Numeral)b(Increase)(a);
 #endif
+
+        // η conversion:
+        // Add = a => b => b(n => Increase(n))(a)
+        public static readonly Func<Numeral, Func<Numeral, Numeral>>
+            AddWithIncrease = a => b => (Numeral)b(n => Increase((Numeral)n))(a);
+
+        // Subtract = a => b => b(Decrease)(a)
+        // η conversion:
+        // Subtract = a => b => b(n => Decrease(n))(a)
+        public static readonly Func<Numeral, Func<Numeral, Numeral>>
+            Subtract = a => b => (Numeral)b(n => Decrease((Numeral)n))(a);
+
+        // Multiply = a => b => b(Add(a))(a)
+        // η conversion:
+        // Multiply = a => b => b(n => Add(a)(n))(Zero)
+        public static readonly Func<Numeral, Func<Numeral, Numeral>>
+            Multiply = a => b => (Numeral)b(n => Add(a)((Numeral)n))(Zero);
+
+        // Pow = a => b => b(Multiply(a))(a)
+        // η conversion:
+        // Pow = a => b => b(n => Multiply(a)(n))(1)
+        public static readonly Func<Numeral, Func<Numeral, Numeral>>
+            Pow = a => b => (Numeral)b(accumulate => Multiply(a)((Numeral)accumulate))(One);
+
+        // DivideByRecursion = dividend => divisor => 
+        //    If(dividend >= divisor)
+        //        (_ => 1 + DivideByRecursion(dividend - divisor)(divisor))
+        //        (_ => 0);
+        public static readonly Func<Numeral, Func<Numeral, Numeral>> 
+            DivideByRecursion = dividend => divisor =>
+                ChurchBoolean<Numeral>.If(dividend.IsGreaterThanOrEqualTo(divisor))
+                    (_ => One.Add(DivideByRecursion(dividend.Subtract(divisor))(divisor)))
+                    (_ => Zero);
+    }
+
+    public static partial class NumeralExtensions
+    {
+        public static Numeral Increase(this Numeral n) => ChurchNumeral.Increase(n);
+
+        public static Numeral Decrease(this Numeral n) => ChurchNumeral.Decrease(n);
+
+        public static Numeral Add(this Numeral a, Numeral b) => ChurchNumeral.Add(a)(b);
+
+        public static Numeral Subtract(this Numeral a, Numeral b) => ChurchNumeral.Subtract(a)(b);
+
+        public static Numeral Multiply(this Numeral a, Numeral b) => ChurchNumeral.Multiply(a)(b);
+
+        public static Numeral Pow(this Numeral mantissa, Numeral exponent) => ChurchNumeral.Pow(mantissa)(exponent);
+    }
+
+    public static partial class ChurchPredicate
+    {
+        // IsZero = n => n(_ => False)(True)
+        public static readonly Func<Numeral, Boolean> 
+            IsZero = n => (Boolean)n(_ => False)(True);
+    }
+
+    public static partial class NumeralExtensions
+    {
+        public static Boolean IsZero(this Numeral n) => ChurchPredicate.IsZero(n);
+    }
+
+    public static partial class ChurchPredicate
+    {
+        // IsLessThanOrEqualTo = a => b => a - b == 0;
+        [SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "LessOr")]
+        public static readonly Func<Numeral, Func<Numeral, Boolean>> 
+            IsLessThanOrEqualTo = a => b => a.Subtract(b).IsZero();
+
+        // IsGreaterThanOrEqualTo = a => b => b - a == 0;
+        public static readonly Func<Numeral, Func<Numeral, Boolean>> 
+            IsGreaterThanOrEqualTo = a => b => b.Subtract(a).IsZero();
+
+        // IsEqualTo = a => b => a <= b && a >= b
+        public static readonly Func<Numeral, Func<Numeral, Boolean>>
+            IsEqualTo = a => b => IsLessThanOrEqualTo(a)(b).And(IsGreaterThanOrEqualTo(a)(b));
+
+        // IsGreaterThan = a => b => !(a <= b)
+        public static readonly Func<Numeral, Func<Numeral, Boolean>>
+            IsGreaterThan = a => b => IsLessThanOrEqualTo(a)(b).Not();
+
+        // IsLessThan = a => b => !(a >= b)
+        public static readonly Func<Numeral, Func<Numeral, Boolean>> 
+            IsLessThan = a => b => IsGreaterThanOrEqualTo(a)(b).Not();
+
+        // IsNotEqualTo = a => b => !(a == b)
+        public static readonly Func<Numeral, Func<Numeral, Boolean>>
+            IsNotEqualTo = a => b => IsEqualTo(a)(b).Not();
+    }
+
+    public static partial class NumeralExtensions
+    {
+        [SuppressMessage("Microsoft.Naming", "CA1702:CompoundWordsShouldBeCasedCorrectly", MessageId = "LessOr")]
+        public static Boolean IsLessThanOrEqualTo(this Numeral a, Numeral b) => ChurchPredicate.IsLessThanOrEqualTo(a)(b);
+
+        public static Boolean IsGreaterThanOrEqualTo(this Numeral a, Numeral b) => ChurchPredicate.IsGreaterThanOrEqualTo(a)(b);
+
+        public static Boolean IsEqualTo(this Numeral a, Numeral b) => ChurchPredicate.IsEqualTo(a)(b);
+
+        public static Boolean IsGreaterThan(this Numeral a, Numeral b) => ChurchPredicate.IsGreaterThan(a)(b);
+
+        public static Boolean IsLessThan(this Numeral a, Numeral b) => ChurchPredicate.IsLessThan(a)(b);
+
+        public static Boolean IsNotEqualTo(this Numeral a, Numeral b) => ChurchPredicate.IsNotEqualTo(a)(b);
+
+        public static Numeral DivideByRecursion(this Numeral dividend, Numeral divisor) => ChurchNumeral.DivideByRecursion(dividend)(divisor);
     }
 }

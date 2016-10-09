@@ -45,7 +45,7 @@
         public static AggregateListNodeWrapper<T> Null { get; } = new NullAggregateListNodeWrapper();
     }
 
-    public static partial class AggregateListNodeWrapperExtensions
+    public static partial class ChurchAggregateListNodeWrapper
     {
         // IsNull = node => node(value => _ => False)(True)
         public static Boolean IsNull<T>(this AggregateListNodeWrapper<T> node) =>
@@ -59,7 +59,7 @@
             Create = value => next => new AggregateListNodeWrapper<T>(value, next);
     }
 
-    public static partial class AggregateListNodeWrapperExtensions
+    public static partial class ChurchAggregateListNodeWrapper
     {
         // Value = node => ignore => node(value => _ => value)(ignore)
         public static T Value<T>(this AggregateListNodeWrapper<T> node, T ignore = default(T)) =>

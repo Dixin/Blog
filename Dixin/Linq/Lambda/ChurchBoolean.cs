@@ -56,14 +56,26 @@ namespace Dixin.Linq.Lambda
     {
         // And = a => b => a(b)(False)
         public static Boolean And(this Boolean a, Boolean b) => ChurchBoolean.And(a)(b);
+    }
 
+    public static partial class BooleanExtensions
+    {
         internal static void CallAnd()
         {
             Boolean result1 = True.And(True);
 
-            Boolean a = True;
-            Boolean b = False;
-            Boolean result2 = a.And(b);
+            Boolean x = True;
+            Boolean y = False;
+            Boolean result2 = x.And(y);
+        }
+
+        internal static void CallAnonymousAnd()
+        {
+            Boolean result1 = new Func<Boolean, Func<Boolean, Boolean>>(a => b => (Boolean)a(b)(False))(True)(True);
+
+            Boolean x = True;
+            Boolean y = False;
+            Boolean result2 = new Func<Boolean, Func<Boolean, Boolean>>(a => b => (Boolean)a(b)(False))(x)(y);
         }
 
         // Or = a => b => a(True)(b)

@@ -33,17 +33,15 @@ Id ∘ f ≡ f
 ≡ Id (f x)
 ≡ f x
 
-If := λb.λt.λf.b t f
-
-If := λb.λt.λf.b t f Id
-
 True := λt.λf.t (x)
-Sequence := λa.λb.b
-False    := λt.λf.f
+
+False := λt.λf.f
 
 And :=  λab.a b (λtf.f)
 
-If := λc.λt.λf.c t f (λx.x)
+If := λb.λt.λf.b t f
+
+If := λb.λt.λf.b t f Id
 
 0 := λfx.x                  ≡ λf.λx.x
 1 := λfx.f x                ≡ λf.λx.f x
@@ -88,30 +86,74 @@ N f x ≡ f0 x
 ...
 
 Increase := λn.λf.λx.f (n f x)
-Increase2 := λn.λf.f ∘ (n f)
+Increase := λn.λf.f ∘ (n f)
+
+  Decrease 0
+≡ λf.λx.0 (λg.λh.h (g f)) (λu.x) (λv.v)
+≡ λf.λx.(λg.λh.h (g f))0 (λu.x) (λv.v)
+≡ λf.λx.(λu.x) (λv.v)
+≡ λf.λx.x
+≡ λf.λx.f0 x
+
+  1 (λg.λh.h (g f)) (λu.x)
+≡ (λg.λh.h (g f))1 (λu.x)
+≡ (λg.λh.h (g f)) (λu.x)
+≡ λh.h ((λu.x) f)
+≡ λh.h x
+≡ λh.h (f0 x) 
+
+  2 (λg.λh.h (g f)) (λu.x)
+≡ (λg.λh.h (g f))2 (λu.x)
+≡ (λg.λh.h (g f)) (λg.λh.h (g f))1 (λu.x)
+≡ (λg.λh.h (g f)) (λh.h (f0 x))
+≡ λh.h (λh.h (f0 x) f)
+≡ λh.h (f (f0 x))
+≡ λh.h (f1 x)
+
+  3 (λg.λh.h (g f)) (λu.x)
+≡ (λg.λh.h (g f))3 (λu.x)
+≡ (λg.λh.h (g f)) (λg.λh.h (g f))2 (λu.x)
+≡ (λg.λh.h (g f)) (λh.h (f1 x))
+≡ λh.h ((λh.h (f1 x)) f)
+≡ λh.h (f (f1 x))
+≡ λh.h (f2 x)
+
+...
+
+  n (λg.λh.h (g f)) (λu.x)
+≡ λh.h (fn - 1 x)
+
+  Decrease n
+≡ λf.λx.n (λg.λh.h (g f)) (λu.x) (λv.v)
+≡ λf.λx.(λh.h (fn - 1 x)) (λv.v)
+≡ λf.λx.(λv.v) (fn - 1 x)
+≡ λf.λx.fn - 1 x
 
 Add := λa.λb.λf.λx.a f (b f x)
-Add2 := λa.λb.λf.fa ∘ fb ≡ λa.λb.λf.(a f) ∘ (b f)
-Add3 := λa.λb.a Increase b
+Add := λa.λb.λf.fa ∘ fb ≡ λa.λb.λf.(a f) ∘ (b f)
+Add := λa.λb.a Increase b
+
+Add := λa.λb.a (λn.Increase n) b
 
 Decrease = λn.λf.λx.n (λg.λh.h (g f)) (λu.x) (λu.u)
-Subtract = λa.λb.b Decrease a
 
-Multiply = λa.λb.a (λx.Add b x) 0
-Power = λm.λe.e (λx.Multiply m x) 1
+Subtract := λa.λb.b Decrease a
+Multiply := λa.λb.b (Add a) 0
+Power := λa.λb.b (Multiply a) 1
 
 IsZero := λn.n (λx.False) True
 
-IsLessOrEqual = λa.λb.IsZero (Subtract a b)
-IsGreaterOrEqual = λa.λb.IsZero (Subtract b a)
-IsEqual = λa.λb.And (IsLessOrEqual a b) (IsGreaterOrEqual a b)
+IsEqualTo := λa.λb.And (IsLessThanOrEqualTo a b) (IsGreaterThanOrEqualTo a b)
 
-IsLess := λa.λb.Not (IsGreaterOrEqual a b)
-IsGreater := λa.λb.Not (IsLessOrEqual a b)
-IsNotEqual := λa.λb.Not (IsEqual a b)
+IsLessThanOrEqualTo := λa.λb.IsZero (Subtract a b)
+IsGreaterThanOrEqualTo := λa.λb.IsZero (Subtract b a)
 
-a/b := If a >= b then 1+ (a-b)/b else 0
-_DevideBy = λa.λb.If (IsGreaterOrEqual a b) (λx.Add One (_DevideBy (Subtract a b) b)) (λx.Zero)
+IsGreaterThan := λa.λb.Not (IsLessThanOrEqualTo a b)
+IsLessThan := λa.λb.Not (IsGreaterThanOrEqualTo a b)
+IsNotEqualTo := λa.λb.Not (IsEqualTo a b)
+
+a / b := if a >= b then 1 + (a – b) / b else 0
+DivideByResursion = λa.λb.If (IsGreaterThanOrEqualTo a b) (λx.Add One (DivideByResursion (Subtract a b) b)) (λx.Zero)
 
 IsZero := λn.n (λx.False) True
         ≡ λn.n (λx.λt.λf.f) (λt.λf.t)
@@ -222,9 +264,9 @@ Subtract = λa.λb.FormatWithZero (CreateTuple (Add ap bn) (Add an bp))
 
 Multiply = λa.λb.FormatWithZero (CreateTuple (Add (Multiply ap bp) (Multiply an bn)) (Add (Multiply ap bn) (Multiply an bp)))
 
-DevideBy = λa.λb.FormatWithZero (CreateTuple (Add (DevideByIgnoreZero ap bp) + (DevideByIgnoreZero an bn)) (Add (DevideByIgnoreZero ap bn) (DevideByIgnoreZero an bp))));
+DivideBy = λa.λb.FormatWithZero (CreateTuple (Add (DivideByIgnoreZero ap bp) + (DivideByIgnoreZero an bn)) (Add (DivideByIgnoreZero ap bn) (DivideByIgnoreZero an bp))));
 
-DevideByIgnoreZero = λa.λb.If (IsZero b) (λx.0) (λx._DevideBy a b)
+DivideByIgnoreZero = λa.λb.If (IsZero b) (λx.0) (λx._DivideBy a b)
 
  1  ≡ (1, 0) ≡ (2, 1) ≡ (3, 2) ≡ (4, 3) ≡ …
 -1  ≡ (0, 1) ≡ (1, 2) ≡ (2, 3) ≡ (3, 4) ≡ …
@@ -284,8 +326,8 @@ Subtract := λa.λb.b Decrease a
 
 Multiply = λa.λb.a (λx.Add b x) 0
 
-_DevideBy := λa.λb.If (IsGreaterOrEqual a b) (λx.Add One (_DevideBy (Subtract a b) b)) (λx.Zero)
-DevideByIgnoreZero = λa.λb.If (IsZero b) (λx.0) (λx._DevideBy a b)
+_DivideBy := λa.λb.If (IsGreaterOrEqual a b) (λx.Add One (_DivideBy (Subtract a b) b)) (λx.Zero)
+DivideByIgnoreZero = λa.λb.If (IsZero b) (λx.0) (λx._DivideBy a b)
 
 Power = λm.λe.e (λx.Multiply m x) 1
 
@@ -516,14 +558,14 @@ Fibonacci := Y FibonacciHelper
 
 Y Fibonacci n
 
-_DevideBy := λa.λb.If (IsGreaterOrEqual a b) (λx.Add One (_DevideBy (Subtract a b) b)) (λx.Zero)
+_DivideBy := λa.λb.If (IsGreaterOrEqual a b) (λx.Add One (_DivideBy (Subtract a b) b)) (λx.Zero)
 
-DevideBy := λf.λa.λb.If (IsGreaterOrEqual a b) (λx.Add One (f (Subtract a b) b)) (λx.Zero)
+DivideBy := λf.λa.λb.If (IsGreaterOrEqual a b) (λx.Add One (f (Subtract a b) b)) (λx.Zero)
 
-DevideBy := Y DevideByHelper
+DivideBy := Y DivideByHelper
           ≡ Y (λf.λa.λb.If (IsGreaterOrEqual a b) (λx.Add One (f (Subtract a b) b)) (λx.Zero))
 
-DevideBy := Y (λf.λa.λb.If (IsGreaterOrEqual a b) (λx.Add One (f (Subtract a b) b)) (λx.Zero))
+DivideBy := Y (λf.λa.λb.If (IsGreaterOrEqual a b) (λx.Add One (f (Subtract a b) b)) (λx.Zero))
           ≡ (λf.(λx.f (x x)) (λx.f (x x))) (λf.λa.λb.If (IsGreaterOrEqual a b) (λx.Add One (f (Subtract a b) b)) (λx.Zero))
 
 f1 := λx.Add x 1

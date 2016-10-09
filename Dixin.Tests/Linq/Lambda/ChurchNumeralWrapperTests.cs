@@ -78,14 +78,14 @@
         [TestMethod]
         public void PowTest()
         {
-            Assert.IsTrue(0U.Pow(1U) == (0U.ChurchWarpper() ^ 1U.ChurchWarpper()));
-            Assert.IsTrue(10U.Pow(0U) == (10U.ChurchWarpper() ^ 0U.ChurchWarpper()));
-            Assert.IsTrue(0U.Pow(10U) == (0U.ChurchWarpper() ^ 10U.ChurchWarpper()));
-            Assert.IsTrue(1U.Pow(1U) == (1U.ChurchWarpper() ^ 1U.ChurchWarpper()));
-            Assert.IsTrue(10U.Pow(1U) == (10U.ChurchWarpper() ^ 1U.ChurchWarpper()));
-            Assert.IsTrue(1U.Pow(10U) == (1U.ChurchWarpper() ^ 10U.ChurchWarpper()));
-            Assert.IsTrue(3U.Pow(5U) == (3U.ChurchWarpper() ^ 5U.ChurchWarpper()));
-            Assert.IsTrue(5U.Pow(3U) == (5U.ChurchWarpper() ^ 3U.ChurchWarpper()));
+            Assert.IsTrue((uint)Math.Pow(0U, 1U) == (0U.ChurchWarpper() ^ 1U.ChurchWarpper()));
+            Assert.IsTrue((uint)Math.Pow(10U, 0U) == (10U.ChurchWarpper() ^ 0U.ChurchWarpper()));
+            Assert.IsTrue((uint)Math.Pow(0U, 10U) == (0U.ChurchWarpper() ^ 10U.ChurchWarpper()));
+            Assert.IsTrue((uint)Math.Pow(1U, 1U) == (1U.ChurchWarpper() ^ 1U.ChurchWarpper()));
+            Assert.IsTrue((uint)Math.Pow(10U, 1U) == (10U.ChurchWarpper() ^ 1U.ChurchWarpper()));
+            Assert.IsTrue((uint)Math.Pow(1U, 10U) == (1U.ChurchWarpper() ^ 10U.ChurchWarpper()));
+            Assert.IsTrue((uint)Math.Pow(3U, 5U) == (3U.ChurchWarpper() ^ 5U.ChurchWarpper()));
+            Assert.IsTrue((uint)Math.Pow(5U, 3U) == (5U.ChurchWarpper() ^ 3U.ChurchWarpper()));
         }
 
         [TestMethod]

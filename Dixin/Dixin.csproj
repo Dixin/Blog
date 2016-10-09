@@ -538,7 +538,6 @@
     <Compile Include="Linq\Lambda\ChurchNestedList.cs" />
     <Compile Include="Linq\Lambda\ChurchAggregateList.cs" />
     <Compile Include="Linq\Lambda\ChurchNumeral.cs" />
-    <Compile Include="Linq\Lambda\ChurchPredicates.cs" />
     <Compile Include="Linq\Lambda\ChurchTuple.cs" />
     <Compile Include="Linq\Lambda\ChurchSignedNumeral.cs" />
     <Compile Include="Linq\Combinators\IotaCombinator.cs" />

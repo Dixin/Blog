@@ -26,9 +26,9 @@
     {
         // FormatWithZero = signed => If(positive == negative)(_ => Zero.Sign())(_ => If(positive > negative)(__ => (positive - negative).Sign())(__ => (negative - positive).Sign().Negate()))
         public static SignedNumeral FormatWithZero(this SignedNumeral signed) => 
-            ChurchBoolean<SignedNumeral>.If(signed.Positive().Equal(signed.Negative()))
+            ChurchBoolean<SignedNumeral>.If(signed.Positive().IsEqualTo(signed.Negative()))
                 (_ => Zero.Sign())
-                (_ => ChurchBoolean<SignedNumeral>.If(signed.Positive().Greater(signed.Negative()))
+                (_ => ChurchBoolean<SignedNumeral>.If(signed.Positive().IsGreaterThan(signed.Negative()))
                     (__ => signed.Positive().Subtract(signed.Negative()).Sign())
                     (__ => signed.Negative().Subtract(signed.Positive()).Sign().Negate()));
 

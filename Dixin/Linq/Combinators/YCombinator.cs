@@ -73,7 +73,7 @@ namespace Dixin.Linq.Lambda
     {
         // Fibonacci  = fibonacci  => numeral => If(numeral > One)(_ => fibonacci(numeral - One) + fibonacci(numeral - One - One))(_ => numeral);
         private static Func<Numeral, Numeral> Fibonacci(Func<Numeral, Numeral> fibonacci) => numeral =>
-            ChurchBoolean<Numeral>.If(numeral.Greater(One))
+            ChurchBoolean<Numeral>.If(numeral.IsGreaterThan(One))
                 (_ => fibonacci(numeral.Subtract(One)).Add(fibonacci(numeral.Subtract(One).Subtract(One))))
                 (_ => numeral);
 
@@ -85,7 +85,7 @@ namespace Dixin.Linq.Lambda
         // DivideBy = divideBy => dividend => divisor => If(dividend >= divisor)(_ => One + divideBy(dividend - divisor)(divisor))(_ => Zero)
         private static Func<Numeral, Func<Numeral, Numeral>> DivideBy(
             Func<Numeral, Func<Numeral, Numeral>> divideBy) => dividend => divisor =>
-                ChurchBoolean<Numeral>.If(dividend.GreaterOrEqual(divisor))
+                ChurchBoolean<Numeral>.If(dividend.IsGreaterThanOrEqualTo(divisor))
                     (_ => One.Add(divideBy(dividend.Subtract(divisor))(divisor)))
                     (_ => Zero);
 

@@ -13,7 +13,7 @@ namespace Dixin.Linq.Lambda
 
     public static partial class ChurchEncoding
     {
-        public static Numeral Church(this uint n) => n > 0U ? Church(n - 1U).Increase() : ChurchNumeral.Zero;
+        public static Numeral Church(this uint n) => n == 0U ? ChurchNumeral.Zero : Church(n - 1U).Increase();
 
         public static uint Unchurch(this Numeral numeral) => (uint)numeral(x => (uint)x + 1U)(0U);
 
