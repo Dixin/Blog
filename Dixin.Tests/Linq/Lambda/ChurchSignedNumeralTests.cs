@@ -50,12 +50,12 @@
         public void FormatWithZeroTest()
         {
             SignedNumeral signed = new SignedNumeral(ChurchTuple<Numeral, Numeral>.Create(12U.Church())(23U.Church()));
-            signed = signed.FormatWithZero();
+            signed = signed.Format();
             Assert.IsTrue(0U == signed.Positive().Unchurch());
             Assert.IsTrue(11U == signed.Negative().Unchurch());
 
             signed = new SignedNumeral(ChurchTuple<Numeral, Numeral>.Create(23U.Church())(12U.Church()));
-            signed = signed.FormatWithZero();
+            signed = signed.Format();
             Assert.IsTrue(11U == signed.Positive().Unchurch());
             Assert.IsTrue(0U == signed.Negative().Unchurch());
         }

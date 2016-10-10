@@ -5,7 +5,7 @@ namespace Dixin.Linq.Lambda
     using static ChurchBoolean;
 
     // ListNode<T> is the alias of Tuple<T, ListNode<T>>
-    public delegate object ListNode<out T>(Either<T, ListNode<T>> f);
+    public delegate object ListNode<out T>(Boolean f);
 
     public static partial class ChurchList<T>
     {

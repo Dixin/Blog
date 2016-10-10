@@ -56,9 +56,11 @@
         public static readonly Func<Numeral, Numeral>
             IncreaseWithComposition = n => f => f.o(n(f));
 
+#if DEMO
         // Decrease = n => f => x => n(g => h => h(g(f)))(_ => x)(_ => _)
         public static readonly Func<Numeral, Numeral> Decrease =
             n => f => (x => ((Func<Func<object, object>, object>)n(y => new Func<Func<Func<object, object>, object>, Func<Func<object, object>, object>>(g => h => h(g(f)))((Func<Func<object, object>, object>)y))(new Func<Func<object, object>, object>(_ => x)))(v => v));
+#endif
 
         // Add = a => b => f => x => a(f)(b(f)(x))
         public static readonly Func<Numeral, Func<Numeral, Numeral>>
@@ -106,6 +108,13 @@
                 ChurchBoolean<Numeral>.If(dividend.IsGreaterThanOrEqualTo(divisor))
                     (_ => One.Add(DivideByRecursion(dividend.Subtract(divisor))(divisor)))
                     (_ => Zero);
+
+        // Decrease2 = n => n(tuple => tuple.Shift(Increase))(ChurchTuple.Create(Zero)(Zero)).Item1();
+        public static readonly Func<Numeral, Numeral> Decrease = n =>
+            ((Tuple<Numeral, Numeral>)n
+                (tuple => ((Tuple<Numeral, Numeral>)tuple).Shift(Increase))
+                (ChurchTuple<Numeral, Numeral>.Create(Zero)(Zero)))
+            .Item1();
     }
 
     public static partial class NumeralExtensions

@@ -1,72 +1,100 @@
 ﻿namespace Dixin.Linq.Lambda
 {
+    using System;
+
     using static ChurchNumeral;
 
-    // SignedNumeral is the alias of Tuple<_Numeral, _Numeral>.
-    public delegate object SignedNumeral(Either<Numeral, Numeral> f);
+    // SignedNumeral is the alias of Tuple<Numeral, Numeral>.
+    public delegate object SignedNumeral(Boolean f);
 
     public static partial class ChurchSignedNumeral
     {
-        // Sign = numeral => ChurchTuple.Create(numeral, Zero)
-        public static SignedNumeral Sign(this Numeral numeral) => 
-            new SignedNumeral(ChurchTuple<Numeral, Numeral>.Create(numeral)(Zero));
+        // Sign = n => ChurchTuple.Create(n, 0)
+        public static readonly Func<Numeral, SignedNumeral>
+            Sign = n => new SignedNumeral(ChurchTuple<Numeral, Numeral>.Create(n)(Zero));
 
         // Negate = signed => signed.Swap()
-        public static SignedNumeral Negate(this SignedNumeral signed) => 
-            new SignedNumeral(new Tuple<Numeral, Numeral>(signed).Swap());
+        public static readonly Func<SignedNumeral, SignedNumeral>
+            Negate = signed => new SignedNumeral(new Tuple<Numeral, Numeral>(signed).Swap());
 
         // Positive = signed => signed.Item1()
-        public static Numeral Positive(this SignedNumeral signed) => new Tuple<Numeral, Numeral>(signed).Item1();
+        public static readonly Func<SignedNumeral, Numeral>
+            Positive = signed => new Tuple<Numeral, Numeral>(signed).Item1();
 
         // Negative = signed => signed.Item2()
-        public static Numeral Negative(this SignedNumeral signed) => new Tuple<Numeral, Numeral>(signed).Item2();
+        public static readonly Func<SignedNumeral, Numeral>
+            Negative = signed => new Tuple<Numeral, Numeral>(signed).Item2();
+
+        // Format = signed =>
+        //    If(positive >= negative)
+        //        (_ => (positive - negative, 0))
+        //        (_ => (0, negative - positive))
+        public static readonly Func<SignedNumeral, SignedNumeral>
+            Format = signed =>
+                ChurchBoolean<SignedNumeral>.If(signed.Positive().IsGreaterThanOrEqualTo(signed.Negative()))
+                    (_ => signed.Positive().Subtract(signed.Negative()).Sign())
+                    (_ => signed.Negative().Subtract(signed.Positive()).Sign().Negate());
+    }
+
+    public static partial class SignedNumeralExtensions
+    {
+        public static SignedNumeral Sign(this Numeral n) => ChurchSignedNumeral.Sign(n);
+
+        public static SignedNumeral Negate(this SignedNumeral signed) => ChurchSignedNumeral.Negate(signed);
+
+        public static Numeral Positive(this SignedNumeral signed) => ChurchSignedNumeral.Positive(signed);
+
+        public static Numeral Negative(this SignedNumeral signed) => ChurchSignedNumeral.Negative(signed);
+
+        public static SignedNumeral Format(this SignedNumeral signed) => ChurchSignedNumeral.Format(signed);
     }
 
     public static partial class ChurchSignedNumeral
     {
-        // FormatWithZero = signed => If(positive == negative)(_ => Zero.Sign())(_ => If(positive > negative)(__ => (positive - negative).Sign())(__ => (negative - positive).Sign().Negate()))
-        public static SignedNumeral FormatWithZero(this SignedNumeral signed) => 
-            ChurchBoolean<SignedNumeral>.If(signed.Positive().IsEqualTo(signed.Negative()))
-                (_ => Zero.Sign())
-                (_ => ChurchBoolean<SignedNumeral>.If(signed.Positive().IsGreaterThan(signed.Negative()))
-                    (__ => signed.Positive().Subtract(signed.Negative()).Sign())
-                    (__ => signed.Negative().Subtract(signed.Positive()).Sign().Negate()));
+        // Add = a => b => ChurchTuple.Create(a.Positive() + b.Positive())(a.Negative() + b.Negative()).Format()
+        public static readonly Func<SignedNumeral, Func<SignedNumeral, SignedNumeral>>
+            Add = a => b => new SignedNumeral(ChurchTuple<Numeral, Numeral>.Create
+                   (a.Positive().Add(b.Positive()))
+                   (a.Negative().Add(b.Negative())))
+               .Format();
 
-        // Add = a => b => ChurchTuple.Create(a.Positive() + b.Positive())(a.Negative() + b.Negative()).FormatWithZero()
-        public static SignedNumeral Add(this SignedNumeral a, SignedNumeral b) =>
-            new SignedNumeral(ChurchTuple<Numeral, Numeral>.Create
-                (a.Positive().Add(b.Positive()))
-                (a.Negative().Add(b.Negative())))
-            .FormatWithZero();
+        // Subtract = a => b => ChurchTuple.Create(a.Positive() + b.Negative())(a.Negative() + b.Positive()).Format()
+        public static readonly Func<SignedNumeral, Func<SignedNumeral, SignedNumeral>>
+            Subtract = a => b => new SignedNumeral(ChurchTuple<Numeral, Numeral>.Create
+                    (a.Positive().Add(b.Negative()))
+                    (a.Negative().Add(b.Positive())))
+                .Format();
 
-        // Subtract = a => b => ChurchTuple.Create(a.Positive() + b.Negative())(a.Negative() + b.Positive()).FormatWithZero()
-        public static SignedNumeral Subtract(this SignedNumeral a, SignedNumeral b) =>
-            new SignedNumeral(ChurchTuple<Numeral, Numeral>.Create
-                (a.Positive().Add(b.Negative()))
-                (a.Negative().Add(b.Positive())))
-            .FormatWithZero();
+        // Multiply = a => b => ChurchTuple.Create(a.Positive() * b.Positive() + a.Negative() * b.Negative())(a.Positive() * b.Negative() + a.Negative() * b.Positive()).Format()
+        public static readonly Func<SignedNumeral, Func<SignedNumeral, SignedNumeral>>
+            Multiply = a => b => new SignedNumeral(ChurchTuple<Numeral, Numeral>.Create
+                    (a.Positive().Multiply(b.Positive()).Add(a.Negative().Multiply(b.Negative())))
+                    (a.Positive().Multiply(b.Negative()).Add(a.Negative().Multiply(b.Positive()))))
+                .Format();
 
-        // Multiply = a => b => ChurchTuple.Create(a.Positive() * b.Positive() + a.Negative() + b.Negative())(a.Positive() * b.Negative() + a.Negative() * b.Positive()).FormatWithZero()
-        public static SignedNumeral Multiply(this SignedNumeral a, SignedNumeral b) =>
-            new SignedNumeral(ChurchTuple<Numeral, Numeral>.Create
-                (a.Positive().Multiply(b.Positive()).Add(a.Negative().Multiply(b.Negative())))
-                (a.Positive().Multiply(b.Negative()).Add(a.Negative().Multiply(b.Positive()))))
-            .FormatWithZero();
+        // DivideByIgnoreZero = dividend => divisor => If(divisor.IsZero())(_ => 0)(_ => dividend._DivideBy(divisor))
+        public static readonly Func<Numeral, Func<Numeral, Numeral>> 
+            DivideByIgnoreZero = dividend => divisor =>
+                ChurchBoolean<Numeral>.If(divisor.IsZero())
+                    (_ => Zero)
+                    (_ => dividend.DivideBy(divisor));
 
-        // DivideBy = dividend => divisor => ChurchTuple.Create((dividend.Positive() | divisor.Positive()) + (dividend.Negative() | divisor.Negative()))((dividend.Positive() | divisor.Negative()) + (dividend.Negative() | divisor.Positive()))).FormatWithZero();
-        public static SignedNumeral DivideBy(this SignedNumeral dividend, SignedNumeral divisor) =>
-            new SignedNumeral(ChurchTuple<Numeral, Numeral>.Create
-                (dividend.Positive().DivideByIgnoreZero(divisor.Positive()).Add(dividend.Negative().DivideByIgnoreZero(divisor.Negative())))
-                (dividend.Positive().DivideByIgnoreZero(divisor.Negative()).Add(dividend.Negative().DivideByIgnoreZero(divisor.Positive()))))
-            .FormatWithZero();
+        // DivideBy = dividend => divisor => ChurchTuple.Create((dividend.Positive() / divisor.Positive()) + (dividend.Negative() / divisor.Negative()))((dividend.Positive() / divisor.Negative()) + (dividend.Negative() / divisor.Positive()))).Format();
+        public static readonly Func<SignedNumeral, Func<SignedNumeral, SignedNumeral>>
+            DivideBy = dividend => divisor => new SignedNumeral(ChurchTuple<Numeral, Numeral>.Create
+                    (DivideByIgnoreZero(dividend.Positive())(divisor.Positive()).Add(DivideByIgnoreZero(dividend.Negative())(divisor.Negative())))
+                    (DivideByIgnoreZero(dividend.Positive())(divisor.Negative()).Add(DivideByIgnoreZero(dividend.Negative())(divisor.Positive()))))
+                .Format();
     }
 
-    public static partial class ChurchNumeral
+    public static partial class SignedNumeralExtensions
     {
-        // DivideByIgnoreZero = dividend => divisor => If(divisor.IsZero())(_ => Zero)(_ => dividend._DivideBy(divisor))
-        public static Numeral DivideByIgnoreZero(this Numeral dividend, Numeral divisor) =>
-            ChurchBoolean<Numeral>.If(divisor.IsZero())
-                (_ => Zero)
-                (_ => dividend.DivideBy(divisor));
+        public static SignedNumeral Add(this SignedNumeral a, SignedNumeral b) => ChurchSignedNumeral.Add(a)(b);
+
+        public static SignedNumeral Subtract(this SignedNumeral a, SignedNumeral b) => ChurchSignedNumeral.Subtract(a)(b);
+
+        public static SignedNumeral Multiply(this SignedNumeral a, SignedNumeral b) => ChurchSignedNumeral.Multiply(a)(b);
+
+        public static SignedNumeral DivideBy(this SignedNumeral dividend, SignedNumeral divisor) => ChurchSignedNumeral.DivideBy(dividend)(divisor);
     }
 }

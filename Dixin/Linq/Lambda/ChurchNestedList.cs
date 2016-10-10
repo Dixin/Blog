@@ -5,7 +5,7 @@ namespace Dixin.Linq.Lambda
     using static ChurchBoolean;
 
     // ListNode2 is the alias of Tuple<Boolean, Tuple<T, ListNode2<T>>>.
-    public delegate object NestedListNode<out T>(Either<Boolean, Tuple<T, NestedListNode<T>>> f);
+    public delegate object NestedListNode<out T>(Boolean f);
 
     public static partial class ChurchNestedList<T>
     {

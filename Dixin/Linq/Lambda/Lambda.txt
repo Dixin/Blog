@@ -156,52 +156,102 @@ a / b := if a >= b then 1 + (a – b) / b else 0
 DivideByResursion = λa.λb.If (IsGreaterThanOrEqualTo a b) (λx.Add One (DivideByResursion (Subtract a b) b)) (λx.Zero)
 
 IsZero := λn.n (λx.False) True
-        ≡ λn.n (λx.λt.λf.f) (λt.λf.t)
-
-  IsZero 5
-≡ (λn.n (λx.λt.λf.f) (λt.λf.t)) 5
-≡ ...
-
-  _DivideBy 10 3
-≡ (λa.λb.If (IsGreaterOrEqual a b) (λx.Add One (??? (Subtract a b) b)) (λx.Zero)) 10 3
 
 CreateTuple := λx.λy.λf.f x y
-Tuple := λf.f x y
+Tuple := CreateTuple x y
+       ≡ (λx.λy.λf.f x y) x y
+       ≡ λf.f x y
+
+λx.λy.x
+λx.λy.y
+
+  Tuple (λx.λy.x)
+≡ (λf.f x y) (λx.λy.x)
+≡ (λx.λy.x) x y
+≡ x
+
+  Tuple (λx.λy.y)
+≡ (λf.f x y) (λx.λy.y)
+≡ (λx.λy.y) x y
+≡ y
+
 Item1 := λt.t (λx.λy.x)
 Item2 := λt.t (λx.λy.y)
 
-  Item1 (Tuple x y)
-≡ Item1 (λf.f x y)
+  Item1 (CreateTuple x y)
+≡ (λt.t (λx.λy.x)) (CreateTuple x y)
 ≡ (λt.t (λx.λy.x)) (λf.f x y)
 ≡ (λf.f x y) (λx.λy.x)
 ≡ (λx.λy.x) x y
-≡ (λy.x) y
 ≡ x
 
 Item1 := λt.t True
 Item2 := λt.t False
 
-Decrease = λn.λf.λx.n (λg.λh.h (g f)) (λu.x) (λu.u)
+Swap = λt.CreateTuple (Item2 t)(Item1 t)
 
-Shift = λf.λt.CreateTuple (Item2 t) (f (Item1 t))
+Shift = λt.λf.CreateTuple (Item2 t) (f (Item2 t))
 
-  n Increase Zero
+  n Increase 0
 ≡ n
 
-  3 (Shift Increase (0, 0))
-≡ 3 (Shift Increase) (0, 0)
-≡ (Shift Increase) ∘ (Shift Increase) ∘ (Shift Increase) (0, 0)
-≡ (Shift Increase) ∘ (Shift Increase) (0, Increase 0)
-≡ (Shift Increase) ∘ (Shift Increase) (0, 1)
-≡ (Shift Increase) ∘ (1, Increase 1)
-≡ (Shift Increase) ∘ (1, 2)
+
+  Shift Increase (0, 0)
+≡ (0, Increase 0)
+≡ (0, 1)
+
+  Shift Increase (0, 1)
+≡ (1, Increase 1)
+≡ (1, 2)
+
+  Shift Increase (1, 2)
 ≡ (2, Increase 2)
 ≡ (2, 3)
 
-  n (Shift Increase (0, 0))
+...
+
+  (Shift Increase) (0, 0)                                       ≡ (Shift Increase)1 (0, 0) ≡ 1 (Shift Increase) (0, 0) 
+≡ (0, 1)
+
+  (Shift Increase) (0, 1)
+≡ (Shift Increase) ((Shift Increase) (0, 0))
+≡ (Shift Increase) ∘ (Shift Increase) (0, 0)                    ≡ (Shift Increase)2 (0, 0) ≡ 2 (Shift Increase) (0, 0) 
+≡ (1, 2)
+
+  (Shift Increase) (1, 2)
+≡ (Shift Increase) ((Shift Increase) ∘ (Shift Increase) (0, 0))
+≡ (Shift Increase) ∘ (Shift Increase) ∘ (Shift Increase) (0, 0) ≡ (Shift Increase)3 (0, 0) ≡ 3 (Shift Increase) (0, 0) 
+≡ (2, 3)
+
+...
+
+  n (Shift Increase) (0, 0)
 ≡ (n - 1, n)
 
-Decrease2 = λn.Item1 (n (Shift Increase) (CreateTuple 0 0))
+  Item1 (n (Shift Increase) (0, 0))
+≡ Item1 (n - 1, n)
+≡ n - 1
+
+Decrease = λn.Item1 (n (Shift Increase) (CreateTuple 0 0))
+
+SignedNumeral := Tuple
+
+ 1 := (1, 0) ≡ (2, 1) ≡ (3, 2) ≡ (4, 3) ≡ ...
+ 0 := (0, 0) ≡ (1, 1) ≡ (2, 2) ≡ (3, 3) ≡ ...
+-2 := (0, 2) ≡ (1, 3) ≡ (2, 4) ≡ (3, 5) ≡ ...
+
+Sign = n => CreateTuple n 0
+
+Format = λs.If (sp >=  sn) (λx.(sp - sn, 0)) (λx.(0, sn - sp))
+
+Add = λa.λb.Format (CreateTuple (Add ap bp) (Add an bn))
+
+Subtract = λa.λb.Format (CreateTuple (Add ap bn) (Add an bp))
+
+Multiply = λa.λb.Format (CreateTuple (Add (Multiply ap bp) (Multiply an bn)) (Add (Multiply ap bn) (Multiply an bp)))
+
+DivideByIgnoreZero = λa.λb.If (IsZero b) (λx.0) (λx.DivideBy a b)
+DivideBy = λa.λb.Format (CreateTuple (Add (DivideByIgnoreZero ap bp) + (DivideByIgnoreZero an bn)) (Add (DivideByIgnoreZero ap bn) (DivideByIgnoreZero an bp))))
 
 CreateListNode := λv.λn.λf.f v n
 ListNode := λf.f v n
@@ -256,17 +306,15 @@ Negate = signed => SwapTuple signed
 Positive = signed => Item1 signed
 Negative = signed => Item2 signed
 
-FormatWithZero = λs.If (IsEqual sp  sn) (λx.Sign 0) (λx.If(IsGreater sp sn) (λy.(Sign (Subtract sp sn)))(λy.(Negate (Sign (Subtract sn sp)))))
+Format = λs.If (IsEqual sp  sn) (λx.Sign 0) (λx.If(IsGreater sp sn) (λy.(Sign (Subtract sp sn)))(λy.(Negate (Sign (Subtract sn sp)))))
 
-Add = λa.λb.FormatWithZero (CreateTuple (Add ap bp) (Add an bn))
-
-Subtract = λa.λb.FormatWithZero (CreateTuple (Add ap bn) (Add an bp))
-
-Multiply = λa.λb.FormatWithZero (CreateTuple (Add (Multiply ap bp) (Multiply an bn)) (Add (Multiply ap bn) (Multiply an bp)))
-
-DivideBy = λa.λb.FormatWithZero (CreateTuple (Add (DivideByIgnoreZero ap bp) + (DivideByIgnoreZero an bn)) (Add (DivideByIgnoreZero ap bn) (DivideByIgnoreZero an bp))));
+AddSigned = λa.λb.Format (CreateTuple (Add ap bp) (Add an bn))
+SubtractSigned = λa.λb.Format (CreateTuple (Add ap bn) (Add an bp))
+MultiplySigned = λa.λb.Format (CreateTuple (Add (Multiply ap bp) (Multiply an bn)) (Add (Multiply ap bn) (Multiply an bp)))
 
 DivideByIgnoreZero = λa.λb.If (IsZero b) (λx.0) (λx._DivideBy a b)
+
+DivideBySigned = λa.λb.Format (CreateTuple (Add (DivideByIgnoreZero ap bp) + (DivideByIgnoreZero an bn)) (Add (DivideByIgnoreZero ap bn) (DivideByIgnoreZero an bp)))
 
  1  ≡ (1, 0) ≡ (2, 1) ≡ (3, 2) ≡ (4, 3) ≡ …
 -1  ≡ (0, 1) ≡ (1, 2) ≡ (2, 3) ≡ (3, 4) ≡ …
@@ -387,7 +435,7 @@ Negate := Swap
 Positive := Item1
 Negative := Item2
 
-FormatWithZero = λs.If (IsEqual sp  sn) (λx.ToSigned 0) (λx.If (IsGreater sp sn) (λy.ToSigned (Subtract sp sn)) (λy.Negate (ToSigned (Subtract sn sp))))
+Format = λs.If (IsEqual sp  sn) (λx.ToSigned 0) (λx.If (IsGreater sp sn) (λy.ToSigned (Subtract sp sn)) (λy.Negate (ToSigned (Subtract sn sp))))
 
 B := λx.λy.λz.x (y z)
 C := λx.λy.λz.x z y
