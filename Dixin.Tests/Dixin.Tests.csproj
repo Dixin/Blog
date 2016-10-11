@@ -194,7 +194,8 @@
     <Compile Include="Linq\CSharp\VariancesTests.cs" />
     <Compile Include="Linq\EntityFramework\PerformanceTests.cs" />
     <Compile Include="Linq\CSharp\GenericTests.cs" />
-    <Compile Include="Linq\Lambda\AggregateListNodeTests.cs" />
+    <Compile Include="Linq\Lambda\ChurchAggregateListTests.cs" />
+    <Compile Include="Linq\Lambda\ChurchNestedListTests.cs" />
     <Compile Include="Linq\Lambda\ChurchNumeralTests.cs" />
     <Compile Include="Linq\LinqToObjects\LinkedListSequenceTests.cs" />
     <Compile Include="Linq\LinqToSql\ConcurrencyTests.cs" />
