@@ -243,7 +243,7 @@
     <Compile Include="Linq\Lambda\ChurchPredicateTests.cs" />
     <Compile Include="Linq\Lambda\ChurchSignedNumeralTests.cs" />
     <Compile Include="Linq\Lambda\ChurchTupleTests.cs" />
-    <Compile Include="Linq\Lambda\AggregateListNodeWrapperTests.cs" />
+    <Compile Include="Linq\Lambda\ChurchAggregateListWrapperTests.cs" />
     <Compile Include="Linq\Lambda\ChurchNumeralWrapperTests.cs" />
     <Compile Include="Linq\EntityFramework\ChangesTests.cs" />
     <Compile Include="Linq\EntityFramework\DatabaseTests.cs" />

@@ -109,7 +109,7 @@
                     (_ => One.Add(DivideByRecursion(dividend.Subtract(divisor))(divisor)))
                     (_ => Zero);
 
-        // Decrease2 = n => n(tuple => tuple.Shift(Increase))(ChurchTuple.Create(Zero)(Zero)).Item1();
+        // Decrease = n => n(tuple => tuple.Shift(Increase))(ChurchTuple.Create(Zero)(Zero)).Item1();
         public static readonly Func<Numeral, Numeral> Decrease = n =>
             ((Tuple<Numeral, Numeral>)n
                 (tuple => ((Tuple<Numeral, Numeral>)tuple).Shift(Increase))

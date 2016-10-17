@@ -42,9 +42,9 @@ namespace Dixin.Linq.Lambda
 
     public static partial class ChurchTuple<T1, T2, TResult>
     {
-        // Shift = tuple => f => Create(tuple.Item2())(f(tuple.Item1()))
-        public static readonly Func<Tuple<T1, T2>, Func<Func<T2, TResult>, Tuple<T2, TResult>>>
-            Shift = tuple => f => ChurchTuple<T2, TResult>.Create(tuple.Item2())(f(tuple.Item2()));
+        // Shift = f => tuple => Create(tuple.Item2())(f(tuple.Item1()))
+        public static readonly Func<Func<T2, TResult>, Func<Tuple<T1, T2>, Tuple<T2, TResult>>>
+            Shift = f => tuple => ChurchTuple<T2, TResult>.Create(tuple.Item2())(f(tuple.Item2()));
     }
 
     public static partial class TupleExtensions
@@ -59,6 +59,6 @@ namespace Dixin.Linq.Lambda
         public static Tuple<T2, T1> Swap<T1, T2>(this Tuple<T1, T2> tuple) => ChurchTuple<T1, T2>.Swap(tuple);
 
         public static Tuple<T2, TResult> Shift<T1, T2, TResult>(this Tuple<T1, T2> tuple, Func<T2, TResult> f) => 
-            ChurchTuple<T1, T2, TResult>.Shift(tuple)(f);
+            ChurchTuple<T1, T2, TResult>.Shift(f)(tuple);
     }
 }

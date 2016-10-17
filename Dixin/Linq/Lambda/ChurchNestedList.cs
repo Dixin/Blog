@@ -36,17 +36,14 @@ namespace Dixin.Linq.Lambda
         public static readonly Func<NestedListNode<T>, T>
             Value = node => new Tuple<Boolean, Tuple<T, NestedListNode<T>>>(node).Item2().Item1();
 
-        // Next = node => If(node.IsNull())(_ => node)(_ => node.Item2().Item2())
+        // Next = node => node.Item2().Item2()
         public static readonly Func<NestedListNode<T>, NestedListNode<T>> 
-            Next = node => 
-                ChurchBoolean<NestedListNode<T>>.If(node.IsNull())
-                    (_ => node)
-                    (_ => new Tuple<Boolean, Tuple<T, NestedListNode<T>>>(node).Item2().Item2());
+            Next = node => new Tuple<Boolean, Tuple<T, NestedListNode<T>>>(node).Item2().Item2();
     }
 
     public static partial class ChurchNestedList<T>
     {
-        // Index = start => index = index(Next)(start)
+        // NodeAt = start => index = index(Next)(start)
         public static readonly Func<NestedListNode<T>, Func<Numeral, NestedListNode<T>>> 
             NodeAt = start => index => (NestedListNode<T>)index(node => Next((NestedListNode<T>)node))(start);
     }

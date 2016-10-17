@@ -190,11 +190,10 @@ Item2 := λt.t False
 
 Swap = λt.CreateTuple (Item2 t)(Item1 t)
 
-Shift = λt.λf.CreateTuple (Item2 t) (f (Item2 t))
+Shift = λf.λt.CreateTuple (Item2 t) (f (Item2 t))
 
   n Increase 0
 ≡ n
-
 
   Shift Increase (0, 0)
 ≡ (0, Increase 0)
@@ -253,6 +252,17 @@ Multiply = λa.λb.Format (CreateTuple (Add (Multiply ap bp) (Multiply an bn)) (
 DivideByIgnoreZero = λa.λb.If (IsZero b) (λx.0) (λx.DivideBy a b)
 DivideBy = λa.λb.Format (CreateTuple (Add (DivideByIgnoreZero ap bp) + (DivideByIgnoreZero an bn)) (Add (DivideByIgnoreZero ap bn) (DivideByIgnoreZero an bp))))
 
+CreateListNode := CreateTuple ≡ λv.λn.λf.f v n
+ListNode := Tuple ≡ λf.f v n
+
+Value := Item1 ≡ λl.l (λv.λn.v)
+Next := Item2 ≡ λl.l (λv.λn.n)
+
+Null := False
+IsNull := λl.l (λv.λn.λx.False) True
+
+Index = λl.λi.i Next l
+
 CreateListNode := λv.λn.λf.f v n
 ListNode := λf.f v n
 ListNodeValue := λl.l (λv.λn.v)
@@ -290,12 +300,93 @@ Null = λf.True
 IsListNode2Null = λl.(Item1 l)
 ListNode2OfIndex = λl.λi.i ListNode2Next l
 
-CreateListNode3 = λv.λn.λf.λx.f v (n f x)
-NullListNode3 = f => x => x
-IsListNode3Null = λl.l (λv.λx.False) True
 ListNode3Value = λl.λx.l (λv.λy.v) x
 ListNode3Next = λl.Item2  ((l (λv.λt.CreateTuple (CreateListNode3 v (Item1 t)) (Item1 t)) (CreateTuple NullListNode3 NullListNode3)))
-ListNode3OfIndex = λl.λi.i ListNode2Next l
+
+CreateListNode = λv.λn.λx.λf.f (n x f) v
+ListNode = λx.λf.f (n x f) v
+
+Null = λx.λf.x
+IsNull = λl.l True (λx.λv.False)
+
+  CreateListNode 0 Null
+≡ (λv.λn.λx.λf.f (n x f) v) 0 (λx.λf.x)
+≡ (λn.λx.λf.f (n x f) 0) (λx.λf.x)
+≡ λx.λf.f ((λx.λf.x) x f) 0
+≡ λx.λf.f x 0
+
+  CreateListNode 1 (CreateListNode 0 Null)
+≡ CreateListNode 1 (λx.λf.f x 0)
+≡ (λv.λn.λx.λf.f (n x f) v) 1 (λx.λf.f x 0)
+≡ (λn.λx.λf.f (n x f) 1) (λx.λf.f x 0)
+≡ λx.λf.f ((λx.λf.f x 0) x f) 1
+≡ λx.λf.f (f x 0) 1
+
+  CreateListNode 2 (CreateListNode 1 (CreateListNode 0 Null))
+≡ CreateListNode 2 (λx.λf.f (f x 0) 1)
+≡ (λv.λn.λx.λf.f (n x f) v) 2 (λx.λf.f (f x 0) 1)
+≡ (λn.λx.λf.f (n x f) 2) (λx.λf.f (f x 0) 1)
+≡ λx.λf.f (λx.λf.f (f x 0) 1) x f) 2
+≡ λx.λf.f (f (f x 0) 1) 2
+
+  IsNull Null
+≡ (λl.l True (λx.λv.False)) (λx.λf.x)
+≡ (λx.λf.x) True (λx.λv.False)
+≡ (λf.True) (λx.λv.False)
+≡ True
+
+  IsNull (CreateListNode 2 Null)
+≡ IsNull (λx.λf.f x 2)
+≡ (λl.l True (λx.λv.False)) (λx.λf.f x 2)
+≡ (λx.λf.f x 2) True (λx.λv.False)
+≡ (λf.f True 2) (λx.λv.False)
+≡ (λx.λv.False) True 2
+≡ False
+
+Value = λl.l Id (λx.λv.v)
+
+  Value (CreateListNode v n)
+≡ Value (λx.λf.f (n x f) v)
+≡ (λl.l Id (λx.λv.v)) (λx.λf.f (n x f) v)
+≡ (λx.λf.f (n x f) v) Id (λx.λv.v)
+≡ (λf.f (n Id f) v) (λx.λv.v)
+≡ (λx.λv.v) (n Id f) v
+≡ (λv.v) v
+≡ v
+
+Next = λl.λx.λf.l (λf.x) (λx.λv.λg.g (x f) v) (λx.λv.v)
+
+  (CreateListNode v n) (Null, Null) (λt.λv.Shift (CreateListNode v) t)
+≡ (λx.λf.f (n x f) v) (Null, Null) (λt.λv.Shift (CreateListNode v) t)
+≡ (λf.f (n (Null, Null) f) v) (λt.λv.Shift (CreateListNode v) t)
+≡ (λt.λv.Shift (CreateListNode v) t) (n (Null, Null) (λt.λv.Shift (CreateListNode v)) t) v
+≡ (λv.Shift (CreateListNode v) (n (Null, Null) (λt.λv.Shift (CreateListNode v)) t)) v
+≡ Shift (CreateListNode v) (n (Null, Null) (λt.λv.Shift (CreateListNode v)) t)
+
+  (CreateListNode 0 Null) (Null, Null) (λt.λv.Shift (CreateListNode v) t)
+≡ Shift (CreateListNode 0) (Null (Null, Null) (λt.λv.Shift (CreateListNode v)) t)
+≡ Shift (CreateListNode 0) ((λx.λf.λx) (Null, Null) (λt.λv.Shift (CreateListNode v)) t)
+≡ Shift (CreateListNode 0) (Null, Null)
+≡ (Null, Create ListNode 0 Null)
+
+  (CreateListNode 1 (CreateListNode 0 Null)) (Null, Null) (λt.λv.Shift (CreateListNode v) t)
+≡ Shift (CreateListNode 1) ((CreateListNode 0 Null) (Null, Null) (λt.λv.Shift (CreateListNode v)) t)
+≡ Shift (CreateListNode 1) (Null, Create ListNode 0 Null)
+≡ (Create ListNode 0 Null, (CreateListNode 1 (CreateListNode 0 Null))
+
+  (CreateListNode 2 (CreateListNode 1 (CreateListNode 0 Null))) (Null, Null) (λt.λv.Shift (CreateListNode v) t)
+≡ Shift (CreateListNode 2) ((CreateListNode 1 (CreateListNode 0 Null)) (Null, Null) (λt.λv.Shift (CreateListNode v)) t)
+≡ Shift (CreateListNode 2) (CreateListNode 0 Null, (CreateListNode 1 (CreateListNode 0 Null))
+≡ ((CreateListNode 1 (CreateListNode 0 Null), CreateListNode 2 (CreateListNode 1 (CreateListNode 0 Null)))
+
+...
+
+  (CreateListNode v n) (Null, Null) (λt.λv.Shift (CreateListNode v) t)
+≡ (n, CreateListNode v n)
+
+Next = λl.Item2 (l (CreateTuple Null Null) (λt.λv.Shift (CreateListNode v) t))
+
+NodeAt = λl.λi.i Next l
 
 Swap = λt.CreateTuple (Item2 t) (Item1 t)
 

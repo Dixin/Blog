@@ -5,7 +5,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class AggregateListNodeWrapperTests
+    public class ChurchAggregateListWrapperTests
     {
         [TestMethod]
         public void CreateValueNextTest()
@@ -23,11 +23,18 @@
         }
 
         [TestMethod]
-        public void NullIsNullTest()
+        public void IsNullTest()
         {
-            AggregateListNodeWrapper<int> node = AggregateListNodeWrapper<int>.Create(1)(AggregateListNodeWrapper<int>.Null);
-            Assert.IsTrue(AggregateListNodeWrapper<int>.Null.IsNull().Unchurch());
-            Assert.IsFalse(node.IsNull().Unchurch());
+            AggregateListNodeWrapper<int> node1 = AggregateListNodeWrapper<int>.Create(1)(AggregateListNodeWrapper<int>.Null);
+            AggregateListNodeWrapper<int> node2 = AggregateListNodeWrapper<int>.Create(2)(node1);
+            AggregateListNodeWrapper<int> node3 = AggregateListNodeWrapper<int>.Create(3)(node2);
+            Assert.IsTrue(AggregateListNodeWrapper<object>.Null.IsNull().Unchurch());
+            Assert.IsFalse(node1.IsNull().Unchurch());
+            Assert.IsFalse(node2.IsNull().Unchurch());
+            Assert.IsFalse(node3.IsNull().Unchurch());
+            Assert.IsTrue(node1.Next().IsNull().Unchurch());
+            Assert.IsFalse(node2.Next().IsNull().Unchurch());
+            Assert.IsFalse(node3.Next().IsNull().Unchurch());
         }
 
         [TestMethod]
