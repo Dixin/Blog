@@ -6,7 +6,7 @@ BEGIN TRANSACTION
     FROM [Production].[ProductCategory]
     WHERE @@ROWCOUNT > 0 AND [ProductCategoryID] = scope_identity()',N'@0 nvarchar(50)',@0=N'ProductCategory'
 
-	exec sp_executesql N'INSERT [Production].[ProductSubcategory]([Name], [ProductCategoryID])
+    exec sp_executesql N'INSERT [Production].[ProductSubcategory]([Name], [ProductCategoryID])
     VALUES (@0, @1)
     SELECT [ProductSubcategoryID]
     FROM [Production].[ProductSubcategory]
@@ -121,15 +121,15 @@ SELECT TOP (1)
     FROM [Production].[ProductSubcategory] AS [c]
 
 BEGIN TRANSACTION
-	exec sp_executesql N'UPDATE [Production].[ProductCategory]
-	SET [Name] = @0
-	WHERE ([ProductCategoryID] = @1)
-	',N'@0 nvarchar(50),@1 int',@0=N'Update',@1=4
+    exec sp_executesql N'UPDATE [Production].[ProductCategory]
+    SET [Name] = @0
+    WHERE ([ProductCategoryID] = @1)
+    ',N'@0 nvarchar(50),@1 int',@0=N'Update',@1=4
 
-	exec sp_executesql N'UPDATE [Production].[ProductSubcategory]
-	SET [ProductCategoryID] = @0
-	WHERE ([ProductSubcategoryID] = @1)
-	',N'@0 int,@1 int',@0=-1,@1=1
+    exec sp_executesql N'UPDATE [Production].[ProductSubcategory]
+    SET [ProductCategoryID] = @0
+    WHERE ([ProductSubcategoryID] = @1)
+    ',N'@0 int,@1 int',@0=-1,@1=1
 ROLLBACK TRANSACTION
 
 SELECT TOP (1) 
@@ -157,11 +157,11 @@ BEGIN TRANSACTION
     FROM sys.dm_exec_sessions
     WHERE session_id = @@SPID
 
-	exec sp_executesql N'INSERT [Production].[ProductCategory]([Name])
-	VALUES (@0)
-	SELECT [ProductCategoryID]
-	FROM [Production].[ProductCategory]
-	WHERE @@ROWCOUNT > 0 AND [ProductCategoryID] = scope_identity()',N'@0 nvarchar(50)',@0=N'ProductCategory'
+    exec sp_executesql N'INSERT [Production].[ProductCategory]([Name])
+    VALUES (@0)
+    SELECT [ProductCategoryID]
+    FROM [Production].[ProductCategory]
+    WHERE @@ROWCOUNT > 0 AND [ProductCategoryID] = scope_identity()',N'@0 nvarchar(50)',@0=N'ProductCategory'
 
     exec sp_executesql N'DELETE FROM [Production].[ProductCategory] WHERE [Name] = @p0',N'@p0 nvarchar(15)',@p0=N'ProductCategory'
 COMMIT TRANSACTION
@@ -180,11 +180,11 @@ BEGIN TRANSACTION
     FROM sys.dm_exec_sessions
     WHERE session_id = @@SPID
 
-	exec sp_executesql N'INSERT [Production].[ProductCategory]([Name])
-	VALUES (@0)
-	SELECT [ProductCategoryID]
-	FROM [Production].[ProductCategory]
-	WHERE @@ROWCOUNT > 0 AND [ProductCategoryID] = scope_identity()',N'@0 nvarchar(50)',@0=N'ProductCategory'
+    exec sp_executesql N'INSERT [Production].[ProductCategory]([Name])
+    VALUES (@0)
+    SELECT [ProductCategoryID]
+    FROM [Production].[ProductCategory]
+    WHERE @@ROWCOUNT > 0 AND [ProductCategoryID] = scope_identity()',N'@0 nvarchar(50)',@0=N'ProductCategory'
 
     exec sp_executesql N'DELETE FROM [Production].[ProductCategory] WHERE [Name] = @p0',N'@p0 nvarchar(15)',@p0=N'ProductCategory'
 COMMIT TRANSACTION 
@@ -203,11 +203,11 @@ BEGIN TRANSACTION
     FROM sys.dm_exec_sessions
     WHERE session_id = @@SPID
 
-	exec sp_executesql N'INSERT [Production].[ProductCategory]([Name])
-	VALUES (@0)
-	SELECT [ProductCategoryID]
-	FROM [Production].[ProductCategory]
-	WHERE @@ROWCOUNT > 0 AND [ProductCategoryID] = scope_identity()',N'@0 nvarchar(50)',@0=N'ProductCategory'
+    exec sp_executesql N'INSERT [Production].[ProductCategory]([Name])
+    VALUES (@0)
+    SELECT [ProductCategoryID]
+    FROM [Production].[ProductCategory]
+    WHERE @@ROWCOUNT > 0 AND [ProductCategoryID] = scope_identity()',N'@0 nvarchar(50)',@0=N'ProductCategory'
 
     exec sp_executesql N'DELETE FROM [Production].[ProductCategory] WHERE [Name] = @p0',N'@p0 nvarchar(15)',@p0=N'ProductCategory'
 COMMIT TRANSACTION

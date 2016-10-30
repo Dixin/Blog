@@ -1,15 +1,15 @@
 ﻿-- Create stored procedure.
 CREATE PROCEDURE [dbo].[uspGetCategoryAndSubCategory]
-	@CategoryID int
+    @CategoryID int
 AS
 BEGIN
-	SELECT [Category].[ProductCategoryID], [Category].[Name]
-		FROM [Production].[ProductCategory] AS [Category] 
-		WHERE [Category].[ProductCategoryID] = @CategoryID;
+    SELECT [Category].[ProductCategoryID], [Category].[Name]
+        FROM [Production].[ProductCategory] AS [Category] 
+        WHERE [Category].[ProductCategoryID] = @CategoryID;
 
-	SELECT [Subcategory].[ProductSubcategoryID], [Subcategory].[Name], [Subcategory].[ProductCategoryID]
-		FROM [Production].[ProductSubcategory] As [Subcategory]
-	    WHERE [Subcategory].[ProductCategoryID] = @CategoryID;
+    SELECT [Subcategory].[ProductSubcategoryID], [Subcategory].[Name], [Subcategory].[ProductCategoryID]
+        FROM [Production].[ProductSubcategory] As [Subcategory]
+        WHERE [Subcategory].[ProductCategoryID] = @CategoryID;
 END;
 GO
 
@@ -66,24 +66,24 @@ GO
 
 -- Create table-valued type.
 CREATE TYPE [Category] AS TABLE (
-	Id int,
-	MinListPrice money);
+    Id int,
+    MinListPrice money);
 GO
 
 -- Create stored procedure with table-valued parameter.
 CREATE PROCEDURE [dbo].[uspGetProducts]
-	@Category [dbo].[Category] READONLY
+    @Category [dbo].[Category] READONLY
 AS
 BEGIN
-	SET NOCOUNT ON;
+    SET NOCOUNT ON;
 
-	SELECT [Product].[ProductID], [Product].[Name], [Product].[ListPrice], [Product].[ProductSubcategoryID]
-	FROM [Production].[Product] AS [Product]
-	LEFT OUTER JOIN [Production].[ProductSubcategory] AS [Subcategory]
-	ON [Product].ProductSubcategoryID = [Subcategory].[ProductSubcategoryID]
-	LEFT OUTER JOIN @Category AS [Category]
-	ON [Subcategory].[ProductCategoryID] = [Category].[Id]
-	WHERE [Product].[ListPrice] >= [Category].[MinListPrice];
+    SELECT [Product].[ProductID], [Product].[Name], [Product].[ListPrice], [Product].[ProductSubcategoryID]
+    FROM [Production].[Product] AS [Product]
+    LEFT OUTER JOIN [Production].[ProductSubcategory] AS [Subcategory]
+    ON [Product].ProductSubcategoryID = [Subcategory].[ProductSubcategoryID]
+    LEFT OUTER JOIN @Category AS [Category]
+    ON [Subcategory].[ProductCategoryID] = [Category].[Id]
+    WHERE [Product].[ListPrice] >= [Category].[MinListPrice];
 END;
 GO
 
@@ -100,26 +100,26 @@ GO
 -- Create table-valued function with table-valued parameter.
 CREATE FUNCTION [dbo].[ufnGetProducts]
 (
-	@Category [dbo].[Category] READONLY
+    @Category [dbo].[Category] READONLY
 )
 RETURNS @Products TABLE 
 (
     [ProductID] int NOT NULL, 
     [Name] nvarchar(50) NOT NULL, 
     [ListPrice] money NOT NULL, 
-	[ProductSubcategoryID] int NULL
+    [ProductSubcategoryID] int NULL
 )
 AS
 BEGIN
-	INSERT INTO @Products
-		SELECT [Product].[ProductID], [Product].[Name], [Product].[ListPrice], [Product].[ProductSubcategoryID]
-		FROM [Production].[Product] AS [Product]
-		LEFT OUTER JOIN [Production].[ProductSubcategory] AS [Subcategory]
-		ON [Product].ProductSubcategoryID = [Subcategory].[ProductSubcategoryID]
-		LEFT OUTER JOIN @Category AS [Category]
-		ON [Subcategory].[ProductCategoryID] = [Category].[Id]
-		WHERE [Product].[ListPrice] >= [Category].[MinListPrice];
-	RETURN;
+    INSERT INTO @Products
+        SELECT [Product].[ProductID], [Product].[Name], [Product].[ListPrice], [Product].[ProductSubcategoryID]
+        FROM [Production].[Product] AS [Product]
+        LEFT OUTER JOIN [Production].[ProductSubcategory] AS [Subcategory]
+        ON [Product].ProductSubcategoryID = [Subcategory].[ProductSubcategoryID]
+        LEFT OUTER JOIN @Category AS [Category]
+        ON [Subcategory].[ProductCategoryID] = [Category].[Id]
+        WHERE [Product].[ListPrice] >= [Category].[MinListPrice];
+    RETURN;
 END;
 GO
 
@@ -136,22 +136,22 @@ GO
 -- Create scalar-valued function with table-valued parameter.
 CREATE FUNCTION [dbo].[ufnGetProductCount]
 (
-	@Category [dbo].[Category] READONLY
+    @Category [dbo].[Category] READONLY
 )
 RETURNS int
 AS
 BEGIN
-	DECLARE @ProductCount int;
+    DECLARE @ProductCount int;
 
-	SELECT @ProductCount = COUNT(*)
-	FROM [Production].[Product] AS [Product]
-	LEFT OUTER JOIN [Production].[ProductSubcategory] AS [Subcategory]
-	ON [Product].ProductSubcategoryID = [Subcategory].[ProductSubcategoryID]
-	LEFT OUTER JOIN @Category AS [Category]
-	ON [Subcategory].[ProductCategoryID] = [Category].[Id]
-	WHERE [Product].[ListPrice] >= [Category].[MinListPrice];
+    SELECT @ProductCount = COUNT(*)
+    FROM [Production].[Product] AS [Product]
+    LEFT OUTER JOIN [Production].[ProductSubcategory] AS [Subcategory]
+    ON [Product].ProductSubcategoryID = [Subcategory].[ProductSubcategoryID]
+    LEFT OUTER JOIN @Category AS [Category]
+    ON [Subcategory].[ProductCategoryID] = [Category].[Id]
+    WHERE [Product].[ListPrice] >= [Category].[MinListPrice];
 
-	RETURN @ProductCount;
+    RETURN @ProductCount;
 END;
 GO
 
@@ -173,26 +173,26 @@ GO
 CREATE TRIGGER [Production].[uProductPhoto] ON [Production].[ProductPhoto]
 AFTER UPDATE AS
 BEGIN
-	SET NOCOUNT ON;
+    SET NOCOUNT ON;
 
     IF UPDATE([ModifiedDate]) 
-		RETURN;
+        RETURN;
 
     UPDATE [Production].[ProductPhoto]
     SET [ModifiedDate] = GETDATE()
-	FROM [Production].[ProductPhoto]
-	INNER JOIN [inserted]
+    FROM [Production].[ProductPhoto]
+    INNER JOIN [inserted]
     ON [ProductPhoto].[ProductPhotoID] = [inserted].[ProductPhotoID]
 END;
 GO
 
 -- Update logic file name.
 ALTER DATABASE [D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\ADVENTUREWORKS_DATA.MDF]
-	MODIFY FILE (NAME = N'AdventureWorks2014_Data', NEWNAME = N'AdventureWorks_Data');
+    MODIFY FILE (NAME = N'AdventureWorks2014_Data', NEWNAME = N'AdventureWorks_Data');
 GO
 
 ALTER DATABASE [D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\ADVENTUREWORKS_DATA.MDF]
-	MODIFY FILE (NAME = N'AdventureWorks2014_Log', NEWNAME = N'AdventureWorks_Log');
+    MODIFY FILE (NAME = N'AdventureWorks2014_Log', NEWNAME = N'AdventureWorks_Log');
 GO
 
 -- Shrink database and log.

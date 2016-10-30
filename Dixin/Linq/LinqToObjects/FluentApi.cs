@@ -149,10 +149,10 @@ namespace Dixin.Linq.LinqToObjects
 #if DEMO
 namespace System.Collections
 {
-	public interface IEnumerable
-	{
-		IEnumerator GetEnumerator();
-	}
+    public interface IEnumerable
+    {
+        IEnumerator GetEnumerator();
+    }
 }
 
 namespace System.Collections.Generic

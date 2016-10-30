@@ -25,7 +25,7 @@
             Func<double, double> absSqrt1 = sqrt.After(abs);
             Trace.WriteLine(absSqrt1(-2D)); // 1.4142135623731
 
-            Func<double, double> absSqrt2 = abs.Before(sqrt);
+            Func<double, double> absSqrt2 = abs.Then(sqrt);
             Trace.WriteLine(absSqrt2(-2D)); // 1.4142135623731
         }
 
@@ -45,8 +45,8 @@
         {
             Func<IEnumerable<int>, IEnumerable<double>> filterSortMap =
                 new Func<IEnumerable<int>, IEnumerable<int>>(source => Enumerable.Where(source, int32 => int32 > 0))
-                    .Before(filtered => Enumerable.OrderBy(filtered, int32 => int32))
-                    .Before(sorted => Enumerable.Select(sorted, int32 => Math.Sqrt(int32)));
+                    .Then(filtered => Enumerable.OrderBy(filtered, int32 => int32))
+                    .Then(sorted => Enumerable.Select(sorted, int32 => Math.Sqrt(int32)));
             IEnumerable<double> query = filterSortMap(new int[] { 4, 3, 2, 1, 0, -1 });
             foreach (double result in query) // Execute query.
             {
@@ -79,21 +79,21 @@
             }
         }
 
-        internal static Func<Func<int, bool>, IEnumerable<int>, IEnumerable<int>> filter =
-            (predicate, source) => Enumerable.Where(source, predicate);
+        private static readonly Func<Func<int, bool>, IEnumerable<int>, IEnumerable<int>> 
+            Filter = (predicate, source) => Enumerable.Where(source, predicate);
 
-        internal static Func<Func<int, int>, IEnumerable<int>, IEnumerable<int>> sort =
-            (keySelector, source) => Enumerable.OrderBy(source, keySelector);
+        private static readonly Func<Func<int, int>, IEnumerable<int>, IEnumerable<int>> 
+            Sort = (keySelector, source) => Enumerable.OrderBy(source, keySelector);
 
-        internal static Func<Func<int, double>, IEnumerable<int>, IEnumerable<double>> map =
-            (selector, source) => Enumerable.Select(source, selector);
+        private static readonly Func<Func<int, double>, IEnumerable<int>, IEnumerable<double>> 
+            Map = (selector, source) => Enumerable.Select(source, selector);
 
         internal static void CompositeAndPartialApply()
         {
             Func<IEnumerable<int>, IEnumerable<double>> filterSortMap =
-                filter.Partial(int32 => int32 > 0)
-                    .Before(sort.Partial(int32 => int32))
-                    .Before(map.Partial(int32 => Math.Sqrt(int32)));
+                Filter.Partial(int32 => int32 > 0)
+                    .Then(Sort.Partial(int32 => int32))
+                    .Then(Map.Partial(int32 => Math.Sqrt(int32)));
             IEnumerable<double> query = filterSortMap(new int[] { 4, 3, 2, 1, 0, -1 });
             foreach (double result in query) // Execute query.
             {
@@ -105,9 +105,9 @@
         {
             IEnumerable<int> source = new int[] { 4, 3, 2, 1, 0, -1 };
             IEnumerable<double> query = source
-                .Forward(filter.Partial(int32 => int32 > 0))
-                .Forward(sort.Partial(int32 => int32))
-                .Forward(map.Partial(int32 => Math.Sqrt(int32)));
+                .Forward(Filter.Partial(int32 => int32 > 0))
+                .Forward(Sort.Partial(int32 => int32))
+                .Forward(Map.Partial(int32 => Math.Sqrt(int32)));
             foreach (double result in query)
             {
                 Trace.WriteLine(result);

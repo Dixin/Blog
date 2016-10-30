@@ -197,6 +197,7 @@
     <Compile Include="Linq\Lambda\ChurchAggregateListTests.cs" />
     <Compile Include="Linq\Lambda\ChurchNestedListTests.cs" />
     <Compile Include="Linq\Lambda\ChurchNumeralTests.cs" />
+    <Compile Include="Linq\Lambda\CombinatorTests.FixedPoint.cs" />
     <Compile Include="Linq\LinqToObjects\LinkedListSequenceTests.cs" />
     <Compile Include="Linq\LinqToSql\ConcurrencyTests.cs" />
     <Compile Include="Linq\LinqToSql\PerformanceTests.cs" />
@@ -232,8 +233,8 @@
     <Compile Include="Linq\CategoryTheory\MonoidTests.cs" />
     <Compile Include="Linq\CategoryTheory\NaturalTransformationsTests.cs" />
     <Compile Include="Linq\CategoryTheory\StackTests.cs" />
-    <Compile Include="Linq\Combinators\IotaCombinatorTests.cs" />
-    <Compile Include="Linq\Combinators\SkiCombinatorsTests.cs" />
+    <Compile Include="Linq\Lambda\CombinatorTests.Iota.cs" />
+    <Compile Include="Linq\Lambda\CombinatorsTests.Ski.cs" />
     <Compile Include="Linq\EnumerableXTests.cs" />
     <Compile Include="Linq\Functional\FunctionalQueryMethodsTests.cs" />
     <Compile Include="Linq\CSharp\BinaryArithmeticCompilerTests.cs" />

@@ -91,14 +91,14 @@
         [TestMethod]
         public void FactorialTest()
         {
-            Func<uint, uint> factorial = null; // Must have. So that factorial can recursively refer itself.
-            factorial = x => x == 0U ? 1 : factorial(x - 1);
+            Func<uint, uint> factorial = null; // Must have to be compiled.
+            factorial = x => x == 0 ? 1U : x * factorial(x - 1U);
 
             Assert.IsTrue(factorial(0U) == 0U.ChurchWarpper().Factorial());
             Assert.IsTrue(factorial(1U) == 1U.ChurchWarpper().Factorial());
             Assert.IsTrue(factorial(2U) == 2U.ChurchWarpper().Factorial());
             Assert.IsTrue(factorial(3U) == 3U.ChurchWarpper().Factorial());
-            Assert.IsTrue(factorial(10U) == 10U.ChurchWarpper().Factorial());
+            Assert.IsTrue(factorial(7U) == 7U.ChurchWarpper().Factorial());
         }
 
         [TestMethod]

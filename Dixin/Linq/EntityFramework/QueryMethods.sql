@@ -85,9 +85,9 @@ SELECT
     1 AS [C1], 
     [Extent1].[Name] AS [Name], 
     CASE 
-		WHEN ([Extent1].[ListPrice] > cast(1000 as decimal(18))) THEN cast(1 as bit) 
-		WHEN ( NOT ([Extent1].[ListPrice] > cast(1000 as decimal(18)))) THEN cast(0 as bit) 
-	END AS [C2]
+        WHEN ([Extent1].[ListPrice] > cast(1000 as decimal(18))) THEN cast(1 as bit) 
+        WHEN ( NOT ([Extent1].[ListPrice] > cast(1000 as decimal(18)))) THEN cast(0 as bit) 
+    END AS [C2]
     FROM [Production].[Product] AS [Extent1]
 
 -- GroupBy
@@ -504,7 +504,7 @@ SELECT
         [Extent2].[ListPrice] AS [ListPrice]
         FROM [Production].[Product] AS [Extent2]
         WHERE [Extent2].[ListPrice] < cast(2000 as decimal(18))) AS [Intersect1]
-	
+    
 -- Except
 SELECT 
     [Except1].[C1] AS [C1], 
@@ -775,10 +775,10 @@ SELECT
         1 AS [C1]
         FROM [Production].[Product] AS [Extent1]
         WHERE ([Extent1].[ProductSubcategoryID] IS NULL) 
-			OR (CASE -- OR and the succeeding condition is redundant.
-					WHEN ([Extent1].[ProductSubcategoryID] IS NOT NULL) THEN cast(1 as bit) 
-					ELSE cast(0 as bit) 
-				END IS NULL)
+            OR (CASE -- OR and the succeeding condition is redundant.
+                    WHEN ([Extent1].[ProductSubcategoryID] IS NOT NULL) THEN cast(1 as bit) 
+                    ELSE cast(0 as bit) 
+                END IS NULL)
     )) THEN cast(1 as bit) ELSE cast(0 as bit) END AS [C1]
     FROM  ( SELECT 1 AS X ) AS [SingleRowTable1]
 

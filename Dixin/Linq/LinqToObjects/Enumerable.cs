@@ -311,7 +311,7 @@ namespace System.Collections.Generic
         IDictionary<TKey, TValue>, IDictionary, ICollection<KeyValuePair<TKey, TValue>>, ICollection, 
         IReadOnlyDictionary<TKey, TValue>, IReadOnlyCollection<KeyValuePair<TKey, TValue>>, 
         ISerializable, IDeserializationCallback
-	{
+    {
     }
 }
 

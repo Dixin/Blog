@@ -5,7 +5,7 @@ namespace Dixin.Linq.Lambda
     using static ChurchBoolean;
 
     // ListNode<T> is the alias of Tuple<T, ListNode<T>>.
-    public delegate object ListNode<out T>(Boolean f);
+    public delegate dynamic ListNode<out T>(Boolean f);
 
     public static partial class ChurchList<T>
     {
@@ -26,15 +26,14 @@ namespace Dixin.Linq.Lambda
     {
         // Null = f => x => x;
         public static readonly ListNode<T>
-            Null = f => new Func<Boolean, Boolean>(x => x);
+            Null = new ListNode<T>(False);
 
         // IsNull = node => node(value => next => _ => False)(True)
         public static readonly Func<ListNode<T>, Boolean> 
-            IsNull = node => ((Func<Boolean, Boolean>)node(value => next => new Func<Boolean, Boolean>(_ => False)))(True);
+            IsNull = node => node(value => next => new Func<Boolean, Boolean>(_ => False))(True);
 
-        // NodeAt = start => index => index(Next)(start)
         public static readonly Func<ListNode<T>, Func<Numeral, ListNode<T>>>
-            NodeAt = start => index => (ListNode<T>)index(x => Next((ListNode<T>)x))(start);
+            ListNodeAt = start => index => index(node => Next(node))(start);
     }
 
     public static class ListNodeExtensions
@@ -45,6 +44,6 @@ namespace Dixin.Linq.Lambda
 
         public static Boolean IsNull<T>(this ListNode<T> node) => ChurchList<T>.IsNull(node);
 
-        public static ListNode<T> NodeAt<T>(this ListNode<T> start, Numeral index) => ChurchList<T>.NodeAt(start)(index);
+        public static ListNode<T> ListNodeAt<T>(this ListNode<T> start, Numeral index) => ChurchList<T>.ListNodeAt(start)(index);
     }
 }

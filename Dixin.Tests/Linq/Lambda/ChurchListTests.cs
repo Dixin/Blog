@@ -2,6 +2,7 @@
 {
     using System;
     using System.Diagnostics;
+
     using Dixin.Linq.Lambda;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -56,13 +57,13 @@
             ListNode<int> node1 = ChurchList<int>.Create(1)(ChurchList<int>.Null);
             ListNode<int> node2 = ChurchList<int>.Create(2)(node1);
             ListNode<int> node3 = ChurchList<int>.Create(3)(node2);
-            Assert.AreEqual(node3, node3.NodeAt(0U.Church()));
-            Assert.AreEqual(node2, node3.NodeAt(1U.Church()));
-            Assert.AreEqual(node1, node3.NodeAt(2U.Church()));
-            Assert.IsTrue(node3.NodeAt(3U.Church()).IsNull().Unchurch());
+            Assert.AreEqual(node3, node3.ListNodeAt(0U.Church()));
+            Assert.AreEqual(node2, node3.ListNodeAt(1U.Church()));
+            Assert.AreEqual(node1, node3.ListNodeAt(2U.Church()));
+            Assert.IsTrue(node3.ListNodeAt(3U.Church()).IsNull().Unchurch());
             try
             {
-                node3.NodeAt(4U.Church());
+                node3.ListNodeAt(4U.Church());
                 Assert.Fail();
             }
             catch (InvalidCastException exception)

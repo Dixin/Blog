@@ -492,7 +492,7 @@ namespace System.Reflection
 {
     using System.Runtime.InteropServices;
 
-	[ClassInterface(ClassInterfaceType.None)]
+    [ClassInterface(ClassInterfaceType.None)]
     [ComDefaultInterface(typeof(_MethodBase))]
     [ComVisible(true)]
     public abstract class MethodBase : MemberInfo, _MethodBase
@@ -536,8 +536,8 @@ namespace System
     using System.Runtime.InteropServices;
     using System.Runtime.Serialization;
 
-	[Serializable]
-	[StructLayout(LayoutKind.Auto)]
+    [Serializable]
+    [StructLayout(LayoutKind.Auto)]
     public struct DateTime : IComparable, IFormattable, IConvertible, ISerializable, IComparable<DateTime>, IEquatable<DateTime>
     {
         public DateTime(long ticks);

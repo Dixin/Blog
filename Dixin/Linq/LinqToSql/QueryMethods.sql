@@ -373,7 +373,7 @@ WHERE (EXISTS(
     FROM [Production].[Product] AS [t1]
     WHERE ((([t0].[Name] IS NULL) AND ([t1].[Name] IS NULL)) OR (([t0].[Name] IS NOT NULL) AND ([t1].[Name] IS NOT NULL) AND ((([t0].[Name] IS NULL) AND ([t1].[Name] IS NULL)) OR (([t0].[Name] IS NOT NULL) AND ([t1].[Name] IS NOT NULL) AND ([t0].[Name] = [t1].[Name]))))) AND ([t0].[ListPrice] = [t1].[ListPrice]) AND ([t1].[ListPrice] < @p0)
     )) AND ([t0].[ListPrice] > @p1)',N'@p0 decimal(33,4),@p1 decimal(33,4)',@p0=2000.0000,@p1=100.0000
-	
+    
 -- Except
 exec sp_executesql N'SELECT DISTINCT [t0].[Name], [t0].[ListPrice]
 FROM [Production].[Product] AS [t0]

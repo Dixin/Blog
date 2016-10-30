@@ -8,53 +8,55 @@ namespace Dixin.Linq.Lambda
     using static Dixin.Linq.Lambda.Boolean;
 #endif
 
-    // Curried from object Boolean(object @true, object @false).
-    // Boolean is the alias of Func<object, Func<object, object>>.
-    public delegate Func<object, object> Boolean(object @true);
+    // Curried from dynamic Boolean(dynamic @true, dynamic @false).
+    // Boolean is the alias of Func<dynamic, Func<dynamic, dynamic>>.
+    public delegate Func<dynamic, dynamic> Boolean(dynamic @true);
 
     public static partial class ChurchBoolean
     {
-        //  True = true => false => true
         public static readonly Boolean
             True = @true => @false => @true;
 
-        //  False = true => false => false
         public static readonly Boolean
             False = @true => @false => @false;
     }
 
     public static partial class ChurchBoolean
     {
-        // And = a => b => a(b)(False)
-        public static Func<Boolean, Func<Boolean, Boolean>>
-            // Casting return value to Boolean is safe, because b and False are both of type Boolean.
-            And = a => b => (Boolean)a(b)(False);
+        public static readonly Func<Boolean, Func<Boolean, Boolean>>
+            And = a => b => a(b)(False);
     }
+
+#if DEMO
+    public delegate Func<object, object> Boolean(object @true);
+
+    public static partial class ChurchBoolean
+    {
+        public static readonly Func<Boolean, Func<Boolean, Boolean>>
+            And2 = a => b => (Boolean)a(b)(False);
+    }
+#endif
 
     public static partial class ChurchBoolean
     {
 #if DEMO
         // And = a => b => a(b)(true => false => false)
-        public static Func<Boolean, Func<Boolean, Boolean>>
-            And = a => b => (Boolean)a(b)(new Boolean(@true => @false => @false));
+        public static readonly Func<Boolean, Func<Boolean, Boolean>>
+            And = a => b => a(b)(new Boolean(@true => @false => @false));
 #endif
 
-        // Or = a => b => a(True)(b)
-        public static Func<Boolean, Func<Boolean, Boolean>> 
-            Or = a => b => (Boolean)a(True)(b);
+        public static readonly Func<Boolean, Func<Boolean, Boolean>> 
+            Or = a => b => a(True)(b);
 
-        // Not = boolean => boolean(False)(True)
-        public static Func<Boolean, Boolean> 
-            Not = boolean => (Boolean)boolean(False)(True);
+        public static readonly Func<Boolean, Boolean> 
+            Not = boolean => boolean(False)(True);
 
-        // Xor = a => b => a(b(False)(True))(b(True)(False))
-        public static Func<Boolean, Func<Boolean, Boolean>>
-            Xor = a => b => (Boolean)a(b(False)(True))(b(True)(False));
+        public static readonly Func<Boolean, Func<Boolean, Boolean>>
+            Xor = a => b => a(Not(b))(b);
     }
 
     public static partial class BooleanExtensions
     {
-        // And = a => b => a(b)(False)
         public static Boolean And(this Boolean a, Boolean b) => ChurchBoolean.And(a)(b);
     }
 
@@ -78,45 +80,42 @@ namespace Dixin.Linq.Lambda
             Boolean result2 = new Func<Boolean, Func<Boolean, Boolean>>(a => b => (Boolean)a(b)(False))(x)(y);
         }
 
-        // Or = a => b => a(True)(b)
         public static Boolean Or(this Boolean a, Boolean b) => ChurchBoolean.Or(a)(b);
 
-        // Not = boolean => boolean(False)(True)
         public static Boolean Not(this Boolean a) => ChurchBoolean.Not(a);
 
-        // Xor = a => b => a(b(False)(True))(b(True)(False))
         public static Boolean Xor(this Boolean a, Boolean b) => ChurchBoolean.Xor(a)(b);
     }
 
-    public static partial class ChurchBoolean<T>
+    public static partial class ChurchBoolean
     {
         // EagerIf = condition => then => @else => condition(then)(@else)
-        public static readonly Func<Boolean, Func<T, Func<T, T>>>
+        public static readonly Func<Boolean, Func<dynamic, Func<dynamic, dynamic>>>
             EagerIf = condition => then => @else =>
-                (T)condition // if (condition)
-                    (then)   // then {  ... }
+                condition    // if (condition)
+                    (then)   // then { ... }
                     (@else); // else { ... }
 
-        // If = condition then => @else => condition(then, @else)(Id)
-        public static readonly Func<Boolean, Func<Func<Unit<T>, T>, Func<Func<Unit<T>, T>, T>>>
-            If = condition => then => @else =>
-                ((Func<Unit<T>, T>)condition
-                    (then)
-                    (@else))(Functions<T>.Id);
+        // If = condition => thenFactory => elseFactory => condition(thenFactory, elseFactory)(Id)
+        public static readonly Func<Boolean, Func<Func<Unit<dynamic>, dynamic>, Func<Func<Unit<dynamic>, dynamic>, dynamic>>>
+            If = condition => thenFactory => elseFactory =>
+                condition
+                    (thenFactory)
+                    (elseFactory)(Functions<dynamic>.Id);
     }
 
     public static partial class ChurchBoolean
     {
         internal static void CallEagerIf(Boolean condition, Boolean a, Boolean b)
         {
-            Boolean result = ChurchBoolean<Boolean>.EagerIf(condition)
+            Boolean result = EagerIf(condition)
                 (a.And(b)) // then.
                 (a.Or(b)); // else.
         }
 
         internal static void CallLazyIf(Boolean condition, Boolean a, Boolean b)
         {
-            Boolean result = ChurchBoolean<Boolean>.If(condition)
+            Boolean result = If(condition)
                 (_ => a.And(b)) // then.
                 (_ => a.Or(b)); // else.
         }

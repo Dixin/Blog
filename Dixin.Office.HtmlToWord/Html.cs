@@ -23,32 +23,33 @@ namespace Dixin.Office.HtmlToWord
         /// </summary>
         public virtual string TransformText()
         {
-            this.Write("<html>\r\n\t<head>\r\n\t\t<title>");
+            this.Write("<html>\r\n    <head>\r\n        <title>");
             this.Write(this.ToStringHelper.ToStringWithCulture(this.Title));
-            this.Write("</title>\r\n\t\t<style type=\"text/css\">\r\n\t\t\ttable {\r\n\t\t\t\tborder-collapse: collapse;\r\n" +
-                    "\t\t\t}\r\n\r\n\t\t\ttable, th, td {\r\n\t\t\t\tborder: 1px solid black;\r\n\t\t\t}\r\n\t\t</style>\r\n\t</h" +
-                    "ead>\r\n\t<body>\r\n");
+            this.Write("</title>\r\n        <style type=\"text/css\">\r\n            table {\r\n                b" +
+                    "order-collapse: collapse;\r\n            }\r\n\r\n            table, th, td {\r\n       " +
+                    "         border: 1px solid black;\r\n            }\r\n        </style>\r\n    </head>\r" +
+                    "\n    <body>\r\n");
  
 foreach (IGrouping<string, Tuple<string, string>> chapter in this.Chapters)
 {
 
-            this.Write("\t\t<h1><br />");
+            this.Write("        <h1><br />");
             this.Write(this.ToStringHelper.ToStringWithCulture(chapter.Key));
             this.Write("</h1>\r\n");
 
     foreach (Tuple<string, string> section in chapter)
-	{
+    {
 
-            this.Write("\t\t<h2>");
+            this.Write("        <h2>");
             this.Write(this.ToStringHelper.ToStringWithCulture(section.Item1));
-            this.Write("</h2>\r\n\t\t");
+            this.Write("</h2>\r\n        ");
             this.Write(this.ToStringHelper.ToStringWithCulture(section.Item2));
             this.Write("\r\n");
 
     }
 }
 
-            this.Write("\t</body>\r\n</html>");
+            this.Write("    </body>\r\n</html>");
             return this.GenerationEnvironment.ToString();
         }
     }

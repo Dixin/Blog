@@ -114,42 +114,47 @@
 
     internal static partial class Functions
     {
-        internal static void CallLambdaExpression()
+        internal static void CallLambdaExpressionWithConstructor()
         {
-            new Func<int, bool>(int32 => int32 > 0)(1);
+            bool result = new Func<int, bool>(int32 => int32 > 0)(1);
+        }
+
+        internal static void CallLambdaExpressionWithTypeConversion()
+        {
+            bool result = ((Func<int, bool>)(int32 => int32 > 0))(1);
         }
     }
 
     internal static partial class CompiledFunctions
-	{
-		[CompilerGenerated]
-		[Serializable]
-		private sealed class Container
-		{
-			public static readonly Container Singleton = new Container();
+    {
+        [CompilerGenerated]
+        [Serializable]
+        private sealed class Container
+        {
+            public static readonly Container Singleton = new Container();
 
-			public static Func<int, bool> cachedIsPositive;
+            public static Func<int, bool> cachedIsPositive;
 
-			internal bool IsPositive(int int32)
-			{
-				return int32 > 0;
-			}
-		}
+            internal bool IsPositive(int int32)
+            {
+                return int32 > 0;
+            }
+        }
 
-		internal static void CallLambdaExpression()
-		{
+        internal static void CallLambdaExpressionWithConstructor()
+        {
             Func<int, bool> isPositive;
-		    if (Container.cachedIsPositive != null)
-		    {
-		        isPositive = Container.cachedIsPositive;
-		    }
-		    else
-		    {
+            if (Container.cachedIsPositive != null)
+            {
+                isPositive = Container.cachedIsPositive;
+            }
+            else
+            {
                 isPositive = Container.cachedIsPositive = new Func<int, bool>(Container.Singleton.IsPositive);
             }
-			isPositive.Invoke(1);
-		}
-	}
+            bool result = isPositive.Invoke(1);
+        }
+    }
 
     internal static partial class Functions
     {

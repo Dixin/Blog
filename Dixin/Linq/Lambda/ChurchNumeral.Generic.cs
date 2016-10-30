@@ -61,7 +61,7 @@
         public static NumeralWrapper Decrease(this NumeralWrapper numeral) =>
             new Numeral<NumeralWrapper>(f => x =>
                 numeral.Invoke<Func<Func<NumeralWrapper, NumeralWrapper>, NumeralWrapper>>(g => h => h(g(f)))(_ => x)(_ => _))
-                (Increase)(NumeralWrapper.Zero);
+                (Increase)(Zero);
 
         // Subtract = a => b => b(Decrease)(a)
         public static NumeralWrapper Subtract(this NumeralWrapper a, NumeralWrapper b) => b.Invoke<NumeralWrapper>(Decrease)(a);
@@ -70,20 +70,20 @@
     public static partial class NumeralWrapperExtensions
     {
         // Multiply = a => b => a(x => b.Add(x))(Zero)
-        public static NumeralWrapper Multiply(this NumeralWrapper a, NumeralWrapper b) => a.Invoke<NumeralWrapper>(b.Add)(NumeralWrapper.Zero);
+        public static NumeralWrapper Multiply(this NumeralWrapper a, NumeralWrapper b) => a.Invoke<NumeralWrapper>(b.Add)(Zero);
 
         // Power = m => e => e(x => m.Multiply(x))(1)
         public static NumeralWrapper Pow(this NumeralWrapper mantissa, NumeralWrapper exponent) =>
-            exponent.Invoke<NumeralWrapper>(mantissa.Multiply)(NumeralWrapper.One);
+            exponent.Invoke<NumeralWrapper>(mantissa.Multiply)(One);
 
         // _DivideBy = dividend => divisor => 
         // If(dividend.IsGreaterOrEqual(divisor))
         //    (_ => One + (dividend - divisor)._DivideBy(divisor))
         //    (_ => Zero);
         public static NumeralWrapper _DivideBy(this NumeralWrapper dividend, NumeralWrapper divisor) =>
-            ChurchBoolean<NumeralWrapper>.If(dividend >= divisor)
-                (_ => NumeralWrapper.One + (dividend - divisor)._DivideBy(divisor))
-                (_ => NumeralWrapper.Zero);
+            If(dividend >= divisor)
+                (_ => One + (dividend - divisor)._DivideBy(divisor))
+                (_ => Zero);
     }
 
     public partial class NumeralWrapper
@@ -183,15 +183,15 @@
     {
         // DivideByIgnoreZero = dividend => divisor => If(divisor.IsZero())(_ => Zero)(_ => dividend._DivideBy(divisor))
         public static NumeralWrapper DivideByIgnoreZero(this NumeralWrapper dividend, NumeralWrapper divisor) =>
-            ChurchBoolean<NumeralWrapper>.If(divisor.IsZero())
-                (_ => NumeralWrapper.Zero)
+            If(divisor.IsZero())
+                (_ => Zero)
                 (_ => dividend._DivideBy(divisor));
 
         // Decrease2 = n => n(tuple => tuple.Shift(Increase))(ChurchTuple.Create(Zero)(Zero)).Item1();
         public static NumeralWrapper Decrease2(this NumeralWrapper numeral) =>
             numeral.Invoke<Tuple<NumeralWrapper, NumeralWrapper>>
                 (tuple => tuple.Shift(Increase)) // (x, y) -> (y, y + 1)
-                (ChurchTuple<NumeralWrapper, NumeralWrapper>.Create(NumeralWrapper.Zero)(NumeralWrapper.Zero))
+                (ChurchTuple<NumeralWrapper, NumeralWrapper>.Create(Zero)(Zero))
             .Item1();
     }
 
@@ -203,5 +203,34 @@
 
         public static string Visualize(this NumeralWrapper numeral) =>
             numeral.Invoke<string>(x => string.Concat(x, "*"))(string.Empty);
+    }
+
+    public static partial class ChurchNumeralWrapper
+    {
+        // Factorial = factorial => numeral => If(numeral.IsZero())(_ => 1)(_ => factorial(numeral.Decrease()) * numeral);
+        public static Func<NumeralWrapper, NumeralWrapper> Factorial(Func<NumeralWrapper, NumeralWrapper> factorial) => numeral =>
+            If(numeral.IsZero())
+                (_ => One)
+                (_ => factorial(numeral - One) * numeral);
+
+        public static NumeralWrapper Factorial(this NumeralWrapper numeral) => FixedPointCombinators<NumeralWrapper, NumeralWrapper>.Z(Factorial)(numeral);
+
+        // Fibonacci  = fibonacci  => numeral => If(numeral > 1)(_ => fibonacci(numeral - One) + fibonacci(numeral - 1 - 1))(_ => numeral);
+        private static Func<NumeralWrapper, NumeralWrapper> Fibonacci(Func<NumeralWrapper, NumeralWrapper> fibonacci) => numeral =>
+            If(numeral > One)
+                (_ => fibonacci(numeral - One) + fibonacci(numeral - One - One))
+                (_ => numeral);
+
+        public static NumeralWrapper Fibonacci(this NumeralWrapper numeral) => FixedPointCombinators<NumeralWrapper, NumeralWrapper>.Z(Fibonacci)(numeral);
+
+        // DivideBy = divideBy => dividend => divisor => If(dividend >= divisor)(_ => One + divideBy(dividend - divisor)(divisor))(_ => Zero)
+        private static Func<NumeralWrapper, Func<NumeralWrapper, NumeralWrapper>> DivideBy(
+            Func<NumeralWrapper, Func<NumeralWrapper, NumeralWrapper>> divideBy) => dividend => divisor =>
+                If(dividend >= divisor)
+                    (_ => One + divideBy(dividend - divisor)(divisor))
+                    (_ => Zero);
+
+        public static NumeralWrapper DivideBy(this NumeralWrapper dividend, NumeralWrapper divisor) =>
+            FixedPointCombinators<NumeralWrapper, Func<NumeralWrapper, NumeralWrapper>>.Z(DivideBy)(dividend)(divisor);
     }
 }

@@ -317,11 +317,12 @@
     <Compile Include="Linq\CSharp\Curry.cs" />
     <Compile Include="Linq\ActionFunc.Composite.cs" />
     <Compile Include="Linq\CSharp\Immutability.cs" />
-    <Compile Include="Linq\CSharp\PureFunction.cs" />
     <Compile Include="Linq\CSharp\Purity.cs" />
     <Compile Include="Linq\Lambda\ChurchAggregateList.Generic.cs" />
     <Compile Include="Linq\Lambda\ChurchNumeral.Generic.cs" />
-    <Compile Include="Linq\Lambda\Expression.cs" />
+    <Compile Include="Linq\Lambda\Expressions.cs" />
+    <Compile Include="Linq\Lambda\Functions.cs" />
+    <Compile Include="Linq\Lambda\SkiCompiler.cs" />
     <Compile Include="Linq\LinqToObjects\Generator.cs" />
     <Compile Include="Linq\TraceHelper.cs" />
     <Compile Include="Linq\CSharp\AnonymousFunction.cs" />
@@ -441,6 +442,7 @@
     <Content Include="Linq\CSharp\LambdaExpression.txt" />
     <Content Include="Linq\Introduction\LinqToDocumentDB.sql" />
     <Content Include="Linq\Introduction\LinqToXml.xml" />
+    <Content Include="Linq\Lambda\HTMLPage1.html" />
     <Content Include="Linq\LinqToSql\Performance.sql" />
     <Content Include="Linq\LinqToSql\Laziness.sql" />
     <Content Include="Linq\LinqToSql\Functions.sql" />
@@ -498,7 +500,7 @@
     <Compile Include="Linq\CategoryTheory\Psudo.cs" />
     <Compile Include="Linq\CategoryTheory\ReflectionHelper.cs" />
     <Compile Include="Linq\CategoryTheory\TraceHelper.cs" />
-    <Compile Include="Linq\Combinators\BckwCombinators.cs" />
+    <Compile Include="Linq\Lambda\Combinators.Bckw.cs" />
     <Compile Include="Linq\Functional\Concat`1.cs" />
     <Compile Include="Linq\Functional\Sequence`1.cs" />
     <Compile Include="Linq\Functional\EnumerableExtensions.Linq.cs" />
@@ -540,10 +542,10 @@
     <Compile Include="Linq\Lambda\ChurchNumeral.cs" />
     <Compile Include="Linq\Lambda\ChurchTuple.cs" />
     <Compile Include="Linq\Lambda\ChurchSignedNumeral.cs" />
-    <Compile Include="Linq\Combinators\IotaCombinator.cs" />
-    <Compile Include="Linq\Combinators\OmegaCombinators.cs" />
-    <Compile Include="Linq\Combinators\SkiCombinators.cs" />
-    <Compile Include="Linq\Combinators\YCombinator.cs" />
+    <Compile Include="Linq\Lambda\Combinators.Iota.cs" />
+    <Compile Include="Linq\Lambda\Combinators.Omega.cs" />
+    <Compile Include="Linq\Lambda\Combinators.Ski.cs" />
+    <Compile Include="Linq\Lambda\Combinators.FixedPoint.cs" />
     <Compile Include="Linq\Lambda\Equivalence.cs" />
     <Compile Include="Linq\ActionFunc.Curry.cs" />
     <Compile Include="Linq\ActionFunc.Forward.cs" />
@@ -605,6 +607,7 @@
     <None Include="Linq\Introduction\LinqToDocumentDB.json" />
     <None Include="Linq\Introduction\LinqToJson.json" />
     <Compile Include="Linq\EntityFramework\QueryMethods.cs" />
+    <None Include="Linq\Lambda\SkiCompiler.hs" />
     <None Include="Linq\LinqToXml\AspNetRss.xsd">
       <SubType>Designer</SubType>
     </None>

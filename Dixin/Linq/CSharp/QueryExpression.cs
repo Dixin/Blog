@@ -179,11 +179,11 @@ namespace System.Linq
     using System.Collections.Generic;
 
     public static class Enumerable
-	{
+    {
         public static IEnumerable<TSource> Where<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate);
 
         public static IEnumerable<TSource> Where<TSource>(this IEnumerable<TSource> source, Func<TSource, int, bool> predicate);
-	}
+    }
 }
 
 namespace System.Linq

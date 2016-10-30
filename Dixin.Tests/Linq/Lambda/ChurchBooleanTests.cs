@@ -73,15 +73,15 @@
         public void IfTest()
         {
             Assert.AreEqual(
-                true ? true && false : true || false,
-                ChurchBoolean<Boolean>.If(True)(_ => True.And(False))(_ => True.Or(False)).Unchurch());
+                (true ? true && false : true || false).Church(),
+                If(True)(_ => True.And(False))(_ => True.Or(False)));
             Assert.AreEqual(
-                false ? true && false : true || false,
-                ChurchBoolean<Boolean>.If(False)(_ => True.And(False))(_ => True.Or(False)).Unchurch());
+                (false ? true && false : true || false).Church(),
+                If(False)(_ => True.And(False))(_ => True.Or(False)));
 
             bool isTrueBranchExecuted = false;
             bool isFalseBranchExecuted = false;
-            ChurchBoolean<object>.If(True)
+            If(True)
                 (_ => { isTrueBranchExecuted = true; return null; })
                 (_ => { isFalseBranchExecuted = true; return null; });
             Assert.IsTrue(isTrueBranchExecuted);
@@ -89,7 +89,7 @@
 
             isTrueBranchExecuted = false;
             isFalseBranchExecuted = false;
-            ChurchBoolean<object>.If(False)
+            If(False)
                 (_ => { isTrueBranchExecuted = true; return null; })
                 (_ => { isFalseBranchExecuted = true; return null; });
             Assert.IsFalse(isTrueBranchExecuted);

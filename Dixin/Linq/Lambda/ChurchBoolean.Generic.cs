@@ -18,19 +18,19 @@
     public static partial class ChurchBoolean<T>
     {
         // And = a => b => a(b)(False)
-        public static Func<Boolean<Boolean<T>, Boolean<T>>, Func<Boolean<T>, Boolean<T>>>
+        public static readonly Func<Boolean<Boolean<T>, Boolean<T>>, Func<Boolean<T>, Boolean<T>>>
             And = a => b => (Boolean<T>)a(b)(False);
 
         // Or = a => b => a(True)(b)
-        public static Func<Boolean<Boolean<T>, Boolean<T>>, Func<Boolean<T>, Boolean<T>>>
+        public static readonly Func<Boolean<Boolean<T>, Boolean<T>>, Func<Boolean<T>, Boolean<T>>>
             Or = a => b => (Boolean<T>)a(True)(b);
 
         // Not = boolean => boolean(False)(True)
-        public static Func<Boolean<Boolean<T>, Boolean<T>>, Boolean<T>>
+        public static readonly Func<Boolean<Boolean<T>, Boolean<T>>, Boolean<T>>
             Not = boolean => (Boolean<T>)boolean(False)(True);
 
         // Xor = a => b => a(b(False)(True))(b(True)(False))
-        public static Func<Boolean<Boolean<T>, Boolean<T>>, Func<Boolean<Boolean<T>, Boolean<T>>, Boolean<T>>>
+        public static readonly Func<Boolean<Boolean<T>, Boolean<T>>, Func<Boolean<Boolean<T>, Boolean<T>>, Boolean<T>>>
             Xor = a => b => (Boolean<T>)a((Boolean<T>)b(False)(True))((Boolean<T>)b(True)(False));
     }
 

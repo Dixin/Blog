@@ -2,10 +2,11 @@
 {
     using System;
 
+    using static ChurchBoolean;
     using static ChurchNumeral;
 
     // SignedNumeral is the alias of Tuple<Numeral, Numeral>.
-    public delegate object SignedNumeral(Boolean f);
+    public delegate dynamic SignedNumeral(Boolean f);
 
     public static partial class ChurchSignedNumeral
     {
@@ -31,7 +32,7 @@
         //        (_ => (0, negative - positive))
         public static readonly Func<SignedNumeral, SignedNumeral>
             Format = signed =>
-                ChurchBoolean<SignedNumeral>.If(signed.Positive().IsGreaterThanOrEqualTo(signed.Negative()))
+                If(signed.Positive().IsGreaterThanOrEqualTo(signed.Negative()))
                     (_ => signed.Positive().Subtract(signed.Negative()).Sign())
                     (_ => signed.Negative().Subtract(signed.Positive()).Sign().Negate());
     }
@@ -75,7 +76,7 @@
         // DivideByIgnoreZero = dividend => divisor => If(divisor.IsZero())(_ => 0)(_ => dividend._DivideBy(divisor))
         public static readonly Func<Numeral, Func<Numeral, Numeral>> 
             DivideByIgnoreZero = dividend => divisor =>
-                ChurchBoolean<Numeral>.If(divisor.IsZero())
+                If(divisor.IsZero())
                     (_ => Zero)
                     (_ => dividend.DivideBy(divisor));
 

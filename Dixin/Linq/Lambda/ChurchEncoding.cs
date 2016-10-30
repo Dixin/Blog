@@ -8,7 +8,7 @@ namespace Dixin.Linq.Lambda
         public static Boolean Church(this bool @bool) => @bool ? True : False;
 
         // Boolean function to System.Boolean structure.
-        public static bool Unchurch(this Boolean boolean) => (bool)boolean(true)(false);
+        public static bool Unchurch(this Boolean boolean) => boolean(true)(false);
     }
 
     public static partial class ChurchEncoding

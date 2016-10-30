@@ -86,6 +86,15 @@
                 .Count(functionMember => functionMember.IsPublic);
             Trace.WriteLine(functionCount); // 74127
         }
+
+        [Pure] // Incorrect.
+        internal static ProcessStartInfo Initialize(ProcessStartInfo processStart)
+        {
+            processStart.UseShellExecute = true;
+            processStart.ErrorDialog = true;
+            processStart.WindowStyle = ProcessWindowStyle.Normal;
+            return processStart;
+        }
     }
 }
 

@@ -26,11 +26,13 @@ namespace Dixin.Tests.Linq.EntityFramework
         {
             using (AdventureWorks context0 = new AdventureWorks())
             {
-                Assert.AreEqual(1, context0.Database.ExecuteSqlCommand(
-                    @"INSERT INTO [Production].[Product]
-	                        ([Name], [ProductNumber], [MakeFlag], [FinishedGoodsFlag], [SafetyStockLevel], [ReorderPoint], [StandardCost], [ListPrice], [DaysToManufacture], [SellStartDate], [rowguid], [ModifiedDate])
+                Assert.AreEqual(
+                    1,
+                    context0.Database.ExecuteSqlCommand(
+                        @"INSERT INTO [Production].[Product]
+                            ([Name], [ProductNumber], [MakeFlag], [FinishedGoodsFlag], [SafetyStockLevel], [ReorderPoint], [StandardCost], [ListPrice], [DaysToManufacture], [SellStartDate], [rowguid], [ModifiedDate])
                         VALUES
-	                        ({0}, N'ProductNumber', 1, 1, 100, 100, 1000, {1}, 1, GETDATE(), NEWID(), GETDATE())",
+                            ({0}, N'ProductNumber', 1, 1, 100, 100, 1000, {1}, 1, GETDATE(), NEWID(), GETDATE())",
                     nameof(Product.Name),
                     InitialListPrice));
                 return context0.Products.OrderByDescending(product => product.ProductID).First();
@@ -393,9 +395,9 @@ namespace Dixin.Tests.Linq.EntityFramework
             {
                 Assert.AreEqual(1, await context0.Database.ExecuteSqlCommandAsync(
                     @"INSERT INTO [Production].[Product]
-	                        ([Name], [ProductNumber], [MakeFlag], [FinishedGoodsFlag], [SafetyStockLevel], [ReorderPoint], [StandardCost], [ListPrice], [DaysToManufacture], [SellStartDate], [rowguid], [ModifiedDate])
+                            ([Name], [ProductNumber], [MakeFlag], [FinishedGoodsFlag], [SafetyStockLevel], [ReorderPoint], [StandardCost], [ListPrice], [DaysToManufacture], [SellStartDate], [rowguid], [ModifiedDate])
                         VALUES
-	                        ({0}, N'ProductNumber', 1, 1, 100, 100, 1000, {1}, 1, GETDATE(), NEWID(), GETDATE())",
+                            ({0}, N'ProductNumber', 1, 1, 100, 100, 1000, {1}, 1, GETDATE(), NEWID(), GETDATE())",
                     nameof(Product.Name),
                     InitialListPrice));
                 return await context0.Products.OrderByDescending(product => product.ProductID).FirstAsync();
@@ -758,9 +760,9 @@ namespace Dixin.Tests.Linq.EntityFramework
             {
                 Assert.AreEqual(1, context0.Database.ExecuteSqlCommand(
                     @"INSERT INTO [Production].[Product]
-	                        ([Name], [ProductNumber], [MakeFlag], [FinishedGoodsFlag], [SafetyStockLevel], [ReorderPoint], [StandardCost], [ListPrice], [DaysToManufacture], [SellStartDate], [rowguid], [ModifiedDate])
+                            ([Name], [ProductNumber], [MakeFlag], [FinishedGoodsFlag], [SafetyStockLevel], [ReorderPoint], [StandardCost], [ListPrice], [DaysToManufacture], [SellStartDate], [rowguid], [ModifiedDate])
                         VALUES
-	                        ({0}, N'ProductNumber', 1, 1, 100, 100, 1000, {1}, 1, GETDATE(), NEWID(), GETDATE())",
+                            ({0}, N'ProductNumber', 1, 1, 100, 100, 1000, {1}, 1, GETDATE(), NEWID(), GETDATE())",
                     nameof(Product.Name),
                     InitialListPrice));
                 return context0.Products.OrderByDescending(product => product.ProductID).First();
@@ -1123,9 +1125,9 @@ namespace Dixin.Tests.Linq.EntityFramework
             {
                 Assert.AreEqual(1, await context0.Database.ExecuteSqlCommandAsync(
                     @"INSERT INTO [Production].[Product]
-	                        ([Name], [ProductNumber], [MakeFlag], [FinishedGoodsFlag], [SafetyStockLevel], [ReorderPoint], [StandardCost], [ListPrice], [DaysToManufacture], [SellStartDate], [rowguid], [ModifiedDate])
+                            ([Name], [ProductNumber], [MakeFlag], [FinishedGoodsFlag], [SafetyStockLevel], [ReorderPoint], [StandardCost], [ListPrice], [DaysToManufacture], [SellStartDate], [rowguid], [ModifiedDate])
                         VALUES
-	                        ({0}, N'ProductNumber', 1, 1, 100, 100, 1000, {1}, 1, GETDATE(), NEWID(), GETDATE())",
+                            ({0}, N'ProductNumber', 1, 1, 100, 100, 1000, {1}, 1, GETDATE(), NEWID(), GETDATE())",
                     nameof(Product.Name),
                     InitialListPrice));
                 return await context0.Products.OrderByDescending(product => product.ProductID).FirstAsync();

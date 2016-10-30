@@ -1,33 +1,33 @@
 ﻿<#@ template language="C#" debug="true" visibility="internal" linePragmas="false" #>
 <#@ import namespace="System.Linq" #>
 <html>
-	<head>
-		<title><#= this.Title #></title>
-		<style type="text/css">
-			table {
-				border-collapse: collapse;
-			}
+    <head>
+        <title><#= this.Title #></title>
+        <style type="text/css">
+            table {
+                border-collapse: collapse;
+            }
 
-			table, th, td {
-				border: 1px solid black;
-			}
-		</style>
-	</head>
-	<body>
+            table, th, td {
+                border: 1px solid black;
+            }
+        </style>
+    </head>
+    <body>
 <# 
 foreach (IGrouping<string, Tuple<string, string>> chapter in this.Chapters)
 {
 #>
-		<h1><br /><#= chapter.Key #></h1>
+        <h1><br /><#= chapter.Key #></h1>
 <#
     foreach (Tuple<string, string> section in chapter)
-	{
+    {
 #>
-		<h2><#= section.Item1 #></h2>
-		<#= section.Item2 #>
+        <h2><#= section.Item1 #></h2>
+        <#= section.Item2 #>
 <#
     }
 }
 #>
-	</body>
+    </body>
 </html>

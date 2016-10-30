@@ -4,7 +4,7 @@
     using System.Diagnostics;
     using System.Linq;
 
-    internal static class Expression
+    internal static class Expressions
     {
 #if DEMO
         internal static Func<T, T> Variable<T>(Func<T, Func<Func<T, T>, T>> g, Func<T, T> h) => 
@@ -46,14 +46,5 @@
             Func<double, double> absSqrtLog2 = log.o(sqrt.o(abs)); // Composition: log o (sqrt o abs).
             Trace.WriteLine(absSqrtLog2(-2D)); // 0.34642256747438094
         }
-    }
-
-    // Unit<T> is the alias of Func<T, T>.
-    public delegate T Unit<T>(T value);
-
-    public static partial class Functions<T>
-    {
-        public static readonly Unit<T>
-            Id = x => x;
     }
 }

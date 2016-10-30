@@ -1,8 +1,8 @@
-namespace Dixin.Tests.Linq.Combinators
+namespace Dixin.Tests.Linq.Lambda
 {
     using System;
 
-    using Dixin.Linq.Combinators;
+    using Dixin.Linq.Lambda;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -19,7 +19,6 @@ namespace Dixin.Tests.Linq.Combinators
             Assert.AreEqual(x1, (Func<int, Func<int, int>>)SkiCombinators.K(x1)(y1));
             Assert.AreEqual(x1, (Func<int, Func<int, int>>)SkiCombinators.I(x1));
             Assert.AreEqual(y1, (Func<int, int>)SkiCombinators.I(y1));
-            Assert.AreEqual(z1, (int)SkiCombinators.I(z1));
 
             string x2 = "a";
             int y2 = 1;
@@ -31,18 +30,25 @@ namespace Dixin.Tests.Linq.Combinators
         [TestMethod]
         public void BooleanTests()
         {
-            Assert.AreEqual(true, (bool)SkiCombinators.True(true)(false));
-            Assert.AreEqual(false, (bool)SkiCombinators.False(new Func<dynamic, dynamic>(_ => true))(false));
+            Func<int, Func<int, int>> t1 = a => b => a + b;
+            int f1 = 1;
+            Assert.AreEqual(ChurchBoolean.True(t1)(f1), SkiCalculus.True(t1)(f1));
+            Assert.AreEqual(ChurchBoolean.False(t1)(f1), SkiCalculus.False(t1)(f1));
+
+            Func<int, int> t2 = a => a + 1;
+            int f2 = 2;
+            Assert.AreEqual(ChurchBoolean.True(t2)(f2), SkiCalculus.True(t2)(f2));
+            Assert.AreEqual(ChurchBoolean.False(t2)(f2), SkiCalculus.False(t2)(f2));
         }
 
         [TestMethod]
         public void NumeralTests()
         {
-            Assert.AreEqual(0U, SkiCombinators._UnchurchNumeral(SkiCombinators.Zero));
-            Assert.AreEqual(1U, SkiCombinators._UnchurchNumeral(SkiCombinators.One));
-            Assert.AreEqual(2U, SkiCombinators._UnchurchNumeral(SkiCombinators.Two));
-            Assert.AreEqual(3U, SkiCombinators._UnchurchNumeral(SkiCombinators.Three));
-            Assert.AreEqual(4U, SkiCombinators._UnchurchNumeral(SkiCombinators.Increase(SkiCombinators.Three)));
+            Assert.AreEqual(0U, SkiCalculus.UnchurchNumeral(SkiCalculus.Zero));
+            Assert.AreEqual(1U, SkiCalculus.UnchurchNumeral(SkiCalculus.One));
+            Assert.AreEqual(2U, SkiCalculus.UnchurchNumeral(SkiCalculus.Two));
+            Assert.AreEqual(3U, SkiCalculus.UnchurchNumeral(SkiCalculus.Three));
+            Assert.AreEqual(4U, SkiCalculus.UnchurchNumeral(SkiCalculus.Increase(SkiCalculus.Three)));
         }
     }
 }

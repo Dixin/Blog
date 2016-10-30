@@ -15,7 +15,9 @@ var http = require("http"),
 
     download = function (options, path) {
         var deferred = Q.defer(),
-            file = fs.createWriteStream(path),
+            file = fs.createWriteStream(path, {
+                flags: "w"
+            }),
             httpModule = getHttpModule(options);
 
         console.log("Downloading " + url.format(options) + " to " + path);
@@ -26,6 +28,25 @@ var http = require("http"),
             });
         }).on("error", function (error) {
             fs.unlink(path);
+            deferred.reject(error);
+        }).end();
+        return deferred.promise;
+    },
+
+    downloadString = function(options) {
+        var deferred = Q.defer(),
+            httpModule = getHttpModule(options);
+        console.log("Downloading " + url.format(options) + " as string.");
+        httpModule.request(options, function (response) {
+            var strings = [];
+            response.setEncoding('utf8');
+            response.on('data', function (string) {
+                strings.push(string);
+            });
+            response.on('end', function () {
+                deferred.resolve(strings.join());
+            });
+        }).on("error", function (error) {
             deferred.reject(error);
         }).end();
         return deferred.promise;
@@ -51,6 +72,7 @@ var http = require("http"),
 
 module.exports = {
     download: download,
+    downloadString: downloadString,
     removeReservedCharactersFromFileName: removeReservedCharactersFromFileName,
     exists: exists
 };

@@ -8,7 +8,9 @@
     "email": "dixinyan@live.com"
   },
   "dependencies": {
+    "cheerio": "^0.22.0",
+    "oauth": "^0.9.14",
     "q": "^1.4.1",
-    "tumblr-auto-auth": "^0.2.0"
+    "tumblr.js": "^1.1.1"
   }
 }

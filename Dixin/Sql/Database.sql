@@ -1,16 +1,16 @@
 ﻿-- Query all foreign keys.
 SELECT 
-	foreign_keys.name AS ForeignKey,
-	OBJECT_SCHEMA_NAME(foreign_keys.parent_object_id) AS TableSchema,
-	OBJECT_NAME(foreign_keys.parent_object_id) AS TableName,
-	COL_NAME(columns.parent_object_id, columns.parent_column_id) AS ColumnName,
-	OBJECT_SCHEMA_NAME(foreign_keys.referenced_object_id) AS ReferenceTableSchema,
-	OBJECT_NAME (foreign_keys.referenced_object_id) AS ReferenceTableName,
-	COL_NAME(columns.referenced_object_id, columns.referenced_column_id) AS ReferenceColumnName
+    foreign_keys.name AS ForeignKey,
+    OBJECT_SCHEMA_NAME(foreign_keys.parent_object_id) AS TableSchema,
+    OBJECT_NAME(foreign_keys.parent_object_id) AS TableName,
+    COL_NAME(columns.parent_object_id, columns.parent_column_id) AS ColumnName,
+    OBJECT_SCHEMA_NAME(foreign_keys.referenced_object_id) AS ReferenceTableSchema,
+    OBJECT_NAME (foreign_keys.referenced_object_id) AS ReferenceTableName,
+    COL_NAME(columns.referenced_object_id, columns.referenced_column_id) AS ReferenceColumnName
 FROM
-	sys.foreign_keys AS foreign_keys
-	INNER JOIN sys.foreign_key_columns AS columns ON foreign_keys.object_id = columns.constraint_object_id
-	INNER JOIN sys.objects AS objects ON objects.object_id = columns.referenced_object_id;
+    sys.foreign_keys AS foreign_keys
+    INNER JOIN sys.foreign_key_columns AS columns ON foreign_keys.object_id = columns.constraint_object_id
+    INNER JOIN sys.objects AS objects ON objects.object_id = columns.referenced_object_id;
 
 -- Query table-valued function output schema.
 SELECT *
@@ -27,14 +27,14 @@ FROM sys.dm_exec_describe_first_result_set(N'dbo.uspGetManagerEmployees', NULL, 
 -- Query T-SQL first output schema.
 SELECT *
 FROM sys.dm_exec_describe_first_result_set(
-	N'SELECT object_id, name, type_desc FROM sys.indexes', NULL, 0);
+    N'SELECT object_id, name, type_desc FROM sys.indexes', NULL, 0);
 
 SELECT * 
 FROM sys.dm_exec_describe_first_result_set(
-	N'SELECT CustomerID, TerritoryID, AccountNumber FROM Sales.Customer WHERE CustomerID = @CustomerID;
-	SELECT * FROM Sales.SalesOrderHeader;',
-	N'@CustomerID int',
-	0);
+    N'SELECT CustomerID, TerritoryID, AccountNumber FROM Sales.Customer WHERE CustomerID = @CustomerID;
+    SELECT * FROM Sales.SalesOrderHeader;',
+    N'@CustomerID int',
+    0);
 
 -- Query table-valued function result.
 SELECT *
@@ -66,8 +66,8 @@ sys.sp_msforeachtable N'sys.sp_spaceused [?]';
 SELECT
     schemas.name AS [TableSchema],
     OBJECT_NAME(parent_obj) AS [TableName],
-	USER_NAME(sysobjects.uid) AS [TriggerOwner],
-	sysobjects.name AS [TriggerName],
+    USER_NAME(sysobjects.uid) AS [TriggerOwner],
+    sysobjects.name AS [TriggerName],
     OBJECTPROPERTY(id, N'ExecIsUpdateTrigger') AS [Update],
     OBJECTPROPERTY(id, N'ExecIsDeleteTrigger') AS [Delete],
     OBJECTPROPERTY(id, N'ExecIsInsertTrigger') AS [Insert],
@@ -86,16 +86,16 @@ USE master;
 GO
 
 SELECT
-	name,
-	physical_name,
-	type_desc,
-	state_desc
+    name,
+    physical_name,
+    type_desc,
+    state_desc
 FROM sys.master_files
 WHERE database_id = DB_ID(N'D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\ADVENTUREWORKS_DATA.MDF');
 
 -- Update logic file name.
 ALTER DATABASE [D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\ADVENTUREWORKS_DATA.MDF]
-	MODIFY FILE (NAME = N'AdventureWorks2014_Data', NEWNAME = N'AdventureWorks_Data');
+    MODIFY FILE (NAME = N'AdventureWorks2014_Data', NEWNAME = N'AdventureWorks_Data');
 GO
 
 -- Shrink database and log.
@@ -112,22 +112,22 @@ GO
 
 -- Shrink logs for database with full recover model.
 ALTER DATABASE [D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\ADVENTUREWORKS_DATA.MDF]
-	SET RECOVERY SIMPLE;
+    SET RECOVERY SIMPLE;
 GO
 
 BACKUP DATABASE [D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\ADVENTUREWORKS_DATA.MDF] 
-	TO DISK = N'D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\Advunture.bak';
+    TO DISK = N'D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\Advunture.bak';
 GO
 
 BACKUP LOG [D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\ADVENTUREWORKS_DATA.MDF]
-	TO DISK = N'D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\Advunture_Log.bak';
+    TO DISK = N'D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\Advunture_Log.bak';
 GO
 
 DBCC SHRINKFILE (AdventureWorks_Log, EMPTYFILE);
 GO
 
 ALTER DATABASE [D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\ADVENTUREWORKS_DATA.MDF]
-	SET RECOVERY FULL;
+    SET RECOVERY FULL;
 GO
 
 -- Clear query plan.
