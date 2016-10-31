@@ -416,23 +416,32 @@ Next = λl.λx.λf.l (λf.x) (λx.λv.λg.g (x f) v) (λx.λv.v)
 = (λv.Shift (CreateListNode v) (n (Null, Null) (λt.λv.Shift (CreateListNode v)) t)) v
 = Shift (CreateListNode v) (n (Null, Null) (λt.λv.Shift (CreateListNode v)) t)
 
-  (CreateListNode 0 Null) (Null, Null) (λt.λv.Shift (CreateListNode v) t)
+  ListNode0 (Null, Null) (λt.λv.Shift (CreateListNode v) t)
+= (CreateListNode 0 Null) (Null, Null) (λt.λv.Shift (CreateListNode v) t)
 = Shift (CreateListNode 0) (Null (Null, Null) (λt.λv.Shift (CreateListNode v)) t)
 = Shift (CreateListNode 0) ((λx.λf.λx) (Null, Null) (λt.λv.Shift (CreateListNode v)) t)
 = Shift (CreateListNode 0) (Null, Null)
-= (Null, Create ListNode 0 Null)
+= (Null, CreateListNode 0 Null)
+= (Null, ListNode0)
 
-  (CreateListNode 1 (CreateListNode 0 Null)) (Null, Null) (λt.λv.Shift (CreateListNode v) t)
+  ListNode1 (Null, Null) (λt.λv.Shift (CreateListNode v) t)
+= (CreateListNode 1 (CreateListNode 0 Null)) (Null, Null) (λt.λv.Shift (CreateListNode v) t)
 = Shift (CreateListNode 1) ((CreateListNode 0 Null) (Null, Null) (λt.λv.Shift (CreateListNode v)) t)
 = Shift (CreateListNode 1) (Null, Create ListNode 0 Null)
-= (Create ListNode 0 Null, (CreateListNode 1 (CreateListNode 0 Null))
+= (CreateListNode 0 Null, (CreateListNode 1 (CreateListNode 0 Null))
+= (ListNode0, ListNode1)
 
-  (CreateListNode 2 (CreateListNode 1 (CreateListNode 0 Null))) (Null, Null) (λt.λv.Shift (CreateListNode v) t)
+  ListNode2 (Null, Null) (λt.λv.Shift (CreateListNode v) t)
+= (CreateListNode 2 (CreateListNode 1 (CreateListNode 0 Null))) (Null, Null) (λt.λv.Shift (CreateListNode v) t)
 = Shift (CreateListNode 2) ((CreateListNode 1 (CreateListNode 0 Null)) (Null, Null) (λt.λv.Shift (CreateListNode v)) t)
 = Shift (CreateListNode 2) (CreateListNode 0 Null, (CreateListNode 1 (CreateListNode 0 Null))
 = ((CreateListNode 1 (CreateListNode 0 Null), CreateListNode 2 (CreateListNode 1 (CreateListNode 0 Null)))
+= (ListNode1, ListNode2)
 
 ...
+
+  ListNoden (Null, Null) (λt.λv.Shift (CreateListNode v) t)
+= (ListNoden - 1, ListNoden)
 
   (CreateListNode v n) (Null, Null) (λt.λv.Shift (CreateListNode v) t)
 = (n, CreateListNode v n)

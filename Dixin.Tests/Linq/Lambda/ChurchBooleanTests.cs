@@ -35,35 +35,35 @@
         [TestMethod]
         public void NotTest()
         {
-            Assert.AreEqual(!true, True.Not().Unchurch());
-            Assert.AreEqual(!false, False.Not().Unchurch());
+            Assert.AreEqual((!true).Church(), True.Not());
+            Assert.AreEqual((!false).Church(), False.Not());
         }
 
         [TestMethod]
         public void AndTest()
         {
-            Assert.AreEqual(true && true, True.And(True).Unchurch());
-            Assert.AreEqual(true && false, True.And(False).Unchurch());
-            Assert.AreEqual(false && true, False.And(True).Unchurch());
-            Assert.AreEqual(false && false, False.And(False).Unchurch());
+            Assert.AreEqual((true && true).Church(), True.And(True));
+            Assert.AreEqual((true && false).Church(), True.And(False));
+            Assert.AreEqual((false && true).Church(), False.And(True));
+            Assert.AreEqual((false && false).Church(), False.And(False));
         }
 
         [TestMethod]
         public void OrTest()
         {
-            Assert.AreEqual(true || true, True.Or(True).Unchurch());
-            Assert.AreEqual(true || false, True.Or(False).Unchurch());
-            Assert.AreEqual(false || true, False.Or(True).Unchurch());
-            Assert.AreEqual(false || false, False.Or(False).Unchurch());
+            Assert.AreEqual((true || true).Church(), True.Or(True));
+            Assert.AreEqual((true || false).Church(), True.Or(False));
+            Assert.AreEqual((false || true).Church(), False.Or(True));
+            Assert.AreEqual((false || false).Church(), False.Or(False));
         }
 
         [TestMethod]
         public void XorTest()
         {
-            Assert.AreEqual(true ^ true, True.Xor(True).Unchurch());
-            Assert.AreEqual(true ^ false, True.Xor(False).Unchurch());
-            Assert.AreEqual(false ^ true, False.Xor(True).Unchurch());
-            Assert.AreEqual(false ^ false, False.Xor(False).Unchurch());
+            Assert.AreEqual((true ^ true).Church(), True.Xor(True));
+            Assert.AreEqual((true ^ false).Church(), True.Xor(False));
+            Assert.AreEqual((false ^ true).Church(), False.Xor(True));
+            Assert.AreEqual((false ^ false).Church(), False.Xor(False));
         }
     }
 

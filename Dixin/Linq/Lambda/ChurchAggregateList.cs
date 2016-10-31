@@ -27,16 +27,14 @@
         public static readonly Func<AggregateListNode<T>, T>
             Value = node => node(Functions<T>.Id)(x => value => value);
 
-#if DEMO
         // Next = node => x => f => node(_ => x)(accumulate => value => (g => g(accumulate(f))(value)))(accumulate => value => accumulate);
         public static readonly Func<AggregateListNode<T>, AggregateListNode<T>>
            Next = node => x => f => node(new Func<Func<dynamic, Func<T, dynamic>>, dynamic>(_ => x))(accumulate => value => new Func<Func<dynamic, Func<T, dynamic>>, dynamic>(g => g(accumulate(f))(value)))(new Func<dynamic, Func<T, dynamic>>(accumulate => value => accumulate));
-#endif
 
         // https://books.google.com/books?id=1Sm6BQAAQBAJ&pg=PA172&lpg=PA172&dq=church+list+fold+haskell&source=bl&ots=gJccvSeeWw&sig=Zsqfb94JjyF0lWt1veJEfREhHsg&hl=en&sa=X&ei=S07HVMy7EIzjoAT1tID4BQ&ved=0CEYQ6AEwBzgK#v=onepage&q=church%20list%20fold%20haskell&f=false
-        // Next = node => node(ChurchTuple.Create(Null)(Null))(tuple => value => tuple.Shift(Create(value))).Item1()
+        // Next = node => node((Null, Null))(tuple => value => tuple.Shift(ChurchTuple.Create(value))).Item1()
         public static readonly Func<AggregateListNode<T>, AggregateListNode<T>>
-            Next = node =>
+            NextWithSwap = node =>
                 ((Tuple<AggregateListNode<T>, AggregateListNode<T>>)node
                     (ChurchTuple<AggregateListNode<T>, AggregateListNode<T>>.Create(Null)(Null))
                     (tuple => value => ((Tuple<AggregateListNode<T>, AggregateListNode<T>>)tuple).Shift(Create(value))))

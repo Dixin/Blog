@@ -6,6 +6,19 @@
     using static ChurchBoolean;
     using static ChurchNumeral;
 
+    public static partial class CompiledChurchNumeral
+    {
+        public static readonly Func<Numeral, Func<Numeral, Numeral>> DivideBySelfReference;
+
+        static CompiledChurchNumeral()
+        {
+            DivideBySelfReference = dividend => divisor =>
+                If(dividend.IsGreaterThanOrEqualTo(divisor))
+                    (_ => One.Add(DivideBySelfReference(dividend.Subtract(divisor))(divisor)))
+                    (_ => Zero);
+        }
+    }
+
     // Curried from dynamic Numeral(Func<dynamic, dynamic> f, dynamic x).
     // Numeral is the alias for Func<Func<dynamic, dynamic>, Func<dynamic, dynamic>>.
     public delegate Func<dynamic, dynamic> Numeral(Func<dynamic, dynamic> f);
@@ -46,26 +59,27 @@
 
     public static partial class ChurchNumeral
     {
-        public static readonly Func<Numeral, Numeral>
-            Increase = n => f => x => f(n(f)(x));
+        public static readonly Func<Numeral, Numeral> Increase = n => f => x => f(n(f)(x));
 
-        public static readonly Func<Numeral, Numeral>
-            IncreaseWithComposition = n => f => f.o(n(f));
+        public static readonly Func<Numeral, Numeral> IncreaseWithComposition = n => f => f.o(n(f));
 
         // Decrease = n => f => x => n(g => h => h(g(f)))(_ => x)(Id)
-        public static readonly Func<Numeral, Numeral>
-            Decrease = n => f => x => n(g => new Func<Func<dynamic, dynamic>, dynamic>(h => h(g(f))))(new Func<Func<dynamic, dynamic>, dynamic>(_ => x))(new Func<dynamic, dynamic>(Functions<dynamic>.Id));
+        public static readonly Func<Numeral, Numeral> Decrease =
+            n =>
+                f =>
+                    x =>
+                        n(g => new Func<Func<dynamic, dynamic>, dynamic>(h => h(g(f))))(
+                            new Func<Func<dynamic, dynamic>, dynamic>(_ => x))(
+                            new Func<dynamic, dynamic>(Functions<dynamic>.Id));
 
         // Add = a => b => f => x => a(f)(b(f)(x))
-        public static readonly Func<Numeral, Func<Numeral, Numeral>>
-            Add = a => b => f => x => b(f)(a(f)(x));
+        public static readonly Func<Numeral, Func<Numeral, Numeral>> Add = a => b => f => x => b(f)(a(f)(x));
 
         // Add = a => b => f => f ^ (a + b)
-        public static readonly Func<Numeral, Func<Numeral, Numeral>>
-            AddWithComposition = a => b => f => a(f).o(b(f));
+        public static readonly Func<Numeral, Func<Numeral, Numeral>> AddWithComposition = a => b => f => a(f).o(b(f));
 
 #if DEMO
-        // Add = a => b => b(Increase)(a)
+// Add = a => b => b(Increase)(a)
         public static readonly Func<Numeral, Func<Numeral, Numeral>>
             AddWithIncrease = a => b => (Numeral)b(Increase)(a);
 #endif
@@ -73,27 +87,26 @@
         // Add = a => b => b(Increase)(a)
         // η conversion:
         // Add = a => b => b(n => Increase(n))(a)
-        public static readonly Func<Numeral, Func<Numeral, Numeral>>
-            AddWithIncrease = a => b => b(n => Increase(n))(a);
+        public static readonly Func<Numeral, Func<Numeral, Numeral>> AddWithIncrease = a => b => b(n => Increase(n))(a);
 
         // Subtract = a => b => b(Decrease)(a)
         // η conversion:
         // Subtract = a => b => b(n => Decrease(n))(a)
-        public static readonly Func<Numeral, Func<Numeral, Numeral>>
-            Subtract = a => b => b(n => Decrease(n))(a);
+        public static readonly Func<Numeral, Func<Numeral, Numeral>> Subtract = a => b => b(n => Decrease(n))(a);
 
         // Multiply = a => b => b(Add(a))(a)
         // η conversion:
         // Multiply = a => b => b(n => Add(a)(n))(Zero)
-        public static readonly Func<Numeral, Func<Numeral, Numeral>>
-            Multiply = a => b => b(n => Add(a)(n))(Zero);
+        public static readonly Func<Numeral, Func<Numeral, Numeral>> Multiply = a => b => b(n => Add(a)(n))(Zero);
 
         // Pow = a => b => b(Multiply(a))(a)
         // η conversion:
         // Pow = a => b => b(n => Multiply(a)(n))(1)
-        public static readonly Func<Numeral, Func<Numeral, Numeral>>
-            Pow = a => b => b(n => Multiply(a)(n))(One);
+        public static readonly Func<Numeral, Func<Numeral, Numeral>> Pow = a => b => b(n => Multiply(a)(n))(One);
+    }
 
+    public static partial class ChurchNumeral
+    {
         // DivideBySelfReference = dividend => divisor => 
         //    If(dividend >= divisor)
         //        (_ => 1 + DivideBySelfReference(dividend - divisor)(divisor))
@@ -103,6 +116,15 @@
                 If(dividend.IsGreaterThanOrEqualTo(divisor))
                     (_ => One.Add(DivideBySelfReference(dividend.Subtract(divisor))(divisor)))
                     (_ => Zero);
+    }
+
+    public static partial class ChurchNumeral
+    {
+        public static Func<Numeral, Numeral> DivideByMethod(Numeral dividend) => divisor =>
+            If(dividend.IsGreaterThanOrEqualTo(divisor))
+                (_ => One.Add(DivideByMethod(dividend.Subtract(divisor))(divisor)))
+                (_ => Zero);
+    }
 
 #if DEMO
         internal static void Inline()
@@ -113,7 +135,8 @@
                     (_ => Zero);
         }
 #endif
-
+    public static partial class ChurchNumeral
+    {
         internal static void Inline()
         {
             Func<Numeral, Func<Numeral, Numeral>> divideBy = null;
@@ -123,25 +146,13 @@
                     (_ => Zero);
         }
 
-        // Decrease = n => n(tuple => tuple.Shift(Increase))(ChurchTuple.Create(Zero)(Zero)).Item1();
-        public static readonly Func<Numeral, Numeral> DecreaseWithSwap = n =>
-            ((Tuple<Numeral, Numeral>)n
-                (tuple => ((Tuple<Numeral, Numeral>)tuple).Shift(Increase))
-                (ChurchTuple<Numeral, Numeral>.Create(Zero)(Zero)))
-            .Item1();
-    }
-
-    public static partial class CompiledChurchNumeral
-    {
-        public static readonly Func<Numeral, Func<Numeral, Numeral>> DivideBySelfReference;
-
-        static CompiledChurchNumeral()
-        {
-            DivideBySelfReference = dividend => divisor =>
-                If(dividend.IsGreaterThanOrEqualTo(divisor))
-                    (_ => One.Add(DivideBySelfReference(dividend.Subtract(divisor))(divisor)))
-                    (_ => Zero);
-        }
+        // Decrease = n => n(tuple => tuple.Shift(Increase))(0, 0).Item1();
+        public static readonly Func<Numeral, Numeral> 
+            DecreaseWithSwap = n =>
+                ((Tuple<Numeral, Numeral>)n
+                    (tuple => ((Tuple<Numeral, Numeral>)tuple).Shift(Increase))
+                    (ChurchTuple<Numeral, Numeral>.Create(Zero)(Zero)))
+                .Item1();
     }
 
     public static partial class NumeralExtensions

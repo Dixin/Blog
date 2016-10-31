@@ -9,7 +9,7 @@ namespace Dixin.Linq.Lambda
 
     public static partial class ChurchList<T>
     {
-        // Create = value => next => ChurchTuple.Create(value)(next)
+        // Create = value => next => (value, next)
         public static readonly Func<T, Func<ListNode<T>, ListNode<T>>>
             Create = value => next => new ListNode<T>(ChurchTuple<T, ListNode<T>>.Create(value)(next));
 
@@ -24,7 +24,7 @@ namespace Dixin.Linq.Lambda
 
     public static partial class ChurchList<T>
     {
-        // Null = f => x => x;
+        // Null = False;
         public static readonly ListNode<T>
             Null = new ListNode<T>(False);
 

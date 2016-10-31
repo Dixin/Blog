@@ -12,11 +12,11 @@ namespace Dixin.Linq.Lambda
         public static readonly Func<T1, Func<T2, Tuple<T1, T2>>> 
             Create = item1 => item2 => f => f(item1)(item2);
 
-        // Item1 = tuple => tuple(x => y => x)
+        // Item1 = tuple => tuple(True)
         public static readonly Func<Tuple<T1, T2>, T1> 
             Item1 = tuple => (T1)(object)tuple(True); // Bug: http://stackoverflow.com/questions/37392566/
 
-        // Item2 = tuple => tuple(x => y => y)
+        // Item2 = tuple => tuple(False)
         public static readonly Func<Tuple<T1, T2>, T2> 
             Item2 = tuple => (T2)(object)tuple(False); // Bug: http://stackoverflow.com/questions/37392566/
     }
@@ -68,7 +68,7 @@ namespace Dixin.Linq.Lambda
 
     public static partial class ChurchTuple<T1, T2, T3>
     {
-        // CreateTuple = item1 => item2 => item3 => CreateTuple(item1)(CreateTuple(item2)(item3))
+        // Create = item1 => item2 => item3 => Create(item1)(CreateTuple(item2)(item3))
         public static readonly Func<T1, Func<T2, Func<T3, Tuple<T1, T2, T3>>>>
             Create = item1 => item2 => item3 => new Tuple<T1, T2, T3>(ChurchTuple<T1, Tuple<T2, T3>>.Create(item1)(ChurchTuple<T2, T3>.Create(item2)(item3)));
 

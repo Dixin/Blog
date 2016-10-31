@@ -1,6 +1,6 @@
 ﻿"use strict";
 
-var path = require("path"),
+const path = require("path"),
     url = require("url"),
     util = require("util"),
     http = require("http"),
@@ -12,7 +12,7 @@ var path = require("path"),
     common = require("./common"),
 
     getClient = function (options) {
-        var deferred = Q.defer(),
+        const deferred = Q.defer(),
             callbackUrl = "http://127.0.0.1:34946/tumblr",
             parsedCallbackUrl = url.parse(callbackUrl),
             oAuthClient = new oAuth.OAuth(
@@ -27,15 +27,15 @@ var path = require("path"),
             if (error) {
                 deferred.reject(error);
             } else {
-                var server = http.createServer((request, response) => {
-                    var requestUrl = url.parse(request.url);
+                const server = http.createServer((request, response) => {
+                    const requestUrl = url.parse(request.url);
                     if (requestUrl.pathname === parsedCallbackUrl.pathname) {
-                        var query = queryString.parse(requestUrl.query);
+                        const query = queryString.parse(requestUrl.query);
                         oAuthClient.getOAuthAccessToken(token, tokenSecret, query.oauth_verifier, function (error, accessToken, acessTokenSecret) {
                             if (error) {
                                 deferred.reject(error);
                             } else {
-                                var tumblrClient = new tumblr.Client({
+                                const tumblrClient = new tumblr.Client({
                                     consumer_key: options.appConsumerKey,
                                     consumer_secret: options.appSecretKey,
                                     token: accessToken,
@@ -69,7 +69,7 @@ var path = require("path"),
     },
 
     getLikes = function (options) {
-        var deferred = Q.defer();
+        const deferred = Q.defer();
         options.client.userLikes({
             limit: options.limit,
             after: options.after
@@ -88,12 +88,12 @@ var path = require("path"),
     },
 
     downloadPost = function (post, directory, getFileName) {
-        var downloads = [];
+        const downloads = [];
         console.log(`Processing ${post.post_url}`);
         if (post.photos) { // Post has pictures.
             post.photos.forEach(function (photo, index) {
-                var url = photo.original_size.url;
-                var file = path.join(directory, getFileName(post, url, index));
+                const url = photo.original_size.url,
+                    file = path.join(directory, getFileName(post, url, index));
                 downloads.push(common.download(url, file).thenResolve({
                     post: post,
                     url: url,
@@ -103,8 +103,8 @@ var path = require("path"),
             });
         }
         if (post.video_url) { // Post has videos.
-            var url = post.video_url;
-            var file = path.join(directory, getFileName(post, url));
+            const url = post.video_url,
+                file = path.join(directory, getFileName(post, url));
             downloads.push(common.download(url, file).thenResolve({
                 post: post,
                 url: url,
@@ -116,16 +116,13 @@ var path = require("path"),
     },
 
     getFileName = function (post, url, index) {
-        var summary = post.summary ? common.removeReservedCharactersFromFileName(post.summary).trim() : "",
+        const summary = post.summary ? common.removeReservedCharactersFromFileName(post.summary).trim() : "",
             extension = url.split(".").pop();
-        summary = summary ? ` ${summary.substring(0, 30)}` : "";
-        index = index || 0;
-        // return `${post.id} ${index}${summary}.${extension}`;
-        return post.blog_name + " " + post.id + " " + index + summary + "." + extension;
+        return `${post.blog_name} ${post.id} ${index || 0} ${summary ? ` ${summary.substring(0, 30)}` : ""}.${extension}`;
     },
 
     unlikePost = function (options) {
-        var deferred = Q.defer();
+        const deferred = Q.defer();
         console.log(`Unliking post ${options.post.post_url}`);
         options.client.unlikePost(options.post.id, options.post.reblog_key, function (error) {
             if (error) {
@@ -174,26 +171,26 @@ var path = require("path"),
     getLikedPostsFromHtml = function (options, likedPosts, likesPath, deferred) {
         likedPosts = likedPosts || [];
         deferred = deferred || Q.defer();
-        var likesUrl = `https://www.tumblr.com${likesPath || "/likes"}`;
-        var requestOptions = url.parse(likesUrl);
+        const likesUrl = `https://www.tumblr.com${likesPath || "/likes"}`;
+        const requestOptions = url.parse(likesUrl);
         requestOptions.headers = {
             "accept": 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
             "accept-language": "en-US,en;q=0.8,zh-CN;q=0.6,zh-TW;q=0.4",
             "cache-control": "max-age=0",
             "cookie": options.cookie,
             "dnt": "1",
-            "upgrade-insecure-requests": "1",
+            "upgrade-insecure-requests": "1"
         };
         common.downloadString(requestOptions)
             .then(function (html) {
-                var $ = cheerio.load(html);
+                const $ = cheerio.load(html);
                 $("li.post_container div.post").each(function () {
                     likedPosts.push({
                         blog: $(this).data("tumblelog"),
                         post: $(this).data("post-id")
                     });
                 });
-                var nextPage = $("#next_page_link");
+                const nextPage = $("#next_page_link");
                 if (nextPage.length > 0) {
                     getLikedPostsFromHtml(options, likedPosts, nextPage.prop("href"), deferred);
                 } else {
@@ -207,7 +204,7 @@ var path = require("path"),
         return getLikedPostsFromHtml(options).then(likedPosts => {
             console.log(`Posts from HTML: ${likedPosts.length}`);
             Q.all(likedPosts.map(post => {
-                var deferred = Q.defer();
+                const deferred = Q.defer();
                 options.client.blogPosts(post.blog + ".tumblr.com", null, { id: post.post }, function (error, data) {
                     if (error) {
                         deferred.reject(error);

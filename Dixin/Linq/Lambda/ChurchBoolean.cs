@@ -2,8 +2,6 @@ namespace Dixin.Linq.Lambda
 {
     using System;
 
-    using static ChurchBoolean;
-
 #if DEMO
     using static Dixin.Linq.Lambda.Boolean;
 #endif
@@ -60,7 +58,7 @@ namespace Dixin.Linq.Lambda
         public static Boolean And(this Boolean a, Boolean b) => ChurchBoolean.And(a)(b);
     }
 
-    public static partial class BooleanExtensions
+    public static partial class ChurchBoolean
     {
         internal static void CallAnd()
         {
@@ -79,7 +77,10 @@ namespace Dixin.Linq.Lambda
             Boolean y = False;
             Boolean result2 = new Func<Boolean, Func<Boolean, Boolean>>(a => b => (Boolean)a(b)(False))(x)(y);
         }
+    }
 
+    public static partial class BooleanExtensions
+    {
         public static Boolean Or(this Boolean a, Boolean b) => ChurchBoolean.Or(a)(b);
 
         public static Boolean Not(this Boolean a) => ChurchBoolean.Not(a);
