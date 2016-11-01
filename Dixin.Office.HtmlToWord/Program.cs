@@ -93,11 +93,11 @@
                                             .Select(paragraph => paragraph.Cq())
                                             .ForEach(paragraph =>
                                                     {
-                                                        string paragrapgText = paragraph.Text().Trim();
+                                                        string paragraphText = paragraph.Text().Trim();
                                                         if ((paragraph.Children().Length == 0 &&
-                                                             string.IsNullOrWhiteSpace(paragrapgText))
+                                                             string.IsNullOrWhiteSpace(paragraphText))
                                                             ||
-                                                            paragrapgText.StartsWith(
+                                                            paragraphText.StartsWith(
                                                                 "[LinQ via C#", StringComparison.OrdinalIgnoreCase))
                                                         {
                                                             paragraph.Remove();

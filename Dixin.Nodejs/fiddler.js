@@ -1,6 +1,6 @@
 ﻿"use strict";
 
-var url = require("url"),
+const url = require("url"),
     http = require("http"),
 
     env = process.env,
@@ -11,20 +11,17 @@ var url = require("url"),
         port: 8888,
     },
 
-    proxyRequests = function () {
-        var proxyUrl = url.format(proxy);
-        env.http_proxy = proxyUrl;
-        env.https_proxy = proxyUrl;
+    proxyRequests = () => {
+        env.http_proxy = env.https_proxy = url.format(proxy);
         env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
     },
 
-    unproxyRequests = function () {
-        env.http_proxy = "";
-        env.https_proxy = "";
+    unproxyRequests = () => {
+        env.http_proxy = env.https_proxy = "";
         env.NODE_TLS_REJECT_UNAUTHORIZED = "";
     },
 
-    setProxy = function (options) {
+    setProxy = options => {
         if (typeof options === "string") { // options can be URL string.
             options = url.parse(options);
         }
@@ -45,15 +42,9 @@ var url = require("url"),
         return options;
     },
 
-    request = function (options, callback) {
-        options = setProxy(options);
-        return http.request(options, callback);
-    },
+    request = (options, callback) => http.request(setProxy(options), callback),
     
-    get = function(options, callback) {
-        options = setProxy(options);
-        return http.get(options, callback);
-    };
+    get = (options, callback) => http.get(setProxy(options), callback);
 
 module.exports = {
     proxy: proxy,

@@ -4,168 +4,82 @@
     using System.Collections.Generic;
     using System.Linq;
 
-    using Dixin.Common;
-
-    public enum ListQueryMode
-    {
-        Strict = 0,
-        Normalize,
-        Ignore
-    }
-
     public static partial class EnumerableX
     {
         #region List
 
-        public static IEnumerable<TSource> Insert<TSource>(
-            this IEnumerable<TSource> source, int index, TSource insert, ListQueryMode mode = ListQueryMode.Strict)
+        public static IEnumerable<TSource> Insert<TSource>(this IEnumerable<TSource> source, int index, TSource value)
         {
-            source.NotNull(nameof(source));
-            if (mode == ListQueryMode.Strict)
+            if (index < 0)
             {
-                Argument.Range(
-                    index >= 0,
-                    $"When {nameof(mode)} is {ListQueryMode.Strict}, {nameof(index)} must be 0 or positive.",
-                    nameof(index));
+                throw new ArgumentOutOfRangeException(nameof(index), $"{nameof(index)} must be 0 or greater than 0.");
             }
 
+            return InsertGenerator(source, index, value);
+        }
 
-            if (mode == ListQueryMode.Normalize && index < 0)
+        private static IEnumerable<TSource> InsertGenerator<TSource>(
+            IEnumerable<TSource> source, int index, TSource value)
+        {
+            int currentIndex = 0;
+            foreach (TSource sourceValue in source)
             {
-                index = 0;
-            }
-
-            int currentIndex = -1;
-            bool isInserted = false;
-            foreach (TSource value in source)
-            {
-                currentIndex = checked(currentIndex + 1);
                 if (currentIndex == index)
                 {
-                    isInserted = true;
-                    yield return insert;
+                    yield return value;
                 }
-
-                yield return value;
+                yield return sourceValue;
+                currentIndex = checked(currentIndex + 1);
             }
 
-            if (!isInserted)
+            if (index == currentIndex)
             {
-                int count = checked(currentIndex + 1);
-                switch (mode)
-                {
-                    case ListQueryMode.Normalize:
-                        yield return insert;
-                        break;
-
-                    case ListQueryMode.Ignore:
-                        if (count == index)
-                        {
-                            yield return insert;
-                        }
-
-                        break;
-
-                    case ListQueryMode.Strict:
-                        if (count == index)
-                        {
-                            yield return insert;
-                        }
-                        else
-                        {
-                            throw new ArgumentOutOfRangeException(
-                                nameof(index),
-                                // mscorlib resource ArgumentOutOfRange_ListInsert.
-                                $"Index {index} must be equal to or less than the count of sequance {count}.");
-                        }
-
-                        break;
-                }
+                yield return value;
+            }
+            else if (index > currentIndex)
+            {
+                // mscorlib resource ArgumentOutOfRange_ListInsert.
+                throw new ArgumentOutOfRangeException(
+                    nameof(index),
+                    $"Index {index} must be equal to or less than the count of sequance {currentIndex}.");
             }
         }
 
-        public static IEnumerable<TSource> RemoveAt<TSource>(
-            this IEnumerable<TSource> source, int index, ListQueryMode mode = ListQueryMode.Strict)
+        public static IEnumerable<TSource> RemoveAt<TSource>(this IEnumerable<TSource> source, int index)
         {
-            source.NotNull(nameof(source));
-            if (mode == ListQueryMode.Strict)
+            if (index < 0)
             {
-                Argument.Range(
-                    index >= 0,
-                    $"When {nameof(mode)} is {ListQueryMode.Strict}, {nameof(index)} must be 0 or positive.",
-                    nameof(index));
+                throw new ArgumentOutOfRangeException(nameof(index), $"{nameof(index)} must be 0 or greater than 0.");
             }
 
-            if (index < 0 && mode == ListQueryMode.Normalize)
-            {
-                index = 0;
-            }
+            return RemoveAtGenerator(source, index);
+        }
 
-            int currentIndex = -1;
-            bool isRemoved = false;
-            TSource lastValue = default(TSource);
-            bool hasLastValue = false;
+        private static IEnumerable<TSource> RemoveAtGenerator<TSource>(IEnumerable<TSource> source, int index)
+        {
+            int currentIndex = 0;
             foreach (TSource value in source)
             {
+                if (currentIndex != index)
+                {
+                    yield return value;
+                }
                 currentIndex = checked(currentIndex + 1);
-                if (currentIndex == index)
-                {
-                    isRemoved = true;
-                }
-                else
-                {
-                    if (!hasLastValue)
-                    {
-                        hasLastValue = true;
-                        lastValue = value;
-                    }
-                    else
-                    {
-                        yield return lastValue;
-                        lastValue = value;
-                    }
-                }
             }
 
-            if (isRemoved)
+            if (index >= currentIndex)
             {
-                if (hasLastValue)
-                {
-                    yield return lastValue;
-                }
-            }
-            else
-            {
-                switch (mode)
-                {
-                    case ListQueryMode.Strict:
-                        if (index < 0 || index > currentIndex)
-                        {
-                            throw new ArgumentOutOfRangeException(
-                                nameof(index),
-                                $"index {index} must be equal to or less than the last index of source {currentIndex}.");
-                        }
-
-                        break;
-                    case ListQueryMode.Ignore:
-                        if ((index < 0 || index > currentIndex) && hasLastValue)
-                        {
-                            yield return lastValue;
-                        }
-
-                        break;
-                }
+                throw new ArgumentOutOfRangeException(
+                    nameof(index), 
+                    $"index {index} must be equal to or less than the last index of source {currentIndex}.");
             }
         }
 
         public static IEnumerable<TSource> Remove<TSource>(
             this IEnumerable<TSource> source,
             TSource remove,
-            IEqualityComparer<TSource> comparer = null,
-            ListQueryMode mode = ListQueryMode.Strict)
+            IEqualityComparer<TSource> comparer = null)
         {
-            source.NotNull(nameof(source));
-
             comparer = comparer ?? EqualityComparer<TSource>.Default;
             bool isRemoved = false;
             foreach (TSource value in source)
@@ -179,23 +93,13 @@
                     yield return value;
                 }
             }
-
-            if (!isRemoved && mode == ListQueryMode.Strict)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(remove),
-                    $"The specified value is not removed because it is not in {nameof(source)}.");
-            }
         }
 
         public static IEnumerable<TSource> RemoveAll<TSource>(
             this IEnumerable<TSource> source,
             TSource remove,
-            IEqualityComparer<TSource> comparer = null,
-            ListQueryMode mode = ListQueryMode.Strict)
+            IEqualityComparer<TSource> comparer = null)
         {
-            source.NotNull(nameof(source));
-
             comparer = comparer ?? EqualityComparer<TSource>.Default;
             bool isRemoved = false;
             foreach (TSource value in source)
@@ -209,12 +113,6 @@
                     yield return value;
                 }
             }
-
-            if (!isRemoved && mode == ListQueryMode.Strict)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(remove), $"The specified value is not removed because it is not in {nameof(source)}.");
-            }
         }
 
         public static int IndexOf<TSource>(
@@ -224,8 +122,6 @@
             int startIndex = 0,
             int? count = null)
         {
-            source.NotNull(nameof(source));
-
             comparer = comparer ?? EqualityComparer<TSource>.Default;
             source = source.Skip(startIndex);
             if (count != null)
@@ -233,16 +129,15 @@
                 source = source.Take(count.Value);
             }
 
-            int index = checked(-1 + startIndex);
+            int index = checked(0 + startIndex);
             foreach (TSource value in source)
             {
-                index = checked(index + 1);
                 if (comparer.Equals(value, search))
                 {
                     return index;
                 }
+                index = checked(index + 1);
             }
-
             return -1;
         }
 
@@ -253,8 +148,6 @@
             int startIndex = 0,
             int? count = null)
         {
-            source.NotNull(nameof(source));
-
             comparer = comparer ?? EqualityComparer<TSource>.Default;
             source = source.Skip(startIndex);
             if (count != null)
@@ -263,16 +156,15 @@
             }
 
             int lastIndex = -1;
-            int index = checked(-1 + startIndex);
+            int index = checked(0 + startIndex);
             foreach (TSource value in source)
             {
-                index = checked(index + 1);
                 if (comparer.Equals(value, search))
                 {
                     lastIndex = index;
                 }
+                index = checked(index + 1);
             }
-
             return lastIndex;
         }
 

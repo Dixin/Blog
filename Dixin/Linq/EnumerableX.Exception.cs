@@ -5,8 +5,6 @@
     using System.Linq;
     using System.Runtime.CompilerServices;
 
-    using Dixin.Common;
-
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
     using static Dixin.TransientFaultHandling.Retry;
@@ -17,8 +15,6 @@
             this IEnumerable<TSource> source, Func<TException, bool> handler = null)
             where TException : Exception
         {
-            source.NotNull(nameof(source));
-
             using (IEnumerator<TSource> iterator = source.GetEnumerator())
             {
                 while (true)
@@ -39,49 +35,32 @@
                     {
                         break;
                     }
-
                     yield return value;
                 }
             }
         }
 
         public static IEnumerable<TSource> Catch<TSource, TException>(
-            this IEnumerable<TSource> source, Action<TException> handler = null)
-            where TException : Exception
-        {
-            source.NotNull(nameof(source));
-
-            return source.Catch<TSource, TException>(exception =>
+            this IEnumerable<TSource> source, Action<TException> handler = null) where TException : Exception =>
+                source.Catch<TSource, TException>(exception =>
                 {
                     handler?.Invoke(exception);
                     return false;
                 });
-        }
 
         public static IEnumerable<TSource> Catch<TSource>(
-            this IEnumerable<TSource> source, Func<Exception, bool> handler = null)
-        {
-            source.NotNull(nameof(source));
-
-            return source.Catch<TSource, Exception>(handler);
-        }
+            this IEnumerable<TSource> source, Func<Exception, bool> handler = null) => 
+                source.Catch<TSource, Exception>(handler);
 
         public static IEnumerable<TSource> Catch<TSource>(
-            this IEnumerable<TSource> source, Action<Exception> handler = null)
-        {
-            source.NotNull(nameof(source));
-
-            return source.Catch<TSource, Exception>(handler);
-        }
+            this IEnumerable<TSource> source, Action<Exception> handler = null) => 
+                source.Catch<TSource, Exception>(handler);
 
         public static IEnumerable<TResult> TrySelect<TSource, TResult, TException>(
             this IEnumerable<TSource> source,
             Func<TSource, int, TResult> selector,
             Func<TException, bool?> @catch = null) where TException : Exception
         {
-            source.NotNull(nameof(source));
-            selector.NotNull(nameof(selector));
-
             using (IEnumerator<TSource> iterator = source.GetEnumerator())
             {
                 int index = -1;
@@ -107,7 +86,6 @@
                             case true:
                                 throw;
                         }
-
                         continue;
                     }
 
@@ -119,13 +97,8 @@
         public static IEnumerable<TResult> TrySelect<TSource, TResult>(
             this IEnumerable<TSource> source,
             Func<TSource, int, TResult> selector,
-            Func<Exception, bool?> @catch = null)
-        {
-            source.NotNull(nameof(source));
-            selector.NotNull(nameof(selector));
-
-            return source.TrySelect<TSource, TResult, Exception>(selector, @catch);
-        }
+            Func<Exception, bool?> @catch = null) => 
+                source.TrySelect<TSource, TResult, Exception>(selector, @catch);
 
         public static IEnumerable<TResult> RetrySelect<TSource, TResult, TException>(
             this IEnumerable<TSource> source,
@@ -133,15 +106,10 @@
             RetryStrategy retryStrategy = null,
             Func<Exception, bool> isTransient = null,
             EventHandler<RetryingEventArgs> retryingHandler = null,
-            Func<TException, bool?> @catch = null) where TException : Exception
-        {
-            source.NotNull(nameof(source));
-            selector.NotNull(nameof(selector));
-
-            return source.TrySelect(
-                (value, index) => Execute(() => selector(value, index), retryStrategy, isTransient, retryingHandler),
-                @catch);
-        }
+            Func<TException, bool?> @catch = null) where TException : Exception => 
+                source.TrySelect(
+                    (value, index) => Execute(() => selector(value, index), retryStrategy, isTransient, retryingHandler),
+                    @catch);
 
         public static IEnumerable<TResult> RetrySelect<TSource, TResult, TException>(
             this IEnumerable<TSource> source,
@@ -152,18 +120,13 @@
             TimeSpan? retryInterval = null,
             bool? firstFastRetry = true,
             Func<TException, bool?> @catch = null,
-            [CallerMemberName] string retryStrategyName = null) where TException : Exception
-        {
-            source.NotNull(nameof(source));
-            selector.NotNull(nameof(selector));
-
-            return source.RetrySelect(
-                selector,
-                FixedInterval(retryCount, retryInterval, firstFastRetry, retryStrategyName),
-                isTransient,
-                retryingHandler,
-                @catch);
-        }
+            [CallerMemberName] string retryStrategyName = null) where TException : Exception => 
+                source.RetrySelect(
+                    selector,
+                    FixedInterval(retryCount, retryInterval, firstFastRetry, retryStrategyName),
+                    isTransient,
+                    retryingHandler,
+                    @catch);
 
         public static IEnumerable<TResult> RetrySelect<TSource, TResult>(
             this IEnumerable<TSource> source,
@@ -171,14 +134,9 @@
             RetryStrategy retryStrategy = null,
             Func<Exception, bool> isTransient = null,
             EventHandler<RetryingEventArgs> retryingHandler = null,
-            Func<Exception, bool?> @catch = null)
-        {
-            source.NotNull(nameof(source));
-            selector.NotNull(nameof(selector));
-
-            return source.RetrySelect<TSource, TResult, Exception>(
-                selector, retryStrategy, isTransient, retryingHandler, @catch);
-        }
+            Func<Exception, bool?> @catch = null) => 
+                source.RetrySelect<TSource, TResult, Exception>(
+                    selector, retryStrategy, isTransient, retryingHandler, @catch);
 
         public static IEnumerable<TResult> RetrySelect<TSource, TResult>(
             this IEnumerable<TSource> source,
@@ -189,27 +147,19 @@
             TimeSpan? retryInterval = null,
             bool? firstFastRetry = true,
             Func<Exception, bool?> @catch = null,
-            [CallerMemberName] string retryStrategyName = null)
-        {
-            source.NotNull(nameof(source));
-            selector.NotNull(nameof(selector));
-
-            return source.RetrySelect(
-                selector,
-                FixedInterval(retryCount, retryInterval, firstFastRetry, retryStrategyName),
-                isTransient,
-                retryingHandler,
-                @catch);
-        }
+            [CallerMemberName] string retryStrategyName = null) => 
+                source.RetrySelect(
+                    selector,
+                    FixedInterval(retryCount, retryInterval, firstFastRetry, retryStrategyName),
+                    isTransient,
+                    retryingHandler,
+                    @catch);
 
         public static IEnumerable<TResult> TrySelect<TSource, TResult, TException>(
             this IEnumerable<TSource> source,
             Func<TSource, TResult> selector,
             Func<TException, bool?> @catch = null) where TException : Exception
         {
-            source.NotNull(nameof(source));
-            selector.NotNull(nameof(selector));
-
             using (IEnumerator<TSource> iterator = source.GetEnumerator())
             {
                 while (true)
@@ -233,7 +183,6 @@
                             case true:
                                 throw;
                         }
-
                         continue;
                     }
 
@@ -245,13 +194,8 @@
         public static IEnumerable<TResult> TrySelect<TSource, TResult>(
             this IEnumerable<TSource> source,
             Func<TSource, TResult> selector,
-            Func<Exception, bool?> @catch = null)
-        {
-            source.NotNull(nameof(source));
-            selector.NotNull(nameof(selector));
-
-            return source.TrySelect<TSource, TResult, Exception>(selector, @catch);
-        }
+            Func<Exception, bool?> @catch = null) => 
+                source.TrySelect<TSource, TResult, Exception>(selector, @catch);
 
         public static IEnumerable<TResult> RetrySelect<TSource, TResult, TException>(
             this IEnumerable<TSource> source,
@@ -259,15 +203,10 @@
             RetryStrategy retryStrategy = null,
             Func<Exception, bool> isTransient = null,
             EventHandler<RetryingEventArgs> retryingHandler = null,
-            Func<TException, bool?> @catch = null) where TException : Exception
-        {
-            source.NotNull(nameof(source));
-            selector.NotNull(nameof(selector));
-
-            return source.TrySelect(
-                value => Execute(() => selector(value), retryStrategy, isTransient, retryingHandler),
-                @catch);
-        }
+            Func<TException, bool?> @catch = null) where TException : Exception => 
+                source.TrySelect(
+                    value => Execute(() => selector(value), retryStrategy, isTransient, retryingHandler),
+                    @catch);
 
         public static IEnumerable<TResult> RetrySelect<TSource, TResult, TException>(
             this IEnumerable<TSource> source,
@@ -278,18 +217,13 @@
             TimeSpan? retryInterval = null,
             bool? firstFastRetry = true,
             Func<TException, bool?> @catch = null,
-            [CallerMemberName] string retryStrategyName = null) where TException : Exception
-        {
-            source.NotNull(nameof(source));
-            selector.NotNull(nameof(selector));
-
-            return source.RetrySelect(
-                selector,
-                FixedInterval(retryCount, retryInterval, firstFastRetry, retryStrategyName),
-                isTransient,
-                retryingHandler,
-                @catch);
-        }
+            [CallerMemberName] string retryStrategyName = null) where TException : Exception => 
+                source.RetrySelect(
+                    selector,
+                    FixedInterval(retryCount, retryInterval, firstFastRetry, retryStrategyName),
+                    isTransient,
+                    retryingHandler,
+                    @catch);
 
         public static IEnumerable<TResult> RetrySelect<TSource, TResult>(
             this IEnumerable<TSource> source,
@@ -297,14 +231,9 @@
             RetryStrategy retryStrategy = null,
             Func<Exception, bool> isTransient = null,
             EventHandler<RetryingEventArgs> retryingHandler = null,
-            Func<Exception, bool?> @catch = null)
-        {
-            source.NotNull(nameof(source));
-            selector.NotNull(nameof(selector));
-
-            return source.RetrySelect<TSource, TResult, Exception>(
-                selector, retryStrategy, isTransient, retryingHandler, @catch);
-        }
+            Func<Exception, bool?> @catch = null) => 
+                source.RetrySelect<TSource, TResult, Exception>(
+                    selector, retryStrategy, isTransient, retryingHandler, @catch);
 
         public static IEnumerable<TResult> RetrySelect<TSource, TResult>(
             this IEnumerable<TSource> source,
@@ -315,18 +244,13 @@
             TimeSpan? retryInterval = null,
             bool? firstFastRetry = true,
             Func<Exception, bool?> @catch = null,
-            [CallerMemberName] string retryStrategyName = null)
-        {
-            source.NotNull(nameof(source));
-            selector.NotNull(nameof(selector));
-
-            return source.RetrySelect(
-                selector,
-                FixedInterval(retryCount, retryInterval, firstFastRetry, retryStrategyName),
-                isTransient,
-                retryingHandler,
-                @catch);
-        }
+            [CallerMemberName] string retryStrategyName = null) => 
+                source.RetrySelect(
+                    selector,
+                    FixedInterval(retryCount, retryInterval, firstFastRetry, retryStrategyName),
+                    isTransient,
+                    retryingHandler,
+                    @catch);
 
         public static IEnumerable<TSource> Retry<TSource, TException>(
             this IEnumerable<TSource> source,
@@ -335,19 +259,17 @@
             EventHandler<RetryingEventArgs> retryingHandler = null,
             Func<TException, bool> @catch = null) where TException : Exception
         {
-            source.NotNull(nameof(source));
-
             List<TSource> results = new List<TSource>();
             try
             {
                 Execute(
                     () =>
+                    {
+                        foreach (TSource value in source.Skip(results.Count))
                         {
-                            foreach (TSource value in source.Skip(results.Count))
-                            {
-                                results.Add(value);
-                            }
-                        },
+                            results.Add(value);
+                        }
+                    },
                     retryStrategy,
                     isTransient,
                     retryingHandler);
@@ -364,8 +286,10 @@
             int retryCount,
             Func<TException, bool> @catch = null) where TException : Exception
         {
-            source.NotNull(nameof(source));
-            Argument.Range(retryCount >= 0, $"{nameof(retryCount)} must be 0 or positive.", nameof(retryCount));
+            if (retryCount < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(retryCount), $"{retryCount} must be 0 or greater than 0.");
+            }
 
             int count = 0;
             TException lastException = null;
@@ -425,8 +349,10 @@
             int retryCount,
             Func<Exception, bool> @catch = null)
         {
-            source.NotNull(nameof(source));
-            Argument.Range(retryCount >= 0, $"{nameof(retryCount)} must be 0 or positive.", nameof(retryCount));
+            if (retryCount < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(retryCount), $"{retryCount} must be 0 or greater than 0.");
+            }
 
             return source.Retry<TSource, Exception>(retryCount, @catch);
         }

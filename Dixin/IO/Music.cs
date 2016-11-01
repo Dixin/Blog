@@ -142,7 +142,7 @@
             ["The Punisher"]="惩罚者"
         };
 
-        private const string Separater = ".";
+        private const string Separator = ".";
 
         private static readonly HashSet<string> Extensions = new HashSet<string>(
             new[] { ".mp3", ".m4a", ".wma" }, StringComparer.OrdinalIgnoreCase);
@@ -177,13 +177,13 @@
                             return;
                         }
 
-                        string[] names = song.Name.Split(Separater.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                        string[] names = song.Name.Split(Separator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
                         string year = names[0];
                         string albumName = names[1];
                         string artistName = names[3];
                         string genre = names[5];
 
-                        string newAlbumName = $"{genre}{Separater}{artistName}{Separater}{year}{Separater}{albumName}";
+                        string newAlbumName = $"{genre}{Separator}{artistName}{Separator}{year}{Separator}{albumName}";
                         DirectoryInfo newAlbum = new DirectoryInfo(Path.Combine(toDirectory.FullName, newAlbumName));
                         if (!newAlbum.Exists)
                         {
@@ -228,7 +228,7 @@
                         }
                         else
                         {
-                            string[] names = songs.First().Name.Split(Separater.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                            string[] names = songs.First().Name.Split(Separator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
                             string artistName = names[3];
                             string year = names[0];
                             string albumName = names[1];
@@ -240,7 +240,7 @@
                             }
                             else
                             {
-                                string newAlbumName = $"{genre}{Separater}{artistName}{Separater}{year}{Separater}{albumName}";
+                                string newAlbumName = $"{genre}{Separator}{artistName}{Separator}{year}{Separator}{albumName}";
                                 if (!album.Name.EqualsIgnoreCase(newAlbumName))
                                 {
                                     album.Rename(newAlbumName);
@@ -258,7 +258,7 @@
             Directory.EnumerateDirectories(music).ForEach(album =>
                 {
                     string[] names = Path.GetFileName(album)
-                        .Split(Separater.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                        .Split(Separator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
                     for (int index = 0; index < names.Length; index++)
                     {
                         string name = names[index];
@@ -271,7 +271,7 @@
                             }
                         }
                     }
-                    new DirectoryInfo(album).TryRename(string.Join(Separater, names));
+                    new DirectoryInfo(album).TryRename(string.Join(Separator, names));
                 });
         }
 
@@ -279,7 +279,7 @@
 
         private static bool IsNotFormated(string fileName)
         {
-            string[] names = fileName.Split(Separater.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+            string[] names = fileName.Split(Separator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
             return names.Length != 7
                 || names[0].Length != 4
                 || (names[2].Length != 2 && names[2].Length != 3 && names.Any(string.IsNullOrWhiteSpace));

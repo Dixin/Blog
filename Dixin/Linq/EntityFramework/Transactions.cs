@@ -8,8 +8,6 @@ namespace Dixin.Linq.EntityFramework
     using System.Linq;
     using System.Transactions;
 
-    using Dixin.Common;
-
     using IsolationLevel = System.Data.IsolationLevel;
 
     internal static partial class Transactions
@@ -56,12 +54,8 @@ namespace Dixin.Linq.EntityFramework
             FROM sys.dm_exec_sessions
             WHERE session_id = @@SPID";
 
-        public static string QueryCurrentIsolationLevel(this DbContext context)
-        {
-            context.NotNull(nameof(context));
-
-            return context.Database.SqlQuery<string>(CurrentIsolationLevelSql).Single();
-        }
+        public static string QueryCurrentIsolationLevel(this DbContext context) => 
+            context.Database.SqlQuery<string>(CurrentIsolationLevelSql).Single();
     }
 
     internal static partial class Transactions

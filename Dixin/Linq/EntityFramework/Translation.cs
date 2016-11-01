@@ -208,14 +208,14 @@
             // IQueryable<string> firstQueryable = selectQueryable.Provider._internalQuery.ObjectQueryProvider
             //    .CreateQuery<string>(firstCallExpression);
             // Above _internalQuery, ObjectQueryProvider and CreateQuery are not public. Reflection is needed:
-            Assembly entityFrmaeworkAssembly = typeof(DbContext).Assembly;
-            Type dbQueryProviderType = entityFrmaeworkAssembly.GetType(
+            Assembly entityFrameworkAssembly = typeof(DbContext).Assembly;
+            Type dbQueryProviderType = entityFrameworkAssembly.GetType(
                 "System.Data.Entity.Internal.Linq.DbQueryProvider");
             FieldInfo internalQueryField = dbQueryProviderType.GetField(
                 "_internalQuery", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField);
-            Type internalQueryType = entityFrmaeworkAssembly.GetType("System.Data.Entity.Internal.Linq.IInternalQuery");
+            Type internalQueryType = entityFrameworkAssembly.GetType("System.Data.Entity.Internal.Linq.IInternalQuery");
             PropertyInfo objectQueryProviderProperty = internalQueryType.GetProperty("ObjectQueryProvider");
-            Type objectQueryProviderType = entityFrmaeworkAssembly.GetType(
+            Type objectQueryProviderType = entityFrameworkAssembly.GetType(
                 "System.Data.Entity.Core.Objects.ELinq.ObjectQueryProvider");
             MethodInfo createQueryMethod = objectQueryProviderType
                 .GetMethod(

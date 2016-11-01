@@ -6,16 +6,11 @@
     using System.Linq;
     using System.Threading;
 
-    using Dixin.Common;
-
     public static class ParallelEnumerableX
     {
         public static void ForceParallel<TSource>(
             this IEnumerable<TSource> source, Action<TSource> action, int forcedDegreeOfParallelism)
         {
-            source.NotNull(nameof(source));
-            action.NotNull(nameof(action));
-
             ConcurrentQueue<TSource> queue = new ConcurrentQueue<TSource>(source);
             Thread[] threads = Enumerable
                 .Range(0, Math.Min(forcedDegreeOfParallelism, queue.Count))

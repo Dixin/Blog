@@ -258,7 +258,7 @@
     <Compile Include="Linq\LinqToSql\FunctionsTests.cs" />
     <Compile Include="Linq\LinqToSql\LogTests.cs" />
     <Compile Include="Linq\LinqToSql\QueryMethodsTests.cs" />
-    <Compile Include="Linq\EntityFramework\BinaryArithmeticTanslatorTests.cs" />
+    <Compile Include="Linq\EntityFramework\BinaryArithmeticTranslatorTests.cs" />
     <Compile Include="Linq\EntityFramework\InfixVisitorTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">

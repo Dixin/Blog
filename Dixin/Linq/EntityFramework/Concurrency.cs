@@ -320,9 +320,10 @@ namespace Dixin.Linq.EntityFramework
         public static int SaveChanges(
             this DbContext context, Action<IEnumerable<DbEntityEntry>> resolveConflicts, int retryCount = 3)
         {
-            context.NotNull(nameof(context));
-            resolveConflicts.NotNull(nameof(resolveConflicts));
-            Argument.Range(retryCount > 0, $"{retryCount} must be greater than 0.", nameof(retryCount));
+            if (retryCount <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(retryCount), $"{retryCount} must be greater than 0.");
+            }
 
             for (int retry = 1; retry < retryCount; retry++)
             {
@@ -350,13 +351,9 @@ namespace Dixin.Linq.EntityFramework
         public static int SaveChanges(
             this DbContext context, Action<IEnumerable<DbEntityEntry>> resolveConflicts, RetryStrategy retryStrategy)
         {
-            context.NotNull(nameof(context));
-            resolveConflicts.NotNull(nameof(resolveConflicts));
-            retryStrategy.NotNull(nameof(retryStrategy));
-
             RetryPolicy retryPolicy = new RetryPolicy(
                 new TransientDetection<DbUpdateConcurrencyException>(), retryStrategy);
-            retryPolicy.Retrying += (sender, e) => 
+            retryPolicy.Retrying += (sender, e) =>
                 resolveConflicts(((DbUpdateConcurrencyException)e.LastException).Entries);
             return retryPolicy.ExecuteAction(context.SaveChanges);
         }
@@ -368,36 +365,32 @@ namespace Dixin.Linq.EntityFramework
 
         ClientWins,
 
-        MergeClinetAndStore
+        MergeClientAndStore
     }
 
     public static partial class DbContextExtensions
     {
         public static int SaveChanges(this DbContext context, RefreshConflict refreshMode, int retryCount = 3)
         {
-            context.NotNull(nameof(context));
-            Argument.Range(retryCount > 0, $"{retryCount} must be greater than 0.", nameof(retryCount));
+            if (retryCount <= 0)
+            {
+                throw new ArgumentOutOfRangeException($"{retryCount} must be greater than 0.", nameof(retryCount));
+            }
 
             return context.SaveChanges(
                 conflicts => conflicts.ForEach(tracking => tracking.Refresh(refreshMode)), retryCount);
         }
 
-        public static int SaveChanges(this DbContext context, RefreshConflict refreshMode, RetryStrategy retryStrategy)
-        {
-            context.NotNull(nameof(context));
-            retryStrategy.NotNull(nameof(retryStrategy));
-
-            return context.SaveChanges(
-                conflicts => conflicts.ForEach(tracking => tracking.Refresh(refreshMode)), retryStrategy);
-        }
+        public static int SaveChanges(
+            this DbContext context, RefreshConflict refreshMode, RetryStrategy retryStrategy) =>
+                context.SaveChanges(
+                    conflicts => conflicts.ForEach(tracking => tracking.Refresh(refreshMode)), retryStrategy);
     }
 
-    public static partial class DbEntutyEntryExtensions
+    public static partial class DbEntityEntryExtensions
     {
         public static DbEntityEntry Refresh(this DbEntityEntry tracking, RefreshConflict refreshMode)
         {
-            tracking.NotNull(nameof(tracking));
-
             switch (refreshMode)
             {
                 case RefreshConflict.StoreWins:
@@ -426,7 +419,7 @@ namespace Dixin.Linq.EntityFramework
                         }
                         break;
                     }
-                case RefreshConflict.MergeClinetAndStore:
+                case RefreshConflict.MergeClientAndStore:
                     {
                         DbPropertyValues databaseValues = tracking.GetDatabaseValues(); // Execute SELECT.
                         if (databaseValues == null)
@@ -471,7 +464,7 @@ namespace Dixin.Linq.EntityFramework
 
                 productCopy2.Name = nameof(adventureWorks2);
                 productCopy2.ProductSubcategoryID = 1;
-                adventureWorks2.SaveChanges(RefreshConflict.MergeClinetAndStore);
+                adventureWorks2.SaveChanges(RefreshConflict.MergeClientAndStore);
             }
         }
     }

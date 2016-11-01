@@ -85,7 +85,7 @@
 #endif
 
         public static readonly Func<dynamic, dynamic>
-            IwithSK = S(K)(K); // Or S(K)(S).
+            IWithSK = S(K)(K); // Or S(K)(S).
     }
 
     public static partial class SkiCalculus

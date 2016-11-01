@@ -1,6 +1,6 @@
 ﻿"use strict";
 
-var tumblr = require("./tumblr");
+const tumblr = require("./tumblr");
 
 tumblr.downloadAllAndUnlike({
     // Register an application in tumblr: https://www.tumblr.com/oauth/apps.

@@ -42,8 +42,8 @@
             QueryMethods.WhereWithAnd();
             QueryMethods.WhereAndWhere();
             QueryMethods.WhereWithIs();
-            QueryMethods.OfTypeWithEntiy();
-            QueryMethods.OfTypeWithPromitive(); // TODO.
+            QueryMethods.OfTypeWithEntity();
+            QueryMethods.OfTypeWithPrimitive(); // TODO.
         }
 
         [TestMethod]

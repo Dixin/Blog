@@ -81,7 +81,7 @@
 
     internal static partial class ExpressionTree
     {
-        internal static void Preix()
+        internal static void Prefix()
         {
             Expression<Func<double, double, double, double, double, double>> infix =
                 (a, b, c, d, e) => a + b - c * d / 2 + e * 3;

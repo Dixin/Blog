@@ -8,7 +8,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class BinaryArithmeticTanslatorTests
+    public class BinaryArithmeticTranslatorTests
     {
         [TestMethod]
         public void TranslateToSql()

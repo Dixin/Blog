@@ -424,10 +424,10 @@
             IEqualityComparer<TSource> comparer = null)
         {
             comparer = comparer ?? EqualityComparer<TSource>.Default;
-            using (IEnumerator<TSource> firstItoerator = first.GetEnumerator())
+            using (IEnumerator<TSource> firstItorator = first.GetEnumerator())
             using (IEnumerator<TSource> secondIterator = second.GetEnumerator())
             {
-                return firstItoerator.SequenceEqual(secondIterator, comparer);
+                return firstItorator.SequenceEqual(secondIterator, comparer);
             }
         }
 

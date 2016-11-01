@@ -136,8 +136,8 @@
             Directory
                 .EnumerateFiles(directory)
                 .Where(file => archiveExtensions.Contains(Path.GetExtension(file), StringComparer.OrdinalIgnoreCase))
-                .ForEach(archibe =>
-                    this.Extract(archibe, destinationDirectory?.Invoke(archibe), deleteArchive, logger));
+                .ForEach(archive =>
+                    this.Extract(archive, destinationDirectory?.Invoke(archive), deleteArchive, logger));
 
             if (isRecursive)
             {

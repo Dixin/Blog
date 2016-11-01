@@ -14,11 +14,12 @@
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
     using System.Transactions;
-    using Dixin.Common;
+
     using Dixin.Linq.EntityFramework.Full;
     using Dixin.Linq.EntityFramework.FullWithViews;
 
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+
     using IsolationLevel = System.Data.IsolationLevel;
 
     public class LegacyAdventureWorks : ObjectContext
@@ -362,12 +363,10 @@
         }
     }
 
-    public static partial class DbEntutyEntryExtensions
+    public static partial class DbEntityEntryExtensions
     {
         public static async Task<DbEntityEntry> RefreshAsync(this DbEntityEntry tracking, RefreshConflict refreshMode)
         {
-            tracking.NotNull(nameof(tracking));
-
             switch (refreshMode)
             {
                 case RefreshConflict.StoreWins:
@@ -388,7 +387,7 @@
                         }
                         break;
                     }
-                case RefreshConflict.MergeClinetAndStore:
+                case RefreshConflict.MergeClientAndStore:
                     {
                         DbPropertyValues databaseValues = await tracking.GetDatabaseValuesAsync();
                         if (databaseValues == null)
@@ -415,8 +414,10 @@
         public static async Task<int> SaveChangesAsync(
             this DbContext context, Func<IEnumerable<DbEntityEntry>, Task> resolveConflictsAsync, int retryCount = 3)
         {
-            context.NotNull(nameof(context));
-            Argument.Range(retryCount > 0, $"{retryCount} must be greater than 0.", nameof(retryCount));
+            if (retryCount <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(retryCount), $"{retryCount} must be greater than 0.");
+            }
 
             for (int retry = 1; retry < retryCount; retry++)
             {
@@ -435,10 +436,6 @@
         public static async Task<int> SaveChangesAsync(
             this DbContext context, Func<IEnumerable<DbEntityEntry>, Task> resolveConflictsAsync, RetryStrategy retryStrategy)
         {
-            context.NotNull(nameof(context));
-            resolveConflictsAsync.NotNull(nameof(resolveConflictsAsync));
-            retryStrategy.NotNull(nameof(retryStrategy));
-
             RetryPolicy retryPolicy = new RetryPolicy(
                 new TransientDetection<DbUpdateConcurrencyException>(), retryStrategy);
             retryPolicy.Retrying += (sender, e) =>
@@ -452,8 +449,10 @@
         public static async Task<int> SaveChangesAsync(
             this DbContext context, RefreshConflict refreshMode, int retryCount = 3)
         {
-            context.NotNull(nameof(context));
-            Argument.Range(retryCount > 0, $"{retryCount} must be greater than 0.", nameof(retryCount));
+            if (retryCount <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(retryCount), $"{retryCount} must be greater than 0.");
+            }
 
             return await context.SaveChangesAsync(
                 async conflicts =>
@@ -467,21 +466,16 @@
         }
 
         public static async Task<int> SaveChangesAsync(
-            this DbContext context, RefreshConflict refreshMode, RetryStrategy retryStrategy)
-        {
-            context.NotNull(nameof(context));
-            retryStrategy.NotNull(nameof(retryStrategy));
-
-            return await context.SaveChangesAsync(
-                async conflicts =>
-                {
-                    foreach (DbEntityEntry tracking in conflicts)
-                    {
-                        await tracking.RefreshAsync(refreshMode);
-                    }
-                },
-                retryStrategy);
-        }
+            this DbContext context, RefreshConflict refreshMode, RetryStrategy retryStrategy) => 
+                await context.SaveChangesAsync(
+                    async conflicts =>
+                        {
+                            foreach (DbEntityEntry tracking in conflicts)
+                            {
+                                await tracking.RefreshAsync(refreshMode);
+                            }
+                        },
+                    retryStrategy);
     }
 
     internal static partial class Performance
@@ -501,7 +495,7 @@
 
                 productCopy2.Name = nameof(adventureWorks2);
                 productCopy2.ProductSubcategoryID = 1;
-                await adventureWorks2.SaveChangesAsync(RefreshConflict.MergeClinetAndStore);
+                await adventureWorks2.SaveChangesAsync(RefreshConflict.MergeClientAndStore);
             }
         }
 

@@ -44,7 +44,7 @@
         }
 
         [TestMethod]
-        public void EmailalidationTest()
+        public void EmailValidationTest()
         {
             Contact contact1 = new Contact() { Name = nameof(Contact.Name), Email = "user@host.com" };
             ValidationContext validationContext1 = new ValidationContext(contact1);

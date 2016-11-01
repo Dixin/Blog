@@ -16,7 +16,7 @@
         {
             QueryMethods.ParentAndAncestors();
             QueryMethods.ChildElements();
-            QueryMethods.ChildrenAndDecendants();
+            QueryMethods.ChildrenAndDescendants();
             QueryMethods.ResultObjects();
         }
 

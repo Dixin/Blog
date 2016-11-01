@@ -7,8 +7,6 @@ namespace Dixin.Linq.LinqToSql
     using System.Linq;
     using System.Linq.Expressions;
 
-    using Dixin.Common;
-
     public static class TableHelper
     {
         public static void SetForeignKey<TOther>(
@@ -58,15 +56,20 @@ namespace Dixin.Linq.LinqToSql
             where TEntity : class
         {
             MetaType metaType = database.Mapping.GetMetaType(typeof(TEntity));
-            Argument.Requires(metaType != null, $"{nameof(TEntity)} must be mapped.", nameof(TEntity));
+            if (metaType == null)
+            {
+                throw new ArgumentException($"{nameof(TEntity)} must be mapped.", nameof(TEntity));
+            }
             MetaDataMember[] primaryKeys = database
                 .Mapping
                 .GetMetaType(typeof(TEntity))
                 .DataMembers
                 .Where(member => member.IsPrimaryKey)
                 .ToArray();
-            Argument.Requires(
-                keys.Length == primaryKeys.Length, $"{nameof(keys)} must have correct number of values.", nameof(keys));
+            if (keys.Length != primaryKeys.Length)
+            {
+                throw new ArgumentException($"{nameof(keys)} must have correct number of values.", nameof(keys));
+            }
 
             ParameterExpression entity = Expression.Parameter(typeof(TEntity), nameof(entity));
             Expression predicateBody = database

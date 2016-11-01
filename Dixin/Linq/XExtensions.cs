@@ -8,15 +8,10 @@
     using System.Xml.Schema;
     using System.Xml.Xsl;
 
-    using Dixin.Common;
-
     public static partial class XExtensions
     {
-        public static IEnumerable<XObject> DescendantObjects(this XObject source)
-        {
-            source.NotNull(nameof(source));
-
-            return Enumerable
+        public static IEnumerable<XObject> DescendantObjects(this XObject source) => 
+            Enumerable
                 .Empty<XObject>()
                 .Concat(
                     (source as XElement)?.Attributes() // T is covariant in IEnumerable<T>.
@@ -30,56 +25,36 @@
                                 (descendant as XElement)?.Attributes() // T is covariant in IEnumerable<T>.
                                 ?? Enumerable.Empty<XObject>()))
                     ?? Enumerable.Empty<XObject>());
-        }
     }
 
     public static partial class XExtensions
     {
-        public static IEnumerable<XObject> SelfAndDescendantObjects(this XObject source)
-        {
-            source.NotNull(nameof(source));
-
-            return Enumerable
+        public static IEnumerable<XObject> SelfAndDescendantObjects(this XObject source) => 
+            Enumerable
                 .Repeat(source, 1)
                 .Concat(source.DescendantObjects());
-        }
 
-        public static IEnumerable<XName> Names(this XContainer source)
-        {
-            source.NotNull(nameof(source));
-
-            return ((source as XElement)?.DescendantsAndSelf() ?? source.Descendants())
+        public static IEnumerable<XName> Names(this XContainer source) => 
+            ((source as XElement)?.DescendantsAndSelf() ?? source.Descendants())
                 .SelectMany(element => Enumerable
                     .Repeat(element.Name, 1)
                     .Concat(element
                         .Attributes()
                         .Select(attribute => attribute.Name)))
                 .Distinct();
-        }
 
-        public static IEnumerable<XAttribute> AllAttributes(this XContainer source)
-        {
-            source.NotNull(nameof(source));
-
-            return ((source as XElement)?.DescendantsAndSelf() ?? source.Descendants())
+        public static IEnumerable<XAttribute> AllAttributes(this XContainer source) => 
+            ((source as XElement)?.DescendantsAndSelf() ?? source.Descendants())
                 .SelectMany(element => element.Attributes());
-        }
 
-        public static IEnumerable<Tuple<string, XNamespace>> Namespaces(this XContainer source)
-        {
-            source.NotNull(nameof(source));
-
-            // Namespaces are defined as xmlns:prefix="namespace" attributes.
-            return source
+        public static IEnumerable<Tuple<string, XNamespace>> Namespaces(this XContainer source) =>
+            source // Namespaces are defined as xmlns:prefix="namespace" attributes.
                 .AllAttributes()
                 .Where(attribute => attribute.IsNamespaceDeclaration)
                 .Select(attribute => Tuple.Create(attribute.Name.LocalName, (XNamespace)attribute.Value));
-        }
 
         public static XmlNamespaceManager CreateNamespaceManager(this XContainer source)
         {
-            source.NotNull(nameof(source));
-
             XmlNamespaceManager namespaceManager = new XmlNamespaceManager(new NameTable());
             source
                 .Namespaces()
@@ -89,9 +64,6 @@
 
         public static string XPath(this XName source, XElement container)
         {
-            source.NotNull(nameof(source));
-            container.NotNull(nameof(container));
-
             string prefix = source.Namespace == XNamespace.None
                 ? null
                 : container.GetPrefixOfNamespace(source.Namespace); // GetPrefixOfNamespace returns null if not found.
@@ -100,8 +72,8 @@
 
         private static string CombineXPath(string xPath1, string xPath2, string predicate = null) =>
             string.Equals(xPath1, "/", StringComparison.Ordinal) || string.IsNullOrEmpty(xPath2)
-            ? $"{xPath1}{xPath2}{predicate}"
-            : $"{xPath1}/{xPath2}{predicate}";
+                ? $"{xPath1}{xPath2}{predicate}"
+                : $"{xPath1}/{xPath2}{predicate}";
 
         private static string XPath<TSource>(
             this TSource source,
@@ -126,53 +98,31 @@
             return CombineXPath(parentXPath, selfXPath, predicate);
         }
 
-        public static string XPath(this XElement source, string parentXPath = null)
-        {
-            source.NotNull(nameof(source));
-
-            return string.IsNullOrEmpty(parentXPath) && source.Parent == null && source.Document == null
+        public static string XPath(this XElement source, string parentXPath = null) => 
+            string.IsNullOrEmpty(parentXPath) && source.Parent == null && source.Document == null
                 ? "/" // source is an element on the fly, not attached to any parent node.
                 : source.XPath(
                     parentXPath ?? source.Parent?.XPath(),
                     source.Name.XPath(source),
                     sibling => sibling.Name == source.Name);
-        }
 
-        public static string XPath(this XComment source, string parentXPath = null)
-        {
-            source.NotNull(nameof(source));
+        public static string XPath(this XComment source, string parentXPath = null) => 
+            source.XPath(parentXPath ?? source.Parent?.XPath(), "comment()");
 
-            return source.XPath(parentXPath ?? source.Parent?.XPath(), "comment()");
-        }
+        public static string XPath(this XText source, string parentXPath = null) => 
+            source.XPath(parentXPath ?? source.Parent?.XPath(), "text()");
 
-        public static string XPath(this XText source, string parentXPath = null)
-        {
-            source.NotNull(nameof(source));
-
-            return source.XPath(parentXPath ?? source.Parent?.XPath(), "text()");
-        }
-
-        public static string XPath(this XProcessingInstruction source, string parentXPath = null)
-        {
-            source.NotNull(nameof(source));
-
-            return source.XPath(
+        public static string XPath(this XProcessingInstruction source, string parentXPath = null) => 
+            source.XPath(
                 parentXPath ?? source.Parent?.XPath(),
                 $"processing-instruction('{source.Target}')",
                 sibling => string.Equals(sibling.Target, source.Target, StringComparison.Ordinal));
-        }
 
-        public static string XPath(this XAttribute source, string parentXPath = null)
-        {
-            source.NotNull(nameof(source));
-
-            return CombineXPath(parentXPath ?? source.Parent?.XPath(), $"@{source.Name.XPath(source.Parent)}");
-        }
+        public static string XPath(this XAttribute source, string parentXPath = null) => 
+            CombineXPath(parentXPath ?? source.Parent?.XPath(), $"@{source.Name.XPath(source.Parent)}");
 
         public static XmlSchemaSet InferSchema(this XNode source)
         {
-            source.NotNull(nameof(source));
-
             XmlSchemaInference schemaInference = new XmlSchemaInference();
             using (XmlReader reader = source.CreateReader())
             {
@@ -182,8 +132,6 @@
 
         public static XDocument ToXDocument(this XmlSchema source)
         {
-            source.NotNull(nameof(source));
-
             XDocument document = new XDocument();
             using (XmlWriter writer = document.CreateWriter())
             {
@@ -194,8 +142,6 @@
 
         public static IEnumerable<Tuple<XObject, string, IXmlSchemaInfo>> GetValidities(this XElement source, string parentXPath = null)
         {
-            source.NotNull(nameof(source));
-
             string xPath = source.XPath(parentXPath);
             return Enumerable
                 .Repeat(Tuple.Create((XObject)source, xPath, source.GetSchemaInfo()), 1)
@@ -207,18 +153,11 @@
                     .SelectMany(child => child.GetValidities(xPath)));
         }
 
-        public static IEnumerable<Tuple<XObject, string, IXmlSchemaInfo>> GetValidities(this XDocument source)
-        {
-            source.NotNull(nameof(source));
-
-            return source.Root.GetValidities();
-        }
+        public static IEnumerable<Tuple<XObject, string, IXmlSchemaInfo>> GetValidities(this XDocument source) => 
+            source.Root.GetValidities();
 
         public static XDocument XslTransform(this XNode source, XNode xsl)
         {
-            source.NotNull(nameof(source));
-            xsl.NotNull(nameof(xsl));
-
             XDocument result = new XDocument();
             using (XmlReader sourceReader = source.CreateReader())
             using (XmlReader xslReader = xsl.CreateReader())

@@ -5,8 +5,6 @@
     using System.Collections.Generic;
     using System.Linq;
 
-    using Dixin.Common;
-
     public static partial class EnumerableX
     {
     }
@@ -17,8 +15,6 @@
 
         public static IEnumerable<TResult> Create<TResult>(Func<TResult> valueFactory, int? count = null)
         {
-            valueFactory.NotNull(nameof(valueFactory));
-
             if (count == null)
             {
                 while (true)
@@ -39,8 +35,8 @@
             return Create(() => random.Next(min, max));
         }
 
-        public static IEnumerable<int> RandomInt32(int min, int max, int seed)
-            => RandomInt32(min, max, new Random(seed));
+        public static IEnumerable<int> RandomInt32(int min, int max, int seed) =>
+            RandomInt32(min, max, new Random(seed));
 
         public static IEnumerable<double> RandomDouble(int? seed = null)
         {
@@ -55,8 +51,8 @@
 
         public static IEnumerable<TResult> FromValues<TResult>(params TResult[] values) => values;
 
-        public static IEnumerable<TSource> EmptyIfNull<TSource>
-            (this IEnumerable<TSource> source) => source ?? Enumerable.Empty<TSource>();
+        public static IEnumerable<TSource> EmptyIfNull<TSource>(this IEnumerable<TSource> source) =>
+            source ?? Enumerable.Empty<TSource>();
 
         #endregion
 
@@ -64,8 +60,6 @@
 
         public static IEnumerable<TSource> Join<TSource>(this IEnumerable<TSource> source, TSource separator)
         {
-            source.NotNull(nameof(source));
-
             using (IEnumerator<TSource> iterator = source.GetEnumerator())
             {
                 if (iterator.MoveNext())
@@ -83,8 +77,6 @@
         public static IEnumerable<TSource> Join<TSource>(
             this IEnumerable<TSource> source, IEnumerable<TSource> separator)
         {
-            source.NotNull(nameof(source));
-
             separator = separator ?? Enumerable.Empty<TSource>();
             using (IEnumerator<TSource> iterator = source.GetEnumerator())
             {
@@ -104,49 +96,29 @@
             }
         }
 
-        public static IEnumerable<TSource> Append<TSource>
-            (this IEnumerable<TSource> source, params TSource[] append)
-        {
-            source.NotNull(nameof(source));
+        public static IEnumerable<TSource> Append<TSource>(
+            this IEnumerable<TSource> source, params TSource[] append) =>
+                source.Concat(append);
 
-            return source.Concat(append);
-        }
+        public static IEnumerable<TSource> Prepend<TSource>(
+            this IEnumerable<TSource> source, params TSource[] prepend) =>
+                prepend.Concat(source);
 
-        public static IEnumerable<TSource> Prepend<TSource>
-            (this IEnumerable<TSource> source, params TSource[] prepend)
-        {
-            source.NotNull(nameof(source));
+        public static IEnumerable<TSource> AppendTo<TSource>(
+            this TSource append, IEnumerable<TSource> source) =>
+                source.Append(append);
 
-            return prepend.Concat(source);
-        }
-
-        public static IEnumerable<TSource> AppendTo<TSource>
-            (this TSource append, IEnumerable<TSource> source)
-        {
-            source.NotNull(nameof(source));
-
-            return source.Append(append);
-        }
-
-        public static IEnumerable<TSource> PrependTo<TSource>
-            (this TSource prepend, IEnumerable<TSource> source)
-        {
-            source.NotNull(nameof(source));
-
-            return source.Prepend(prepend);
-        }
+        public static IEnumerable<TSource> PrependTo<TSource>(
+            this TSource prepend, IEnumerable<TSource> source) =>
+                source.Prepend(prepend);
 
         #endregion
 
         #region Partitioning
 
-        public static IEnumerable<TSource> Subsequence<TSource>
-            (this IEnumerable<TSource> source, int startIndex, int count)
-        {
-            source.NotNull(nameof(source));
-
-            return source.Skip(startIndex).Take(count);
-        }
+        public static IEnumerable<TSource> Subsequence<TSource>(
+            this IEnumerable<TSource> source, int startIndex, int count) =>
+                source.Skip(startIndex).Take(count);
 
         #endregion
 
@@ -158,10 +130,7 @@
             IFormatProvider formatProvider = null)
             where TKey : IConvertible
         {
-            source.NotNull(nameof(source));
-            keySelector.NotNull(nameof(keySelector));
-
-            // Excel VAR.P function
+            // Excel VAR.P function:
             // https://support.office.com/en-us/article/VAR-P-function-73d1285c-108c-4843-ba5d-a51f90656f3a
             double[] keys = source.Select(key => keySelector(key).ToDouble(formatProvider)).ToArray();
             double mean = keys.Average();
@@ -174,9 +143,6 @@
             IFormatProvider formatProvider = null)
             where TKey : IConvertible
         {
-            source.NotNull(nameof(source));
-            keySelector.NotNull(nameof(keySelector));
-
             // Excel VAR.S function:
             // https://support.office.com/en-us/article/VAR-S-function-913633de-136b-449d-813e-65a00b2b990b
             double[] keys = source.Select(key => keySelector(key).ToDouble(formatProvider)).ToArray();
@@ -188,59 +154,39 @@
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             IFormatProvider formatProvider = null)
-            where TKey : IConvertible
-        {
-            source.NotNull(nameof(source));
-            keySelector.NotNull(nameof(keySelector));
-
-            // Excel VAR function:
-            // https://support.office.com/en-us/article/VAR-function-270da762-03d5-4416-8503-10008194458a
-            return source.VarianceSample(keySelector, formatProvider);
-        }
+            where TKey : IConvertible =>
+                // Excel VAR function:
+                // https://support.office.com/en-us/article/VAR-function-270da762-03d5-4416-8503-10008194458a
+                source.VarianceSample(keySelector, formatProvider);
 
         public static double StandardDeviationPopulation<TSource, TKey>(
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             IFormatProvider formatProvider = null)
-            where TKey : IConvertible
-        {
-            source.NotNull(nameof(source));
-            keySelector.NotNull(nameof(keySelector));
-
-            // Excel STDEV.P function:
-            // https://support.office.com/en-us/article/STDEV-P-function-6e917c05-31a0-496f-ade7-4f4e7462f285
-            return Math.Sqrt(source.VariancePopulation(keySelector, formatProvider));
-        }
+            where TKey : IConvertible =>
+                // Excel STDEV.P function: 
+                // https://support.office.com/en-us/article/STDEV-P-function-6e917c05-31a0-496f-ade7-4f4e7462f285
+                Math.Sqrt(source.VariancePopulation(keySelector, formatProvider));
 
         public static double StandardDeviationSample<TSource, TKey>(
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             IFormatProvider formatProvider = null)
-            where TKey : IConvertible
-        {
-            source.NotNull(nameof(source));
-            keySelector.NotNull(nameof(keySelector));
-
-            // Excel STDEV.S function:
-            // https://support.office.com/en-us/article/STDEV-S-function-7d69cf97-0c1f-4acf-be27-f3e83904cc23
-            return Math.Sqrt(source.VarianceSample(keySelector, formatProvider));
-        }
+            where TKey : IConvertible =>
+                // Excel STDEV.S function:
+                // https://support.office.com/en-us/article/STDEV-S-function-7d69cf97-0c1f-4acf-be27-f3e83904cc23
+                Math.Sqrt(source.VarianceSample(keySelector, formatProvider));
 
         public static double StandardDeviation<TSource, TKey>(
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             IFormatProvider formatProvider = null)
-            where TKey : IConvertible
-        {
-            source.NotNull(nameof(source));
-            keySelector.NotNull(nameof(keySelector));
+            where TKey : IConvertible =>
+                // Excel STDDEV.P function:
+                // https://support.office.com/en-us/article/STDEV-function-51fecaaa-231e-4bbb-9230-33650a72c9b0
+                Math.Sqrt(source.Variance(keySelector, formatProvider));
 
-            // Excel STDDEV.P function:
-            // https://support.office.com/en-us/article/STDEV-function-51fecaaa-231e-4bbb-9230-33650a72c9b0
-            return Math.Sqrt(source.Variance(keySelector, formatProvider));
-        }
-
-        public static double PercentileExclusive<TSource, TKey>(
+        public static double PercentileExclusive<TSource, TKey>( // Excel PERCENTILE.EXC function.
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             double percentile,
@@ -248,10 +194,10 @@
             IFormatProvider formatProvider = null)
             where TKey : IConvertible
         {
-            source.NotNull(nameof(source));
-            keySelector.NotNull(nameof(keySelector));
-            Argument.Range(percentile >= 0, $"{nameof(percentile)} must be between 0 and 1.", nameof(percentile));
-            Argument.Range(percentile <= 1, $"{nameof(percentile)} must be between 0 and 1.", nameof(percentile));
+            if (percentile < 0 || percentile > 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(percentile), $"{nameof(percentile)} must be between 0 and 1.");
+            }
 
             // Excel PERCENTILE.EXC function:
             // https://support.office.com/en-us/article/PERCENTILE-EXC-function-bbaa7204-e9e1-4010-85bf-c31dc5dce4ba
@@ -262,7 +208,7 @@
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(percentile),
-                    $"{nameof(percentile)} must be in the range of (1 / source.Count()) and (1 - 1 / source.Count()).");
+                    $"{nameof(percentile)} must be in the range between (1 / source.Count()) and (1 - 1 / source.Count()).");
             }
 
             double index = percentile * (length + 1) - 1;
@@ -274,7 +220,7 @@
             return keyAtIndex + (keyAtNextIndex - keyAtIndex) * decimalComponentOfIndex;
         }
 
-        public static double PercentileInclusive<TSource, TKey>(
+        public static double PercentileInclusive<TSource, TKey>( // Excel PERCENTILE.INC function.
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             double percentile,
@@ -282,10 +228,10 @@
             IFormatProvider formatProvider = null)
             where TKey : IConvertible
         {
-            source.NotNull(nameof(source));
-            keySelector.NotNull(nameof(keySelector));
-            Argument.Range(percentile >= 0, $"{nameof(percentile)} must be between 0 and 1.", nameof(percentile));
-            Argument.Range(percentile <= 1, $"{nameof(percentile)} must be between 0 and 1.", nameof(percentile));
+            if (percentile < 0 || percentile > 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(percentile), $"{nameof(percentile)} must be between 0 and 1.");
+            }
 
             // Excel PERCENTILE.INC function:
             // https://support.office.com/en-us/article/PERCENTILE-INC-Function-DAX-15f69af8-1588-4863-9acf-2acc00384ffd
@@ -307,7 +253,7 @@
             return keyAtIndex + (keyAtNextIndex - keyAtIndex) * decimalComponentOfIndex;
         }
 
-        public static double Percentile<TSource, TKey>(
+        public static double Percentile<TSource, TKey>( // Excel PERCENTILE function.
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             double percentile,
@@ -315,10 +261,10 @@
             IFormatProvider formatProvider = null)
             where TKey : IConvertible
         {
-            source.NotNull(nameof(source));
-            keySelector.NotNull(nameof(keySelector));
-            Argument.Range(percentile >= 0, $"{nameof(percentile)} must be between 0 and 1.", nameof(percentile));
-            Argument.Range(percentile <= 1, $"{nameof(percentile)} must be between 0 and 1.", nameof(percentile));
+            if (percentile < 0 || percentile > 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(percentile), $"{nameof(percentile)} must be between 0 and 1.");
+            }
 
             // Excel PERCENTILE function:
             // https://support.office.com/en-us/article/PERCENTILE-function-91b43a53-543c-4708-93de-d626debdddca
@@ -330,32 +276,33 @@
 
         #region Quantifiers
 
-        public static bool IsNullOrEmpty<TSource>
-            (this IEnumerable<TSource> source) => source == null || !source.Any();
+        public static bool IsNullOrEmpty<TSource>(this IEnumerable<TSource> source) => source == null || !source.Any();
 
-        public static bool IsNotNullOrEmpty<TSource>
-            (this IEnumerable<TSource> source) => source != null && source.Any();
+        public static bool IsNotNullOrEmpty<TSource>(this IEnumerable<TSource> source) => source != null && source.Any();
 
         public static bool ContainsAny<TSource>(
             this IEnumerable<TSource> source,
             IEnumerable<TSource> values,
             IEqualityComparer<TSource> comparer = null)
         {
-            source.NotNull(nameof(source));
-            values.NotNull(nameof(values));
-
-            TSource[] array = null;
-            return source.Any(value => (array ?? (array = values.ToArray())).Contains(value, comparer));
+            TSource[] valuesCache = null;
+            return source.Any(value => (valuesCache ?? (valuesCache = values.ToArray())).Contains(value, comparer));
         }
 
+        public static bool ContainsAll<TSource>(
+            this IEnumerable<TSource> source,
+            IEnumerable<TSource> values,
+            IEqualityComparer<TSource> comparer = null)
+        {
+            TSource[] sourceCache = null;
+            return values.All(value => (sourceCache ?? (sourceCache = source.ToArray())).Contains(value, comparer));
+        }
         #endregion
 
         #region Iteration
 
         public static void ForEach<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> onNext)
         {
-            source.NotNull(nameof(source));
-
             foreach (TSource value in source)
             {
                 if (!onNext(value))
@@ -367,8 +314,6 @@
 
         public static void ForEach<TSource>(this IEnumerable<TSource> source, Func<TSource, int, bool> onNext)
         {
-            source.NotNull(nameof(source));
-
             int index = 0;
             foreach (TSource value in source)
             {
@@ -383,8 +328,6 @@
 
         public static void ForEach<TSource>(this IEnumerable<TSource> source)
         {
-            source.NotNull(nameof(source));
-
             using (IEnumerator<TSource> iterator = source.GetEnumerator())
             {
                 while (iterator.MoveNext())
@@ -395,8 +338,6 @@
 
         public static void ForEach(this IEnumerable source)
         {
-            source.NotNull(nameof(source));
-
             IEnumerator iterator = source.GetEnumerator();
             while (iterator.MoveNext())
             {

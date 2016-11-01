@@ -40,10 +40,10 @@
             QueryMethods.WhereWithAnd();
             QueryMethods.WhereAndWhere();
             QueryMethods.WhereWithIs();
-            QueryMethods.OfTypeWithEntiy();
+            QueryMethods.OfTypeWithEntity();
             try
             {
-                QueryMethods.OfTypeWithPromitive();
+                QueryMethods.OfTypeWithPrimitive();
                 Assert.Fail();
             }
             catch (NotSupportedException exception)

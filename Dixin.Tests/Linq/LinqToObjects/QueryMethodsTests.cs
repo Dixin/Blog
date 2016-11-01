@@ -93,7 +93,7 @@
         }
 
         [TestMethod]
-        public void PartioningTest()
+        public void PartitioningTest()
         {
             SkipTake();
             TakeWhileSkipWhile();

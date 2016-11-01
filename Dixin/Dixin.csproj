@@ -386,7 +386,7 @@
     <Compile Include="Linq\Parallel\HelperMethods.cs" />
     <Compile Include="Linq\Parallel\QueryMethods.cs" />
     <Compile Include="Linq\Parallel\QueryMethods.Ordering.cs" />
-    <Compile Include="Linq\Parallel\ParaeeleQueryExtensions.cs" />
+    <Compile Include="Linq\Parallel\ParallelQueryExtensions.cs" />
     <Compile Include="Linq\Parallel\Partitioning.cs" />
     <Compile Include="Linq\Parallel\Performance.cs" />
     <Compile Include="Common\AppDomainData.cs" />

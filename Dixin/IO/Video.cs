@@ -10,7 +10,7 @@
 
     internal static class Video
     {
-        private const string Separater = ".";
+        private const string Separator = ".";
 
         internal static void RenameAllAlbums(string root, bool otherLettersFirst = false)
         {
@@ -27,10 +27,10 @@
 
             Directory.EnumerateDirectories(root).ForEach(album =>
                 {
-                    string[] names = Path.GetFileName(album).Split(Separater.ToCharArray());
+                    string[] names = Path.GetFileName(album).Split(Separator.ToCharArray());
                     if ((otherLettersFirst && names.Last().HasOtherLetter()) || (!otherLettersFirst && names.First().HasOtherLetter()))
                     {
-                        new DirectoryInfo(album).Rename(string.Join(Separater, names.Last(), names[1], names.First()));
+                        new DirectoryInfo(album).Rename(string.Join(Separator, names.Last(), names[1], names.First()));
                     }
                 });
         }
@@ -39,10 +39,10 @@
         {
             Directory.EnumerateDirectories(target).ForEach(targetAlbum =>
                 {
-                    string name = Path.GetFileName(targetAlbum).Split(Separater.ToCharArray(), StringSplitOptions.RemoveEmptyEntries).Last();
+                    string name = Path.GetFileName(targetAlbum).Split(Separator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries).Last();
                     string[] sources = Directory.EnumerateDirectories(source)
                         .Where(sourceAlbum =>
-                            name.EqualsOrdinal(Path.GetFileName(sourceAlbum).Split(Separater.ToCharArray(), StringSplitOptions.RemoveEmptyEntries).First()))
+                            name.EqualsOrdinal(Path.GetFileName(sourceAlbum).Split(Separator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries).First()))
                         .ToArray();
                     if (sources.Length == 1)
                     {
@@ -60,7 +60,7 @@
 
         private static bool IsNotFormated(string album)
         {
-            string[] names = Path.GetFileName(album).Split(Separater.ToCharArray());
+            string[] names = Path.GetFileName(album).Split(Separator.ToCharArray());
             int result;
             return names.Length != 3
                 || names[1].Length != 4

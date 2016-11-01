@@ -82,14 +82,14 @@
             products.ForEach(product => Trace.WriteLine($"{product.Name}: {product.GetType().Name}")); // Execute query.
         }
 
-        internal static void OfTypeWithEntiy()
+        internal static void OfTypeWithEntity()
         {
             IQueryable<Product> source = AdventureWorks.Products;
             IQueryable<UniversalProduct> products = source.OfType<UniversalProduct>(); // Define query.
             products.ForEach(product => Trace.WriteLine($"{product.Name}: {product.GetType().Name}")); // Execute query.
         }
 
-        internal static void OfTypeWithPromitive()
+        internal static void OfTypeWithPrimitive()
         {
             IQueryable<Product> source = AdventureWorks.Products;
             IQueryable<int> products = source.Select(p => p.ProductID).OfType<int>(); // Define query.

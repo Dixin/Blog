@@ -6,13 +6,11 @@
     using System.Linq;
     using System.Threading;
 
-    using Dixin.Common;
-
     using Microsoft.ConcurrencyVisualizer.Instrumentation;
 
-    using Parallel = System.Threading.Tasks.Parallel;
-
     using static HelperMethods;
+
+    using Parallel = System.Threading.Tasks.Parallel;
 
     internal static partial class Partitioning
     {
@@ -120,14 +118,15 @@
 
         public StaticPartitioner(IEnumerable<TSource> source)
         {
-            source.NotNull(nameof(source));
-
             this.buffer = source.Share();
         }
 
         public override IList<IEnumerator<TSource>> GetPartitions(int partitionCount)
         {
-            Argument.Range(partitionCount > 0, "The value must be greater than 0.", nameof(partitionCount));
+            if (partitionCount <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(partitionCount), $"{partitionCount} must be greater than 0.");
+            }
 
             return Enumerable
                 .Range(0, partitionCount)
@@ -140,7 +139,6 @@
     {
         public DynamicPartitioner(IEnumerable<TSource> source) : base(source)
         {
-            source.NotNull(nameof(source));
         }
 
         public override bool SupportsDynamicPartitions => true;

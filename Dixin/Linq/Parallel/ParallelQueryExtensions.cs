@@ -5,8 +5,6 @@ namespace Dixin.Linq.Parallel
     using System.Reflection;
     using System.Threading.Tasks;
 
-    using Dixin.Common;
-
     public struct QuerySettings
     {
         public TaskScheduler TaskScheduler { get; set; }
@@ -18,7 +16,7 @@ namespace Dixin.Linq.Parallel
         public ParallelMergeOptions? MergeOptions { get; set; }
     }
 
-    public static class ParaeeleQueryExtensions
+    public static class ParallelQueryExtensions
     {
         private static readonly PropertyInfo QuerySettingsProperty = typeof(ParallelQuery).GetProperty(
             "SpecifiedQuerySettings", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
@@ -40,8 +38,6 @@ namespace Dixin.Linq.Parallel
 
         public static QuerySettings SpecifiedQuerySettings(this ParallelQuery source)
         {
-            source.NotNull(nameof(source));
-
             object querySettings = QuerySettingsProperty.GetValue(source);
             return new QuerySettings()
                 {

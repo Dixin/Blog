@@ -27,9 +27,9 @@
         internal static IEnumerable<byte[]> Download(IEnumerable<Uri> uris) => uris
             .Select(uri =>
                 {
-                    using (WebClient webClinet = new WebClient())
+                    using (WebClient webClient = new WebClient())
                     {
-                        return webClinet.DownloadData(uri);
+                        return webClient.DownloadData(uri);
                     }
                 })
             .Retry(3);

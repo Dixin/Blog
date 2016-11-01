@@ -100,11 +100,11 @@
     [Pure]
     internal static partial class CpsQuery
     {
-        internal static void SumOfSqaure()
+        internal static void SumOfSquare()
         {
             Func<int, Func<int, int>> add = x => y => x + y;
-            Func<int, int> sqaure = x => x * x;
-            Func<int, Func<int, int>> sumOfSquares = x => y => add(sqaure(x))(sqaure(y));
+            Func<int, int> square = x => x * x;
+            Func<int, Func<int, int>> sumOfSquares = x => y => add(square(x))(square(y));
         }
     }
 }

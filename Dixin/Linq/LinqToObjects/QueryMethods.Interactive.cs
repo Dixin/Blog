@@ -165,16 +165,16 @@
         internal static void Share()
         {
             IEnumerable<int> sequence = Enumerable.Range(0, 5);
-            IEnumerator<int> indepedentIterator1 = sequence.GetEnumerator();
-            IEnumerator<int> indepedentIterator2 = sequence.GetEnumerator();
-            indepedentIterator1.MoveNext(); Trace.WriteLine(indepedentIterator1.Current); // 0| |
-            indepedentIterator2.MoveNext(); Trace.WriteLine(indepedentIterator2.Current); //  |0|
-            indepedentIterator1.MoveNext(); Trace.WriteLine(indepedentIterator1.Current); // 1| |
-            IEnumerator<int> indepedentIterator3 = sequence.GetEnumerator();                //  | |
-            indepedentIterator3.MoveNext(); Trace.WriteLine(indepedentIterator3.Current); //  | |0
-            indepedentIterator1.MoveNext(); Trace.WriteLine(indepedentIterator1.Current); // 2| |
-            indepedentIterator2.MoveNext(); Trace.WriteLine(indepedentIterator2.Current); //  |1|
-                                                                                            // ...
+            IEnumerator<int> independentIterator1 = sequence.GetEnumerator();
+            IEnumerator<int> independentIterator2 = sequence.GetEnumerator();
+            independentIterator1.MoveNext(); Trace.WriteLine(independentIterator1.Current); // 0| |
+            independentIterator2.MoveNext(); Trace.WriteLine(independentIterator2.Current); //  |0|
+            independentIterator1.MoveNext(); Trace.WriteLine(independentIterator1.Current); // 1| |
+            IEnumerator<int> independentIterator3 = sequence.GetEnumerator();               //  | |
+            independentIterator3.MoveNext(); Trace.WriteLine(independentIterator3.Current); //  | |0
+            independentIterator1.MoveNext(); Trace.WriteLine(independentIterator1.Current); // 2| |
+            independentIterator2.MoveNext(); Trace.WriteLine(independentIterator2.Current); //  |1|
+            // ...
 
             IBuffer<int> share = Enumerable.Range(0, 5).Share();
             IEnumerator<int> sharedIterator1 = share.GetEnumerator();
@@ -182,7 +182,7 @@
             sharedIterator1.MoveNext(); Trace.WriteLine(sharedIterator1.Current); // 0| |
             sharedIterator2.MoveNext(); Trace.WriteLine(sharedIterator2.Current); //  |1|
             sharedIterator1.MoveNext(); Trace.WriteLine(sharedIterator1.Current); // 2| |
-            IEnumerator<int> sharedIterator3 = share.GetEnumerator();               //  | |
+            IEnumerator<int> sharedIterator3 = share.GetEnumerator();             //  | |
             sharedIterator3.MoveNext(); Trace.WriteLine(sharedIterator3.Current); //  | |3
 
             share.Dispose();
@@ -241,19 +241,19 @@
             int[] concat1 = EnumerableEx.Create<int>(async yield =>
                 {
                     // Start concatenation:
-                    using (IEnumerator<int> indepedentIterator1 = source1.GetEnumerator())
+                    using (IEnumerator<int> independentIterator1 = source1.GetEnumerator())
                     {
-                        while (indepedentIterator1.MoveNext())
+                        while (independentIterator1.MoveNext())
                         {
-                            await yield.Return(indepedentIterator1.Current); // yield return 0 1 2 3 4.
+                            await yield.Return(independentIterator1.Current); // yield return 0 1 2 3 4.
                         }
                     }
 
-                    using (IEnumerator<int> indepedentIterator2 = source1.GetEnumerator())
+                    using (IEnumerator<int> independentIterator2 = source1.GetEnumerator())
                     {
-                        while (indepedentIterator2.MoveNext())
+                        while (independentIterator2.MoveNext())
                         {
-                            await yield.Return(indepedentIterator2.Current); // yield return 0 1 2 3 4.
+                            await yield.Return(independentIterator2.Current); // yield return 0 1 2 3 4.
                         }
                     }
                 }).ToArray(); // 0 1 2 3 4 0 1 2 3 4.
@@ -326,14 +326,14 @@
             Tuple<int, int>[] concat1 = EnumerableEx.Create<Tuple<int, int>>(async yield =>
                 {
                     // Start zipping:
-                    using (IEnumerator<int> indepdentIterator1 = source1.GetEnumerator())
-                    using (IEnumerator<int> indepdentIterator2 = source1.GetEnumerator())
+                    using (IEnumerator<int> independentIterator1 = source1.GetEnumerator())
+                    using (IEnumerator<int> independentIterator2 = source1.GetEnumerator())
                     {
-                        while (indepdentIterator1.MoveNext() && indepdentIterator2.MoveNext())
+                        while (independentIterator1.MoveNext() && independentIterator2.MoveNext())
                         {
                             // yield return (0, 0) (1, 1) (2, 2) (3, 3) (4, 4).
                             await yield.Return(
-                                Tuple.Create(indepdentIterator1.Current, indepdentIterator2.Current));
+                                Tuple.Create(independentIterator1.Current, independentIterator2.Current));
                         }
                     }
                 }).ToArray(); // (0, 0) (1, 1) (2, 2) (3, 3) (4, 4).

@@ -55,7 +55,7 @@
             // [C#]:9 [LINQ]:6 [.NET]:5 [Functional Programming]:4 [LINQ via C#]:4
         }
 
-        internal static void ChildrenAndDecendants()
+        internal static void ChildrenAndDescendants()
         {
             XElement root = XElement.Parse(@"
                 <root>
@@ -122,10 +122,10 @@
 
             XElement[] ancestors = element1.Ancestors().ToArray();
             Trace.WriteLine(XNode.CompareDocumentOrder(ancestors.First(), ancestors.Last())); // 1
-            IEnumerable<XName> ancestorsInDucumentOrder = ancestors
+            IEnumerable<XName> ancestorsInDocumentOrder = ancestors
                 .InDocumentOrder()
                 .Select(ancestor => ancestor.Name);
-            Trace.WriteLine(string.Join(" ", ancestorsInDucumentOrder));
+            Trace.WriteLine(string.Join(" ", ancestorsInDocumentOrder));
             // grandparent parent
 
             bool areSequentialEqual = element1

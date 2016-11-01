@@ -4,34 +4,37 @@
     using System.Collections.Generic;
     using System.Linq;
 
-    using Dixin.Common;
-
     public static partial class EnumerableX
     {
         public static IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
-            Func<TKey, TKey, int> compare) => source.OrderBy(keySelector, compare.Comparer());
+            Func<TKey, TKey, int> compare) => 
+                source.OrderBy(keySelector, compare.ToComparer());
 
         public static IOrderedEnumerable<TSource> OrderBy2<TSource, TKey>(
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
-            Func<TKey, TKey, int> compare) => source.OrderBy(keySelector, new ComparerWrapper<TKey>(compare));
+            Func<TKey, TKey, int> compare) => 
+                source.OrderBy(keySelector, compare.ToComparer());
 
         public static IOrderedEnumerable<TSource> OrderByDescending<TSource, TKey>(
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
-            Func<TKey, TKey, int> compare) => source.OrderByDescending(keySelector, compare.Comparer());
+            Func<TKey, TKey, int> compare) => 
+                source.OrderByDescending(keySelector, compare.ToComparer());
 
         public static IOrderedEnumerable<TSource> ThenBy<TSource, TKey>(
             this IOrderedEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
-            Func<TKey, TKey, int> compare) => source.ThenBy(keySelector, compare.Comparer());
+            Func<TKey, TKey, int> compare) => 
+                source.ThenBy(keySelector, compare.ToComparer());
 
         public static IOrderedEnumerable<TSource> ThenByDescending<TSource, TKey>(
             this IOrderedEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
-            Func<TKey, TKey, int> compare) => source.ThenByDescending(keySelector, compare.Comparer());
+            Func<TKey, TKey, int> compare) => 
+                source.ThenByDescending(keySelector, compare.ToComparer());
     }
 
     public static partial class EnumerableX
@@ -42,8 +45,8 @@
             Func<TSource, TElement> elementSelector,
             Func<TKey, IEnumerable<TElement>, TResult> resultSelector,
             Func<TKey, TKey, bool> equality,
-            Func<TKey, int> getHashCode = null)
-            => source.GroupBy(keySelector, elementSelector, resultSelector, equality.Comparer(getHashCode));
+            Func<TKey, int> getHashCode = null) => 
+                source.GroupBy(keySelector, elementSelector, resultSelector, equality.ToComparer(getHashCode));
 
         public static IEnumerable<TResult> Join<TOuter, TInner, TKey, TResult>(
             this IEnumerable<TOuter> outer,
@@ -52,8 +55,8 @@
             Func<TInner, TKey> innerKeySelector,
             Func<TOuter, TInner, TResult> resultSelector,
             Func<TKey, TKey, bool> equality,
-            Func<TKey, int> getHashCode = null)
-            => outer.Join(inner, outerKeySelector, innerKeySelector, resultSelector, equality.Comparer(getHashCode));
+            Func<TKey, int> getHashCode = null) => 
+                outer.Join(inner, outerKeySelector, innerKeySelector, resultSelector, equality.ToComparer(getHashCode));
 
         public static IEnumerable<TResult> GroupJoin<TOuter, TInner, TKey, TResult>(
             this IEnumerable<TOuter> outer,
@@ -62,36 +65,40 @@
             Func<TInner, TKey> innerKeySelector,
             Func<TOuter, IEnumerable<TInner>, TResult> resultSelector,
             Func<TKey, TKey, bool> equality,
-            Func<TKey, int> getHashCode = null)
-            => outer.GroupJoin(
-                inner,
-                outerKeySelector,
-                innerKeySelector,
-                resultSelector,
-                equality.Comparer(getHashCode));
+            Func<TKey, int> getHashCode = null) => 
+                outer.GroupJoin(
+                    inner,
+                    outerKeySelector,
+                    innerKeySelector,
+                    resultSelector,
+                    equality.ToComparer(getHashCode));
 
         public static IEnumerable<TSource> Distinct<TSource>(
             this IEnumerable<TSource> source,
             Func<TSource, TSource, bool> equality,
-            Func<TSource, int> getHashCode = null) => source.Distinct(equality.Comparer(getHashCode));
+            Func<TSource, int> getHashCode = null) => 
+                source.Distinct(equality.ToComparer(getHashCode));
 
         public static IEnumerable<TSource> Union<TSource>(
             this IEnumerable<TSource> first,
             IEnumerable<TSource> second,
             Func<TSource, TSource, bool> equality,
-            Func<TSource, int> getHashCode = null) => first.Union(second, equality.Comparer(getHashCode));
+            Func<TSource, int> getHashCode = null) => 
+                first.Union(second, equality.ToComparer(getHashCode));
 
         public static IEnumerable<TSource> Intersect<TSource>(
             this IEnumerable<TSource> first,
             IEnumerable<TSource> second,
             Func<TSource, TSource, bool> equality,
-            Func<TSource, int> getHashCode = null) => first.Intersect(second, equality.Comparer(getHashCode));
+            Func<TSource, int> getHashCode = null) => 
+                first.Intersect(second, equality.ToComparer(getHashCode));
 
         public static IEnumerable<TSource> Except<TSource>(
             this IEnumerable<TSource> first,
             IEnumerable<TSource> second,
             Func<TSource, TSource, bool> equality,
-            Func<TSource, int> getHashCode = null) => first.Except(second, equality.Comparer(getHashCode));
+            Func<TSource, int> getHashCode = null) => 
+                first.Except(second, equality.ToComparer(getHashCode));
     }
 
     public static partial class EnumerableX
@@ -102,7 +109,7 @@
             Func<TSource, TElement> elementSelector,
             Func<TKey, TKey, bool> equality,
             Func<TKey, int> getHashCode = null) =>
-                source.ToDictionary(keySelector, elementSelector, equality.Comparer(getHashCode));
+                source.ToDictionary(keySelector, elementSelector, equality.ToComparer(getHashCode));
 
         public static ILookup<TKey, TElement> ToLookup<TSource, TKey, TElement>(
             this IEnumerable<TSource> source,
@@ -110,7 +117,7 @@
             Func<TSource, TElement> elementSelector,
             Func<TKey, TKey, bool> equality,
             Func<TKey, int> getHashCode = null) =>
-                source.ToLookup(keySelector, elementSelector, equality.Comparer(getHashCode));
+                source.ToLookup(keySelector, elementSelector, equality.ToComparer(getHashCode));
     }
 
     public static partial class EnumerableX
@@ -119,13 +126,13 @@
             this IEnumerable<TSource> source,
             TSource value,
             Func<TSource, TSource, bool> equality,
-            Func<TSource, int> getHashCode = null) => source.Contains(value, equality.Comparer(getHashCode));
+            Func<TSource, int> getHashCode = null) => source.Contains(value, equality.ToComparer(getHashCode));
 
         public static bool SequenceEqual<TSource>(
             this IEnumerable<TSource> first,
             IEnumerable<TSource> second,
             Func<TSource, TSource, bool> equality,
-            Func<TSource, int> getHashCode = null) => first.SequenceEqual(second, equality.Comparer(getHashCode));
+            Func<TSource, int> getHashCode = null) => first.SequenceEqual(second, equality.ToComparer(getHashCode));
     }
 
     public class ComparerWrapper<T> : IComparer<T>
@@ -134,8 +141,6 @@
 
         public ComparerWrapper(Func<T, T, int> compare)
         {
-            compare.NotNull(nameof(compare));
-
             this.compare = compare;
         }
 
@@ -145,12 +150,11 @@
     public class EqualityComparerWrapper<T> : IEqualityComparer<T>
     {
         private readonly Func<T, T, bool> equality;
+
         private readonly Func<T, int> getHashCode;
 
         public EqualityComparerWrapper(Func<T, T, bool> equality, Func<T, int> getHashCode = null)
         {
-            equality.NotNull(nameof(equality));
-
             this.equality = equality;
             this.getHashCode = getHashCode ?? (value => value.GetHashCode());
         }
@@ -162,9 +166,9 @@
 
     public static partial class FuncExtensions
     {
-        public static IComparer<T> Comparer<T>(this Func<T, T, int> compare) => new ComparerWrapper<T>(compare);
+        public static IComparer<T> ToComparer<T>(this Func<T, T, int> compare) => new ComparerWrapper<T>(compare);
 
-        public static IEqualityComparer<T> Comparer<T>
+        public static IEqualityComparer<T> ToComparer<T>
             (this Func<T, T, bool> equality, Func<T, int> getHashCode = null) =>
                 new EqualityComparerWrapper<T>(equality, getHashCode);
     }

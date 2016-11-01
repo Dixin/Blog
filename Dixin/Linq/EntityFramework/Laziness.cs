@@ -8,7 +8,6 @@
     using System.Diagnostics;
     using System.Linq;
 
-    using Dixin.Common;
     using Dixin.Linq;
 
     public static class QueryableExtensions
@@ -16,9 +15,6 @@
         public static IEnumerator<TSource> GetIterator<TSource>(
             this IQueryable<TSource> query, DbContext dbContext)
         {
-            query.NotNull(nameof(query));
-            dbContext.NotNull(nameof(dbContext));
-
             IEnumerator<TSource> sqlReader = null;
             bool isSqlExecuted = false;
             return new Iterator<TSource>(

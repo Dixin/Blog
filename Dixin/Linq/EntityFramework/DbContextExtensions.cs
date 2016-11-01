@@ -17,14 +17,10 @@
     using System.Linq.Expressions;
     using System.Reflection;
 
-    using Dixin.Common;
-
     public static partial class DbContextExtensions
     {
         public static DbQueryCommandTree Convert(this IObjectContextAdapter context, Expression expression)
         {
-            context.NotNull(nameof(context));
-
             ObjectContext objectContext = context.ObjectContext;
 
             // DbExpression dbExpression = new ExpressionConverter(
@@ -35,12 +31,12 @@
             //    commandTree, out providerCommands, out columnMap, out columnCount, out entitySets);
             // return (DbQueryCommandTree)providerCommands.Single().CommandTree;
             // ExpressionConverter, Funcletizer and PlanCompiler are not public. Reflection is needed:
-            Assembly entityFrmaeworkAssembly = typeof(DbContext).Assembly;
-            Type funcletizerType = entityFrmaeworkAssembly.GetType(
+            Assembly entityFrameworkAssembly = typeof(DbContext).Assembly;
+            Type funcletizerType = entityFrameworkAssembly.GetType(
                 "System.Data.Entity.Core.Objects.ELinq.Funcletizer");
             MethodInfo createQueryFuncletizerMethod = funcletizerType.GetMethod(
                 "CreateQueryFuncletizer", BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.InvokeMethod);
-            Type expressionConverterType = entityFrmaeworkAssembly.GetType(
+            Type expressionConverterType = entityFrameworkAssembly.GetType(
                 "System.Data.Entity.Core.Objects.ELinq.ExpressionConverter");
             ConstructorInfo expressionConverterConstructor = expressionConverterType.GetConstructor(
                 BindingFlags.NonPublic | BindingFlags.Instance,
@@ -54,13 +50,13 @@
                 new object[] { funcletizer, expression });
             DbExpression dbExpression = (DbExpression)convertMethod.Invoke(expressionConverter, new object[0]);
             DbQueryCommandTree commandTree = objectContext.MetadataWorkspace.CreateQueryCommandTree(dbExpression);
-            Type planCompilerType = entityFrmaeworkAssembly.GetType(
+            Type planCompilerType = entityFrameworkAssembly.GetType(
                 "System.Data.Entity.Core.Query.PlanCompiler.PlanCompiler");
             MethodInfo compileMethod = planCompilerType.GetMethod(
                 "Compile", BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.InvokeMethod);
             object[] arguments = new object[] { commandTree, null, null, null, null };
             compileMethod.Invoke(null, arguments);
-            Type providerCommandInfoType = entityFrmaeworkAssembly.GetType(
+            Type providerCommandInfoType = entityFrameworkAssembly.GetType(
                 "System.Data.Entity.Core.Query.PlanCompiler.ProviderCommandInfo");
             PropertyInfo commandTreeProperty = providerCommandInfoType.GetProperty(
                 "CommandTree", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
@@ -73,8 +69,6 @@
     {
         public static DbCommand Generate(this IObjectContextAdapter context, DbQueryCommandTree commandTree)
         {
-            context.NotNull(nameof(context));
-
             MetadataWorkspace metadataWorkspace = context.ObjectContext.MetadataWorkspace;
             StoreItemCollection itemCollection = (StoreItemCollection)metadataWorkspace
                 .GetItemCollection(DataSpace.SSpace);
@@ -111,8 +105,6 @@
         public static IDictionary<EntitySetBase, DbMappingView> GeteMappingViews(
             this IObjectContextAdapter context, out IList<EdmSchemaError> errors)
         {
-            context.NotNull(nameof(context));
-
             StorageMappingItemCollection mappings = (StorageMappingItemCollection)context.ObjectContext
                 .MetadataWorkspace.GetItemCollection(DataSpace.CSSpace);
             errors = new List<EdmSchemaError>();
