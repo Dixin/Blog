@@ -119,14 +119,12 @@
             Trace.WriteLine(element1.IsBefore(element2)); // True
             Trace.WriteLine(XNode.DocumentOrderComparer.Compare(element1, element2)); // -1
 
-
             XElement[] ancestors = element1.Ancestors().ToArray();
             Trace.WriteLine(XNode.CompareDocumentOrder(ancestors.First(), ancestors.Last())); // 1
             IEnumerable<XName> ancestorsInDocumentOrder = ancestors
                 .InDocumentOrder()
                 .Select(ancestor => ancestor.Name);
-            Trace.WriteLine(string.Join(" ", ancestorsInDocumentOrder));
-            // grandparent parent
+            Trace.WriteLine(string.Join(" ", ancestorsInDocumentOrder)); // grandparent parent
 
             bool areSequentialEqual = element1
                 .AncestorsAndSelf()
@@ -172,8 +170,8 @@
             Trace.WriteLine(rssNavigator.MoveToFirstChild()); // True
             Trace.WriteLine(rssNavigator.Name); // rss
 
-            IEnumerable<string> categories = (rssNavigator
-                .Evaluate("/rss/channel/item[guid/@isPermaLink='true']/category") as XPathNodeIterator)
+            IEnumerable<string> categories = ((XPathNodeIterator)rssNavigator
+                .Evaluate("/rss/channel/item[guid/@isPermaLink='true']/category"))
                 .Cast<XPathNavigator>()
                 .Select(categoryNavigator => categoryNavigator.UnderlyingObject)
                 .Cast<XElement>()
@@ -234,8 +232,8 @@
         internal static void XPathEvaluateSequence()
         {
             XDocument rss = XDocument.Load("https://weblogs.asp.net/dixin/rss");
-            IEnumerable<string> categories = (rss
-                .XPathEvaluate("/rss/channel/item[guid/@isPermaLink='true']/category/text()") as IEnumerable<object>)
+            IEnumerable<string> categories = ((IEnumerable<object>)rss
+                .XPathEvaluate("/rss/channel/item[guid/@isPermaLink='true']/category/text()"))
                 .Cast<XText>()
                 .GroupBy(
                     categoryTextNode => categoryTextNode.Value, // Current text node's value.
@@ -252,10 +250,10 @@
         internal static void XPathEvaluateSequenceWithNamespace()
         {
             XDocument rss = XDocument.Load("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2");
-            IEnumerable<XText> mediaTitles = (rss
+            IEnumerable<XText> mediaTitles = ((IEnumerable<object>)rss
                 .XPathEvaluate(
                     "/rss/channel/item[contains(media:category/text(), 'microsoft')]/media:title/text()",
-                    rss.CreateNamespaceManager()) as IEnumerable<object>)
+                    rss.CreateNamespaceManager()))
                 .Cast<XText>();
             mediaTitles.ForEach(mediaTitle => Trace.WriteLine(mediaTitle.Value));
             // Chinese President visits Microsoft
@@ -281,8 +279,8 @@
                 .First()
                 .Attribute(XName.Get("profile", "urn:flickr:user")); // <rss xmlns:flickr="urn:flickr:user">...</rss>.
             Trace.WriteLine(attribute1.XPath()); // /rss/channel/item[1]/author/@flickr:profile
-            XAttribute attribute2 = (flickrRss
-                .XPathEvaluate(attribute1.XPath(), flickrRss.CreateNamespaceManager()) as IEnumerable<object>)
+            XAttribute attribute2 = ((IEnumerable<object>)flickrRss
+                .XPathEvaluate(attribute1.XPath(), flickrRss.CreateNamespaceManager()))
                 .Cast<XAttribute>()
                 .Single();
             Trace.WriteLine(object.ReferenceEquals(attribute1, attribute2)); // True

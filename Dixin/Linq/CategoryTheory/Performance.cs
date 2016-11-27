@@ -84,13 +84,11 @@ namespace Dixin.Linq.CategoryTheory
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Diagnostics.Contracts;
     using System.Linq;
     using System.Runtime.CompilerServices;
 
     using CustomLinq = Dixin.Linq.LinqToObjects.EnumerableExtensions;
 
-    // [Pure]
     public static partial class EnumerableExtensions
     {
         internal static IEnumerable<T> QuickSort<T>(this IEnumerable<T> source, Comparer<T> comparer = null)
@@ -165,7 +163,6 @@ namespace Dixin.Linq.CategoryTheory
                 => Run(() => action(arg1, arg2).ForEach(), count);
     }
 
-    [Pure]
     public static class ArrayHelper
     {
         public static int[][] RandomArrays(int minValue, int maxValue, int minLength, int maxLength, int count)
@@ -188,13 +185,12 @@ namespace Dixin.Linq.CategoryTheory
         private static readonly string LongString =
             Enumerable.Range(0, 10000).Select(_ => Guid.NewGuid().ToString()).Aggregate(string.Concat);
 
-        public string Name { [Pure]get; private set; }
+        public string Name { get; private set; }
 
-        public int Age { [Pure]get; private set; }
+        public int Age { get; private set; }
 
-        public string Description { [Pure]get; private set; }
+        public string Description { get; private set; }
 
-        [Pure]
         public static IEnumerable<PersonReferenceType> Random(int count)
         {
             Random random = new Random();
@@ -209,7 +205,6 @@ namespace Dixin.Linq.CategoryTheory
             }
         }
 
-        [Pure]
         public int CompareTo(PersonReferenceType other)
         {
             int nameCompare = string.Compare(this.Name, other.Name, StringComparison.OrdinalIgnoreCase);
@@ -222,13 +217,12 @@ namespace Dixin.Linq.CategoryTheory
         private static readonly string LongString =
             Enumerable.Range(0, 10000).Select(_ => Guid.NewGuid().ToString()).Aggregate(string.Concat);
 
-        public string Name { [Pure]get; private set; }
+        public string Name { get; private set; }
 
-        public int Age { [Pure]get; private set; }
+        public int Age { get; private set; }
 
-        public string Description { [Pure]get; private set; }
+        public string Description { get; private set; }
 
-        [Pure]
         public static IEnumerable<PersonValueType> Random(int count)
         {
             Random random = new Random();
@@ -243,7 +237,6 @@ namespace Dixin.Linq.CategoryTheory
             }
         }
 
-        [Pure]
         public int CompareTo(PersonValueType other)
         {
             int nameCompare = string.Compare(this.Name, other.Name, StringComparison.OrdinalIgnoreCase);
@@ -322,7 +315,6 @@ namespace Dixin.Linq.CategoryTheory
     // Impure.
     internal static partial class Filter
     {
-        [Pure]
         internal static T[] EagerForEach<T>(IEnumerable<T> source, Func<T, bool> predicate)
         {
             T[] result = new T[4];
@@ -346,7 +338,6 @@ namespace Dixin.Linq.CategoryTheory
             return result;
         }
 
-        [Pure]
         internal static IEnumerable<T> LazyForEach<T>(IEnumerable<T> source, Func<T, bool> predicate)
         {
             foreach (T value in source)
@@ -358,14 +349,12 @@ namespace Dixin.Linq.CategoryTheory
             }
         }
 
-        [Pure]
         internal static IEnumerable<T> Linq<T>
             (IEnumerable<T> source, Func<T, bool> predicate)
                 => from value in source
                    where predicate(value)
                    select value;
 
-        [Pure]
         internal static IEnumerable<T> Monad<T>
             (IEnumerable<T> source, Func<T, bool> predicate)
                 => from value in source

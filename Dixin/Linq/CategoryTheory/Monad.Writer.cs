@@ -3,11 +3,8 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Diagnostics.Contracts;
     using System.Globalization;
     using System.Linq;
-
-    using Microsoft.FSharp.Core;
 
     public class Writer<T, TContent>
     {
@@ -19,78 +16,39 @@
             this.Monoid = monoid;
         }
 
-        public T Value
-        {
-            [Pure]get { return this.lazy.Value.Item1; }
-        }
+        public T Value => this.lazy.Value.Item1;
 
+        public TContent Content => this.lazy.Value.Item2;
 
-        public TContent Content
-        {
-            [Pure]get { return this.lazy.Value.Item2; }
-        }
-
-        public IMonoid<TContent> Monoid {[Pure] get; }
+        public IMonoid<TContent> Monoid { get; }
     }
 
-    [Pure]
     public static partial class WriterExtensions
     {
         // Required by LINQ.
-        public static Writer<TResult, TContent> SelectMany<TSource, TContent, TSelector, TResult>
+        public static Writer<TResult, TContent> SelectMany<TContent, TSource, TSelector, TResult>
             (this Writer<TSource, TContent> source,
                 Func<TSource, Writer<TSelector, TContent>> selector,
                 Func<TSource, TSelector, TResult> resultSelector) =>
                 new Writer<TResult, TContent>(() =>
                     {
                         Writer<TSelector, TContent> selectorResult = selector(source.Value);
-                        return Tuple.Create(
-                            resultSelector(source.Value, selectorResult.Value),
-                            source.Monoid.Binary(source.Content, selectorResult.Content));
+                        return resultSelector(source.Value, selectorResult.Value).Tuple(
+                            source.Monoid.Multiply(source.Content, selectorResult.Content));
                     }, source.Monoid);
 
-        // Not required, just for convenience.
-        public static Writer<TResult, TContent> SelectMany<TSource, TContent, TResult>
-            (this Writer<TSource, TContent> source,
-                Func<TSource, Writer<TResult, TContent>> selector) => source.SelectMany(selector, Functions.False);
-    }
-
-    // [Pure]
-    public static partial class WriterExtensions
-    {
-        // μ: Writer<Writer<T, TContent>> => Writer<T, TContent>
-        public static Writer<TResult, TContent> Flatten<TResult, TContent>
-            (Writer<Writer<TResult, TContent>, TContent> source) => source.SelectMany(Functions.Id);
-
-        // η: T -> Writer<T, TContent>
+        // Wrap: T -> Writer<T, TContent>
         public static Writer<T, TContent> Writer<T, TContent>
             (this T value, TContent content, IMonoid<TContent> monoid) =>
-                new Writer<T, TContent>(() => Tuple.Create(value, content), monoid);
-
-        // φ: Lazy<Writer<T1, TContent>, Writer<T2, TContent>> => Writer<Defer<T1, T2>, TContent>
-        public static Writer<Lazy<T1, T2>, TContent> Binary<T1, T2, TContent>
-            (this Lazy<Writer<T1, TContent>, Writer<T2, TContent>> binaryFunctor) =>
-                binaryFunctor.Value1.SelectMany(
-                    value1 => binaryFunctor.Value2,
-                    (value1, value2) => new Lazy<T1, T2>(value1, value2));
-
-        // ι: TUnit -> Writer<TUnit, TContent>
-        public static Writer<Unit, TContent> Unit<TContent>
-            (Unit unit, TContent content, IMonoid<TContent> monoid) => unit.Writer(content, monoid);
-
-        // Select: (TSource -> TResult) -> (Writer<TSource, TContent> -> Writer<TResult, TContent>)
-        public static Writer<TResult, TContent> Select<TSource, TResult, TContent>
-            (this Writer<TSource, TContent> source, Func<TSource, TResult> selector) =>
-                source.SelectMany(value => selector(value).Writer(source.Content, source.Monoid));
+                new Writer<T, TContent>(() => value.Tuple(content), monoid);
     }
 
-    // [Pure]
     public static partial class WriterExtensions
     {
         public static Writer<TSource, IEnumerable<string>> WithLog<TSource>(this TSource value, string log) =>
             value.Writer(
                 $"{DateTime.Now.ToString("o", CultureInfo.InvariantCulture)} - {log}".Enumerable(),
-                Enumerable.Empty<string>().Monoid((a, b) => a.Concat(b)));
+                new EnumerableConcatMonoid<string>());
     }
 
     // Impure.

@@ -11,13 +11,32 @@
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+    using static Dixin.Linq.CategoryTheory.Functions;
+
     using FuncExtensions = Dixin.Linq.CategoryTheory.FuncExtensions;
-    using NullableInt32 = Dixin.Linq.CategoryTheory.Nullable<int>;
-    using NullableString = Dixin.Linq.CategoryTheory.Nullable<string>;
     using TaskExtensions = Dixin.Linq.CategoryTheory.TaskExtensions;
 
-    public partial class MonadTests
+    [TestClass]
+    public class MonadTests
     {
+        [TestMethod]
+        public void EnumerableMonoidTest()
+        {
+            IEnumerable<int> enumerable = new int[] { 0, 1, 2, 3, 4 };
+            // Left unit preservation: Unit(f).Multiply() == f.
+            EnumerableAssert.AreSequentialEqual(
+                EnumerableExtensions.Unit(enumerable).Multiply(),
+                enumerable);
+            // Right unit preservation: f == f.Select(Unit).Multiply().
+            EnumerableAssert.AreSequentialEqual(
+                enumerable,
+                enumerable.Select(EnumerableExtensions.Unit).Multiply());
+            // Associativity preservation: f.Wrap().Multiply().Wrap().Multiply() == f.Wrap().Wrap().Multiply().Multiply().
+            EnumerableAssert.AreSequentialEqual(
+                enumerable.Enumerable().Multiply().Enumerable().Multiply(),
+                enumerable.Enumerable().Enumerable().Multiply().Multiply());
+        }
+
         [TestMethod]
         public void EnumerableTest()
         {
@@ -36,19 +55,16 @@
 
             // Monad law 1: m.Monad().SelectMany(f) == f(m)
             Func<int, IEnumerable<int>> addOne = x => (x + 1).Enumerable();
-            EnumerableAssert.AreSequentialEqual(1.Enumerable().SelectMany(addOne), addOne(1));
+            EnumerableAssert.AreSequentialEqual(1.Enumerable().SelectMany(addOne, False), addOne(1));
             // Monad law 2: M.SelectMany(Monad) == M
-            EnumerableAssert.AreSequentialEqual(enumerable1.SelectMany(EnumerableExtensions.Enumerable), enumerable1);
+            EnumerableAssert.AreSequentialEqual(enumerable1.SelectMany(EnumerableExtensions.Enumerable, False), enumerable1);
             // Monad law 3: M.SelectMany(f1).SelectMany(f2) == M.SelectMany(x => f1(x).SelectMany(f2))
             Func<int, IEnumerable<int>> addTwo = x => (x + 2).Enumerable();
             EnumerableAssert.AreSequentialEqual(
-                enumerable2.SelectMany(addOne).SelectMany(addTwo),
-                enumerable2.SelectMany(x => addOne(x).SelectMany(addTwo)));
+                enumerable2.SelectMany(addOne, False).SelectMany(addTwo, False),
+                enumerable2.SelectMany(x => addOne(x).SelectMany(addTwo, False), False));
         }
-    }
 
-    public partial class MonadTests
-    {
         [TestMethod]
         public void LazyTest()
         {
@@ -72,18 +88,18 @@
 
             // Monad law 1: m.Monad().SelectMany(f) == f(m)
             Func<int, Lazy<int>> addOne = x => (x + 1).Lazy();
-            Lazy<int> left = 1.Lazy().SelectMany(addOne);
+            Lazy<int> left = 1.Lazy().SelectMany(addOne, False);
             Lazy<int> right = addOne(1);
             Assert.AreEqual(left.Value, right.Value);
             // Monad law 2: M.SelectMany(Monad) == M
             Lazy<int> M = 1.Lazy();
-            left = M.SelectMany(LazyExtensions.Lazy);
+            left = M.SelectMany(LazyExtensions.Lazy, False);
             right = M;
             Assert.AreEqual(left.Value, right.Value);
             // Monad law 3: M.SelectMany(f1).SelectMany(f2) == M.SelectMany(x => f1(x).SelectMany(f2))
             Func<int, Lazy<int>> addTwo = x => (x + 2).Lazy();
-            left = M.SelectMany(addOne).SelectMany(addTwo);
-            right = M.SelectMany(x => addOne(x).SelectMany(addTwo));
+            left = M.SelectMany(addOne, False).SelectMany(addTwo, False);
+            right = M.SelectMany(x => addOne(x).SelectMany(addTwo, False), False);
             Assert.AreEqual(left.Value, right.Value);
         }
 
@@ -116,18 +132,18 @@
 
             // Monad law 1: m.Monad().SelectMany(f) == f(m)
             Func<int, Func<int>> addOne = x => (x + 1).Func();
-            Func<int> left = 1.Func().SelectMany(addOne);
+            Func<int> left = 1.Func().SelectMany(addOne, False);
             Func<int> right = addOne(1);
             Assert.AreEqual(left(), right());
             // Monad law 2: M.SelectMany(Monad) == M
             Func<int> M = 1.Func();
-            left = M.SelectMany(FuncExtensions.Func);
+            left = M.SelectMany(FuncExtensions.Func, False);
             right = M;
             Assert.AreEqual(left(), right());
             // Monad law 3: M.SelectMany(f1).SelectMany(f2) == M.SelectMany(x => f1(x).SelectMany(f2))
             Func<int, Func<int>> addTwo = x => (x + 2).Func();
-            left = M.SelectMany(addOne).SelectMany(addTwo);
-            right = M.SelectMany(x => addOne(x).SelectMany(addTwo));
+            left = M.SelectMany(addOne, False).SelectMany(addTwo, False);
+            right = M.SelectMany(x => addOne(x).SelectMany(addTwo, False), False);
             Assert.AreEqual(left(), right());
 
             bool isExecuted5 = false;
@@ -152,17 +168,17 @@
         }
 
         [TestMethod]
-        public void NullableTest()
+        public void OptionalTest()
         {
             bool isExecuted1 = false;
             Func<int, Func<int, string>> add = x => y =>
             { isExecuted1 = true; return (x + y).ToString(CultureInfo.InvariantCulture); };
-            NullableInt32 nullable1 = new NullableInt32();
-            NullableInt32 nullable2 = new NullableInt32();
-            NullableString query1 = from x in nullable1
-                                                     from y in nullable2
-                                                     from _ in nullable1
-                                                     select add(x)(y);
+            Optional<int> optional = new Optional<int>();
+            Optional<int> optional2 = new Optional<int>();
+            Optional<string> query1 = from x in optional
+                                      from y in optional2
+                                      from _ in optional
+                                      select add(x)(y);
             Assert.IsFalse(isExecuted1); // Deferred and lazy.
             Assert.IsFalse(query1.HasValue); // Execution.
             Assert.IsFalse(isExecuted1);
@@ -172,11 +188,11 @@
             bool isExecuted5 = false;
             add = x => y =>
             { isExecuted3 = true; return (x + y).ToString(CultureInfo.InvariantCulture); };
-            NullableInt32 one = new NullableInt32(() =>
+            Optional<int> one = new Optional<int>(() =>
                 { isExecuted4 = true; return Tuple.Create(true, 1); });
-            NullableInt32 two = new NullableInt32(() =>
+            Optional<int> two = new Optional<int>(() =>
                 { isExecuted5 = true; return Tuple.Create(true, 2); });
-            NullableString query2 = from x in one
+            Optional<string> query2 = from x in one
                                                      from y in two
                                                      from _ in one
                                                      select add(x)(y);
@@ -190,25 +206,22 @@
             Assert.IsTrue(isExecuted5);
 
             // Monad law 1: m.Monad().SelectMany(f) == f(m)
-            Func<int, NullableInt32> addOne = x => (x + 1).Nullable();
-            NullableInt32 left = 1.Nullable().SelectMany(addOne);
-            NullableInt32 right = addOne(1);
+            Func<int, Optional<int>> addOne = x => (x + 1).Optional();
+            Optional<int> left = 1.Optional().SelectMany(addOne, False);
+            Optional<int> right = addOne(1);
             Assert.AreEqual(left.Value, right.Value);
             // Monad law 2: M.SelectMany(Monad) == M
-            NullableInt32 M = 1.Nullable();
-            left = M.SelectMany(NullableExtensions.Nullable);
+            Optional<int> M = 1.Optional();
+            left = M.SelectMany(OptionalExtensions.Optional, False);
             right = M;
             Assert.AreEqual(left.Value, right.Value);
             // Monad law 3: M.SelectMany(f1).SelectMany(f2) == M.SelectMany(x => f1(x).SelectMany(f2))
-            Func<int, NullableInt32> addTwo = x => (x + 2).Nullable();
-            left = M.SelectMany(addOne).SelectMany(addTwo);
-            right = M.SelectMany(x => addOne(x).SelectMany(addTwo));
+            Func<int, Optional<int>> addTwo = x => (x + 2).Optional();
+            left = M.SelectMany(addOne, False).SelectMany(addTwo, False);
+            right = M.SelectMany(x => addOne(x).SelectMany(addTwo, False), False);
             Assert.AreEqual(left.Value, right.Value);
         }
-    }
 
-    public partial class MonadTests
-    {
         [TestMethod]
         public void TupleTest()
         {
@@ -225,18 +238,18 @@
 
             // Monad law 1: m.Monad().SelectMany(f) == f(m)
             Func<int, Tuple<int>> addOne = x => (x + 1).Tuple();
-            Tuple<int> left = 1.Tuple().SelectMany(addOne);
+            Tuple<int> left = 1.Tuple().SelectMany(addOne, False);
             Tuple<int> right = addOne(1);
             Assert.AreEqual(left.Item1, right.Item1);
             // Monad law 2: M.SelectMany(Monad) == M
             Tuple<int> M = 1.Tuple();
-            left = M.SelectMany(TupleExtensions.Tuple);
+            left = M.SelectMany(TupleExtensions.Tuple, False);
             right = M;
             Assert.AreEqual(left.Item1, right.Item1);
             // Monad law 3: M.SelectMany(f1).SelectMany(f2) == M.SelectMany(x => f1(x).SelectMany(f2))
             Func<int, Tuple<int>> addTwo = x => (x + 2).Tuple();
-            left = M.SelectMany(addOne).SelectMany(addTwo);
-            right = M.SelectMany(x => addOne(x).SelectMany(addTwo));
+            left = M.SelectMany(addOne, False).SelectMany(addTwo, False);
+            right = M.SelectMany(x => addOne(x).SelectMany(addTwo, False), False);
             Assert.AreEqual(left.Item1, right.Item1);
         }
 
@@ -254,19 +267,19 @@
 
             // Monad law 1: m.Monad().SelectMany(f) == f(m)
             Func<int, Task<int>> addOne = x => (x + 1).Task();
-            Task<int> left = 1.Task().SelectMany(addOne);
+            Task<int> left = 1.Task().SelectMany(addOne, False);
             Task<int> right = addOne(1);
             Assert.AreEqual(left.Result, right.Result);
             // Monad law 2: M.SelectMany(Monad) == M
             Task<int> M = 1.Task();
-            left = M.SelectMany(TaskExtensions.Task);
+            left = M.SelectMany(TaskExtensions.Task, False);
             right = M;
             Assert.AreEqual(left.Result, right.Result);
             // Monad law 3: M.SelectMany(f1).SelectMany(f2) == M.SelectMany(x => f1(x).SelectMany(f2))
             M = 1.Task();
             Func<int, Task<int>> addTwo = x => (x + 2).Task();
-            left = M.SelectMany(addOne).SelectMany(addTwo);
-            right = M.SelectMany(x => addOne(x).SelectMany(addTwo));
+            left = M.SelectMany(addOne, False).SelectMany(addTwo, False);
+            right = M.SelectMany(x => addOne(x).SelectMany(addTwo, False), False);
             Assert.AreEqual(left.Result, right.Result);
         }
 
@@ -297,35 +310,35 @@
             List<Task<int>> addOneTasks = new List<Task<int>>();
             Func<int, Task<int>> addOne = x =>
             {
-                Task<int> task = (x + 1).Task(true);
+                Task<int> task = new Task<int>(() => x + 1);
                 addOneTasks.Add(task);
                 return task;
             };
-            Task<int> one = 1.Task(true);
-            Task<int> left = one.SelectMany(addOne);
+            Task<int> one = new Task<int>(() => 1);
+            Task<int> left = one.SelectMany(addOne, False);
             Task<int> right = addOne(1);
             one.Start();
             while (addOneTasks.Count < 2) { }
             addOneTasks.ForEach(task => task.Start());
             Assert.AreEqual(left.Result, right.Result);
             // Monad law 2: M.SelectMany(Monad) == M
-            Task<int> M = 1.Task(true);
-            left = M.SelectMany(TaskExtensions.Task);
+            Task<int> M = new Task<int>(() => 1);
+            left = M.SelectMany(TaskExtensions.Task, False);
             right = M;
             M.Start();
             Assert.AreEqual(left.Result, right.Result);
             // Monad law 3: M.SelectMany(f1).SelectMany(f2) == M.SelectMany(x => f1(x).SelectMany(f2))
             addOneTasks.Clear();
             List<Task<int>> addTwoTasks = new List<Task<int>>();
-            M = 1.Task(true);
+            M = new Task<int>(() => 1);
             Func<int, Task<int>> addTwo = x =>
             {
-                Task<int> task = (x + 1).Task(true);
+                Task<int> task = new Task<int>(() => x + 1);
                 addTwoTasks.Add(task);
                 return task;
             };
-            left = M.SelectMany(addOne).SelectMany(addTwo);
-            right = M.SelectMany(x => addOne(x).SelectMany(addTwo));
+            left = M.SelectMany(addOne, False).SelectMany(addTwo, False);
+            right = M.SelectMany(x => addOne(x).SelectMany(addTwo, False), False);
             M.Start();
             while (addOneTasks.Count < 2) { }
             addOneTasks.ForEach(task => task.Start());
@@ -333,10 +346,7 @@
             addTwoTasks.ForEach(task => task.Start());
             Assert.AreEqual(left.Result, right.Result);
         }
-    }
 
-    public partial class MonadTests
-    {
         [TestMethod]
         public void IOTest()
         {
@@ -366,18 +376,18 @@
 
             // Monad law 1: m.Monad().SelectMany(f) == f(m)
             Func<int, IO<int>> addOne3 = x => (x + 1).IO();
-            IO<int> left = 1.IO().SelectMany(addOne3);
+            IO<int> left = 1.IO().SelectMany(addOne3, False);
             IO<int> right = addOne3(1);
             Assert.AreEqual(left(), right());
             // Monad law 2: M.SelectMany(Monad) == M
             IO<int> M = 1.IO();
-            left = M.SelectMany(m => m.IO());
+            left = M.SelectMany(m => m.IO(), False);
             right = M;
             Assert.AreEqual(left(), right());
             // Monad law 3: M.SelectMany(f1).SelectMany(f2) == M.SelectMany(x => f1(x).SelectMany(f2))
             Func<int, IO<int>> addTwo = x => (x + 2).IO();
-            left = M.SelectMany(addOne3).SelectMany(addTwo);
-            right = M.SelectMany(x => addOne3(x).SelectMany(addTwo));
+            left = M.SelectMany(addOne3, False).SelectMany(addTwo, False);
+            right = M.SelectMany(x => addOne3(x).SelectMany(addTwo, False), False);
             Assert.AreEqual(left(), right());
 
             bool isExecuted5 = false;
@@ -399,22 +409,19 @@
             Assert.IsTrue(isExecuted6);
             Assert.IsTrue(isExecuted7);
         }
-    }
 
-    public partial class MonadTests
-    {
         [TestMethod]
         public void StateTest()
         {
             bool isExecuted1 = false;
             bool isExecuted2 = false;
-            Func<State<int, string>> f1 = () => 1.State<int, string>(
+            Func<State<string, int>> f1 = () => 1.State<string, int>(
                 state => { isExecuted1 = true; return state + "a"; });
             Func<int, Func<int, Func<string, int>>> f2 =
                 x => y => z => { isExecuted2 = true; return x + y + z.Length; };
-            State<int, string> query1 = from x in f1()
+            State<string, int> query1 = from x in f1()
                                         from _ in State.Set(x.ToString(CultureInfo.InvariantCulture))
-                                        from y in 2.State<int, string>(state => "b" + state)
+                                        from y in 2.State<string, int>(state => "b" + state)
                                         from z in State.Get<string>()
                                         select f2(x)(y)(z);
             Assert.IsFalse(isExecuted1); // Deferred and lazy.
@@ -426,28 +433,25 @@
             Assert.IsTrue(isExecuted2);
 
             // Monad law 1: m.Monad().SelectMany(f) == f(m)
-            Func<int, State<int, string>> addOne = x => (x + 1).State<int, string>();
-            State<int, string> left = 1.State<int, string>().SelectMany(addOne);
-            State<int, string> right = addOne(1);
+            Func<int, State<string, int>> addOne = x => (x + 1).State<string, int>();
+            State<string, int> left = 1.State<string, int>().SelectMany(addOne, False);
+            State<string, int> right = addOne(1);
             Assert.AreEqual(left.Value("a"), right.Value("a"));
             Assert.AreEqual(left.State("a"), right.State("a"));
             // Monad law 2: M.SelectMany(Monad) == M
-            State<int, string> M = 1.State<int, string>();
-            left = M.SelectMany(StateExtensions.State<int, string>);
+            State<string, int> M = 1.State<string, int>();
+            left = M.SelectMany(StateExtensions.State<string, int>, False);
             right = M;
             Assert.AreEqual(left.Value("a"), right.Value("a"));
             Assert.AreEqual(left.State("a"), right.State("a"));
             // Monad law 3: M.SelectMany(f1).SelectMany(f2) == M.SelectMany(x => f1(x).SelectMany(f2))
-            Func<int, State<int, string>> addTwo = x => (x + 2).State<int, string>();
-            left = M.SelectMany(addOne).SelectMany(addTwo);
-            right = M.SelectMany(x => addOne(x).SelectMany(addTwo));
+            Func<int, State<string, int>> addTwo = x => (x + 2).State<string, int>();
+            left = M.SelectMany(addOne, False).SelectMany(addTwo, False);
+            right = M.SelectMany(x => addOne(x).SelectMany(addTwo, False), False);
             Assert.AreEqual(left.Value("a"), right.Value("a"));
             Assert.AreEqual(left.State("a"), right.State("a"));
         }
-    }
 
-    public partial class MonadTests
-    {
         [TestMethod]
         public void ReaderTest()
         {
@@ -479,23 +483,21 @@
             Tuple<bool, string> config = Tuple.Create(true, "abc");
             // Monad law 1: m.Monad().SelectMany(f) == f(m)
             Func<int, Reader<Tuple<bool, string>, int>> addOne = x => c => x + 1;
-            Reader<Tuple<bool, string>, int> left = 1.Reader<Tuple<bool, string>, int>().SelectMany(addOne);
+            Reader<Tuple<bool, string>, int> left = 1.Reader<Tuple<bool, string>, int>().SelectMany(addOne, False);
             Reader<Tuple<bool, string>, int> right = addOne(1);
             Assert.AreEqual(left(config), right(config));
             // Monad law 2: M.SelectMany(Monad) == M
             Reader<Tuple<bool, string>, int> M = c => 1 + c.Item2.Length;
-            left = M.SelectMany(ReaderExtensions.Reader<Tuple<bool, string>, int>);
+            left = M.SelectMany(ReaderExtensions.Reader<Tuple<bool, string>, int>, False);
             right = M;
             Assert.AreEqual(left(config), right(config));
             // Monad law 3: M.SelectMany(f1).SelectMany(f2) == M.SelectMany(x => f1(x).SelectMany(f2))
             Func<int, Reader<Tuple<bool, string>, int>> addLength = x => c => x + c.Item2.Length;
-            left = M.SelectMany(addOne).SelectMany(addLength);
-            right = M.SelectMany(x => addOne(x).SelectMany(addLength));
+            left = M.SelectMany(addOne, False).SelectMany(addLength, False);
+            right = M.SelectMany(x => addOne(x).SelectMany(addLength, False), False);
             Assert.AreEqual(left(config), right(config));
         }
-    }
-    public partial class MonadTests
-    {
+
         [TestMethod]
         public void WriterTest()
         {
@@ -516,10 +518,10 @@
             Assert.IsTrue(logs[2].EndsWith(" - c"));
             Assert.IsTrue(isExecuted1);
 
-            IMonoid<string> monoid = string.Empty.Monoid(string.Concat); // (a, b) => string.Concat(a, b).
+            IMonoid<string> monoid = new StringConcatMonoid(); // (a, b) => string.Concat(a, b).
             // Monad law 1: m.Monad().SelectMany(f) == f(m)
             Func<int, Writer<int, string>> addOne = x => (x + 1).Writer("a", monoid);
-            Writer<int, string> left = 1.Writer("b", monoid).SelectMany(addOne);
+            Writer<int, string> left = 1.Writer("b", monoid).SelectMany(addOne, False);
             Writer<int, string> right = addOne(1);
             Assert.AreEqual(left.Value, right.Value);
             Assert.AreEqual("ba", left.Content);
@@ -527,22 +529,20 @@
             // Monad law 2: M.SelectMany(Monad) == M
             Func<int, Writer<int, string>> Resturn = x => x.Writer("abc", monoid);
             Writer<int, string> M = Resturn(1);
-            left = M.SelectMany(Resturn);
+            left = M.SelectMany(Resturn, False);
             right = M;
             Assert.AreEqual(left.Value, right.Value);
             Assert.AreEqual("abcabc", left.Content);
             Assert.AreEqual("abc", right.Content);
             // Monad law 3: M.SelectMany(f1).SelectMany(f2) == M.SelectMany(x => f1(x).SelectMany(f2))
             Func<int, Writer<int, string>> addTwo = x => (x + 2).Writer("b", monoid);
-            left = M.SelectMany(addOne).SelectMany(addTwo);
-            right = M.SelectMany(x => addOne(x).SelectMany(addTwo));
+            left = M.SelectMany(addOne, False).SelectMany(addTwo, False);
+            right = M.SelectMany(x => addOne(x).SelectMany(addTwo, False), False);
             Assert.AreEqual(left.Value, right.Value);
             Assert.AreEqual("abcab", left.Content);
             Assert.AreEqual("abcab", right.Content);
         }
-    }
-    public partial class MonadTests
-    {
+
         [TestMethod]
         public void ContinuationTest()
         {
@@ -552,9 +552,9 @@
                     isExecuted1 = true;
                     return (x + y + z.Length).ToString(CultureInfo.InstalledUICulture);
                 };
-            Cps<string, int> query = from x in 1.Cps<int, int>()
+            Cps<int, string> query = from x in 1.Cps<int, int>()
                                      from y in 2.Cps<int, int>()
-                                     from z in "abc".Cps<string, int>()
+                                     from z in "abc".Cps<int, string>()
                                      select f(x)(y)(z);
             Assert.IsFalse(isExecuted1); // Deferred and lazy.
             Assert.AreEqual((1 + 2 + "abc".Length).ToString(CultureInfo.InstalledUICulture).Length, query(x => x.Length)); // Execution.
@@ -562,19 +562,95 @@
 
             // Monad law 1: m.Monad().SelectMany(f) == f(m)
             Func<int, Cps<int, int>> addOne = x => (x + 1).Cps<int, int>();
-            Cps<int, int> left = 1.Cps<int, int>().SelectMany(addOne);
+            Cps<int, int> left = 1.Cps<int, int>().SelectMany(addOne, False);
             Cps<int, int> right = addOne(1);
             Assert.AreEqual(left.Invoke(), right.Invoke());
             // Monad law 2: M.SelectMany(Monad) == M
             Cps<int, int> M = 1.Cps<int, int>();
-            left = M.SelectMany(CpsExtensions.Cps<int, int>);
+            left = M.SelectMany(CpsExtensions.Cps<int, int>, False);
             right = M;
             Assert.AreEqual(left.Invoke(), right.Invoke());
             // Monad law 3: M.SelectMany(f1).SelectMany(f2) == M.SelectMany(x => f1(x).SelectMany(f2))
             Func<int, Cps<int, int>> addTwo = x => (x + 2).Cps<int, int>();
-            left = M.SelectMany(addOne).SelectMany(addTwo);
-            right = M.SelectMany(x => addOne(x).SelectMany(addTwo));
+            left = M.SelectMany(addOne, False).SelectMany(addTwo, False);
+            right = M.SelectMany(x => addOne(x).SelectMany(addTwo, False), False);
             Assert.AreEqual(left.Invoke(), right.Invoke());
+        }
+
+        [TestMethod]
+        public void TryTest()
+        {
+            bool isExecuted1 = false;
+            Func<int, Func<int, Func<string, string>>> f = x => y => z =>
+            {
+                isExecuted1 = true;
+                return (x + y + z.Length).ToString(CultureInfo.InstalledUICulture);
+            };
+            Try<string> query = from x in 1.Try()
+                                     from y in 2.Try()
+                                     from z in "abc".Try()
+                                     select f(x)(y)(z);
+            Assert.IsFalse(isExecuted1); // Deferred and lazy.
+            Assert.AreEqual((1 + 2 + "abc".Length).ToString(CultureInfo.InstalledUICulture), query().Value); // Execution.
+            Assert.IsTrue(isExecuted1);
+
+            // Monad law 1: m.Monad().SelectMany(f) == f(m)
+            Func<int, Try<int>> addOne = x => (x + 1).Try();
+            Try<int> left = 1.Try().SelectMany(addOne, False);
+            Try<int> right = addOne(1);
+            Assert.AreEqual(left.Invoke().Value, right.Invoke().Value);
+            // Monad law 2: M.SelectMany(Monad) == M
+            Try<int> M = 1.Try();
+            left = M.SelectMany(TryExtensions.Try, False);
+            right = M;
+            Assert.AreEqual(left.Invoke().Value, right.Invoke().Value);
+            // Monad law 3: M.SelectMany(f1).SelectMany(f2) == M.SelectMany(x => f1(x).SelectMany(f2))
+            Func<int, Try<int>> addTwo = x => (x + 2).Try();
+            left = M.SelectMany(addOne, False).SelectMany(addTwo, False);
+            right = M.SelectMany(x => addOne(x).SelectMany(addTwo, False), False);
+            Assert.AreEqual(left.Invoke(), right.Invoke());
+        }
+
+        [TestMethod]
+        public void TryStrictFactorialTest()
+        {
+            TryResult<int> result = TryExtensions.StrictFactorial(null);
+            Assert.IsTrue(result.HasException);
+            Assert.IsNotNull(result.Exception);
+            Assert.IsInstanceOfType(result.Exception, typeof(ArgumentNullException));
+            result = TryExtensions.StrictFactorial(0);
+            Assert.IsTrue(result.HasException);
+            Assert.IsNotNull(result.Exception);
+            Assert.IsInstanceOfType(result.Exception, typeof(ArgumentOutOfRangeException));
+            result = TryExtensions.StrictFactorial(3);
+            Assert.IsFalse(result.HasException);
+            Assert.IsNull(result.Exception);
+            Assert.AreEqual(6, result.Value);
+            result = TryExtensions.StrictFactorial(-1);
+            Assert.IsTrue(result.HasException);
+            Assert.IsNotNull(result.Exception);
+            Assert.IsInstanceOfType(result.Exception, typeof(ArgumentOutOfRangeException));
+        }
+
+        [TestMethod]
+        public void TryFactorialTest()
+        {
+            TryResult<string> result = TryExtensions.Factorial(null);
+            Assert.IsFalse(result.HasException);
+            Assert.IsNull(result.Exception);
+            Assert.AreEqual("0", result.Value);
+            result = TryExtensions.Factorial("0");
+            Assert.IsFalse(result.HasException);
+            Assert.IsNull(result.Exception);
+            Assert.AreEqual("0", result.Value);
+            result = TryExtensions.Factorial("3");
+            Assert.IsFalse(result.HasException);
+            Assert.IsNull(result.Exception);
+            Assert.AreEqual("6", result.Value);
+            result = TryExtensions.Factorial("-1");
+            Assert.IsFalse(result.HasException);
+            Assert.IsNull(result.Exception);
+            StringAssert.Contains(result.Value, "Parameter name");
         }
     }
 }

@@ -1,50 +1,49 @@
 ﻿namespace Dixin.Linq.CategoryTheory
 {
     using System;
-    using System.Diagnostics.Contracts;
+
+#if DEMO
+    public interface IFunctor<TBifunctor<,>> where TBifunctor<,> : IFunctor<TBifunctor<,>>
+    {
+        Func<TBifunctor<TSource1, TSource2>, TBifunctor<TResult1, TResult2>> Select<TSource1, TSource2, TResult1, TResult2>(
+            Func<TSource1, TResult1> selector1, Func<TSource2, TResult2> selector2);
+    }
+#endif
 
     public class Lazy<T1, T2>
     {
         private readonly Lazy<Tuple<T1, T2>> lazy;
-
-        public Lazy(Func<T1> factory1, Func<T2> factory2)
-            : this(() => Tuple.Create(factory1(), factory2()))
-        {
-        }
-
-        public Lazy(T1 value1, T2 value2)
-            : this(() => Tuple.Create(value1, value2))
-        {
-        }
 
         public Lazy(Func<Tuple<T1, T2>> factory)
         {
             this.lazy = new Lazy<Tuple<T1, T2>>(factory);
         }
 
-        public T1 Value1
-        {
-            [Pure]get { return this.lazy.Value.Item1; }
-        }
+        public T1 Value1 => this.lazy.Value.Item1;
 
-        public T2 Value2
-        {
-            [Pure]get { return this.lazy.Value.Item2; }
-        }
+        public T2 Value2 => this.lazy.Value.Item2;
+
+        public override string ToString() => this.lazy.Value.ToString();
     }
 
-    // [Pure]
     public static partial class LazyExtensions
     {
-        public static Lazy<TResult1, TResult2> Select<TSource1, TSource2, TResult1, TResult2>
-            (this Lazy<TSource1, TSource2> source,
-                Func<TSource1, TResult1> selector1,
-                Func<TSource2, TResult2> selector2) =>
-                    new Lazy<TResult1, TResult2>(() => selector1(source.Value1), () => selector2(source.Value2));
+        public static Lazy<T1, T2> Lazy<T1, T2>(this T1 value1, T2 value2) =>
+            new Lazy<T1, T2>(() => value1.Tuple(value2));
+    }
 
-        public static IMorphism<Lazy<TSource1, TSource2>, Lazy<TResult1, TResult2>, DotNet> Select<TSource1, TSource2, TResult1, TResult2>
-            (IMorphism<TSource1, TResult1, DotNet> selector1, IMorphism<TSource2, TResult2, DotNet> selector2) =>
-                new DotNetMorphism<Lazy<TSource1, TSource2>, Lazy<TResult1, TResult2>>(
-                    source => source.Select(selector1.Invoke, selector2.Invoke));
+    public static partial class LazyExtensions
+    {
+        // Select: (TSource1 -> TResult1, TSource2 -> TResult2) -> (Lazy<TSource1, TSource2> -> Lazy<TResult1, TResult2>).
+        public static Func<Lazy<TSource1, TSource2>, Lazy<TResult1, TResult2>> Select<TSource1, TSource2, TResult1, TResult2>(
+            Func<TSource1, TResult1> selector1, Func<TSource2, TResult2> selector2) => source =>
+                Select(source, selector1, selector2);
+
+        // Select: (Lazy<TSource1, TSource2>, TSource1 -> TResult1, TSource2 -> TResult2) -> Lazy<TResult1, TResult2>).
+        public static Lazy<TResult1, TResult2> Select<TSource1, TSource2, TResult1, TResult2>(
+            this Lazy<TSource1, TSource2> source,
+            Func<TSource1, TResult1> selector1,
+            Func<TSource2, TResult2> selector2) =>
+                new Lazy<TResult1, TResult2>(() => selector1(source.Value1).Tuple(selector2(source.Value2)));
     }
 }

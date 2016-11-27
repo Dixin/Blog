@@ -35,18 +35,27 @@ namespace Dixin.Linq.CategoryTheory {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string ConnectionString {
+        public string WordTemplatePath {
             get {
-                return ((string)(this["ConnectionString"]));
+                return ((string)(this["WordTemplatePath"]));
             }
         }
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("0")]
-        public int Port {
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string TempPath {
             get {
-                return ((int)(this["Port"]));
+                return ((string)(this["TempPath"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string OneDrivePath {
+            get {
+                return ((string)(this["OneDrivePath"]));
             }
         }
     }

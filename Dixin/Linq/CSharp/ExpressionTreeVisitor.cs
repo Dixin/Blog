@@ -199,7 +199,6 @@
     internal static class BinaryArithmeticCompiler
     {
         internal static TDelegate Compile<TDelegate>(Expression<TDelegate> expression)
-            where TDelegate : class
         {
             DynamicMethod dynamicFunction = new DynamicMethod(
                 name: string.Empty,
@@ -207,7 +206,7 @@
                 parameterTypes: expression.Parameters.Select(parameter => parameter.Type).ToArray(),
                 m: typeof(BinaryArithmeticCompiler).Module);
             EmitIL(dynamicFunction.GetILGenerator(), new PostfixVisitor().VisitBody(expression));
-            return dynamicFunction.CreateDelegate(typeof(TDelegate)) as TDelegate;
+            return (TDelegate)(object)dynamicFunction.CreateDelegate(typeof(TDelegate));
         }
 
         private static void EmitIL(ILGenerator ilGenerator, IEnumerable<Tuple<OpCode, double?>> codes)

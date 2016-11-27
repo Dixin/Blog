@@ -1,142 +1,64 @@
 ﻿namespace Dixin.Linq.CategoryTheory
 {
     using System;
-    using System.Diagnostics.Contracts;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Linq.Expressions;
 
-    using Dixin.Common;
-
-    public interface ICategory<TCategory> where TCategory : ICategory<TCategory>
+    public interface ICategory<TObject, TMorphism>
     {
-        // o = (m2, m1) -> composition
-        [Pure]
-        IMorphism<TSource, TResult, TCategory> o<TSource, TMiddle, TResult>(
-            IMorphism<TMiddle, TResult, TCategory> m2, IMorphism<TSource, TMiddle, TCategory> m1);
+        IEnumerable<TObject> Objects { get; }
 
-        [Pure]
-        IMorphism<TObject, TObject, TCategory> Id<TObject>();
+        TMorphism Compose(TMorphism morphism2, TMorphism morphism1);
+
+        TMorphism Id(TObject @object);
     }
 
-    public interface IMorphism<in TSource, out TResult, out TCategory> where TCategory : ICategory<TCategory>
+    public class Int32Category : ICategory<int, BinaryExpression>
     {
-        [Pure]
-        TCategory Category { get; }
-
-        [Pure]
-        TResult Invoke(TSource source);
-    }
-
-    public class DotNet : ICategory<DotNet>
-    {
-        [Pure]
-        public IMorphism<TObject, TObject, DotNet> Id<TObject>
-            () => new DotNetMorphism<TObject, TObject>(@object => @object);
-
-        [Pure]
-        public IMorphism<TSource, TResult, DotNet> o<TSource, TMiddle, TResult>
-            (IMorphism<TMiddle, TResult, DotNet> m2, IMorphism<TSource, TMiddle, DotNet> m1) =>
-                new DotNetMorphism<TSource, TResult>(@object => m2.Invoke(m1.Invoke(@object)));
-
-        private DotNet()
+        public IEnumerable<int> Objects
         {
-        }
-
-        public static DotNet Category {[Pure] get; } = new DotNet();
-    }
-
-    public class DotNetMorphism<TSource, TResult> : IMorphism<TSource, TResult, DotNet>
-    {
-        private readonly Func<TSource, TResult> function;
-
-        public DotNetMorphism(Func<TSource, TResult> function)
-        {
-            this.function = function;
-        }
-
-        public DotNet Category
-        {
-            [Pure]get {return DotNet.Category;}
-        }
-
-        [Pure]
-        public TResult Invoke
-            (TSource source) => this.function(source);
-    }
-
-    [Pure]
-    public static class MorphismExtensions
-    {
-        public static IMorphism<TSource, TResult, DotNet> o<TSource, TMiddle, TResult>(
-            this IMorphism<TMiddle, TResult, DotNet> m2, IMorphism<TSource, TMiddle, DotNet> m1)
-        {
-            Argument.Requires(m2.Category == m1.Category, $"{nameof(m2)} and {nameof(m1)} are not in the same category.");
-
-            return m1.Category.o(m2, m1);
-        }
-
-        public static IMorphism<TSource, TResult, DotNet> DotNetMorphism<TSource, TResult>
-            (this Func<TSource, TResult> function) => new DotNetMorphism<TSource, TResult>(function);
-    }
-
-    #region Monoid
-
-    public partial interface IMonoid<T> : ICategory<IMonoid<T>>
-    {
-    }
-
-    public class MonoidMorphism<T> : IMorphism<T, T, IMonoid<T>>
-    {
-        private readonly Func<T, T> function;
-
-        public MonoidMorphism(IMonoid<T> category, Func<T, T> function)
-        {
-            this.function = function;
-            this.Category = category;
-        }
-
-        public IMonoid<T> Category {[Pure] get; }
-
-        [Pure]
-        public T Invoke
-            (T source) => this.function(source);
-    }
-
-    public partial class Monoid<T>
-    {
-        [Pure]
-        public IMorphism<TSource, TResult, IMonoid<T>> o<TSource, TMiddle, TResult>(
-            IMorphism<TMiddle, TResult, IMonoid<T>> m2, IMorphism<TSource, TMiddle, IMonoid<T>> m1)
-        {
-            if (!(typeof(T).IsAssignableFrom(typeof(TSource)) && typeof(T).IsAssignableFrom(typeof(TMiddle))
-                && typeof(T).IsAssignableFrom(typeof(TResult))))
+            get
             {
-                throw new InvalidOperationException($"Category {nameof(Monoid<T>)} has only 1 object {nameof(T)}.");
+                for (int int32 = int.MinValue; int32 <= int.MaxValue; int32++)
+                {
+                    yield return int32;
+                }
             }
-
-            return new MonoidMorphism<T>(
-                this,
-                _ => this.Binary(
-                    (T)(object)m1.Invoke((TSource)(object)this.Unit),
-                    (T)(object)m2.Invoke((TMiddle)(object)this.Unit)))
-                as IMorphism<TSource, TResult, IMonoid<T>>;
         }
 
-        [Pure]
-        public IMorphism<TObject, TObject, IMonoid<T>> Id<TObject>()
-        {
-            if (!typeof(T).IsAssignableFrom(typeof(TObject)))
-            {
-                throw new InvalidOperationException($"Category {nameof(Monoid<T>)} has only 1 object {nameof(T)}.");
-            }
+        public BinaryExpression Compose(BinaryExpression morphism2, BinaryExpression morphism1) =>
+            Expression.LessThanOrEqual(morphism2.Left, morphism1.Right); // (Y <= Z) ∘ (X <= Y) => X <= Z.
 
-            return new MonoidMorphism<T>(this, value => value) as IMorphism<TObject, TObject, IMonoid<T>>;
-        }
+        public BinaryExpression Id(int @object) =>
+            Expression.GreaterThanOrEqual(Expression.Constant(@object), Expression.Constant(@object)); // X <= X.
     }
 
-    public static partial class MonoidExtensions
+    public static partial class FuncExtensions
     {
-        public static IMorphism<T, T, IMonoid<T>> MonoidMorphism<T>
-            (this IMonoid<T> category, Func<T, T> function) => new MonoidMorphism<T>(category, function);
+        public static Func<TSource, TResult> o<TSource, TMiddle, TResult>( // After.
+            this Func<TMiddle, TResult> function2, Func<TSource, TMiddle> function1) =>
+                value => function2(function1(value));
     }
 
-    #endregion
+    public partial class DotNetCategory : ICategory<Type, Delegate>
+    {
+        public IEnumerable<Type> Objects =>
+            AppDomain.CurrentDomain.GetAssemblies().SelectMany(assembly => assembly.ExportedTypes);
+
+        public Delegate Compose(Delegate morphism2, Delegate morphism1) =>
+            // return (Func<TSource, TResult>)Functions.Compose<TSource, TMiddle, TResult>(
+            //    (Func<TMiddle, TResult>)morphism2, (Func<TSource, TMiddle>)morphism1);
+            (Delegate)typeof(FuncExtensions).GetMethod(nameof(FuncExtensions.o))
+                .MakeGenericMethod( // TSource, TMiddle, TResult.
+                    morphism1.Method.GetParameters().Single().ParameterType,
+                    morphism1.Method.ReturnType,
+                    morphism2.Method.ReturnType)
+                .Invoke(null, new object[] { morphism2, morphism1 });
+
+        public Delegate Id(Type @object) => // Functions.Id<TSource>
+            Delegate.CreateDelegate(
+                type: typeof(Func<,>).MakeGenericType(@object, @object),
+                method: typeof(Functions).GetMethod(nameof(Functions.Id)).MakeGenericMethod(@object));
+    }
 }

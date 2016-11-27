@@ -143,8 +143,8 @@
       <HintPath>..\packages\linqtotwitter.4.1.0\lib\net45\LinqToTwitter.net.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Azure.Documents.Client, Version=1.9.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Azure.DocumentDB.1.9.2\lib\net45\Microsoft.Azure.Documents.Client.dll</HintPath>
+    <Reference Include="Microsoft.Azure.Documents.Client, Version=1.10.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Azure.DocumentDB.1.10.0\lib\net45\Microsoft.Azure.Documents.Client.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.ConcurrencyVisualizer.Markers, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -194,19 +194,19 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Cecil, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.9.6.3\lib\net45\Mono.Cecil.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Cecil.Mdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.9.6.3\lib\net45\Mono.Cecil.Mdb.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.Mdb.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Cecil.Pdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.9.6.3\lib\net45\Mono.Cecil.Pdb.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.Pdb.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Cecil.Rocks, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.9.6.3\lib\net45\Mono.Cecil.Rocks.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.Rocks.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -225,8 +225,8 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data.Linq" />
-    <Reference Include="System.Interactive, Version=1.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Ix-Main.1.2.5\lib\net45\System.Interactive.dll</HintPath>
+    <Reference Include="System.Interactive, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Interactive.3.1.1\lib\net45\System.Interactive.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.IO.Compression" />
@@ -313,9 +313,12 @@
     </Compile>
     <Compile Include="Common\ExceptionFilter.cs" />
     <Compile Include="Common\Int32Extensions.cs" />
+    <Compile Include="Linq\ActionFunc.Compose.cs" />
+    <Compile Include="Linq\CategoryTheory\Monad.cs" />
+    <Compile Include="Linq\CategoryTheory\Monad.Try.cs" />
+    <Compile Include="Linq\CategoryTheory\Optional`1.cs" />
     <Compile Include="Linq\CSharp\Composition.cs" />
     <Compile Include="Linq\CSharp\Curry.cs" />
-    <Compile Include="Linq\ActionFunc.Composite.cs" />
     <Compile Include="Linq\CSharp\Immutability.cs" />
     <Compile Include="Linq\CSharp\Purity.cs" />
     <Compile Include="Linq\Lambda\ChurchAggregateList.Generic.cs" />
@@ -426,8 +429,6 @@
     <Compile Include="Management\Win32Process.cs" />
     <Compile Include="IO\Music.cs" />
     <Compile Include="IO\Video.cs" />
-    <Compile Include="Linq\CategoryTheory\Functor.Like.cs" />
-    <Compile Include="Linq\CategoryTheory\Monad.Like.cs" />
     <Content Include="Linq\EntityFramework\Database.sql" />
     <Content Include="Linq\EntityFramework\Translation.txt" />
     <Content Include="Linq\EntityFramework\Views.sql" />
@@ -481,13 +482,10 @@
     <Compile Include="TransientFaultHandling\Retry.cs" />
     <Compile Include="Linq\CategoryTheory\Bifunctor.cs" />
     <Compile Include="Linq\CategoryTheory\Category.cs" />
-    <Compile Include="Linq\CategoryTheory\FuncExtensions.cs" />
     <Compile Include="Linq\CategoryTheory\Functions.cs" />
     <Compile Include="Linq\CategoryTheory\Functor.cs" />
     <Compile Include="Linq\CategoryTheory\Monad.Cps.cs" />
-    <Compile Include="Linq\CategoryTheory\Monad.Enumerable.cs" />
     <Compile Include="Linq\CategoryTheory\Monad.IO.cs" />
-    <Compile Include="Linq\CategoryTheory\Monad.More.cs" />
     <Compile Include="Linq\CategoryTheory\Monad.Reader.cs" />
     <Compile Include="Linq\CategoryTheory\Monad.SelectMany.cs" />
     <Compile Include="Linq\CategoryTheory\Monad.State.cs" />
@@ -495,7 +493,6 @@
     <Compile Include="Linq\CategoryTheory\MonoidalCategory.cs" />
     <Compile Include="Linq\CategoryTheory\MonoidalFunctor.cs" />
     <Compile Include="Linq\CategoryTheory\NaturalTransformation.cs" />
-    <Compile Include="Linq\CategoryTheory\Nullable`1.cs" />
     <Compile Include="Linq\CategoryTheory\Performance.cs" />
     <Compile Include="Linq\CategoryTheory\Psudo.cs" />
     <Compile Include="Linq\CategoryTheory\ReflectionHelper.cs" />
@@ -663,12 +660,12 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
-    <Error Condition="!Exists('..\packages\Microsoft.Azure.DocumentDB.1.9.2\build\Microsoft.Azure.DocumentDB.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Azure.DocumentDB.1.9.2\build\Microsoft.Azure.DocumentDB.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.Azure.DocumentDB.1.10.0\build\Microsoft.Azure.DocumentDB.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Azure.DocumentDB.1.10.0\build\Microsoft.Azure.DocumentDB.targets'))" />
   </Target>
   <PropertyGroup>
     <SsdtUnitTestVersion>2.0</SsdtUnitTestVersion>
   </PropertyGroup>
-  <Import Project="..\packages\Microsoft.Azure.DocumentDB.1.9.2\build\Microsoft.Azure.DocumentDB.targets" Condition="Exists('..\packages\Microsoft.Azure.DocumentDB.1.9.2\build\Microsoft.Azure.DocumentDB.targets')" />
+  <Import Project="..\packages\Microsoft.Azure.DocumentDB.1.10.0\build\Microsoft.Azure.DocumentDB.targets" Condition="Exists('..\packages\Microsoft.Azure.DocumentDB.1.10.0\build\Microsoft.Azure.DocumentDB.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

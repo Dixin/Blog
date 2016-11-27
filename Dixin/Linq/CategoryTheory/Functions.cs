@@ -1,19 +1,20 @@
 ﻿namespace Dixin.Linq.CategoryTheory
 {
-    using System.Diagnostics.Contracts;
+    using System;
 
-    [Pure]
     public static partial class Functions
     {
-        // Id is alias of DotNet.Category.Id().Invoke
-        public static T Id<T>
-            (T value) => DotNet.Category.Id<T>().Invoke(value);
+        public static TSource Id<TSource>(TSource value) => value;
     }
 
-    // [Pure]
+    public static partial class Functions<TSource, TMiddle, TResult>
+    {
+        public static readonly Func<Func<TMiddle, TResult>, Func<Func<TSource, TMiddle>, Func<TSource, TResult>>>
+            o = function2 => function1 => value => function2(function1(value));
+    }
+
     public static partial class Functions
     {
-        public static TFalse False<TTrue, TFalse>
-            (TTrue @true, TFalse @false) => @false;
+        public static TFalse False<TTrue, TFalse>(TTrue @true, TFalse @false) => @false;
     }
 }

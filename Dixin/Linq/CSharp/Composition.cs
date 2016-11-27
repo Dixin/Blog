@@ -17,7 +17,7 @@
 
         internal static double AbsSqrt(double @double) => Math.Sqrt(Math.Abs(@double));
 
-        internal static void Composite()
+        internal static void Compose()
         {
             Func<double, double> sqrt = Math.Sqrt;
             Func<double, double> abs = Math.Abs;
@@ -41,7 +41,7 @@
             }
         }
 
-        internal static void CompositeLinq()
+        internal static void ComposeLinq()
         {
             Func<IEnumerable<int>, IEnumerable<double>> filterSortMap =
                 new Func<IEnumerable<int>, IEnumerable<int>>(source => Enumerable.Where(source, int32 => int32 > 0))
@@ -88,7 +88,7 @@
         private static readonly Func<Func<int, double>, IEnumerable<int>, IEnumerable<double>> 
             Map = (selector, source) => Enumerable.Select(source, selector);
 
-        internal static void CompositeAndPartialApply()
+        internal static void ComposeAndPartialApply()
         {
             Func<IEnumerable<int>, IEnumerable<double>> filterSortMap =
                 Filter.Partial(int32 => int32 > 0)

@@ -1,8 +1,6 @@
 ﻿namespace Dixin.Linq.CategoryTheory
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
-    using System.Diagnostics.Contracts;
     using System.IO;
     using System.Net;
 
@@ -10,193 +8,120 @@
 
     using Microsoft.FSharp.Core;
 
+    using static Dixin.Linq.CategoryTheory.Functions;
+
     public delegate T IO<out T>();
 
-    // [Pure]
     public static partial class IOExtensions
     {
-        // Required by LINQ.
-        public static IO<TResult> SelectMany<TSource, TSelector, TResult>
-            (this IO<TSource> source,
-             Func<TSource, IO<TSelector>> selector,
-             Func<TSource, TSelector, TResult> resultSelector) =>
+        public static IO<TResult> SelectMany<TSource, TSelector, TResult>(
+            this IO<TSource> source,
+            Func<TSource, IO<TSelector>> selector,
+            Func<TSource, TSelector, TResult> resultSelector) =>
                 () =>
-                    {
-                        TSource sourceValue = source();
-                        return resultSelector(sourceValue, selector(sourceValue)());
-                    };
+                {
+                    TSource value = source();
+                    return resultSelector(value, selector(value)());
+                };
 
-        // Not required, just for convenience.
-        public static IO<TResult> SelectMany<TSource, TResult>
-            (this IO<TSource> source, Func<TSource, IO<TResult>> selector) =>
-                source.SelectMany(selector, Functions.False);
+        // Wrap: TSource -> IO<TSource>
+        public static IO<TSource> IO<TSource>(this TSource value) => () => value;
+
+        public static IO<TResult> Select<TSource, TResult>(
+            this IO<TSource> source,
+            Func<TSource, TResult> selector) =>
+                source.SelectMany(value => selector(value).IO(), False);
     }
 
-    // [Pure]
     public static partial class IOExtensions
     {
-        // η: T -> IO<T>
-        public static IO<T> IO<T>
-            (this T value) => () => value;
+        public static IO<Unit> IOAction(this Action action) =>
+            () =>
+            {
+                action();
+                return default(Unit);
+            };
 
-        // Select: (TSource -> TResult) -> (IO<TSource> -> IO<TResult>)
-        public static IO<TResult> Select<TSource, TResult>
-            (this IO<TSource> source, Func<TSource, TResult> selector) =>
-                source.SelectMany(value => selector(value).IO());
-    }
+        public static Func<T, IO<Unit>> IOAction<T>(this Action<T> action) => 
+            value => () =>
+            {
+                action(value);
+                return default(Unit);
+            };
 
-    [SuppressMessage("Microsoft.Naming", "CA1724:TypeNamesShouldNotMatchNamespaces")]
-    [Pure]
-    public static partial class IO
-    {
-        public static IO<Unit> Action
-            (Action action) => action.AsIO();
+        public static Func<T1, T2, IO<Unit>> IOAction<T1, T2>(this Action<T1, T2> action) =>
+            (value1, value2) => () =>
+            {
+                action(value1, value2);
+                return default(Unit);
+            };
 
-        public static Func<T, IO<Unit>> Action<T>
-            (this Action<T> action) => action.AsIO();
+        public static Func<T1, T2, T3, IO<Unit>> IOAction<T1, T2, T3>(this Action<T1, T2, T3> action) => 
+            (value1, value2, value3) => () =>
+            {
+                action(value1, value2, value3);
+                return default(Unit);
+            };
 
-        public static Func<T1, T2, IO<Unit>> Action<T1, T2>
-            (this Action<T1, T2> action) => action.AsIO();
-
-        public static Func<T1, T2, T3, IO<Unit>> Action<T1, T2, T3>
-            (this Action<T1, T2, T3> action) => action.AsIO();
-
-        public static Func<T1, T2, T3, T4, IO<Unit>> Action<T1, T2, T3, T4>
-            (this Action<T1, T2, T3, T4> action) => action.AsIO();
+        public static Func<T1, T2, T3, T4, IO<Unit>> IOAction<T1, T2, T3, T4>(this Action<T1, T2, T3, T4> action) => 
+            (value1, value2, value3, value4) => () =>
+            {
+                action(value1, value2, value3, value4);
+                return null;
+            };
 
         // ...
 
-        public static IO<T> Func<T>
-            (this Func<T> function) => function.AsIO();
+        public static IO<TResult> IOFunc<TResult>(this Func<TResult> function) =>
+            () => function();
 
-        public static Func<T, IO<TResult>> Func<T, TResult>
-            (this Func<T, TResult> function) => function.AsIO();
+        public static Func<T, IO<TResult>> IOFunc<T, TResult>(this Func<T, TResult> function) => 
+            value => () => function(value);
 
-        public static Func<T1, T2, IO<TResult>> Func<T1, T2, TResult>
-            (this Func<T1, T2, TResult> function) => function.AsIO();
+        public static Func<T1, T2, IO<TResult>> IOFunc<T1, T2, TResult>(this Func<T1, T2, TResult> function) => 
+            (value1, value2) => () => function(value1, value2);
 
-        public static Func<T1, T2, T3, IO<TResult>> Func<T1, T2, T3, TResult>
-            (this Func<T1, T2, T3, TResult> function) => function.AsIO();
+        public static Func<T1, T2, T3, IO<TResult>> IOFunc<T1, T2, T3, TResult>(
+            this Func<T1, T2, T3, TResult> function) => 
+                (value1, value2, value3) => () => function(value1, value2, value3);
 
-        public static Func<T1, T2, T3, T4, IO<TResult>> Func<T1, T2, T3, T4, TResult>
-            (this Func<T1, T2, T3, T4, TResult> function) => function.AsIO();
-
-        // ...
-    }
-
-    [Pure]
-    public static partial class IOExtensions
-    {
-        public static IO<Unit> AsIO
-            (this Action action) =>
-                () =>
-                    {
-                        action();
-                        return null;
-                    };
-
-        public static Func<T, IO<Unit>> AsIO<T>
-            (this Action<T> action) => arg =>
-                () =>
-                    {
-                        action(arg);
-                        return null;
-                    };
-
-        public static Func<T1, T2, IO<Unit>> AsIO<T1, T2>
-            (this Action<T1, T2> action) => (arg1, arg2) =>
-                () =>
-                    {
-                        action(arg1, arg2);
-                        return null;
-                    };
-
-        public static Func<T1, T2, T3, IO<Unit>> AsIO<T1, T2, T3>
-            (this Action<T1, T2, T3> action) => (arg1, arg2, arg3) =>
-                () =>
-                    {
-                        action(arg1, arg2, arg3);
-                        return null;
-                    };
-
-        public static Func<T1, T2, T3, T4, IO<Unit>> AsIO<T1, T2, T3, T4>
-            (this Action<T1, T2, T3, T4> action) => (arg1, arg2, arg3, arg4) =>
-                () =>
-                    {
-                        action(arg1, arg2, arg3, arg4);
-                        return null;
-                    };
-
-        // ...
-
-        public static IO<TResult> AsIO<TResult>
-            (this Func<TResult> function) =>
-                () => function();
-
-        public static Func<T, IO<TResult>> AsIO<T, TResult>
-            (this Func<T, TResult> function) => arg =>
-                () => function(arg);
-
-        public static Func<T1, T2, IO<TResult>> AsIO<T1, T2, TResult>
-            (this Func<T1, T2, TResult> function) => (arg1, arg2) =>
-                () => function(arg1, arg2);
-
-        public static Func<T1, T2, T3, IO<TResult>> AsIO<T1, T2, T3, TResult>
-            (this Func<T1, T2, T3, TResult> function) => (arg1, arg2, arg3) =>
-                () => function(arg1, arg2, arg3);
-
-        public static Func<T1, T2, T3, T4, IO<TResult>> AsIO<T1, T2, T3, T4, TResult>
-            (this Func<T1, T2, T3, T4, TResult> function) => (arg1, arg2, arg3, arg4) =>
-                () => function(arg1, arg2, arg3, arg4);
+        public static Func<T1, T2, T3, T4, IO<TResult>> IOFunc<T1, T2, T3, T4, TResult>(
+            this Func<T1, T2, T3, T4, TResult> function) => 
+                (value1, value2, value3, value4) => () => function(value1, value2, value3, value4);
 
         // ...
     }
 
     // Impure.
-    internal static partial class IOQuery
+    public static partial class IOExtensions
     {
-        internal static void AsIO()
+        internal static void IOFunctions()
         {
-            IO<string> consoleReadLine = new Func<string>(Console.ReadLine).AsIO();
-            Func<string, IO<Unit>> consoleWriteLine = new Action<string>(Console.WriteLine).AsIO();
-
-            Func<string, IO<string>> fileReadAllText = new Func<string, string>(File.ReadAllText).AsIO();
-            Func<string, string, IO<Unit>> fileWriteAllText = new Action<string, string>(File.WriteAllText).AsIO();
-
-            Func<string, IO<bool>> fileExists = new Func<string, bool>(File.Exists).AsIO();
-            // ...
-        }
-
-        internal static void IOFuncAction()
-        {
-            IO<string> consoleReadLine = IO.Func(Console.ReadLine);
-            Func<string, IO<Unit>> consoleWriteLine = IO.Action<string>(Console.WriteLine);
-
-            Func<string, IO<string>> fileReadAllText = IO.Func<string, string>(File.ReadAllText);
-            Func<string, string, IO<Unit>> fileWriteAllText = IO.Action<string, string>(File.WriteAllText);
-
-            Func<string, IO<bool>> fileExists = IO.Func<string, bool>(File.Exists);
-            // ...
+            IO<string> consoleReadLine = IOFunc(Console.ReadLine);
+            Func<string, IO<Unit>> consoleWriteLine = IOAction<string>(Console.WriteLine);
+            Func<string, IO<string>> fileReadAllText = IOFunc<string, string>(File.ReadAllText);
+            Func<string, string, IO<Unit>> fileWriteAllText = IOAction<string, string>(File.WriteAllText);
+            Func<string, IO<bool>> fileExists = IOFunc<string, bool>(File.Exists);
         }
 
         internal static void FileIO()
         {
             IO<Tuple<bool, string>> query =
                 // 1. Read file name from console.
-                from fileName in IO.Func(Console.ReadLine)
-                    // 2. Write confirmation message to console.
+                from fileName in IOFunc(Console.ReadLine)
+                // 2. Write confirmation message to console.
                 let message = $"{fileName}? y/n"
-                from _ in IO.Action<string>(Console.WriteLine)(message)
-                    // 3. Read confirmation from console.
-                from confirmation in IO.Func(Console.ReadLine)
-                    // 4. If confirmed, read the file.
+                from _ in IOAction<string>(Console.WriteLine)(message)
+                // 3. Read confirmation from console.
+                from confirmation in IOFunc(Console.ReadLine)
+                // 4. If confirmed, read the file.
                 let isConfirmed = "y".EqualsIgnoreCase(confirmation)
-                from text in isConfirmed ? IO.Func<string, string>(File.ReadAllText)(fileName) : string.Empty.IO()
-                    // 5. Write text to console.
-                from __ in IO.Action<string>(Console.WriteLine)(text)
-                    // 6. Returns text as query result.
-                select new Tuple<bool, string>(isConfirmed, text); // Deferred and lazy.
-            Tuple<bool, string> result = query(); // Execution.
+                from text in isConfirmed ? IOFunc<string, string>(File.ReadAllText)(fileName) : string.Empty.IO()
+                // 5. Write text to console.
+                from __ in IOAction<string>(Console.WriteLine)(text)
+                // 6. Returns text as query result.
+                select isConfirmed.Tuple(text); // Define query.
+            Tuple<bool, string> result = query(); // Execute query.
         }
 
         internal static void NetworkIO()
@@ -205,15 +130,15 @@
             {
                 IO<Unit> query =
                     // 1. Read URL from console.
-                    from url in IO.Func(Console.ReadLine)
+                    from url in IOFunc(Console.ReadLine)
                     // 2. Download string from Internet.
-                    from text in IO.Func(() => webClient.DownloadString(url))
+                    from text in IOFunc(() => webClient.DownloadString(url))
                     // 3. Write string to console.
                     let length = 1000
                     let message = text.Length <= length ? text : $"{text.Substring(0, length)}..."
-                    from unit in IO.Action<string>(Console.WriteLine)(message)
-                    select (Unit)null; // Deferred and lazy.
-                query(); // Execution.
+                    from _ in IOAction<string>(Console.WriteLine)(message)
+                    select _; // Define query.
+                query(); // Execute query.
             }
         }
     }

@@ -129,8 +129,8 @@
             List<string> source = new List<string>() { "a", "b" };
             IEnumerable<string> exposed = source.AsEnumerable();
             bool asEnumerable = object.ReferenceEquals(source, exposed); // true.
-            (exposed as List<string>).Reverse(); // List<T>.Reverse.
-            (exposed as List<string>).Add("c"); // source can be changed.
+            ((List<string>)exposed).Reverse(); // List<T>.Reverse.
+            ((List<string>)exposed).Add("c"); // source can be changed.
 
             IEnumerable<string> hidden = source.Hide(); // hidden is a read only generator.
             bool hide = object.ReferenceEquals(source, hidden); // false.

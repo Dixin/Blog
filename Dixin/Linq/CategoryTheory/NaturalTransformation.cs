@@ -2,60 +2,46 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.Contracts;
 
-    [Pure]
     public static partial class NaturalTransformations
     {
-        // Lazy<> => IEnumerable<>
-        public static IEnumerable<T> ToEnumerable<T>(this Lazy<T> lazy)
-        {
-            yield return lazy.Value;
-        }
+        // ToFunc: Lazy<> -> Func<>
+        public static Func<T> ToFunc<T>(this Lazy<T> lazy) => () => lazy.Value;
 
-        // Func<> => IEnumerable<>
+        // ToEnumerable: Func<> -> IEnumerable<>
         public static IEnumerable<T> ToEnumerable<T>(this Func<T> function)
         {
             yield return function();
         }
 
-        // Nullable<> => IEnumerable<>
-        public static IEnumerable<T> ToEnumerable<T>(this Nullable<T> nullable)
+        // ToEnumerable: Lazy<> -> IEnumerable<>
+        public static IEnumerable<T> ToEnumerable<T>(this Lazy<T> lazy)
         {
-            if (nullable.HasValue)
+            yield return lazy.Value;
+        }
+
+        // ToLazy: Func<> -> Lazy<>
+        public static Lazy<T> ToLazy<T>(this Func<T> function) => new Lazy<T>(function);
+    }
+
+    public static partial class NaturalTransformations
+    {
+        // ToEnumerable: Optional<> -> IEnumerable<>
+        public static IEnumerable<T> ToEnumerable<T>(this Optional<T> optional)
+        {
+            if (optional.HasValue)
             {
-                yield return nullable.Value;
+                yield return optional.Value;
             }
         }
-    }
 
-    // [Pure]
-    public static partial class NaturalTransformations
-    {
-        // Lazy<> => Func<>
-        public static Func<T> ToFunc<T>
-            (this Lazy<T> lazy) => () => lazy.Value;
+        // ToOptional: Func<> -> Optional<>
+        public static Optional<T> ToOptional<T>(this Func<T> function) => 
+            new Optional<T>(() => true.Tuple(function()));
 
-        // Func<> => Nullable<>
-        public static Nullable<T> ToNullable<T>
-            (this Func<T> function) => new Nullable<T>(() => Tuple.Create(true, function()));
-    }
-
-    // [Pure]
-    public static partial class NaturalTransformations
-    {
-        // Lazy<> => Nullable<>
-        public static Nullable<T> ToNullable<T>
-            (this Lazy<T> lazy) =>
-                // new Func<Func<T>, Nullable<T>>(ToNullable).o(new Func<Lazy<T>, Func<T>>(ToFunc))(lazy);
-                lazy.ToFunc().ToNullable();
-    }
-
-    // [Pure]
-    public static partial class NaturalTransformations
-    {
-        // Func<> => Lazy<>
-        public static Lazy<T> ToLazy<T>
-            (this Func<T> function) => new Lazy<T>(function);
+        // ToOptional: Lazy<> -> Optional<>
+        public static Optional<T> ToOptional<T>(this Lazy<T> lazy) =>
+                // new Func<Func<T>, Optional<T>>(ToOptional).o(new Func<Lazy<T>, Func<T>>(ToFunc))(lazy);
+                lazy.ToFunc().ToOptional();
     }
 }

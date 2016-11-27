@@ -1,110 +1,109 @@
 ﻿namespace Dixin.Linq.CategoryTheory
 {
     using System;
-    using System.Diagnostics.Contracts;
 
     using Microsoft.FSharp.Core;
 
     // Cps<T, TContinuation> is alias of Func<Func<T, TContinuation>, TContinuation>
-    public delegate TContinuation Cps<out T, TContinuation>(Func<T, TContinuation> continuation);
+    public delegate TContinuation Cps<TContinuation, out T>(Func<T, TContinuation> continuation);
 
-    // [Pure]
     public static partial class Cps
     {
-        // Add = (x, y) => x + y
-        internal static int Add
-            (int x, int y) => x + y;
+        // Sum = (x, y) => x + y
+        internal static int Sum(int x, int y) => x + y;
     }
 
-    // [Pure]
     public static partial class Cps
     {
-        // AddWithCallback = (x, y, callback) => callback(x + y)
-        internal static TCallback AddWithCallback<TCallback>
-            (int x, int y, Func<int, TCallback> callback) => callback(x + y);
+        // SumWithCallback = (x, y, callback) => callback(x + y)
+        internal static TCallback SumWithCallback<TCallback>(int x, int y, Func<int, TCallback> callback) =>
+            callback(x + y);
 
-        // AddWithCallback = (x, y) => callback => callback(x + y)
-        internal static Func<Func<int, TCallback>, TCallback> AddWithCallback<TCallback>
-            (int x, int y) => callback => callback(x + y);
+        // SumWithCallback = (x, y) => callback => callback(x + y)
+        internal static Func<Func<int, TCallback>, TCallback> SumWithCallback<TCallback>(int x, int y) =>
+            callback => callback(x + y);
 
-        // AddCps = (x, y) => continuation => continuation(x + y)
-        internal static Cps<int, TContinuation> AddCps<TContinuation>
-            (int x, int y) => continuation => continuation(x + y);
+        // SumCps = (x, y) => continuation => continuation(x + y)
+        internal static Cps<TContinuation, int> SumCps<TContinuation>(int x, int y) =>
+            continuation => continuation(x + y);
 
         // SquareCps = x => continuation => continuation(x * x)
-        internal static Cps<int, TContinuation> SquareCps<TContinuation>
-            (int x) => continuation => continuation(x * x);
+        internal static Cps<TContinuation, int> SquareCps<TContinuation>(int x) =>
+            continuation => continuation(x * x);
 
-        // SumOfSquaresCps = (x, y) => continuation => SquareCps(x)(xx => SquareCps(y)(yy => AddCps(xx)(yy)(continuation)));
-        internal static Cps<int, TContinuation> SumOfSquaresCps<TContinuation>
-            (int x, int y) => continuation =>
+        // SumOfSquaresCps = (x, y) => continuation => SquareCps(x)(xx => SquareCps(y)(yy => SumCps(xx)(yy)(continuation)));
+        internal static Cps<TContinuation, int> SumOfSquaresCps<TContinuation>(int x, int y) =>
+            continuation =>
                 SquareCps<TContinuation>(x)(xx =>
                     SquareCps<TContinuation>(y)(yy =>
-                        AddCps<TContinuation>(xx, yy)(continuation)));
+                        SumCps<TContinuation>(xx, yy)(continuation)));
     }
 
-    [Pure]
     public static partial class CpsExtensions
     {
-        // Required by LINQ.
-        public static Cps<TResult, TContinuation> SelectMany<TSource, TSelector, TResult, TContinuation>
-            (this Cps<TSource, TContinuation> source,
-                Func<TSource, Cps<TSelector, TContinuation>> selector,
-                Func<TSource, TSelector, TResult> resultSelector) =>
-                continuation => source(sourceArg =>
-                    selector(sourceArg)(selectorArg =>
-                        continuation(resultSelector(sourceArg, selectorArg))));
+        public static Cps<TContinuation, TResult> SelectMany<TContinuation, TSource, TSelector, TResult>(
+            this Cps<TContinuation, TSource> source,
+            Func<TSource, Cps<TContinuation, TSelector>> selector,
+            Func<TSource, TSelector, TResult> resultSelector) =>
+                continuation => source(value =>
+                    selector(value)(result =>
+                        continuation(resultSelector(value, result))));
 
-        // Not required, just for convenience.
-        public static Cps<TResult, TContinuation> SelectMany<TSource, TResult, TContinuation>
-            (this Cps<TSource, TContinuation> source, Func<TSource, Cps<TResult, TContinuation>> selector) =>
-                source.SelectMany(selector, Functions.False);
+        // Wrap: T -> Cps<T, TContinuation>
+        public static Cps<TContinuation, T> Cps<TContinuation, T>(
+            this T arg) => continuation => continuation(arg);
     }
 
-    // [Pure]
     public static partial class CpsExtensions
     {
-        // η: T -> Cps<T, TContinuation>
-        public static Cps<T, TContinuation> Cps<T, TContinuation>
-            (this T arg) => continuation => continuation(arg);
+        // φ: Lazy<Cps<TContinuation, T1>, Cps<TContinuation, T2>> => Cps<TContinuation, Lazy<T1, T2>>
+        public static Cps<TContinuation, Lazy<T1, T2>> Binary<TContinuation, T1, T2>(
+            this Lazy<Cps<TContinuation, T1>, Cps<TContinuation, T2>> bifunctor) =>
+                bifunctor.Value1.SelectMany(
+                    value1 => bifunctor.Value2,
+                    (value1, value2) => value1.Lazy(value2));
 
-        // φ: Lazy<Cps<T1, TContinuation>, Cps<T2, TContinuation>> => Cps<Defer<T1, T2>, TContinuation>
-        public static Cps<Lazy<T1, T2>, TContinuation> Binary<T1, T2, TContinuation>
-            (this Lazy<Cps<T1, TContinuation>, Cps<T2, TContinuation>> binaryFunctor) =>
-                binaryFunctor.Value1.SelectMany(
-                    value1 => binaryFunctor.Value2,
-                    (value1, value2) => new Lazy<T1, T2>(value1, value2));
-
-        // ι: TUnit -> Cps<TUnit, TContinuation>
-        public static Cps<Unit, TContinuation> Unit<TContinuation>
-            (Unit unit) => unit.Cps<Unit, TContinuation>();
-
-        // Select: (TSource -> TResult) -> (Cps<TSource, TContinuation> -> Cps<TResult, TContinuation>)
-        public static Cps<TResult, TContinuation> Select<TSource, TResult, TContinuation>
-            (this Cps<TSource, TContinuation> source, Func<TSource, TResult> selector) =>
-                // continuation => source(sourceArg => continuation(selector(sourceArg)));
-                // continuation => source(continuation.o(selector));
-                source.SelectMany(value => selector(value).Cps<TResult, TContinuation>());
+        // ι: TUnit -> Cps<TContinuation, TUnit>
+        public static Cps<TContinuation, Unit> Unit<TContinuation>(Unit unit) => unit.Cps<TContinuation, Unit>();
     }
 
-    // [Pure]
-    public static partial class CpsExtensions
+    public static partial class Cps
     {
-        public static Func<T, TContinuation> NoCps<T, TContinuation>
-            (this Func<T, Cps<TContinuation, TContinuation>> cps) => arg => cps(arg)(Functions.Id);
-
-        public static T Invoke<T>
-            (this Cps<T, T> cps) => cps(Functions.Id);
-    }
-
-    [Pure]
-    internal static partial class CpsQuery
-    {
-        internal static void SumOfSquare()
+        internal static void SumOfSquare(int x, int y)
         {
-            Func<int, Func<int, int>> add = x => y => x + y;
-            Func<int, int> square = x => x * x;
-            Func<int, Func<int, int>> sumOfSquares = x => y => add(square(x))(square(y));
+            Cps<string, int> query = from xx in SquareCps<string>(x)
+                                     from yy in SquareCps<string>(y)
+                                     from sum in SumCps<string>(xx, yy)
+                                     select sum;
+            string result = query(continuation: int32 => int32.ToString());
         }
+
+        internal static Cps<TContinuation, int> FibonacciCps<TContinuation>(int int32) =>
+            int32 > 1
+                ? (from a in FibonacciCps<TContinuation>(int32 - 1)
+                   from b in FibonacciCps<TContinuation>(int32 - 2)
+                   select a + b)
+                : 0.Cps<TContinuation, int>();
+        // continuation => int32 > 1
+        //    ? continuation(FibonacciCps<int>(int32 - 1)(Id) + FibonacciCps<int>(int32 - 2)(Id))
+        //    : continuation(0);
+    }
+
+    public static partial class CpsExtensions
+    {
+        // Select: (TSource -> TResult) -> (Cps<TContinuation, TSource> -> Cps<TContinuation, TResult>)
+        public static Cps<TContinuation, TResult> Select<TContinuation, TSource, TResult>(
+            this Cps<TContinuation, TSource> source, Func<TSource, TResult> selector) =>
+                source.SelectMany(value => selector(value).Cps<TContinuation, TResult>(), Functions.False);
+        // Equivalent to:
+        // continuation => source(value => continuation(selector(value)));
+        // Or:
+        // continuation => source(continuation.o(selector));
+
+        public static Func<T, TContinuation> NoCps<T, TContinuation>(
+            this Func<T, Cps<TContinuation, TContinuation>> cps) =>
+                value => cps(value)(Functions.Id);
+
+        public static T Invoke<T>(this Cps<T, T> cps) => cps(Functions.Id);
     }
 }

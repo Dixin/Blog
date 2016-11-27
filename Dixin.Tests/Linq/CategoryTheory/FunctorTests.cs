@@ -10,11 +10,8 @@
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    using NullableInt32 = Dixin.Linq.CategoryTheory.Nullable<int>;
-    using NullableString = Dixin.Linq.CategoryTheory.Nullable<string>;
-
     [TestClass]
-    public partial class FunctorTests
+    public class FunctorTests
     {
         [TestMethod]
         public void EnumerableGeneralTest()
@@ -26,16 +23,11 @@
             EnumerableAssert.AreSequentialEqual(functor.Select(Functions.Id), Functions.Id(functor));
             // Functor law 2: F.Select(f2.o(f1)) == F.Select(f1).Select(f2)
             Func<int, string> addTwo = x => (x + 2).ToString(CultureInfo.InvariantCulture);
-            IMorphism<int, int, DotNet> addOneMorphism = addOne.DotNetMorphism();
-            IMorphism<int, string, DotNet> addTwoMorphism = addTwo.DotNetMorphism();
             EnumerableAssert.AreSequentialEqual(
-                addTwoMorphism.o(addOneMorphism).Select().Invoke(functor),
-                addTwoMorphism.Select().o(addOneMorphism.Select()).Invoke(functor));
+                EnumerableExtensions.Select(addTwo.o(addOne)).Invoke(functor),
+                EnumerableExtensions.Select(addTwo).o(EnumerableExtensions.Select(addOne)).Invoke(functor));
         }
-    }
 
-    public partial class FunctorTests
-    {
         [TestMethod]
         public void EnumerableCSharpTest()
         {
@@ -58,13 +50,10 @@
                 enumerable.Select(f1).Select(f2));
             // Functor law 2: F.Select(f2.o(f1)) == F.Select(f1).Select(f2)
             EnumerableAssert.AreSequentialEqual(
-                from x in enumerable select f2.o(f1)(x),
-                from y in (from x in enumerable select f1(x)) select f2(y));
+                from value in enumerable select f2.o(f1)(value),
+                from value in enumerable select f1(value) into value select f2(value));
         }
-    }
 
-    public partial class FunctorTests
-    {
         [TestMethod]
         public void TupleTest()
         {
@@ -91,14 +80,14 @@
         public void Tuple2Test()
         {
             bool isExecuted1 = false;
-            Tuple<int, string> tuple = new Tuple<int, string>(0, "a");
+            Tuple<string, int> tuple = "a".Tuple(0);
             Func<int, int> addOne = x => { isExecuted1 = true; return x + 1; };
 
-            Tuple<int, string> query1 = from x in tuple select addOne(x); // Execution.
+            Tuple<string, int> query1 = from x in tuple select addOne(x); // Execution.
             Assert.IsTrue(isExecuted1); // Immediate execution.
 
-            Assert.AreEqual(0 + 1, query1.Item1);
-            Assert.AreEqual("a", query1.Item2);
+            Assert.AreEqual("a", query1.Item1);
+            Assert.AreEqual(0 + 1, query1.Item2);
             Assert.IsTrue(isExecuted1);
 
             // Functor law 1: F.Select(Id) == Id(F)
@@ -186,13 +175,13 @@
         }
 
         [TestMethod]
-        public void NullableWithoutValueTest()
+        public void OptionalWithoutValueTest()
         {
             bool isExecuted1 = false;
             Func<int, string> append = x => { isExecuted1 = true; return x + "b"; };
-            NullableInt32 nullable = new NullableInt32();
+            Optional<int> optional = new Optional<int>();
 
-            NullableString query1 = from x in nullable select append(x);
+            Optional<string> query1 = from x in optional select append(x);
             Assert.IsFalse(isExecuted1); // Deferred and lazy.
 
             Assert.IsFalse(query1.HasValue); // Execution.
@@ -202,19 +191,19 @@
             Assert.AreEqual(query1.Select(Functions.Id).HasValue, Functions.Id(query1).HasValue);
             // Functor law 2: F.Select(f2.o(f1)) == F.Select(f1).Select(f2)
             Func<string, int> length = x => x.Length;
-            NullableInt32 query2 = nullable.Select(length.o(append));
-            NullableInt32 query3 = nullable.Select(append).Select(length);
+            Optional<int> query2 = optional.Select(length.o(append));
+            Optional<int> query3 = optional.Select(append).Select(length);
             Assert.AreEqual(query2.HasValue, query3.HasValue);
         }
 
         [TestMethod]
-        public void NullableWithValueTest()
+        public void OptionalWithValueTest()
         {
             bool isExecuted1 = false;
             Func<int, string> append = x => { isExecuted1 = true; return x + "b"; };
-            NullableInt32 nullable = new NullableInt32(() => Tuple.Create(true, 1));
+            Optional<int> optional = new Optional<int>(() => Tuple.Create(true, 1));
 
-            NullableString query1 = from x in nullable select append(x);
+            Optional<string> query1 = from x in optional select append(x);
             Assert.IsFalse(isExecuted1); // Deferred and lazy.
 
             Assert.IsTrue(query1.HasValue); // Execution.
@@ -225,13 +214,11 @@
             Assert.AreEqual(query1.Select(Functions.Id).HasValue, Functions.Id(query1).HasValue);
             // Functor law 2: F.Select(f2.o(f1)) == F.Select(f1).Select(f2)
             Func<string, int> length = x => x.Length;
-            NullableInt32 query2 = nullable.Select(length.o(append));
-            NullableInt32 query3 = nullable.Select(append).Select(length);
+            Optional<int> query2 = optional.Select(length.o(append));
+            Optional<int> query3 = optional.Select(append).Select(length);
             Assert.AreEqual(query2.Value, query3.Value);
         }
-    }
-    public partial class FunctorTests
-    {
+
         [TestMethod]
         public void ContinuationTest()
         {
@@ -252,16 +239,12 @@
             Cps<int, int> cps2 = factorialCps(3).Select(addOne).Select(addTwo);
             Assert.AreEqual(cps1.Invoke(), cps2.Invoke());
         }
-    }
 
-    [TestClass]
-    public class FunctorialTests
-    {
         [TestMethod]
         public void HotTaskTest()
         {
             bool isExecuted1 = false;
-            Task<string> hotTask = System.Threading.Tasks.Task.Run(() => "a");
+            Task<string> hotTask = Task.Run(() => "a");
             Func<string, string> append = x => { isExecuted1 = true; return x + "b"; };
 
             Task<string> query1 = from x in hotTask select append(x);

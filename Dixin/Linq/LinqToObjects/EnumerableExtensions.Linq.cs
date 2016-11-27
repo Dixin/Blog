@@ -102,7 +102,7 @@
             return new Lookup<TKey, TElement>(
                 groupsWithNonNullKey.ToDictionary(
                     group => group.Key,
-                    group => new Grouping<TKey, TElement>(group.Key, group.Value) as IGrouping<TKey, TElement>,
+                    group => (IGrouping<TKey, TElement>)new Grouping<TKey, TElement>(group.Key, group.Value),
                     comparer),
                 new Grouping<TKey, TElement>(default(TKey), groupWithNullKey),
                 groupWithNullKey.Count > 0);

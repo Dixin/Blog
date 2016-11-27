@@ -26,13 +26,13 @@
             Enumerable.Range(0, 5).Where(isEven).ForEach(Console.WriteLine);
         }
 
-        internal static void Composite()
+        internal static void Compose()
         {
             Func<double, double> sqrt = Math.Sqrt;
             Func<double, double> abs = Math.Abs;
 
             Func<double, double> absSqrt1 = sqrt.o(abs); // Composition: sqrt after abs.
-            Trace.WriteLine(absSqrt1(-2D)); // 1.4142135623731.
+            Trace.WriteLine(absSqrt1(-2D)); // 1.4142135623731
         }
 
         internal static void Associativity()

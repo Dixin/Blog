@@ -7,14 +7,14 @@ namespace Dixin.Tests.Linq.CategoryTheory
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class BinaryFunctorTests
+    public class BifunctorTests
     {
         [TestMethod]
         public void LazyTest()
         {
             bool isExecuted1 = false;
             bool isExecuted2 = false;
-            Lazy<int, string> lazyBinaryFunctor = new Lazy<int, string>(1, "abc");
+            Lazy<int, string> lazyBinaryFunctor = 1.Lazy("abc");
             Func<int, bool> selector1 = x => { isExecuted1 = true; return x > 0; };
             Func<string, int> selector2 = x => { isExecuted2 = true; return x.Length; };
 

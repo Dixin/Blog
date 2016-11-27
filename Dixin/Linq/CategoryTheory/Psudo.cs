@@ -88,7 +88,7 @@
     {
         // Select: (TSource -> TResult) -> (TDotNetMonad<TSource> -> TDotNetMonad<TResult>)
 
-        // φ: Lazy<TDotNetMonad<T1>, TDotNetMonad<T2>> => TDotNetMonad<Defer<T1, T2>>
+        // φ: Lazy<TDotNetMonad<T1>, TDotNetMonad<T2>> => TDotNetMonad<Lazy<T1, T2>>
 
         // ι: TUnit -> TDotNetMonad<TUnit>
 
@@ -102,19 +102,19 @@
         where TApplicativeFunctor<> : IApplicativeFunctor<TApplicativeFunctor<>>
     {
         TApplicativeFunctor<TResult> Apply<TSource, TResult>(
-            TApplicativeFunctor<Func<TSource, TResult>> selectorFunctor, TApplicativeFunctor<TSource> source);
+            TApplicativeFunctor<Func<TSource, TResult>> selectorWrapper, TApplicativeFunctor<TSource> source);
 
         TApplicativeFunctor<T> Pure<T>(T value);
     }
 
     public interface IDotNetMonoidalFunctor<T> // F<>
-        : IMonoidalFunctor<DotNet, DotNet, Lazy< , >, Defer< , >, Unit, Unit, IDotNetMonoidalFunctor<>>
+        : IMonoidalFunctor<DotNet, DotNet, Lazy< , >, Lazy< , >, Unit, Unit, IDotNetMonoidalFunctor<>>
     {
-        // φ: Lazy<F<T1>, F<T2>> => F<Defer<T1, T2>>
+        // φ: Lazy<F<T1>, F<T2>> => F<Lazy<T1, T2>>
         // IDotNetMonoidalFunctor<Lazy<T1, T2>> Binary<T1, T2>(
         //     Lazy<IDotNetMonoidalFunctor<T1>, IDotNetMonoidalFunctor<T2>> binaryFunctor);
 
-        // φ: Lazy<F<T1>, F<T2>> => F<Defer<T1, T2>>
+        // φ: Lazy<F<T1>, F<T2>> => F<Lazy<T1, T2>>
         // is equivalent to
         // φ: (F<T1>, F<T2>>) => F<Lazy<T1, T2>>
         IDotNetMonoidalFunctor<Lazy<T1, T2>> Binary<T1, T2>(

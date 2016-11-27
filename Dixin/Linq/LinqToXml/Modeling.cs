@@ -140,7 +140,7 @@
                 {
                     if (reader.NodeType == XmlNodeType.Element && reader.Name.EqualsOrdinal("item"))
                     {
-                        yield return XNode.ReadFrom(reader) as XElement;
+                        yield return (XElement)XNode.ReadFrom(reader);
                     }
                 }
             }

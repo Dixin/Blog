@@ -156,8 +156,8 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Data.Linq" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Interactive, Version=1.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Ix-Main.1.2.5\lib\net45\System.Interactive.dll</HintPath>
+    <Reference Include="System.Interactive, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Interactive.3.1.1\lib\net45\System.Interactive.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Management" />
@@ -224,10 +224,9 @@
     <Compile Include="Dynamic\StaticTest.cs" />
     <Compile Include="Dynamic\StructTest.cs" />
     <Compile Include="Linq\CategoryTheory\ApplicativeTests.cs" />
-    <Compile Include="Linq\CategoryTheory\BinaryFunctorTests.cs" />
+    <Compile Include="Linq\CategoryTheory\BifunctorTests.cs" />
     <Compile Include="Linq\CategoryTheory\PerformanceTests.cs" />
     <Compile Include="Linq\CategoryTheory\EnumerableExtensionsTests.cs" />
-    <Compile Include="Linq\CategoryTheory\EnumerableTests.cs" />
     <Compile Include="Linq\CategoryTheory\FunctorTests.cs" />
     <Compile Include="Linq\CategoryTheory\MonadTests.cs" />
     <Compile Include="Linq\CategoryTheory\MonoidTests.cs" />
@@ -281,7 +280,9 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

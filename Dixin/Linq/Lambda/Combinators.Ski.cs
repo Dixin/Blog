@@ -57,7 +57,7 @@
             False = new Boolean(S(K));
 
         public static readonly Func<dynamic, dynamic>
-            Composite = S(K(S))(K);
+            Compose = S(K(S))(K);
 
         public static readonly Func<dynamic, dynamic>
             Zero = K(I);
@@ -66,15 +66,15 @@
             One = I;
 
         public static readonly Func<dynamic, dynamic>
-            Two = S(Composite)(I);
+            Two = S(Compose)(I);
 
         public static readonly Func<dynamic, dynamic>
-            Three = S(Composite)(S(Composite)(I));
+            Three = S(Compose)(S(Compose)(I));
 
         // ...
 
         public static readonly Func<dynamic, Func<dynamic, dynamic>>
-            Increase = S(Composite);
+            Increase = S(Compose);
 
         public static readonly Func<dynamic, dynamic>
             ω = S(I)(I);

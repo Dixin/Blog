@@ -1,91 +1,61 @@
 ﻿namespace Dixin.Linq.CategoryTheory
 {
     using System;
-    using System.Diagnostics.Contracts;
 
-    using Microsoft.FSharp.Core;
+    // Reader<TContext, T> is alias of Func<TContext, T>
+    public delegate T Reader<in TContext, out T>(TContext context);
 
-    // Reader<TEnvironment, T> is alias of Func<TEnvironment, T>
-    public delegate T Reader<in TEnvironment, out T>(TEnvironment environment);
-
-    [Pure]
     public static partial class ReaderExtensions
     {
-        // Required by LINQ.
-        public static Reader<TEnvironment, TResult> SelectMany<TEnvironment, TSource, TSelector, TResult>
-            (this Reader<TEnvironment, TSource> source,
-                Func<TSource, Reader<TEnvironment, TSelector>> selector,
-                Func<TSource, TSelector, TResult> resultSelector) =>
-                environment =>
-                    {
-                        TSource sourceResult = source(environment);
-                        return resultSelector(sourceResult, selector(sourceResult)(environment));
-                    };
+        public static Reader<TContext, TResult> SelectMany<TContext, TSource, TSelector, TResult>(
+            this Reader<TContext, TSource> source,
+            Func<TSource, Reader<TContext, TSelector>> selector,
+            Func<TSource, TSelector, TResult> resultSelector) =>
+                context =>
+                {
+                    TSource value = source(context);
+                    return resultSelector(value, selector(value)(context));
+                };
 
-        // Not required, just for convenience.
-        public static Reader<TEnvironment, TResult> SelectMany<TEnvironment, TSource, TResult>
-            (this Reader<TEnvironment, TSource> source,
-                Func<TSource, Reader<TEnvironment, TResult>> selector) =>
-                source.SelectMany(selector, Functions.False);
+        // Wrap: T -> Reader<TContext, T>
+        public static Reader<TContext, TSource> Reader<TContext, TSource>(this TSource value) => context => value;
     }
 
-    // [Pure]
     public static partial class ReaderExtensions
     {
-        // μ: Reader<TEnvironment, Reader<TEnvironment, T>> => Reader<TEnvironment, T>
-        public static Reader<TEnvironment, TResult> Flatten<TEnvironment, TResult>
-            (Reader<TEnvironment, Reader<TEnvironment, TResult>> source) => source.SelectMany(Functions.Id);
+        public static Reader<TContext, TContext> Context<TContext>() => Functions.Id;
 
-        // η: T -> Reader<TEnvironment, T>
-        public static Reader<TEnvironment, T> Reader<TEnvironment, T>
-            (this T value) => environment => value;
-
-        // φ: Lazy<Reader<TEnvironment, T1>, Reader<TEnvironment, T2>> => Reader<TEnvironment, Defer<T1, T2>>
-        public static Reader<TEnvironment, Lazy<T1, T2>> Binary<TEnvironment, T1, T2>
-            (this Lazy<Reader<TEnvironment, T1>, Reader<TEnvironment, T2>> binaryFunctor) =>
-                binaryFunctor.Value1.SelectMany(
-                    value1 => binaryFunctor.Value2,
-                    (value1, value2) => new Lazy<T1, T2>(value1, value2));
-
-        // ι: TUnit -> Reader<TEnvironment, TUnit>
-        public static Reader<TEnvironment, Unit> Unit<TEnvironment>
-            (Unit unit) => unit.Reader<TEnvironment, Unit>();
-
-        // Select: (TSource -> TResult) -> (Reader<TEnvironment, TSource> -> Reader<TEnvironment, TResult>)
-        public static Reader<TEnvironment, TResult> Select<TEnvironment, TSource, TResult>
-            (this Reader<TEnvironment, TSource> source, Func<TSource, TResult> selector) =>
-                source.SelectMany(value => selector(value).Reader<TEnvironment, TResult>());
+        // Select: (TSource -> TResult) -> (Reader<TContext, TSource> -> Reader<TContext, TResult>)
+        public static Reader<TContext, TResult> Select<TContext, TSource, TResult>(
+            this Reader<TContext, TSource> source, Func<TSource, TResult> selector) =>
+                source.SelectMany(value => selector(value).Reader<TContext, TResult>(), Functions.False);
     }
 
-    // Impure.
     internal static partial class ReaderQuery
     {
-        internal static void ProcessSettings()
+        internal static void HtmlToWord()
         {
-            Reader<Settings, string> query =
-                // 1. Use settings.
-                from html in new Reader<Settings, string>(settings => DownloadString(settings.BlogUrl))
-                // 2. Use settings.
-                from _ in new Reader<Settings, Unit>(settings => SaveToDatabase(settings.ConnectionString, html))
-                // 3. Update settings.
-                from __ in new Reader<Settings, Settings>(settings => UpdateSettings(settings))
-                // 4. Use settings. Here settings are updated.
-                from ___ in new Reader<Settings, Unit>(settings => ListenToPort(settings.Port))
-                select html;
-            string result = query(Settings.Default);
+            var query = // Reader<Settings, (string, string)>
+                from htmlContent in new Reader<Settings, string>(settings => DownloadHtmlContent(settings.BlogUrl))
+                from htmlFilePath in new Reader<Settings, string>(settings => SaveHtmlToFile(
+                    settings.TempPath, htmlContent))
+                from wordFilePath in new Reader<Settings, string>(settings => ConvertHtmlFileToWordFile(
+                    settings.WordTemplatePath, htmlFilePath))
+                from wordFileUrl in new Reader<Settings, string>(settings => UploadFileToOneDrive(
+                    wordFilePath, settings.OneDrivePath))
+                select new { Local = wordFilePath, Remote = wordFileUrl }; // Define query.
+            var result = // (string, string)
+                query(Settings.Default); // Execute query.
         }
 
-        private static string DownloadString(string url) => null;
+        private static string DownloadHtmlContent(string url) => default(string);
 
-        private static Unit SaveToDatabase(string connectionString, string html) => null;
+        private static string SaveHtmlToFile(string connectionString, string html) => default(string);
 
-        private static Settings UpdateSettings(Settings settings)
-        {
-            settings["Port"] = 80;
-            settings.Save();
-            return settings;
-        }
+        private static string ConvertHtmlFileToWordFile(string wordTemplatePath, string htmlFilePath) => default(string);
 
-        private static Unit ListenToPort(int port) => null;
+        private static string UploadFileToOneDrive(string filePath, string oneDrivePath) => default(string);
     }
+
+    //public interface IRepository
 }

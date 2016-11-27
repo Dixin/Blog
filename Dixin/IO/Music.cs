@@ -8,8 +8,12 @@
 
     using Dixin.Common;
 
+    using Microsoft.VisualBasic;
+
     internal static class Music
     {
+        private const string Separator = ".";
+
         private static readonly Dictionary<string, string> Translation = new Dictionary<string, string>()
         {
             ["Alternative-Rock"] = "另类摇滚",
@@ -22,7 +26,8 @@
             ["Rock"] = "摇滚",
             ["Soundtrack"] = "电影原声",
             ["Trailer"] = "预告片",
-            ["Indie"]= "独立",
+            ["Indie"] = "独立",
+            ["New Age"] = "新世纪",
 
             ["Coldplay"] = "酷玩",
             ["Oku Hanako"] = "奥华子",
@@ -44,7 +49,22 @@
             ["Shin"] = "信乐团",
             ["Tang Dynasty"] = "唐朝",
             ["Various"] = "群星",
-            
+            ["Moby"] = "魔比",
+            ["Linkin Park"] = "林肯公园",
+            ["Bon Jovi"] = "邦乔维",
+            ["Vangelis"] ="范吉利斯",
+            ["Hans Zimmer"] = "汉斯季默",
+            ["Chin Tsai"] = "蔡琴",
+            ["Kwongwing Chan"] = "陈光荣",
+
+            ["Live At The Royal Albert Hall"] = "皇家阿尔伯特音乐厅演唱会",
+            ["Live In Texas"] = "德克萨斯演唱会",
+            ["Yanni Live! The Concert Event"] = "蔡琴",
+            ["At The Royal Albert Hall"] = "蔡琴",
+            ["At The Royal Albert Hall"] = "蔡琴",
+            ["At The Royal Albert Hall"] = "蔡琴",
+            ["Live At The Acropolis"] = "雅典卫城音乐会",
+            ["Tribute"] = "紫禁城音乐会",
             ["The Avengers"] = "复仇者联盟",
             ["Alien Vs Predator 2 Requiem"] = "异形大战铁血战士2",
             ["Iron Man 3"] = "钢铁侠3",
@@ -139,10 +159,8 @@
             ["Fast And Furious 7"] = "速度与激情7",
             ["Hotel Rwanda"] = "卢旺达饭店",
             ["All About Lily Chou-Chou"] = "关于莉莉周的一切",
-            ["The Punisher"]="惩罚者"
+            ["The Punisher"] = "惩罚者"
         };
-
-        private const string Separator = ".";
 
         private static readonly HashSet<string> Extensions = new HashSet<string>(
             new[] { ".mp3", ".m4a", ".wma" }, StringComparer.OrdinalIgnoreCase);
@@ -253,27 +271,24 @@
                     });
         }
 
-        internal static void Translate(string music)
+        internal static void Translate(string music) => Directory.EnumerateFileSystemEntries(music).ForEach(songOrAlbum =>
         {
-            Directory.EnumerateDirectories(music).ForEach(album =>
+            string[] names = Path.GetFileName(songOrAlbum)
+                .Split(Separator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+            for (int index = 0; index < names.Length; index++)
+            {
+                string name = names[index];
+                if (Translation.ContainsKey(name))
                 {
-                    string[] names = Path.GetFileName(album)
-                        .Split(Separator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                    for (int index = 0; index < names.Length; index++)
+                    string translation = Translation[name];
+                    if (!string.IsNullOrWhiteSpace(translation))
                     {
-                        string name = names[index];
-                        if (Translation.ContainsKey(name))
-                        {
-                            string translation = Translation[name];
-                            if (!string.IsNullOrWhiteSpace(translation))
-                            {
-                                names[index] = translation;
-                            }
-                        }
+                        names[index] = translation;
                     }
-                    new DirectoryInfo(album).TryRename(string.Join(Separator, names));
-                });
-        }
+                }
+            }
+            FileSystem.Rename(songOrAlbum, Path.Combine(Path.GetDirectoryName(songOrAlbum), string.Join(Separator, names)));
+        });
 
         private static bool IsMusicFile(string extension) => Extensions.Contains(extension);
 
