@@ -18,6 +18,9 @@ namespace Dixin.Tests.Linq.CategoryTheory
         internal static TSource Single<TSource>
             (this IEnumerable<TSource> source) => Enumerable.Single(source);
 
+        internal static TSource Last<TSource>
+            (this IEnumerable<TSource> source) => Enumerable.Last(source);
+
         internal static IEnumerable<TSource> Concat<TSource>
             (this IEnumerable<TSource> first, IEnumerable<TSource> second) => Enumerable.Concat(first, second);
     }

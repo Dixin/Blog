@@ -22,7 +22,6 @@
         public static T1 RightUnitor<T1>(this Lazy<T1, Unit> bifunctor) => bifunctor.Value1;
 
         public static Lazy<T1, Lazy<T2, T3>> Associator<T1, T2, T3>(this Lazy<Lazy<T1, T2>, T3> product) =>
-            new Lazy<T1, Lazy<T2, T3>>(() => product.Value1.Value1.Tuple(
-                new Lazy<T2, T3>(() => product.Value1.Value2.Tuple(product.Value2))));
+            product.Value1.Value1.Lazy(product.Value1.Value2.Lazy(product.Value2));
     }
 }

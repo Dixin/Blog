@@ -193,9 +193,9 @@
             Optional<int> two = new Optional<int>(() =>
                 { isExecuted5 = true; return Tuple.Create(true, 2); });
             Optional<string> query2 = from x in one
-                                                     from y in two
-                                                     from _ in one
-                                                     select add(x)(y);
+                                      from y in two
+                                      from _ in one
+                                      select add(x)(y);
             Assert.IsFalse(isExecuted3); // Deferred and lazy.
             Assert.IsFalse(isExecuted4); // Deferred and lazy.
             Assert.IsFalse(isExecuted5); // Deferred and lazy.
@@ -505,42 +505,43 @@
             Func<int> f1 = () => 1;
             Func<int, Func<int, Func<string, int>>> f2 = x => y => z =>
                 { isExecuted1 = true; return x + y + z.Length; };
-            Writer<int, IEnumerable<string>> query = from x in f1().WithLog("a")
-                                                     from y in 2.WithLog("b")
-                                                     from z in "xyz".WithLog("c")
-                                                     select f2(x)(y)(z);
+            Writer<string, int> query = from x in f1().LogWriter("a")
+                                        from y in 2.LogWriter("b")
+                                        from z in "xyz".LogWriter("c")
+                                        select f2(x)(y)(z);
             Assert.IsFalse(isExecuted1); // Deferred and lazy.
             Assert.AreEqual(1 + 2 + "xyz".Length, query.Value); // Execution.
             string[] logs = query.Content.ToArray();
             Assert.IsTrue(logs.Length == 3);
-            Assert.IsTrue(logs[0].EndsWith(" - a"));
-            Assert.IsTrue(logs[1].EndsWith(" - b"));
-            Assert.IsTrue(logs[2].EndsWith(" - c"));
+            Assert.IsTrue(logs[0].EndsWith("a"));
+            Assert.IsTrue(logs[1].EndsWith("b"));
+            Assert.IsTrue(logs[2].EndsWith("c"));
             Assert.IsTrue(isExecuted1);
 
             IMonoid<string> monoid = new StringConcatMonoid(); // (a, b) => string.Concat(a, b).
             // Monad law 1: m.Monad().SelectMany(f) == f(m)
-            Func<int, Writer<int, string>> addOne = x => (x + 1).Writer("a", monoid);
-            Writer<int, string> left = 1.Writer("b", monoid).SelectMany(addOne, False);
-            Writer<int, string> right = addOne(1);
+            Func<int, Writer<string, int>> addOne = x => (x + 1).LogWriter("a");
+            Writer<string, int> left = 1.LogWriter("b").SelectMany(addOne, False);
+            Writer<string, int> right = addOne(1);
             Assert.AreEqual(left.Value, right.Value);
-            Assert.AreEqual("ba", left.Content);
-            Assert.AreEqual("a", right.Content);
+            EnumerableAssert.AreSequentialEqual(new string[] { "b", "a" }, left.Content.Select(log => log.Substring(log.Length - 1)));
+            string rightLog = right.Content.Single();
+            Assert.AreEqual("a", right.Content.Single().Split(' ').Last());
             // Monad law 2: M.SelectMany(Monad) == M
-            Func<int, Writer<int, string>> Resturn = x => x.Writer("abc", monoid);
-            Writer<int, string> M = Resturn(1);
+            Func<int, Writer<string, int>> Resturn = x => x.LogWriter("abc");
+            Writer<string, int> M = Resturn(1);
             left = M.SelectMany(Resturn, False);
             right = M;
             Assert.AreEqual(left.Value, right.Value);
-            Assert.AreEqual("abcabc", left.Content);
-            Assert.AreEqual("abc", right.Content);
+            EnumerableAssert.AreSequentialEqual(new string[] { "abc", "abc" }, left.Content.Select(log => log.Split(' ').Last()));
+            Assert.AreEqual("abc", right.Content.Single().Split(' ').Last());
             // Monad law 3: M.SelectMany(f1).SelectMany(f2) == M.SelectMany(x => f1(x).SelectMany(f2))
-            Func<int, Writer<int, string>> addTwo = x => (x + 2).Writer("b", monoid);
+            Func<int, Writer<string, int>> addTwo = x => (x + 2).LogWriter("b");
             left = M.SelectMany(addOne, False).SelectMany(addTwo, False);
             right = M.SelectMany(x => addOne(x).SelectMany(addTwo, False), False);
             Assert.AreEqual(left.Value, right.Value);
-            Assert.AreEqual("abcab", left.Content);
-            Assert.AreEqual("abcab", right.Content);
+            EnumerableAssert.AreSequentialEqual(new string[] { "abc", "a", "b" }, left.Content.Select(log => log.Split(' ').Last()));
+            EnumerableAssert.AreSequentialEqual(new string[] { "abc", "a", "b" }, right.Content.Select(log => log.Split(' ').Last()));
         }
 
         [TestMethod]
@@ -587,9 +588,9 @@
                 return (x + y + z.Length).ToString(CultureInfo.InstalledUICulture);
             };
             Try<string> query = from x in 1.Try()
-                                     from y in 2.Try()
-                                     from z in "abc".Try()
-                                     select f(x)(y)(z);
+                                from y in 2.Try()
+                                from z in "abc".Try()
+                                select f(x)(y)(z);
             Assert.IsFalse(isExecuted1); // Deferred and lazy.
             Assert.AreEqual((1 + 2 + "abc".Length).ToString(CultureInfo.InstalledUICulture), query().Value); // Execution.
             Assert.IsTrue(isExecuted1);
