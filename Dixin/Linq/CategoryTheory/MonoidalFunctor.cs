@@ -284,7 +284,7 @@
     {
         // Multiply: Lazy<Tuple<T1>, Tuple<T2>> => Tuple<Lazy<T1, T2>>
         public static Tuple<Lazy<T1, T2>> Multiply<T1, T2>(this Lazy<Tuple<T1>, Tuple<T2>> bifunctor) =>
-            new Tuple<Lazy<T1, T2>>(bifunctor.Value1.Item1.Lazy(bifunctor.Value2.Item1));
+            new Tuple<Lazy<T1, T2>>(bifunctor.Value1.Item1.Lazy(bifunctor.Value2.Item1)); // Immediate execution.
 
         // Unit: Unit -> Tuple<Unit>
         public static Tuple<Unit> Unit(Unit unit = default(Unit)) => new Tuple<Unit>(unit);
@@ -305,11 +305,11 @@
 
     #region Tuple<T,>
 
-    public static partial class TupleExtensions // Tuple<T, TResult> : IMonoidalFunctor<Tuple<T,>>
+    public static partial class TupleExtensions // Tuple<T1, T2 : IMonoidalFunctor<Tuple<T,>>
     {
-        // Multiply: Lazy<Tuple<T, T1>, Tuple<T, T2>> => Tuple<T, Lazy<T1, T2>>
+        // Multiply: Lazy<Tuple<T, T1>, Tuple<T, T2>> -> Tuple<T, Lazy<T1, T2>>
         public static Tuple<T, Lazy<T1, T2>> Multiply<T, T1, T2>(this Lazy<Tuple<T, T1>, Tuple<T, T2>> bifunctor) =>
-            bifunctor.Value1.Item1.Tuple(bifunctor.Value1.Item2.Lazy(bifunctor.Value2.Item2));
+            bifunctor.Value1.Item1.Tuple(bifunctor.Value1.Item2.Lazy(bifunctor.Value2.Item2)); // Immediate execution.
 
         // Unit: Unit -> Tuple<Unit>
         public static Tuple<T, Unit> Unit<T>(Unit unit = default(Unit)) => default(T).Tuple(unit);

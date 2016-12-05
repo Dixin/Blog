@@ -326,11 +326,12 @@
         public static Func<TResult> SelectMany<TSource, TSelector, TResult>(
             this Func<TSource> source,
             Func<TSource, Func<TSelector>> selector,
-            Func<TSource, TSelector, TResult> resultSelector) => () =>
-            {
-                TSource value = source();
-                return resultSelector(value, selector(value)());
-            };
+            Func<TSource, TSelector, TResult> resultSelector) => 
+                () =>
+                {
+                    TSource value = source();
+                    return resultSelector(value, selector(value)());
+                };
     }
 
     public static partial class FuncExtensions
@@ -341,7 +342,7 @@
             {
                 Func<Task> query = from url in new Func<string>(Console.ReadLine)
                                    from downloadTask in
-                                   new Func<Task<string>>(() => webClient.DownloadStringTaskAsync(new Uri(url)))
+                                       new Func<Task<string>>(() => webClient.DownloadStringTaskAsync(new Uri(url)))
                                    from consoleTask in new Func<Task>(async () => Console.WriteLine(await downloadTask))
                                    select consoleTask;
                 await query();
@@ -365,11 +366,12 @@
         public static Func<T, TResult> SelectMany<T, TSource, TSelector, TResult>(
             this Func<T, TSource> source,
             Func<TSource, Func<T, TSelector>> selector,
-            Func<TSource, TSelector, TResult> resultSelector) => value =>
-            {
-                TSource result = source(value);
-                return resultSelector(result, selector(result)(value));
-            };
+            Func<TSource, TSelector, TResult> resultSelector) => 
+                value =>
+                {
+                    TSource result = source(value);
+                    return resultSelector(result, selector(result)(value));
+                };
     }
 
     #endregion
@@ -388,8 +390,8 @@
         public static Optional<TResult> SelectMany<TSource, TSelector, TResult>(
             this Optional<TSource> source,
             Func<TSource, Optional<TSelector>> selector,
-            Func<TSource, TSelector, TResult> resultSelector) => new Optional<TResult>(
-            () =>
+            Func<TSource, TSelector, TResult> resultSelector) => 
+                new Optional<TResult>(() =>
                 {
                     if (source.HasValue)
                     {
@@ -416,10 +418,10 @@
         public static Tuple<TSource> Unit<TSource>(TSource value) => Tuple(value);
 
         public static Tuple<TResult> SelectMany<TSource, TSelector, TResult>(
-                this Tuple<TSource> source,
-                Func<TSource, Tuple<TSelector>> selector,
-                Func<TSource, TSelector, TResult> resultSelector)
-            => new Tuple<TResult>(resultSelector(source.Item1, selector(source.Item1).Item1));
+            this Tuple<TSource> source,
+            Func<TSource, Tuple<TSelector>> selector,
+            Func<TSource, TSelector, TResult> resultSelector) => 
+                new Tuple<TResult>(resultSelector(source.Item1, selector(source.Item1).Item1)); // Immediate execution.
     }
 
     #endregion
@@ -436,10 +438,10 @@
         public static Tuple<T, TSource> Unit<T, TSource>(TSource value) => Tuple<T, TSource>(value);
 
         public static Tuple<T, TResult> SelectMany<T, TSource, TSelector, TResult>(
-                this Tuple<T, TSource> source,
-                Func<TSource, Tuple<T, TSelector>> selector,
-                Func<TSource, TSelector, TResult> resultSelector)
-            => source.Item1.Tuple(resultSelector(source.Item2, selector(source.Item2).Item2));
+            this Tuple<T, TSource> source,
+            Func<TSource, Tuple<T, TSelector>> selector,
+            Func<TSource, TSelector, TResult> resultSelector) => 
+                source.Item1.Tuple(resultSelector(source.Item2, selector(source.Item2).Item2)); // Immediate execution.
     }
 
     public static partial class TupleExtensions

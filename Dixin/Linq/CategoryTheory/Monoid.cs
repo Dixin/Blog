@@ -49,7 +49,7 @@
     {
         public IEnumerable<T> Multiply(IEnumerable<T> value1, IEnumerable<T> value2) => value1.Concat(value2);
 
-        public IEnumerable<T> Unit() => System.Linq.Enumerable.Empty<T>();
+        public IEnumerable<T> Unit() => Enumerable.Empty<T>();
     }
 
     public class BooleanAndMonoid : IMonoid<bool>
@@ -69,7 +69,7 @@
 #if DEMO
     public class VoidMonoid : IMonoid<void>
     {
-        public Func<void, void, void> Multiply => (value1, value2) => default(void);
+        public void Multiply(void value1, void value2) => default(void);
 
         public void Unit() => default(void);
     }
@@ -93,7 +93,7 @@
 
         public IEnumerable<Type> Objects { get { yield return typeof(T); } }
 
-        public T Compose(T morphism1, T morphism2) => this.monoid.Multiply(morphism1, morphism2);
+        public T Compose(T morphism2, T morphism1) => this.monoid.Multiply(morphism1, morphism2);
 
         public T Id(Type @object) => this.monoid.Unit();
     }

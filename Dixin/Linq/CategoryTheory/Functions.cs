@@ -4,6 +4,12 @@
 
     public static partial class Functions
     {
+#if DEMO
+        public static Func<TSource, TResult> o<TSource, TMiddle, TResult>(
+            this Func<TMiddle, TResult> function2, Func<TSource, TMiddle> function1) =>
+                value => function2(function1(value));
+#endif
+
         public static TSource Id<TSource>(TSource value) => value;
     }
 

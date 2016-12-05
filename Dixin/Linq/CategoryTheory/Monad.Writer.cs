@@ -6,27 +6,33 @@
     using System.Globalization;
     using System.Linq;
 
-    public class WriterBase<TContent, T>
+    public abstract class WriterBase<TContent, T>
     {
-        private readonly Lazy<Tuple<TContent, T>> lazy;
+        private readonly Lazy<TContent, T> lazy;
 
-        public WriterBase(Func<Tuple<TContent, T>> writer, IMonoid<TContent> monoid)
+        protected WriterBase(Func<Tuple<TContent, T>> writer, IMonoid<TContent> monoid)
         {
-            this.lazy = new Lazy<Tuple<TContent, T>>(writer);
+            this.lazy = new Lazy<TContent, T>(writer);
             this.Monoid = monoid;
         }
 
-        public TContent Content => this.lazy.Value.Item1;
+        public TContent Content => this.lazy.Value1;
 
-        public T Value => this.lazy.Value.Item2;
+        public T Value => this.lazy.Value2;
 
         public IMonoid<TContent> Monoid { get; }
     }
 
     public class Writer<TContent, T> : WriterBase<IEnumerable<TContent>, T>
     {
-        public Writer(Func<Tuple<IEnumerable<TContent>, T>> writer)
-            : base(writer, new EnumerableConcatMonoid<TContent>())
+        private static readonly IMonoid<IEnumerable<TContent>> ContentMonoid = 
+            new EnumerableConcatMonoid<TContent>();
+
+        public Writer(Func<Tuple<IEnumerable<TContent>, T>> writer) : base(writer, ContentMonoid)
+        {
+        }
+
+        public Writer(T value) : base(() => ContentMonoid.Unit().Tuple(value), ContentMonoid)
         {
         }
     }
@@ -46,13 +52,13 @@
 
         // Wrap: T -> Writer<TContent, T>
         public static Writer<TContent, T> Writer<TContent, T>(this T value) =>
-            new Writer<TContent, T>(() => new EnumerableConcatMonoid<TContent>().Unit().Tuple(value));
+            new Writer<TContent, T>(value);
     }
 
     public static partial class WriterExtensions
     {
         public static Writer<string, TSource> LogWriter<TSource>(this TSource value, params string[] logs) =>
-            new Writer<string, TSource>(() => 
+            new Writer<string, TSource>(() =>
                 logs.Select(log => $"{DateTime.Now.ToString("o", CultureInfo.InvariantCulture)} {log}").Tuple(value));
     }
 
@@ -61,7 +67,7 @@
         internal static void Stack()
         {
             IEnumerable<int> stack = Enumerable.Empty<int>();
-            Writer<string, IEnumerable<int>> writer =
+            Writer<string, IEnumerable<int>> query =
                 from lazy1 in stack.Push(1).LogWriter("Push 1 to stack.")
                 from lazy2 in lazy1.Value2.Push(2).LogWriter("Push 2 to stack.")
                 from lazy3 in lazy2.Value2.Pop().LogWriter("Pop 2 from stack.")
@@ -69,10 +75,10 @@
                 from lazy4 in stack1.Push(4).LogWriter("Push 4 to stack.")
                 from lazy5 in lazy4.Value2.Pop().LogWriter("Pop 4 from stack.")
                 from stack2 in lazy5.Value2.LogWriter("Get current stack.")
-                select stack2;
+                select stack2; // Define query.
 
-            IEnumerable<int> result = writer.Value;
-            IEnumerable<string> logs = writer.Content;
+            IEnumerable<int> result = query.Value; // Execute query.
+            IEnumerable<string> logs = query.Content;
             logs.ForEach(log => Trace.WriteLine(log));
         }
     }
