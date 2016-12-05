@@ -3,12 +3,28 @@
     using System;
 
 #if DEMO
-    public interface IFunctor<TBifunctor<,>> where TBifunctor<,> : IFunctor<TBifunctor<,>>
+    // Cannot be compiled.
+    public interface IBifunctor<TBifunctor<,>> where TBifunctor<,> : IFunctor<TBifunctor<,>>
     {
         Func<TBifunctor<TSource1, TSource2>, TBifunctor<TResult1, TResult2>> Select<TSource1, TSource2, TResult1, TResult2>(
             Func<TSource1, TResult1> selector1, Func<TSource2, TResult2> selector2);
     }
 #endif
+
+    public static partial class TupleExtensions // Tuple<T1, T2> : IBifunctor<Tuple<,>>
+    {
+        // Bifunctor Select: (TSource1 -> TResult1, TSource2 -> TResult2) -> (Tuple<TSource1, TSource2> -> Tuple<TResult1, TResult2>).
+        public static Func<Tuple<TSource1, TSource2>, Tuple<TResult1, TResult2>> Select<TSource1, TSource2, TResult1, TResult2>(
+            Func<TSource1, TResult1> selector1, Func<TSource2, TResult2> selector2) => source =>
+                Select(source, selector1, selector2);
+
+        // LINQ-like Select: (Tuple<TSource1, TSource2>, TSource1 -> TResult1, TSource2 -> TResult2) -> Tuple<TResult1, TResult2>).
+        public static Tuple<TResult1, TResult2> Select<TSource1, TSource2, TResult1, TResult2>(
+            this Tuple<TSource1, TSource2> source,
+            Func<TSource1, TResult1> selector1,
+            Func<TSource2, TResult2> selector2) =>
+                selector1(source.Item1).Tuple(selector2(source.Item2));
+    }
 
     public class Lazy<T1, T2>
     {
@@ -32,14 +48,14 @@
             new Lazy<T1, T2>(() => value1.Tuple(value2));
     }
 
-    public static partial class LazyExtensions
+    public static partial class LazyExtensions // Lazy<T1, T2> : IBifunctor<Lazy<,>>
     {
-        // Select: (TSource1 -> TResult1, TSource2 -> TResult2) -> (Lazy<TSource1, TSource2> -> Lazy<TResult1, TResult2>).
+        // Bifunctor Select: (TSource1 -> TResult1, TSource2 -> TResult2) -> (Lazy<TSource1, TSource2> -> Lazy<TResult1, TResult2>).
         public static Func<Lazy<TSource1, TSource2>, Lazy<TResult1, TResult2>> Select<TSource1, TSource2, TResult1, TResult2>(
             Func<TSource1, TResult1> selector1, Func<TSource2, TResult2> selector2) => source =>
                 Select(source, selector1, selector2);
 
-        // Select: (Lazy<TSource1, TSource2>, TSource1 -> TResult1, TSource2 -> TResult2) -> Lazy<TResult1, TResult2>).
+        // LINQ-like Select: (Lazy<TSource1, TSource2>, TSource1 -> TResult1, TSource2 -> TResult2) -> Lazy<TResult1, TResult2>).
         public static Lazy<TResult1, TResult2> Select<TSource1, TSource2, TResult1, TResult2>(
             this Lazy<TSource1, TSource2> source,
             Func<TSource1, TResult1> selector1,

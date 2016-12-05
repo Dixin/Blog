@@ -284,9 +284,9 @@
         }
     }
 
-#endregion
+    #endregion
 
-#region Nullable<>
+    #region Nullable<>
 
     public static partial class NullableExtensions // Nullable<T> : IFunctor<Nullable<>>
     {
@@ -318,9 +318,9 @@
         }
     }
 
-#endregion
+    #endregion
 
-#region Tuple<>
+    #region Tuple<>
 
     public static partial class TupleExtensions // Tuple<T> : IFunctor<Tuple<>>
     {
@@ -353,9 +353,9 @@
         }
     }
 
-#endregion
+    #endregion
 
-#region Tuple<T,>
+    #region Tuple<T,>
 
     public static partial class TupleExtensions // Tuple<T, T2> : IFunctor<Tuple<T,>>
     {
@@ -390,9 +390,9 @@
         }
     }
 
-#endregion
+    #endregion
 
-#region Task<>
+    #region Task<>
 
     public static partial class TaskExtensions // Task<T> : IFunctor<Task<>>
     {
@@ -418,7 +418,7 @@
         }
     }
 
-#endregion
+    #endregion
 
     public static partial class QueryableExtensions
     {

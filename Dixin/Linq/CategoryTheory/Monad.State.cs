@@ -32,7 +32,7 @@
     {
         // η: T -> State<T, TState>
         public static State<TState, T> State<TState, T>(this T value, Func<TState, TState> newState) =>
-                oldState => value.Lazy(newState(oldState));
+            oldState => new Lazy<T, TState>(() => value.Tuple(newState(oldState)));
     }
 
     public static partial class StateExtensions

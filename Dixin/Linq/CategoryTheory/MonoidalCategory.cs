@@ -17,10 +17,13 @@
 
     public static partial class LazyExtensions
     {
-        public static T2 LeftUnitor<T2>(this Lazy<Unit, T2> bifunctor) => bifunctor.Value2;
+        // LeftUnitor: Unit x T -> T
+        public static T LeftUnitor<T>(this Lazy<Unit, T> product) => product.Value2;
 
-        public static T1 RightUnitor<T1>(this Lazy<T1, Unit> bifunctor) => bifunctor.Value1;
+        // RightUnitor: T x Unit -> T
+        public static T RightUnitor<T>(this Lazy<T, Unit> product) => product.Value1;
 
+        // Associator: (T1 x T2) x T3 -> T1 x (T2 x T3)
         public static Lazy<T1, Lazy<T2, T3>> Associator<T1, T2, T3>(this Lazy<Lazy<T1, T2>, T3> product) =>
             product.Value1.Value1.Lazy(product.Value1.Value2.Lazy(product.Value2));
     }
