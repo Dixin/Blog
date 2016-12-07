@@ -80,24 +80,22 @@
 
         internal static void FunctorLaws()
         {
-            IEnumerable<int> enumerable = new int[] { 0, 1, 2, 3, 4 };
+            IEnumerable<int> source = new int[] { 0, 1, 2, 3, 4 };
             Func<int, double> selector1 = int32 => Math.Sqrt(int32);
             Func<double, string> selector2 = @double => @double.ToString("0.00");
 
-            // Associativity preservation: f.Select(selector2.o(selector1)) == f.Select(selector1).Select(selector2).
-            (from value in enumerable
+            // Associativity preservation: source.Select(selector2.o(selector1)) == source.Select(selector1).Select(selector2).
+            (from value in source
              select selector2.o(selector1)(value))
                 .ForEach(result => Trace.WriteLine(result));  // 0.00 1.00 1.41 1.73 2.00
-            (from value in enumerable
+            (from value in source
              select selector1(value) into value
              select selector2(value))
                 .ForEach(result => Trace.WriteLine(result));  // 0.00 1.00 1.41 1.73 2.00
-            // Identity preservation: f.Select(Id) == Id(f).
-            (from value in enumerable
-             select Id(value))
-                .ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
-            Id(enumerable)
-                .ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
+            // Identity preservation: source.Select(Id) == Id(source).
+            (from value in source
+             select Id(value)).ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
+            Id(source).ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
         }
     }
 

@@ -8,22 +8,44 @@
 
     using Microsoft.FSharp.Core;
 
+    using static Dixin.Linq.CategoryTheory.DotNetCategory;
+
 #if DEMO
+    // Cannot be compiled.
     public interface IMonoidalFunctor<TMonoidalFunctor<>> : IFunctor<TMonoidalFunctor<>>
+         where TMonoidalFunctor<> : IMonoidalFunctor<TMonoidalFunctor<>>
     {
+        // From IFunctor<TMonoidalFunctor<>>:
         // Select: (TSource -> TResult) -> (TMonoidalFunctor<TSource> -> TMonoidalFunctor<TResult>)
         // Func<TMonoidalFunctor<TSource>, TMonoidalFunctor<TResult>> Select<TSource, TResult>(Func<TSource, TResult> selector);
 
-        // Multiply: Lazy<TMonoidalFunctor<T1>, TMonoidalFunctor<T2>> -> TMonoidalFunctor<Lazy<T1, T2>>
-        TMonoidalFunctor<Lazy<T1, T2>> Multiply<T1, T2>(
-            Lazy<TMonoidalFunctor<T1>, TMonoidalFunctor<T2>> bifunctor);
+        // Multiply: TMonoidalFunctor<T1> x TMonoidalFunctor<T2> -> TMonoidalFunctor<T1 x T2>
+        // Multiply: Tuple<TMonoidalFunctor<T1>, TMonoidalFunctor<T2>> -> TMonoidalFunctor<Tuple<T1, T2>>
+        TMonoidalFunctor<Tuple<T1, T2>> Multiply<T1, T2>(
+            Tuple<TMonoidalFunctor<T1>, TMonoidalFunctor<T2>> bifunctor);
 
         // Unit: Unit -> TMonoidalFunctor<Unit>
         TMonoidalFunctor<Unit> Unit(Unit unit);
     }
 
-    public interface IApplicativeFunctor<TApplicativeFunctor<>> : IFunctor<TApplicativeFunctor<>>
+    // Cannot be compiled.
+    public interface IMonoidalFunctor<TMonoidalFunctor<>> : IFunctor<TMonoidalFunctor<>>
+         where TMonoidalFunctor<> : IMonoidalFunctor<TMonoidalFunctor<>>
     {
+        // Multiply: TMonoidalFunctor<T1> x TMonoidalFunctor<T2> -> TMonoidalFunctor<T1 x T2>
+        // Multiply: (TMonoidalFunctor<T1>, TMonoidalFunctor<T2>) -> TMonoidalFunctor<Tuple<T1, T2>>
+        TMonoidalFunctor<Tuple<T1, T2>> Multiply<T1, T2>(
+            TMonoidalFunctor<T1> source1, TMonoidalFunctor<T2> source2);
+
+        // Unit: Unit -> TMonoidalFunctor<Unit>
+        TMonoidalFunctor<Unit> Unit(Unit unit);
+    }
+
+    // Cannot be compiled.
+    public interface IApplicativeFunctor<TApplicativeFunctor<>> : IFunctor<TApplicativeFunctor<>>
+         where TApplicativeFunctor<> : IApplicativeFunctor<TApplicativeFunctor<>>
+    {
+        // From: IFunctor<TApplicativeFunctor<>>:
         // Select: (TSource -> TResult) -> (TApplicativeFunctor<TSource> -> TApplicativeFunctor<TResult>)
         // Func<TApplicativeFunctor<TSource>, TApplicativeFunctor<TResult>> Select<TSource, TResult>(Func<TSource, TResult> selector);
 
@@ -40,15 +62,17 @@
 
     public static partial class EnumerableExtensions // IEnumerable<T> : IMonoidalFunctor<IEnumerable<>>
     {
-        // Multiply: Lazy<IEnumerable<T1>, IEnumerable<T2>> => IEnumerable<Lazy<T1, T2>>
-        public static IEnumerable<Lazy<T1, T2>> Multiply<T1, T2>(
-            this Lazy<IEnumerable<T1>, IEnumerable<T2>> bifunctor)
+        // Multiply: IEnumerable<T1> x IEnumerable<T2> -> IEnumerable<T1 x T2>
+        // Multiply: Tuple<IEnumerable<T1>, IEnumerable<T2>> -> IEnumerable<Tuple<T1, T2>>
+        // Multiply: (IEnumerable<T1>, IEnumerable<T2>) -> IEnumerable<Tuple<T1, T2>>
+        public static IEnumerable<Tuple<T1, T2>> Multiply<T1, T2>(
+            this IEnumerable<T1> source1, IEnumerable<T2> source2) // Implicit tuple.
         {
-            foreach (T1 value1 in bifunctor.Value1)
+            foreach (T1 value1 in source1)
             {
-                foreach (T2 value2 in bifunctor.Value2)
+                foreach (T2 value2 in source2)
                 {
-                    yield return value1.Lazy(value2);
+                    yield return value1.Tuple(value2);
                 }
             }
         }
@@ -60,12 +84,59 @@
         }
     }
 
+    public static partial class EnumerableExtensions
+    {
+        internal static void Selector1Arity(IEnumerable<int> xs)
+        {
+            Func<int, bool> selector = x => x > 0;
+            // Apply selector with xs.
+            IEnumerable<bool> applyWithXs = xs.Select(selector);
+        }
+
+        internal static void SelectorNArity(IEnumerable<int> xs, IEnumerable<long> ys, IEnumerable<double> zs)
+        {
+            Func<int, long, double, bool> selector = (x, y, z) => x + y + z > 0;
+            // Curry selector.
+            Func<int, Func<long, Func<double, bool>>> curriedSelector = 
+                selector.Curry(); // 1 arity: x => (y => z => x + y + z > 0)
+            // Partially apply selector with xs.
+            IEnumerable<Func<long, Func<double, bool>>> applyWithXs = xs.Select(curriedSelector);
+            // Partially apply selector with ys.
+            IEnumerable<Tuple<Func<long, Func<double, bool>>, long>> multiplyWithYs = applyWithXs.Multiply(ys);
+            IEnumerable<Func<double, bool>> applyWithYs = multiplyWithYs.Select(product =>
+            {
+                Func<long, Func<double, bool>> partialAppliedSelector = product.Item1;
+                long y = product.Item2;
+                return partialAppliedSelector(y);
+            });
+            // Partially apply selector with zs.
+            IEnumerable<Tuple<Func<double, bool>, double>> multiplyWithZs = applyWithYs.Multiply(zs);
+            IEnumerable<bool> applyWithZs = multiplyWithZs.Select(product =>
+            {
+                Func<double, bool> partialAppliedSelector = product.Item1;
+                double z = product.Item2;
+                return partialAppliedSelector(z);
+            });
+        }
+
+        internal static void Apply(IEnumerable<int> xs, IEnumerable<long> ys, IEnumerable<double> zs)
+        {
+            Func<int, long, double, bool> selector = (x, y, z) => x + y + z > 0;
+            // Partially apply selector with xs.
+            IEnumerable<Func<long, Func<double, bool>>> applyWithXs = xs.Select(selector.Curry());
+            // Partially apply selector with ys.
+            IEnumerable<Func<double, bool>> applyWithYs = applyWithXs.Apply(ys);
+            // Partially apply selector with zs.
+            IEnumerable<bool> applyWithZs = applyWithYs.Apply(zs);
+        }
+    }
+
     public static partial class EnumerableExtensions // IEnumerable<T> : IApplicativeFunctor<IEnumerable<>>
     {
         // Apply: (IEnumerable<TSource -> TResult>, IEnumerable<TSource>) -> IEnumerable<TResult>
         public static IEnumerable<TResult> Apply<TSource, TResult>(
             this IEnumerable<Func<TSource, TResult>> selectorWrapper, IEnumerable<TSource> source) =>
-                selectorWrapper.Lazy(source).Multiply().Select(product => product.Value1(product.Value2));
+                selectorWrapper.Multiply(source).Select(product => product.Item1(product.Item2));
 
         // Wrap: TSource -> IEnumerable<TSource>
         public static IEnumerable<TSource> Enumerable<TSource>(this TSource value) => Unit().Select(unit => value);
@@ -96,12 +167,11 @@
 
     public static partial class EnumerableExtensions // IEnumerable<T> : IMonoidalFunctor<IEnumerable<>>
     {
-        // Multiply: Lazy<IEnumerable<T1>, IEnumerable<T2>> -> IEnumerable<Lazy<T1, T2>>
-        public static IEnumerable<Lazy<T1, T2>> Multiply<T1, T2>(
-            this Lazy<IEnumerable<T1>, IEnumerable<T2>> bifunctor) =>
-                 new Func<T1, T2, Lazy<T1, T2>>(LazyExtensions.Lazy).Curry().Enumerable()
-                    .Apply(bifunctor.Value1)
-                    .Apply(bifunctor.Value2);
+        // Multiply: IEnumerable<T1> x IEnumerable<T2> -> IEnumerable<T1 x T2>
+        // Multiply: (IEnumerable<T1>, IEnumerable<T2>) -> IEnumerable<Tuple<T1, T2>>
+        public static IEnumerable<Tuple<T1, T2>> Multiply2<T1, T2>(
+            this IEnumerable<T1> source1, IEnumerable<T2> source2) =>
+                new Func<T1, T2, Tuple<T1, T2>>(Tuple.Create).Curry().Enumerable().Apply(source1).Apply(source2);
 
         // Unit: Unit -> IEnumerable<Unit>
         public static IEnumerable<Unit> Unit(Unit unit = default(Unit)) => unit.Enumerable();
@@ -112,63 +182,65 @@
     {
         internal static void MonoidalFunctorLaws()
         {
-            IEnumerable<int> enumerable = new int[] { 0, 1, 2, 3, 4 };
             IEnumerable<Unit> unit = Unit();
-            IEnumerable<int> enumerable1 = new int[] { 0, 1 };
-            IEnumerable<char> enumerable2 = new char[] { '@', '#' };
-            IEnumerable<bool> enumerable3 = new bool[] { true, false };
+            IEnumerable<int> source1 = new int[] { 0, 1 };
+            IEnumerable<char> source2 = new char[] { '@', '#' };
+            IEnumerable<bool> source3 = new bool[] { true, false };
+            IEnumerable<int> source = new int[] { 0, 1, 2, 3, 4 };
 
-            // Left unit preservation: unit.Lazy(f).Multiply().Select(LeftUnitor) == f.
-            unit.Lazy(enumerable).Multiply().Select(LazyExtensions.LeftUnitor)
-                .ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
-            // Right unit preservation: f == f.Lazy(unit).Multiply().Select(RightUnitor).
-            enumerable.Lazy(unit).Multiply().Select(LazyExtensions.RightUnitor)
-                .ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
-            // Associativity preservation: f1.Lazy(f2).Multiply().Lazy(f3).Multiply().Select(Associator) == f1.Lazy(f2.Lazy(f3).Multiply()).Multiply().
-            enumerable1.Lazy(enumerable2).Multiply().Lazy(enumerable3).Multiply().Select(LazyExtensions.Associator)
+            // Associativity preservation: source1.Multiply(source2).Multiply(source3).Select(Associator) == source1.Multiply(source2.Multiply(source3)).
+            source1.Multiply(source2).Multiply(source3).Select(Associator)
                 .ForEach(result => Trace.WriteLine(result));
-            // (0, (@, True)) (0, (@, False)) (0, (#, True)) (0, (#, False)) (1, (@, True)) (1, (@, False)) (1, (#, True)) (1, (#, False))
-            enumerable1.Lazy(enumerable2.Lazy(enumerable3).Multiply()).Multiply()
+                // (0, (@, True)) (0, (@, False)) (0, (#, True)) (0, (#, False))
+                // (1, (@, True)) (1, (@, False)) (1, (#, True)) (1, (#, False))
+            source1.Multiply(source2.Multiply(source3))
                 .ForEach(result => Trace.WriteLine(result));
-            // (0, (@, True)) (0, (@, False)) (0, (#, True)) (0, (#, False)) (1, (@, True)) (1, (@, False)) (1, (#, True)) (1, (#, False))
+                // (0, (@, True)) (0, (@, False)) (0, (#, True)) (0, (#, False))
+                // (1, (@, True)) (1, (@, False)) (1, (#, True)) (1, (#, False))
+            // Left unit preservation: unit.Multiply(source).Select(LeftUnitor) == source.
+            unit.Multiply(source).Select(LeftUnitor)
+                .ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
+            // Right unit preservation: source == source.Multiply(unit).Select(RightUnitor).
+            source.Multiply(unit).Select(RightUnitor)
+                .ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
         }
 
-        internal static void ApplicativeFunctorLaws()
+        internal static void ApplicativeLaws()
         {
-            IEnumerable<int> enumerable = new int[] { 0, 1, 2, 3, 4 };
+            IEnumerable<int> source = new int[] { 0, 1, 2, 3, 4 };
             IEnumerable<Func<int, double>> selectorWrapper1 =
                 new Func<int, double>[] { int32 => int32 / 2D, int32 => Math.Sqrt(int32) };
             IEnumerable<Func<double, string>> selectorWrapper2 =
                 new Func<double, string>[] { @double => @double.ToString("0.0"), @double => @double.ToString("0.00") };
-            Func<int, double> selector = int32 => Math.Sqrt(int32);
-            const int Value = 5;
-            
-            // Identity: Id.Wrap().Apply(f) == f.
-            new Func<int, int>(Functions.Id).Enumerable().Apply(enumerable)
+            Func<int, double> function = int32 => Math.Sqrt(int32);
+            int value = 5;
+
+            // Identity: Id.Wrap().Apply(source) == source.
+            new Func<int, int>(Functions.Id).Enumerable().Apply(source)
                 .ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
-            // Composition: o.Wrap().Apply(selectorWrapper2).Apply(selectorWrapper1).Apply(f) == selectorWrapper2.Apply(selectorWrapper1.Apply(f)).
+            // Composition: o.Wrap().Apply(selectorWrapper2).Apply(selectorWrapper1).Apply(source) == selectorWrapper2.Apply(selectorWrapper1.Apply(source)).
             Functions<int, double, string>.o.Enumerable()
-                .Apply(selectorWrapper2).Apply(selectorWrapper1).Apply(enumerable)
+                .Apply(selectorWrapper2).Apply(selectorWrapper1).Apply(source)
                 .ForEach(result => Trace.WriteLine(result));
-            // 0.0  0.5  1.0  1.5  2.0
-            // 0.0  1.0  1.4  1.7  2.0 
-            // 0.00 0.50 1.00 1.50 2.00
-            // 0.00 1.00 1.41 1.73 2.00
-            selectorWrapper2.Apply(selectorWrapper1.Apply(enumerable))
+                // 0.0  0.5  1.0  1.5  2.0
+                // 0.0  1.0  1.4  1.7  2.0 
+                // 0.00 0.50 1.00 1.50 2.00
+                // 0.00 1.00 1.41 1.73 2.00
+            selectorWrapper2.Apply(selectorWrapper1.Apply(source))
                 .ForEach(result => Trace.WriteLine(result));
-            // 0.0  0.5  1.0  1.5  2.0
-            // 0.0  1.0  1.4  1.7  2.0 
-            // 0.00 0.50 1.00 1.50 2.00
-            // 0.00 1.00 1.41 1.73 2.00
+                // 0.0  0.5  1.0  1.5  2.0
+                // 0.0  1.0  1.4  1.7  2.0 
+                // 0.00 0.50 1.00 1.50 2.00
+                // 0.00 1.00 1.41 1.73 2.00
             // Homomorphism: selector.Wrap().Apply(value.Wrap()) == selector(value).Wrap().
-            selector.Enumerable().Apply(Value.Enumerable())
+            function.Enumerable().Apply(value.Enumerable())
                 .ForEach(result => Trace.WriteLine(result)); // 2.23606797749979
-            selector(Value).Enumerable()
+            function(value).Enumerable()
                 .ForEach(result => Trace.WriteLine(result)); // 2.23606797749979
             // Interchange: selectorWrapper.Apply(value.Wrap()) == (selector => selector(value)).Wrap().Apply(selectorWrapper).
-            selectorWrapper1.Apply(Value.Enumerable())
+            selectorWrapper1.Apply(value.Enumerable())
                 .ForEach(result => Trace.WriteLine(result)); // 2.5 2.23606797749979
-            new Func<Func<int, double>, double>(selectorFunction => selectorFunction(Value)).Enumerable().Apply(selectorWrapper1)
+            new Func<Func<int, double>, double>(selector => selector(value)).Enumerable().Apply(selectorWrapper1)
                 .ForEach(result => Trace.WriteLine(result)); // 2.5 2.23606797749979
         }
     }
@@ -179,9 +251,10 @@
 
     public static partial class LazyExtensions // Lazy<T> : IMonoidalFunctor<Lazy<>>
     {
-        // Multiply: Lazy<Lazy<T1>, Lazy<T2>> => Lazy<Lazy<T1, T2>>
-        public static Lazy<Lazy<T1, T2>> Multiply<T1, T2>(this Lazy<Lazy<T1>, Lazy<T2>> bifunctor) =>
-            new Lazy<Lazy<T1, T2>>(() => bifunctor.Value1.Value.Lazy(bifunctor.Value2.Value));
+        // Multiply: Lazy<T1> x Lazy<T2> -> Lazy<T1 x T2>
+        // Multiply: (Lazy<T1>, Lazy<T2>) -> Lazy<Tuple<T1, T2>>
+        public static Lazy<Tuple<T1, T2>> Multiply<T1, T2>(this Lazy<T1> source1, Lazy<T2> source2) =>
+            new Lazy<Tuple<T1, T2>>(() => source1.Value.Tuple(source2.Value));
 
         // Unit: Unit -> Lazy<Unit>
         public static Lazy<Unit> Unit(Unit unit = default(Unit)) => new Lazy<Unit>(() => unit);
@@ -192,7 +265,7 @@
         // Apply: (Lazy<TSource -> TResult>, Lazy<TSource>) -> Lazy<TResult>
         public static Lazy<TResult> Apply<TSource, TResult>(
             this Lazy<Func<TSource, TResult>> selectorWrapper, Lazy<TSource> source) =>
-                selectorWrapper.Lazy(source).Multiply().Select(product => product.Value1(product.Value2));
+                selectorWrapper.Multiply(source).Select(product => product.Item1(product.Item2));
 
         // Wrap: TSource -> Lazy<TSource>
         public static Lazy<T> Lazy<T>(this T value) => Unit().Select(unit => value);
@@ -204,9 +277,10 @@
 
     public static partial class FuncExtensions // Func<T> : IMonoidalFunctor<Func<>>
     {
-        // Multiply: Lazy<Func<T1>, Func<T2>> => Func<Lazy<T1, T2>>
-        public static Func<Lazy<T1, T2>> Multiply<T1, T2>(this Lazy<Func<T1>, Func<T2>> bifunctor) =>
-            () => bifunctor.Value1().Lazy(bifunctor.Value2());
+        // Multiply: Func<T1> x Func<T2> -> Func<T1 x T2>
+        // Multiply: (Func<T1>, Func<T2>) -> Func<Tuple<T1, T2>>
+        public static Func<Tuple<T1, T2>> Multiply<T1, T2>(this Func<T1> source1, Func<T2> source2) =>
+            () => source1().Tuple(source2());
 
         // Unit: Unit -> Func<Unit>
         public static Func<Unit> Unit(Unit unit = default(Unit)) => () => unit;
@@ -217,7 +291,7 @@
         // Apply: (Func<TSource -> TResult>, Func<TSource>) -> Func<TResult>
         public static Func<TResult> Apply<TSource, TResult>(
             this Func<Func<TSource, TResult>> selectorWrapper, Func<TSource> source) =>
-                selectorWrapper.Lazy(source).Multiply().Select(product => product.Value1(product.Value2));
+                selectorWrapper.Multiply(source).Select(product => product.Item1(product.Item2));
 
         // Wrap: TSource -> Func<TSource>
         public static Func<T> Func<T>(this T value) => Unit().Select(unit => value);
@@ -229,9 +303,10 @@
 
     public static partial class FuncExtensions // Func<T, TResult> : IMonoidalFunctor<Func<T,>>
     {
-        // Multiply: Lazy<Func<T, T1>, Func<T, T2>> => Func<T, Lazy<T1, T2>>
-        public static Func<T, Lazy<T1, T2>> Multiply<T, T1, T2>(this Lazy<Func<T, T1>, Func<T, T2>> bifunctor) =>
-            value => bifunctor.Value1(value).Lazy(bifunctor.Value2(value));
+        // Multiply: Func<T, T1> x Func<T, T2> -> Func<T, T1 x T2>
+        // Multiply: (Func<T, T1>, Func<T, T2>) -> Func<T, Tuple<T1, T2>>
+        public static Func<T, Tuple<T1, T2>> Multiply<T, T1, T2>(this Func<T, T1> source1, Func<T, T2> source2) =>
+            value => source1(value).Tuple(source2(value));
 
         // Unit: Unit -> Func<T, Unit>
         public static Func<T, Unit> Unit<T>(Unit unit = default(Unit)) => _ => unit;
@@ -242,7 +317,7 @@
         // Apply: (Func<T, TSource -> TResult>, Func<T, TSource>) -> Func<T, TResult>
         public static Func<T, TResult> Apply<T, TSource, TResult>(
             this Func<T, Func<TSource, TResult>> selectorWrapper, Func<T, TSource> source) =>
-                selectorWrapper.Lazy(source).Multiply().Select(product => product.Value1(product.Value2));
+                selectorWrapper.Multiply(source).Select(product => product.Item1(product.Item2));
 
         // Wrap: TSource -> Func<T, TSource>
         public static Func<T, TSource> Func<T, TSource>(this TSource value) => Unit<T>().Select(unit => value);
@@ -254,11 +329,12 @@
 
     public static partial class OptionalExtensions // Optional<T> : IMonoidalFunctor<Optional<>>
     {
-        // Multiply: Lazy<Optional<T1>, Optional<T2>> => Optional<Lazy<T1, T2>>
-        public static Optional<Lazy<T1, T2>> Multiply<T1, T2>(this Lazy<Optional<T1>, Optional<T2>> bifunctor) =>
-            new Optional<Lazy<T1, T2>>(() => bifunctor.Value1.HasValue && bifunctor.Value2.HasValue
-                ? true.Tuple(bifunctor.Value1.Value.Lazy(bifunctor.Value2.Value))
-                : false.Tuple(default(Lazy<T1, T2>)));
+        // Multiply: Optional<T1> x Optional<T2> -> Optional<T1 x T2>
+        // Multiply: (Optional<T1>, Optional<T2>) -> Optional<Tuple<T1, T2>>
+        public static Optional<Tuple<T1, T2>> Multiply<T1, T2>(this Optional<T1> source1, Optional<T2> source2) =>
+            new Optional<Tuple<T1, T2>>(() => source1.HasValue && source2.HasValue
+                ? true.Tuple(source1.Value.Tuple(source2.Value))
+                : false.Tuple(default(T1).Tuple(default(T2))));
 
         // Unit: Unit -> Optional<Unit>
         public static Optional<Unit> Unit(Unit unit = default(Unit)) =>
@@ -270,7 +346,7 @@
         // Apply: (Optional<TSource -> TResult>, Optional<TSource>) -> Optional<TResult>
         public static Optional<TResult> Apply<TSource, TResult>(
             this Optional<Func<TSource, TResult>> selectorWrapper, Optional<TSource> source) =>
-                selectorWrapper.Lazy(source).Multiply().Select(product => product.Value1(product.Value2));
+                selectorWrapper.Multiply(source).Select(product => product.Item1(product.Item2));
 
         // Wrap: TSource -> Optional<TSource>
         public static Optional<T> Optional<T>(this T value) => Unit().Select(unit => value);
@@ -282,9 +358,10 @@
 
     public static partial class TupleExtensions // Tuple<T> : IMonoidalFunctor<Tuple<>>
     {
-        // Multiply: Lazy<Tuple<T1>, Tuple<T2>> => Tuple<Lazy<T1, T2>>
-        public static Tuple<Lazy<T1, T2>> Multiply<T1, T2>(this Lazy<Tuple<T1>, Tuple<T2>> bifunctor) =>
-            new Tuple<Lazy<T1, T2>>(bifunctor.Value1.Item1.Lazy(bifunctor.Value2.Item1)); // Immediate execution.
+        // Multiply: Tuple<T1> x Tuple<T2> -> Tuple<T1 x T2>
+        // Multiply: (Tuple<T1>, Tuple<T2>) -> Tuple<Tuple<T1, T2>>
+        public static Tuple<Tuple<T1, T2>> Multiply<T1, T2>(this Tuple<T1> source1, Tuple<T2> source2) =>
+            new Tuple<Tuple<T1, T2>>(source1.Item1.Tuple(source2.Item1)); // Immediate execution.
 
         // Unit: Unit -> Tuple<Unit>
         public static Tuple<Unit> Unit(Unit unit = default(Unit)) => new Tuple<Unit>(unit);
@@ -295,7 +372,7 @@
         // Apply: (Tuple<TSource -> TResult>, Tuple<TSource>) -> Tuple<TResult>
         public static Tuple<TResult> Apply<TSource, TResult>(
             this Tuple<Func<TSource, TResult>> selectorWrapper, Tuple<TSource> source) =>
-                selectorWrapper.Lazy(source).Multiply().Select(product => product.Value1(product.Value2));
+                selectorWrapper.Multiply(source).Select(product => product.Item1(product.Item2));
 
         // Wrap: TSource -> Tuple<TSource>
         public static Tuple<T> Tuple<T>(this T value) => Unit().Select(unit => value);
@@ -307,9 +384,10 @@
 
     public static partial class TupleExtensions // Tuple<T1, T2 : IMonoidalFunctor<Tuple<T,>>
     {
-        // Multiply: Lazy<Tuple<T, T1>, Tuple<T, T2>> -> Tuple<T, Lazy<T1, T2>>
-        public static Tuple<T, Lazy<T1, T2>> Multiply<T, T1, T2>(this Lazy<Tuple<T, T1>, Tuple<T, T2>> bifunctor) =>
-            bifunctor.Value1.Item1.Tuple(bifunctor.Value1.Item2.Lazy(bifunctor.Value2.Item2)); // Immediate execution.
+        // Multiply: Tuple<T, T1> x Tuple<T, T2> -> Tuple<T, T1 x T2>
+        // Multiply: (Tuple<T, T1>, Tuple<T, T2>) -> Tuple<T, Tuple<T1, T2>>
+        public static Tuple<T, Tuple<T1, T2>> Multiply<T, T1, T2>(this Tuple<T, T1> source1, Tuple<T, T2> source2) =>
+            source1.Item1.Tuple(source1.Item2.Tuple(source2.Item2)); // Immediate execution.
 
         // Unit: Unit -> Tuple<Unit>
         public static Tuple<T, Unit> Unit<T>(Unit unit = default(Unit)) => default(T).Tuple(unit);
@@ -320,7 +398,7 @@
         // Apply: (Tuple<T, TSource -> TResult>, Tuple<T, TSource>) -> Tuple<T, TResult>
         public static Tuple<T, TResult> Apply<T, TSource, TResult>(
             this Tuple<T, Func<TSource, TResult>> selectorWrapper, Tuple<T, TSource> source) =>
-                selectorWrapper.Lazy(source).Multiply().Select(product => product.Value1(product.Value2));
+                selectorWrapper.Multiply(source).Select(product => product.Item1(product.Item2));
 
         // Wrap: TSource -> Tuple<T, TSource>
         public static Tuple<T, TSource> Tuple<T, TSource>(this TSource value) => Unit<T>().Select(unit => value);
@@ -330,43 +408,43 @@
     {
         internal static void MonoidalFunctorLaws()
         {
-            Tuple<string, int> tuple = "a".Tuple(1);
+            Tuple<string, int> source = "a".Tuple(1);
             Tuple<string, Unit> unit = Unit<string>();
-            Tuple<string, int> tuple1 = "b".Tuple(2);
-            Tuple<string, char> tuple2 = "c".Tuple('@');
-            Tuple<string, bool> tuple3 = "d".Tuple(true);
+            Tuple<string, int> source1 = "b".Tuple(2);
+            Tuple<string, char> source2 = "c".Tuple('@');
+            Tuple<string, bool> source3 = "d".Tuple(true);
 
-            // Left unit preservation: unit.Lazy(f).Multiply().Select(LeftUnitor) == f.
-            Trace.WriteLine(unit.Lazy(tuple).Multiply().Select(LazyExtensions.LeftUnitor)); // (, 1)
-            // Right unit preservation: f == f.Lazy(unit).Multiply().Select(RightUnitor).
-            Trace.WriteLine(tuple.Lazy(unit).Multiply().Select(LazyExtensions.RightUnitor)); // (a, 1)
-            // Associativity preservation: f1.Lazy(f2).Multiply().Lazy(f3).Multiply().Select(Associator) == f1.Lazy(f2.Lazy(f3).Multiply()).Multiply().
-            Trace.WriteLine(tuple1.Lazy(tuple2).Multiply().Lazy(tuple3).Multiply().Select(LazyExtensions.Associator)); // (b, (2, (@, True)))
-            Trace.WriteLine(tuple1.Lazy(tuple2.Lazy(tuple3).Multiply()).Multiply()); // (b, (2, (@, True)))
+            // Associativity preservation: source1.Multiply(source2).Multiply(source3).Select(Associator) == source1.Multiply(source2.Multiply(source3)).
+            Trace.WriteLine(source1.Multiply(source2).Multiply(source3).Select(Associator)); // (b, (2, (@, True)))
+            Trace.WriteLine(source1.Multiply(source2.Multiply(source3))); // (b, (2, (@, True)))
+            // Left unit preservation: unit.Multiply(source).Select(LeftUnitor) == source.
+            Trace.WriteLine(unit.Multiply(source).Select(LeftUnitor)); // (, 1)
+            // Right unit preservation: source == source.Multiply(unit).Select(RightUnitor).
+            Trace.WriteLine(source.Multiply(unit).Select(RightUnitor)); // (a, 1)
         }
 
-        internal static void ApplicativeFunctorLaws()
+        internal static void ApplicativeLaws()
         {
-            Tuple<string, int> enumerable = "a".Tuple(1);
-            Tuple<string, Func<int, double>> selectorWrapper1 = 
+            Tuple<string, int> source = "a".Tuple(1);
+            Tuple<string, Func<int, double>> selectorWrapper1 =
                 "b".Tuple(new Func<int, double>(int32 => Math.Sqrt(int32)));
-            Tuple<string, Func<double, string>> selectorWrapper2 = 
+            Tuple<string, Func<double, string>> selectorWrapper2 =
                 "c".Tuple(new Func<double, string>(@double => @double.ToString("0.00")));
-            Func<int, double> selector = int32 => Math.Sqrt(int32);
-            const int Value = 5;
+            Func<int, double> function = int32 => Math.Sqrt(int32);
+            int value = 5;
 
-            // Identity: Id.Wrap().Apply(f) == f.
-            Trace.WriteLine(new Func<int, int>(Functions.Id).Tuple<string, Func<int, int>>().Apply(enumerable)); // (, 1)
-            // Composition: o.Wrap().Apply(selectorWrapper2).Apply(selectorWrapper1).Apply(f) == selectorWrapper2.Apply(selectorWrapper1.Apply(f)).
+            // Identity: Id.Wrap().Apply(source) == source.
+            Trace.WriteLine(new Func<int, int>(Functions.Id).Tuple<string, Func<int, int>>().Apply(source)); // (, 1)
+            // Composition: o.Wrap().Apply(selectorWrapper2).Apply(selectorWrapper1).Apply(source) == selectorWrapper2.Apply(selectorWrapper1.Apply(source)).
             Trace.WriteLine(Functions<int, double, string>.o.Tuple<string, Func<Func<double, string>, Func<Func<int, double>, Func<int, string>>>>()
-                .Apply(selectorWrapper2).Apply(selectorWrapper1).Apply(enumerable)); // (, 1.00)
-            Trace.WriteLine(selectorWrapper2.Apply(selectorWrapper1.Apply(enumerable))); // (c, 1.00)
+                .Apply(selectorWrapper2).Apply(selectorWrapper1).Apply(source)); // (, 1.00)
+            Trace.WriteLine(selectorWrapper2.Apply(selectorWrapper1.Apply(source))); // (c, 1.00)
             // Homomorphism: selector.Wrap().Apply(value.Wrap()) == selector(value).Wrap().
-            Trace.WriteLine(selector.Tuple<string, Func<int, double>>().Apply(Value.Tuple<string, int>())); // (, 2.23606797749979)
-            Trace.WriteLine(selector(Value).Tuple<string, double>()); // (, 2.23606797749979)
+            Trace.WriteLine(function.Tuple<string, Func<int, double>>().Apply(value.Tuple<string, int>())); // (, 2.23606797749979)
+            Trace.WriteLine(function(value).Tuple<string, double>()); // (, 2.23606797749979)
             // Interchange: selectorWrapper.Apply(value.Wrap()) == (selector => selector(value)).Wrap().Apply(selectorWrapper).
-            Trace.WriteLine(selectorWrapper1.Apply(Value.Tuple<string, int>())); // (b, 2.23606797749979)
-            Trace.WriteLine(new Func<Func<int, double>, double>(selectorFunction => selectorFunction(Value))
+            Trace.WriteLine(selectorWrapper1.Apply(value.Tuple<string, int>())); // (b, 2.23606797749979)
+            Trace.WriteLine(new Func<Func<int, double>, double>(selector => selector(value))
                 .Tuple<string, Func<Func<int, double>, double>>().Apply(selectorWrapper1)); // (, 2.23606797749979)
         }
     }
@@ -377,21 +455,21 @@
 
     public static partial class TaskExtensions // Task<T> : IMonoidalFunctor<Task<>>
     {
-        // Multiply: Lazy<Task<T1>, Task<T2>> => Task<Lazy<T1, T2>>
-        public static async Task<Lazy<T1, T2>> Multiply<T1, T2>(this Lazy<Task<T1>, Task<T2>> bifunctor) =>
-            (await bifunctor.Value1).Lazy(await bifunctor.Value2);
+        // Multiply: Task<T1> x Task<T2> -> Task<T1 x T2>
+        // Multiply: (Task<T1>, Task<T2>) -> Task<Tuple<T1, T2>>
+        public static async Task<Tuple<T1, T2>> Multiply<T1, T2>(this Task<T1> source1, Task<T2> source2) =>
+            (await source1).Tuple(await source2);
 
         // Unit: Unit -> Task<Unit>
         public static Task<Unit> Unit(Unit unit = default(Unit)) => System.Threading.Tasks.Task.FromResult(unit);
     }
 
-    // Impure.
     public static partial class TaskExtensions // Task<T> : IApplicativeFunctor<Task<>>
     {
         // Apply: (Task<TSource -> TResult>, Task<TSource>) -> Task<TResult>
         public static Task<TResult> Apply<TSource, TResult>(
             this Task<Func<TSource, TResult>> selectorWrapper, Task<TSource> source) =>
-                selectorWrapper.Lazy(source).Multiply().Select(product => product.Value1(product.Value2));
+                selectorWrapper.Multiply(source).Select(product => product.Item1(product.Item2));
 
         // Wrap: TSource -> Task<TSource>
         public static Task<T> Task<T>(this T value) => Unit().Select(unit => value);

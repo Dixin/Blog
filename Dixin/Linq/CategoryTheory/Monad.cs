@@ -208,21 +208,21 @@
     {
         internal static void MonoidLaws()
         {
-            IEnumerable<int> enumerable = new int[] { 0, 1, 2, 3, 4 };
-            // Left unit preservation: Unit(f).Multiply() == f.
-            Unit(enumerable).Multiply().ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
-            // Right unit preservation: f == f.Select(Unit).Multiply().
-            enumerable.Select(Unit).Multiply().ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
-            // Associativity preservation: f.Wrap().Multiply().Wrap().Multiply() == f.Wrap().Wrap().Multiply().Multiply().
-            enumerable.Enumerable().Multiply().Enumerable().Multiply().ForEach(result => Trace.WriteLine(result));
+            IEnumerable<int> source = new int[] { 0, 1, 2, 3, 4 };
+            // Left unit preservation: Unit(source).Multiply() == f.
+            Unit(source).Multiply().ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
+            // Right unit preservation: source == source.Select(Unit).Multiply().
+            source.Select(Unit).Multiply().ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
+            // Associativity preservation: source.Wrap().Multiply().Wrap().Multiply() == source.Wrap().Wrap().Multiply().Multiply().
+            source.Enumerable().Multiply().Enumerable().Multiply().ForEach(result => Trace.WriteLine(result));
             // 0 1 2 3 4
-            enumerable.Enumerable().Enumerable().Multiply().Multiply().ForEach(result => Trace.WriteLine(result));
+            source.Enumerable().Enumerable().Multiply().Multiply().ForEach(result => Trace.WriteLine(result));
             // 0 1 2 3 4
         }
 
         internal static void MonadLaws()
         {
-            IEnumerable<int> enumerable = new int[] { 0, 1, 2, 3, 4 };
+            IEnumerable<int> source = new int[] { 0, 1, 2, 3, 4 };
             Func<int, IEnumerable<char>> selector = int32 => new string('*', int32);
             Func<int, IEnumerable<double>> selector1 = int32 => new double[] { int32 / 2D, Math.Sqrt(int32) };
             Func<double, IEnumerable<string>> selector2 =
@@ -230,22 +230,29 @@
             const int Value = 5;
 
             // Left unit: value.Wrap().SelectMany(selector) == selector(value).
-            (from value in Value.Enumerable() from result in selector(value) select result).ForEach(
+            (from value in Value.Enumerable()
+             from result in selector(value)
+             select result).ForEach(
                 result => Trace.WriteLine(result)); // * * * * *
             selector(Value).ForEach(result => Trace.WriteLine(result)); // * * * * *
-            // Eight unit: f == f.SelectMany(Wrap).
-            (from value in enumerable from result in value.Enumerable() select result).ForEach(
-                result => Trace.WriteLine(result)); // 0 1 2 3 4
-            // Associativity f.SelectMany(selector1).SelectMany(selector2) == f.SelectMany(value => selector1(value).SelectMany(selector2)).
-            (from value in enumerable from result1 in selector1(value) from result2 in selector2(result1) select result2)
-                .ForEach(result => Trace.WriteLine(result));
+            // Eight unit: source == source.SelectMany(Wrap).
+            (from value in source
+             from result in value.Enumerable()
+             select result).ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
+            // Associativity source.SelectMany(selector1).SelectMany(selector2) == source.SelectMany(value => selector1(value).SelectMany(selector2)).
+            (from value in source
+             from result1 in selector1(value)
+             from result2 in selector2(result1)
+             select result2).ForEach(result => Trace.WriteLine(result));
             // 0.0 0.00 0.0 0.00
             // 0.5 0.50 1.0 1.00
             // 1.0 1.00 1.4 1.41
             // 1.5 1.50 1.7 1.73
             // 2.0 2.00 2.0 2.00
-            (from value in enumerable
-             from result in (from result1 in selector1(value) from result2 in selector2(result1) select result2)
+            (from value in source
+             from result in (from result1 in selector1(value)
+                             from result2 in selector2(result1)
+                             select result2)
              select result).ForEach(result => Trace.WriteLine(result));
             // 0.0 0.00 0.0 0.00
             // 0.5 0.50 1.0 1.00
@@ -254,10 +261,10 @@
             // 2.0 2.00 2.0 2.00
         }
 
-        public static Func<TSource, IEnumerable<TResult>> o<TSource, TMiddle, TResult>(
-            // After.
+        public static Func<TSource, IEnumerable<TResult>> o<TSource, TMiddle, TResult>( // After.
             this Func<TMiddle, IEnumerable<TResult>> selector2,
-            Func<TSource, IEnumerable<TMiddle>> selector1) => value => selector1(value).Select(selector2).Multiply();
+            Func<TSource, IEnumerable<TMiddle>> selector1) => 
+                value => selector1(value).Select(selector2).Multiply();
 
         internal static void LawsWithKleisliComposition()
         {

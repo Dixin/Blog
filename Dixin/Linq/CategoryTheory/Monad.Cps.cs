@@ -54,19 +54,6 @@
             this T arg) => continuation => continuation(arg);
     }
 
-    public static partial class CpsExtensions
-    {
-        // φ: Lazy<Cps<TContinuation, T1>, Cps<TContinuation, T2>> => Cps<TContinuation, Lazy<T1, T2>>
-        public static Cps<TContinuation, Lazy<T1, T2>> Binary<TContinuation, T1, T2>(
-            this Lazy<Cps<TContinuation, T1>, Cps<TContinuation, T2>> bifunctor) =>
-                bifunctor.Value1.SelectMany(
-                    value1 => bifunctor.Value2,
-                    (value1, value2) => value1.Lazy(value2));
-
-        // ι: TUnit -> Cps<TContinuation, TUnit>
-        public static Cps<TContinuation, Unit> Unit<TContinuation>(Unit unit) => unit.Cps<TContinuation, Unit>();
-    }
-
     public static partial class Cps
     {
         internal static void SumOfSquare(int x, int y)
