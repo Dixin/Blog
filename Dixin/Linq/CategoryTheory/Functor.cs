@@ -211,8 +211,8 @@
             bool result = query(input); // Execute query.
 
             // Equivalent to:
-            Func<T, string> function1 = value => value.ToString();
-            Func<string, bool> function2 = string.IsNullOrWhiteSpace;
+            Func<T, string> function1 = source;
+            Func<string, bool> function2 = selector;
             Func<T, bool> composition = function2.o(function1);
             result = composition(input);
         }
@@ -397,14 +397,14 @@
         // Functor Select: (TSource -> TResult) -> (Task<TSource> -> Task<TResult>)
         public static Func<Task<TSource>, Task<TResult>> Select<TSource, TResult>(
             Func<TSource, TResult> selector) => source =>
-                Select(source, selector); // Immediate, impure.
+                Select(source, selector); // Immediate execution, impure.
 
         // LINQ Select: (Task<TSource>, TSource -> TResult) -> Task<TResult>
         public static async Task<TResult> Select<TSource, TResult>(
             this Task<TSource> source, Func<TSource, TResult> selector) =>
-                selector(await source); // Immediate, impure.
+                selector(await source); // Immediate execution, impure.
 
-        internal static async void Map()
+        internal static async Task Map()
         {
             Task<int> source = System.Threading.Tasks.Task.FromResult(1);
             // Map int to string.

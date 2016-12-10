@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
 
+    using Dixin.Linq;
     using Dixin.Linq.CategoryTheory;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;

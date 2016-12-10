@@ -56,6 +56,36 @@
         // Wrap: TSource -> TApplicativeFunctor<TSource>
         TApplicativeFunctor<TSource> Wrap<TSource>(TSource value);
     }
+
+    // Cannot be compiled.
+    public static class MonoidalFunctorExtensions // (Multiply, Unit) implements (Apply, Wrap).
+    {
+        // Apply: (TMonoidalFunctor<TSource -> TResult>, TMonoidalFunctor<TSource>) -> TMonoidalFunctor<TResult>
+        public static TMonoidalFunctor<TResult> Apply<TMonoidalFunctor<>, TSource, TResult>(
+            this TMonoidalFunctor<Func<TSource, TResult>> selectorWrapper, TMonoidalFunctor<TSource> source) 
+            where TMonoidalFunctor<> : IMonoidalFunctor<TMonoidalFunctor<>> =>
+                selectorWrapper.Multiply(source).Select(product => product.Item1(product.Item2));
+
+        // Wrap: TSource -> TMonoidalFunctor<TSource>
+        public static TMonoidalFunctor<TSource> Wrap<TMonoidalFunctor<>, TSource>(this TSource value) 
+            where TMonoidalFunctor<> : IMonoidalFunctor<TMonoidalFunctor<>> => 
+                TMonoidalFunctor<TSource>.Unit().Select(unit => value);
+    }
+
+    // Cannot be compiled.
+    public static class ApplicativeFunctorExtensions // (Apply, Wrap) implements (Multiply, Unit).
+    {
+        // Multiply: TApplicativeFunctor<T1> x TApplicativeFunctor<T2> -> TApplicativeFunctor<T1 x T2>
+        // Multiply: (TApplicativeFunctor<T1>, TApplicativeFunctor<T2>) -> TApplicativeFunctor<Tuple<T1, T2>>
+        public static TApplicativeFunctor<Tuple<T1, T2>> Multiply<TApplicativeFunctor<>, T1, T2>(
+            this TApplicativeFunctor<T1> source1, TApplicativeFunctor<T2> source2) 
+            where TApplicativeFunctor<> : IApplicativeFunctor<TApplicativeFunctor<>> =>
+                new Func<T1, T2, Tuple<T1, T2>>(Tuple.Create).Curry().Wrap().Apply(source1).Apply(source2);
+
+        // Unit: Unit -> TApplicativeFunctor<Unit>
+        public static TApplicativeFunctor<Unit> Unit<TApplicativeFunctor<>>(Unit unit = default(Unit))
+            where TApplicativeFunctor<> : IApplicativeFunctor<TApplicativeFunctor<>> => unit.Wrap();
+    }
 #endif
 
     #region IEnumerable<>
@@ -169,7 +199,7 @@
     {
         // Multiply: IEnumerable<T1> x IEnumerable<T2> -> IEnumerable<T1 x T2>
         // Multiply: (IEnumerable<T1>, IEnumerable<T2>) -> IEnumerable<Tuple<T1, T2>>
-        public static IEnumerable<Tuple<T1, T2>> Multiply2<T1, T2>(
+        public static IEnumerable<Tuple<T1, T2>> Multiply<T1, T2>(
             this IEnumerable<T1> source1, IEnumerable<T2> source2) =>
                 new Func<T1, T2, Tuple<T1, T2>>(Tuple.Create).Curry().Enumerable().Apply(source1).Apply(source2);
 
@@ -208,19 +238,25 @@
         internal static void ApplicativeLaws()
         {
             IEnumerable<int> source = new int[] { 0, 1, 2, 3, 4 };
+            Func<int, double> selector = int32 => Math.Sqrt(int32);
             IEnumerable<Func<int, double>> selectorWrapper1 =
                 new Func<int, double>[] { int32 => int32 / 2D, int32 => Math.Sqrt(int32) };
             IEnumerable<Func<double, string>> selectorWrapper2 =
                 new Func<double, string>[] { @double => @double.ToString("0.0"), @double => @double.ToString("0.00") };
-            Func<int, double> function = int32 => Math.Sqrt(int32);
+            Func<Func<double, string>, Func<Func<int, double>, Func<int, string>>> o =
+                new Func<Func<double, string>, Func<int, double>, Func<int, string>>(Linq.FuncExtensions.o).Curry();
             int value = 5;
 
-            // Identity: Id.Wrap().Apply(source) == source.
+            // Functor preservation: source.Select(selector) == selector.Wrap().Apply(source).
+            source.Select(selector)
+                .ForEach(result => Trace.WriteLine(result)); // 0 1 1.4142135623731 1.73205080756888 2
+            selector.Enumerable().Apply(source)
+                .ForEach(result => Trace.WriteLine(result)); // 0 1 1.4142135623731 1.73205080756888 2
+            // Identity preservation: Id.Wrap().Apply(source) == source.
             new Func<int, int>(Functions.Id).Enumerable().Apply(source)
                 .ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
-            // Composition: o.Wrap().Apply(selectorWrapper2).Apply(selectorWrapper1).Apply(source) == selectorWrapper2.Apply(selectorWrapper1.Apply(source)).
-            Functions<int, double, string>.o.Enumerable()
-                .Apply(selectorWrapper2).Apply(selectorWrapper1).Apply(source)
+            // Composition preservation: o.Wrap().Apply(selectorWrapper2).Apply(selectorWrapper1).Apply(source) == selectorWrapper2.Apply(selectorWrapper1.Apply(source)).
+            o.Enumerable().Apply(selectorWrapper2).Apply(selectorWrapper1).Apply(source)
                 .ForEach(result => Trace.WriteLine(result));
                 // 0.0  0.5  1.0  1.5  2.0
                 // 0.0  1.0  1.4  1.7  2.0 
@@ -233,14 +269,14 @@
                 // 0.00 0.50 1.00 1.50 2.00
                 // 0.00 1.00 1.41 1.73 2.00
             // Homomorphism: selector.Wrap().Apply(value.Wrap()) == selector(value).Wrap().
-            function.Enumerable().Apply(value.Enumerable())
+            selector.Enumerable().Apply(value.Enumerable())
                 .ForEach(result => Trace.WriteLine(result)); // 2.23606797749979
-            function(value).Enumerable()
+            selector(value).Enumerable()
                 .ForEach(result => Trace.WriteLine(result)); // 2.23606797749979
             // Interchange: selectorWrapper.Apply(value.Wrap()) == (selector => selector(value)).Wrap().Apply(selectorWrapper).
             selectorWrapper1.Apply(value.Enumerable())
                 .ForEach(result => Trace.WriteLine(result)); // 2.5 2.23606797749979
-            new Func<Func<int, double>, double>(selector => selector(value)).Enumerable().Apply(selectorWrapper1)
+            new Func<Func<int, double>, double>(function => function(value)).Enumerable().Apply(selectorWrapper1)
                 .ForEach(result => Trace.WriteLine(result)); // 2.5 2.23606797749979
         }
     }
@@ -372,7 +408,7 @@
         // Apply: (Tuple<TSource -> TResult>, Tuple<TSource>) -> Tuple<TResult>
         public static Tuple<TResult> Apply<TSource, TResult>(
             this Tuple<Func<TSource, TResult>> selectorWrapper, Tuple<TSource> source) =>
-                selectorWrapper.Multiply(source).Select(product => product.Item1(product.Item2));
+                selectorWrapper.Multiply(source).Select(product => product.Item1(product.Item2)); // Immediate execution.
 
         // Wrap: TSource -> Tuple<TSource>
         public static Tuple<T> Tuple<T>(this T value) => Unit().Select(unit => value);
@@ -398,7 +434,7 @@
         // Apply: (Tuple<T, TSource -> TResult>, Tuple<T, TSource>) -> Tuple<T, TResult>
         public static Tuple<T, TResult> Apply<T, TSource, TResult>(
             this Tuple<T, Func<TSource, TResult>> selectorWrapper, Tuple<T, TSource> source) =>
-                selectorWrapper.Multiply(source).Select(product => product.Item1(product.Item2));
+                selectorWrapper.Multiply(source).Select(product => product.Item1(product.Item2)); // Immediate execution.
 
         // Wrap: TSource -> Tuple<T, TSource>
         public static Tuple<T, TSource> Tuple<T, TSource>(this TSource value) => Unit<T>().Select(unit => value);
@@ -426,25 +462,30 @@
         internal static void ApplicativeLaws()
         {
             Tuple<string, int> source = "a".Tuple(1);
-            Tuple<string, Func<int, double>> selectorWrapper1 =
+            Func<int, double> selector = int32 => Math.Sqrt(int32);
+            Tuple<string, Func<int, double>> selectorWrapper1 = 
                 "b".Tuple(new Func<int, double>(int32 => Math.Sqrt(int32)));
             Tuple<string, Func<double, string>> selectorWrapper2 =
                 "c".Tuple(new Func<double, string>(@double => @double.ToString("0.00")));
-            Func<int, double> function = int32 => Math.Sqrt(int32);
+            Func<Func<double, string>, Func<Func<int, double>, Func<int, string>>> o = 
+                new Func<Func<double, string>, Func<int, double>, Func<int, string>>(Linq.FuncExtensions.o).Curry();
             int value = 5;
 
-            // Identity: Id.Wrap().Apply(source) == source.
+            // Functor preservation: source.Select(selector) == selector.Wrap().Apply(source).
+            Trace.WriteLine(source.Select(selector)); // (a, 1)
+            Trace.WriteLine(selector.Tuple<string, Func<int, double>>().Apply(source)); // (, 1)
+            // Identity preservation: Id.Wrap().Apply(source) == source.
             Trace.WriteLine(new Func<int, int>(Functions.Id).Tuple<string, Func<int, int>>().Apply(source)); // (, 1)
-            // Composition: o.Wrap().Apply(selectorWrapper2).Apply(selectorWrapper1).Apply(source) == selectorWrapper2.Apply(selectorWrapper1.Apply(source)).
-            Trace.WriteLine(Functions<int, double, string>.o.Tuple<string, Func<Func<double, string>, Func<Func<int, double>, Func<int, string>>>>()
+            // Composition preservation: o.Curry().Wrap().Apply(selectorWrapper2).Apply(selectorWrapper1).Apply(source) == selectorWrapper2.Apply(selectorWrapper1.Apply(source)).
+            Trace.WriteLine(o.Tuple<string, Func<Func<double, string>, Func<Func<int, double>, Func<int, string>>>>()
                 .Apply(selectorWrapper2).Apply(selectorWrapper1).Apply(source)); // (, 1.00)
             Trace.WriteLine(selectorWrapper2.Apply(selectorWrapper1.Apply(source))); // (c, 1.00)
             // Homomorphism: selector.Wrap().Apply(value.Wrap()) == selector(value).Wrap().
-            Trace.WriteLine(function.Tuple<string, Func<int, double>>().Apply(value.Tuple<string, int>())); // (, 2.23606797749979)
-            Trace.WriteLine(function(value).Tuple<string, double>()); // (, 2.23606797749979)
+            Trace.WriteLine(selector.Tuple<string, Func<int, double>>().Apply(value.Tuple<string, int>())); // (, 2.23606797749979)
+            Trace.WriteLine(selector(value).Tuple<string, double>()); // (, 2.23606797749979)
             // Interchange: selectorWrapper.Apply(value.Wrap()) == (selector => selector(value)).Wrap().Apply(selectorWrapper).
             Trace.WriteLine(selectorWrapper1.Apply(value.Tuple<string, int>())); // (b, 2.23606797749979)
-            Trace.WriteLine(new Func<Func<int, double>, double>(selector => selector(value))
+            Trace.WriteLine(new Func<Func<int, double>, double>(function => function(value))
                 .Tuple<string, Func<Func<int, double>, double>>().Apply(selectorWrapper1)); // (, 2.23606797749979)
         }
     }
@@ -458,7 +499,7 @@
         // Multiply: Task<T1> x Task<T2> -> Task<T1 x T2>
         // Multiply: (Task<T1>, Task<T2>) -> Task<Tuple<T1, T2>>
         public static async Task<Tuple<T1, T2>> Multiply<T1, T2>(this Task<T1> source1, Task<T2> source2) =>
-            (await source1).Tuple(await source2);
+            (await source1).Tuple(await source2); // Immediate execution, impure.
 
         // Unit: Unit -> Task<Unit>
         public static Task<Unit> Unit(Unit unit = default(Unit)) => System.Threading.Tasks.Task.FromResult(unit);
@@ -469,7 +510,7 @@
         // Apply: (Task<TSource -> TResult>, Task<TSource>) -> Task<TResult>
         public static Task<TResult> Apply<TSource, TResult>(
             this Task<Func<TSource, TResult>> selectorWrapper, Task<TSource> source) =>
-                selectorWrapper.Multiply(source).Select(product => product.Item1(product.Item2));
+                selectorWrapper.Multiply(source).Select(product => product.Item1(product.Item2)); // Immediate execution, impure.
 
         // Wrap: TSource -> Task<TSource>
         public static Task<T> Task<T>(this T value) => Unit().Select(unit => value);

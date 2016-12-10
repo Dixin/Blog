@@ -12,6 +12,12 @@
 
     using FuncExtensions = Dixin.Linq.CategoryTheory.FuncExtensions;
 
+    internal static class Functions<TSource, TMiddle, TResult>
+    {
+        internal static readonly Func<Func<TMiddle, TResult>, Func<Func<TSource, TMiddle>, Func<TSource, TResult>>>
+            o = function2 => function1 => value => function2(function1(value));
+    }
+
     [TestClass]
     public partial class MonoidalFunctorTests
     {

@@ -34,12 +34,14 @@
             Expression.GreaterThanOrEqual(Expression.Constant(@object), Expression.Constant(@object)); // X <= X.
     }
 
+#if DEMO
     public static partial class FuncExtensions
     {
         public static Func<TSource, TResult> o<TSource, TMiddle, TResult>( // After.
             this Func<TMiddle, TResult> function2, Func<TSource, TMiddle> function1) =>
                 value => function2(function1(value));
     }
+#endif
 
     public partial class DotNetCategory : ICategory<Type, Delegate>
     {
@@ -49,7 +51,7 @@
         public Delegate Compose(Delegate morphism2, Delegate morphism1) =>
             // return (Func<TSource, TResult>)Functions.Compose<TSource, TMiddle, TResult>(
             //    (Func<TMiddle, TResult>)morphism2, (Func<TSource, TMiddle>)morphism1);
-            (Delegate)typeof(FuncExtensions).GetMethod(nameof(FuncExtensions.o))
+            (Delegate)typeof(Linq.FuncExtensions).GetMethod(nameof(Linq.FuncExtensions.o))
                 .MakeGenericMethod( // TSource, TMiddle, TResult.
                     morphism1.Method.GetParameters().Single().ParameterType,
                     morphism1.Method.ReturnType,

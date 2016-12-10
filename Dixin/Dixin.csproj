@@ -494,7 +494,6 @@
     <Compile Include="Linq\CategoryTheory\MonoidalFunctor.cs" />
     <Compile Include="Linq\CategoryTheory\NaturalTransformation.cs" />
     <Compile Include="Linq\CategoryTheory\Performance.cs" />
-    <Compile Include="Linq\CategoryTheory\Psudo.cs" />
     <Compile Include="Linq\CategoryTheory\ReflectionHelper.cs" />
     <Compile Include="Linq\CategoryTheory\TraceHelper.cs" />
     <Compile Include="Linq\Lambda\Combinators.Bckw.cs" />

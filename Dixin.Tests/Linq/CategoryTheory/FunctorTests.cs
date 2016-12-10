@@ -5,6 +5,7 @@
     using System.Globalization;
     using System.Threading.Tasks;
 
+    using Dixin.Linq;
     using Dixin.Linq.CategoryTheory;
     using Dixin.TestTools.UnitTesting;
 
