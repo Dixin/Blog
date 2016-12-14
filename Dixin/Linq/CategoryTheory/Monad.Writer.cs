@@ -50,9 +50,9 @@
                         resultSelector(source.Value, result.Value));
                 });
 
-        // Wrap: T -> Writer<TContent, T>
-        public static Writer<TContent, T> Writer<TContent, T>(this T value) =>
-            new Writer<TContent, T>(value);
+        // Wrap: TSource -> Writer<TContent, TSource>
+        public static Writer<TContent, TSource> Writer<TContent, TSource>(this TSource value) =>
+            new Writer<TContent, TSource>(value);
     }
 
     public static partial class WriterExtensions
@@ -62,6 +62,18 @@
                 logs.Select(log => $"{DateTime.Now.ToString("o", CultureInfo.InvariantCulture)} {log}").Tuple(value));
     }
 
+    public static partial class EnumerableExtensions
+    {
+        public static Tuple<T, IEnumerable<T>> Pop<T>(this IEnumerable<T> source)
+        {
+            source = source.Share();
+            return source.First().Tuple(source);
+        }
+
+        public static Tuple<T, IEnumerable<T>> Push<T>(this IEnumerable<T> source, T value) =>
+            value.Tuple(source.Concat(value.Enumerable()));
+    }
+
     public static partial class WriterExtensions
     {
         internal static void Stack()
@@ -69,12 +81,12 @@
             IEnumerable<int> stack = Enumerable.Empty<int>();
             Writer<string, IEnumerable<int>> query =
                 from lazy1 in stack.Push(1).LogWriter("Push 1 to stack.")
-                from lazy2 in lazy1.Value2.Push(2).LogWriter("Push 2 to stack.")
-                from lazy3 in lazy2.Value2.Pop().LogWriter("Pop 2 from stack.")
+                from lazy2 in lazy1.Item2.Push(2).LogWriter("Push 2 to stack.")
+                from lazy3 in lazy2.Item2.Pop().LogWriter("Pop 2 from stack.")
                 from stack1 in Enumerable.Range(0, 3).LogWriter("Reset stack to 0, 1, 2.")
                 from lazy4 in stack1.Push(4).LogWriter("Push 4 to stack.")
-                from lazy5 in lazy4.Value2.Pop().LogWriter("Pop 4 from stack.")
-                from stack2 in lazy5.Value2.LogWriter("Get current stack.")
+                from lazy5 in lazy4.Item2.Pop().LogWriter("Pop 4 from stack.")
+                from stack2 in lazy5.Item2.LogWriter("Get current stack.")
                 select stack2; // Define query.
 
             IEnumerable<int> result = query.Value; // Execute query.

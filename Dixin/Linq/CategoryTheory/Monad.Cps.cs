@@ -2,35 +2,39 @@
 {
     using System;
 
-    using Microsoft.FSharp.Core;
-
-    // Cps<T, TContinuation> is alias of Func<Func<T, TContinuation>, TContinuation>
+    // Cps: (T -> TContinuation>) -> TContinuation
     public delegate TContinuation Cps<TContinuation, out T>(Func<T, TContinuation> continuation);
 
     public static partial class Cps
     {
+        // Sum: (int, int) -> int
         // Sum = (x, y) => x + y
         internal static int Sum(int x, int y) => x + y;
     }
 
     public static partial class Cps
     {
+        // SumWithCallback: (int, int, int -> TContinuation) -> TContinuation
         // SumWithCallback = (x, y, callback) => callback(x + y)
-        internal static TCallback SumWithCallback<TCallback>(int x, int y, Func<int, TCallback> callback) =>
+        internal static TContinuation SumWithCallback<TContinuation>(int x, int y, Func<int, TContinuation> callback) =>
             callback(x + y);
 
+        // SumWithCallback: (int, int) -> (int -> TContinuation) -> TContinuation
         // SumWithCallback = (x, y) => callback => callback(x + y)
-        internal static Func<Func<int, TCallback>, TCallback> SumWithCallback<TCallback>(int x, int y) =>
+        internal static Func<Func<int, TContinuation>, TContinuation> SumWithCallback<TContinuation>(int x, int y) =>
             callback => callback(x + y);
 
+        // SumCps: (int, int) -> Cps<TContinuation, int>
         // SumCps = (x, y) => continuation => continuation(x + y)
         internal static Cps<TContinuation, int> SumCps<TContinuation>(int x, int y) =>
             continuation => continuation(x + y);
 
+        // SquareCps: int -> Cps<TContinuation, int>
         // SquareCps = x => continuation => continuation(x * x)
         internal static Cps<TContinuation, int> SquareCps<TContinuation>(int x) =>
             continuation => continuation(x * x);
 
+        // SumOfSquaresCps: (int, int) -> Cps<TContinuation, int>
         // SumOfSquaresCps = (x, y) => continuation => SquareCps(x)(xx => SquareCps(y)(yy => SumCps(xx)(yy)(continuation)));
         internal static Cps<TContinuation, int> SumOfSquaresCps<TContinuation>(int x, int y) =>
             continuation =>
@@ -41,6 +45,7 @@
 
     public static partial class CpsExtensions
     {
+        // SelectMany: (Cps<TContinuation, TSource>, TSource -> Cps<TContinuation, TSelector>, (TSource, TSelector) -> TResult) -> Cps<TContinuation, TResult>
         public static Cps<TContinuation, TResult> SelectMany<TContinuation, TSource, TSelector, TResult>(
             this Cps<TContinuation, TSource> source,
             Func<TSource, Cps<TContinuation, TSelector>> selector,
@@ -49,9 +54,18 @@
                     selector(value)(result =>
                         continuation(resultSelector(value, result))));
 
-        // Wrap: T -> Cps<T, TContinuation>
-        public static Cps<TContinuation, T> Cps<TContinuation, T>(
-            this T arg) => continuation => continuation(arg);
+        // Wrap: TSource -> Cps<TContinuation, TSource>
+        public static Cps<TContinuation, TSource> Cps<TContinuation, TSource>(this TSource value) => 
+            continuation => continuation(value);
+
+        // Select: (Cps<TContinuation, TSource>, TSource -> TResult) -> Cps<TContinuation, TResult>
+        public static Cps<TContinuation, TResult> Select<TContinuation, TSource, TResult>(
+            this Cps<TContinuation, TSource> source, Func<TSource, TResult> selector) =>
+                source.SelectMany(value => selector(value).Cps<TContinuation, TResult>(), (value, result) => result);
+                // Equivalent to:
+                // continuation => source(value => continuation(selector(value)));
+                // Or:
+                // continuation => source(continuation.o(selector));
     }
 
     public static partial class Cps
@@ -78,15 +92,6 @@
 
     public static partial class CpsExtensions
     {
-        // Select: (TSource -> TResult) -> (Cps<TContinuation, TSource> -> Cps<TContinuation, TResult>)
-        public static Cps<TContinuation, TResult> Select<TContinuation, TSource, TResult>(
-            this Cps<TContinuation, TSource> source, Func<TSource, TResult> selector) =>
-                source.SelectMany(value => selector(value).Cps<TContinuation, TResult>(), Functions.False);
-        // Equivalent to:
-        // continuation => source(value => continuation(selector(value)));
-        // Or:
-        // continuation => source(continuation.o(selector));
-
         public static Func<T, TContinuation> NoCps<T, TContinuation>(
             this Func<T, Cps<TContinuation, TContinuation>> cps) =>
                 value => cps(value)(Functions.Id);

@@ -13,8 +13,6 @@
 
     using Microsoft.FSharp.Core;
 
-    using static Dixin.Linq.CategoryTheory.Functions;
-
 #if DEMO
 // Cannot be compiled.
     public partial interface IMonad<TMonad<>> : IFunctor<TMonad<>> where TMonad<> : IMonad<TMonad<>>
@@ -119,6 +117,24 @@
     public partial interface IMonad<TMonad<>> : IMonoidalFunctor<TMonad<>>, IApplicativeFunctor<TMonad<>>
     {
     }
+
+    // Cannot be compiled.
+    public static partial class MonadExtensions
+    {
+        internal static void Workflow<TMonad<>, T1, T2, T3, T4, TResult>( // Non generic TMonad can work too.
+            Func<TMonad<T1>> step1,
+            Func<TMonad<T2>> step2,
+            Func<TMonad<T3>> step3,
+            Func<TMonad<T4>> step4,
+            Func<T1, T2, T3, T4, TResult> resultSelector) where TMonad<> : IMonad<TMonad<>>
+        {
+            TMonad<TResult> query = from /* T1 */ value1 in /* TMonad<T1> */ step1()
+                                    from /* T2 */ value2 in /* TMonad<T1> */ step2()
+                                    from /* T3 */ value3 in /* TMonad<T1> */ step3()
+                                    from /* T4 */ value4 in /* TMonad<T1> */ step4()
+                                    select /* TResult */ resultSelector(value1, value2, value3, value4); // Define query.
+        }
+    }
 #endif
 
     #region IEnumerable<>
@@ -162,7 +178,7 @@
         }
 
 #if DEMO
-// Wrap: TSource -> IEnumerable<TSource>
+        // Wrap: TSource -> IEnumerable<TSource>
         public static IEnumerable<TSource> Enumerable<TSource>(this TSource value)
         {
             yield return value;
@@ -691,13 +707,16 @@
 
     public static partial class TaskExtensions
     {
-        internal static async Task Workflow(string url)
+        internal static async Task WorkflowAsync(string url)
         {
-            Task<string> query = from response in new HttpClient().GetAsync(url) // Return Task<HttpResponseMessage>.
-                                 from stream in response.Content.ReadAsStreamAsync() // Return Task<Stream>.
-                                 from text in new StreamReader(stream).ReadToEndAsync() // Return Task<string>.
-                                 select text; // Define and execute query.
-            string result = await query; // Query result.
+            using (HttpClient httpClient = new HttpClient())
+            {
+                Task<string> query = from response in httpClient.GetAsync(url) // Return Task<HttpResponseMessage>.
+                                     from stream in response.Content.ReadAsStreamAsync() // Return Task<Stream>.
+                                     from text in new StreamReader(stream).ReadToEndAsync() // Return Task<string>.
+                                     select text; // Define and execute query.
+                string result = await query; // Query result.
+            }
         }
     }
 
@@ -715,9 +734,19 @@
             return resultSelector(default(Unit), await selector(default(Unit)));
         }
 
+        // SelectMany: (Task<TSource>, TSource -> Task, (TSource, Unit) -> TResult) -> Task<TResult>
+        public static async Task<TResult> SelectMany<TSource, TResult>(
+            this Task<TSource> source,
+            Func<TSource, Task> selector,
+            Func<TSource, Unit, TResult> resultSelector)
+        {
+            await selector(await source);
+            return resultSelector(await source, default(Unit));
+        }
+
         // Select: (Unit -> TResult) -> (Task -> Task<TResult>)
         public static Task<TResult> Select<TResult>(this Task source, Func<Unit, TResult> selector) =>
-            source.SelectMany(value => selector(value).Task(), False);
+            source.SelectMany(value => selector(value).Task(), (value, result) => result);
     }
 
     public static partial class QueryableExtensions

@@ -231,7 +231,6 @@
     <Compile Include="Linq\CategoryTheory\MonadTests.cs" />
     <Compile Include="Linq\CategoryTheory\MonoidTests.cs" />
     <Compile Include="Linq\CategoryTheory\NaturalTransformationsTests.cs" />
-    <Compile Include="Linq\CategoryTheory\StackTests.cs" />
     <Compile Include="Linq\Lambda\CombinatorTests.Iota.cs" />
     <Compile Include="Linq\Lambda\CombinatorsTests.Ski.cs" />
     <Compile Include="Linq\EnumerableXTests.cs" />

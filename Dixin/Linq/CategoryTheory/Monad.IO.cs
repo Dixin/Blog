@@ -3,17 +3,42 @@
     using System;
     using System.IO;
     using System.Net;
-
-    using Dixin.Common;
+    using System.Text;
+    using System.Threading.Tasks;
 
     using Microsoft.FSharp.Core;
 
-    using static Dixin.Linq.CategoryTheory.Functions;
-
+    // IO: () -> T
     public delegate T IO<out T>();
 
     public static partial class IOExtensions
     {
+        internal static string Impure()
+        {
+            string filePath = Console.ReadLine();
+            string fileContent = File.ReadAllText(filePath);
+            return fileContent;
+        }
+
+        internal static IO<string> Pure()
+        {
+            IO<string> filePath = () => Console.ReadLine();
+            IO<string> fileContent = () => File.ReadAllText(filePath());
+            return fileContent;
+        }
+
+        internal static void IO()
+        {
+            string result1 = Impure(); // IO is produced.
+            IO<string> resultWrapper = Pure(); // IO is not produced.
+
+            string result2 = resultWrapper(); // IO is produced.
+        }
+    }
+
+    public static partial class IOExtensions
+    {
+        // SelectMany: (IO<TSource>, TSource -> IO<TSelector>, (TSource, TSelector) -> TResult) -> IO<TResult>
         public static IO<TResult> SelectMany<TSource, TSelector, TResult>(
             this IO<TSource> source,
             Func<TSource, IO<TSelector>> selector,
@@ -27,118 +52,60 @@
         // Wrap: TSource -> IO<TSource>
         public static IO<TSource> IO<TSource>(this TSource value) => () => value;
 
+        // Select: (IO<TSource>, TSource -> TResult) -> IO<TResult>
         public static IO<TResult> Select<TSource, TResult>(
-            this IO<TSource> source,
-            Func<TSource, TResult> selector) =>
-                source.SelectMany(value => selector(value).IO(), False);
+            this IO<TSource> source, Func<TSource, TResult> selector) =>
+                source.SelectMany(value => selector(value).IO(), (value, result) => result);
     }
 
     public static partial class IOExtensions
     {
-        public static IO<Unit> IOAction(this Action action) =>
+        public static IO<TResult> IO<TResult>(Func<TResult> function) =>
+            () => function();
+
+        public static IO<Unit> IO(Action action) =>
             () =>
             {
                 action();
                 return default(Unit);
             };
-
-        public static Func<T, IO<Unit>> IOAction<T>(this Action<T> action) => 
-            value => () =>
-            {
-                action(value);
-                return default(Unit);
-            };
-
-        public static Func<T1, T2, IO<Unit>> IOAction<T1, T2>(this Action<T1, T2> action) =>
-            (value1, value2) => () =>
-            {
-                action(value1, value2);
-                return default(Unit);
-            };
-
-        public static Func<T1, T2, T3, IO<Unit>> IOAction<T1, T2, T3>(this Action<T1, T2, T3> action) => 
-            (value1, value2, value3) => () =>
-            {
-                action(value1, value2, value3);
-                return default(Unit);
-            };
-
-        public static Func<T1, T2, T3, T4, IO<Unit>> IOAction<T1, T2, T3, T4>(this Action<T1, T2, T3, T4> action) => 
-            (value1, value2, value3, value4) => () =>
-            {
-                action(value1, value2, value3, value4);
-                return null;
-            };
-
-        // ...
-
-        public static IO<TResult> IOFunc<TResult>(this Func<TResult> function) =>
-            () => function();
-
-        public static Func<T, IO<TResult>> IOFunc<T, TResult>(this Func<T, TResult> function) => 
-            value => () => function(value);
-
-        public static Func<T1, T2, IO<TResult>> IOFunc<T1, T2, TResult>(this Func<T1, T2, TResult> function) => 
-            (value1, value2) => () => function(value1, value2);
-
-        public static Func<T1, T2, T3, IO<TResult>> IOFunc<T1, T2, T3, TResult>(
-            this Func<T1, T2, T3, TResult> function) => 
-                (value1, value2, value3) => () => function(value1, value2, value3);
-
-        public static Func<T1, T2, T3, T4, IO<TResult>> IOFunc<T1, T2, T3, T4, TResult>(
-            this Func<T1, T2, T3, T4, TResult> function) => 
-                (value1, value2, value3, value4) => () => function(value1, value2, value3, value4);
-
-        // ...
     }
 
-    // Impure.
     public static partial class IOExtensions
     {
-        internal static void IOFunctions()
+        internal static void Workflow()
         {
-            IO<string> consoleReadLine = IOFunc(Console.ReadLine);
-            Func<string, IO<Unit>> consoleWriteLine = IOAction<string>(Console.WriteLine);
-            Func<string, IO<string>> fileReadAllText = IOFunc<string, string>(File.ReadAllText);
-            Func<string, string, IO<Unit>> fileWriteAllText = IOAction<string, string>(File.WriteAllText);
-            Func<string, IO<bool>> fileExists = IOFunc<string, bool>(File.Exists);
+            IO<int> query = from unit1 in IO(() => Console.WriteLine("File path:")) // IO<Unit>.
+                            from filePath in IO(Console.ReadLine) // IO<string>.
+                            from unit2 in IO(() => Console.WriteLine("File encoding:")) // IO<Unit>.
+                            from encodingName in IO(Console.ReadLine) // IO<string>.
+                            let encoding = Encoding.GetEncoding(encodingName)
+                            from fileContent in IO(() => File.ReadAllText(filePath, encoding)) // IO<string>.
+                            from unit3 in IO(() => Console.WriteLine("File content:")) // IO<Unit>.
+                            from unit4 in IO(() => Console.WriteLine(fileContent)) // IO<Unit>.
+                            select fileContent.Length; // Define query.
+            int result = query(); // Execute query.
         }
 
-        internal static void FileIO()
-        {
-            IO<Tuple<bool, string>> query =
-                // 1. Read file name from console.
-                from fileName in IOFunc(Console.ReadLine)
-                // 2. Write confirmation message to console.
-                let message = $"{fileName}? y/n"
-                from _ in IOAction<string>(Console.WriteLine)(message)
-                // 3. Read confirmation from console.
-                from confirmation in IOFunc(Console.ReadLine)
-                // 4. If confirmed, read the file.
-                let isConfirmed = "y".EqualsIgnoreCase(confirmation)
-                from text in isConfirmed ? IOFunc<string, string>(File.ReadAllText)(fileName) : string.Empty.IO()
-                // 5. Write text to console.
-                from __ in IOAction<string>(Console.WriteLine)(text)
-                // 6. Returns text as query result.
-                select isConfirmed.Tuple(text); // Define query.
-            Tuple<bool, string> result = query(); // Execute query.
-        }
-
-        internal static void NetworkIO()
+        internal static async Task WorkflowAsync()
         {
             using (WebClient webClient = new WebClient())
             {
-                IO<Unit> query =
-                    // 1. Read URL from console.
-                    from url in IOFunc(Console.ReadLine)
-                    // 2. Download string from Internet.
-                    from text in IOFunc(() => webClient.DownloadString(url))
-                    // 3. Write string to console.
-                    let length = 1000
-                    let message = text.Length <= length ? text : $"{text.Substring(0, length)}..."
-                    from _ in IOAction<string>(Console.WriteLine)(message)
-                    select _; // Define query.
-                query(); // Execute query.
+                IO<Task> query = from unit1 in IO(() => Console.WriteLine("Url:")) // IO<Unit>. 
+                                 from url in IO(Console.ReadLine) // IO<string>.
+                                 from unit2 in IO(() => Console.WriteLine("File path:")) // IO<Unit>.
+                                 from filePath in IO(Console.ReadLine) // IO<string>.
+                                 from dowanloadStreamTask in IO(async () =>
+                                     await webClient.OpenReadTaskAsync(url)) // IO<Task<Stream>>.
+                                 from writeFileTask in IO(async () => 
+                                     await (await dowanloadStreamTask).CopyToAsync(File.Create(filePath))) // IO<Task>.
+                                 from messageTask in IO(async () =>
+                                     {
+                                         await writeFileTask;
+                                         Console.WriteLine($"Downloaded {url} to {filePath}");
+                                     }) // IO<Task>.
+                                 select messageTask; // Define query.
+                await query(); // Execute query.
             }
         }
     }

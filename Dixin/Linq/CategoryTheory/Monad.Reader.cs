@@ -1,61 +1,63 @@
 ﻿namespace Dixin.Linq.CategoryTheory
 {
     using System;
+    using System.IO;
 
-    // Reader<TContext, T> is alias of Func<TContext, T>
-    public delegate T Reader<in TContext, out T>(TContext context);
+    using Microsoft.FSharp.Core;
+
+    // Reader: TEnvironment -> T
+    public delegate T Reader<in TEnvironment, out T>(TEnvironment environment);
 
     public static partial class ReaderExtensions
     {
-        public static Reader<TContext, TResult> SelectMany<TContext, TSource, TSelector, TResult>(
-            this Reader<TContext, TSource> source,
-            Func<TSource, Reader<TContext, TSelector>> selector,
+        // SelectMany: (Reader<TEnvironment, TSource>, TSource -> Reader<TEnvironment, TSelector>, (TSource, TSelector) -> TResult) -> Reader<TEnvironment, TResult>
+        public static Reader<TEnvironment, TResult> SelectMany<TEnvironment, TSource, TSelector, TResult>(
+            this Reader<TEnvironment, TSource> source,
+            Func<TSource, Reader<TEnvironment, TSelector>> selector,
             Func<TSource, TSelector, TResult> resultSelector) =>
-                context =>
+                environment =>
                 {
-                    TSource value = source(context);
-                    return resultSelector(value, selector(value)(context));
+                    TSource value = source(environment);
+                    return resultSelector(value, selector(value)(environment));
                 };
 
-        // Wrap: T -> Reader<TContext, T>
-        public static Reader<TContext, TSource> Reader<TContext, TSource>(this TSource value) => context => value;
+        // Wrap: TSource -> Reader<TEnvironment, TSource>
+        public static Reader<TEnvironment, TSource> Reader<TEnvironment, TSource>(this TSource value) =>
+            environment => value;
+
+        // Select: (Reader<TEnvironment, TSource>, TSource -> TResult) -> Reader<TEnvironment, TResult>
+        public static Reader<TEnvironment, TResult> Select<TEnvironment, TSource, TResult>(
+            this Reader<TEnvironment, TSource> source, Func<TSource, TResult> selector) =>
+                source.SelectMany(value => selector(value).Reader<TEnvironment, TResult>(), Functions.False);
+    }
+
+    internal interface IConfiguration
+    {
     }
 
     public static partial class ReaderExtensions
     {
-        public static Reader<TContext, TContext> Context<TContext>() => Functions.Id;
+        private static Reader<IConfiguration, Stream> DownloadHtmlContent(string url) => 
+            configuration => default(Stream); // Return download stram.
 
-        // Select: (TSource -> TResult) -> (Reader<TContext, TSource> -> Reader<TContext, TResult>)
-        public static Reader<TContext, TResult> Select<TContext, TSource, TResult>(
-            this Reader<TContext, TSource> source, Func<TSource, TResult> selector) =>
-                source.SelectMany(value => selector(value).Reader<TContext, TResult>(), Functions.False);
-    }
+        private static Reader<IConfiguration, string> SaveHtmlToFile(Stream htmlStream) =>
+            configuration => default(string); // Return saved HTML file path.
 
-    internal static partial class ReaderQuery
-    {
-        internal static void HtmlToWord()
+        private static Reader<IConfiguration, string> ConvertHtmlFileToWordFile(string htmlFilePath, string wordTemplatePath) =>
+            configuration => default(string); // Return converted Word file path.
+
+        private static Reader<IConfiguration, Unit> UploadFileToOneDrive(string localFilePath) =>
+            configuration => default(Unit); // Return void.
+
+        internal static void Workflow(IConfiguration configuration, string url, string wordTemplatePath)
         {
-            var query = // Reader<Settings, (string, string)>
-                from htmlContent in new Reader<Settings, string>(settings => DownloadHtmlContent(settings.BlogUrl))
-                from htmlFilePath in new Reader<Settings, string>(settings => SaveHtmlToFile(
-                    settings.TempPath, htmlContent))
-                from wordFilePath in new Reader<Settings, string>(settings => ConvertHtmlFileToWordFile(
-                    settings.WordTemplatePath, htmlFilePath))
-                from wordFileUrl in new Reader<Settings, string>(settings => UploadFileToOneDrive(
-                    wordFilePath, settings.OneDrivePath))
-                select new { Local = wordFilePath, Remote = wordFileUrl }; // Define query.
-            var result = // (string, string)
-                query(Settings.Default); // Execute query.
+            Reader<IConfiguration, string> query = 
+                from htmlContent in DownloadHtmlContent(url) // Reader<IConfiguration, Steam>.
+                from htmlFile in SaveHtmlToFile(htmlContent) // Reader<IConfiguration, string>.
+                from wordFile in ConvertHtmlFileToWordFile(htmlFile, wordTemplatePath) // Reader<IConfiguration, string>.
+                from unit in UploadFileToOneDrive(wordFile) // Reader<IConfiguration, Unit>.
+                select wordFile; // Define query.
+            string result = query(configuration); // Execute query.
         }
-
-        private static string DownloadHtmlContent(string url) => default(string);
-
-        private static string SaveHtmlToFile(string connectionString, string html) => default(string);
-
-        private static string ConvertHtmlFileToWordFile(string wordTemplatePath, string htmlFilePath) => default(string);
-
-        private static string UploadFileToOneDrive(string filePath, string oneDrivePath) => default(string);
     }
-
-    //public interface IRepository
 }

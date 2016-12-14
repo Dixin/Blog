@@ -1,103 +1,124 @@
 ﻿namespace Dixin.Linq.CategoryTheory
 {
     using System;
-    using System.Globalization;
+    using System.Diagnostics;
 
-    public delegate TryResult<T> Try<T>();
+    using Microsoft.FSharp.Core;
 
-    public struct TryResult<T>
+    public struct Try<T>
     {
-        public TryResult(T value)
+        private readonly Lazy<Tuple<T, Exception>> factory;
+
+        public Try(Func<Tuple<T, Exception>> factory)
         {
-            this.Value = value;
-            this.Exception = null;
+            this.factory = new Lazy<Tuple<T, Exception>>(() =>
+                {
+                    try
+                    {
+                        return factory();
+                    }
+                    catch (Exception exception)
+                    {
+                        return default(T).Tuple(exception);
+                    }
+                });
         }
 
-        public TryResult(Exception exception)
+        public T Value
         {
-            this.Value = default(T);
-            this.Exception = exception;
+            get
+            {
+                if (this.HasException)
+                {
+                    throw new InvalidOperationException($"{nameof(Try<T>)} object must have a value.");
+                }
+                return this.factory.Value.Item1;
+            }
         }
 
-        public T Value { get; }
-
-        public Exception Exception { get; }
+        public Exception Exception => this.factory.Value.Item2;
 
         public bool HasException => this.Exception != null;
 
-        public static implicit operator TryResult<T>(T value) => new TryResult<T>(value);
+        public static implicit operator Try<T>(T value) => new Try<T>(() => value.Tuple((Exception)null));
     }
 
     public static partial class TryExtensions
     {
+        // SelectMany: (Try<TSource>, TSource -> Try<TSelector>, (TSource, TSelector) -> TResult) -> Try<TResult>
         public static Try<TResult> SelectMany<TSource, TSelector, TResult>(
             this Try<TSource> source,
             Func<TSource, Try<TSelector>> selector,
-            Func<TSource, TSelector, TResult> resultSelector) => () =>
-            {
-                try
+            Func<TSource, TSelector, TResult> resultSelector) =>
+                new Try<TResult>(() =>
                 {
-                    TryResult<TSource> value = source();
-                    if (value.HasException)
+                    if (source.HasException)
                     {
-                        return new TryResult<TResult>(value.Exception);
+                        return default(TResult).Tuple(source.Exception);
                     }
-                    TryResult<TSelector> result = selector(value.Value)();
+                    Try<TSelector> result = selector(source.Value);
                     if (result.HasException)
                     {
-                        return new TryResult<TResult>(result.Exception);
+                        return default(TResult).Tuple(result.Exception);
                     }
-                    return resultSelector(value.Value, result.Value);
-                }
-                catch (Exception exception)
-                {
-                    return new TryResult<TResult>(exception);
-                }
-            };
+                    return resultSelector(source.Value, result.Value).Tuple((Exception)null);
+                });
 
         // Wrap: TSource -> Try<TSource>
-        public static Try<TSource> Try<TSource>(this TSource value) => () => value;
+        public static Try<TSource> Try<TSource>(this TSource value) => value;
+
+        // Select: (Try<TSource>, TSource -> TResult) -> Try<TResult>
+        public static Try<TResult> Select<TSource, TResult>(
+            this Try<TSource> source, Func<TSource, TResult> selector) =>
+                source.SelectMany(value => selector(value).Try(), (value, result) => result);
     }
 
     public static partial class TryExtensions
     {
-        public static TryResult<T> Throw<T>(this Exception exception) => new TryResult<T>(exception);
+        public static Try<T> Throw<T>(this Exception exception) => new Try<T>(() => default(T).Tuple(exception));
+    }
 
-        public static Try<T> Try<T>(Func<TryResult<T>> function) =>
-            () =>
+    public static partial class TryExtensions
+    {
+        public static Try<T> Try<T>(Func<T> function) =>
+            new Try<T>(() => function().Tuple((Exception)null));
+
+        public static Try<Unit> Try(Action action) =>
+            new Try<Unit>(() =>
             {
-                try
+                action();
+                return default(Unit).Tuple((Exception)null);
+            });
+
+        public static Try<T> Catch<T, TException>(
+            this Try<T> source, Func<TException, Try<T>> handler, Func<TException, bool> when = null)
+            where TException : Exception => 
+                new Try<T>(() =>
                 {
-                    return function();
-                }
-                catch (Exception exception)
-                {
-                    return new TryResult<T>(exception);
-                }
-            };
+                    TException exception;
+                    if (source.HasException && (exception = source.Exception as TException) != null
+                        && (when == null || when(exception)))
+                    {
+                        source = handler(exception);
+                        
+                    }
+                    return source.HasException ? default(T).Tuple(source.Exception) : source.Value.Tuple((Exception)null);
+                });
 
-        public static Try<T> Try<T>(Func<T> function) => Try(() => new TryResult<T>(function()));
+        public static Try<T> Catch<T>(
+            this Try<T> source, Func<Exception, Try<T>> handler, Func<Exception, bool> when = null) =>
+                Catch<T, Exception>(source, handler, when);
 
-        public static TryResult<T> Catch<T, TException>(
-            this TryResult<T> result, Func<TException, TryResult<T>> handler, Func<TException, bool> when = null)
-            where TException : Exception
-        {
-            TException exception;
-            return result.HasException && (exception = result.Exception as TException) != null 
-                && (when == null || when(exception)) ? handler(exception) : result;
-        }
+        public static TResult Finally<T, TResult>(
+            this Try<T> source, Func<Try<T>, TResult> @finally) => @finally(source);
 
-        public static TryResult<T> Catch<T>(
-            this TryResult<T> result, Func<Exception, TryResult<T>> handler, Func<Exception, bool> when = null) =>
-                Catch<T, Exception>(result, handler, when);
-
-        public static TryResult<TResult> Finally<T, TResult>(
-            this TryResult<T> result, Func<TryResult<T>, TResult> finnally) => finnally(result);
+        public static void Finally<T>(
+            this Try<T> source, Action<Try<T>> @finally) => @finally(source);
     }
 
     public static partial class TryExtensions
     {
-        internal static TryResult<int> StrictFactorial(int? value)
+        internal static Try<int> TryStrictFactorial(int? value)
         {
             if (value == null)
             {
@@ -107,27 +128,35 @@
             {
                 return Throw<int>(new ArgumentOutOfRangeException(nameof(value), value, "Argument should be positive."));
             }
+
             if (value == 1)
             {
                 return 1;
             }
-            return value.Value * StrictFactorial(value - 1).Value;
+            return value.Value * TryStrictFactorial(value - 1).Value;
         }
 
-        internal static TryResult<string> Factorial(string value)
+        internal static string Factorial(string value)
         {
-            Func<string, int?> stringToNullableInt32 =
-                @string => string.IsNullOrEmpty(value) ? default(int?) : Convert.ToInt32(@string);
-            Try<int> query = from int32 in Try(() => stringToNullableInt32(value))
-                             from result in Try(() => StrictFactorial(int32))
+            Func<string, int?> stringToNullableInt32 = @string =>
+                string.IsNullOrEmpty(@string) ? default(int?) : Convert.ToInt32(@string);
+            Try<int> query = from nullableInt32 in Try(() => 
+                                string.IsNullOrEmpty(value) ? default(int?) : Convert.ToInt32(value)) // Try<int32?>
+                             from result in TryStrictFactorial(nullableInt32) // Try<int>.
+                             from unit in Try(() => Trace.WriteLine(result)) // Try<Unit>.
                              select result; // Define query.
-            return query() // Execute query.
-                .Catch<int, ArgumentNullException>(exception => 0)
+            return query
+                .Catch(exception => // Catch all and rethrow.
+                    {
+                        Trace.WriteLine(exception);
+                        return Throw<int>(exception);
+                    })
+                .Catch<int, ArgumentNullException>(exception => 1) // When argument is null, factorial is 1.
                 .Catch<int, ArgumentOutOfRangeException>(
                     when: exception => object.Equals(exception.ActualValue, 0),
-                    handler: exception => 0)
-                .Finally(result => result.HasException
-                    ? result.Exception.Message : result.Value.ToString(CultureInfo.InvariantCulture));
+                    handler: exception => 1) // When argument is 0, factorial is 1.
+                .Finally(result => result.HasException // Execute query.
+                    ? result.Exception.Message : result.Value.ToString());
         }
     }
 }

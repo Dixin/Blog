@@ -41,6 +41,17 @@
 
         // Other members.
     }
+
+    public static partial class FunctorExtensions
+    {
+        // Cannot be compiled.
+        internal static void Map<TFunctor<>, TSource, TResult>( // Non generic TFunctor can work too.
+            TFunctor<TSource> functor, Func<TSource, TResult> selector) where TFunctor<> : IFunctor<TFunctor<>>
+        {
+            TFunctor<TResult> query = from /* TSource */ value in /* TFunctor<TSource> */ functor
+                                      select /* TResult */ selector(value); // Define query.
+        }
+    }
 #endif
 
     #region IEnumerable<>
@@ -272,13 +283,19 @@
             // Map Optional<int> to Optional<string>.
             Optional<string> query1 = from value in source1
                                       select selector(value); // Define query.
-            string result1 = query1.Value; // Execute query.
+            if (query1.HasValue) // Execute query.
+            {
+                string result1 = query1.Value;
+            }
 
             Optional<int> source2 = new Optional<int>();
             // Map Optional<int> to Optional<string>.
             Optional<string> query2 = from value in source2
                                       select selector(value); // Define query.
-            bool result2 = query2.HasValue; // Execute query.
+            if (query2.HasValue) // Execute query.
+            {
+                string result2 = query2.Value;
+            }
         }
     }
 
@@ -404,7 +421,7 @@
             this Task<TSource> source, Func<TSource, TResult> selector) =>
                 selector(await source); // Immediate execution, impure.
 
-        internal static async Task Map()
+        internal static async Task MapAsync()
         {
             Task<int> source = System.Threading.Tasks.Task.FromResult(1);
             // Map int to string.

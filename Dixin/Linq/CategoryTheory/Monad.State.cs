@@ -2,187 +2,174 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.Linq;
-    using System.Threading.Tasks;
 
     using Microsoft.FSharp.Core;
 
-    // State<TState, T> is alias of Func<TState, Lazy<T, TState>>
-    public delegate Lazy<T, TState> State<TState, T>(TState state);
+    // State: TState -> Tuple<T, TState>
+    public delegate Tuple<T, TState> State<TState, T>(TState state);
 
     public static partial class StateExtensions
     {
+        // SelectMany: (State<TState, TSource>, TSource -> State<TState, TSelector>, (TSource, TSelector) -> TResult) -> State<TState, TResult>
         public static State<TState, TResult> SelectMany<TState, TSource, TSelector, TResult>(
             this State<TState, TSource> source,
             Func<TSource, State<TState, TSelector>> selector,
             Func<TSource, TSelector, TResult> resultSelector) =>
-                state => new Lazy<TResult, TState>(() =>
+                oldState =>
                 {
-                    Lazy<TSource, TState> value = source(state);
-                    Lazy<TSelector, TState> result = selector(value.Value1)(value.Value2);
-                    return resultSelector(value.Value1, result.Value1).Tuple(result.Value2);
-                });
+                    Tuple<TSource, TState> value = source(oldState);
+                    Tuple<TSelector, TState> result = selector(value.Item1)(value.Item2);
+                    TState newState = result.Item2;
+                    return resultSelector(value.Item1, result.Item1).Tuple(newState); // Output new state.
+                };
 
-        // Wrap: T -> State<T, TState>
-        public static State<TState, T> State<TState, T>(this T value) =>
-            state => value.Lazy(state);
+        // Wrap: TSource -> State<TState, TSource>
+        public static State<TState, TSource> State<TState, TSource>(this TSource value) =>
+            oldState => value.Tuple(oldState); // Output old state.
+
+        // Select: (State<TState, TSource>, TSource -> TResult) -> State<TState, TResult>
+        public static State<TState, TResult> Select<TState, TSource, TResult>(
+            this State<TState, TSource> source,
+            Func<TSource, TResult> selector) =>
+                oldState =>
+                {
+                    Tuple<TSource, TState> value = source(oldState);
+                    TState newState = value.Item2;
+                    return selector(value.Item1).Tuple(newState); // Output new state.
+                };
+        // Equivalent to:            
+        // source.SelectMany(value => selector(value).State<TState, TResult>(), (value, result) => result);
     }
 
     public static partial class StateExtensions
     {
-        // η: T -> State<T, TState>
-        public static State<TState, T> State<TState, T>(this T value, Func<TState, TState> newState) =>
-            oldState => new Lazy<T, TState>(() => value.Tuple(newState(oldState)));
+        // GetState: () -> State<TState, TState>
+        public static State<TState, TState> GetState<TState>() =>
+            oldState => oldState.Tuple(oldState); // Output old state.
+
+        // SetState: TState -> State<TState, Unit>
+        public static State<TState, Unit> SetState<TState>(TState newState) =>
+            oldState => default(Unit).Tuple(newState); // Output new state.
+    }
+
+    public static partial class StateExtensions
+    {
+        internal static void Workflow()
+        {
+            string initialState = nameof(initialState);
+            string newState = nameof(newState);
+            string resetState = nameof(resetState);
+            State<string, int> source1 = oldState => 1.Tuple(oldState);
+            State<string, bool> source2 = oldState => true.Tuple(newState);
+            State<string, char> source3 = '@'.State<string, char>(); // oldState => 2.Tuple(oldState).
+
+            State<string, string[]> query =
+                from value1 in source1 // source1: State<string, int> = initialState => (1, initialState).
+                from state1 in GetState<string>() // GetState<int>(): State<string, string> = initialState => (initialState, initialState).
+                from value2 in source2 // source2: State<string, bool>3 = initialState => (true, newState).
+                from state2 in GetState<string>() // GetState<int>(): State<string, string> = newState => (newState, newState).
+                from unit in SetState(resetState) // SetState(resetState): State<string, Unit> = newState => (default(Unit), resetState).
+                from state3 in GetState<string>() // GetState(): State<string, string> = resetState => (resetState, resetState).
+                from value3 in source3 // source3: State<string, char> = resetState => (@, resetState).
+                select new string[] { state1, state2, state3 }; // Define query.
+            Tuple<string[], string> result = query(initialState); // Execute query with initial state.
+            result.Item1.ForEach(state => Trace.WriteLine(state)); // initialState newState resetState
+            Trace.WriteLine(result.Item2); // Final state: resetState
+        }
+    }
+
+    public static partial class StateExtensions
+    {
+        // FactorialState: unit -> (unit -> Tuple(unit, unit))
+        // FactorialState: unit -> State<unit, unit>
+        private static State<uint, uint> FactorialState(uint current) =>
+            from state in GetState<uint>() // State<uint, uint>.
+            let product = state
+            let next = current - 1
+            from result in current > 0
+                ? (from unit in SetState(product * current) // State<unit, Unit>.
+                   from value in FactorialState(next) // State<uint, uint>.
+                   select next)
+                : next.State<uint, uint>() // State<uint, uint>.
+            select result;
+
+        public static uint Factorial(uint uInt32)
+        {
+            State<uint, uint> query = FactorialState(uInt32); // Define query.
+            return query(1).Item2; // Execute query, with initial state: 1.
+        }
+
+        // AggregateState: (TAccumulate -> TSource -> TAccumulate) -> (Tuple<TAccumulate, IEnumerable<TSource>> -> Tuple(TAccumulate -> TSource -> TAccumulate, Tuple<TAccumulate, IEnumerable<TSource>>))
+        // AggregateState: TAccumulate -> TSource -> TAccumulate -> State<Tuple<TAccumulate, IEnumerable<TSource>>, TAccumulate -> TSource -> TAccumulate>
+        private static State<Tuple<TAccumulate, IEnumerable<TSource>>, Func<TAccumulate, TSource, TAccumulate>> AggregateState<TSource, TAccumulate>(
+            Func<TAccumulate, TSource, TAccumulate> func) =>
+                from state in GetState<Tuple<TAccumulate, IEnumerable<TSource>>>() // State<Tuple<TAccumulate, IEnumerable<TSource>>, Tuple<TAccumulate, IEnumerable<TSource>>>.
+                let accumulate = state.Item1 // TAccumulate.
+                let source = state.Item2.Share() // IBuffer<TSource>.
+                let sourceIterator = source.GetEnumerator() // IEnumerator<TSource>.
+                from result in sourceIterator.MoveNext()
+                    ? (from unit in SetState(func(accumulate, sourceIterator.Current).Tuple(source.AsEnumerable())) // State<Tuple<TAccumulate, IEnumerable<TSource>>, Unit>.
+                       from value in AggregateState(func) // State<Tuple<TAccumulate, IEnumerable<TSource>>, Func<TAccumulate, TSource, TAccumulate>>.
+                       select func)
+                    : func.State<Tuple<TAccumulate, IEnumerable<TSource>>, Func<TAccumulate, TSource, TAccumulate>>() // State<Tuple<TAccumulate, IEnumerable<TSource>>, Func<TAccumulate, TSource, TAccumulate>>.
+                select result;
+
+        public static TAccumulate Aggregate<TSource, TAccumulate>(
+            IEnumerable<TSource> source, TAccumulate seed, Func<TAccumulate, TSource, TAccumulate> func)
+        {
+            State<Tuple<TAccumulate, IEnumerable<TSource>>, Func<TAccumulate, TSource, TAccumulate>> query =
+                AggregateState(func); // Define query.
+            return query(seed.Tuple(source)).Item2.Item1; // Execute query, with initial state (seed, source).
+        }
+    }
+
+    public static partial class StateExtensions
+    {
+        // PopState: Unit -> (IEnumerable<T> -> Tuple<T, IEnumerable<T>>)
+        // PopState: Unit -> State<IEnumerable<T>, T>
+        internal static State<IEnumerable<T>, T> PopState<T>(Unit unit = null) =>
+            oldStack =>
+            {
+                IEnumerable<T> newStack = oldStack.Share();
+                return newStack.First().Tuple(newStack); // Output new state.
+            };
+
+        // PushState: T -> (IEnumerable<T> -> Tuple<Unit, IEnumerable<T>>)
+        // PushState: T -> State<IEnumerable<T>, Unit>
+        internal static State<IEnumerable<T>, Unit> PushState<T>(T value) =>
+            oldStack =>
+            {
+                IEnumerable<T> newStack = oldStack.Concat(value.Enumerable());
+                return default(Unit).Tuple(newStack); // Output new state.
+            };
+
+        internal static void Stack()
+        {
+            IEnumerable<int> initialStack = Enumerable.Repeat(0, 5);
+            State<IEnumerable<int>, IEnumerable<int>> query =
+                from value1 in PopState<int>() // State<IEnumerable<int>, int>.
+                from unit1 in PushState(1) // State<IEnumerable<int>, Unit>.
+                from unit2 in PushState(2) // State<IEnumerable<int>, Unit>.
+                from stack in GetState<IEnumerable<int>>() // State<IEnumerable<int>, IEnumerable<int>>.
+                from unit3 in SetState(Enumerable.Range(0, 5)) // State<IEnumerable<int>, Unit>.
+                from value2 in PopState<int>() // State<IEnumerable<int>, int>.
+                from value3 in PopState<int>() // State<IEnumerable<int>, int>.
+                from unit4 in PushState(5) // State<IEnumerable<int>, Unit>.
+                select stack; // Define query.
+            Tuple<IEnumerable<int>, IEnumerable<int>> result = query(initialStack); // Execute query with initial state.
+            result.Item1.ForEach(value => Trace.WriteLine(value)); // 0 0 0 0 1 2
+            result.Item2.ForEach(value => Trace.WriteLine(value)); // 0 1 2 5
+        }
     }
 
     public static partial class StateExtensions
     {
         public static TSource Value<TState, TSource>(this State<TState, TSource> source, TState state) =>
-            source(state).Value1;
+            source(state).Item1;
 
         public static TState State<TState, T>(this State<TState, T> source, TState state) =>
-            source(state).Value2;
-    }
-
-    public static class State
-    {
-        public static State<TState, TState> Get<TState>() =>
-            state => state.Lazy(state);
-
-        public static State<TState, Unit> Set<TState>(TState newState) =>
-            oldState => default(Unit).Lazy(newState);
-    }
-
-    public delegate IO<Task<TrafficLightState>> TrafficLightState();
-
-    // Impure.
-    public static partial class StateExtensions
-    {
-        internal static IO<Task<TrafficLightState>> GreenState() =>
-            from _ in TraceHelper.Log(nameof(GreenState))
-            select (from __ in Task.Delay(TimeSpan.FromSeconds(3))
-                    select new TrafficLightState(YellowState));
-
-        internal static IO<Task<TrafficLightState>> YellowState() =>
-            from _ in TraceHelper.Log(nameof(YellowState))
-            select (from __ in Task.Delay(TimeSpan.FromSeconds(1))
-                    select new TrafficLightState(RedState));
-
-        internal static IO<Task<TrafficLightState>> RedState() =>
-            from _ in TraceHelper.Log(nameof(RedState))
-            select (from __ in Task.Delay(TimeSpan.FromSeconds(2))
-                    select default(TrafficLightState));
-    }
-
-    // Impure.
-    public static partial class StateExtensions
-    {
-        internal static State<IO<Task<TrafficLightState>>, Unit> MoveNext() =>
-            ((Unit)null).State<IO<Task<TrafficLightState>>, Unit>(state => async () =>
-                {
-                    TrafficLightState next = await (state ?? GreenState())();
-                    return next == null ? null : await next()();
-                });
-
-        internal static IO<Task<TrafficLightState>> TrafficLight(IO<Task<TrafficLightState>> state = null)
-        {
-            State<IO<Task<TrafficLightState>>, Unit> query =
-                from green in MoveNext()
-                from yellow in MoveNext()
-                from red in MoveNext()
-                select (Unit)null; // Deferred and lazy.
-            return query.State(state); // Final state.
-        }
-    }
-
-    // Impure.
-    public static partial class StateExtensions
-    {
-        internal static async void ExecuteTrafficLight() => await TrafficLight()();
-    }
-
-    public static partial class EnumerableExtensions
-    {
-        public static Lazy<T, IEnumerable<T>> Pop<T>(this IEnumerable<T> source) =>
-            // The execution of First is deferred, so that Pop is still pure.
-            new Lazy<T, IEnumerable<T>>(() => source.First().Tuple(source.Skip(1)));
-
-        public static Lazy<T, IEnumerable<T>> Push<T>(this IEnumerable<T> source, T value) =>
-            value.Lazy(source.Concat(value.Enumerable()));
-    }
-
-    // Impure.
-    internal static partial class StateQuery
-    {
-        internal static State<IEnumerable<T>, T> Pop<T>() => source => source.Pop();
-
-        internal static State<IEnumerable<T>, T> Push<T>(T value) => source => source.Push(value);
-
-        internal static IEnumerable<int> Stack(IEnumerable<int> state = null)
-        {
-            state = state ?? Enumerable.Empty<int>();
-            State<IEnumerable<int>, IEnumerable<int>> query =
-                from value1 in Push(1)
-                from value2 in Push(2)
-                from value3 in Pop<int>()
-                from stack1 in State.Set(Enumerable.Range(0, 3))
-                from value4 in Push(4)
-                from value5 in Pop<int>()
-                from stack2 in State.Get<IEnumerable<int>>()
-                select stack2;
-            return query.Value(state);
-        }
-    }
-
-    // Impure.
-    internal class TrafficLightStateMachine
-    {
-        internal ITrafficLightState State { get; private set; }
-
-        internal async Task MoveNext(ITrafficLightState state = null)
-        {
-            this.State = state ?? new GreenState();
-            await this.State.Handle(this);
-        }
-
-        internal static async void Execute() => await new TrafficLightStateMachine().MoveNext();
-    }
-
-    internal interface ITrafficLightState // State
-    {
-        Task Handle(TrafficLightStateMachine light);
-    }
-
-    // Impure.
-    internal class GreenState : ITrafficLightState // ConcreteStateA
-    {
-        public async Task Handle(TrafficLightStateMachine light)
-        {
-            TraceHelper.Log(nameof(GreenState)).Invoke();
-            await Task.Delay(3000);
-            await light.MoveNext(new YellowState());
-        }
-    }
-
-    // Impure.
-    internal class YellowState : ITrafficLightState // ConcreteStateB
-    {
-        public async Task Handle(TrafficLightStateMachine light)
-        {
-            TraceHelper.Log(nameof(YellowState)).Invoke();
-            await Task.Delay(1000);
-            await light.MoveNext(new RedState());
-        }
-    }
-
-    // Impure.
-    internal class RedState : ITrafficLightState // ConcreteStateC
-    {
-        public async Task Handle(TrafficLightStateMachine light)
-        {
-            TraceHelper.Log(nameof(RedState)).Invoke();
-            await Task.Delay(2000);
-            // await light.MoveNext(new GreenState());
-        }
+            source(state).Item2;
     }
 }

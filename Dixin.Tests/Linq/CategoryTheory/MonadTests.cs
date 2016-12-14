@@ -13,6 +13,7 @@
 
     using static Dixin.Linq.CategoryTheory.Functions;
 
+    using Enumerable = System.Linq.Enumerable;
     using FuncExtensions = Dixin.Linq.CategoryTheory.FuncExtensions;
     using TaskExtensions = Dixin.Linq.CategoryTheory.TaskExtensions;
 
@@ -415,20 +416,19 @@
         {
             bool isExecuted1 = false;
             bool isExecuted2 = false;
-            Func<State<string, int>> f1 = () => 1.State<string, int>(
-                state => { isExecuted1 = true; return state + "a"; });
+            Func<State<string, int>> f1 = () => state => { isExecuted1 = true; return 1.Tuple(state + "a"); };
             Func<int, Func<int, Func<string, int>>> f2 =
                 x => y => z => { isExecuted2 = true; return x + y + z.Length; };
             State<string, int> query1 = from x in f1()
-                                        from _ in State.Set(x.ToString(CultureInfo.InvariantCulture))
-                                        from y in 2.State<string, int>(state => "b" + state)
-                                        from z in State.Get<string>()
+                                        from _ in StateExtensions.SetState(x.ToString(CultureInfo.InvariantCulture))
+                                        from y in new State<string, int>(state => 2.Tuple("b" + state))
+                                        from z in StateExtensions.GetState<string>()
                                         select f2(x)(y)(z);
             Assert.IsFalse(isExecuted1); // Deferred and lazy.
             Assert.IsFalse(isExecuted2); // Deferred and lazy.
-            Lazy<int, string> result1 = query1("state"); // Execution.
-            Assert.AreEqual(1 + 2 + ("b" + "1").Length, result1.Value1);
-            Assert.AreEqual("b" + "1", result1.Value2);
+            Tuple<int, string> result1 = query1("state"); // Execution.
+            Assert.AreEqual(1 + 2 + ("b" + "1").Length, result1.Item1);
+            Assert.AreEqual("b" + "1", result1.Item2);
             Assert.IsTrue(isExecuted1);
             Assert.IsTrue(isExecuted2);
 
@@ -450,6 +450,42 @@
             right = M.SelectMany(x => addOne(x).SelectMany(addTwo, False), False);
             Assert.AreEqual(left.Value("a"), right.Value("a"));
             Assert.AreEqual(left.State("a"), right.State("a"));
+        }
+
+        [TestMethod]
+        public void FactorialStateTest()
+        {
+            Func<uint, uint> factorial = null; // Must have to be compiled.
+            factorial = x => x == 0 ? 1U : x * factorial(x - 1U);
+
+            Assert.AreEqual(factorial(0), StateExtensions.Factorial(0));
+            Assert.AreEqual(factorial(1), StateExtensions.Factorial(1));
+            Assert.AreEqual(factorial(2), StateExtensions.Factorial(2));
+            Assert.AreEqual(factorial(3), StateExtensions.Factorial(3));
+            Assert.AreEqual(factorial(4), StateExtensions.Factorial(4));
+            Assert.AreEqual(factorial(5), StateExtensions.Factorial(5));
+            Assert.AreEqual(factorial(10), StateExtensions.Factorial(10));
+        }
+
+        [TestMethod]
+        public void AggregateStateTest()
+        {
+            Assert.AreEqual(
+                Enumerable.Aggregate(Enumerable.Range(0, 5), 0, (a, b) => a + b), 
+                StateExtensions.Aggregate(Enumerable.Range(0, 5), 0, (a, b) => a + b));
+            Assert.AreEqual(
+                Enumerable.Aggregate(Enumerable.Range(1, 5), 1, (a, b) => a + b),
+                StateExtensions.Aggregate(Enumerable.Range(1, 5), 1, (a, b) => a + b));
+        }
+
+        [TestMethod]
+        public void StateMachineTest()
+        {
+            IEnumerable<int> expected = Enumerable.Range(0, 5).Push(5).Item2.Pop().Item2;
+            State<IEnumerable<int>, int> query = from unit in StateExtensions.PushState(5)
+                                                 from value in StateExtensions.PopState<int>()
+                                                 select value;
+            EnumerableAssert.AreSequentialEqual(expected, query(Enumerable.Range(0, 5)).Item2);
         }
 
         [TestMethod]
@@ -592,42 +628,42 @@
                                 from z in "abc".Try()
                                 select f(x)(y)(z);
             Assert.IsFalse(isExecuted1); // Deferred and lazy.
-            Assert.AreEqual((1 + 2 + "abc".Length).ToString(CultureInfo.InstalledUICulture), query().Value); // Execution.
+            Assert.AreEqual((1 + 2 + "abc".Length).ToString(CultureInfo.InstalledUICulture), query.Value); // Execution.
             Assert.IsTrue(isExecuted1);
 
             // Monad law 1: m.Monad().SelectMany(f) == f(m)
             Func<int, Try<int>> addOne = x => (x + 1).Try();
             Try<int> left = 1.Try().SelectMany(addOne, False);
             Try<int> right = addOne(1);
-            Assert.AreEqual(left.Invoke().Value, right.Invoke().Value);
+            Assert.AreEqual(left.Value, right.Value);
             // Monad law 2: M.SelectMany(Monad) == M
             Try<int> M = 1.Try();
             left = M.SelectMany(TryExtensions.Try, False);
             right = M;
-            Assert.AreEqual(left.Invoke().Value, right.Invoke().Value);
+            Assert.AreEqual(left.Value, right.Value);
             // Monad law 3: M.SelectMany(f1).SelectMany(f2) == M.SelectMany(x => f1(x).SelectMany(f2))
             Func<int, Try<int>> addTwo = x => (x + 2).Try();
             left = M.SelectMany(addOne, False).SelectMany(addTwo, False);
             right = M.SelectMany(x => addOne(x).SelectMany(addTwo, False), False);
-            Assert.AreEqual(left.Invoke(), right.Invoke());
+            Assert.AreEqual(left.Value, right.Value);
         }
 
         [TestMethod]
         public void TryStrictFactorialTest()
         {
-            TryResult<int> result = TryExtensions.StrictFactorial(null);
+            Try<int> result = TryExtensions.TryStrictFactorial(null);
             Assert.IsTrue(result.HasException);
             Assert.IsNotNull(result.Exception);
             Assert.IsInstanceOfType(result.Exception, typeof(ArgumentNullException));
-            result = TryExtensions.StrictFactorial(0);
+            result = TryExtensions.TryStrictFactorial(0);
             Assert.IsTrue(result.HasException);
             Assert.IsNotNull(result.Exception);
             Assert.IsInstanceOfType(result.Exception, typeof(ArgumentOutOfRangeException));
-            result = TryExtensions.StrictFactorial(3);
+            result = TryExtensions.TryStrictFactorial(3);
             Assert.IsFalse(result.HasException);
             Assert.IsNull(result.Exception);
             Assert.AreEqual(6, result.Value);
-            result = TryExtensions.StrictFactorial(-1);
+            result = TryExtensions.TryStrictFactorial(-1);
             Assert.IsTrue(result.HasException);
             Assert.IsNotNull(result.Exception);
             Assert.IsInstanceOfType(result.Exception, typeof(ArgumentOutOfRangeException));
@@ -636,14 +672,14 @@
         [TestMethod]
         public void TryFactorialTest()
         {
-            TryResult<string> result = TryExtensions.Factorial(null);
+            Try<string> result = TryExtensions.Factorial(null);
             Assert.IsFalse(result.HasException);
             Assert.IsNull(result.Exception);
-            Assert.AreEqual("0", result.Value);
+            Assert.AreEqual("1", result.Value);
             result = TryExtensions.Factorial("0");
             Assert.IsFalse(result.HasException);
             Assert.IsNull(result.Exception);
-            Assert.AreEqual("0", result.Value);
+            Assert.AreEqual("1", result.Value);
             result = TryExtensions.Factorial("3");
             Assert.IsFalse(result.HasException);
             Assert.IsNull(result.Exception);

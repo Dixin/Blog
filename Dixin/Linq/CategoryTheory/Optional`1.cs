@@ -20,7 +20,7 @@
                 // Message is copied from mscorlib.dll string table, where key is InvalidOperation_NoValue.
                 if (!this.HasValue)
                 {
-                    throw new InvalidOperationException("Optional object must have a value.");
+                    throw new InvalidOperationException($"{nameof(Optional<T>)} object must have a value.");
                 }
                 return this.factory.Value.Item2;
             }
