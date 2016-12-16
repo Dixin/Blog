@@ -906,11 +906,11 @@ f2 := λy.Add y 1
 Sequence := λa.λb.b
 Sequence (Add 1 2) (Add 3 4)
 
-  Sequence Ω (Add 3 4)
-= Sequence (ω ω) (Add 3 4)
-= Sequence ((λx.x x) (λx.x x)) (Add 3 4)
-= Sequence ((λx.x x) (λx.x x)) (Add 3 4)
-= ...
+  Sequence Ω x
+≡ Sequence (ω ω) x
+≡ Sequence ((λx.x x) (λx.x x)) x
+≡ Sequence ((λx.x x) (λx.x x)) x
+≡ ...
 
 IsHalting := λf.λx.If (...f halts on x...) (λx.True) (λx.False)
 
