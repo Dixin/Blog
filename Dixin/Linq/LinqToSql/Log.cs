@@ -1,10 +1,28 @@
 ﻿namespace Dixin.Linq.LinqToSql
 {
+    using System;
     using System.Data.Common;
     using System.Diagnostics;
+    using System.IO;
     using System.Linq;
+    using System.Text;
 
-    using Dixin.IO;
+    public class CustomTextWriter : TextWriter
+    {
+        private readonly Action<string> write;
+
+        public CustomTextWriter(Action<string> write, Encoding encoding = null)
+        {
+            this.write = write;
+            this.Encoding = encoding ?? Encoding.Default;
+        }
+
+        public override void Write(string value) => this.write(value);
+
+        public override void Write(char[] buffer, int index, int count) => this.Write(new string(buffer, index, count));
+
+        public override Encoding Encoding { get; }
+    }
 
     internal static partial class Log
     {
@@ -22,6 +40,7 @@
                 source.ForEach(category => Trace.WriteLine(category.Name)); // Execute query.
             }
         }
+
         internal static void DataContextLog()
         {
             using (AdventureWorks adventureWorks = new AdventureWorks())

@@ -8,8 +8,6 @@
     using System.Xml;
     using System.Xml.Linq;
 
-    using Dixin.Common;
-
     internal static partial class Modeling
     {
         internal static void CreateAndSerialize()
@@ -138,7 +136,7 @@
                 reader.MoveToContent();
                 while (reader.Read())
                 {
-                    if (reader.NodeType == XmlNodeType.Element && reader.Name.EqualsOrdinal("item"))
+                    if (reader.NodeType == XmlNodeType.Element && reader.Name.Equals("item", StringComparison.Ordinal))
                     {
                         yield return (XElement)XNode.ReadFrom(reader);
                     }

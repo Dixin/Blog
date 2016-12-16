@@ -7,8 +7,6 @@
     using System.Diagnostics.CodeAnalysis;
     using System.Reflection;
 
-    using Dixin.Reflection;
-
     internal abstract class Sequence
     {
         [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
@@ -201,6 +199,36 @@
         }
     }
 
+    public static partial class TypeExtensions
+    {
+        public static bool IsAssignableTo(this Type from, Type to)
+        {
+            if (to.IsAssignableFrom(from))
+            {
+                return true;
+            }
+
+            if (!to.IsGenericTypeDefinition)
+            {
+                return false;
+            }
+
+            if (from.IsGenericType && from.GetGenericTypeDefinition() == to)
+            {
+                return true; // Collection<int> is assignable to Collection<>.
+            }
+
+            if (to.IsInterface && from.GetInterfaces().Any(
+                @interface => @interface.IsGenericType && @interface.GetGenericTypeDefinition() == to))
+            {
+                return true; // Collection<>/Collection<int> assignable to IEnumerable<>/ICollection<>.
+            }
+
+            Type baseOfFrom = from.BaseType;
+            return baseOfFrom != null && IsAssignableTo(baseOfFrom, to);
+        }
+    }
+
     internal static partial class IteratorPattern
     {
         internal static IEnumerable<Type> NonGenericSequences(Assembly assembly)
@@ -218,7 +246,7 @@
         {
             foreach (Type nonGenericSequence in NonGenericSequences(typeof(object).Assembly)) // mscorlib.dll.
             {
-                //Console.WriteLine(nonGenericSequence.FullName);
+                // Console.WriteLine(nonGenericSequence.FullName);
             }
             // System.Array
             // System.Collections.ArrayList

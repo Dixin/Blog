@@ -10,9 +10,14 @@ namespace Dixin.Linq.EntityFramework
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
 
-    using Dixin.Common;
-
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+
+    public static partial class StringExtensions
+    {
+        public static string ToRowVersionString(this byte[] rowVersion) =>
+            $"0x{BitConverter.ToString(rowVersion).Replace("-", string.Empty)}";
+            // $"0x{BitConverter.ToUInt64(rowVersion.Reverse().ToArray(), 0).ToString("X16")}";
+    }
 
     internal partial class DbReaderWriter : IDisposable
     {

@@ -7,7 +7,68 @@
 
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
-    using static Dixin.TransientFaultHandling.Retry;
+    using static Retry;
+
+    public class ExceptionDetection : ITransientErrorDetectionStrategy
+    {
+        private readonly Func<Exception, bool> isTransient;
+
+        public ExceptionDetection(Func<Exception, bool> isTransient = null)
+        {
+            this.isTransient = isTransient ?? (_ => true);
+        }
+
+        public bool IsTransient(Exception exception) => this.isTransient(exception);
+    }
+
+    public static partial class Retry
+    {
+        public static TResult Execute<TResult>(
+            Func<TResult> func,
+            RetryStrategy retryStrategy = null,
+            Func<Exception, bool> isTransient = null,
+            EventHandler<RetryingEventArgs> retryingHandler = null)
+        {
+            RetryPolicy retryPolicy = new RetryPolicy(
+                new ExceptionDetection(isTransient), retryStrategy ?? RetryStrategy.DefaultFixed);
+            if (retryingHandler != null)
+            {
+                retryPolicy.Retrying += retryingHandler;
+            }
+
+            return retryPolicy.ExecuteAction(func);
+        }
+    }
+
+    public static partial class Retry
+    {
+        public static FixedInterval FixedInterval(
+            int? retryCount = null,
+            TimeSpan? retryInterval = null,
+            bool? firstFastRetry = null,
+            [CallerMemberName] string name = null) => 
+                new FixedInterval(
+                    name,
+                    retryCount ?? RetryStrategy.DefaultClientRetryCount,
+                    retryInterval ?? RetryStrategy.DefaultRetryInterval,
+                    firstFastRetry ?? RetryStrategy.DefaultFirstFastRetry);
+
+        public static void Execute(
+            Action action,
+            RetryStrategy retryStrategy = null,
+            Func<Exception, bool> isTransient = null,
+            EventHandler<RetryingEventArgs> retryingHandler = null)
+        {
+            RetryPolicy retryPolicy = new RetryPolicy(
+                new ExceptionDetection(isTransient), retryStrategy ?? RetryStrategy.DefaultFixed);
+            if (retryingHandler != null)
+            {
+                retryPolicy.Retrying += retryingHandler;
+            }
+
+            retryPolicy.ExecuteAction(action);
+        }
+    }
 
     public static partial class EnumerableX
     {
