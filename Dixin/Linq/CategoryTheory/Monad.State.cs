@@ -39,8 +39,8 @@
                     TState newState = value.Item2;
                     return selector(value.Item1).Tuple(newState); // Output new state.
                 };
-        // Equivalent to:            
-        // source.SelectMany(value => selector(value).State<TState, TResult>(), (value, result) => result);
+                // Equivalent to:            
+                // source.SelectMany(value => selector(value).State<TState, TResult>(), (value, result) => result);
     }
 
     public static partial class StateExtensions
@@ -87,8 +87,8 @@
         private static State<uint, uint> FactorialState(uint current) =>
             from state in GetState<uint>() // State<uint, uint>.
             let product = state
-            let next = current - 1
-            from result in current > 0
+            let next = current - 1U
+            from result in current > 0U
                 ? (from unit in SetState(product * current) // State<unit, Unit>.
                    from value in FactorialState(next) // State<uint, uint>.
                    select next)

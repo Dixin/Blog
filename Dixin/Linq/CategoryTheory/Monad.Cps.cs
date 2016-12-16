@@ -1,46 +1,34 @@
 ﻿namespace Dixin.Linq.CategoryTheory
 {
     using System;
+    using System.IO;
+    using System.Text;
+
+    using Microsoft.FSharp.Core;
 
     // Cps: (T -> TContinuation>) -> TContinuation
     public delegate TContinuation Cps<TContinuation, out T>(Func<T, TContinuation> continuation);
 
-    public static partial class Cps
+    public static partial class CpsExtensions
     {
-        // Sum: (int, int) -> int
-        // Sum = (x, y) => x + y
-        internal static int Sum(int x, int y) => x + y;
+        // Sqrt: int -> double
+        internal static double Sqrt(int int32) => Math.Sqrt(int32);
+
+        // SqrtWithCallback: (int, double -> TContinuation) -> TContinuation
+        internal static TContinuation SqrtWithCallback<TContinuation>(
+            int int32, Func<double, TContinuation> continuation) =>
+                continuation(Math.Sqrt(int32));
     }
 
-    public static partial class Cps
+    public static partial class CpsExtensions
     {
-        // SumWithCallback: (int, int, int -> TContinuation) -> TContinuation
-        // SumWithCallback = (x, y, callback) => callback(x + y)
-        internal static TContinuation SumWithCallback<TContinuation>(int x, int y, Func<int, TContinuation> callback) =>
-            callback(x + y);
+        // SqrtWithCallback: int -> (double -> TContinuation) -> TContinuation
+        internal static Func<Func<double, TContinuation>, TContinuation> SqrtWithCallback<TContinuation>(int int32) =>
+            continuation => continuation(Math.Sqrt(int32));
 
-        // SumWithCallback: (int, int) -> (int -> TContinuation) -> TContinuation
-        // SumWithCallback = (x, y) => callback => callback(x + y)
-        internal static Func<Func<int, TContinuation>, TContinuation> SumWithCallback<TContinuation>(int x, int y) =>
-            callback => callback(x + y);
-
-        // SumCps: (int, int) -> Cps<TContinuation, int>
-        // SumCps = (x, y) => continuation => continuation(x + y)
-        internal static Cps<TContinuation, int> SumCps<TContinuation>(int x, int y) =>
-            continuation => continuation(x + y);
-
-        // SquareCps: int -> Cps<TContinuation, int>
-        // SquareCps = x => continuation => continuation(x * x)
-        internal static Cps<TContinuation, int> SquareCps<TContinuation>(int x) =>
-            continuation => continuation(x * x);
-
-        // SumOfSquaresCps: (int, int) -> Cps<TContinuation, int>
-        // SumOfSquaresCps = (x, y) => continuation => SquareCps(x)(xx => SquareCps(y)(yy => SumCps(xx)(yy)(continuation)));
-        internal static Cps<TContinuation, int> SumOfSquaresCps<TContinuation>(int x, int y) =>
-            continuation =>
-                SquareCps<TContinuation>(x)(xx =>
-                    SquareCps<TContinuation>(y)(yy =>
-                        SumCps<TContinuation>(xx, yy)(continuation)));
+        // SqrtCps: int -> Cps<TContinuation, double>
+        internal static Cps<TContinuation, double> SqrtCps<TContinuation>(int int32) =>
+            continuation => continuation(Math.Sqrt(int32));
     }
 
     public static partial class CpsExtensions
@@ -55,7 +43,7 @@
                         continuation(resultSelector(value, result))));
 
         // Wrap: TSource -> Cps<TContinuation, TSource>
-        public static Cps<TContinuation, TSource> Cps<TContinuation, TSource>(this TSource value) => 
+        public static Cps<TContinuation, TSource> Cps<TContinuation, TSource>(this TSource value) =>
             continuation => continuation(value);
 
         // Select: (Cps<TContinuation, TSource>, TSource -> TResult) -> Cps<TContinuation, TResult>
@@ -68,26 +56,68 @@
                 // continuation => source(continuation.o(selector));
     }
 
-    public static partial class Cps
+    public static partial class CpsExtensions
     {
-        internal static void SumOfSquare(int x, int y)
-        {
-            Cps<string, int> query = from xx in SquareCps<string>(x)
-                                     from yy in SquareCps<string>(y)
-                                     from sum in SumCps<string>(xx, yy)
-                                     select sum;
-            string result = query(continuation: int32 => int32.ToString());
-        }
+        // SquareCps: int -> Cps<TContinuation, int>
+        internal static Cps<TContinuation, int> SquareCps<TContinuation>(int x) =>
+            continuation => continuation(x * x);
 
-        internal static Cps<TContinuation, int> FibonacciCps<TContinuation>(int int32) =>
-            int32 > 1
-                ? (from a in FibonacciCps<TContinuation>(int32 - 1)
-                   from b in FibonacciCps<TContinuation>(int32 - 2)
+        // SumCps: (int, int) -> Cps<TContinuation, int>
+        internal static Cps<TContinuation, int> SumCps<TContinuation>(int a, int b) =>
+            continuation => continuation(a + b);
+
+#if DEMO
+        // SumOfSquaresCps: (int, int) -> Cps<TContinuation, int>
+        internal static Cps<TContinuation, int> SumOfSquaresCps<TContinuation>(int a, int b) =>
+            continuation =>
+                SquareCps<TContinuation>(a)(squareOfA =>
+                SquareCps<TContinuation>(b)(squareOfB =>
+                SumCps<TContinuation>(squareOfA, squareOfB)(continuation)));
+#endif
+
+        internal static Cps<TContinuation, int> SumOfSquaresCps<TContinuation>(int a, int b) =>
+            from squareOfA in SquareCps<TContinuation>(a) // Cps<TContinuation, int>.
+            from squareOfB in SquareCps<TContinuation>(b) // Cps<TContinuation, int>.
+            from sum in SumCps<TContinuation>(squareOfA, squareOfB) // Cps<TContinuation, int>.
+            select sum;
+
+        internal static Cps<TContinuation, uint> FactorialCps<TContinuation>(uint uInt32) =>
+            uInt32 > 0
+                ? (from nextProduct in FactorialCps<TContinuation>(uInt32 - 1U)
+                   select uInt32 * nextProduct)
+                : 1U.Cps<TContinuation, uint>();
+
+        internal static Cps<TContinuation, uint> FibonacciCps<TContinuation>(uint uInt32) =>
+            uInt32 > 1
+                ? (from a in FibonacciCps<TContinuation>(uInt32 - 1U)
+                   from b in FibonacciCps<TContinuation>(uInt32 - 2U)
                    select a + b)
-                : 0.Cps<TContinuation, int>();
-        // continuation => int32 > 1
-        //    ? continuation(FibonacciCps<int>(int32 - 1)(Id) + FibonacciCps<int>(int32 - 2)(Id))
-        //    : continuation(0);
+                : uInt32.Cps<TContinuation, uint>();
+            // Equivalent to:
+            // continuation => uInt32 > 1U
+            //    ? continuation(FibonacciCps<int>(uInt32 - 1U)(Id) + FibonacciCps<int>(uInt32 - 2U)(Id))
+            //    : continuation(uInt32);
+
+        public static Cps<TContinuation, T> Cps<TContinuation, T>(Func<T> function) =>
+            continuation => continuation(function());
+
+        public static Cps<TContinuation, Unit> Cps<TContinuation>(Action action) =>
+            continuation =>
+            {
+                action();
+                return continuation(default(Unit));
+            };
+
+        internal static void Workflow<TContinuation>(Func<string, TContinuation> continuation)
+        {
+            Cps<TContinuation, string> query =
+                from filePath in Cps<TContinuation, string>(Console.ReadLine) // Cps<TContinuation, string>.
+                from encodingName in Cps<TContinuation, string>(Console.ReadLine) // Cps<TContinuation, string>.
+                from encoding in Cps<TContinuation, Encoding>(() => Encoding.GetEncoding(encodingName)) // Cps<TContinuation, Encoding>.
+                from fileContent in Cps<TContinuation, string>(() => File.ReadAllText(filePath, encoding)) // Cps<TContinuation, string>.
+                select fileContent; // Define query.
+            TContinuation result = query(continuation); // Execute query.
+        }
     }
 
     public static partial class CpsExtensions

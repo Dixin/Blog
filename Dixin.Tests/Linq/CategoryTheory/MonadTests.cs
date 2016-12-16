@@ -481,7 +481,7 @@
         [TestMethod]
         public void StateMachineTest()
         {
-            IEnumerable<int> expected = Enumerable.Range(0, 5).Push(5).Item2.Pop().Item2;
+            IEnumerable<int> expected = Enumerable.Range(0, 5).Append(5).Skip(1);
             State<IEnumerable<int>, int> query = from unit in StateExtensions.PushState(5)
                                                  from value in StateExtensions.PopState<int>()
                                                  select value;
@@ -612,6 +612,21 @@
             left = M.SelectMany(addOne, False).SelectMany(addTwo, False);
             right = M.SelectMany(x => addOne(x).SelectMany(addTwo, False), False);
             Assert.AreEqual(left.Invoke(), right.Invoke());
+        }
+
+        [TestMethod]
+        public void FibonacciContinuationTest()
+        {
+            Func<uint, uint> fibonacci = null; // Must have. So that fibonacci can recursively refer itself.
+            fibonacci = x => x > 1U ? fibonacci(x - 1) + fibonacci(x - 2) : x;
+
+            Assert.AreEqual(fibonacci(0U), CpsExtensions.FibonacciCps<uint>(0U)(Id));
+            Assert.AreEqual(fibonacci(1U), CpsExtensions.FibonacciCps<uint>(1U)(Id));
+            Assert.AreEqual(fibonacci(2U), CpsExtensions.FibonacciCps<uint>(2U)(Id));
+            Assert.AreEqual(fibonacci(3U), CpsExtensions.FibonacciCps<uint>(3U)(Id));
+            Assert.AreEqual(fibonacci(4U), CpsExtensions.FibonacciCps<uint>(4U)(Id));
+            Assert.AreEqual(fibonacci(5U), CpsExtensions.FibonacciCps<uint>(5U)(Id));
+            Assert.AreEqual(fibonacci(10U), CpsExtensions.FibonacciCps<uint>(10U)(Id));
         }
 
         [TestMethod]

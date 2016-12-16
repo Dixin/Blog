@@ -122,16 +122,16 @@
     public static partial class MonadExtensions
     {
         internal static void Workflow<TMonad<>, T1, T2, T3, T4, TResult>( // Non generic TMonad can work too.
-            Func<TMonad<T1>> step1,
-            Func<TMonad<T2>> step2,
-            Func<TMonad<T3>> step3,
-            Func<TMonad<T4>> step4,
+            Func<TMonad<T1>> operation1,
+            Func<TMonad<T2>> operation2,
+            Func<TMonad<T3>> operation3,
+            Func<TMonad<T4>> operation4,
             Func<T1, T2, T3, T4, TResult> resultSelector) where TMonad<> : IMonad<TMonad<>>
         {
-            TMonad<TResult> query = from /* T1 */ value1 in /* TMonad<T1> */ step1()
-                                    from /* T2 */ value2 in /* TMonad<T1> */ step2()
-                                    from /* T3 */ value3 in /* TMonad<T1> */ step3()
-                                    from /* T4 */ value4 in /* TMonad<T1> */ step4()
+            TMonad<TResult> query = from /* T1 */ value1 in /* TMonad<T1> */ operation1()
+                                    from /* T2 */ value2 in /* TMonad<T1> */ operation2()
+                                    from /* T3 */ value3 in /* TMonad<T1> */ operation3()
+                                    from /* T4 */ value4 in /* TMonad<T1> */ operation4()
                                     select /* TResult */ resultSelector(value1, value2, value3, value4); // Define query.
         }
     }
@@ -307,31 +307,31 @@
         }
 
         internal static void Workflow<T1, T2, T3, T4>(
-            Func<IEnumerable<T1>> step1,
-            Func<IEnumerable<T2>> step2,
-            Func<IEnumerable<T3>> step3,
-            Func<T1, T2, T3, IEnumerable<T4>> step4)
+            Func<IEnumerable<T1>> source1,
+            Func<IEnumerable<T2>> source2,
+            Func<IEnumerable<T3>> source3,
+            Func<T1, T2, T3, IEnumerable<T4>> source4)
         {
-            IEnumerable<T4> query = from value1 in step1()
-                                    from value2 in step2()
-                                    from value3 in step3()
-                                    from value4 in step4(value1, value2, value3)
+            IEnumerable<T4> query = from value1 in source1()
+                                    from value2 in source2()
+                                    from value3 in source3()
+                                    from value4 in source4(value1, value2, value3)
                                     select value4; // Define query.
             query.ForEach(result => Trace.WriteLine(result)); // Execute query.
         }
 
         internal static void CompiledWorkflow<T1, T2, T3, T4>(
-            Func<IEnumerable<T1>> step1,
-            Func<IEnumerable<T2>> step2,
-            Func<IEnumerable<T3>> step3,
-            Func<T1, T2, T3, IEnumerable<T4>> step4)
+            Func<IEnumerable<T1>> source1,
+            Func<IEnumerable<T2>> source2,
+            Func<IEnumerable<T3>> source3,
+            Func<T1, T2, T3, IEnumerable<T4>> source4)
         {
             IEnumerable<T4> query =
-                step1()
-                    .SelectMany(value1 => step2(), (value1, value2) => new { Value1 = value1, Value2 = value2 })
-                    .SelectMany(result2 => step3(), (result2, value3) => new { Result2 = result2, Value3 = value3 })
+                source1()
+                    .SelectMany(value1 => source2(), (value1, value2) => new { Value1 = value1, Value2 = value2 })
+                    .SelectMany(result2 => source3(), (result2, value3) => new { Result2 = result2, Value3 = value3 })
                     .SelectMany(
-                        result3 => step4(result3.Result2.Value1, result3.Result2.Value2, result3.Value3),
+                        result3 => source4(result3.Result2.Value1, result3.Result2.Value2, result3.Value3),
                         (result3, value4) => value4); // Define query.
             query.ForEach(result => Trace.WriteLine(result)); // Execute query.
         }

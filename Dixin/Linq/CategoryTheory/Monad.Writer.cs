@@ -3,32 +3,33 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Globalization;
+    using System.IO;
     using System.Linq;
+    using System.Text;
 
     public abstract class WriterBase<TContent, T>
     {
-        private readonly Lazy<TContent, T> lazy;
+        private readonly Lazy<Tuple<TContent, T>> lazy;
 
         protected WriterBase(Func<Tuple<TContent, T>> writer, IMonoid<TContent> monoid)
         {
-            this.lazy = new Lazy<TContent, T>(writer);
+            this.lazy = new Lazy<Tuple<TContent, T>>(writer);
             this.Monoid = monoid;
         }
 
-        public TContent Content => this.lazy.Value1;
+        public TContent Content => this.lazy.Value.Item1;
 
-        public T Value => this.lazy.Value2;
+        public T Value => this.lazy.Value.Item2;
 
         public IMonoid<TContent> Monoid { get; }
     }
 
-    public class Writer<TContent, T> : WriterBase<IEnumerable<TContent>, T>
+    public class Writer<TEntry, T> : WriterBase<IEnumerable<TEntry>, T>
     {
-        private static readonly IMonoid<IEnumerable<TContent>> ContentMonoid = 
-            new EnumerableConcatMonoid<TContent>();
+        private static readonly IMonoid<IEnumerable<TEntry>> ContentMonoid =
+            new EnumerableConcatMonoid<TEntry>();
 
-        public Writer(Func<Tuple<IEnumerable<TContent>, T>> writer) : base(writer, ContentMonoid)
+        public Writer(Func<Tuple<IEnumerable<TEntry>, T>> writer) : base(writer, ContentMonoid)
         {
         }
 
@@ -39,59 +40,56 @@
 
     public static partial class WriterExtensions
     {
-        public static Writer<TContent, TResult> SelectMany<TContent, TSource, TSelector, TResult>(
-            this Writer<TContent, TSource> source,
-            Func<TSource, Writer<TContent, TSelector>> selector,
+        // SelectMany: (Writer<TEntry, TSource>, TSource -> Writer<TEntry, TSelector>, (TSource, TSelector) -> TResult) -> Writer<TEntry, TResult>
+        public static Writer<TEntry, TResult> SelectMany<TEntry, TSource, TSelector, TResult>(
+            this Writer<TEntry, TSource> source,
+            Func<TSource, Writer<TEntry, TSelector>> selector,
             Func<TSource, TSelector, TResult> resultSelector) =>
-                new Writer<TContent, TResult>(() =>
+                new Writer<TEntry, TResult>(() =>
                 {
-                    Writer<TContent, TSelector> result = selector(source.Value);
+                    Writer<TEntry, TSelector> result = selector(source.Value);
                     return source.Monoid.Multiply(source.Content, result.Content).Tuple(
                         resultSelector(source.Value, result.Value));
                 });
 
-        // Wrap: TSource -> Writer<TContent, TSource>
-        public static Writer<TContent, TSource> Writer<TContent, TSource>(this TSource value) =>
-            new Writer<TContent, TSource>(value);
+        // Wrap: TSource -> Writer<TEntry, TSource>
+        public static Writer<TEntry, TSource> Writer<TEntry, TSource>(this TSource value) =>
+            new Writer<TEntry, TSource>(value);
+
+        // Select: (Writer<TEnvironment, TSource>, TSource -> TResult) -> Writer<TEnvironment, TResult>
+        public static Writer<TEntry, TResult> Select<TEntry, TSource, TResult>(
+            this Writer<TEntry, TSource> source, Func<TSource, TResult> selector) =>
+                source.SelectMany(value => selector(value).Writer<TEntry, TResult>(), (value, result) => result);
     }
 
     public static partial class WriterExtensions
     {
-        public static Writer<string, TSource> LogWriter<TSource>(this TSource value, params string[] logs) =>
-            new Writer<string, TSource>(() =>
-                logs.Select(log => $"{DateTime.Now.ToString("o", CultureInfo.InvariantCulture)} {log}").Tuple(value));
-    }
+        public static Writer<string, TSource> LogWriter<TSource>(this TSource value, string log) =>
+            new Writer<string, TSource>(() => log.Enumerable().Tuple(value));
 
-    public static partial class EnumerableExtensions
-    {
-        public static Tuple<T, IEnumerable<T>> Pop<T>(this IEnumerable<T> source)
-        {
-            source = source.Share();
-            return source.First().Tuple(source);
-        }
-
-        public static Tuple<T, IEnumerable<T>> Push<T>(this IEnumerable<T> source, T value) =>
-            value.Tuple(source.Concat(value.Enumerable()));
+        public static Writer<string, TSource> LogWriter<TSource>(this TSource value, Func<TSource, string> logFactory) =>
+            new Writer<string, TSource>(() => logFactory(value).Enumerable().Tuple(value));
     }
 
     public static partial class WriterExtensions
     {
-        internal static void Stack()
+        internal static void Workflow()
         {
-            IEnumerable<int> stack = Enumerable.Empty<int>();
-            Writer<string, IEnumerable<int>> query =
-                from lazy1 in stack.Push(1).LogWriter("Push 1 to stack.")
-                from lazy2 in lazy1.Item2.Push(2).LogWriter("Push 2 to stack.")
-                from lazy3 in lazy2.Item2.Pop().LogWriter("Pop 2 from stack.")
-                from stack1 in Enumerable.Range(0, 3).LogWriter("Reset stack to 0, 1, 2.")
-                from lazy4 in stack1.Push(4).LogWriter("Push 4 to stack.")
-                from lazy5 in lazy4.Item2.Pop().LogWriter("Pop 4 from stack.")
-                from stack2 in lazy5.Item2.LogWriter("Get current stack.")
-                select stack2; // Define query.
-
-            IEnumerable<int> result = query.Value; // Execute query.
-            IEnumerable<string> logs = query.Content;
-            logs.ForEach(log => Trace.WriteLine(log));
+            Writer<string, string> query = from filePath in Console.ReadLine().LogWriter(value =>
+                                               $"File path: {value}") // Writer<string, string>.
+                                           from encodingName in Console.ReadLine().LogWriter(value =>
+                                               $"Encoding name: {value}") // Writer<string, string>.
+                                           from encoding in Encoding.GetEncoding(encodingName).LogWriter(value =>
+                                               $"Encoding: {value}") // Writer<string, Encoding>.
+                                           from fileContent in File.ReadAllText(filePath, encoding).LogWriter(value =>
+                                               $"File content length: {value.Length}") // Writer<string, string>.
+                                           select fileContent; // Define query.
+            string result = query.Value; // Execute query.
+            query.Content.ForEach(log => Trace.WriteLine(log));
+            // File path: D:\File.txt
+            // Encoding name: utf-8
+            // Encoding: System.Text.UTF8Encoding
+            // File content length: 76138
         }
     }
 }

@@ -28,7 +28,7 @@
         // Select: (Reader<TEnvironment, TSource>, TSource -> TResult) -> Reader<TEnvironment, TResult>
         public static Reader<TEnvironment, TResult> Select<TEnvironment, TSource, TResult>(
             this Reader<TEnvironment, TSource> source, Func<TSource, TResult> selector) =>
-                source.SelectMany(value => selector(value).Reader<TEnvironment, TResult>(), Functions.False);
+                source.SelectMany(value => selector(value).Reader<TEnvironment, TResult>(), (value, result) => result);
     }
 
     internal interface IConfiguration
