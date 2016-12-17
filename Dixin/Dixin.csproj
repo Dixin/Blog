@@ -328,7 +328,7 @@
     <Compile Include="Linq\Lambda\Functions.cs" />
     <Compile Include="Linq\Lambda\SkiCompiler.cs" />
     <Compile Include="Linq\LinqToObjects\Generator.cs" />
-    <Compile Include="Linq\TraceHelper.cs" />
+    <Compile Include="Linq\TraceExtensions.cs" />
     <Compile Include="Linq\CSharp\AnonymousFunction.cs" />
     <Compile Include="Linq\CSharp\FunctionType.cs" />
     <Compile Include="Linq\CSharp\NamedFunction.cs" />
