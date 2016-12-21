@@ -15,7 +15,7 @@
 
         internal static bool IsNegative(int int32) // Impure.
         {
-            Trace.WriteLine(int32); // Side effect.
+            Console.WriteLine(int32); // Side effect.
             return int32 < 0;
         }
     }

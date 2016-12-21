@@ -110,8 +110,13 @@
 
         internal static void Repeat()
         {
+<<<<<<< HEAD
             IEnumerable<string> repeat = Enumerable.Repeat("a", 5); // Define query.
             repeat.WriteLines(); // Execute query. a a a a a
+=======
+            IEnumerable<int> repeat = Enumerable.Repeat(1, 5); // Define query.
+            repeat.WriteLines(); // Execute query. 1 1 1 1 1
+>>>>>>> 1e40a6f68a86798dda6e84242671e16088ee8c93
         }
 
         internal static void DefaultIfEmpty()
@@ -186,8 +191,13 @@
             IEnumerable<int> source = Enumerable.Range(-2, 5);
             IEnumerable<string> absoluteValues = source
                 .Select(int32 => new { int32 = int32, abs = Math.Abs(int32) })
+<<<<<<< HEAD
                 .Where(values => values.abs > 0)
                 .Select(values => $"Math.Abs({values.int32}):{values.abs}"); // Define query.
+=======
+                .Where(tuple => tuple.abs > 0)
+                .Select(tuple => $"Math.Abs({tuple.int32}):{tuple.abs}"); // Define query.
+>>>>>>> 1e40a6f68a86798dda6e84242671e16088ee8c93
             absoluteValues.WriteLines(); // Execute query.
             // Math.Abs(-2):2 Math.Abs(-1):1 Math.Abs(1):1 Math.Abs(2):2
         }
@@ -204,8 +214,13 @@
             IEnumerable<MemberInfo> filtered = mapped.Where(member => member.IsObsolete()); // Define query.
             filtered.WriteLines(obsoleteMember => $"{obsoleteMember.DeclaringType}:{obsoleteMember}"); // Execute query.
             // ...
+<<<<<<< HEAD
             // System.Enum:System.String ToString(System.String, System.IFormatProvider)
             // System.Enum:System.String ToString(System.IFormatProvider)
+=======
+            // System.Enum - System.String ToString(System.String, System.IFormatProvider)
+            // System.Enum - System.String ToString(System.IFormatProvider)
+>>>>>>> 1e40a6f68a86798dda6e84242671e16088ee8c93
             // ...
         }
 
