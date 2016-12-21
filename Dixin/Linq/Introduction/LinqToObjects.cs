@@ -58,10 +58,10 @@
     {
         internal static void DelegateTypesQueryExpression()
         {
-            Assembly mscorlib = typeof(object).Assembly;
+            Assembly coreLibrary = typeof(object).GetTypeInfo().Assembly;
             IEnumerable<IGrouping<string, Type>> delegateTypes =
-                from type in mscorlib.GetExportedTypes()
-                where type.BaseType == typeof(MulticastDelegate)
+                from type in coreLibrary.GetExportedTypes()
+                where type.GetTypeInfo().BaseType == typeof(MulticastDelegate)
                 group type by type.Namespace into namespaceTypes
                 orderby namespaceTypes.Count() descending, namespaceTypes.Key
                 select namespaceTypes;
@@ -81,9 +81,9 @@
     {
         internal static void DelegateTypesQueryMethods()
         {
-            Assembly mscorlib = typeof(object).Assembly;
-            IEnumerable<IGrouping<string, Type>> delegateTypes = mscorlib.GetExportedTypes()
-                .Where(type => type.BaseType == typeof(MulticastDelegate))
+            Assembly coreLibrary = typeof(object).GetTypeInfo().Assembly;
+            IEnumerable<IGrouping<string, Type>> delegateTypes = coreLibrary.GetExportedTypes()
+                .Where(type => type.GetTypeInfo().BaseType == typeof(MulticastDelegate))
                 .GroupBy(type => type.Namespace)
                 .OrderByDescending(namespaceTypes => namespaceTypes.Count())
                 .ThenBy(namespaceTypes => namespaceTypes.Key);
@@ -103,10 +103,10 @@
     {
         internal static void CompiledDelegateTypes()
         {
-            Assembly mscorlib = typeof(object).Assembly;
+            Assembly coreLibrary = typeof(object).GetTypeInfo().Assembly;
 
-            Func<Type, bool> filterPredicateFunction = type => type.BaseType == typeof(MulticastDelegate);
-            IEnumerable<Type> filterQuery = Enumerable.Where(mscorlib.GetExportedTypes(), filterPredicateFunction);
+            Func<Type, bool> filterPredicateFunction = type => type.GetTypeInfo().BaseType == typeof(MulticastDelegate);
+            IEnumerable<Type> filterQuery = Enumerable.Where(coreLibrary.GetExportedTypes(), filterPredicateFunction);
 
             Func<Type, string> groupKeySelectorFunction = type => type.Namespace;
             IEnumerable<IGrouping<string, Type>> groupQuery = Enumerable.GroupBy(filterQuery, groupKeySelectorFunction);

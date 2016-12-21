@@ -11,12 +11,17 @@
 
         static Data()
         {
+#if NETFX
             Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // .cctor
+#endif
         }
 
         internal Data(int value)
         {
+#if NETFX
             Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // .ctor
+#endif
+
             this.value = value;
         }
 
@@ -30,19 +35,25 @@
     {
         public static Data operator +(Data data1, Data data2)
         {
+#if NETFX
             Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Addition
+#endif
             return new Data(data1.value + data2.value);
         }
 
         public static explicit operator int(Data value)
         {
+#if NETFX
             Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Explicit
+#endif
             return value.value;
         }
 
         public static implicit operator Data(int value)
         {
+#if NETFX
             Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Implicit
+#endif
             return new Data(value);
         }
     }
@@ -51,19 +62,25 @@
     {
         public static Data op_Addition(Data data1, Data data2)
         {
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name);
+#if NETFX
+            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Addition
+#endif
             return new Data(data1.value + data2.value);
         }
 
         public static int op_Explicit(Data data)
         {
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name);
+#if NETFX
+            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Explicit
+#endif
             return data.value;
         }
 
         public static Data op_Implicit(int data)
         {
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name);
+#if NETFX
+            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Implicit
+#endif
             return new Data(data);
         }
     }
@@ -86,12 +103,16 @@
         {
             get
             {
+#if NETFX
                 Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // get_Description
+#endif
                 return this.description;
             }
             set
             {
+#if NETFX
                 Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // set_Description
+#endif
                 this.description = value;
             }
         }
@@ -144,12 +165,16 @@
         {
             get
             {
+#if NETFX
                 Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // get_Item
+#endif
                 return this.links[index];
             }
             set
             {
+#if NETFX
                 Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // set_Item
+#endif
                 this.links[index] = value;
             }
         }

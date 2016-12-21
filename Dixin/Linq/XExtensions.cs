@@ -5,8 +5,11 @@
     using System.Linq;
     using System.Xml;
     using System.Xml.Linq;
+
+#if NETFX
     using System.Xml.Schema;
     using System.Xml.Xsl;
+#endif
 
     public static partial class XExtensions
     {
@@ -47,11 +50,11 @@
             ((source as XElement)?.DescendantsAndSelf() ?? source.Descendants())
                 .SelectMany(element => element.Attributes());
 
-        public static IEnumerable<Tuple<string, XNamespace>> Namespaces(this XContainer source) =>
+        public static IEnumerable<(string, XNamespace)> Namespaces(this XContainer source) =>
             source // Namespaces are defined as xmlns:prefix="namespace" attributes.
                 .AllAttributes()
                 .Where(attribute => attribute.IsNamespaceDeclaration)
-                .Select(attribute => Tuple.Create(attribute.Name.LocalName, (XNamespace)attribute.Value));
+                .Select(attribute => (attribute.Name.LocalName, (XNamespace)attribute.Value));
 
         public static XmlNamespaceManager CreateNamespaceManager(this XContainer source)
         {
@@ -121,6 +124,7 @@
         public static string XPath(this XAttribute source, string parentXPath = null) => 
             CombineXPath(parentXPath ?? source.Parent?.XPath(), $"@{source.Name.XPath(source.Parent)}");
 
+#if NETFX
         public static XmlSchemaSet InferSchema(this XNode source)
         {
             XmlSchemaInference schemaInference = new XmlSchemaInference();
@@ -129,7 +133,9 @@
                 return schemaInference.InferSchema(reader);
             }
         }
+#endif
 
+#if NETFX
         public static XDocument ToXDocument(this XmlSchema source)
         {
             XDocument document = new XDocument();
@@ -139,21 +145,25 @@
             }
             return document;
         }
+#endif
 
-        public static IEnumerable<Tuple<XObject, string, IXmlSchemaInfo>> GetValidities(this XElement source, string parentXPath = null)
+#if NETFX
+        public static IEnumerable<(XObject, string, IXmlSchemaInfo)> GetValidities(this XElement source, string parentXPath = null)
         {
             string xPath = source.XPath(parentXPath);
             return Enumerable
-                .Repeat(Tuple.Create((XObject)source, xPath, source.GetSchemaInfo()), 1)
+                .Repeat(((XObject)source, xPath, source.GetSchemaInfo()), 1)
                 .Concat(source
                     .Attributes()
-                    .Select(attribute => Tuple.Create((XObject)attribute, attribute.XPath(xPath), attribute.GetSchemaInfo())))
+                    .Select(attribute => ((XObject)attribute, attribute.XPath(xPath), attribute.GetSchemaInfo())))
                 .Concat(source
                     .Elements()
                     .SelectMany(child => child.GetValidities(xPath)));
         }
+#endif
 
-        public static IEnumerable<Tuple<XObject, string, IXmlSchemaInfo>> GetValidities(this XDocument source) => 
+#if NETFX
+        public static IEnumerable<(XObject, string, IXmlSchemaInfo)> GetValidities(this XDocument source) => 
             source.Root.GetValidities();
 
         public static XDocument XslTransform(this XNode source, XNode xsl)
@@ -169,5 +179,6 @@
                 return result;
             }
         }
+#endif
     }
 }

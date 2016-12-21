@@ -1,7 +1,11 @@
 ﻿namespace Dixin.Tests.Linq
 {
+#if NETFX
+    using System.Configuration;
+    using System.Linq;
+
     using Dixin.Linq;
-    using Dixin.Tests.Properties;
+#endif
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -11,8 +15,10 @@
         [TestMethod]
         public void ConnectionStringsTest()
         {
+#if NETFX
             string connectionString = ConnectionStrings.AdventureWorks;
-            Assert.AreEqual(Settings.Default.AdventureWorksConnectionString, connectionString);
+            Assert.AreEqual(ConfigurationManager.ConnectionStrings.Cast<ConnectionStringSettings>().First().ConnectionString, connectionString);
+#endif
         }
     }
 }

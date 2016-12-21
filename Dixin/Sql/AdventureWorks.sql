@@ -14,7 +14,7 @@ END;
 GO
 
 -- Create assembly.
-CREATE ASSEMBLY [Dixin.Sql] 
+CREATE ASSEMBLY [Dixin.Sql]
 FROM N'D:\OneDrive\Works\Drafts\CodeSnippets\Dixin.Sql\bin\Debug\Dixin.Sql.dll';
 GO
 

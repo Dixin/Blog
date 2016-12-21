@@ -3,7 +3,6 @@
     using System;
     using System.Diagnostics;
     using System.IO;
-    using System.Net;
     using System.Reflection;
     using System.Threading.Tasks;
 
@@ -117,7 +116,7 @@
         internal static void Static()
         {
             Func<int, int, int> func1 = Math.Max;
-            MethodInfo method1 = func1.Method;
+            MethodInfo method1 = func1.GetMethodInfo();
             Trace.WriteLine($"{method1.DeclaringType}: {method1}"); // System.Math: Int32 Max(Int32, Int32)
             Trace.WriteLine(func1.Target == null); // True
 
@@ -127,17 +126,17 @@
 
         internal static void Instance()
         {
-            WebClient webClient1 = new WebClient();
-            Func<string, string> func1 = webClient1.DownloadString;
-            MethodInfo method2 = func1.Method;
-            Trace.WriteLine($"{method2.DeclaringType}: {method2}"); // System.Net.WebClient: System.String DownloadString(System.String)
-            Trace.WriteLine(ReferenceEquals(func1.Target, webClient1)); // True
+            object object1 = new object();
+            Func<object, bool> func1 = object1.Equals; // new Func<object, bool>(object1.Equals);
+            MethodInfo method2 = func1.GetMethodInfo();
+            Trace.WriteLine($"{method2.DeclaringType}: {method2}"); // System.Object: Boolean Equals(System.Object)
+            Trace.WriteLine(ReferenceEquals(func1.Target, object1)); // True
 
-            WebClient webClient2 = new WebClient();
-            Func<string, string> func2 = webClient2.DownloadString;
+            char object2 = new char();
+            Func<object, bool> func2 = object2.Equals; // new Func<object, bool>(object2.Equals);
             Trace.WriteLine(func1 == func2); // False
 
-            Func<string, string> func3 = webClient1.DownloadString;
+            Func<object, bool> func3 = object1.Equals; // new Func<object, bool>(object1.Equals);
             Trace.WriteLine(func1 == func3); // True
         }
 
@@ -240,7 +239,7 @@
             Trace.WriteLine(lastResult1); // D
 
             Func<string> functionGroup2 = (Func<string>)Delegate.Remove(functionGroup1, a); // = functionGroup1 - A;
-            functionGroup2 = (Func<string>)Delegate.Remove(functionGroup2, new Func<string>(D)); //  -= D;
+            functionGroup2 = (Func<string>)Delegate.Remove(functionGroup2, new Func<string>(D)); // -= D;
             string lastResult2 = functionGroup2.Invoke(); // B C
             Trace.WriteLine(lastResult2); // C
 

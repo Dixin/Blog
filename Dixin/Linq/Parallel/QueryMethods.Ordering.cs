@@ -3,21 +3,20 @@
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Linq;
     using System.Threading;
 
-    using static HelperMethods;
+    using static Functions;
+
+    using Stopwatch = System.Diagnostics.Stopwatch;
 
     internal static partial class QueryMethods
     {
-        internal static void SelectWithIndex
-            () => new StaticPartitioner<int>(Enumerable.Range(0, Environment.ProcessorCount * 2))
+        internal static void SelectWithIndex() => 
+            new StaticPartitioner<int>(Enumerable.Range(0, Environment.ProcessorCount * 2))
                 .AsParallel()
                 .Select((value, index) => $"[{index}]={value}")
-                .ForEach(valueWithIndex => Trace.WriteLine(valueWithIndex));
-
-        // [0]=0 [1]=2 [2]=4 [3]=5 [4]=6 [5]=1 [6]=3 [7]=7
+                .WriteLines(); // [0]=0 [1]=2 [2]=4 [3]=5 [4]=6 [5]=1 [6]=3 [7]=7
 
         internal static void AsOrdered()
         {
@@ -25,14 +24,14 @@
                 .Range(0, Environment.ProcessorCount * 2)
                 .AsParallel()
                 .Select(value => value + Compute())
-                .ForEach(value => Trace.WriteLine(value)); // 3 1 2 0 4 5 6 7
+                .WriteLines(); // 3 1 2 0 4 5 6 7
 
             Enumerable
                 .Range(0, Environment.ProcessorCount * 2)
                 .AsParallel()
                 .AsOrdered()
                 .Select(value => value + Compute())
-                .ForEach(value => Trace.WriteLine(value)); // 0 1 2 3 4 5 6 7
+                .WriteLines(); // 0 1 2 3 4 5 6 7
         }
 
         internal static void AsUnordered()
@@ -49,7 +48,7 @@
                 .GroupBy(model => model.Weight, model => model.Name)
                 .ForAll(_ => { });
             stopwatch.Stop();
-            Trace.WriteLine(stopwatch.ElapsedMilliseconds); // 35.
+            stopwatch.ElapsedMilliseconds.WriteLine(); // 35.
 
             stopwatch.Restart();
             source
@@ -58,7 +57,7 @@
                 .GroupBy(model => model.Weight, model => model.Name)
                 .ForAll(_ => { });
             stopwatch.Stop();
-            Trace.WriteLine(stopwatch.ElapsedMilliseconds); // 2.
+            stopwatch.ElapsedMilliseconds.WriteLine(); // 2.
         }
 
         internal static void OrderBy()
@@ -67,7 +66,7 @@
                 .Range(0, Environment.ProcessorCount * 2)
                 .AsParallel()
                 .Select(value => value) // Order is not persisted.
-                .ForEach(value => Trace.WriteLine(value)); // 3 1 2 0 4 5 6 7
+                .WriteLines(); // 3 1 2 0 4 5 6 7
 
             Enumerable
                 .Range(0, Environment.ProcessorCount * 2)
@@ -75,7 +74,7 @@
                 .Select(value => value) // Order is not persisted.
                 .OrderBy(value => value) // Order is introduced.
                 .Select(value => value) // Order is persisted.
-                .ForEach(value => Trace.WriteLine(value)); // 3 1 2 0 4 5 6 7
+                .WriteLines(); // 3 1 2 0 4 5 6 7
         }
 
         internal static void Correctness()
@@ -84,46 +83,46 @@
             int[] source = Enumerable.Range(0, count).ToArray(); // 0 ... 15.
 
             int elementAt = new StaticPartitioner<int>(source).AsParallel().Select(value => value + Compute())
-                .ElementAt(count / 2); // Expected: 8.
-            Trace.WriteLine(elementAt); // Actual: 2.
+                .ElementAt(count / 2).WriteLine() // Expected: 8, 
+                .WriteLine(); // Actual: 2.
 
             int first = new StaticPartitioner<int>(source).AsParallel().Select(value => value + Compute())
-                .First(); // Expected: 0.
-            Trace.WriteLine(first); // Actual: 3.
+                .First() // Expected: 0.
+                .WriteLine(); // Actual: 3.
 
             int last = new StaticPartitioner<int>(source).AsParallel().Select(value => value + Compute())
-                .Last(); // Expected: 15.
-            Trace.WriteLine(last); // Actual: 13.
+                .Last() // Expected: 15.
+                .WriteLine(); // Actual: 13.
 
             new StaticPartitioner<int>(source).AsParallel().Select(value => value + Compute())
                 .Take(count / 2) // Expected: 0 ... 7.
-                .ForEach(value => Trace.WriteLine(value)); // Actual: 3 2 5 7 10 11 14 15.
+                .WriteLines(); // Actual: 3 2 5 7 10 11 14 15.
 
             new StaticPartitioner<int>(source).AsParallel().Select(value => value + Compute())
                 .Skip(count / 2) // Expected: 8 ... 15.
-                .ForEach(value => Trace.WriteLine(value)); // Actual: 3 0 7 5 11 10 15 14.
+                .WriteLines(); // Actual: 3 0 7 5 11 10 15 14.
 
             new StaticPartitioner<int>(source).AsParallel().Select(value => value + Compute())
                 .TakeWhile(value => value <= count / 2) // Expected: 0 ... 7.
-                .ForEach(value => Trace.WriteLine(value)); // Actual: 3 5 8.
+                .WriteLines(); // Actual: 3 5 8.
 
             new StaticPartitioner<int>(source).AsParallel().Select(value => value + Compute())
                 .SkipWhile(value => value <= count / 2) // Expected: 9 ... 15.
-                .ForEach(value => Trace.WriteLine(value)); // Actual: 1 3 2 13 5 7 6 11 9 10 15 12 14.
+                .WriteLines(); // Actual: 1 3 2 13 5 7 6 11 9 10 15 12 14.
 
             new StaticPartitioner<int>(source).AsParallel().Select(value => value + Compute())
                 .Reverse() // Expected: 15 ... 0.
-                .ForEach(value => Trace.WriteLine(value)); // Actual: 12 8 4 2 13 9 5 1 14 10 6 0 15 11 7 3.
+                .WriteLines(); // Actual: 12 8 4 2 13 9 5 1 14 10 6 0 15 11 7 3.
 
             bool sequentialEqual = new StaticPartitioner<int>(source).AsParallel().Select(value => value + Compute())
                 .SequenceEqual(new StaticPartitioner<int>(source).AsParallel()); // Expected: True.
-            Trace.WriteLine(sequentialEqual); // Actual: False.
+            sequentialEqual.WriteLine(); // Actual: False.
 
             new StaticPartitioner<int>(source).AsParallel().Select(value => value + Compute())
                 .Zip(
-                    new StaticPartitioner<int>(source).AsParallel(),
-                    (a, b) => $"({a}, {b})") // Expected: (0, 0) ... (15, 15).
-                .ForEach(value => Trace.WriteLine(value)); // Actual: (3, 8) (0, 12) (1, 0) (2, 4) (6, 9) (7, 13) ...
+                    second: new StaticPartitioner<int>(source).AsParallel(),
+                    resultSelector: (a, b) => $"({a}, {b})") // Expected: (0, 0) ... (15, 15).
+                .WriteLines(); // Actual: (3, 8) (0, 12) (1, 0) (2, 4) (6, 9) (7, 13) ...
         }
     }
 
@@ -159,34 +158,34 @@
             outer
                 .Join(
                     inner,
-                    outerPerson => Tuple.Create(outerPerson.Weight, outerPerson.Name.Substring(0, 2)),
-                    innerPerson => Tuple.Create(innerPerson.Weight + 1, innerPerson.Name.Substring(2, 4)),
+                    outerPerson => (outerPerson.Weight, outerPerson.Name.Substring(0, 2)),
+                    innerPerson => (innerPerson.Weight + 1, innerPerson.Name.Substring(2, 4)),
                     (outerPerson, innerPerson) => new { Outer = outerPerson, Inner = innerPerson })
                 .ForAll(_ => { });
             stopwatch.Stop();
-            Trace.WriteLine(stopwatch.ElapsedMilliseconds); // 243
+            stopwatch.ElapsedMilliseconds.WriteLine(); // 243
 
             stopwatch.Restart();
             outer.AsUnordered()
                 .Join(
                     inner,
-                    outerPerson => Tuple.Create(outerPerson.Weight, outerPerson.Name.Substring(0, 2)),
-                    innerPerson => Tuple.Create(innerPerson.Weight + 1, innerPerson.Name.Substring(2, 4)),
+                    outerPerson => (outerPerson.Weight, outerPerson.Name.Substring(0, 2)),
+                    innerPerson => (innerPerson.Weight + 1, innerPerson.Name.Substring(2, 4)),
                     (outerPerson, innerPerson) => new { Outer = outerPerson, Inner = innerPerson })
                 .ForAll(_ => { });
             stopwatch.Stop();
-            Trace.WriteLine(stopwatch.ElapsedMilliseconds); // 77
+            stopwatch.ElapsedMilliseconds.WriteLine(); // 77
 
             stopwatch.Restart();
             outer.AsUnordered()
                 .Join(
                     inner.AsUnordered(),
-                    outerPerson => Tuple.Create(outerPerson.Weight, outerPerson.Name.Substring(0, 2)),
-                    innerPerson => Tuple.Create(innerPerson.Weight + 1, innerPerson.Name.Substring(2, 4)),
+                    outerPerson => (outerPerson.Weight, outerPerson.Name.Substring(0, 2)),
+                    innerPerson => (innerPerson.Weight + 1, innerPerson.Name.Substring(2, 4)),
                     (outerPerson, innerPerson) => new { Outer = outerPerson, Inner = innerPerson })
                 .ForAll(_ => { });
             stopwatch.Stop();
-            Trace.WriteLine(stopwatch.ElapsedMilliseconds); // 64
+            stopwatch.ElapsedMilliseconds.WriteLine(); // 64
         }
 
         internal static void MergeOptionForOrder()
@@ -197,14 +196,14 @@
                 .AsParallel()
                 .WithMergeOptions(ParallelMergeOptions.FullyBuffered)
                 .ForEach(value => fullyBuffered.Add(value));
-            Trace.WriteLine(fullyBuffered.SequenceEqual(source)); // True
+            fullyBuffered.SequenceEqual(source).WriteLine(); // True
 
             List<int> notBuffered = new List<int>();
             source
                 .AsParallel()
                 .WithMergeOptions(ParallelMergeOptions.NotBuffered)
                 .ForEach(value => notBuffered.Add(value));
-            Trace.WriteLine(notBuffered.SequenceEqual(source)); // False
+            notBuffered.SequenceEqual(source).WriteLine(); // False
         }
     }
 
@@ -240,19 +239,19 @@
             new OrderableDynamicPartitioner<int>(source)
                 .AsParallel()
                 .Select(value => value + Compute())
-                .ForEach(value => Trace.WriteLine(value)); // 1 0 5 3 4 6 2 7
+                .WriteLines(); // 1 0 5 3 4 6 2 7
 
             new OrderableDynamicPartitioner<int>(source)
                 .AsParallel()
                 .AsOrdered()
                 .Select(value => value + Compute())
-                .ForEach(value => Trace.WriteLine(value)); // 0 ... 7
+                .WriteLines(); // 0 ... 7
 
             new DynamicPartitioner<int>(source)
                 .AsParallel()
                 .AsOrdered()
                 .Select(value => value + Compute())
-                .ForEach(value => Trace.WriteLine(value));
+                .WriteLines();
             // InvalidOperationException: AsOrdered may not be used with a partitioner that is not orderable.
         }
     }

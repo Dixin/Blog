@@ -2,7 +2,7 @@
 {
     using System;
     using System.IO;
-    using System.Net;
+    using System.Net.Http;
     using System.Text;
     using System.Threading.Tasks;
 
@@ -89,16 +89,16 @@
 
         internal static async Task WorkflowAsync()
         {
-            using (WebClient webClient = new WebClient())
+            using (HttpClient httpClient = new HttpClient())
             {
                 IO<Task> query = from unit1 in IO(() => Console.WriteLine("Url:")) // IO<Unit>. 
                                  from url in IO(Console.ReadLine) // IO<string>.
                                  from unit2 in IO(() => Console.WriteLine("File path:")) // IO<Unit>.
                                  from filePath in IO(Console.ReadLine) // IO<string>.
-                                 from dowanloadStreamTask in IO(async () =>
-                                     await webClient.OpenReadTaskAsync(url)) // IO<Task<Stream>>.
+                                 from downloadStreamTask in IO(async () =>
+                                     await httpClient.GetStreamAsync(url)) // IO<Task<Stream>>.
                                  from writeFileTask in IO(async () => 
-                                     await (await dowanloadStreamTask).CopyToAsync(File.Create(filePath))) // IO<Task>.
+                                     await (await downloadStreamTask).CopyToAsync(File.Create(filePath))) // IO<Task>.
                                  from messageTask in IO(async () =>
                                      {
                                          await writeFileTask;

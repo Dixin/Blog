@@ -6,7 +6,7 @@
     using System.Linq;
 
     using Dixin.Linq.Parallel;
-    using Dixin.TestTools.UnitTesting;
+    using Dixin.Linq.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 

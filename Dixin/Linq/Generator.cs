@@ -184,7 +184,7 @@
     {
         private readonly Func<TData, TData> start;
 
-        private readonly Func<TData, Tuple<bool, TData>> moveNext;
+        private readonly Func<TData, (bool, TData)> moveNext;
 
         private readonly Func<TData, T> getCurrent;
 
@@ -197,14 +197,14 @@
         public Generator(
             TData data = default(TData),
             Func<TData, TData> start = null,
-            Func<TData, Tuple<bool, TData>> moveNext = null,
+            Func<TData, (bool, TData)> moveNext = null,
             Func<TData, T> getCurrent = null,
             Action<TData> dispose = null,
             Action<TData> end = null)
         {
             this.data = data;
             this.start = start ?? (currentData => currentData);
-            this.moveNext = moveNext ?? (currentData => Tuple.Create(false, currentData));
+            this.moveNext = moveNext ?? (currentData => (false, currentData));
             this.getCurrent = getCurrent ?? (currentData => default(T));
             this.dispose = dispose ?? (currentData => { });
             this.end = end ?? (currentData => { });
@@ -230,7 +230,7 @@
                         this.state = IteratorState.MoveNext; // IteratorState: Start => MoveNext.
                         goto case IteratorState.MoveNext;
                     case IteratorState.MoveNext:
-                        Tuple<bool, TData> result = this.moveNext(this.data);
+                        (bool, TData) result = this.moveNext(this.data);
                         this.data = result.Item2;
                         if (result.Item1)
                         {
@@ -307,7 +307,7 @@
         public static Generator<T, TData> Create<T, TData>(
             TData data = default(TData),
             Func<TData, TData> start = null,
-            Func<TData, Tuple<bool, TData>> moveNext = null,
+            Func<TData, (bool, TData)> moveNext = null,
             Func<TData, T> getCurrent = null,
             Action<TData> dispose = null,
             Action<TData> end = null) =>

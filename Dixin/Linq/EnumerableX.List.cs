@@ -38,7 +38,6 @@
             }
             else if (index > currentIndex)
             {
-                // mscorlib resource ArgumentOutOfRange_ListInsert.
                 throw new ArgumentOutOfRangeException(
                     nameof(index),
                     $"Index {index} must be equal to or less than the count of sequance {currentIndex}.");

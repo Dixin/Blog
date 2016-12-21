@@ -4,6 +4,12 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Reflection;
+#if !NETFX
+    using System.Runtime.Loader;
+
+    using Microsoft.Extensions.DependencyModel;
+#endif
 
     public interface ICategory<TObject, TMorphism>
     {
@@ -46,21 +52,30 @@
     public partial class DotNetCategory : ICategory<Type, Delegate>
     {
         public IEnumerable<Type> Objects =>
-            AppDomain.CurrentDomain.GetAssemblies().SelectMany(assembly => assembly.ExportedTypes);
+            // TODO: AppDomain.CurrentDomain.GetAssemblies().SelectMany(assembly => assembly.GetExportedTypes());
+            GetReferences(typeof(DotNetCategory).GetTypeInfo().Assembly)
+                .Concat(new Assembly[] { typeof(object).GetTypeInfo().Assembly })
+                .Distinct()
+                .SelectMany(assembly => assembly.GetExportedTypes());
 
         public Delegate Compose(Delegate morphism2, Delegate morphism1) =>
             // return (Func<TSource, TResult>)Functions.Compose<TSource, TMiddle, TResult>(
             //    (Func<TMiddle, TResult>)morphism2, (Func<TSource, TMiddle>)morphism1);
-            (Delegate)typeof(Linq.FuncExtensions).GetMethod(nameof(Linq.FuncExtensions.o))
+            (Delegate)typeof(Linq.FuncExtensions).GetTypeInfo().GetMethod(nameof(Linq.FuncExtensions.o))
                 .MakeGenericMethod( // TSource, TMiddle, TResult.
-                    morphism1.Method.GetParameters().Single().ParameterType,
-                    morphism1.Method.ReturnType,
-                    morphism2.Method.ReturnType)
+                    morphism1.GetMethodInfo().GetParameters().Single().ParameterType,
+                    morphism1.GetMethodInfo().ReturnType,
+                    morphism2.GetMethodInfo().ReturnType)
                 .Invoke(null, new object[] { morphism2, morphism1 });
 
         public Delegate Id(Type @object) => // Functions.Id<TSource>
-            Delegate.CreateDelegate(
-                type: typeof(Func<,>).MakeGenericType(@object, @object),
-                method: typeof(Functions).GetMethod(nameof(Functions.Id)).MakeGenericMethod(@object));
+            typeof(Functions).GetTypeInfo().GetMethod(nameof(Functions.Id)).MakeGenericMethod(@object)
+                .CreateDelegate(typeof(Func<,>).MakeGenericType(@object, @object));
+
+        private static IEnumerable<Assembly> GetReferences(Assembly assembly) =>
+            assembly.GetName().Name.Equals("mscorlib", StringComparison.Ordinal)
+                ? new Assembly[] { assembly }
+                : new Assembly[] { assembly }.Concat(assembly.GetReferencedAssemblies()
+                    .SelectMany(reference => GetReferences(Assembly.Load(reference))));
     }
 }

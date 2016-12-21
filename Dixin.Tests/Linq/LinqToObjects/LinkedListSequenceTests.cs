@@ -2,8 +2,7 @@
 {
     using System.Collections.Generic;
     using Dixin.Linq.LinqToObjects;
-
-    using Dixin.TestTools.UnitTesting;
+    using Dixin.Linq.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -11,7 +10,7 @@
     public class LinkedListSequenceTests
     {
         [TestMethod]
-        public void Empty()
+        public void EmptyTest()
         {
             SinglyLinkedListNode<int> head = null;
             LinkedListSequence<int> sequence = new LinkedListSequence<int>(head);
@@ -25,7 +24,7 @@
         }
 
         [TestMethod]
-        public void Single()
+        public void SingleTest()
         {
             SinglyLinkedListNode<int> head = new SinglyLinkedListNode<int>(1);
             LinkedListSequence<int> sequence = new LinkedListSequence<int>(head);
@@ -39,7 +38,7 @@
         }
 
         [TestMethod]
-        public void Multiple()
+        public void MultipleTest()
         {
             SinglyLinkedListNode<int> head = new SinglyLinkedListNode<int>(0, new SinglyLinkedListNode<int>(1, new SinglyLinkedListNode<int>(2, new SinglyLinkedListNode<int>(3))));
             LinkedListSequence<int> sequence = new LinkedListSequence<int>(head);

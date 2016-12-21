@@ -3,9 +3,9 @@
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
+    using System.Reflection;
 
     internal static partial class QueryMethods
     {
@@ -15,7 +15,7 @@
         {
             Func<IEnumerable<int>> sequenceFactory = () =>
                 {
-                    Trace.WriteLine("Executing factory.");
+                    "Executing factory.".WriteLine();
                     return Enumerable.Empty<int>();
                 };
             IEnumerable<int> sequence1 = sequenceFactory() // sequenceFactory immediate executes.
@@ -167,23 +167,23 @@
             IEnumerable<int> sequence = Enumerable.Range(0, 5);
             IEnumerator<int> independentIterator1 = sequence.GetEnumerator();
             IEnumerator<int> independentIterator2 = sequence.GetEnumerator();
-            independentIterator1.MoveNext(); Trace.WriteLine(independentIterator1.Current); // 0| |
-            independentIterator2.MoveNext(); Trace.WriteLine(independentIterator2.Current); //  |0|
-            independentIterator1.MoveNext(); Trace.WriteLine(independentIterator1.Current); // 1| |
-            IEnumerator<int> independentIterator3 = sequence.GetEnumerator();               //  | |
-            independentIterator3.MoveNext(); Trace.WriteLine(independentIterator3.Current); //  | |0
-            independentIterator1.MoveNext(); Trace.WriteLine(independentIterator1.Current); // 2| |
-            independentIterator2.MoveNext(); Trace.WriteLine(independentIterator2.Current); //  |1|
+            independentIterator1.MoveNext(); independentIterator1.Current.WriteLine(); // 0| |
+            independentIterator2.MoveNext(); independentIterator2.Current.WriteLine(); //  |0|
+            independentIterator1.MoveNext(); independentIterator1.Current.WriteLine(); // 1| |
+            IEnumerator<int> independentIterator3 = sequence.GetEnumerator();          //  | |
+            independentIterator3.MoveNext(); independentIterator3.Current.WriteLine(); //  | |0
+            independentIterator1.MoveNext(); independentIterator1.Current.WriteLine(); // 2| |
+            independentIterator2.MoveNext(); independentIterator2.Current.WriteLine(); //  |1|
             // ...
 
             IBuffer<int> share = Enumerable.Range(0, 5).Share();
             IEnumerator<int> sharedIterator1 = share.GetEnumerator();
             IEnumerator<int> sharedIterator2 = share.GetEnumerator();
-            sharedIterator1.MoveNext(); Trace.WriteLine(sharedIterator1.Current); // 0| |
-            sharedIterator2.MoveNext(); Trace.WriteLine(sharedIterator2.Current); //  |1|
-            sharedIterator1.MoveNext(); Trace.WriteLine(sharedIterator1.Current); // 2| |
-            IEnumerator<int> sharedIterator3 = share.GetEnumerator();             //  | |
-            sharedIterator3.MoveNext(); Trace.WriteLine(sharedIterator3.Current); //  | |3
+            sharedIterator1.MoveNext(); sharedIterator1.Current.WriteLine(); // 0| |
+            sharedIterator2.MoveNext(); sharedIterator2.Current.WriteLine(); //  |1|
+            sharedIterator1.MoveNext(); sharedIterator1.Current.WriteLine(); // 2| |
+            IEnumerator<int> sharedIterator3 = share.GetEnumerator();        //  | |
+            sharedIterator3.MoveNext(); sharedIterator3.Current.WriteLine(); //  | |3
 
             share.Dispose();
             sharedIterator1.MoveNext(); // ObjectDisposedException.
@@ -195,7 +195,7 @@
         {
             for (int value = start; value < start + count; value++)
             {
-                Trace.WriteLine(value);
+                value.WriteLine();
                 yield return value;
             }
         }
@@ -305,17 +305,17 @@
         internal static void ShareWithSelector3()
         {
             IEnumerable<int> source1 = TracedRange(0, 5);
-            Tuple<int, int>[] concat1 = source1.Zip(source1, Tuple.Create).ToArray();
+            (int, int)[] concat1 = source1.Zip(source1, ValueTuple.Create).ToArray();
             // (0, 0) (1, 1) (2, 2) (3, 3) (4, 4).
             // Trace: 0 0 1 1 2 2 3 3 4 4.
 
             IEnumerable<int> source2 = TracedRange(0, 5);
-            Tuple<int, int>[] concat2 = source2.Zip(source2, Tuple.Create).ToArray();
+            (int, int)[] concat2 = source2.Zip(source2, ValueTuple.Create).ToArray();
             // (0, 1) (2, 3).
             // Trace: 0 1 2 3 4.
 
             IEnumerable<int> source3 = TracedRange(0, 5);
-            Tuple<int, int>[] concat3 = source3.Share(source => source.Zip(source, Tuple.Create)).ToArray();
+            (int, int)[] concat3 = source3.Share(source => source.Zip(source, ValueTuple.Create)).ToArray();
             // (0, 1) (2, 3).
             // Trace: 0 1 2 3 4.
         }
@@ -323,7 +323,7 @@
         internal static void ShareWithSelector4()
         {
             IEnumerable<int> source1 = TracedRange(0, 5);
-            Tuple<int, int>[] concat1 = EnumerableEx.Create<Tuple<int, int>>(async yield =>
+            (int, int)[] concat1 = EnumerableEx.Create<(int, int)>(async yield =>
                 {
                     // Start zipping:
                     using (IEnumerator<int> independentIterator1 = source1.GetEnumerator())
@@ -332,14 +332,13 @@
                         while (independentIterator1.MoveNext() && independentIterator2.MoveNext())
                         {
                             // yield return (0, 0) (1, 1) (2, 2) (3, 3) (4, 4).
-                            await yield.Return(
-                                Tuple.Create(independentIterator1.Current, independentIterator2.Current));
+                            await yield.Return((independentIterator1.Current, independentIterator2.Current));
                         }
                     }
                 }).ToArray(); // (0, 0) (1, 1) (2, 2) (3, 3) (4, 4).
 
             IEnumerable<int> source2 = TracedRange(0, 5).Share();
-            Tuple<int, int>[] concat2 = EnumerableEx.Create<Tuple<int, int>>(async yield =>
+            (int, int)[] concat2 = EnumerableEx.Create<(int, int)>(async yield =>
                 {
                     // Start zipping:
                     using (IEnumerator<int> sharedIterator1 = source2.GetEnumerator())
@@ -348,14 +347,13 @@
                         while (sharedIterator1.MoveNext() && sharedIterator2.MoveNext())
                         {
                             // yield return (0, 1) (2, 3).
-                            await yield.Return(
-                                Tuple.Create(sharedIterator1.Current, sharedIterator2.Current));
+                            await yield.Return((sharedIterator1.Current, sharedIterator2.Current));
                         }
                     }
                 }).ToArray(); // (0, 1) (2, 3).
 
             IEnumerable<int> source3 = TracedRange(0, 5);
-            Tuple<int, int>[] concat3 = EnumerableEx.Create<Tuple<int, int>>(async yield =>
+            (int, int)[] concat3 = EnumerableEx.Create<(int, int)>(async yield =>
                 {
                     IEnumerable<int> source = source3.Share();
                     // Start zipping:
@@ -365,7 +363,7 @@
                         while (sharedIterator1.MoveNext() && sharedIterator2.MoveNext())
                         {
                             // yield return (0, 1) (2, 3).
-                            await yield.Return(Tuple.Create(sharedIterator1.Current, sharedIterator2.Current));
+                            await yield.Return((sharedIterator1.Current, sharedIterator2.Current));
                         }
                     }
                 }).ToArray(); // (0, 1) (2, 3).
@@ -376,16 +374,16 @@
             IBuffer<int> publish = TracedRange(0, 5).Publish();
             IEnumerator<int> iterator1 = publish.GetEnumerator();
             // iterator1: 0 1 2 3 4
-            iterator1.MoveNext(); Trace.WriteLine(iterator1.Current); // 0| |Trace: 0
-            iterator1.MoveNext(); Trace.WriteLine(iterator1.Current); // 1| |Trace: 1
-            iterator1.MoveNext(); Trace.WriteLine(iterator1.Current); // 2| |Trace: 2
-            IEnumerator<int> iterator2 = publish.GetEnumerator();       //  | |
-                                                                        // iterator2: 3 4                                               | |
-            iterator2.MoveNext(); Trace.WriteLine(iterator2.Current); //  |3|Trace: 3
-            iterator1.MoveNext(); Trace.WriteLine(iterator1.Current); // 3| |
-            iterator2.MoveNext(); Trace.WriteLine(iterator2.Current); //  |4|Trace: 4
-            iterator1.MoveNext(); Trace.WriteLine(iterator1.Current); // 4| |
-                                                                        // Trace: 0 1 2 3 4.
+            iterator1.MoveNext(); iterator1.Current.WriteLine(); // 0| |Trace: 0
+            iterator1.MoveNext(); iterator1.Current.WriteLine(); // 1| |Trace: 1
+            iterator1.MoveNext(); iterator1.Current.WriteLine(); // 2| |Trace: 2
+            IEnumerator<int> iterator2 = publish.GetEnumerator(); // | |
+            // iterator2: 3 4                                        | |
+            iterator2.MoveNext(); iterator2.Current.WriteLine(); //  |3|Trace: 3
+            iterator1.MoveNext(); iterator1.Current.WriteLine(); // 3| |
+            iterator2.MoveNext(); iterator2.Current.WriteLine(); //  |4|Trace: 4
+            iterator1.MoveNext(); iterator1.Current.WriteLine(); // 4| |
+            // Trace: 0 1 2 3 4.
 
             publish.Dispose();
             iterator1.MoveNext(); // ObjectDisposedException.
@@ -399,13 +397,13 @@
             // iterator1: 0 1 2 3 4
             IEnumerator<int> iterator2 = publish.GetEnumerator();
             // iterator1: 0 1 2 3 4
-            iterator1.MoveNext(); Trace.WriteLine(iterator1.Current); // 0| |Trace: 0
-            iterator1.MoveNext(); Trace.WriteLine(iterator1.Current); // 1| |Trace: 1
-            iterator1.MoveNext(); Trace.WriteLine(iterator1.Current); // 2| |Trace: 2
-            iterator2.MoveNext(); Trace.WriteLine(iterator2.Current); //  |0|
-            iterator1.MoveNext(); Trace.WriteLine(iterator1.Current); // 3| |Trace: 3
-            iterator2.MoveNext(); Trace.WriteLine(iterator2.Current); //  |1|
-            iterator1.MoveNext(); Trace.WriteLine(iterator1.Current); // 4| |Trace: 4
+            iterator1.MoveNext(); iterator1.Current.WriteLine(); // 0| |Trace: 0
+            iterator1.MoveNext(); iterator1.Current.WriteLine(); // 1| |Trace: 1
+            iterator1.MoveNext(); iterator1.Current.WriteLine(); // 2| |Trace: 2
+            iterator2.MoveNext(); iterator2.Current.WriteLine(); //  |0|
+            iterator1.MoveNext(); iterator1.Current.WriteLine(); // 3| |Trace: 3
+            iterator2.MoveNext(); iterator2.Current.WriteLine(); //  |1|
+            iterator1.MoveNext(); iterator1.Current.WriteLine(); // 4| |Trace: 4
 
             publish.Dispose();
             iterator1.MoveNext(); // ObjectDisposedException.
@@ -415,17 +413,17 @@
         internal static void PublishWithSelector1()
         {
             IEnumerable<int> source1 = TracedRange(0, 5);
-            Tuple<int, int>[] concat1 = source1.Zip(source1, Tuple.Create).ToArray();
+            (int, int)[] concat1 = source1.Zip(source1, ValueTuple.Create).ToArray();
             // (0, 0), (1, 1), (2, 2), (3, 3), (4, 4)
             // Trace: 0 0 1 1 2 2 3 3 4 4
 
             IEnumerable<int> source2 = TracedRange(0, 5).Publish();
-            Tuple<int, int>[] concat2 = source2.Zip(source2, Tuple.Create).ToArray();
+            (int, int)[] concat2 = source2.Zip(source2, ValueTuple.Create).ToArray();
             // (0, 0), (1, 1), (2, 2), (3, 3), (4, 4)
             // Trace: 0 1 2 3 4
 
             IEnumerable<int> source3 = TracedRange(0, 5);
-            Tuple<int, int>[] concat3 = source3.Publish(source => source.Zip(source, Tuple.Create)).ToArray();
+            (int, int)[] concat3 = source3.Publish(source => source.Zip(source, ValueTuple.Create)).ToArray();
             // (0, 0), (1, 1), (2, 2), (3, 3), (4, 4)
             // Trace: 0 1 2 3 4
         }
@@ -491,14 +489,14 @@
             {
                 foreach (int value in query)
                 {
-                    Trace.WriteLine(value);
+                    value.WriteLine();
                 }
             }
             catch (OperationCanceledException exception)
             {
-                Trace.WriteLine(exception.Message);
+                exception.WriteLine();
             }
-            // 0 1 2 3 4 "OperationCanceledException from Throw".
+            // 0 1 2 3 4 OperationCanceledException: OperationCanceledException from Throw
         }
 
         internal static void CatchWithHandler()
@@ -516,25 +514,10 @@
             IEnumerable<int> range = Enumerable.Range(0, 5);
             IEnumerable<int> cast = new object[] { 5, "a" }.Cast<int>();
             IEnumerable<IEnumerable<int>> source1 = new IEnumerable<int>[] { scan, range, cast };
-            foreach (int value in source1.Catch())
-            {
-                Trace.WriteLine(value);
-            }
-            // 0 1 2 3 4.
+            source1.Catch().WriteLines(); // 0 1 2 3 4.
 
-            IEnumerable<IEnumerable<int>> source2 = new IEnumerable<int>[] { scan, cast };
-            try
-            {
-                foreach (int value in source2.Catch())
-                {
-                    Trace.WriteLine(value);
-                }
-            }
-            catch (Exception exception)
-            {
-                Trace.WriteLine(exception.Message);
-            }
-            // 5 "Specified cast is not valid."
+            IEnumerable<IEnumerable<int>> source2 = new IEnumerable<int>[] { scan, cast }; // Define query.
+            source2.Catch().WriteLines(); // 5 System.InvalidCastException: Specified cast is not valid.
         }
 
         #endregion
@@ -545,18 +528,18 @@
         {
             IEnumerable<int> query = Enumerable
                 .Range(0, 5).Do(
-                    onNext: value => Trace.WriteLine($"Range: {value}"),
-                    onCompleted: () => Trace.WriteLine($"Range completes."))
+                    onNext: value => $"Range: {value}".WriteLine(),
+                    onCompleted: () => $"Range completes.".WriteLine())
                 .Scan((a, b) => a + b).Do(
-                    onNext: value => Trace.WriteLine($"Scan: {value}"),
-                    onCompleted: () => Trace.WriteLine($"Scan completes."))
+                    onNext: value => $"Scan: {value}".WriteLine(),
+                    onCompleted: () => $"Scan completes.".WriteLine())
                 .TakeLast(2).Do(
-                    onNext: value => Trace.WriteLine($"TakeLast: {value}"),
-                    onCompleted: () => Trace.WriteLine($"TakeLast completes.")); // Defines query.
+                    onNext: value => $"TakeLast: {value}".WriteLine(),
+                    onCompleted: () => $"TakeLast completes.".WriteLine()); // Defines query.
 
             foreach (int result in query) // Executes query.
             {
-                Trace.WriteLine($"Pulled result: {result}");
+                $"Pulled result: {result}".WriteLine();
             }
         }
 
@@ -574,7 +557,7 @@
 
         internal static void MaxBy()
         {
-            IList<Type> maxTypes = mscorlib.GetExportedTypes().MaxBy(type => type.GetMembers().Length);
+            IList<Type> maxTypes = CoreLibrary.GetExportedTypes().MaxBy(type => type.GetTypeInfo().GetMembers().Length);
             // { System.Convert }.
         }
 

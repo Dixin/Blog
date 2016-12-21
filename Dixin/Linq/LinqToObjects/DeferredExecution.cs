@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Linq;
     using System.Threading.Tasks;
 
@@ -11,15 +10,15 @@
         internal static IEnumerable<TResult> SelectGenerator<TSource, TResult>(
             this IEnumerable<TSource> source, Func<TSource, TResult> selector)
         {
-            Trace.WriteLine("Select query starts.");
+            "Select query starts.".WriteLine();
             foreach (TSource value in source)
             {
-                Trace.WriteLine($"Select query is calling selector with {value}.");
+                $"Select query is calling selector with {value}.".WriteLine();
                 TResult result = selector(value);
-                Trace.WriteLine($"Select query evaluated and is yielding {result}.");
+                $"Select query evaluated and is yielding {result}.".WriteLine();
                 yield return result;
             }
-            Trace.WriteLine("Select query ends.");
+            "Select query ends.".WriteLine();
         }
     }
 
@@ -28,16 +27,16 @@
         internal static IEnumerable<TResult> DesugaredSelectGenerator<TSource, TResult>(
             this IEnumerable<TSource> source, Func<TSource, TResult> selector)
         {
-            Trace.WriteLine("Select query starts.");
+            "Select query starts.".WriteLine();
             IEnumerator<TSource> sourceIterator = null; // start.
             try
             {
                 sourceIterator = source.GetEnumerator(); // start.
                 while (sourceIterator.MoveNext()) // moveNext.
                 {
-                    Trace.WriteLine($"Select query is calling selector with {sourceIterator.Current}."); // getCurrent.
+                    $"Select query is calling selector with {sourceIterator.Current}.".WriteLine(); // getCurrent.
                     TResult result = selector(sourceIterator.Current); // getCurrent.
-                    Trace.WriteLine($"Select query evaluated and is yielding {result}."); // getCurrent.
+                    $"Select query evaluated and is yielding {result}.".WriteLine(); // getCurrent.
                     yield return result; // getCurrent.
                 }
             }
@@ -45,7 +44,7 @@
             {
                 sourceIterator?.Dispose(); // dispose.
             }
-            Trace.WriteLine("Select query ends."); // end.
+            "Select query ends.".WriteLine(); // end.
         }
 
         internal static IEnumerable<TResult> CompiledSelectGenerator<TSource, TResult>(
@@ -55,34 +54,34 @@
                 iteratorFactory: sourceIterator => new Iterator<TResult>(
                     start: () =>
                         {
-                            Trace.WriteLine("Select query starts.");
+                            "Select query starts.".WriteLine();
                             sourceIterator = source.GetEnumerator();
                         },
                     moveNext: () => sourceIterator.MoveNext(),
                     getCurrent: () =>
                         {
-                            Trace.WriteLine($"Select query is calling selector with {sourceIterator.Current}.");
+                            $"Select query is calling selector with {sourceIterator.Current}.".WriteLine();
                             TResult result = selector(sourceIterator.Current);
-                            Trace.WriteLine($"Select query evaluated and is yielding {result}.");
+                            $"Select query evaluated and is yielding {result}.".WriteLine();
                             return result;
                         },
                     dispose: () => sourceIterator?.Dispose(),
-                    end: () => Trace.WriteLine("Select query ends.")));
+                    end: () => "Select query ends.".WriteLine()));
 
         internal static IEnumerable<TResult> SelectList<TSource, TResult>(
             this IEnumerable<TSource> source, Func<TSource, TResult> selector)
         {
-            Trace.WriteLine("Select query starts.");
+            "Select query starts.".WriteLine();
             List<TResult> resultSequence = new List<TResult>();
             foreach (TSource value in source)
             {
-                Trace.WriteLine($"Select query is calling selector with {value}.");
+                $"Select query is calling selector with {value}.".WriteLine();
                 TResult result = selector(value);
-                Trace.WriteLine($"Select query evaluated and is adding {result}.");
+                $"Select query evaluated and is adding {result}.".WriteLine();
                 resultSequence.Add(result);
             }
 
-            Trace.WriteLine("Select query ends.");
+            "Select query ends.".WriteLine();
             return resultSequence;
         }
 
@@ -147,28 +146,28 @@
 
         internal static void Tasks()
         {
-            Task cold = new Task(() => Trace.WriteLine(nameof(cold))); // Deferred execution.
+            Task cold = new Task(() => nameof(cold).WriteLine()); // Deferred execution.
             // Created task is not started.
             cold.Start(); // Created task is started.
 
-            Task hot = Task.Run(() => Trace.WriteLine(nameof(hot))); // Immediate execution.
+            Task hot = Task.Run(() => nameof(hot).WriteLine()); // Immediate execution.
             // Created task is started.
         }
 
         internal static IEnumerable<TSource> WhereGenerator<TSource>(
             this IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
-            Trace.WriteLine("Where query starts.");
+            "Where query starts.".WriteLine();
             foreach (TSource value in source)
             {
-                Trace.WriteLine($"Where query is calling predicate with {value}.");
+                $"Where query is calling predicate with {value}.".WriteLine();
                 if (predicate(value))
                 {
-                    Trace.WriteLine($"Where query is yielding {value}.");
+                    $"Where query is yielding {value}.".WriteLine();
                     yield return value;
                 }
             }
-            Trace.WriteLine("Where query ends.");
+            "Where query ends.".WriteLine();
         }
 
         internal static IEnumerable<TSource> CompiledWhereGenerator<TSource>(
@@ -178,14 +177,14 @@
                 iteratorFactory: sourceIterator => new Iterator<TSource>(
                     start: () =>
                         {
-                            Trace.WriteLine("Where query starts.");
+                            "Where query starts.".WriteLine();
                             sourceIterator = source.GetEnumerator();
                         },
                     moveNext: () =>
                         {
                             while (sourceIterator.MoveNext())
                             {
-                                Trace.WriteLine($"Where query is calling predicate with {sourceIterator.Current}.");
+                                $"Where query is calling predicate with {sourceIterator.Current}.".WriteLine();
                                 if (predicate(sourceIterator.Current))
                                 {
                                     return true;
@@ -195,11 +194,11 @@
                         },
                     getCurrent: () =>
                         {
-                            Trace.WriteLine($"Where query is yielding {sourceIterator.Current}.");
+                            $"Where query is yielding {sourceIterator.Current}.".WriteLine();
                             return sourceIterator.Current;
                         },
                     dispose: () => sourceIterator?.Dispose(),
-                    end: () => Trace.WriteLine("Where query ends.")));
+                    end: () => "Where query ends.".WriteLine()));
 
         internal static void ForEachWhereAndSelect()
         {
@@ -229,40 +228,40 @@
 
         internal static IEnumerable<TSource> ReverseGenerator<TSource>(this IEnumerable<TSource> source)
         {
-            Trace.WriteLine("Reverse query starts.");
+            "Reverse query starts.".WriteLine();
             TSource[] values = source.ToArray();
-            Trace.WriteLine($"Reverse query evaluated all {values.Length} value(s) in input sequence.");
+            $"Reverse query evaluated all {values.Length} value(s) in input sequence.".WriteLine();
             for (int lastIndex = values.Length - 1; lastIndex >= 0; lastIndex--)
             {
-                Trace.WriteLine($"Reverse query is yielding index {lastIndex} of input sequence.");
+                $"Reverse query is yielding index {lastIndex} of input sequence.".WriteLine();
                 yield return values[lastIndex];
             }
-            Trace.WriteLine("Reverse query ends.");
+            "Reverse query ends.".WriteLine();
         }
 
         internal static IEnumerable<TSource> CompiledReverseGenerator<TSource>(this IEnumerable<TSource> source) =>
-            new Generator<TSource, Tuple<TSource[], int>>(
-                data: null,
+            new Generator<TSource, (TSource[], int)>(
+                data: default((TSource[], int)),
                 iteratorFactory: data => new Iterator<TSource>(
                     start: () =>
                         {
-                            Trace.WriteLine("Reverse query starts.");
+                            "Reverse query starts.".WriteLine();
                             TSource[] values = source.ToArray();
-                            Trace.WriteLine($"Reverse query evaluated all {values.Length} value(s) in input sequence.");
+                            $"Reverse query evaluated all {values.Length} value(s) in input sequence.".WriteLine();
 
-                            data = Tuple.Create(values, values.Length - 1);
+                            data = (values, values.Length - 1);
                         },
                     moveNext: () => data.Item2 >= 0,
                     getCurrent: () =>
                         {
                             TSource[] values = data.Item1;
                             int lastIndex = data.Item2;
-                            data = Tuple.Create(values, lastIndex - 1);
+                            data = (values, lastIndex - 1);
 
-                            Trace.WriteLine($"Reverse query is yielding index {lastIndex} of input sequence.");
+                            $"Reverse query is yielding index {lastIndex} of input sequence.".WriteLine();
                             return values[lastIndex];
                         },
-                    end: () => Trace.WriteLine("Reverse query ends.")));
+                    end: () => "Reverse query ends.".WriteLine()));
 
         internal static void ForEachSelectAndReverse()
         {
@@ -288,14 +287,14 @@
                     // Select query ends.
                     // Reverse query evaluated all 5 value(s) in input sequence.
                     // Reverse query is yielding index 4 of input sequence.
-                    Trace.WriteLine(reverseIterator.Current); // *****
+                    reverseIterator.Current.WriteLine(); // *****
                     while (reverseIterator.MoveNext())
                     {
                         // Reverse query is yielding index 3 of input sequence.
                         // Reverse query is yielding index 2 of input sequence.
                         // Reverse query is yielding index 1 of input sequence.
                         // Reverse query is yielding index 0 of input sequence.
-                        Trace.WriteLine(reverseIterator.Current); // 6 4 2 0
+                        reverseIterator.Current.WriteLine(); // 6 4 2 0
                     }
                     // Reverse query ends.
                 }

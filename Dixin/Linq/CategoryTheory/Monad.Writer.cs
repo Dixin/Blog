@@ -2,18 +2,16 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.IO;
-    using System.Linq;
     using System.Text;
 
     public abstract class WriterBase<TContent, T>
     {
-        private readonly Lazy<Tuple<TContent, T>> lazy;
+        private readonly Lazy<(TContent, T)> lazy;
 
-        protected WriterBase(Func<Tuple<TContent, T>> writer, IMonoid<TContent> monoid)
+        protected WriterBase(Func<(TContent, T)> writer, IMonoid<TContent> monoid)
         {
-            this.lazy = new Lazy<Tuple<TContent, T>>(writer);
+            this.lazy = new Lazy<(TContent, T)>(writer);
             this.Monoid = monoid;
         }
 
@@ -29,11 +27,11 @@
         private static readonly IMonoid<IEnumerable<TEntry>> ContentMonoid =
             new EnumerableConcatMonoid<TEntry>();
 
-        public Writer(Func<Tuple<IEnumerable<TEntry>, T>> writer) : base(writer, ContentMonoid)
+        public Writer(Func<(IEnumerable<TEntry>, T)> writer) : base(writer, ContentMonoid)
         {
         }
 
-        public Writer(T value) : base(() => ContentMonoid.Unit().Tuple(value), ContentMonoid)
+        public Writer(T value) : base(() => (ContentMonoid.Unit(), value), ContentMonoid)
         {
         }
     }
@@ -48,7 +46,7 @@
                 new Writer<TEntry, TResult>(() =>
                 {
                     Writer<TEntry, TSelector> result = selector(source.Value);
-                    return source.Monoid.Multiply(source.Content, result.Content).Tuple(
+                    return (source.Monoid.Multiply(source.Content, result.Content), 
                         resultSelector(source.Value, result.Value));
                 });
 
@@ -65,10 +63,10 @@
     public static partial class WriterExtensions
     {
         public static Writer<string, TSource> LogWriter<TSource>(this TSource value, string log) =>
-            new Writer<string, TSource>(() => log.Enumerable().Tuple(value));
+            new Writer<string, TSource>(() => (log.Enumerable(), value));
 
         public static Writer<string, TSource> LogWriter<TSource>(this TSource value, Func<TSource, string> logFactory) =>
-            new Writer<string, TSource>(() => logFactory(value).Enumerable().Tuple(value));
+            new Writer<string, TSource>(() => (logFactory(value).Enumerable(), value));
     }
 
     public static partial class WriterExtensions
@@ -85,7 +83,7 @@
                                                $"File content length: {value.Length}") // Writer<string, string>.
                                            select fileContent; // Define query.
             string result = query.Value; // Execute query.
-            query.Content.ForEach(log => Trace.WriteLine(log));
+            query.Content.WriteLines();
             // File path: D:\File.txt
             // Encoding name: utf-8
             // Encoding: System.Text.UTF8Encoding

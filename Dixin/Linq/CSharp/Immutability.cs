@@ -84,15 +84,15 @@
                 name: "Surface Book", price: 1349.00M);
         }
 
-        internal static void ResuseAnonymousType()
+        internal static void ReuseAnonymousType()
         {
             var device1 = new { Name = "Surface Book", Price = 1349.00M };
             var device2 = new { Name = "Surface Pro 4", Price = 899.00M };
             var device3 = new { Name = "Xbox One S", Price = 399.00 }; // Price is of type double.
             var device4 = new { Price = 174.99M, Name = "Microsoft Band 2" };
-            Trace.WriteLine(device1.GetType() == device2.GetType()); // True
-            Trace.WriteLine(device1.GetType() == device3.GetType()); // False
-            Trace.WriteLine(device1.GetType() == device4.GetType()); // False
+            (device1.GetType() == device2.GetType()).WriteLine(); // True
+            (device1.GetType() == device3.GetType()).WriteLine(); // False
+            (device1.GetType() == device4.GetType()).WriteLine(); // False
         }
 
         internal static void AnonymousTypeParameter()

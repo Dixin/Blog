@@ -1,10 +1,13 @@
 namespace Dixin.Linq.Introduction
 {
+#if NETFX
     using System.Data;
     using System.Data.Common;
     using System.Data.SqlClient;
     using System.Diagnostics;
+#endif
 
+#if NETFX
     internal static partial class LinqToDataSets
     {
         internal static void QueryMethods()
@@ -27,7 +30,9 @@ namespace Dixin.Linq.Introduction
             }
         }
     }
+#endif
 
+#if NETFX
     internal static partial class LinqToDataSets
     {
         internal static void QueryExpression()
@@ -50,4 +55,5 @@ namespace Dixin.Linq.Introduction
             }
         }
     }
+#endif
 }

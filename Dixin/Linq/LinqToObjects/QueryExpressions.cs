@@ -3,25 +3,31 @@ namespace Dixin.Linq.LinqToObjects
     using System;
     using System.Collections;
     using System.Collections.Generic;
+#if NETFX
     using System.Configuration;
+#endif
     using System.Linq;
     using System.Reflection;
+#if NETFX
     using System.Web.Profile;
+#endif
 
     using Dixin.Linq.CSharp;
 
+#if NETFX
     using Microsoft.TeamFoundation.Client;
     using Microsoft.TeamFoundation.WorkItemTracking.Client;
+#endif
 
     internal static class QueryExpressions
     {
-        private static readonly Assembly mscorlib = typeof(object).Assembly;
+        private static readonly Assembly CoreLibrary = typeof(object).GetTypeInfo().Assembly;
 
         internal static void Where()
         {
-            IEnumerable<Type> source = mscorlib.GetExportedTypes();
+            IEnumerable<Type> source = CoreLibrary.GetExportedTypes();
             IEnumerable<Type> primitives = from type in source
-                                           where type.IsPrimitive
+                                           where type.GetTypeInfo().IsPrimitive
                                            select type;
         }
 
@@ -44,7 +50,7 @@ namespace Dixin.Linq.LinqToObjects
         internal static void SelectMany()
         {
             IEnumerable<MemberInfo> mappedAndFiltered =
-                from type in mscorlib.GetExportedTypes()
+                from type in CoreLibrary.GetExportedTypes()
                 from member in type.GetDeclaredMembers()
                 where member.IsObsolete()
                 select member;
@@ -52,9 +58,9 @@ namespace Dixin.Linq.LinqToObjects
 
         internal static void SelectManyWithResultSelector()
         {
-            IEnumerable<Type> source = mscorlib.GetExportedTypes();
+            IEnumerable<Type> source = CoreLibrary.GetExportedTypes();
             IEnumerable<string> obsoleteMembers =
-                from type in mscorlib.GetExportedTypes()
+                from type in CoreLibrary.GetExportedTypes()
                 from member in type.GetDeclaredMembers()
                 where member.IsObsolete()
                 select $"{type} - {member}";
@@ -311,6 +317,7 @@ namespace Dixin.Linq.LinqToObjects
                        select innerValue);
         }
 
+#if NETFX
         internal static void CastNonGenericIEnumerable(TfsClientCredentials credentials)
         {
             using (TfsTeamProjectCollection projectCollection = new TfsTeamProjectCollection(
@@ -333,6 +340,7 @@ namespace Dixin.Linq.LinqToObjects
             IEnumerable<SettingsProperty> genericProperties = from SettingsProperty property in properties
                                                               select property;
         }
+#endif
 
         internal static void CastGenericIEnumerable()
         {

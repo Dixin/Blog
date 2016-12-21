@@ -6,7 +6,7 @@
     using System.Threading.Tasks;
 
     using Dixin.Linq.CategoryTheory;
-    using Dixin.TestTools.UnitTesting;
+    using Dixin.Linq.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -204,26 +204,26 @@
         {
             bool isExecuted1 = false;
             Func<int, int> addOne = x => { isExecuted1 = true; return x + 1; };
-            Tuple<string, int> query1 = addOne.Tuple<string, Func<int, int>>().Apply(2.Tuple<string, int>());
+            (string, int) query1 = addOne.ValueTuple<string, Func<int, int>>().Apply(2.ValueTuple<string, int>());
             Assert.IsTrue(isExecuted1); // Immediate execution.
             Assert.AreEqual(2 + 1, query1.Item2); // Execution.
             Assert.IsTrue(isExecuted1);
 
             // f.Functor().Apply(F) == F.Select(f)
-            Assert.AreEqual(addOne.Tuple<string, Func<int, int>>().Apply(1.Tuple<string, int>()), 1.Tuple<string, int>().Select(addOne));
+            Assert.AreEqual(addOne.ValueTuple<string, Func<int, int>>().Apply(1.ValueTuple<string, int>()), 1.ValueTuple<string, int>().Select(addOne));
             // id.Functor().Apply(F) == F
             Func<int, int> id = Functions.Id;
-            Assert.AreEqual(id.Tuple<string, Func<int, int>>().Apply(1.Tuple<string, int>()), 1.Tuple<string, int>());
+            Assert.AreEqual(id.ValueTuple<string, Func<int, int>>().Apply(1.ValueTuple<string, int>()), 1.ValueTuple<string, int>());
             // o.Functor().Apply(F1).Apply(F2).Apply(F3) == F1.Apply(F2.Apply(F3))
             Func<int, int> addTwo = x => x + 2;
-            Tuple<string, int> left1 = Functions<int, int, int>.o.Tuple<string, Func<Func<int, int>, Func<Func<int, int>, Func<int, int>>>>().Apply(addOne.Tuple<string, Func<int, int>>()).Apply(addTwo.Tuple<string, Func<int, int>>()).Apply(1.Tuple<string, int>());
-            Tuple<string, int> right1 = addOne.Tuple<string, Func<int, int>>().Apply(addTwo.Tuple<string, Func<int, int>>().Apply(1.Tuple<string, int>()));
+            (string, int) left1 = Functions<int, int, int>.o.ValueTuple<string, Func<Func<int, int>, Func<Func<int, int>, Func<int, int>>>>().Apply(addOne.ValueTuple<string, Func<int, int>>()).Apply(addTwo.ValueTuple<string, Func<int, int>>()).Apply(1.ValueTuple<string, int>());
+            (string, int) right1 = addOne.ValueTuple<string, Func<int, int>>().Apply(addTwo.ValueTuple<string, Func<int, int>>().Apply(1.ValueTuple<string, int>()));
             Assert.AreEqual(left1, right1);
             // f.Functor().Apply(a.Functor()) == f(a).Functor()
-            Assert.AreEqual(addOne.Tuple<string, Func<int, int>>().Apply(1.Tuple<string, int>()), addOne(1).Tuple<string, int>());
+            Assert.AreEqual(addOne.ValueTuple<string, Func<int, int>>().Apply(1.ValueTuple<string, int>()), addOne(1).ValueTuple<string, int>());
             // F.Apply(a.Functor()) == (f => f(a)).Functor().Apply(F)
-            Tuple<string, int> left2 = addOne.Tuple<string, Func<int, int>>().Apply(1.Tuple<string, int>());
-            Tuple<string, int> right2 = new Func<Func<int, int>, int>(f => f(1)).Tuple<string, Func<Func<int, int>, int>>().Apply(addOne.Tuple<string, Func<int, int>>());
+            (string, int) left2 = addOne.ValueTuple<string, Func<int, int>>().Apply(1.ValueTuple<string, int>());
+            (string, int) right2 = new Func<Func<int, int>, int>(f => f(1)).ValueTuple<string, Func<Func<int, int>, int>>().Apply(addOne.ValueTuple<string, Func<int, int>>());
             Assert.AreEqual(left2, right2);
         }
 
@@ -232,26 +232,26 @@
         {
             bool isExecuted1 = false;
             Func<int, int> addOne = x => { isExecuted1 = true; return x + 1; };
-            Tuple<int> query1 = addOne.Tuple().Apply(2.Tuple());
+            ValueTuple<int> query1 = addOne.ValueTuple().Apply(2.ValueTuple());
             Assert.IsTrue(isExecuted1); // Immediate execution.
             Assert.AreEqual(2 + 1, query1.Item1); // Execution.
             Assert.IsTrue(isExecuted1);
 
             // f.Functor().Apply(F) == F.Select(f)
-            Assert.AreEqual(addOne.Tuple().Apply(1.Tuple()).Item1, 1.Tuple().Select(addOne).Item1);
+            Assert.AreEqual(addOne.ValueTuple().Apply(1.ValueTuple()).Item1, 1.ValueTuple().Select(addOne).Item1);
             // id.Functor().Apply(F) == F
             Func<int, int> id = Functions.Id;
-            Assert.AreEqual(id.Tuple().Apply(1.Tuple()).Item1, 1.Tuple().Item1);
+            Assert.AreEqual(id.ValueTuple().Apply(1.ValueTuple()).Item1, 1.ValueTuple().Item1);
             // o.Functor().Apply(F1).Apply(F2).Apply(F3) == F1.Apply(F2.Apply(F3))
             Func<int, int> addTwo = x => x + 2;
-            Tuple<int> left1 = Functions<int, int, int>.o.Tuple().Apply(addOne.Tuple()).Apply(addTwo.Tuple()).Apply(1.Tuple());
-            Tuple<int> right1 = addOne.Tuple().Apply(addTwo.Tuple().Apply(1.Tuple()));
+            ValueTuple<int> left1 = Functions<int, int, int>.o.ValueTuple().Apply(addOne.ValueTuple()).Apply(addTwo.ValueTuple()).Apply(1.ValueTuple());
+            ValueTuple<int> right1 = addOne.ValueTuple().Apply(addTwo.ValueTuple().Apply(1.ValueTuple()));
             Assert.AreEqual(left1.Item1, right1.Item1);
             // f.Functor().Apply(a.Functor()) == f(a).Functor()
-            Assert.AreEqual(addOne.Tuple().Apply(1.Tuple()).Item1, addOne(1).Tuple().Item1);
+            Assert.AreEqual(addOne.ValueTuple().Apply(1.ValueTuple()).Item1, addOne(1).ValueTuple().Item1);
             // F.Apply(a.Functor()) == (f => f(a)).Functor().Apply(F)
-            Tuple<int> left2 = addOne.Tuple().Apply(1.Tuple());
-            Tuple<int> right2 = new Func<Func<int, int>, int>(f => f(1)).Tuple().Apply(addOne.Tuple());
+            ValueTuple<int> left2 = addOne.ValueTuple().Apply(1.ValueTuple());
+            ValueTuple<int> right2 = new Func<Func<int, int>, int>(f => f(1)).ValueTuple().Apply(addOne.ValueTuple());
             Assert.AreEqual(left2.Item1, right2.Item1);
         }
 

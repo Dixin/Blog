@@ -3,7 +3,6 @@
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.Reflection;
 
@@ -145,7 +144,7 @@
             LinkedListSequence<int> sequence = new LinkedListSequence<int>(head);
             foreach (int value in sequence)
             {
-                Trace.WriteLine(value);
+                value.WriteLine();
             }
         }
 
@@ -203,28 +202,28 @@
     {
         public static bool IsAssignableTo(this Type from, Type to)
         {
-            if (to.IsAssignableFrom(from))
+            if (to.GetTypeInfo().IsAssignableFrom(from))
             {
                 return true;
             }
 
-            if (!to.IsGenericTypeDefinition)
+            if (!to.GetTypeInfo().IsGenericTypeDefinition)
             {
                 return false;
             }
 
-            if (from.IsGenericType && from.GetGenericTypeDefinition() == to)
+            if (from.GetTypeInfo().IsGenericType && from.GetGenericTypeDefinition() == to)
             {
                 return true; // Collection<int> is assignable to Collection<>.
             }
 
-            if (to.IsInterface && from.GetInterfaces().Any(
-                @interface => @interface.IsGenericType && @interface.GetGenericTypeDefinition() == to))
+            if (to.GetTypeInfo().IsInterface && from.GetTypeInfo().GetInterfaces().Any(
+                @interface => @interface.GetTypeInfo().IsGenericType && @interface.GetGenericTypeDefinition() == to))
             {
                 return true; // Collection<>/Collection<int> assignable to IEnumerable<>/ICollection<>.
             }
 
-            Type baseOfFrom = from.BaseType;
+            Type baseOfFrom = from.GetTypeInfo().BaseType;
             return baseOfFrom != null && IsAssignableTo(baseOfFrom, to);
         }
     }
@@ -237,14 +236,14 @@
             Type genericEnumerable = typeof(IEnumerable<>);
             return assembly
                 .GetExportedTypes()
-                .Where(type => type != nonGenericEnumerable && nonGenericEnumerable.IsAssignableFrom(type))
+                .Where(type => type != nonGenericEnumerable && nonGenericEnumerable.GetTypeInfo().IsAssignableFrom(type))
                 .Except(assembly.GetExportedTypes().Where(type => type.IsAssignableTo(genericEnumerable)))
                 .OrderBy(type => type.FullName);
         }
 
         internal static void NonGenericSequences()
         {
-            foreach (Type nonGenericSequence in NonGenericSequences(typeof(object).Assembly)) // mscorlib.dll.
+            foreach (Type nonGenericSequence in NonGenericSequences(typeof(object).GetTypeInfo().Assembly)) // Core library.
             {
                 // Console.WriteLine(nonGenericSequence.FullName);
             }
@@ -280,9 +279,9 @@
             // System.Security.Policy.Evidence
             // System.Security.ReadOnlyPermissionSet
 
-            foreach (Type nonGenericSequence in NonGenericSequences(typeof(Uri).Assembly)) // System.dll.
+            foreach (Type nonGenericSequence in NonGenericSequences(typeof(Uri).GetTypeInfo().Assembly)) // System.dll.
             {
-                Trace.WriteLine(nonGenericSequence.FullName);
+                nonGenericSequence.FullName.WriteLine();
             }
             // System.CodeDom.CodeAttributeArgumentCollection
             // System.CodeDom.CodeAttributeDeclarationCollection

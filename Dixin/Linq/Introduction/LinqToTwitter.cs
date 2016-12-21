@@ -1,11 +1,14 @@
 ﻿namespace Dixin.Linq.Introduction
 {
+#if NETFX
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Linq;
 
     using global::LinqToTwitter;
+#endif
 
+#if NETFX
     internal static partial class LinqToTwitter
     {
         internal static void QueryExpression()
@@ -37,7 +40,9 @@
             }
         }
     }
+#endif
 
+#if NETFX
     internal static partial class LinqToTwitter
     {
         internal static void QueryMethods()
@@ -69,4 +74,5 @@
             }
         }
     }
+#endif
 }

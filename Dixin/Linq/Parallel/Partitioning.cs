@@ -6,9 +6,11 @@
     using System.Linq;
     using System.Threading;
 
+#if NETFX
     using Microsoft.ConcurrencyVisualizer.Instrumentation;
+#endif
 
-    using static HelperMethods;
+    using static Functions;
 
     using Parallel = System.Threading.Tasks.Parallel;
 
@@ -162,6 +164,7 @@
             Parallel.ForEach(new DynamicPartitioner<int>(source), value => Compute(value));
         }
 
+#if NETFX
         internal static void VisualizeDynamicPartitioner()
         {
             IEnumerable<int> source = Enumerable.Range(0, Environment.ProcessorCount * 4);
@@ -176,6 +179,7 @@
                     }
                 });
         }
+#endif
 
         internal static IList<IList<TSource>> GetPartitions<TSource>(IEnumerable<TSource> partitionsSource, int partitionCount)
         {

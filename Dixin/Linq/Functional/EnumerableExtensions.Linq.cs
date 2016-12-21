@@ -109,7 +109,7 @@
                     return source.Where(hashSet.Add);
                 });
 
-        private static Tuple<bool, TSource> ElementAt<TSource>(
+        private static (bool, TSource) ElementAt<TSource>(
             this IEnumerator<TSource> iterator,
             int targetIndex,
             int lastIndex)
@@ -118,11 +118,11 @@
             {
                 int currentIndex = lastIndex + 1;
                 return currentIndex == targetIndex
-                    ? Tuple.Create(true, iterator.Current)
+                    ? (true, iterator.Current)
                     : iterator.ElementAt(targetIndex, currentIndex);
             }
 
-            return Tuple.Create(false, default(TSource));
+            return (false, default(TSource));
         }
 
         public static TSource ElementAt<TSource>(this IEnumerable<TSource> source, int index)
@@ -140,7 +140,7 @@
 
             using (IEnumerator<TSource> iterator = source.GetEnumerator())
             {
-                Tuple<bool, TSource> result = iterator.ElementAt(index, -1);
+                (bool, TSource) result = iterator.ElementAt(index, -1);
                 if (result.Item1)
                 {
                     return result.Item2;

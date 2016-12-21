@@ -7,7 +7,6 @@
     using System.Linq;
 
     using Mono.Cecil;
-    using Mono.Cecil.Rocks;
 
     internal static partial class Purity
     {
@@ -47,7 +46,7 @@
             return int32 + 0; // Function logic.
         }
 
-        internal static void PureFunction(string contractsAssemblyDirectory)
+        internal static void PureFunction(string contractsAssemblyDirectory, string gacDirectory = @"C:\Windows\Microsoft.NET\assembly")
         {
             string[] contractAssemblyFiles = Directory
                 .EnumerateFiles(contractsAssemblyDirectory, "*.dll")
@@ -59,15 +58,12 @@
                 .SelectMany(assemblyContract => assemblyContract.Modules)
                 .SelectMany(moduleContract => moduleContract.GetTypes())
                 .Where(typeContract => typeContract.IsPublic)
-                .SelectMany(typeContract => typeContract.GetMethods())
+                .SelectMany(typeContract => typeContract.Methods)
                 .Count(functionMemberContract => functionMemberContract.IsPublic
                     && functionMemberContract.CustomAttributes.Any(attribute =>
                         attribute.AttributeType.FullName.Equals(pureAttribute, StringComparison.Ordinal)));
-            Trace.WriteLine(pureFunctionCount); // 2472
+            pureFunctionCount.WriteLine(); // 2473
 
-            string gacDirectory = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.Windows),
-                @"Microsoft.Net\assembly");
             string[] assemblyFiles = new string[] { "GAC_64", "GAC_MSIL" }
                 .Select(platformDirectory => Path.Combine(gacDirectory, platformDirectory))
                 .SelectMany(assemblyDirectory => Directory
@@ -82,17 +78,17 @@
                 .SelectMany(assembly => assembly.Modules)
                 .SelectMany(module => module.GetTypes())
                 .Where(type => type.IsPublic)
-                .SelectMany(type => type.GetMethods())
+                .SelectMany(type => type.Methods)
                 .Count(functionMember => functionMember.IsPublic);
-            Trace.WriteLine(functionCount); // 74127
+            functionCount.WriteLine(); // 83447
         }
 
         [Pure] // Incorrect.
         internal static ProcessStartInfo Initialize(ProcessStartInfo processStart)
         {
-            processStart.UseShellExecute = true;
-            processStart.ErrorDialog = true;
-            processStart.WindowStyle = ProcessWindowStyle.Normal;
+            processStart.RedirectStandardInput = false;
+            processStart.RedirectStandardOutput = false;
+            processStart.RedirectStandardError = false;
             return processStart;
         }
     }

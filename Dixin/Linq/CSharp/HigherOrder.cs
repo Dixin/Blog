@@ -70,9 +70,9 @@
             Trace.WriteLine(output4()); // False
         }
 
-        internal static void ArrayForEach(Uri[] array)
+        internal static void FilterArray(Uri[] array)
         {
-            Array.ForEach(array, uri => Trace.WriteLine(uri));
+            Uri[] notNull = Array.FindAll(array, uri => uri != null);
         }
     }
 
@@ -213,7 +213,7 @@ namespace System
     [Serializable]
     public abstract class Array : ICloneable, IList, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable
     {
-        public static void ForEach<T>(T[] array, Action<T> action);
+        public static T[] FindAll<T>(T[] array, Predicate<T> match);
     }
 }
 #endif

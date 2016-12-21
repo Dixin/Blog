@@ -44,7 +44,7 @@
         [TestMethod]
         public void OptionalToEnumerableTest()
         {
-            Optional<int> functor = new Optional<int>(() => Tuple.Create(true, 1));
+            Optional<int> functor = new Optional<int>(() => (true, 1));
             IEnumerable<int> query1 = from x in functor.ToEnumerable()
                                       where x > 0
                                       select x;

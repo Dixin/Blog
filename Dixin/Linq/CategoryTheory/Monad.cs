@@ -2,12 +2,8 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.IO;
-    using System.Linq;
-    using System.Linq.Expressions;
     using System.Net.Http;
-    using System.Reflection;
     using System.Text;
     using System.Threading.Tasks;
 
@@ -52,13 +48,13 @@
     // Cannot be compiled.
     public static partial class MonadExtensions // (SelectMany, Wrap) implements (Multiply, Unit).
     {
-        // Multiply: (TMonad<T1>, TMonad<T2>) => TMonad<Tuple<T1, T2>>
-        public static TMonad<Tuple<T1, T2>> Multiply<TMonad<>, T1, T2>(
+        // Multiply: (TMonad<T1>, TMonad<T2>) => TMonad<(T1, T2)>
+        public static TMonad<(T1, T2)> Multiply<TMonad<>, T1, T2>(
             this TMonad<T1> source1, TMonad<T2> source2) where TMonad<> : IMonad<TMonad<>> =>
                 from value1 in source1
                 from value2 in source2
-                select value1.Tuple(value2);
-                // source1.SelectMany(value1 => source2 (value1, value2) => value1.Tuple(value2));
+                select (value1, value2);
+                // source1.SelectMany(value1 => source2 (value1, value2) => (value1, value2));
 
         // Unit: Unit -> TMonad<Unit>
         public static TMonad<Unit> Unit<TMonad<>>(
@@ -83,13 +79,13 @@
     // Cannot be compiled.
     public static class MonadExtensions // Monad (Multiply, Unit) implements monoidal functor (Multiply, Unit).
     {
-        // Multiply: (TMonad<T1>, TMonad<T2>) => TMonad<Tuple<T1, T2>>
-        public static TMonad<Tuple<T1, T2>> Multiply<TMonad<>, T1, T2>(
+        // Multiply: (TMonad<T1>, TMonad<T2>) => TMonad<(T1, T2)>
+        public static TMonad<(T1, T2)> Multiply<TMonad<>, T1, T2>(
             this TMonad<T1> source1, TMonad<T2> source2) where TMonad<> : IMonad<TMonad<>> =>
                 (from value1 in source1
                  select (from value2 in source2
-                         select value1.Tuple(value2))).Multiply();
-                // source1.Select(value1 => source2.Select(value2 => value1.Tuple(value2))).Multiply();
+                         select (value1, value2))).Multiply();
+                // source1.Select(value1 => source2.Select(value2 => (value1, value2))).Multiply();
 
         // Unit: Unit -> TMonad<Unit>
         public static TMonad<Unit> Unit<TMonad<>>(Unit unit = default(Unit)) where TMonad<> : IMonad<TMonad<>> => 
@@ -259,13 +255,13 @@
 
     public static partial class EnumerableExtensions // IEnumerable<T> : IMonoidalFunctor<IEnumerable<>>
     {
-        // Multiply: (IEnumerable<T1>, IEnumerable<T2>) => IEnumerable<Tuple<T1, T2>>
-        public static IEnumerable<Tuple<T1, T2>> Multiply<T1, T2>(
+        // Multiply: (IEnumerable<T1>, IEnumerable<T2>) => IEnumerable<(T1, T2)>
+        public static IEnumerable<(T1, T2)> Multiply<T1, T2>(
             this IEnumerable<T1> source1, IEnumerable<T2> source2) =>
                 from value1 in source1
                 from value2 in source2
-                select value1.Tuple(value2);
-                // source1.SelectMany(value1 => source2 (value1, value2) => value1.Tuple(value2));
+                select (value1, value2);
+                // source1.SelectMany(value1 => source2, (value1, value2) => (value1, value2));
 
         // Unit: Unit -> IEnumerable<Unit>
         public static IEnumerable<Unit> Unit(Unit unit = default(Unit)) => unit.Enumerable();
@@ -296,14 +292,14 @@
             IEnumerable<int> source = new int[] { 0, 1, 2, 3, 4 };
 
             // Associativity preservation: source.Wrap().Multiply().Wrap().Multiply() == source.Wrap().Wrap().Multiply().Multiply().
-            source.Enumerable().Multiply().Enumerable().Multiply().ForEach(result => Trace.WriteLine(result));
+            source.Enumerable().Multiply().Enumerable().Multiply().WriteLines();
             // 0 1 2 3 4
-            source.Enumerable().Enumerable().Multiply().Multiply().ForEach(result => Trace.WriteLine(result));
+            source.Enumerable().Enumerable().Multiply().Multiply().WriteLines();
             // 0 1 2 3 4
             // Left unit preservation: Unit(source).Multiply() == f.
-            Unit(source).Multiply().ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
+            Unit(source).Multiply().WriteLines(); // 0 1 2 3 4
             // Right unit preservation: source == source.Select(Unit).Multiply().
-            source.Select(Unit).Multiply().ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
+            source.Select(Unit).Multiply().WriteLines(); // 0 1 2 3 4
         }
 
         internal static void Workflow<T1, T2, T3, T4>(
@@ -317,7 +313,7 @@
                                     from value3 in source3()
                                     from value4 in source4(value1, value2, value3)
                                     select value4; // Define query.
-            query.ForEach(result => Trace.WriteLine(result)); // Execute query.
+            query.WriteLines(); // Execute query.
         }
 
         internal static void CompiledWorkflow<T1, T2, T3, T4>(
@@ -333,7 +329,7 @@
                     .SelectMany(
                         result3 => source4(result3.Result2.Value1, result3.Result2.Value2, result3.Value3),
                         (result3, value4) => value4); // Define query.
-            query.ForEach(result => Trace.WriteLine(result)); // Execute query.
+            query.WriteLines(); // Execute query.
         }
 
         internal static void MonadLaws()
@@ -349,41 +345,39 @@
             (from value in source
              from result1 in selector1(value)
              from result2 in selector2(result1)
-             select result2).ForEach(result => Trace.WriteLine(result));
-                // 0.0 0.00 0.0 0.00
-                // 0.5 0.50 1.0 1.00
-                // 1.0 1.00 1.4 1.41
-                // 1.5 1.50 1.7 1.73
-                // 2.0 2.00 2.0 2.00
+             select result2).WriteLines();
+            // 0.0 0.00 0.0 0.00
+            // 0.5 0.50 1.0 1.00
+            // 1.0 1.00 1.4 1.41
+            // 1.5 1.50 1.7 1.73
+            // 2.0 2.00 2.0 2.00
             (from value in source
              from result in (from result1 in selector1(value)
                              from result2 in selector2(result1)
                              select result2)
-             select result).ForEach(result => Trace.WriteLine(result));
-                // 0.0 0.00 0.0 0.00
-                // 0.5 0.50 1.0 1.00
-                // 1.0 1.00 1.4 1.41
-                // 1.5 1.50 1.7 1.73
-                // 2.0 2.00 2.0 2.00
+             select result).WriteLines();
+            // 0.0 0.00 0.0 0.00
+            // 0.5 0.50 1.0 1.00
+            // 1.0 1.00 1.4 1.41
+            // 1.5 1.50 1.7 1.73
+            // 2.0 2.00 2.0 2.00
             // Left unit: value.Wrap().SelectMany(selector) == selector(value).
             (from value in Value.Enumerable()
              from result in selector(value)
-             select result).ForEach(
-                result => Trace.WriteLine(result)); // * * * * *
-            selector(Value).ForEach(result => Trace.WriteLine(result)); // * * * * *
+             select result).WriteLines(); // * * * * *
+            selector(Value).WriteLines(); // * * * * *
             // Right unit: source == source.SelectMany(Wrap).
             (from value in source
              from result in value.Enumerable()
-             select result).ForEach(
-                result => Trace.WriteLine(result)); // 0 1 2 3 4
+             select result).WriteLines(); // 0 1 2 3 4
         }
 
         public static Func<TSource, IEnumerable<TResult>> o<TSource, TMiddle, TResult>( // After.
             this Func<TMiddle, IEnumerable<TResult>> selector2,
-            Func<TSource, IEnumerable<TMiddle>> selector1) => 
+            Func<TSource, IEnumerable<TMiddle>> selector1) =>
                 value => selector1(value).SelectMany(selector2, (result1, result2) => result2);
-                // Equivalent to:
-                // value => selector1(value).Select(selector2).Multiply();
+        // Equivalent to:
+        // value => selector1(value).Select(selector2).Multiply();
 
         internal static void KleisliComposition()
         {
@@ -394,26 +388,26 @@
                 @double => new string[] { @double.ToString("0.0"), @double.ToString("0.00") };
 
             // Associativity: selector3.o(selector2).o(selector1) == selector3.o(selector2.o(selector1)).
-            selector3.o(selector2).o(selector1)(true).ForEach(result => Trace.WriteLine(result));
-                // 0.0 0.00 0.0 0.00
-                // 0.5 0.50 1.0 1.00
-                // 1.0 1.00 1.4 1.41
-                // 1.5 1.50 1.7 1.73
-                // 2.0 2.00 2.0 2.00
-            selector3.o(selector2.o(selector1))(true).ForEach(result => Trace.WriteLine(result));
-                // 0.0 0.00 0.0 0.00
-                // 0.5 0.50 1.0 1.00
-                // 1.0 1.00 1.4 1.41
-                // 1.5 1.50 1.7 1.73
-                // 2.0 2.00 2.0 2.00
+            selector3.o(selector2).o(selector1)(true).WriteLines();
+            // 0.0 0.00 0.0 0.00
+            // 0.5 0.50 1.0 1.00
+            // 1.0 1.00 1.4 1.41
+            // 1.5 1.50 1.7 1.73
+            // 2.0 2.00 2.0 2.00
+            selector3.o(selector2.o(selector1))(true).WriteLines();
+            // 0.0 0.00 0.0 0.00
+            // 0.5 0.50 1.0 1.00
+            // 1.0 1.00 1.4 1.41
+            // 1.5 1.50 1.7 1.73
+            // 2.0 2.00 2.0 2.00
             // Left unit: Unit.o(selector) == selector.
             Func<int, IEnumerable<int>> leftUnit = Enumerable;
-            leftUnit.o(selector1)(true).ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
-            selector1(true).ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
+            leftUnit.o(selector1)(true).WriteLines(); // 0 1 2 3 4
+            selector1(true).WriteLines(); // 0 1 2 3 4
             // Right unit: selector == selector.o(Unit).
-            selector1(false).ForEach(result => Trace.WriteLine(result)); // 5 6 7 8 9
+            selector1(false).WriteLines(); // 5 6 7 8 9
             Func<bool, IEnumerable<bool>> rightUnit = Enumerable;
-            selector1.o(rightUnit)(false).ForEach(result => Trace.WriteLine(result)); // 5 6 7 8 9
+            selector1.o(rightUnit)(false).WriteLines(); // 5 6 7 8 9
         }
     }
 
@@ -434,7 +428,7 @@
         public static Lazy<TResult> SelectMany<TSource, TSelector, TResult>(
             this Lazy<TSource> source,
             Func<TSource, Lazy<TSelector>> selector,
-            Func<TSource, TSelector, TResult> resultSelector) => 
+            Func<TSource, TSelector, TResult> resultSelector) =>
                 new Lazy<TResult>(() => resultSelector(source.Value, selector(source.Value).Value));
     }
 
@@ -458,7 +452,7 @@
     public static partial class FuncExtensions // Func<T> : IMonad<Func<>>
     {
         // Multiply: Func<Func<T> -> Func<T>
-        public static Func<TSource> Multiply<TSource>(this Func<Func<TSource>> sourceWrapper) => 
+        public static Func<TSource> Multiply<TSource>(this Func<Func<TSource>> sourceWrapper) =>
             sourceWrapper.SelectMany(source => source, (source, value) => value);
 
         // Unit: Unit -> Func<Unit>
@@ -536,10 +530,10 @@
                         Optional<TSelector> result = selector(source.Value);
                         if (result.HasValue)
                         {
-                            return true.Tuple(resultSelector(source.Value, result.Value));
+                            return (true, resultSelector(source.Value, result.Value));
                         }
                     }
-                    return false.Tuple(default(TResult));
+                    return (false, default(TResult));
                 });
     }
 
@@ -550,22 +544,22 @@
             string input;
             Optional<string> query =
                 from filePath in new Optional<string>(() => string.IsNullOrWhiteSpace(input = Console.ReadLine())
-                    ? false.Tuple(default(string)) : true.Tuple(input))
+                    ? (false, default(string)) : (true, input))
                 from encodingName in new Optional<string>(() => string.IsNullOrWhiteSpace(input = Console.ReadLine())
-                    ? false.Tuple(default(string)) : true.Tuple(input))
+                    ? (false, default(string)) : (true, input))
                 from encoding in new Optional<Encoding>(() =>
                     {
                         try
                         {
-                            return true.Tuple(Encoding.GetEncoding(encodingName));
+                            return (true, Encoding.GetEncoding(encodingName));
                         }
                         catch (ArgumentException)
                         {
-                            return false.Tuple(default(Encoding));
+                            return (false, default(Encoding));
                         }
                     })
                 from fileContent in new Optional<string>(() => File.Exists(filePath)
-                    ? true.Tuple(File.ReadAllText(filePath, encoding)) : false.Tuple(default(string)))
+                    ? (true, File.ReadAllText(filePath, encoding)) : (false, default(string)))
                 select fileContent; // Define query.
             if (query.HasValue) // Execute query.
             {
@@ -576,111 +570,109 @@
 
     #endregion
 
-    #region Tuple<>
+    #region ValueTuple<>
 
-    public static partial class TupleExtensions // Tuple<T> : IMonad<Tuple<>>
+    public static partial class ValueTupleExtensions // ValueTuple<T> : IMonad<ValueTuple<>>
     {
-        // Multiply: Tuple<Tuple<TSource> -> Tuple<TSource>
-        public static Tuple<TSource> Multiply<TSource>(this Tuple<Tuple<TSource>> sourceWrapper) =>
+        // Multiply: ValueTuple<ValueTuple<TSource> -> ValueTuple<TSource>
+        public static ValueTuple<TSource> Multiply<TSource>(this ValueTuple<ValueTuple<TSource>> sourceWrapper) =>
             sourceWrapper.SelectMany(source => source, (source, value) => value); // Immediate execution.
 
-        // Unit: TSource -> Tuple<TSource>
-        public static Tuple<TSource> Unit<TSource>(TSource value) => Tuple(value);
+        // Unit: TSource -> ValueTuple<TSource>
+        public static ValueTuple<TSource> Unit<TSource>(TSource value) => ValueTuple(value);
 
-        // SelectMany: (Tuple<TSource>, TSource -> Tuple<TSelector>, (TSource, TSelector) -> TResult) -> Tuple<TResult>
-        public static Tuple<TResult> SelectMany<TSource, TSelector, TResult>(
-            this Tuple<TSource> source,
-            Func<TSource, Tuple<TSelector>> selector,
+        // SelectMany: (ValueTuple<TSource>, TSource -> ValueTuple<TSelector>, (TSource, TSelector) -> TResult) -> ValueTuple<TResult>
+        public static ValueTuple<TResult> SelectMany<TSource, TSelector, TResult>(
+            this ValueTuple<TSource> source,
+            Func<TSource, ValueTuple<TSelector>> selector,
             Func<TSource, TSelector, TResult> resultSelector) =>
-                new Tuple<TResult>(resultSelector(source.Item1, selector(source.Item1).Item1)); // Immediate execution.
+                new ValueTuple<TResult>(resultSelector(source.Item1, selector(source.Item1).Item1)); // Immediate execution.
     }
 
-    public static partial class TupleExtensions
+    public static partial class ValueTupleExtensions
     {
         internal static void Workflow()
         {
-            Tuple<string> query = from filePath in new Tuple<string>(Console.ReadLine())
-                                  from encodingName in new Tuple<string>(Console.ReadLine())
-                                  from encoding in new Tuple<Encoding>(Encoding.GetEncoding(encodingName))
-                                  from fileContent in new Tuple<string>(File.ReadAllText(filePath, encoding))
-                                  select fileContent; // Define and execute query.
+            ValueTuple<string> query = from filePath in new ValueTuple<string>(Console.ReadLine())
+                                       from encodingName in new ValueTuple<string>(Console.ReadLine())
+                                       from encoding in new ValueTuple<Encoding>(Encoding.GetEncoding(encodingName))
+                                       from fileContent in new ValueTuple<string>(File.ReadAllText(filePath, encoding))
+                                       select fileContent; // Define and execute query.
             string result = query.Item1; // Query result.
         }
     }
 
     #endregion
 
-    #region Tuple<T,>
+    #region ValueTuple<T,>
 
-    public static partial class TupleExtensions // Tuple<T, TResult> : IMonad<Tuple<T,>>
+    public static partial class ValueTupleExtensions // ValueTuple<T, TResult> : IMonad<ValueTuple<T,>>
     {
-        // Multiply: Tuple<T, Tuple<T, TSource> -> Tuple<T, TSource>
-        public static Tuple<T, TSource> Multiply<T, TSource>(this Tuple<T, Tuple<T, TSource>> sourceWrapper) =>
+        // Multiply: ValueTuple<T, ValueTuple<T, TSource> -> ValueTuple<T, TSource>
+        public static (T, TSource) Multiply<T, TSource>(this (T, (T, TSource)) sourceWrapper) =>
             sourceWrapper.SelectMany(source => source, (source, value) => value); // Immediate execution.
 
-        // Unit: TSource -> Tuple<T, TSource>
-        public static Tuple<T, TSource> Unit<T, TSource>(TSource value) => Tuple<T, TSource>(value);
+        // Unit: TSource -> ValueTuple<T, TSource>
+        public static (T, TSource) Unit<T, TSource>(TSource value) => ValueTuple<T, TSource>(value);
 
-        // SelectMany: (Tuple<T, TSource>, TSource -> Tuple<T, TSelector>, (TSource, TSelector) -> TResult) -> Tuple<T, TResult>
-        public static Tuple<T, TResult> SelectMany<T, TSource, TSelector, TResult>(
-            this Tuple<T, TSource> source,
-            Func<TSource, Tuple<T, TSelector>> selector,
+        // SelectMany: (ValueTuple<T, TSource>, TSource -> ValueTuple<T, TSelector>, (TSource, TSelector) -> TResult) -> ValueTuple<T, TResult>
+        public static (T, TResult) SelectMany<T, TSource, TSelector, TResult>(
+            this (T, TSource) source,
+            Func<TSource, (T, TSelector)> selector,
             Func<TSource, TSelector, TResult> resultSelector) =>
-                source.Item1.Tuple(resultSelector(source.Item2, selector(source.Item2).Item2)); // Immediate execution.
+                (source.Item1, resultSelector(source.Item2, selector(source.Item2).Item2)); // Immediate execution.
     }
 
-    public static partial class TupleExtensions
+    public static partial class ValueTupleExtensions
     {
         internal static void MonoidLaws()
         {
-            Tuple<string, int> source = "a".Tuple(1);
+            (string, int) source = ("a", 1);
 
             // Associativity preservation: source.Wrap().Multiply().Wrap().Multiply() == source.Wrap().Wrap().Multiply().Multiply().
-            Trace.WriteLine(source
-                .Tuple<string, Tuple<string, int>>()
+            source
+                .ValueTuple<string, (string, int)>()
                 .Multiply()
-                .Tuple<string, Tuple<string, int>>()
-                .Multiply()); // (, 1)
-            Trace.WriteLine(source
-                .Tuple<string, Tuple<string, int>>()
-                .Tuple<string, Tuple<string, Tuple<string, int>>>()
+                .ValueTuple<string, (string, int)>()
                 .Multiply()
-                .Multiply()); // (, 1)
+                .WriteLine(); // (, 1)
+            source
+                .ValueTuple<string, (string, int)>()
+                .ValueTuple<string, (string, (string, int))>()
+                .Multiply()
+                .Multiply()
+                .WriteLine(); // (, 1)
             // Left unit preservation: Unit(f).Multiply() == source.
-            Trace.WriteLine(Unit<string, Tuple<string, int>>(source).Multiply()); // (, 1)
+            Unit<string, (string, int)>(source).Multiply().WriteLine(); // (, 1)
             // Right unit preservation: source == source.Select(Unit).Multiply().
-            Trace.WriteLine(source.Select(Unit<string, int>).Multiply()); // (a, 1)
+            source.Select(Unit<string, int>).Multiply().WriteLine(); // (a, 1)
         }
 
         internal static void MonadLaws()
         {
-            Tuple<string, int> source = "a".Tuple(1);
-            Func<int, Tuple<string, char>> selector = int32 => "b".Tuple('@');
-            Func<int, Tuple<string, double>> selector1 = int32 => "c".Tuple(Math.Sqrt(int32));
-            Func<double, Tuple<string, string>> selector2 = @double => "d".Tuple(@double.ToString("0.00"));
+            ValueTuple<string, int> source = ("a", 1);
+            Func<int, ValueTuple<string, char>> selector = int32 => ("b", '@');
+            Func<int, ValueTuple<string, double>> selector1 = int32 => ("c", Math.Sqrt(int32));
+            Func<double, ValueTuple<string, string>> selector2 = @double => ("d", @double.ToString("0.00"));
             const int Value = 5;
 
             // Associativity: source.SelectMany(selector1).SelectMany(selector2) == source.SelectMany(value => selector1(value).SelectMany(selector2)).
-            Trace.WriteLine(
-                from value in source
-                from result1 in selector1(value)
-                from result2 in selector2(result1)
-                select result2); // (a, 1.00)
-            Trace.WriteLine(
-                from value in source
-                from result in (from result1 in selector1(value) from result2 in selector2(result1) select result2)
-                select result); // (a, 1.00)
+            (from value in source
+             from result1 in selector1(value)
+             from result2 in selector2(result1)
+             select result2).WriteLine(); // (a, 1.00)
+            (from value in source
+             from result in (from result1 in selector1(value) from result2 in selector2(result1) select result2)
+             select result).WriteLine(); // (a, 1.00)
             // Left unit: value.Wrap().SelectMany(selector) == selector(value).
-            Trace.WriteLine(
-                from value in Value.Tuple<string, int>()
-                from result in selector(value)
-                select result); // (, @)
-            Trace.WriteLine(selector(Value)); // (b, @)
+            (from value in Value.ValueTuple<string, int>()
+             from result in selector(value)
+             select result).WriteLine(); // (, @)
+            selector(Value).WriteLine(); // (b, @)
             // Right unit: source == source.SelectMany(Wrap).
-            Trace.WriteLine(
-                from value in source
-                from result in value.Tuple<string, int>()
-                select result); // (a, 1)
+            (from value in source
+             from result in value.ValueTuple<string, int>()
+             select result).WriteLine(); // (a, 1)
         }
     }
 
@@ -747,24 +739,5 @@
         // Select: (Unit -> TResult) -> (Task -> Task<TResult>)
         public static Task<TResult> Select<TResult>(this Task source, Func<Unit, TResult> selector) =>
             source.SelectMany(value => selector(value).Task(), (value, result) => result);
-    }
-
-    public static partial class QueryableExtensions
-    {
-        public static IQueryable<TResult> SelectMany<TSource, TCollection, TResult>(
-            this IQueryable<TSource> source,
-            Expression<Func<TSource, IEnumerable<TCollection>>> collectionSelector,
-            Expression<Func<TSource, TCollection, TResult>> resultSelector) =>
-                source.Provider.CreateQuery<TResult>(
-                    Expression.Call(
-                        null,
-                        ((MethodInfo)MethodBase.GetCurrentMethod()).MakeGenericMethod(
-                            typeof(TSource),
-                            typeof(TCollection),
-                            typeof(TResult)),
-                        new Expression[]
-                            {
-                                source.Expression, Expression.Quote(collectionSelector), Expression.Quote(resultSelector)
-                            }));
     }
 }

@@ -4,9 +4,11 @@
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Diagnostics.Contracts;
+#if NETFX
     using System.Net;
     using Microsoft.TeamFoundation;
     using Microsoft.TeamFoundation.Client;
+#endif
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     using static Dixin.Linq.LinqToObjects.QueryMethods;
@@ -114,6 +116,7 @@
         [TestMethod]
         public void ConversionTest()
         {
+#if NETFX
             try
             {
                 CastNonGenericIEnumerable(new TfsClientCredentials(new BasicAuthCredential(
@@ -125,6 +128,7 @@
                 Trace.WriteLine(exception);
             }
             CastNonGenericIEnumerable2();
+#endif
             CastGenericIEnumerable();
             try
             {

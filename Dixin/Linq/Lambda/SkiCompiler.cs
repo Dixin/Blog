@@ -1,7 +1,6 @@
 ﻿namespace Dixin.Linq.Lambda
 {
     using System;
-    using System.Diagnostics;
     using System.Linq;
     using System.Linq.Expressions;
 
@@ -186,7 +185,7 @@
             Expression<Func<T1, Func<T2, Tuple<T1, T2>>>>
                 createTupleLambda = item1 => item2 => f => f(item1)(item2);
             Expression createTupleSki = createTupleLambda.ToSki();
-            Trace.WriteLine(createTupleSki.ToSkiString());
+            createTupleSki.ToSkiString().WriteLine();
             // S (S (K S) (S (K K) (S (K S) (S (K (S I)) (S (K K) I))))) (K (S (K K) I))
         }
 
@@ -196,7 +195,7 @@
             Expression<Func<Boolean, Func<Boolean, Boolean>>>
                 andLambda = a => b => a(b)((Boolean)(@true => @false => @false));
             Expression andSki = andLambda.ToSki();
-            Trace.WriteLine(andSki.ToSkiString());
+            andSki.ToSkiString());
         }
 #endif
 
@@ -205,7 +204,7 @@
             Expression<Func<Func<object, Func<object, object>>, Func<Func<object, Func<object, object>>, Func<object, Func<object, object>>>>>
                 andLambda = a => b => (Func<object, Func<object, object>>)a(b)((Func<object, Func<object, object>>)(@true => @false => @false));
             Expression andSki = andLambda.ToSki();
-            Trace.WriteLine(andSki.ToSkiString());
+            andSki.ToSkiString().WriteLine();
             // S (S (K S) (S (S (K S) (S (K K) I)) (K I))) (K (K (K I)))
         }
 
@@ -214,7 +213,7 @@
             Expression<Func<Func<Func<T, TResult>, Func<T, TResult>>, Func<T, TResult>>>
                 yLambda = f => ((SelfApplicableFunc<Func<T, TResult>>)(g => x => f(g(g))(x)))(g => x => f(g(g))(x));
             Expression ySki = yLambda.ToSki();
-            Trace.WriteLine(ySki.ToSkiString());
+            ySki.ToSkiString().WriteLine();
             // ((S ((S ((S (K S)) ((S (K (S (K S)))) ((S (K (S (K K)))) ((S ((S (K S)) ((S (K K)) I))) (K ((S I) I))))))) (K (K I)))) ((S ((S (K S)) ((S (K (S (K S)))) ((S (K (S (K K)))) ((S ((S (K S)) ((S (K K)) I))) (K ((S I) I))))))) (K (K I))))
         }
 
@@ -223,7 +222,7 @@
             Expression<Func<T, Func<Func<object, Func<Func<object, Func<T, object>>, object>>, Func<object, Func<Func<object, Func<T, object>>, object>>>>>
                 createNodeLambda = value => next => x => f => f(next(x)(f))(value);
             Expression createNodeSki = createNodeLambda.ToSki();
-            Trace.WriteLine(createNodeSki.ToSkiString());
+            createNodeSki.ToSkiString().WriteLine();
             // ((S (K (S ((S (K S)) ((S (K (S (K S)))) ((S (K (S (K (S I))))) ((S ((S (K S)) ((S (K (S (K S)))) ((S (K (S (K K)))) ((S ((S (K S)) ((S (K K)) I))) (K I)))))) (K (K I))))))))) ((S (K K)) ((S (K K)) ((S (K K)) I))))
         }
     }

@@ -1,10 +1,13 @@
 namespace Dixin.Linq.Introduction
 {
+#if NETFX
     using System.Diagnostics;
     using System.Linq;
 
     using Dixin.Linq.LinqToSql;
+#endif
 
+#if NETFX
     internal static partial class LinqToSql
     {
         internal static void QueryExpression()
@@ -39,4 +42,5 @@ namespace Dixin.Linq.Introduction
             }
         }
     }
+#endif
 }

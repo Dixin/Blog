@@ -7,7 +7,7 @@
 
     using Dixin.Linq;
     using Dixin.Linq.CategoryTheory;
-    using Dixin.TestTools.UnitTesting;
+    using Dixin.Linq.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -59,10 +59,10 @@
         public void TupleTest()
         {
             bool isExecuted1 = false;
-            Tuple<int> tuple = new Tuple<int>(0);
+            ValueTuple<int> tuple = new ValueTuple<int>(0);
             Func<int, int> addOne = x => { isExecuted1 = true; return x + 1; };
 
-            Tuple<int> query1 = from x in tuple select addOne(x); // Execution.
+            ValueTuple<int> query1 = from x in tuple select addOne(x); // Execution.
             Assert.IsTrue(isExecuted1); // Immediate execution.
 
             Assert.AreEqual(0 + 1, query1.Item1);
@@ -72,8 +72,8 @@
             Assert.AreEqual(tuple.Select(Functions.Id).Item1, Functions.Id(tuple).Item1);
             // Functor law 2: F.Select(f2.o(f1)) == F.Select(f1).Select(f2)
             Func<int, string> addTwo = x => (x + 2).ToString(CultureInfo.InvariantCulture);
-            Tuple<string> query2 = tuple.Select(addTwo.o(addOne));
-            Tuple<string> query3 = tuple.Select(addOne).Select(addTwo);
+            ValueTuple<string> query2 = tuple.Select(addTwo.o(addOne));
+            ValueTuple<string> query3 = tuple.Select(addOne).Select(addTwo);
             Assert.AreEqual(query2.Item1, query3.Item1);
         }
 
@@ -81,10 +81,10 @@
         public void Tuple2Test()
         {
             bool isExecuted1 = false;
-            Tuple<string, int> tuple = "a".Tuple(0);
+            (string, int) tuple = ("a", 0);
             Func<int, int> addOne = x => { isExecuted1 = true; return x + 1; };
 
-            Tuple<string, int> query1 = from x in tuple select addOne(x); // Execution.
+            (string, int) query1 = from x in tuple select addOne(x); // Execution.
             Assert.IsTrue(isExecuted1); // Immediate execution.
 
             Assert.AreEqual("a", query1.Item1);
@@ -95,8 +95,8 @@
             Assert.AreEqual(tuple.Select(Functions.Id).Item1, Functions.Id(tuple).Item1);
             // Functor law 2: F.Select(f2.o(f1)) == F.Select(f1).Select(f2)
             Func<int, string> addTwo = x => (x + 2).ToString(CultureInfo.InvariantCulture);
-            Tuple<string, string> query2 = tuple.Select(addTwo.o(addOne));
-            Tuple<string, string> query3 = tuple.Select(addOne).Select(addTwo);
+            (string, string) query2 = tuple.Select(addTwo.o(addOne));
+            (string, string) query3 = tuple.Select(addOne).Select(addTwo);
             Assert.AreEqual(query2.Item1, query3.Item1);
         }
 
@@ -202,7 +202,7 @@
         {
             bool isExecuted1 = false;
             Func<int, string> append = x => { isExecuted1 = true; return x + "b"; };
-            Optional<int> optional = new Optional<int>(() => Tuple.Create(true, 1));
+            Optional<int> optional = new Optional<int>(() => (true, 1));
 
             Optional<string> query1 = from x in optional select append(x);
             Assert.IsFalse(isExecuted1); // Deferred and lazy.

@@ -1,16 +1,22 @@
 ﻿namespace Dixin.Linq.Parallel
 {
     using System;
-    using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
+#if NETFX
     using System.Net;
     using System.Threading;
     using System.Xml.Linq;
 
     using Microsoft.ConcurrencyVisualizer.Instrumentation;
 
-    using static HelperMethods;
+    using static Dixin.Linq.LinqToXml.Modeling;
+#endif
+
+    using static Functions;
+
+    using Stopwatch = System.Diagnostics.Stopwatch;
 
     internal static partial class Performance
     {
@@ -23,7 +29,7 @@
                     int[] sequential = source.OrderBy(keySelector).ToArray();
                 });
             stopwatch.Stop();
-            Trace.WriteLine($"Sequential:{stopwatch.ElapsedMilliseconds}");
+            $"Sequential:{stopwatch.ElapsedMilliseconds}".WriteLine();
 
             stopwatch.Restart();
             Enumerable.Range(0, run).ForEach(_ =>
@@ -31,7 +37,7 @@
                     int[] parallel1 = source.AsParallel().OrderBy(keySelector).ToArray();
                 });
             stopwatch.Stop();
-            Trace.WriteLine($"Parallel:{stopwatch.ElapsedMilliseconds}");
+            $"Parallel:{stopwatch.ElapsedMilliseconds}".WriteLine();
         }
     }
 
@@ -49,6 +55,7 @@
 
     internal static partial class Performance
     {
+#if NETFX
         private static void Download(string[] urls)
         {
             urls.Visualize(url =>
@@ -87,8 +94,8 @@
 
         internal static void DownloadSmallFiles()
         {
-            string[] thumbnails = XDocument
-                .Load("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2")
+            string[] thumbnails = 
+                LoadXDocument("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2")
                 .Descendants((XNamespace)"http://search.yahoo.com/mrss/" + "thumbnail")
                 .Attributes("url")
                 .Select(url => (string)url)
@@ -98,20 +105,21 @@
 
         internal static void DownloadLargeFiles()
         {
-            string[] contents = XDocument
-                .Load("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2")
+            string[] contents = 
+                LoadXDocument("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2")
                 .Descendants((XNamespace)"http://search.yahoo.com/mrss/" + "content")
                 .Attributes("url")
                 .Select(url => (string)url)
                 .ToArray();
             Download(contents);
         }
+#endif
 
         internal static void ReadFiles()
         {
-            string mscorlibPath = typeof(object).Assembly.Location;
-            string gacPath = Path.GetDirectoryName(mscorlibPath);
-            string[] files = Directory.GetFiles(gacPath);
+            string coreLibraryPath = typeof(object).GetTypeInfo().Assembly.Location;
+            string coreLibraryDirectory = Path.GetDirectoryName(coreLibraryPath);
+            string[] files = Directory.GetFiles(coreLibraryDirectory);
 
             files.Visualize(file => File.ReadAllBytes(file));
             files.AsParallel().Visualize(file => File.ReadAllBytes(file));

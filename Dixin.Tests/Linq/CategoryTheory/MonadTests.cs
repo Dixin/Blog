@@ -7,7 +7,7 @@
 
     using Dixin.Linq;
     using Dixin.Linq.CategoryTheory;
-    using Dixin.TestTools.UnitTesting;
+    using Dixin.Linq.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -190,9 +190,9 @@
             add = x => y =>
             { isExecuted3 = true; return (x + y).ToString(CultureInfo.InvariantCulture); };
             Optional<int> one = new Optional<int>(() =>
-                { isExecuted4 = true; return Tuple.Create(true, 1); });
+                { isExecuted4 = true; return (true, 1); });
             Optional<int> two = new Optional<int>(() =>
-                { isExecuted5 = true; return Tuple.Create(true, 2); });
+                { isExecuted5 = true; return (true, 2); });
             Optional<string> query2 = from x in one
                                       from y in two
                                       from _ in one
@@ -227,28 +227,28 @@
         public void TupleTest()
         {
             bool isExecuted = false;
-            Tuple<int> one = new Tuple<int>(1);
-            Tuple<int> two = new Tuple<int>(2);
+            ValueTuple<int> one = new ValueTuple<int>(1);
+            ValueTuple<int> two = new ValueTuple<int>(2);
             Func<int, Func<int, int>> add = x => y => { isExecuted = true; return x + y; };
-            Tuple<int> query = from x in one
-                               from y in two
-                               from _ in one
-                               select add(x)(y);
+            ValueTuple<int> query = from x in one
+                                    from y in two
+                                    from _ in one
+                                    select add(x)(y);
             Assert.IsTrue(isExecuted); // Immediate execution.
             Assert.AreEqual(1 + 2, query.Item1); // Execution.
 
             // Monad law 1: m.Monad().SelectMany(f) == f(m)
-            Func<int, Tuple<int>> addOne = x => (x + 1).Tuple();
-            Tuple<int> left = 1.Tuple().SelectMany(addOne, False);
-            Tuple<int> right = addOne(1);
+            Func<int, ValueTuple<int>> addOne = x => (x + 1).ValueTuple();
+            ValueTuple<int> left = 1.ValueTuple().SelectMany(addOne, False);
+            ValueTuple<int> right = addOne(1);
             Assert.AreEqual(left.Item1, right.Item1);
             // Monad law 2: M.SelectMany(Monad) == M
-            Tuple<int> M = 1.Tuple();
-            left = M.SelectMany(TupleExtensions.Tuple, False);
+            ValueTuple<int> M = 1.ValueTuple();
+            left = M.SelectMany(ValueTupleExtensions.ValueTuple, False);
             right = M;
             Assert.AreEqual(left.Item1, right.Item1);
             // Monad law 3: M.SelectMany(f1).SelectMany(f2) == M.SelectMany(x => f1(x).SelectMany(f2))
-            Func<int, Tuple<int>> addTwo = x => (x + 2).Tuple();
+            Func<int, ValueTuple<int>> addTwo = x => (x + 2).ValueTuple();
             left = M.SelectMany(addOne, False).SelectMany(addTwo, False);
             right = M.SelectMany(x => addOne(x).SelectMany(addTwo, False), False);
             Assert.AreEqual(left.Item1, right.Item1);
@@ -416,17 +416,17 @@
         {
             bool isExecuted1 = false;
             bool isExecuted2 = false;
-            Func<State<string, int>> f1 = () => state => { isExecuted1 = true; return 1.Tuple(state + "a"); };
+            Func<State<string, int>> f1 = () => state => { isExecuted1 = true; return (1, state + "a"); };
             Func<int, Func<int, Func<string, int>>> f2 =
                 x => y => z => { isExecuted2 = true; return x + y + z.Length; };
             State<string, int> query1 = from x in f1()
                                         from _ in StateExtensions.SetState(x.ToString(CultureInfo.InvariantCulture))
-                                        from y in new State<string, int>(state => 2.Tuple("b" + state))
+                                        from y in new State<string, int>(state => (2, "b" + state))
                                         from z in StateExtensions.GetState<string>()
                                         select f2(x)(y)(z);
             Assert.IsFalse(isExecuted1); // Deferred and lazy.
             Assert.IsFalse(isExecuted2); // Deferred and lazy.
-            Tuple<int, string> result1 = query1("state"); // Execution.
+            (int, string) result1 = query1("state"); // Execution.
             Assert.AreEqual(1 + 2 + ("b" + "1").Length, result1.Item1);
             Assert.AreEqual("b" + "1", result1.Item2);
             Assert.IsTrue(isExecuted1);
@@ -471,7 +471,7 @@
         public void AggregateStateTest()
         {
             Assert.AreEqual(
-                Enumerable.Aggregate(Enumerable.Range(0, 5), 0, (a, b) => a + b), 
+                Enumerable.Aggregate(Enumerable.Range(0, 5), 0, (a, b) => a + b),
                 StateExtensions.Aggregate(Enumerable.Range(0, 5), 0, (a, b) => a + b));
             Assert.AreEqual(
                 Enumerable.Aggregate(Enumerable.Range(1, 5), 1, (a, b) => a + b),
@@ -587,14 +587,14 @@
             Func<int, Func<int, Func<string, string>>> f = x => y => z =>
                 {
                     isExecuted1 = true;
-                    return (x + y + z.Length).ToString(CultureInfo.InstalledUICulture);
+                    return (x + y + z.Length).ToString(CultureInfo.InvariantCulture);
                 };
             Cps<int, string> query = from x in 1.Cps<int, int>()
                                      from y in 2.Cps<int, int>()
                                      from z in "abc".Cps<int, string>()
                                      select f(x)(y)(z);
             Assert.IsFalse(isExecuted1); // Deferred and lazy.
-            Assert.AreEqual((1 + 2 + "abc".Length).ToString(CultureInfo.InstalledUICulture).Length, query(x => x.Length)); // Execution.
+            Assert.AreEqual((1 + 2 + "abc".Length).ToString(CultureInfo.InvariantCulture).Length, query(x => x.Length)); // Execution.
             Assert.IsTrue(isExecuted1);
 
             // Monad law 1: m.Monad().SelectMany(f) == f(m)
@@ -636,14 +636,14 @@
             Func<int, Func<int, Func<string, string>>> f = x => y => z =>
             {
                 isExecuted1 = true;
-                return (x + y + z.Length).ToString(CultureInfo.InstalledUICulture);
+                return (x + y + z.Length).ToString(CultureInfo.InvariantCulture);
             };
             Try<string> query = from x in 1.Try()
                                 from y in 2.Try()
                                 from z in "abc".Try()
                                 select f(x)(y)(z);
             Assert.IsFalse(isExecuted1); // Deferred and lazy.
-            Assert.AreEqual((1 + 2 + "abc".Length).ToString(CultureInfo.InstalledUICulture), query.Value); // Execution.
+            Assert.AreEqual((1 + 2 + "abc".Length).ToString(CultureInfo.InvariantCulture), query.Value); // Execution.
             Assert.IsTrue(isExecuted1);
 
             // Monad law 1: m.Monad().SelectMany(f) == f(m)

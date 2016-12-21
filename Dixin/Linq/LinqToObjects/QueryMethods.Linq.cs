@@ -5,19 +5,23 @@
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Collections.Immutable;
+#if NETFX
     using System.Configuration;
-    using System.Diagnostics;
+#endif
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.Linq;
     using System.Reflection;
-    using System.Runtime.CompilerServices;
+#if NETFX
     using System.Web.Profile;
+#endif
 
     using Dixin.Linq.CSharp;
 
+#if NETFX
     using Microsoft.TeamFoundation.Client;
     using Microsoft.TeamFoundation.WorkItemTracking.Client;
+#endif
 
     internal class Person
     {
@@ -82,7 +86,7 @@
             {
                 count++; // Not executed.
             }
-            Trace.WriteLine(count); // 0
+            count.WriteLine(); // 0
         }
     }
 
@@ -95,7 +99,7 @@
             IEnumerable<int> range = Enumerable.Range(-1, 5); // Define query.
             foreach (int int32 in range) // Execute query.
             {
-                Trace.WriteLine(int32); // -1 0 1 2 3
+                int32.WriteLine(); // -1 0 1 2 3
             }
         }
 
@@ -106,72 +110,49 @@
 
         internal static void Repeat()
         {
-            IEnumerable<int> repeat = Enumerable.Repeat(1, 5); // Define query.
-            foreach (int int32 in repeat) // Execute query.
-            {
-                Trace.WriteLine(int32); // 1 1 1 1 1
-            }
+            IEnumerable<string> repeat = Enumerable.Repeat("a", 5); // Define query.
+            repeat.WriteLines(); // Execute query. a a a a a
         }
 
         internal static void DefaultIfEmpty()
         {
             IEnumerable<int> souce = Enumerable.Empty<int>();
-            IEnumerable<int> singletonIfEmpty = souce.DefaultIfEmpty();
-            foreach (int int32 in singletonIfEmpty)
-            {
-                Trace.WriteLine(int32); // 0
-            }
+            IEnumerable<int> singletonIfEmpty = souce.DefaultIfEmpty(); // Define query.
+            singletonIfEmpty.WriteLines(); // Execute query: 0
         }
 
         internal static void DefaultIfEmptyWithDefaultValue()
         {
             IEnumerable<int> souce = Enumerable.Empty<int>();
             IEnumerable<int> singletonIfEmpty = souce.DefaultIfEmpty(1);
-            foreach (int int32 in singletonIfEmpty)
-            {
-                Trace.WriteLine(int32); // 1
-            }
+            singletonIfEmpty.WriteLines(); // Execute query. 1
         }
 
         #endregion
 
         #region Filtering
 
-        private static readonly Assembly mscorlib = typeof(object).Assembly;
+        private static readonly Assembly CoreLibrary = typeof(object).GetTypeInfo().Assembly;
 
         internal static void Where()
         {
-            IEnumerable<Type> source = mscorlib.GetExportedTypes();
-            IEnumerable<Type> primitives = source.Where(type => type.IsPrimitive); // Define query.
-            foreach (Type primitive in primitives) // Execute query.
-            {
-                Trace.WriteLine(primitive);
-                // System.Boolean 
-                // System.Byte
-                // System.Char
-                // System.Double
-                // ...
-            }
+            IEnumerable<Type> source = CoreLibrary.GetExportedTypes();
+            IEnumerable<Type> primitives = source.Where(type => type.GetTypeInfo().IsPrimitive); // Define query.
+            primitives.WriteLines(); // Execute query. System.Boolean System.Byte System.Char System.Double ...
         }
 
         internal static void WhereWithIndex()
         {
             IEnumerable<string> source = new string[] { "zero", "one", "two", "three", "four" };
-            IEnumerable<string> evenNumbers = source.Where((value, index) => index % 2 == 0); // Define query.
-            foreach (string even in evenNumbers) // Execute query.
-            {
-                Trace.WriteLine(even); // zero two four
-            }
+            IEnumerable<string> even = source.Where((value, index) => index % 2 == 0); // Define query.
+            even.WriteLines(); // Execute query. zero two four
         }
 
         internal static void OfType()
         {
             IEnumerable<object> source = new object[] { 1, 2, 'a', 'b', "aa", "bb", new object() };
             IEnumerable<string> strings = source.OfType<string>();  // Define query.
-            foreach (string @string in strings) // Execute query.
-            {
-                Trace.WriteLine(@string);  // aa bb
-            }
+            strings.WriteLines(); // Execute query. aa bb
         }
 
         #endregion
@@ -182,10 +163,7 @@
         {
             IEnumerable<int> source = Enumerable.Range(0, 5);
             IEnumerable<string> squareRoots = source.Select(int32 => $"{Math.Sqrt(int32):0.00}"); // Define query.
-            foreach (string squareRoot in squareRoots) // Execute query.
-            {
-                Trace.WriteLine(squareRoot); // 0.00 1.00 1.41 1.73 2.00
-            }
+            squareRoots.WriteLines(); // Execute query. 0.00 1.00 1.41 1.73 2.00
         }
 
         internal static IEnumerable<string> Words() => new string[] { "Zero", "one", "Two", "three", "four" };
@@ -199,10 +177,8 @@
                 Index = index,
                 Word = value.ToLowerInvariant()
             }); // Define query: IEnumerable<(string Word, int Index)>
-            foreach (var value in mapped) // Execute query.
-            {
-                Trace.WriteLine($"{value.Index}:{value.Word}"); // 0:zero 1:one 2:two 3:three 4:four
-            }
+            mapped.WriteLines(result => $"{result.Index}:{result.Word}"); // Execute query. 
+            // 0:zero 1:one 2:two 3:three 4:four
         }
 
         internal static void Let()
@@ -210,67 +186,51 @@
             IEnumerable<int> source = Enumerable.Range(-2, 5);
             IEnumerable<string> absoluteValues = source
                 .Select(int32 => new { int32 = int32, abs = Math.Abs(int32) })
-                .Where(tuple => tuple.abs > 0)
-                .Select(tuple => $"Math.Abs({tuple.int32}) == {tuple.abs}");
-            foreach (string absoluteValue in absoluteValues)
-            {
-                Trace.WriteLine(absoluteValue);
-                // Math.Abs(-2) == 2
-                // Math.Abs(-1) == 1
-                // Math.Abs(1) == 1
-                // Math.Abs(2) == 2
-            }
+                .Where(values => values.abs > 0)
+                .Select(values => $"Math.Abs({values.int32}):{values.abs}"); // Define query.
+            absoluteValues.WriteLines(); // Execute query.
+            // Math.Abs(-2):2 Math.Abs(-1):1 Math.Abs(1):1 Math.Abs(2):2
         }
 
-        internal static MemberInfo[] GetDeclaredMembers(this Type type) => type.GetMembers(
+        internal static MemberInfo[] GetDeclaredMembers(this Type type) => type.GetTypeInfo().GetMembers(
             BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 
-        internal static bool IsObsolete(this MemberInfo member) => 
-            Attribute.IsDefined(member, typeof(ObsoleteAttribute), false);
+        internal static bool IsObsolete(this MemberInfo member) => member.IsDefined(typeof(ObsoleteAttribute), false);
 
         internal static void SelectMany()
         {
-            IEnumerable<Type> source = mscorlib.GetExportedTypes();
+            IEnumerable<Type> source = CoreLibrary.GetExportedTypes();
             IEnumerable<MemberInfo> mapped = source.SelectMany(type => type.GetDeclaredMembers()); // Define query.
             IEnumerable<MemberInfo> filtered = mapped.Where(member => member.IsObsolete()); // Define query.
-            foreach (MemberInfo obsoleteMember in filtered) // Execute query.
-            {
-                Trace.WriteLine($"{obsoleteMember.DeclaringType} - {obsoleteMember}");
-                // ...
-                // System.Enum - System.String ToString(System.String, System.IFormatProvider)
-                // System.Enum - System.String ToString(System.IFormatProvider)
-                // ...
-            }
+            filtered.WriteLines(obsoleteMember => $"{obsoleteMember.DeclaringType}:{obsoleteMember}"); // Execute query.
+            // ...
+            // System.Enum:System.String ToString(System.String, System.IFormatProvider)
+            // System.Enum:System.String ToString(System.IFormatProvider)
+            // ...
         }
 
         internal static void FluentSelectMany()
         {
-            IEnumerable<MemberInfo> mappedAndFiltered = mscorlib
+            IEnumerable<MemberInfo> mappedAndFiltered = CoreLibrary
                 .GetExportedTypes()
                 .SelectMany(type => type.GetDeclaredMembers())
                 .Where(member => member.IsObsolete()); // Define query.
-            foreach (MemberInfo obsoleteMember in mappedAndFiltered) // Execute query.
-            {
-                Trace.WriteLine($"{obsoleteMember.DeclaringType} - {obsoleteMember}");
-            }
+            mappedAndFiltered.WriteLines(obsoleteMember => $"{obsoleteMember.DeclaringType}:{obsoleteMember}"); // Execute query.
         }
 
         internal static void SelectManyWithResultSelector()
         {
-            IEnumerable<Type> source = mscorlib.GetExportedTypes();
+            IEnumerable<Type> source = CoreLibrary.GetExportedTypes();
             IEnumerable<string> obsoleteMembers = source.SelectMany(
                 collectionSelector: type => type.GetDeclaredMembers().Where(member => member.IsObsolete()),
-                resultSelector: (type, obsoleteMember) => $"{type} - {obsoleteMember}"); // Define query.
-            foreach (string obsoleteMember in obsoleteMembers) // Execute query.
-            {
-                Trace.WriteLine(obsoleteMember);
-            }
+                resultSelector: (type, obsoleteMember) => $"{type}:{obsoleteMember}"); // Define query.
+            obsoleteMembers.WriteLines(); // Execute query.
         }
 
         internal static void CompiledSelectManyWithResultSelector()
         {
-            IEnumerable<Type> source = mscorlib.GetExportedTypes();
-            IEnumerable<string> obsoleteMembers = mscorlib
+            IEnumerable<Type> source = CoreLibrary.GetExportedTypes();
+            IEnumerable<string> obsoleteMembers = CoreLibrary
                 .GetExportedTypes() // IEnumerable<Type>
                 .SelectMany(
                     collectionSelector: type => type.GetDeclaredMembers(),
@@ -289,16 +249,16 @@
             IEnumerable<IGrouping<string, Person>> groups = source.GroupBy(person => person.PlaceOfBirth); // Define query.
             foreach (IGrouping<string, Person> group in groups) // Execute query.
             {
-                Trace.Write($"{group.Key}:");
+                $"{group.Key}:".Write();
                 foreach (Person person in group)
                 {
-                    Trace.Write($"{person.Name}, ");
+                    $"{person.Name}, ".Write();
                 }
-                Trace.WriteLine(null);
-                // US: Robert Downey Jr., Chris Evans,
-                // UK: Tom Hiddleston, Paul Bettany,
-                // AU: Chris Hemsworth,
+                Environment.NewLine.Write();
             }
+            // US: Robert Downey Jr., Chris Evans,
+            // UK: Tom Hiddleston, Paul Bettany,
+            // AU: Chris Hemsworth,
         }
 
         internal static void GroupByWithResultSelector()
@@ -307,14 +267,8 @@
             IEnumerable<string> groups = source
                 .GroupBy(
                     keySelector: person => person.PlaceOfBirth,
-                    resultSelector: (key, group) => $"{key}: {group.Count()}"); // Define query.
-            foreach (string group in groups) // Execute query.
-            {
-                Trace.WriteLine(group);
-                // US: 2
-                // UK: 2
-                // AU: 1
-            }
+                    resultSelector: (key, group) => $"{key}:{group.Count()}"); // Define query.
+            groups.WriteLines(); // Execute query. US:2 UK:2 AU:1
         }
 
         internal static void GroupByAndSelect()
@@ -322,13 +276,7 @@
             IEnumerable<Person> source = Persons();
             IEnumerable<IGrouping<string, Person>> groups = source.GroupBy(person => person.PlaceOfBirth);
             IEnumerable<string> mapped = groups.Select(group => $"{group.Key}: {group.Count()}"); // Define query.
-            foreach (string group in mapped) // Execute query.
-            {
-                Trace.WriteLine(group);
-                // US: 2
-                // UK: 2
-                // AU: 1
-            }
+            groups.WriteLines(); // Execute query. US:2 UK:2 AU:1
         }
 
         internal static void FluentGroupByAndSelect()
@@ -348,16 +296,16 @@
                     elementSelector: person => person.Name); // Define query.
             foreach (IGrouping<string, string> group in groups) // Execute query.
             {
-                Trace.Write($"{group.Key}:");
+                $"{group.Key}: ".Write();
                 foreach (string name in group)
                 {
-                    Trace.Write($"{name}, ");
+                    $"{name}, ".Write();
                 }
-                Trace.WriteLine(null);
-                // US: Robert Downey Jr., Chris Evans,
-                // UK: Tom Hiddleston, Paul Bettany,
-                // AU: Chris Hemsworth,
+                Environment.NewLine.Write();
             }
+            // US: Robert Downey Jr., Chris Evans,
+            // UK: Tom Hiddleston, Paul Bettany,
+            // AU: Chris Hemsworth,
         }
 
         internal static void GroupByWithElementAndResultSelector()
@@ -367,13 +315,10 @@
                 keySelector: person => person.PlaceOfBirth,
                 elementSelector: person => person.Name,
                 resultSelector: (key, group) => $"{key}: {string.Join(", ", group)}"); // Define query.
-            foreach (string group in groups) // Execute query.
-            {
-                Trace.WriteLine(group);
-                // US: Robert Downey Jr., Chris Evans
-                // UK: Tom Hiddleston, Paul Bettany
-                // AU: Chris Hemsworth
-            }
+            groups.WriteLines(); // Execute query.
+            // US: Robert Downey Jr., Chris Evans
+            // UK: Tom Hiddleston, Paul Bettany
+            // AU: Chris Hemsworth
         }
 
         internal static void GroupByWithEqualityComparer()
@@ -382,15 +327,9 @@
             IEnumerable<string> groups = source.GroupBy(
                 keySelector: person => person.PlaceOfBirth,
                 elementSelector: person => person.Name,
-                resultSelector: (key, group) => $"{key}: {string.Join(",", group)}",
+                resultSelector: (key, group) => $"{key}:{string.Join(",", group)}",
                 comparer: StringComparer.OrdinalIgnoreCase); // Define query.
-            foreach (string group in groups) // Execute query.
-            {
-                Trace.WriteLine(group);
-                // US: 2
-                // UK: 2
-                // AU: 1
-            }
+            groups.WriteLines(); // Execute query. US:2 UK: 2 AU: 1
         }
 
         #endregion
@@ -406,15 +345,12 @@
                 outerKeySelector: person => person.Name,
                 innerKeySelector: character => character.Starring, // on person.Name equal character.Starring
                 resultSelector: (person, character) => $"{person.Name} ({person.PlaceOfBirth}): {character.Name}"); // Define query.
-            foreach (string value in innerJoin) // Execute query.
-            {
-                Trace.WriteLine(value);
-                // Robert Downey Jr. (US): Tony Stark
-                // Chris Hemsworth (AU): Thor
-                // Chris Evans (US): Steve Rogers
-                // Paul Bettany (UK): Vision
-                // Paul Bettany (UK): JARVIS
-            }
+            innerJoin.WriteLines(); // Execute query.
+            // Robert Downey Jr. (US): Tony Stark
+            // Chris Hemsworth (AU): Thor
+            // Chris Evans (US): Steve Rogers
+            // Paul Bettany (UK): Vision
+            // Paul Bettany (UK): JARVIS
         }
 
         internal static void InnerJoinWithSelectMany()
@@ -430,15 +366,12 @@
                 .Select(innerJoinValue =>
                     $"{innerJoinValue.Person.Name} ({innerJoinValue.Person.PlaceOfBirth}): {innerJoinValue.Character.Name}");
             // Define query.
-            foreach (string value in innerJoin) // Execute query.
-            {
-                Trace.WriteLine(value);
-                // Robert Downey Jr. (US): Tony Stark
-                // Chris Hemsworth (AU): Thor
-                // Chris Evans (US): Steve Rogers
-                // Paul Bettany (UK): Vision
-                // Paul Bettany (UK): JARVIS
-            }
+            innerJoin.WriteLines(); // Execute query.
+            // Robert Downey Jr. (US): Tony Stark
+            // Chris Hemsworth (AU): Thor
+            // Chris Evans (US): Steve Rogers
+            // Paul Bettany (UK): Vision
+            // Paul Bettany (UK): JARVIS
         }
 
         internal static IEnumerable<TResult> InnerJoinWithSelectMany<TOuter, TInner, TKey, TResult>(
@@ -472,12 +405,9 @@
                 // on new { Starring = person.Name, PlaceOfBirth = person.PlaceOfBirth } equal new { Starring = character.Starring, PlaceOfBirth = character.PlaceOfBirth }
                 resultSelector: (person, character) =>
                     $"{person.Name} ({person.PlaceOfBirth}): {character.Name} ({character.PlaceOfBirth})"); // Define query.
-            foreach (string value in innerJoin) // Execute query.
-            {
-                Trace.WriteLine(value);
-                // Robert Downey Jr. (US): Tony Stark (US)
-                // Chris Evans (US): Steve Rogers (US)
-            }
+            innerJoin.WriteLines(); // Execute query.
+            // Robert Downey Jr. (US): Tony Stark (US)
+            // Chris Evans (US): Steve Rogers (US)
         }
 
         internal static void LeftOuterJoin()
@@ -491,18 +421,18 @@
                 resultSelector: (person, charactersGroup) => new { Person = person, Characters = charactersGroup }); // Define query.
             foreach (var result in leftOuterJoin) // Execute query.
             {
-                Trace.Write($"{result.Person.Name} ({result.Person.PlaceOfBirth}): ");
+                $"{result.Person.Name} ({result.Person.PlaceOfBirth}): ".Write();
                 foreach (Character character in result.Characters)
                 {
-                    Trace.Write($"{character.Name} ({character.PlaceOfBirth}), ");
+                    $"{character.Name} ({character.PlaceOfBirth}), ".Write();
                 }
-                Trace.WriteLine(null);
-                // Robert Downey Jr. (US): Tony Stark (US),
-                // Tom Hiddleston (UK):
-                // Chris Hemsworth (AU): Thor (Asgard),
-                // Chris Evans (US): Steve Rogers (US),
-                // Paul Bettany (UK): Vision (KR), JARVIS (US),
+                Environment.NewLine.Write();
             }
+            // Robert Downey Jr. (US): Tony Stark (US),
+            // Tom Hiddleston (UK):
+            // Chris Hemsworth (AU): Thor (Asgard),
+            // Chris Evans (US): Steve Rogers (US),
+            // Paul Bettany (UK): Vision (KR), JARVIS (US),
         }
 
         internal static void LeftOuterJoinWithDefaultIfEmpty()
@@ -518,16 +448,14 @@
                 .SelectMany(
                     collectionSelector: group => group.Characters.DefaultIfEmpty(),
                     resultSelector: (group, character) => new { Person = group.Person, Character = character });
-            foreach (var result in leftOuterJoin)
-            {
-                Trace.WriteLine($"{result.Person.Name}: {result.Character?.Name}");
-                // Robert Downey Jr.: Tony Stark
-                // Tom Hiddleston:
-                // Chris Hemsworth: Thor
-                // Chris Evans: Steve Rogers
-                // Paul Bettany: Vision
-                // Paul Bettany: JARVIS
-            }
+            // Define query.
+            leftOuterJoin.WriteLines(result => $"{result.Person.Name}: {result.Character?.Name}");
+            // Robert Downey Jr.: Tony Stark
+            // Tom Hiddleston:
+            // Chris Hemsworth: Thor
+            // Chris Evans: Steve Rogers
+            // Paul Bettany: Vision
+            // Paul Bettany: JARVIS
         }
 
         internal static void LeftOuterJoinWithSelect()
@@ -542,18 +470,18 @@
             }); // Define query.
             foreach (var result in leftOuterJoin) // Execute query.
             {
-                Trace.Write($"{result.Person.Name} ({result.Person.PlaceOfBirth}): ");
+                $"{result.Person.Name} ({result.Person.PlaceOfBirth}): ".Write();
                 foreach (Character character in result.Characters)
                 {
-                    Trace.Write($"{character.Name} ({character.PlaceOfBirth}), ");
+                    $"{character.Name} ({character.PlaceOfBirth}), ".Write();
                 }
-                Trace.WriteLine(null);
-                // Robert Downey Jr. (US): Tony Stark (US),
-                // Tom Hiddleston (UK):
-                // Chris Hemsworth (AU): Thor (Asgard),
-                // Chris Evans (US): Steve Rogers (US),
-                // Paul Bettany (UK): Vision (KR), JARVIS (US),
+                Environment.NewLine.Write();
             }
+            // Robert Downey Jr. (US): Tony Stark (US),
+            // Tom Hiddleston (UK):
+            // Chris Hemsworth (AU): Thor (Asgard),
+            // Chris Evans (US): Steve Rogers (US),
+            // Paul Bettany (UK): Vision (KR), JARVIS (US),
         }
 
         internal static IEnumerable<TResult> LeftOuterJoinWithSelect<TOuter, TInner, TKey, TResult>(
@@ -584,15 +512,15 @@
             int columnCount = columns.Length;
             foreach (string cell in cells) // Execute query.
             {
-                Trace.Write($"{cell} ");
+                $"{cell} ".Write();
                 if (cellIndex++ > 0 && cellIndex % columnCount == 0)
                 {
-                    Trace.WriteLine(null);
+                    Environment.NewLine.Write();
                 }
-                // A1 B1 C1 D1
-                // A2 B2 C2 D2
-                // A3 B3 C3 D3
             }
+            // A1 B1 C1 D1
+            // A2 B2 C2 D2
+            // A3 B3 C3 D3
         }
 
         internal static void CrossJoinWithJoin()
@@ -606,10 +534,10 @@
             int columnCount = columns.Length;
             foreach (string cell in cells) // Execute query.
             {
-                Trace.Write($"{cell} ");
+                $"{cell} ".Write();
                 if (cellIndex++ > 0 && cellIndex % columnCount == 0)
                 {
-                    Trace.WriteLine(null);
+                    Environment.NewLine.Write();
                 }
             }
         }
@@ -637,10 +565,7 @@
             IEnumerable<int> first = First();
             IEnumerable<int> second = Second();
             IEnumerable<int> concat = first.Concat(second); // Define query.
-            foreach (int int32 in concat) // Execute query.
-            {
-                Trace.WriteLine(int32);// 1 2 3 4 4 3 4 5 6
-            }
+            concat.WriteLines(); // Execute query. 1 2 3 4 4 3 4 5 6
         }
 
         #endregion
@@ -651,10 +576,7 @@
         {
             IEnumerable<int> first = First();
             IEnumerable<int> distinct = first.Distinct(); // Define query.
-            foreach (int int32 in distinct) // Execute query.
-            {
-                Trace.WriteLine(int32); // 1 2 3 4
-            }
+            distinct.WriteLines(); // Execute query. 1 2 3 4
         }
 
         internal static void Union()
@@ -662,10 +584,7 @@
             IEnumerable<int> first = First();
             IEnumerable<int> second = Second();
             IEnumerable<int> union = first.Union(second); // Define query.
-            foreach (int int32 in union) // Execute query.
-            {
-                Trace.WriteLine(int32); // 1 2 3 4 5 6
-            }
+            union.WriteLines(); // Execute query. 1 2 3 4 5 6
         }
 
         internal static void Intersect()
@@ -673,10 +592,7 @@
             IEnumerable<int> first = First();
             IEnumerable<int> second = Second();
             IEnumerable<int> intersect = first.Intersect(second); // Define query.
-            foreach (int int32 in intersect) // Execute query.
-            {
-                Trace.WriteLine(int32); // 3 4
-            }
+            intersect.WriteLines(); // Execute query. 3 4
         }
 
         internal static void Except()
@@ -684,10 +600,7 @@
             IEnumerable<int> first = First();
             IEnumerable<int> second = Second();
             IEnumerable<int> except = first.Except(second); // Define query.
-            foreach (int int32 in except) // Execute query.
-            {
-                Trace.WriteLine(int32); // 1 2
-            }
+            except.WriteLines(); // Execute query. 1 2
         }
 
         internal static void DistinctWithComparer()
@@ -695,10 +608,7 @@
             IEnumerable<string> source = new string[] { "aa", "AA", "Aa", "aA", "bb" };
             IEnumerable<string> distinctWithComparer = source.Distinct(StringComparer.OrdinalIgnoreCase);
             // Define query.
-            foreach (string @string in distinctWithComparer) // Execute query.
-            {
-                Trace.WriteLine(@string); // aa bb
-            }
+            distinctWithComparer.WriteLines(); // Execute query. aa bb
         }
 
         #endregion
@@ -710,10 +620,7 @@
             IEnumerable<int> first = First();
             IEnumerable<int> second = Second();
             IEnumerable<int> zip = first.Zip(second, (a, b) => a + b); // Define query.
-            foreach (int int32 in zip) // Execute query.
-            {
-                Trace.WriteLine(int32); // 4 6 8 10
-            }
+            zip.WriteLines(); // Execute query. 4 6 8 10
         }
 
         #endregion
@@ -725,16 +632,10 @@
             IEnumerable<int> source = Enumerable.Range(0, 5); // Define query.
 
             IEnumerable<int> partition1 = source.Skip(2); // Define query.
-            foreach (int int32 in partition1) // Execute query.
-            {
-                Trace.WriteLine(int32); // 2 3 4
-            }
+            partition1.WriteLines(); // Execute query. 2 3 4
 
             IEnumerable<int> partition2 = source.Take(2); // Define query.
-            foreach (int int32 in partition2) // Execute query.
-            {
-                Trace.WriteLine(int32); // 0 1
-            }
+            partition2.WriteLines(); // Execute query. 0 1
         }
 
         internal static void TakeWhileSkipWhile()
@@ -742,16 +643,10 @@
             IEnumerable<int> source = new int[] { 1, 2, 3, -1, 4, 5 };
 
             IEnumerable<int> partition1 = source.TakeWhile(int32 => int32 > 0); // Define query.
-            foreach (int int32 in partition1) // Execute query.
-            {
-                Trace.WriteLine(int32); // 1 2 3
-            }
+            partition1.WriteLines(); // Execute query. 1 2 3
 
             IEnumerable<int> partition2 = source.SkipWhile(int32 => int32 > 0); // Define query.
-            foreach (int int32 in partition2) // Execute query.
-            {
-                Trace.WriteLine(int32); // -1 4 5
-            }
+            partition2.WriteLines(); // Execute query. -1 4 5
         }
 
         internal static void TakeWhileSkipWhileWithIndex()
@@ -759,16 +654,10 @@
             IEnumerable<int> source = new int[] { 4, 3, 2, 1, 5 };
 
             IEnumerable<int> partition1 = source.TakeWhile((int32, index) => int32 >= index); // Define query.
-            foreach (int int32 in partition1) // Execute query.
-            {
-                Trace.WriteLine(int32); // 4 3 2
-            }
+            partition1.WriteLines();  // Execute query. 4 3 2
 
             IEnumerable<int> partition2 = source.SkipWhile((int32, index) => int32 >= index); // Define query.
-            foreach (int int32 in partition2) // Execute query.
-            {
-                Trace.WriteLine(int32); // 1 5
-            }
+            partition2.WriteLines();  // Execute query. 1 5
         }
 
         #endregion
@@ -779,30 +668,16 @@
         {
             IEnumerable<string> source = Words();
             IEnumerable<string> ordered = source.OrderBy(word => word); // Define query.
-            foreach (string word in ordered) // Execute query.
-            {
-                Trace.WriteLine(word); // four one three Two Zero
-            }
-
-            foreach (string word in source) // Original sequence.
-            {
-                Trace.WriteLine(word); // Zero one Two three four
-            }
+            ordered.WriteLines(); // Execute query. four one three Two Zero
+            source.WriteLines(); // Original sequence. Zero one Two three four
         }
 
         internal static void OrderByDescending()
         {
             IEnumerable<string> source = Words();
             IEnumerable<string> ordered = source.OrderByDescending(word => word); // Define query.
-            foreach (string word in ordered) // Execute query.
-            {
-                Trace.WriteLine(word); // Zero Two three one four
-            }
-
-            foreach (string word in source) // Original sequence.
-            {
-                Trace.WriteLine(word); // Zero one Two three four
-            }
+            ordered.WriteLines(); // Execute query. Zero Two three one four
+            source.WriteLines(); // Original sequence. Zero one Two three four
         }
 
         internal static void OrderByWithComparer()
@@ -810,10 +685,7 @@
             IEnumerable<string> source = Words();
             IEnumerable<string> ordered = source.OrderBy(
                 keySelector: word => word, comparer: StringComparer.Ordinal); // Define query.
-            foreach (string word in ordered) // Execute query.
-            {
-                Trace.WriteLine(word); // Two Zero four one three
-            }
+            ordered.WriteLines(); // Execute query. Two Zero four one three
         }
 
         internal static void ThenBy()
@@ -822,15 +694,12 @@
             IEnumerable<Person> ordered = source // IEnumerable<Person>
                 .OrderBy(person => person.PlaceOfBirth) // IOrderedEnumerable<Person>
                 .ThenBy(person => person.Name); // IOrderedEnumerable<Person>
-            foreach (Person person in ordered) // Execute query.
-            {
-                Trace.WriteLine($"{person.PlaceOfBirth}: {person.Name}");
-                // AU: Chris Hemsworth
-                // UK: Paul Bettany
-                // UK: Tom Hiddleston
-                // US: Chris Evans
-                // US: Robert Downey Jr.
-            }
+            ordered.WriteLines(person => $"{person.PlaceOfBirth}: {person.Name}"); // Execute query.
+            // AU: Chris Hemsworth
+            // UK: Paul Bettany
+            // UK: Tom Hiddleston
+            // US: Chris Evans
+            // US: Robert Downey Jr.
         }
 
         internal static void OrderByAndOrderBy()
@@ -839,31 +708,26 @@
             IEnumerable<Person> ordered = source
                 .OrderBy(person => person.PlaceOfBirth)
                 .OrderBy(person => person.Name); // Define query.
-            foreach (Person person in ordered) // Execute query.
-            {
-                Trace.WriteLine($"{person.PlaceOfBirth}: {person.Name}");
-                // US: Chris Evans
-                // AU: Chris Hemsworth
-                // UK: Paul Bettany
-                // US: Robert Downey Jr.
-                // UK: Tom Hiddleston
-            }
+            ordered.WriteLines(person => $"{person.PlaceOfBirth}: {person.Name}"); // Execute query.
+            // US: Chris Evans
+            // AU: Chris Hemsworth
+            // UK: Paul Bettany
+            // US: Robert Downey Jr.
+            // UK: Tom Hiddleston
         }
 
         internal static void Reverse()
         {
             IEnumerable<int> source = Enumerable.Range(0, 5);
             IEnumerable<int> reversed = source.Reverse(); // Define query.
-            foreach (int int32 in reversed) // Execute query.
-            {
-                Trace.WriteLine(int32); // 4 3 2 1 0
-            }
+            reversed.WriteLines(); // Execute query. 4 3 2 1 0
         }
 
         #endregion
 
         #region Conversion
 
+#if NETFX
         internal static void CastNonGenericIEnumerable(TfsClientCredentials credentials)
         {
             using (TfsTeamProjectCollection projectCollection = new TfsTeamProjectCollection(
@@ -885,25 +749,20 @@
             SettingsPropertyCollection properties = ProfileBase.Properties; // SettingsPropertyCollection implements IEnumerable.
             IEnumerable<SettingsProperty> genericProperties = properties.Cast<SettingsProperty>();
         }
+#endif
 
         internal static void CastGenericIEnumerable()
         {
             IEnumerable<Base> source = new Base[] { new Derived(), new Derived() };
             IEnumerable<Derived> casted = source.Cast<Derived>(); // Define query.
-            foreach (Derived derived in casted) // Execute query.
-            {
-                Trace.WriteLine(derived.GetType().Name); // Derived Derived
-            }
+            casted.WriteLines(result => result.GetType().Name); // Execute query. Derived Derived
         }
 
         internal static void CastGenericIEnumerableWithException()
         {
             IEnumerable<Base> source = new Base[] { new Derived(), new Base() };
             IEnumerable<Derived> casted = source.Cast<Derived>(); // Define query.
-            foreach (Derived derived in casted) // Execute query.
-            {
-                Trace.WriteLine(derived.GetType().Name); // Derived InvalidCastException
-            }
+            casted.WriteLines(result => result.GetType().Name); // Execute query. Derived InvalidCastException
         }
 
         internal static void CastWithJoin()
@@ -915,10 +774,7 @@
                 outerKeySelector: int32 => int32,
                 innerKeySelector: @string => @string.Length, // on int32 equal @string.Length
                 resultSelector: (int32, @string) => $"{int32}:{@string}"); // Define query.
-            foreach (string value in innerJoin) // Execute query.
-            {
-                Trace.WriteLine(value); // 1:a 2:bb 3:ccc
-            }
+            innerJoin.WriteLines(); // Execute query. 1:a 2:bb 3:ccc
         }
 
         internal static void AsEnumerable()
@@ -939,10 +795,6 @@
             SortedSet<int> sortedSet = new SortedSet<int>();
             sortedSet.Reverse(); // SortedSet<T>.Reverse.
             sortedSet.AsEnumerable().Reverse(); // Enumerable.Reverse.
-
-            ReadOnlyCollectionBuilder<int> readOnlyCollection = new ReadOnlyCollectionBuilder<int>();
-            readOnlyCollection.Reverse(); // ReadOnlyCollectionBuilder<T>.Reverse.
-            readOnlyCollection.AsEnumerable().Reverse(); // Enumerable.Reverse.
 
             IQueryable<int> queryable = new EnumerableQuery<int>(Enumerable.Empty<int>());
             queryable.Reverse(); // Queryable.Reverse.
@@ -977,29 +829,29 @@
                     int32 => Math.Sqrt(int32).ToString("F", CultureInfo.InvariantCulture)); // Execute query.
             foreach (KeyValuePair<int, string> squareRoot in dictionary)
             {
-                Trace.WriteLine($"√{squareRoot.Key}: {squareRoot.Value}");
-                // √0: 0.00
-                // √1: 1.00
-                // √2: 1.41
-                // √3: 1.73
-                // √4: 2.00
+                $"√{squareRoot.Key}: {squareRoot.Value}".WriteLine();
             }
+            // √0: 0.00
+            // √1: 1.00
+            // √2: 1.41
+            // √3: 1.73
+            // √4: 2.00
 
             ILookup<int, int> lookup = Enumerable.Range(-2, 5)
                 .Select(int32 => new { Int32 = int32, Square = int32 * int32 }) // Define query.
                 .ToLookup(pair => pair.Square, pair => pair.Int32); // Execute query.
             foreach (IGrouping<int, int> squareRoots in lookup)
             {
-                Trace.Write($"√{squareRoots.Key}: ");
+                $"√{squareRoots.Key}: ".Write();
                 foreach (int squareRoot in squareRoots)
                 {
-                    Trace.Write($"{squareRoot}, ");
+                    $"{squareRoot}, ".Write();
                 }
-                Trace.WriteLine(null);
-                // √4: -2, 2,
-                // √1: -1, 1,
-                // √0: 0,
+                Environment.NewLine.Write();
             }
+            // √4: -2, 2,
+            // √1: -1, 1,
+            // √0: 0,
         }
 
         internal static void ToDictionaryWithException()
@@ -1021,7 +873,7 @@
             {
                 count++;
             }
-            Trace.WriteLine(count); // 0
+            count.WriteLine(); // 0
 
             Dictionary<int, int> dictionary = Enumerable
                 .Range(0, 5) // Define query.
@@ -1039,7 +891,7 @@
             {
                 count++;
             }
-            Trace.WriteLine(count); // 1
+            count.WriteLine(); // 1
 
             Dictionary<string, string> dictionary =
                 new string[] { "a", "b", null }.ToDictionary(@string => @string);
@@ -1052,12 +904,12 @@
                 .ToLookup(@string => @string, StringComparer.OrdinalIgnoreCase);
             foreach (IGrouping<string, string> group in lookup)
             {
-                Trace.Write($"{group.Key}: ");
+                $"{group.Key}: ".WriteLine();
                 foreach (string @string in group)
                 {
-                    Trace.Write($"{@string}, ");
+                    $"{@string}, ".WriteLine();
                 }
-                Trace.WriteLine(null);
+                Environment.NewLine.Write();
                 // aa: aa, AA, Aa, aA,
                 // bb: bb,
             }
@@ -1077,11 +929,11 @@
 
         internal static void FirstLast()
         {
-            int firstOfSource = Int32Source().First(); // -1.
-            int lastOfSource = Int32Source().Last(); // -4.
+            int firstOfSource = Int32Source().First().WriteLine(); // -1
+            int lastOfSource = Int32Source().Last().WriteLine(); // -4
 
-            int firstOfSingleSOurce = SingleInt32Source().First(); // 5.
-            int lastOfSingleSOurce = SingleInt32Source().Last(); // 5.
+            int firstOfSingleSOurce = SingleInt32Source().First().WriteLine(); // 5
+            int lastOfSingleSOurce = SingleInt32Source().Last().WriteLine(); // 5
 
             int firstOfEmptySOurce = EmptyInt32Source().First(); // InvalidOperationException.
             int lastOfEmptySOurce = EmptyInt32Source().Last(); // InvalidOperationException.
@@ -1089,10 +941,10 @@
 
         internal static void FirstLastWithPredicate()
         {
-            int firstPositiveOfSource = Int32Source().First(int32 => int32 > 0); // 1.
-            int lastNegativeOfSource = Int32Source().Last(int32 => int32 < 0); // -4.
+            int firstPositiveOfSource = Int32Source().First(int32 => int32 > 0).WriteLine(); // 1
+            int lastNegativeOfSource = Int32Source().Last(int32 => int32 < 0).WriteLine(); // -4
 
-            int firstPositiveOfSingleSOurce = SingleInt32Source().First(int32 => int32 > 0); // 1.
+            int firstPositiveOfSingleSOurce = SingleInt32Source().First(int32 => int32 > 0).WriteLine(); // 1
             int lastNegativeOfSingleSOurce = SingleInt32Source().Last(int32 => int32 < 0); // InvalidOperationException.
 
             int firstPositiveOfEmptySOurce = EmptyInt32Source().First(int32 => int32 > 0); // InvalidOperationException.
@@ -1101,25 +953,26 @@
 
         internal static void FirstOrDefaultLastOrDefault()
         {
-            int firstOrDefaultOfEmptySOurce = EmptyInt32Source().FirstOrDefault(); // 0.
-            int lastOrDefaultOfEmptySOurce = EmptyInt32Source().LastOrDefault(); // 0.
+            int firstOrDefaultOfEmptySOurce = EmptyInt32Source().FirstOrDefault().WriteLine(); // 0
+            int lastOrDefaultOfEmptySOurce = EmptyInt32Source().LastOrDefault().WriteLine(); // 0
 
-            int lastNegativeOrDefaultOfSingleSOurce = SingleInt32Source().LastOrDefault(int32 => int32 < 0); // 0.
+            int lastNegativeOrDefaultOfSingleSOurce = SingleInt32Source().LastOrDefault(int32 => int32 < 0).WriteLine(); // 0
 
-            int firstPositiveOrDefaultOfEmptySOurce = EmptyInt32Source().FirstOrDefault(int32 => int32 > 0); // 0.
-            int lastNegativeOrDefaultOfEmptySOurce = EmptyInt32Source().LastOrDefault(int32 => int32 < 0); // 0.
+            int firstPositiveOrDefaultOfEmptySOurce = EmptyInt32Source().FirstOrDefault(int32 => int32 > 0).WriteLine(); // 0
+            int lastNegativeOrDefaultOfEmptySOurce = EmptyInt32Source().LastOrDefault(int32 => int32 < 0).WriteLine(); // 0
 
-            Character lokiOrDefault = Characters().FirstOrDefault(
-                character => "Loki".Equals(character.Name, StringComparison.Ordinal)); // null.
+            Character lokiOrDefault = Characters()
+                .FirstOrDefault(character => "Loki".Equals(character.Name, StringComparison.Ordinal));
+            (lokiOrDefault == null).WriteLine(); // True
         }
 
         internal static void ElementAt()
         {
-            int elementAt2OfSource = Int32Source().ElementAt(2); // 2.
+            int elementAt2OfSource = Int32Source().ElementAt(2).WriteLine(); // 2
             int elementAt9OfSource = Int32Source().ElementAt(9); // ArgumentOutOfRangeException.
             int elementAtNegativeIndex = Int32Source().ElementAt(-5); // ArgumentOutOfRangeException.
 
-            int elementAt0OfSingleSource = SingleInt32Source().ElementAt(0); // 5.
+            int elementAt0OfSingleSource = SingleInt32Source().ElementAt(0).WriteLine(); // 5
             int elementAt1OfSingleSource = SingleInt32Source().ElementAt(1); // ArgumentOutOfRangeException.
 
             int elementAt0OfEmptySource = EmptyInt32Source().ElementAt(0); // ArgumentOutOfRangeException.
@@ -1127,35 +980,36 @@
 
         internal static void ElementAtOrDefault()
         {
-            int elementAt9OrDefaultOfSource = Int32Source().ElementAtOrDefault(9); // 0.
-            int elementAtNegativeIndexOrDefault = Int32Source().ElementAtOrDefault(-5); // 0.
+            int elementAt9OrDefaultOfSource = Int32Source().ElementAtOrDefault(9).WriteLine(); // 0
+            int elementAtNegativeIndexOrDefault = Int32Source().ElementAtOrDefault(-5).WriteLine(); // 0
 
-            int elementAt1OrDefaultOfSingleSource = SingleInt32Source().ElementAtOrDefault(1); // 0.
+            int elementAt1OrDefaultOfSingleSource = SingleInt32Source().ElementAtOrDefault(1).WriteLine(); // 0
 
-            int elementAt0OrDefaultOfEmptySource = EmptyInt32Source().ElementAtOrDefault(0); // 0.
+            int elementAt0OrDefaultOfEmptySource = EmptyInt32Source().ElementAtOrDefault(0).WriteLine(); // 0
 
-            Character characterAt5OrDefault = Characters().ElementAtOrDefault(5); // null.
+            Character characterAt5OrDefault = Characters().ElementAtOrDefault(5);
+            (characterAt5OrDefault == null).WriteLine(); // True
         }
 
         internal static void Single()
         {
             int singleOfSource = Int32Source().Single(); // InvalidOperationException.
-            int singleGreaterThan2OfSource = Int32Source().Single(int32 => int32 > 2); // 3.
+            int singleGreaterThan2OfSource = Int32Source().Single(int32 => int32 > 2).WriteLine(); // 3
             int singleNegativeOfSource = Int32Source().Single(int32 => int32 < 0); // InvalidOperationException.
 
-            int singleOfSingleSource = SingleInt32Source().Single(); // 5.
+            int singleOfSingleSource = SingleInt32Source().Single().WriteLine(); // 5
             int singleNegativeOfSingleSource = SingleInt32Source().Single(int32 => int32 < 0); // InvalidOperationException.
 
             int singleOfEmptySource = EmptyInt32Source().Single(); // InvalidOperationException.
             int singlePositiveOfEmptySource = EmptyInt32Source().Single(int32 => int32 == 0);  // InvalidOperationException.
 
             Character singleCharacter = Characters().Single(); // InvalidOperationException.
-            Character fromAsgard = Characters().Single(
-                character => "Asgard".Equals(character.PlaceOfBirth, StringComparison.Ordinal));  // Thor.
+            Character fromAsgard = Characters()
+                .Single(character => "Asgard".Equals(character.PlaceOfBirth, StringComparison.Ordinal))
+                .WriteLine();  // Thor.
 
             Character loki = Characters().Single(
                 character => "Loki".Equals(character.Name, StringComparison.Ordinal)); // InvalidOperationException.
-
         }
 
         internal static void SingleOrDefault()
@@ -1163,15 +1017,15 @@
             int singleOrDefaultOfSource = Int32Source().SingleOrDefault(); // InvalidOperationException.
             int singleNegativeOrDefaultOfSource = Int32Source().SingleOrDefault(int32 => int32 < 0); // InvalidOperationException.
 
-            int singleNegativeOrDefaultOfSingleSource = SingleInt32Source().SingleOrDefault(int32 => int32 < 0); // 0.
+            int singleNegativeOrDefaultOfSingleSource = SingleInt32Source().SingleOrDefault(int32 => int32 < 0).WriteLine(); // 0
 
-            int singleOrDefaultOfEmptySource = EmptyInt32Source().SingleOrDefault(); // 0.
-            int singlePositiveOrDefaultOfEmptySource = EmptyInt32Source().SingleOrDefault(int32 => int32 == 0); // 0.
+            int singleOrDefaultOfEmptySource = EmptyInt32Source().SingleOrDefault().WriteLine(); // 0
+            int singlePositiveOrDefaultOfEmptySource = EmptyInt32Source().SingleOrDefault(int32 => int32 == 0); // 0
 
             Character singleCharacterOrDefault = Characters().SingleOrDefault(); // InvalidOperationException.
-            Character lokiOrDefault = Characters().SingleOrDefault(
-                character => "Loki".Equals(character.Name, StringComparison.Ordinal)); // null.
-
+            Character lokiOrDefault = Characters()
+                .SingleOrDefault(character => "Loki".Equals(character.Name, StringComparison.Ordinal));
+            (lokiOrDefault == null).WriteLine(); // True
         }
 
         #endregion
@@ -1180,72 +1034,84 @@
 
         internal static void Aggregate()
         {
-            int productOfSource = Int32Source().Aggregate((currentProduct, int32) => currentProduct * int32); // ((((-1 * 1) * 2) * 3) * -4) = 24.
-            int productOfSingleSource = SingleInt32Source().Aggregate(
-                (currentProduct, int32) => currentProduct * int32); // 5.
-            int productOfEmptySource = EmptyInt32Source().Aggregate(
-                (currentProduct, int32) => currentProduct * int32); // InvalidOperationException.
-
+            int productOfSource = Int32Source()
+                .Aggregate((currentProduct, int32) => currentProduct * int32)
+                .WriteLine(); // ((((-1 * 1) * 2) * 3) * -4) = 24.
+            int productOfSingleSource = SingleInt32Source()
+                .Aggregate((currentProduct, int32) => currentProduct * int32).WriteLine(); // 5
+            int productOfEmptySource = EmptyInt32Source()
+                .Aggregate((currentProduct, int32) => currentProduct * int32); // InvalidOperationException.
         }
 
         internal static void AggregateWithSeed()
         {
-            int sumOfSquaresOfSource = Int32Source().Aggregate(
-                seed: 0,
-                func: (currentSumOfSquares, int32) => currentSumOfSquares + int32 * int32); // 31.
-            int sumOfSquaresOfSingleSource = SingleInt32Source().Aggregate(
-                seed: 0,
-                func: (currentSumOfSquares, int32) => currentSumOfSquares + int32 * int32); // 25.
-            int sumOfSquaresOfEmptySource = EmptyInt32Source().Aggregate(
-                seed: 0,
-                func: (currentSumOfSquares, int32) => currentSumOfSquares + int32 * int32); // 0.
+            int sumOfSquaresOfSource = Int32Source()
+                .Aggregate(
+                    seed: 0,
+                    func: (currentSumOfSquares, int32) => currentSumOfSquares + int32 * int32)
+                .WriteLine(); // 31
+            int sumOfSquaresOfSingleSource = SingleInt32Source()
+                .Aggregate(
+                    seed: 0,
+                    func: (currentSumOfSquares, int32) => currentSumOfSquares + int32 * int32)
+                .WriteLine(); // 25
+            int sumOfSquaresOfEmptySource = EmptyInt32Source()
+                .Aggregate(
+                    seed: 0,
+                    func: (currentSumOfSquares, int32) => currentSumOfSquares + int32 * int32)
+                .WriteLine(); // 0
         }
 
         internal static void AggregateWithSeedAndResultSelector()
         {
-            string sumOfSquaresMessage = Int32Source().Aggregate(
-                seed: 0,
-                func: (currentSumOfSquares, int32) => currentSumOfSquares + int32 * int32,
-                resultSelector: result => $"Sum of squares: {result}"); // Sum of squares: 31.
+            string sumOfSquaresMessage = Int32Source()
+                .Aggregate(
+                    seed: 0,
+                    func: (currentSumOfSquares, int32) => currentSumOfSquares + int32 * int32,
+                    resultSelector: result => $"Sum of squares: {result}")
+                .WriteLine(); // Sum of squares: 31
         }
 
         internal static void Count()
         {
-            int countOfSource = Int32Source().Count(); // 5.
-            int countOfSingleSource = SingleInt32Source().Count(); // 1.
-            int countOfEmptySource = EmptyInt32Source().Count(); // 0.
-            int countOfCharacters = Characters().Count(); // 5.
-            int countOfTypesInMscorlib = mscorlib.GetExportedTypes().Count(); // 1523
+            int countOfSource = Int32Source().Count().WriteLine(); // 5
+            int countOfSingleSource = SingleInt32Source().Count().WriteLine(); // 1
+            int countOfEmptySource = EmptyInt32Source().Count().WriteLine(); // 0
+            int countOfCharacters = Characters().Count().WriteLine(); // 5
+            int countOfTypesInCoreLibrary = CoreLibrary.GetExportedTypes().Count().WriteLine(); // 1523
         }
 
         internal static void CountWithPredicate()
         {
-            int positiveCountOfSource = Int32Source().Count(int32 => int32 > 0); // 3.
-            int positiveCountOfSingleSource = SingleInt32Source().Count(int32 => int32 > 0); // 1.
-            int positiveCountOfEmptySource = EmptyInt32Source().Count(int32 => int32 > 0); // 0.
+            int positiveCountOfSource = Int32Source().Count(int32 => int32 > 0).WriteLine(); // 3
+            int positiveCountOfSingleSource = SingleInt32Source().Count(int32 => int32 > 0).WriteLine(); // 1
+            int positiveCountOfEmptySource = EmptyInt32Source().Count(int32 => int32 > 0).WriteLine(); // 0
             int countOfConcat = Enumerable
                 .Repeat(0, int.MaxValue)
                 .Concat(Enumerable.Repeat(0, int.MaxValue))
                 .Count(); // OverflowException.
-            int countOfCharactersFromUS = Characters().Count(character => "US".Equals(character.PlaceOfBirth)); // 3.
+            int countOfCharactersFromUS = Characters()
+                .Count(character => "US".Equals(character.PlaceOfBirth))
+                .WriteLine(); // 3
         }
 
         internal static void LongCount()
         {
-            long longCountOfSource = Int32Source().LongCount(); // 5L.
+            long longCountOfSource = Int32Source().LongCount().WriteLine(); // 5L
             long countOfConcat = Enumerable
                 .Repeat(0, int.MaxValue)
                 .Concat(Enumerable.Repeat(0, int.MaxValue))
-                .LongCount(); // int.MaxValue + int.MaxValue = 4294967294L.
+                .LongCount()
+                .WriteLine(); // int.MaxValue + int.MaxValue = 4294967294L
         }
 
         internal static void MinMax()
         {
-            int minOfSource = Int32Source().Min(); // -4.
-            int maxOfSource = Int32Source().Max(); // 3.
+            int minOfSource = Int32Source().Min().WriteLine(); // -4
+            int maxOfSource = Int32Source().Max().WriteLine(); // 3
 
-            int minOfSingleSource = SingleInt32Source().Min(); // 5.
-            int maxOfSingleSource = SingleInt32Source().Max(); // 5.
+            int minOfSingleSource = SingleInt32Source().Min().WriteLine(); // 5
+            int maxOfSingleSource = SingleInt32Source().Max().WriteLine(); // 5
 
             int minOfEmptySource = EmptyInt32Source().Min(); // InvalidOperationException.
             int maxOfEmptySource = EmptyInt32Source().Max(); // InvalidOperationException.
@@ -1253,14 +1119,14 @@
 
         internal static void MaxWithSelector()
         {
-            decimal mostDeclaredMembers = mscorlib.GetExportedTypes()
-                .Max(type => type.GetDeclaredMembers().Length); // 311.
+            decimal mostDeclaredMembers = CoreLibrary.GetExportedTypes()
+                .Max(type => type.GetDeclaredMembers().Length).WriteLine(); // 311
         }
 
         internal static void OrderByDescendingAndTakeWhile()
         {
             int maxDeclaredMemberCount = 0;
-            var typesWithMaxDeclaredMemberCount = mscorlib.GetExportedTypes()
+            var typesWithMaxDeclaredMemberCount = CoreLibrary.GetExportedTypes()
                 .Select(type => new { Type = type, Count = type.GetDeclaredMembers().Length })
                 .OrderByDescending(typeWithDeclaredMemberCount => typeWithDeclaredMemberCount.Count)
                 .TakeWhile(typeWithDeclaredMemberCount =>
@@ -1271,16 +1137,13 @@
                             maxDeclaredMemberCount = typeWithDeclaredMemberCount.Count;
                         }
                         return typeWithDeclaredMemberCount.Count == maxDeclaredMemberCount;
-                    }); // If more multiple types have the same max declared member count, take all those types.
-            foreach (var typeWithMaxDeclaredMemberCount in typesWithMaxDeclaredMemberCount)
-            {
-                Trace.WriteLine($"{typeWithMaxDeclaredMemberCount.Type.FullName}: {typeWithMaxDeclaredMemberCount.Count}"); // System.Convert: 311.
-            }
+                    }); // If more multiple types have the same max declared member count, take all of those types.
+            typesWithMaxDeclaredMemberCount.WriteLines(type => $"{type.Type.FullName}:{type.Count}"); // Execute query. System.Convert:311
         }
 
         internal static void AggregateWithAnonymousTypeSeed()
         {
-            var typesWithMaxDeclaredMemberCount = mscorlib.GetExportedTypes().Aggregate(
+            var typesWithMaxDeclaredMemberCount = CoreLibrary.GetExportedTypes().Aggregate(
                 seed: new
                 {
                     Types = new List<Type>(),
@@ -1305,52 +1168,51 @@
                         Types = currentMaxTypes,
                         MemberCount = currentMaxDeclaredMemberCount
                     };
-                });
-            foreach (Type typeWithMaxDeclaredMemberCount in typesWithMaxDeclaredMemberCount.Types)
-            {
-                Trace.WriteLine($"{typeWithMaxDeclaredMemberCount.FullName}: {typesWithMaxDeclaredMemberCount.MemberCount}"); // System.Convert: 311.
-            }
+                }); // Define query.
+            typesWithMaxDeclaredMemberCount.Types.WriteLines(type => 
+                $"{type.FullName}:{typesWithMaxDeclaredMemberCount.MemberCount}"); // Execute query. System.Convert:311
         }
 
         internal static void Except2()
         {
-            IEnumerable<MemberInfo> inheritedMembers = typeof(Convert).GetMembers()
-                .Except(typeof(Convert).GetDeclaredMembers());
-            foreach (MemberInfo inheritedMember in inheritedMembers)
-            {
-                Trace.WriteLine(inheritedMember);
-                // System.String ToString()
-                // Boolean Equals(System.Object)
-                // Int32 GetHashCode()
-                // System.Type GetType()
-            }
+            IEnumerable<MemberInfo> inheritedMembers = typeof(Convert).GetTypeInfo().GetMembers()
+                .Except(typeof(Convert).GetDeclaredMembers()); // Define query.
+            inheritedMembers.WriteLines(); // Execute query.
+            // System.String ToString()
+            // Boolean Equals(System.Object)
+            // Int32 GetHashCode()
+            // System.Type GetType()
         }
 
         internal static void MinMaxGeneric()
         {
-            Character min = Characters().Min(); // JAVIS.
-            Character max = Characters().Max(); // Vision.
+            Characters().Min().WriteLine(); // JAVIS
+            Characters().Max().WriteLine(); // Vision
         }
 
         internal static void SumAverage()
         {
-            int sumOfSource = Int32Source().Sum(); // 1.
-            double averageOfSource = Int32Source().Average(); // 0.2.
+            int sumOfSource = Int32Source().Sum().WriteLine(); // 1
+            double averageOfSource = Int32Source().Average().WriteLine(); // 0.2
 
-            int sumOfSingleSource = SingleInt32Source().Sum(); // 5.
-            double averageOfSingleSource = SingleInt32Source().Average(); // 5.0.
+            int sumOfSingleSource = SingleInt32Source().Sum().WriteLine(); // 5
+            double averageOfSingleSource = SingleInt32Source().Average().WriteLine(); // 5.0
 
-            int sumOfEmptySource = EmptyInt32Source().Sum(); // 0.
-            double averageOfEmptySource = EmptyInt32Source().Average(); // InvalidOperationException.
+            int sumOfEmptySource = EmptyInt32Source().Sum().WriteLine(); // 0
+            double averageOfEmptySource = EmptyInt32Source().Average().WriteLine(); // InvalidOperationException.
         }
 
         internal static void AverageWithSelector()
         {
-            IEnumerable<Type> publicTypes = mscorlib.GetExportedTypes();
-            decimal averagePublicMemberCount = publicTypes.Average(type => type.GetMembers(
-                BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance).Length); // 21.046618516086671.
-            decimal averageDeclaredPublicMemberCount = publicTypes.Average(type => type.GetMembers(
-                BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly).Length); // 11.661851608667105.
+            IEnumerable<Type> publicTypes = CoreLibrary.GetExportedTypes();
+            decimal averagePublicMemberCount = publicTypes
+                .Average(type => type.GetTypeInfo().GetMembers(
+                    BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance).Length)
+                .WriteLine(); // 21.046618516086671
+            decimal averageDeclaredPublicMemberCount = publicTypes
+                .Average(type => type.GetTypeInfo().GetMembers(
+                    BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly).Length)
+                .WriteLine(); // 11.661851608667105
         }
 
         #endregion
@@ -1359,36 +1221,36 @@
 
         internal static void All()
         {
-            bool allNegative = Int32Source().All(int32 => int32 < 0); // false.
-            bool allPositive = SingleInt32Source().All(int32 => int32 > 0); // true.
-            bool allGreaterThanMax = EmptyInt32Source().All(int32 => int32 > int.MaxValue); // true.
+            bool allNegative = Int32Source().All(int32 => int32 < 0).WriteLine(); // False
+            bool allPositive = SingleInt32Source().All(int32 => int32 > 0).WriteLine(); // True
+            bool allGreaterThanMax = EmptyInt32Source().All(int32 => int32 > int.MaxValue).WriteLine(); // True
         }
 
         internal static void Any()
         {
-            bool anyInSource = Int32Source().Any(); // true.
-            bool anyInSingleSource = SingleInt32Source().Any(); // true.
-            bool anyInEmptySource = EmptyInt32Source().Any(); // false.
+            bool anyInSource = Int32Source().Any().WriteLine(); // True
+            bool anyInSingleSource = SingleInt32Source().Any().WriteLine(); // True
+            bool anyInEmptySource = EmptyInt32Source().Any().WriteLine(); // False
         }
 
         internal static void AnyWithPredicate()
         {
-            bool anyNegative = Int32Source().Any(int32 => int32 < 0); // true.
-            bool anyPositive = SingleInt32Source().Any(int32 => int32 > 0); // true.
-            bool any0 = EmptyInt32Source().Any(_ => true); // false.
+            bool anyNegative = Int32Source().Any(int32 => int32 < 0).WriteLine(); // True
+            bool anyPositive = SingleInt32Source().Any(int32 => int32 > 0).WriteLine(); // True
+            bool any0 = EmptyInt32Source().Any(_ => true).WriteLine(); // False
         }
 
         internal static void Contains()
         {
-            bool contains5InSource = Int32Source().Contains(5); // false.
-            bool contains5InSingleSource = SingleInt32Source().Contains(5); // true.
-            bool contains5InEmptySource = EmptyInt32Source().Contains(5); // false.
+            bool contains5InSource = Int32Source().Contains(5).WriteLine(); // False
+            bool contains5InSingleSource = SingleInt32Source().Contains(5).WriteLine(); // True
+            bool contains5InEmptySource = EmptyInt32Source().Contains(5).WriteLine(); // False
         }
 
         internal static void ContainsWithComparer()
         {
-            bool containsTwo = Words().Contains("two", StringComparer.Ordinal); // false.
-            bool containsTwoIgnoreCase = Words().Contains("two", StringComparer.OrdinalIgnoreCase); // true.
+            bool containsTwo = Words().Contains("two", StringComparer.Ordinal).WriteLine(); // False
+            bool containsTwoIgnoreCase = Words().Contains("two", StringComparer.OrdinalIgnoreCase).WriteLine(); // True
         }
 
         #endregion
@@ -1397,18 +1259,18 @@
 
         internal static void SequentialEqual()
         {
-            IEnumerable<object> first = new object[] { null, 1, "2", mscorlib };
-            IEnumerable<object> second = new List<object>() { null, 1, $"{1 + 1}", mscorlib };
-            bool valueEqual = first.Equals(second); // false.
-            bool referenceEqual = object.ReferenceEquals(first, second); // false.
-            bool sequentialEqual = first.SequenceEqual(second.Concat(Enumerable.Empty<object>())); // true.
+            IEnumerable<object> first = new object[] { null, 1, "2", CoreLibrary };
+            IEnumerable<object> second = new List<object>() { null, 1, $"{1 + 1}", CoreLibrary };
+            bool valueEqual = first.Equals(second).WriteLine(); // False
+            bool referenceEqual = object.ReferenceEquals(first, second).WriteLine(); // False
+            bool sequentialEqual = first.SequenceEqual(second.Concat(Enumerable.Empty<object>())).WriteLine(); // True
         }
 
         internal static void SequentialEqualOfEmpty()
         {
             IEnumerable<Derived> emptyfirst = new ConcurrentQueue<Derived>();
             IEnumerable<Base> emptysecond = ImmutableHashSet.Create<Base>();
-            bool sequentialEqual = emptyfirst.SequenceEqual(emptysecond); // true.
+            bool sequentialEqual = emptyfirst.SequenceEqual(emptysecond).WriteLine(); // True
         }
 
         [SuppressMessage("Microsoft.Globalization", "CA1309:UseOrdinalStringComparison", MessageId = "Dixin.Linq.LinqToObjects.EnumerableExtensions.SequenceEqual<System.String>(System.Collections.Generic.IEnumerable`1<System.String>,System.Collections.Generic.IEnumerable`1<System.String>,System.Collections.Generic.IEqualityComparer`1<System.String>)")]
@@ -1416,8 +1278,9 @@
         {
             IEnumerable<string> first = new string[] { null, string.Empty, "ss", };
             IEnumerable<string> second = new string[] { null, string.Empty, "ß", };
-            bool sequentialEqual1 = first.SequenceEqual(second, StringComparer.InvariantCulture); // true.
-            bool sequentialEqual2 = first.SequenceEqual(second, StringComparer.Ordinal); // false.
+            CultureInfo.CurrentCulture = new CultureInfo("en-US");
+            bool sequentialEqual1 = first.SequenceEqual(second, StringComparer.CurrentCulture).WriteLine(); // True
+            bool sequentialEqual2 = first.SequenceEqual(second, StringComparer.Ordinal).WriteLine(); // False
         }
 
         #endregion

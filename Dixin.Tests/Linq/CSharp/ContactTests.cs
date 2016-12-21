@@ -5,7 +5,7 @@
     using System.Linq;
 
     using Dixin.Linq.Introduction;
-    using Dixin.TestTools.UnitTesting;
+    using Dixin.Linq.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -52,7 +52,7 @@
             Assert.IsTrue(Validator.TryValidateObject(contact1, validationContext1, results1, true));
             EnumerableAssert.IsEmpty(results1);
 
-            Contact contact2 = new Contact() { Name = nameof(Contact.Name), Email = "user@host" };
+            Contact contact2 = new Contact() { Name = nameof(Contact.Name), Email = "user" };
             ValidationContext validationContext2 = new ValidationContext(contact2);
             List<ValidationResult> results2 = new List<ValidationResult>();
             Assert.IsFalse(Validator.TryValidateObject(contact2, validationContext2, results2, true));

@@ -2,7 +2,7 @@ namespace Dixin.Linq.Parallel
 {
     using System.Linq;
 
-    internal static class HelperMethods
+    internal static class Functions
     {
         internal static int Compute(int value = 0, int iteration = 10000000)
         {

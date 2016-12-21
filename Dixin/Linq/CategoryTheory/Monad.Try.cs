@@ -1,17 +1,16 @@
 ﻿namespace Dixin.Linq.CategoryTheory
 {
     using System;
-    using System.Diagnostics;
 
     using Microsoft.FSharp.Core;
 
     public struct Try<T>
     {
-        private readonly Lazy<Tuple<T, Exception>> factory;
+        private readonly Lazy<(T, Exception)> factory;
 
-        public Try(Func<Tuple<T, Exception>> factory)
+        public Try(Func<(T, Exception)> factory)
         {
-            this.factory = new Lazy<Tuple<T, Exception>>(() =>
+            this.factory = new Lazy<(T, Exception)>(() =>
                 {
                     try
                     {
@@ -19,7 +18,7 @@
                     }
                     catch (Exception exception)
                     {
-                        return default(T).Tuple(exception);
+                        return (default(T), exception);
                     }
                 });
         }
@@ -40,7 +39,7 @@
 
         public bool HasException => this.Exception != null;
 
-        public static implicit operator Try<T>(T value) => new Try<T>(() => value.Tuple((Exception)null));
+        public static implicit operator Try<T>(T value) => new Try<T>(() => (value, (Exception)null));
     }
 
     public static partial class TryExtensions
@@ -54,14 +53,14 @@
                 {
                     if (source.HasException)
                     {
-                        return default(TResult).Tuple(source.Exception);
+                        return (default(TResult), source.Exception);
                     }
                     Try<TSelector> result = selector(source.Value);
                     if (result.HasException)
                     {
-                        return default(TResult).Tuple(result.Exception);
+                        return (default(TResult), result.Exception);
                     }
-                    return resultSelector(source.Value, result.Value).Tuple((Exception)null);
+                    return (resultSelector(source.Value, result.Value), (Exception)null);
                 });
 
         // Wrap: TSource -> Try<TSource>
@@ -75,19 +74,19 @@
 
     public static partial class TryExtensions
     {
-        public static Try<T> Throw<T>(this Exception exception) => new Try<T>(() => default(T).Tuple(exception));
+        public static Try<T> Throw<T>(this Exception exception) => new Try<T>(() => (default(T), exception));
     }
 
     public static partial class TryExtensions
     {
         public static Try<T> Try<T>(Func<T> function) =>
-            new Try<T>(() => function().Tuple((Exception)null));
+            new Try<T>(() => (function(), (Exception)null));
 
         public static Try<Unit> Try(Action action) =>
             new Try<Unit>(() =>
             {
                 action();
-                return default(Unit).Tuple((Exception)null);
+                return (default(Unit), (Exception)null);
             });
 
         public static Try<T> Catch<T, TException>(
@@ -102,7 +101,7 @@
                         source = handler(exception);
                         
                     }
-                    return source.HasException ? default(T).Tuple(source.Exception) : source.Value.Tuple((Exception)null);
+                    return source.HasException ? (default(T), source.Exception) : (source.Value, (Exception)null);
                 });
 
         public static Try<T> Catch<T>(
@@ -143,12 +142,12 @@
             Try<int> query = from nullableInt32 in Try(() => 
                                 string.IsNullOrEmpty(value) ? default(int?) : Convert.ToInt32(value)) // Try<int32?>
                              from result in TryStrictFactorial(nullableInt32) // Try<int>.
-                             from unit in Try(() => Trace.WriteLine(result)) // Try<Unit>.
+                             from unit in Try(() => result.WriteLine()) // Try<Unit>.
                              select result; // Define query.
             return query
                 .Catch(exception => // Catch all and rethrow.
                     {
-                        Trace.WriteLine(exception);
+                        exception.WriteLine();
                         return Throw<int>(exception);
                     })
                 .Catch<int, ArgumentNullException>(exception => 1) // When argument is null, factorial is 1.

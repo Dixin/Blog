@@ -1,11 +1,10 @@
 ﻿namespace Dixin.Tests.Linq
 {
-    using System;
     using System.Linq;
     using System.Xml.Linq;
 
     using Dixin.Linq;
-    using Dixin.TestTools.UnitTesting;
+    using Dixin.Linq.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -95,7 +94,7 @@
 
             XNamespace namespace1 = "namespace1";
             element.SetAttributeValue(XNamespace.Xmlns + "prefix1", namespace1);
-            Tuple<string, XNamespace> prefixAndNamespace = element.Namespaces().Single();
+            (string, XNamespace) prefixAndNamespace = element.Namespaces().Single();
             Assert.IsTrue(object.ReferenceEquals(namespace1, prefixAndNamespace.Item2));
             Assert.IsTrue(object.ReferenceEquals(element.GetNamespaceOfPrefix(prefixAndNamespace.Item1), element.Namespaces().Single().Item2));
             Assert.AreEqual(prefixAndNamespace.Item1, element.GetPrefixOfNamespace(namespace1));

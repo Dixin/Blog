@@ -1,11 +1,12 @@
 ﻿namespace Dixin.Tests.Linq.CSharp
 {
-    using System;
     using System.Collections.Generic;
     using Dixin.Linq.CSharp;
-    using Dixin.TestTools.UnitTesting;
+    using Dixin.Linq.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using Mono.Cecil;
 
     [TestClass]
     public class VariancesTests
@@ -13,7 +14,7 @@
         [TestMethod]
         public void GetTypesWithVarianceTest()
         {
-            IEnumerable<Type> typesWithVariance = Variances.GetTypesWithVariance();
+            IEnumerable<TypeDefinition> typesWithVariance = Variances.GetTypesWithVariance();
             EnumerableAssert.Multiple(typesWithVariance);
         }
     }

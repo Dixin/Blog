@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Linq;
     using System.Threading;
 
@@ -192,7 +191,7 @@
 
         internal static IEnumerable<TResult> Throw<TResult>(Exception exception)
         {
-            Trace.WriteLine($"throw {exception}, thread id: {Thread.CurrentThread.ManagedThreadId}");
+            $"throw {exception}, thread id: {Thread.CurrentThread.ManagedThreadId}".WriteLine();
             throw exception;
 #pragma warning disable 162
             yield break;

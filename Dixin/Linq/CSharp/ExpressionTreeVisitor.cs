@@ -5,6 +5,7 @@
     using System.Diagnostics;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Reflection;
     using System.Reflection.Emit;
 
     internal abstract class BinaryArithmeticExpressionVisitor<TResult>
@@ -90,80 +91,80 @@
         }
     }
 
-    internal class PostfixVisitor : BinaryArithmeticExpressionVisitor<List<Tuple<OpCode, double?>>>
+    internal class PostfixVisitor : BinaryArithmeticExpressionVisitor<List<(OpCode, double?)>>
     {
-        protected override List<Tuple<OpCode, double?>> VisitAdd
+        protected override List<(OpCode, double?)> VisitAdd
             (BinaryExpression add, LambdaExpression expression) => this.VisitBinary(add, OpCodes.Add, expression);
 
-        protected override List<Tuple<OpCode, double?>> VisitConstant(
-            ConstantExpression constant, LambdaExpression expression) => 
-                new List<Tuple<OpCode, double?>>() { Tuple.Create(OpCodes.Ldc_R8, (double?)constant.Value) };
+        protected override List<(OpCode, double?)> VisitConstant(
+            ConstantExpression constant, LambdaExpression expression) =>
+                new List<(OpCode, double?)>() { (OpCodes.Ldc_R8, (double?)constant.Value) };
 
-        protected override List<Tuple<OpCode, double?>> VisitDivide
+        protected override List<(OpCode, double?)> VisitDivide
             (BinaryExpression divide, LambdaExpression expression) =>
                 this.VisitBinary(divide, OpCodes.Div, expression);
 
-        protected override List<Tuple<OpCode, double?>> VisitMultiply
+        protected override List<(OpCode, double?)> VisitMultiply
             (BinaryExpression multiply, LambdaExpression expression) =>
                 this.VisitBinary(multiply, OpCodes.Mul, expression);
 
-        protected override List<Tuple<OpCode, double?>> VisitParameter(
+        protected override List<(OpCode, double?)> VisitParameter(
             ParameterExpression parameter, LambdaExpression expression)
         {
             int index = expression.Parameters.IndexOf(parameter);
-            return new List<Tuple<OpCode, double?>>() { Tuple.Create(OpCodes.Ldarg_S, (double?)index) };
+            return new List<(OpCode, double?)>() { (OpCodes.Ldarg_S, (double?)index) };
         }
 
-        protected override List<Tuple<OpCode, double?>> VisitSubtract
+        protected override List<(OpCode, double?)> VisitSubtract
             (BinaryExpression subtract, LambdaExpression expression) =>
                 this.VisitBinary(subtract, OpCodes.Sub, expression);
 
-        private List<Tuple<OpCode, double?>> VisitBinary( // Recursion: left, right, operator
+        private List<(OpCode, double?)> VisitBinary( // Recursion: left, right, operator
             BinaryExpression binary, OpCode postfix, LambdaExpression expression)
         {
-            List < Tuple < OpCode, double?>>  cils = this.VisitNode(binary.Left, expression);
+            List<(OpCode, double?)> cils = this.VisitNode(binary.Left, expression);
             cils.AddRange(this.VisitNode(binary.Right, expression));
-            cils.Add(Tuple.Create(postfix, (double?)null));
+            cils.Add((postfix, (double?)null));
             return cils;
         }
     }
 
 #if DEMO
-    internal class PostfixVisitor : BinaryArithmeticExpressionVisitor<IEnumerable<Tuple<OpCode, double?>>>
+    internal class PostfixVisitor : BinaryArithmeticExpressionVisitor<IEnumerable<(OpCode, double?)>>
     {
-        protected override IEnumerable<Tuple<OpCode, double?>> VisitAdd
+        protected override IEnumerable<(OpCode, double?)> VisitAdd
             (BinaryExpression add, LambdaExpression expression) => this.VisitBinary(add, OpCodes.Add, expression);
 
-        protected override IEnumerable<Tuple<OpCode, double?>> VisitConstant(
+        protected override IEnumerable<(OpCode, double?)> VisitConstant(
             ConstantExpression constant, LambdaExpression expression)
         {
-            yield return Tuple.Create(OpCodes.Ldc_R8, (double?)constant.Value);
+            yield return (OpCodes.Ldc_R8, (double?)constant.Value);
         }
 
-        protected override IEnumerable<Tuple<OpCode, double?>> VisitDivide
+        protected override IEnumerable<(OpCode, double?)> VisitDivide
             (BinaryExpression divide, LambdaExpression expression) =>
                 this.VisitBinary(divide, OpCodes.Div, expression);
 
-        protected override IEnumerable<Tuple<OpCode, double?>> VisitMultiply
+        protected override IEnumerable<(OpCode, double?)> VisitMultiply
             (BinaryExpression multiply, LambdaExpression expression) =>
                 this.VisitBinary(multiply, OpCodes.Mul, expression);
 
-        protected override IEnumerable<Tuple<OpCode, double?>> VisitParameter(
+        protected override IEnumerable<(OpCode, double?)> VisitParameter(
             ParameterExpression parameter, LambdaExpression expression)
         {
             int index = expression.Parameters.IndexOf(parameter);
-            yield return Tuple.Create(OpCodes.Ldarg_S, (double?)index);
+            yield return (OpCodes.Ldarg_S, (double?)index);
         }
 
-        protected override IEnumerable<Tuple<OpCode, double?>> VisitSubtract
+        protected override IEnumerable<(OpCode, double?)> VisitSubtract
             (BinaryExpression subtract, LambdaExpression expression) =>
                 this.VisitBinary(subtract, OpCodes.Sub, expression);
 
-        private IEnumerable<Tuple<OpCode, double?>> VisitBinary( // Recursion: left, right, operator
+        private IEnumerable<(OpCode, double?)> VisitBinary( // Recursion: left, right, operator
             BinaryExpression binary, OpCode postfix, LambdaExpression expression) =>
                 this.VisitNode(binary.Left, expression)
                     .Concat(this.VisitNode(binary.Right, expression))
-                    .Concat(EnumerableEx.Return(Tuple.Create(postfix, (double?)null))); // left, right, postfix
+                    .Concat(Enumerable.Repeat((postfix, (double?)null), 1)); // left, right, postfix
     }
 #endif
 
@@ -175,8 +176,8 @@
                 (a, b, c, d, e) => a + b - c * d / 2 + e * 3;
 
             PostfixVisitor postfixVisitor = new PostfixVisitor();
-            IEnumerable<Tuple<OpCode, double?>> postfix = postfixVisitor.VisitBody(infix);
-            foreach (Tuple<OpCode, double?> code in postfix)
+            IEnumerable<(OpCode, double?)> postfix = postfixVisitor.VisitBody(infix);
+            foreach ((OpCode, double?) code in postfix)
             {
                 Trace.WriteLine($"{code.Item1} {code.Item2}");
             }
@@ -204,14 +205,14 @@
                 name: string.Empty,
                 returnType: expression.ReturnType,
                 parameterTypes: expression.Parameters.Select(parameter => parameter.Type).ToArray(),
-                m: typeof(BinaryArithmeticCompiler).Module);
+                m: typeof(BinaryArithmeticCompiler).GetTypeInfo().Module);
             EmitIL(dynamicFunction.GetILGenerator(), new PostfixVisitor().VisitBody(expression));
             return (TDelegate)(object)dynamicFunction.CreateDelegate(typeof(TDelegate));
         }
 
-        private static void EmitIL(ILGenerator ilGenerator, IEnumerable<Tuple<OpCode, double?>> codes)
+        private static void EmitIL(ILGenerator ilGenerator, IEnumerable<(OpCode, double?)> codes)
         {
-            foreach (Tuple<OpCode, double?> code in codes)
+            foreach ((OpCode, double?) code in codes)
             {
                 if (code.Item2.HasValue)
                 {
