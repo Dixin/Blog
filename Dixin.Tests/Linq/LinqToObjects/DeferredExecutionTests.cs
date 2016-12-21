@@ -3,7 +3,8 @@ namespace Dixin.Tests.Linq.LinqToObjects
     using System.Linq;
 
     using Dixin.Linq.LinqToObjects;
-    using Dixin.TestTools.UnitTesting;
+    using Dixin.Linq.Tests;
+
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]

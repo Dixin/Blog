@@ -45,7 +45,9 @@
             IEnumerable<XElement> items = Modeling.RssItems("https://weblogs.asp.net/dixin/rss");
             Assert.IsTrue(items.Any());
             Modeling.XNodeToString();
+#if NETFX
             Modeling.Write();
+#endif
         }
 
         [TestMethod]

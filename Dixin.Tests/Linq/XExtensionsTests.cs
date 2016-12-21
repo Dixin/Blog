@@ -5,7 +5,7 @@
     using System.Xml.Linq;
 
     using Dixin.Linq;
-    using Dixin.TestTools.UnitTesting;
+    using Dixin.Linq.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 

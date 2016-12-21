@@ -24,7 +24,6 @@ namespace Dixin.Linq.LinqToObjects
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
 
     internal class FluentList<T> : List<T>
     {
@@ -89,7 +88,7 @@ namespace Dixin.Linq.LinqToObjects
             list.Insert(0, 0);
             list.RemoveAt(1);
             list.Reverse();
-            list.ForEach(value => Trace.WriteLine(value));
+            list.ForEach(value => value.WriteLine());
             list.Clear();
         }
 
@@ -100,7 +99,7 @@ namespace Dixin.Linq.LinqToObjects
                 .Insert(0, 0)
                 .RemoveAt(1)
                 .Reverse()
-                .ForEach(value => Trace.WriteLine(value))
+                .ForEach(value => value.WriteLine())
                 .Clear();
         }
 
@@ -123,7 +122,7 @@ namespace Dixin.Linq.LinqToObjects
                 .FluentInsert(0, 0)
                 .FluentRemoveAt(1)
                 .FluentReverse()
-                .FluentForEach(value => Trace.WriteLine(value))
+                .FluentForEach(value => value.WriteLine())
                 .FluentClear();
         }
 
@@ -140,7 +139,7 @@ namespace Dixin.Linq.LinqToObjects
                                                 0, 0),
                                             1)
                                         ),
-                                    value => Trace.WriteLine(value))
+                                    value => value.WriteLine())
                                 );
         }
     }

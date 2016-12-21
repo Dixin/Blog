@@ -1,5 +1,6 @@
 namespace Dixin.Linq.Introduction
 {
+#if NETFX
     using System.Data;
     using System.Data.Common;
     using System.Data.SqlClient;
@@ -50,4 +51,5 @@ namespace Dixin.Linq.Introduction
             }
         }
     }
+#endif
 }

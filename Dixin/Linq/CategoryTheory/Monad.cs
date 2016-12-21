@@ -2,12 +2,8 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.IO;
-    using System.Linq;
-    using System.Linq.Expressions;
     using System.Net.Http;
-    using System.Reflection;
     using System.Text;
     using System.Threading.Tasks;
 
@@ -296,14 +292,14 @@
             IEnumerable<int> source = new int[] { 0, 1, 2, 3, 4 };
 
             // Associativity preservation: source.Wrap().Multiply().Wrap().Multiply() == source.Wrap().Wrap().Multiply().Multiply().
-            source.Enumerable().Multiply().Enumerable().Multiply().ForEach(result => Trace.WriteLine(result));
+            source.Enumerable().Multiply().Enumerable().Multiply().WriteLines();
             // 0 1 2 3 4
-            source.Enumerable().Enumerable().Multiply().Multiply().ForEach(result => Trace.WriteLine(result));
+            source.Enumerable().Enumerable().Multiply().Multiply().WriteLines();
             // 0 1 2 3 4
             // Left unit preservation: Unit(source).Multiply() == f.
-            Unit(source).Multiply().ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
+            Unit(source).Multiply().WriteLines(); // 0 1 2 3 4
             // Right unit preservation: source == source.Select(Unit).Multiply().
-            source.Select(Unit).Multiply().ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
+            source.Select(Unit).Multiply().WriteLines(); // 0 1 2 3 4
         }
 
         internal static void Workflow<T1, T2, T3, T4>(
@@ -317,7 +313,7 @@
                                     from value3 in source3()
                                     from value4 in source4(value1, value2, value3)
                                     select value4; // Define query.
-            query.ForEach(result => Trace.WriteLine(result)); // Execute query.
+            query.WriteLines(); // Execute query.
         }
 
         internal static void CompiledWorkflow<T1, T2, T3, T4>(
@@ -333,7 +329,7 @@
                     .SelectMany(
                         result3 => source4(result3.Result2.Value1, result3.Result2.Value2, result3.Value3),
                         (result3, value4) => value4); // Define query.
-            query.ForEach(result => Trace.WriteLine(result)); // Execute query.
+            query.WriteLines(); // Execute query.
         }
 
         internal static void MonadLaws()
@@ -349,7 +345,7 @@
             (from value in source
              from result1 in selector1(value)
              from result2 in selector2(result1)
-             select result2).ForEach(result => Trace.WriteLine(result));
+             select result2).WriteLines();
                 // 0.0 0.00 0.0 0.00
                 // 0.5 0.50 1.0 1.00
                 // 1.0 1.00 1.4 1.41
@@ -359,7 +355,7 @@
              from result in (from result1 in selector1(value)
                              from result2 in selector2(result1)
                              select result2)
-             select result).ForEach(result => Trace.WriteLine(result));
+             select result).WriteLines();
                 // 0.0 0.00 0.0 0.00
                 // 0.5 0.50 1.0 1.00
                 // 1.0 1.00 1.4 1.41
@@ -368,14 +364,12 @@
             // Left unit: value.Wrap().SelectMany(selector) == selector(value).
             (from value in Value.Enumerable()
              from result in selector(value)
-             select result).ForEach(
-                result => Trace.WriteLine(result)); // * * * * *
-            selector(Value).ForEach(result => Trace.WriteLine(result)); // * * * * *
+             select result).WriteLines(); // * * * * *
+            selector(Value).WriteLines(); // * * * * *
             // Right unit: source == source.SelectMany(Wrap).
             (from value in source
              from result in value.Enumerable()
-             select result).ForEach(
-                result => Trace.WriteLine(result)); // 0 1 2 3 4
+             select result).WriteLines(); // 0 1 2 3 4
         }
 
         public static Func<TSource, IEnumerable<TResult>> o<TSource, TMiddle, TResult>( // After.
@@ -394,13 +388,13 @@
                 @double => new string[] { @double.ToString("0.0"), @double.ToString("0.00") };
 
             // Associativity: selector3.o(selector2).o(selector1) == selector3.o(selector2.o(selector1)).
-            selector3.o(selector2).o(selector1)(true).ForEach(result => Trace.WriteLine(result));
+            selector3.o(selector2).o(selector1)(true).WriteLines();
                 // 0.0 0.00 0.0 0.00
                 // 0.5 0.50 1.0 1.00
                 // 1.0 1.00 1.4 1.41
                 // 1.5 1.50 1.7 1.73
                 // 2.0 2.00 2.0 2.00
-            selector3.o(selector2.o(selector1))(true).ForEach(result => Trace.WriteLine(result));
+            selector3.o(selector2.o(selector1))(true).WriteLines();
                 // 0.0 0.00 0.0 0.00
                 // 0.5 0.50 1.0 1.00
                 // 1.0 1.00 1.4 1.41
@@ -408,12 +402,12 @@
                 // 2.0 2.00 2.0 2.00
             // Left unit: Unit.o(selector) == selector.
             Func<int, IEnumerable<int>> leftUnit = Enumerable;
-            leftUnit.o(selector1)(true).ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
-            selector1(true).ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
+            leftUnit.o(selector1)(true).WriteLines(); // 0 1 2 3 4
+            selector1(true).WriteLines(); // 0 1 2 3 4
             // Right unit: selector == selector.o(Unit).
-            selector1(false).ForEach(result => Trace.WriteLine(result)); // 5 6 7 8 9
+            selector1(false).WriteLines(); // 5 6 7 8 9
             Func<bool, IEnumerable<bool>> rightUnit = Enumerable;
-            selector1.o(rightUnit)(false).ForEach(result => Trace.WriteLine(result)); // 5 6 7 8 9
+            selector1.o(rightUnit)(false).WriteLines(); // 5 6 7 8 9
         }
     }
 
@@ -636,20 +630,20 @@
             Tuple<string, int> source = "a".Tuple(1);
 
             // Associativity preservation: source.Wrap().Multiply().Wrap().Multiply() == source.Wrap().Wrap().Multiply().Multiply().
-            Trace.WriteLine(source
+            source
                 .Tuple<string, Tuple<string, int>>()
                 .Multiply()
                 .Tuple<string, Tuple<string, int>>()
-                .Multiply()); // (, 1)
-            Trace.WriteLine(source
+                .Multiply().WriteLine(); // (, 1)
+            source
                 .Tuple<string, Tuple<string, int>>()
                 .Tuple<string, Tuple<string, Tuple<string, int>>>()
                 .Multiply()
-                .Multiply()); // (, 1)
+                .Multiply().WriteLine(); // (, 1)
             // Left unit preservation: Unit(f).Multiply() == source.
-            Trace.WriteLine(Unit<string, Tuple<string, int>>(source).Multiply()); // (, 1)
+            Unit<string, Tuple<string, int>>(source).Multiply().WriteLine(); // (, 1)
             // Right unit preservation: source == source.Select(Unit).Multiply().
-            Trace.WriteLine(source.Select(Unit<string, int>).Multiply()); // (a, 1)
+            source.Select(Unit<string, int>).Multiply().WriteLine(); // (a, 1)
         }
 
         internal static void MonadLaws()
@@ -661,26 +655,26 @@
             const int Value = 5;
 
             // Associativity: source.SelectMany(selector1).SelectMany(selector2) == source.SelectMany(value => selector1(value).SelectMany(selector2)).
-            Trace.WriteLine(
-                from value in source
+            
+                (from value in source
                 from result1 in selector1(value)
                 from result2 in selector2(result1)
-                select result2); // (a, 1.00)
-            Trace.WriteLine(
-                from value in source
+                select result2).WriteLine(); // (a, 1.00)
+            
+                (from value in source
                 from result in (from result1 in selector1(value) from result2 in selector2(result1) select result2)
-                select result); // (a, 1.00)
+                select result).WriteLine(); // (a, 1.00)
             // Left unit: value.Wrap().SelectMany(selector) == selector(value).
-            Trace.WriteLine(
-                from value in Value.Tuple<string, int>()
+            
+                (from value in Value.Tuple<string, int>()
                 from result in selector(value)
-                select result); // (, @)
-            Trace.WriteLine(selector(Value)); // (b, @)
+                select result).WriteLine(); // (, @)
+            selector(Value).WriteLine(); // (b, @)
             // Right unit: source == source.SelectMany(Wrap).
-            Trace.WriteLine(
-                from value in source
+            
+                (from value in source
                 from result in value.Tuple<string, int>()
-                select result); // (a, 1)
+                select result).WriteLine(); // (a, 1)
         }
     }
 
@@ -747,24 +741,5 @@
         // Select: (Unit -> TResult) -> (Task -> Task<TResult>)
         public static Task<TResult> Select<TResult>(this Task source, Func<Unit, TResult> selector) =>
             source.SelectMany(value => selector(value).Task(), (value, result) => result);
-    }
-
-    public static partial class QueryableExtensions
-    {
-        public static IQueryable<TResult> SelectMany<TSource, TCollection, TResult>(
-            this IQueryable<TSource> source,
-            Expression<Func<TSource, IEnumerable<TCollection>>> collectionSelector,
-            Expression<Func<TSource, TCollection, TResult>> resultSelector) =>
-                source.Provider.CreateQuery<TResult>(
-                    Expression.Call(
-                        null,
-                        ((MethodInfo)MethodBase.GetCurrentMethod()).MakeGenericMethod(
-                            typeof(TSource),
-                            typeof(TCollection),
-                            typeof(TResult)),
-                        new Expression[]
-                            {
-                                source.Expression, Expression.Quote(collectionSelector), Expression.Quote(resultSelector)
-                            }));
     }
 }

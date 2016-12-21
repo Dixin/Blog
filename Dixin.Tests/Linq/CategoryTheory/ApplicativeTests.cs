@@ -6,7 +6,7 @@
     using System.Threading.Tasks;
 
     using Dixin.Linq.CategoryTheory;
-    using Dixin.TestTools.UnitTesting;
+    using Dixin.Linq.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 

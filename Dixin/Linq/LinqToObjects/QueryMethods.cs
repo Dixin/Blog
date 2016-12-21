@@ -4,8 +4,10 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Net;
-    using System.Reflection;
+
+    using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+
+    using Mono.Cecil;
 
     internal static partial class QueryMethods
     {
@@ -17,21 +19,15 @@
 
         internal static void AppendPrepend()
         {
-            IEnumerable<int> integers1 = Enumerable.Range(0, 5).Append(1).Prepend(-1);
-            IEnumerable<int> integers2 = 1.PrependTo(integers1);
+            IEnumerable<int> values1 = Enumerable.Range(0, 5).Append(1).Prepend(-1);
+            IEnumerable<int> values2 = 1.PrependTo(values1);
         }
 
-        internal static IEnumerable<Assembly> Libraries
-            (string directory) => Directory.EnumerateFiles(directory, "*.dll").TrySelect(Assembly.LoadFrom);
+        internal static IEnumerable<AssemblyDefinition> Libraries(string directory) => 
+            Directory.EnumerateFiles(directory, "*.dll").TrySelect(AssemblyDefinition.ReadAssembly);
 
-        internal static IEnumerable<byte[]> Download(IEnumerable<Uri> uris) => uris
-            .Select(uri =>
-                {
-                    using (WebClient webClient = new WebClient())
-                    {
-                        return webClient.DownloadData(uri);
-                    }
-                })
-            .Retry(3);
+        internal static IEnumerable<byte[]> Download(IEnumerable<string> files) => files
+            .Select(File.ReadAllBytes)
+            .Retry<byte[], Exception>(new FixedInterval(3, TimeSpan.FromSeconds(1)));
     }
 }

@@ -1,5 +1,6 @@
 namespace Dixin.Linq.Introduction
 {
+#if NETFX
     using System;
     using System.Diagnostics;
     using System.Linq;
@@ -79,4 +80,5 @@ namespace Dixin.Linq.Introduction
             }
         }
     }
+#endif
 }

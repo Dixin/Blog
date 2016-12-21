@@ -1,7 +1,6 @@
 namespace Dixin.Linq.LinqToXml
 {
     using System;
-    using System.Diagnostics;
     using System.Text;
     using System.Xml;
 
@@ -78,9 +77,9 @@ namespace Dixin.Linq.LinqToXml
                 document.Save(writer);
             }
 
-            // Trace.WriteLine(rssItem.ToString) outputs "System.Xml.XmlElement".
-            // Trace.WriteLine(rssItem.OuterXml) outputs a single line of XML text.
-            Trace.WriteLine(xmlString);
+            // rssItem.ToString() outputs "System.Xml.XmlElement".
+            // rssItem.OuterXml outputs a single line of XML text.
+            xmlString.WriteLine();
         }
     }
 }

@@ -5,6 +5,7 @@
     using System.Diagnostics;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Reflection;
     using System.Reflection.Emit;
 
     internal abstract class BinaryArithmeticExpressionVisitor<TResult>
@@ -204,7 +205,7 @@
                 name: string.Empty,
                 returnType: expression.ReturnType,
                 parameterTypes: expression.Parameters.Select(parameter => parameter.Type).ToArray(),
-                m: typeof(BinaryArithmeticCompiler).Module);
+                m: typeof(BinaryArithmeticCompiler).GetTypeInfo().Module);
             EmitIL(dynamicFunction.GetILGenerator(), new PostfixVisitor().VisitBody(expression));
             return (TDelegate)(object)dynamicFunction.CreateDelegate(typeof(TDelegate));
         }

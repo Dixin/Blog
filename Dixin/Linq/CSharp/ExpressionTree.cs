@@ -5,8 +5,19 @@
     using System.Diagnostics;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Reflection;
     using System.Runtime.CompilerServices;
-    using Dixin.Linq.EntityFramework;
+
+    internal class Product
+    {
+        internal int ProductID { get; set; }
+
+        internal string Name { get; set; }
+
+        internal decimal ListPrice { get; set; }
+
+        internal int? ProductSubcategoryID { get; set; }
+    }
 
     internal static partial class ExpressionTree
     {
@@ -49,7 +60,7 @@
                 // ... => {
                 Expression.Block(
                     // Trace.WriteLine(int32);
-                    Expression.Call(new Action<int>(Console.WriteLine).Method, parameterExpression),
+                    Expression.Call(new Action<int>(Console.WriteLine).GetMethodInfo(), parameterExpression),
                     // return int32 > 0;
                     Expression.GreaterThan(parameterExpression, Expression.Constant(0, typeof(int)))),
                 // }
@@ -59,7 +70,7 @@
         internal static void ArithmeticalExpression()
         {
             Expression<Func<double, double, double, double, double, double>> expression =
-                (a, b, c, d, e) => a + b - c*d/2 + e*3;
+                (a, b, c, d, e) => a + b - c * d / 2 + e * 3;
         }
     }
 

@@ -2,9 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.IO;
-    using System.Linq;
     using System.Text;
 
     public abstract class WriterBase<TContent, T>
@@ -85,7 +83,7 @@
                                                $"File content length: {value.Length}") // Writer<string, string>.
                                            select fileContent; // Define query.
             string result = query.Value; // Execute query.
-            query.Content.ForEach(log => Trace.WriteLine(log));
+            query.Content.WriteLines();
             // File path: D:\File.txt
             // Encoding name: utf-8
             // Encoding: System.Text.UTF8Encoding

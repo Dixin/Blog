@@ -454,8 +454,7 @@ namespace Dixin.Linq.CSharp
         where T4 : IDisposable
         where T5 : struct, IComparable, IComparable<T5>
         where T6 : new()
-        where T7 : T2, T3, T4, ICloneable, new()
-
+        where T7 : T2, T3, T4, IDisposable, new()
     {
     }
 

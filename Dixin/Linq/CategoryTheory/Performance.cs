@@ -216,7 +216,6 @@
         internal static T[] FunctionalQuickSort<T>(T[] array) => array.QuickSort().ToArray();
 
         internal static T[] PureQuickSort<T>(T[] array) => array.PureQuickSort().ToArray();
-
     }
 
     internal static partial class Sort
@@ -228,11 +227,11 @@
             int[][] arrays3 = arrays1.Select(array => array.ToArray()).ToArray(); // Copy.
             int[][] arrays4 = arrays1.Select(array => array.ToArray()).ToArray(); // Copy.
             int[][] arrays5 = arrays1.Select(array => array.ToArray()).ToArray(); // Copy.
-            Trace.WriteLine($"{nameof(ArraySort)}: {arrays1.RunEach(ArraySort)}");
-            Trace.WriteLine($"{nameof(LinqOrderBy)}: {arrays2.RunEach(LinqOrderBy)}");
-            Trace.WriteLine($"{nameof(CustomLinqOrderBy)}: {arrays3.RunEach(CustomLinqOrderBy)}");
-            Trace.WriteLine($"{nameof(FunctionalQuickSort)}: {arrays4.RunEach(FunctionalQuickSort)}");
-            Trace.WriteLine($"{nameof(PureQuickSort)}: {arrays5.RunEach(PureQuickSort)}");
+            $"{nameof(ArraySort)}: {arrays1.RunEach(ArraySort)}".WriteLine();
+            $"{nameof(LinqOrderBy)}: {arrays2.RunEach(LinqOrderBy)}".WriteLine();
+            $"{nameof(CustomLinqOrderBy)}: {arrays3.RunEach(CustomLinqOrderBy)}".WriteLine();
+            $"{nameof(FunctionalQuickSort)}: {arrays4.RunEach(FunctionalQuickSort)}".WriteLine();
+            $"{nameof(PureQuickSort)}: {arrays5.RunEach(PureQuickSort)}".WriteLine();
         }
 
         internal static void StringArray()
@@ -242,11 +241,11 @@
             string[] array3 = array1.ToArray(); // Copy.
             string[] array4 = array1.ToArray(); // Copy.
             string[] array5 = array1.ToArray(); // Copy.
-            Trace.WriteLine($"{nameof(ArraySort)}: {array1.Run(ArraySort)}");
-            Trace.WriteLine($"{nameof(LinqOrderBy)}: {array2.Run(LinqOrderBy)}");
-            Trace.WriteLine($"{nameof(CustomLinqOrderBy)}: {array3.Run(CustomLinqOrderBy)}");
-            Trace.WriteLine($"{nameof(FunctionalQuickSort)}: {array4.Run(FunctionalQuickSort)}");
-            Trace.WriteLine($"{nameof(PureQuickSort)}: {array5.Run(PureQuickSort)}");
+            $"{nameof(ArraySort)}: {array1.Run(ArraySort)}".WriteLine();
+            $"{nameof(LinqOrderBy)}: {array2.Run(LinqOrderBy)}".WriteLine();
+            $"{nameof(CustomLinqOrderBy)}: {array3.Run(CustomLinqOrderBy)}".WriteLine();
+            $"{nameof(FunctionalQuickSort)}: {array4.Run(FunctionalQuickSort)}".WriteLine();
+            $"{nameof(PureQuickSort)}: {array5.Run(PureQuickSort)}".WriteLine();
         }
 
         internal static void ValueTypeArray()
@@ -256,11 +255,11 @@
             ValuePerson[] array3 = array1.ToArray(); // Copy.
             ValuePerson[] array4 = array1.ToArray(); // Copy.
             ValuePerson[] array5 = array1.ToArray(); // Copy.
-            Trace.WriteLine($"{nameof(ArraySort)}: {array1.Run(ArraySort)}");
-            Trace.WriteLine($"{nameof(LinqOrderBy)}: {array2.Run(LinqOrderBy)}");
-            Trace.WriteLine($"{nameof(CustomLinqOrderBy)}: {array4.Run(CustomLinqOrderBy)}");
-            Trace.WriteLine($"{nameof(FunctionalQuickSort)}: {array3.Run(FunctionalQuickSort)}");
-            Trace.WriteLine($"{nameof(PureQuickSort)}: {array5.Run(PureQuickSort)}");
+            $"{nameof(ArraySort)}: {array1.Run(ArraySort)}".WriteLine();
+            $"{nameof(LinqOrderBy)}: {array2.Run(LinqOrderBy)}".WriteLine();
+            $"{nameof(CustomLinqOrderBy)}: {array4.Run(CustomLinqOrderBy)}".WriteLine();
+            $"{nameof(FunctionalQuickSort)}: {array3.Run(FunctionalQuickSort)}".WriteLine();
+            $"{nameof(PureQuickSort)}: {array5.Run(PureQuickSort)}".WriteLine();
         }
 
         internal static void ReferenceTypeArray()
@@ -270,11 +269,11 @@
             Person[] array3 = array1.ToArray(); // Copy.
             Person[] array4 = array1.ToArray(); // Copy.
             Person[] array5 = array1.ToArray(); // Copy.
-            Trace.WriteLine($"{nameof(ArraySort)}: {array1.Run(ArraySort)}");
-            Trace.WriteLine($"{nameof(LinqOrderBy)}: {array2.Run(LinqOrderBy)}");
-            Trace.WriteLine($"{nameof(CustomLinqOrderBy)}: {array4.Run(CustomLinqOrderBy)}");
-            Trace.WriteLine($"{nameof(FunctionalQuickSort)}: {array3.Run(FunctionalQuickSort)}");
-            Trace.WriteLine($"{nameof(PureQuickSort)}: {array5.Run(PureQuickSort)}");
+            $"{nameof(ArraySort)}: {array1.Run(ArraySort)}".WriteLine();
+            $"{nameof(LinqOrderBy)}: {array2.Run(LinqOrderBy)}".WriteLine();
+            $"{nameof(CustomLinqOrderBy)}: {array4.Run(CustomLinqOrderBy)}".WriteLine();
+            $"{nameof(FunctionalQuickSort)}: {array3.Run(FunctionalQuickSort)}".WriteLine();
+            $"{nameof(PureQuickSort)}: {array5.Run(PureQuickSort)}".WriteLine();
         }
     }
 
@@ -336,10 +335,10 @@
             IEnumerable<int>[] arrays3 = arrays1.Select(array => array.ToArray()).ToArray(); // Copy.
             IEnumerable<int>[] arrays4 = arrays1.Select(array => array.ToArray()).ToArray(); // Copy.
             Func<int, bool> predicate = value => value > 0;
-            Trace.WriteLine($"{nameof(Linq)}: {arrays1.RunEach(Linq, predicate)}");
-            Trace.WriteLine($"{nameof(EagerForEach)}: {arrays2.RunEach(EagerForEach, predicate)}");
-            Trace.WriteLine($"{nameof(LazyForEach)}: {arrays3.RunEach(LazyForEach, predicate)}");
-            Trace.WriteLine($"{nameof(Monad)}: {arrays4.RunEach(Monad, predicate)}");
+            $"{nameof(Linq)}: {arrays1.RunEach(Linq, predicate)}".WriteLine();
+            $"{nameof(EagerForEach)}: {arrays2.RunEach(EagerForEach, predicate)}".WriteLine();
+            $"{nameof(LazyForEach)}: {arrays3.RunEach(LazyForEach, predicate)}".WriteLine();
+            $"{nameof(Monad)}: {arrays4.RunEach(Monad, predicate)}".WriteLine();
         }
 
         internal static void StringSequence()
@@ -349,10 +348,10 @@
             IEnumerable<string> array3 = array1.ToArray(); // Copy.
             IEnumerable<string> array4 = array1.ToArray(); // Copy.
             Func<string, bool> predicate = value => string.Compare(value, "x", StringComparison.OrdinalIgnoreCase) > 0;
-            Trace.WriteLine($"{nameof(Linq)}: {array1.Run(Linq, predicate)}");
-            Trace.WriteLine($"{nameof(EagerForEach)}: {array2.Run(EagerForEach, predicate)}");
-            Trace.WriteLine($"{nameof(LazyForEach)}: {array3.Run(LazyForEach, predicate)}");
-            Trace.WriteLine($"{nameof(Monad)}: {array4.Run(Monad, predicate)}");
+            $"{nameof(Linq)}: {array1.Run(Linq, predicate)}".WriteLine();
+            $"{nameof(EagerForEach)}: {array2.Run(EagerForEach, predicate)}".WriteLine();
+            $"{nameof(LazyForEach)}: {array3.Run(LazyForEach, predicate)}".WriteLine();
+            $"{nameof(Monad)}: {array4.Run(Monad, predicate)}".WriteLine();
         }
 
         internal static void ValueTypeSequence()
@@ -362,10 +361,10 @@
             IEnumerable<ValuePerson> array3 = array1.ToArray(); // Copy.
             IEnumerable<ValuePerson> array4 = array1.ToArray(); // Copy.
             Func<ValuePerson, bool> predicate = value => value.Age > 18;
-            Trace.WriteLine($"{nameof(Linq)}: {array1.Run(Linq, predicate)}");
-            Trace.WriteLine($"{nameof(EagerForEach)}: {array2.Run(EagerForEach, predicate)}");
-            Trace.WriteLine($"{nameof(LazyForEach)}: {array3.Run(LazyForEach, predicate)}");
-            Trace.WriteLine($"{nameof(Monad)}: {array4.Run(Monad, predicate)}");
+            $"{nameof(Linq)}: {array1.Run(Linq, predicate)}".WriteLine();
+            $"{nameof(EagerForEach)}: {array2.Run(EagerForEach, predicate)}".WriteLine();
+            $"{nameof(LazyForEach)}: {array3.Run(LazyForEach, predicate)}".WriteLine();
+            $"{nameof(Monad)}: {array4.Run(Monad, predicate)}".WriteLine();
         }
 
         internal static void ReferenceTypeSequence()
@@ -375,10 +374,10 @@
             IEnumerable<Person> array3 = array1.ToArray(); // Copy.
             IEnumerable<Person> array4 = array1.ToArray(); // Copy.
             Func<Person, bool> predicate = value => value.Age > 18;
-            Trace.WriteLine($"{nameof(Linq)}: {array1.Run(Linq, predicate)}");
-            Trace.WriteLine($"{nameof(EagerForEach)}: {array2.Run(EagerForEach, predicate)}");
-            Trace.WriteLine($"{nameof(LazyForEach)}: {array3.Run(LazyForEach, predicate)}");
-            Trace.WriteLine($"{nameof(Monad)}: {array4.Run(Monad, predicate)}");
+            $"{nameof(Linq)}: {array1.Run(Linq, predicate)}".WriteLine();
+            $"{nameof(EagerForEach)}: {array2.Run(EagerForEach, predicate)}".WriteLine();
+            $"{nameof(LazyForEach)}: {array3.Run(LazyForEach, predicate)}".WriteLine();
+            $"{nameof(Monad)}: {array4.Run(Monad, predicate)}".WriteLine();
         }
     }
 
@@ -458,12 +457,12 @@
             string maxName1 = Guid.NewGuid().ToString();
             string minName2 = Guid.NewGuid().ToString();
             string maxName2 = Guid.NewGuid().ToString();
-            Trace.WriteLine(
+            
                 $@"{nameof(WithoutLambda)}: {array1.Run(values =>
-                    WithoutLambda(values, 10, 20, 30, 40, minName1, maxName1, minName2, maxName2))}");
-            Trace.WriteLine(
+                    WithoutLambda(values, 10, 20, 30, 40, minName1, maxName1, minName2, maxName2))}".WriteLine();
+            
                 $@"{nameof(WithLambda)}: {array2.Run(values =>
-                    WithLambda(values, 10, 20, 30, 40, minName1, maxName1, minName2, maxName2))}");
+                    WithLambda(values, 10, 20, 30, 40, minName1, maxName1, minName2, maxName2))}".WriteLine();
         }
     }
 }

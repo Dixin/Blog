@@ -2,10 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Linq;
-    using System.Linq.Expressions;
-    using System.Reflection;
     using System.Threading.Tasks;
 
     using static Dixin.Linq.CategoryTheory.Functions;
@@ -86,7 +82,7 @@
             // Map IEnumerable<int> to IEnumerable<string>.
             IEnumerable<string> query = from value in source
                                         select selector(value); // Define query.
-            query.ForEach(result => Trace.WriteLine(result)); // Execute query.
+            query.WriteLines(); // Execute query.
         }
 
         internal static void FunctorLaws()
@@ -97,16 +93,14 @@
 
             // Associativity preservation: source.Select(selector2.o(selector1)) == source.Select(selector1).Select(selector2).
             (from value in source
-             select selector2.o(selector1)(value))
-                .ForEach(result => Trace.WriteLine(result));  // 0.00 1.00 1.41 1.73 2.00
+             select selector2.o(selector1)(value)).WriteLines();  // 0.00 1.00 1.41 1.73 2.00
             (from value in source
              select selector1(value) into value
-             select selector2(value))
-                .ForEach(result => Trace.WriteLine(result));  // 0.00 1.00 1.41 1.73 2.00
+             select selector2(value)).WriteLines();  // 0.00 1.00 1.41 1.73 2.00
             // Identity preservation: source.Select(Id) == Id(source).
             (from value in source
-             select Id(value)).ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
-            Id(source).ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
+             select Id(value)).WriteLines(); // 0 1 2 3 4
+            Id(source).WriteLines(); // 0 1 2 3 4
         }
     }
 
@@ -156,11 +150,11 @@
             Func<string, double> selector2 = Convert.ToDouble;
 
             // Associativity preservation: TFunctor<T>.Select(f2.o(f1)) == TFunctor<T>.Select(f1).Select(f2)
-            Trace.WriteLine(lazy.Select(selector2.o(selector1)).Value); // 0
-            Trace.WriteLine(lazy.Select(selector1).Select(selector2).Value); // 0
+            lazy.Select(selector2.o(selector1)).Value.WriteLine(); // 0
+            lazy.Select(selector1).Select(selector2).Value.WriteLine(); // 0
             // Identity preservation: TFunctor<T>.Select(Id) == Id(TFunctor<T>)
-            Trace.WriteLine(lazy.Select(Id).Value); // 0
-            Trace.WriteLine(Id(lazy).Value); // 1
+            lazy.Select(Id).Value.WriteLine(); // 0
+            Id(lazy).Value.WriteLine(); // 1
         }
     }
 
@@ -358,7 +352,7 @@
             // Map int to string.
             Func<int, string> selector = int32 =>
                 {
-                    Trace.WriteLine($"{nameof(selector)} is called with {int32}.");
+                    $"{nameof(selector)} is called with {int32}.".WriteLine();
                     return Convert.ToString(int32);
                 };
             // Map Tuple<int> to Tuple<string>.
@@ -395,7 +389,7 @@
             // Map int to string.
             Func<int, string> selector = int32 =>
             {
-                Trace.WriteLine($"{nameof(selector)} is called with {int32}.");
+                $"{nameof(selector)} is called with {int32}.".WriteLine();
                 return Convert.ToString(int32);
             };
             // Map Tuple<T, int> to Tuple<T, string>.
@@ -434,22 +428,6 @@
     }
 
     #endregion
-
-    public static partial class QueryableExtensions
-    {
-        // Functor Select: Expression<TSource -> TResult> -> (IQueryable<TSource> -> IQueryable<TResult>)
-        public static Func<IQueryable<TSource>, IQueryable<TResult>> Select<TSource, TResult>(
-            Expression<Func<TSource, TResult>> selector) => source =>
-                Select(source, selector);
-
-        // LINQ Select: (IQueryable<TSource>, Expression<TSource -> TResult>) -> IQueryable<TResult>
-        public static IQueryable<TResult> Select<TSource, TResult>(
-            this IQueryable<TSource> source, Expression<Func<TSource, TResult>> selector) =>
-                source.Provider.CreateQuery<TResult>(Expression.Call(
-                    null,
-                    ((MethodInfo)MethodBase.GetCurrentMethod()).MakeGenericMethod(typeof(TSource), typeof(TResult)),
-                    new Expression[] { source.Expression, Expression.Quote(selector) }));
-    }
 }
 
 #if DEMO

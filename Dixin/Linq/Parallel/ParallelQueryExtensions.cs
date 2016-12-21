@@ -21,7 +21,7 @@ namespace Dixin.Linq.Parallel
         private static readonly PropertyInfo QuerySettingsProperty = typeof(ParallelQuery).GetProperty(
             "SpecifiedQuerySettings", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
 
-        private static readonly Type QuerySettingsType = typeof(ParallelQuery).Assembly.GetType(
+        private static readonly Type QuerySettingsType = typeof(ParallelQuery).GetTypeInfo().Assembly.GetType(
             "System.Linq.Parallel.QuerySettings");
 
         private static readonly PropertyInfo TaskSchedulerProperty = QuerySettingsType.GetProperty(

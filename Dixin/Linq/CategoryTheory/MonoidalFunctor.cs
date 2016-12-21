@@ -2,8 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Linq;
     using System.Threading.Tasks;
 
     using Microsoft.FSharp.Core;
@@ -219,20 +217,16 @@
             IEnumerable<int> source = new int[] { 0, 1, 2, 3, 4 };
 
             // Associativity preservation: source1.Multiply(source2).Multiply(source3).Select(Associator) == source1.Multiply(source2.Multiply(source3)).
-            source1.Multiply(source2).Multiply(source3).Select(Associator)
-                .ForEach(result => Trace.WriteLine(result));
+            source1.Multiply(source2).Multiply(source3).Select(Associator).WriteLines();
                 // (0, (@, True)) (0, (@, False)) (0, (#, True)) (0, (#, False))
                 // (1, (@, True)) (1, (@, False)) (1, (#, True)) (1, (#, False))
-            source1.Multiply(source2.Multiply(source3))
-                .ForEach(result => Trace.WriteLine(result));
+            source1.Multiply(source2.Multiply(source3)).WriteLines();
                 // (0, (@, True)) (0, (@, False)) (0, (#, True)) (0, (#, False))
                 // (1, (@, True)) (1, (@, False)) (1, (#, True)) (1, (#, False))
             // Left unit preservation: unit.Multiply(source).Select(LeftUnitor) == source.
-            unit.Multiply(source).Select(LeftUnitor)
-                .ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
+            unit.Multiply(source).Select(LeftUnitor).WriteLines(); // 0 1 2 3 4
             // Right unit preservation: source == source.Multiply(unit).Select(RightUnitor).
-            source.Multiply(unit).Select(RightUnitor)
-                .ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
+            source.Multiply(unit).Select(RightUnitor).WriteLines(); // 0 1 2 3 4
         }
 
         internal static void ApplicativeLaws()
@@ -248,36 +242,28 @@
             int value = 5;
 
             // Functor preservation: source.Select(selector) == selector.Wrap().Apply(source).
-            source.Select(selector)
-                .ForEach(result => Trace.WriteLine(result)); // 0 1 1.4142135623731 1.73205080756888 2
-            selector.Enumerable().Apply(source)
-                .ForEach(result => Trace.WriteLine(result)); // 0 1 1.4142135623731 1.73205080756888 2
+            source.Select(selector).WriteLines(); // 0 1 1.4142135623731 1.73205080756888 2
+            selector.Enumerable().Apply(source).WriteLines(); // 0 1 1.4142135623731 1.73205080756888 2
             // Identity preservation: Id.Wrap().Apply(source) == source.
-            new Func<int, int>(Functions.Id).Enumerable().Apply(source)
-                .ForEach(result => Trace.WriteLine(result)); // 0 1 2 3 4
+            new Func<int, int>(Functions.Id).Enumerable().Apply(source).WriteLines(); // 0 1 2 3 4
             // Composition preservation: o.Wrap().Apply(selectorWrapper2).Apply(selectorWrapper1).Apply(source) == selectorWrapper2.Apply(selectorWrapper1.Apply(source)).
-            o.Enumerable().Apply(selectorWrapper2).Apply(selectorWrapper1).Apply(source)
-                .ForEach(result => Trace.WriteLine(result));
+            o.Enumerable().Apply(selectorWrapper2).Apply(selectorWrapper1).Apply(source).WriteLines();
                 // 0.0  0.5  1.0  1.5  2.0
                 // 0.0  1.0  1.4  1.7  2.0 
                 // 0.00 0.50 1.00 1.50 2.00
                 // 0.00 1.00 1.41 1.73 2.00
-            selectorWrapper2.Apply(selectorWrapper1.Apply(source))
-                .ForEach(result => Trace.WriteLine(result));
+            selectorWrapper2.Apply(selectorWrapper1.Apply(source)).WriteLines();
                 // 0.0  0.5  1.0  1.5  2.0
                 // 0.0  1.0  1.4  1.7  2.0 
                 // 0.00 0.50 1.00 1.50 2.00
                 // 0.00 1.00 1.41 1.73 2.00
             // Homomorphism: selector.Wrap().Apply(value.Wrap()) == selector(value).Wrap().
-            selector.Enumerable().Apply(value.Enumerable())
-                .ForEach(result => Trace.WriteLine(result)); // 2.23606797749979
-            selector(value).Enumerable()
-                .ForEach(result => Trace.WriteLine(result)); // 2.23606797749979
+            selector.Enumerable().Apply(value.Enumerable()).WriteLines(); // 2.23606797749979
+            selector(value).Enumerable().WriteLines(); // 2.23606797749979
             // Interchange: selectorWrapper.Apply(value.Wrap()) == (selector => selector(value)).Wrap().Apply(selectorWrapper).
-            selectorWrapper1.Apply(value.Enumerable())
-                .ForEach(result => Trace.WriteLine(result)); // 2.5 2.23606797749979
+            selectorWrapper1.Apply(value.Enumerable()).WriteLines(); // 2.5 2.23606797749979
             new Func<Func<int, double>, double>(function => function(value)).Enumerable().Apply(selectorWrapper1)
-                .ForEach(result => Trace.WriteLine(result)); // 2.5 2.23606797749979
+                .WriteLines(); // 2.5 2.23606797749979
         }
     }
 
@@ -451,12 +437,12 @@
             Tuple<string, bool> source3 = "d".Tuple(true);
 
             // Associativity preservation: source1.Multiply(source2).Multiply(source3).Select(Associator) == source1.Multiply(source2.Multiply(source3)).
-            Trace.WriteLine(source1.Multiply(source2).Multiply(source3).Select(Associator)); // (b, (2, (@, True)))
-            Trace.WriteLine(source1.Multiply(source2.Multiply(source3))); // (b, (2, (@, True)))
+            source1.Multiply(source2).Multiply(source3).Select(Associator).WriteLine(); // (b, (2, (@, True)))
+            source1.Multiply(source2.Multiply(source3)).WriteLine(); // (b, (2, (@, True)))
             // Left unit preservation: unit.Multiply(source).Select(LeftUnitor) == source.
-            Trace.WriteLine(unit.Multiply(source).Select(LeftUnitor)); // (, 1)
+            unit.Multiply(source).Select(LeftUnitor).WriteLine(); // (, 1)
             // Right unit preservation: source == source.Multiply(unit).Select(RightUnitor).
-            Trace.WriteLine(source.Multiply(unit).Select(RightUnitor)); // (a, 1)
+            source.Multiply(unit).Select(RightUnitor).WriteLine(); // (a, 1)
         }
 
         internal static void ApplicativeLaws()
@@ -472,21 +458,21 @@
             int value = 5;
 
             // Functor preservation: source.Select(selector) == selector.Wrap().Apply(source).
-            Trace.WriteLine(source.Select(selector)); // (a, 1)
-            Trace.WriteLine(selector.Tuple<string, Func<int, double>>().Apply(source)); // (, 1)
+            source.Select(selector).WriteLine(); // (a, 1)
+            selector.Tuple<string, Func<int, double>>().Apply(source).WriteLine(); // (, 1)
             // Identity preservation: Id.Wrap().Apply(source) == source.
-            Trace.WriteLine(new Func<int, int>(Functions.Id).Tuple<string, Func<int, int>>().Apply(source)); // (, 1)
+            new Func<int, int>(Functions.Id).Tuple<string, Func<int, int>>().Apply(source).WriteLine(); // (, 1)
             // Composition preservation: o.Curry().Wrap().Apply(selectorWrapper2).Apply(selectorWrapper1).Apply(source) == selectorWrapper2.Apply(selectorWrapper1.Apply(source)).
-            Trace.WriteLine(o.Tuple<string, Func<Func<double, string>, Func<Func<int, double>, Func<int, string>>>>()
-                .Apply(selectorWrapper2).Apply(selectorWrapper1).Apply(source)); // (, 1.00)
-            Trace.WriteLine(selectorWrapper2.Apply(selectorWrapper1.Apply(source))); // (c, 1.00)
+            o.Tuple<string, Func<Func<double, string>, Func<Func<int, double>, Func<int, string>>>>()
+                .Apply(selectorWrapper2).Apply(selectorWrapper1).Apply(source).WriteLine(); // (, 1.00)
+            selectorWrapper2.Apply(selectorWrapper1.Apply(source)).WriteLine(); // (c, 1.00)
             // Homomorphism: selector.Wrap().Apply(value.Wrap()) == selector(value).Wrap().
-            Trace.WriteLine(selector.Tuple<string, Func<int, double>>().Apply(value.Tuple<string, int>())); // (, 2.23606797749979)
-            Trace.WriteLine(selector(value).Tuple<string, double>()); // (, 2.23606797749979)
+            selector.Tuple<string, Func<int, double>>().Apply(value.Tuple<string, int>()).WriteLine(); // (, 2.23606797749979)
+            selector(value).Tuple<string, double>().WriteLine(); // (, 2.23606797749979)
             // Interchange: selectorWrapper.Apply(value.Wrap()) == (selector => selector(value)).Wrap().Apply(selectorWrapper).
-            Trace.WriteLine(selectorWrapper1.Apply(value.Tuple<string, int>())); // (b, 2.23606797749979)
-            Trace.WriteLine(new Func<Func<int, double>, double>(function => function(value))
-                .Tuple<string, Func<Func<int, double>, double>>().Apply(selectorWrapper1)); // (, 2.23606797749979)
+            selectorWrapper1.Apply(value.Tuple<string, int>()).WriteLine(); // (b, 2.23606797749979)
+            new Func<Func<int, double>, double>(function => function(value))
+                .Tuple<string, Func<Func<int, double>, double>>().Apply(selectorWrapper1).WriteLine(); // (, 2.23606797749979)
         }
     }
 

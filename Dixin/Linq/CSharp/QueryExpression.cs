@@ -3,8 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-
-    using Dixin.Linq.EntityFramework;
+    using System.Reflection;
 
 #if DEMO
     internal static partial class Int32Extensions
@@ -97,7 +96,7 @@
         {
             IEnumerable<IGrouping<string, Type>> query =
                 from type in types
-                where type.BaseType == typeof(MulticastDelegate) // Enumerbale.Where and anonymous method.
+                where type.GetTypeInfo().BaseType == typeof(MulticastDelegate) // Enumerbale.Where and anonymous method.
                 group type by type.Namespace into namespaceTypes // Enumerbale.GroupBy and anonymous method.
                 orderby namespaceTypes.Count() descending, namespaceTypes.Key // Enumerbale.OrderByDescending, Enumerbale.ThenBy and anonymous method.
                 select namespaceTypes; // Omitted.
@@ -107,7 +106,7 @@
         {
             ParallelQuery<IGrouping<string, Type>> query =
                 from type in types
-                where type.BaseType == typeof(MulticastDelegate) // ParallelEnumerbale.Where and anonymous method.
+                where type.GetTypeInfo().BaseType == typeof(MulticastDelegate) // ParallelEnumerbale.Where and anonymous method.
                 group type by type.Namespace into namespaceTypes // ParallelEnumerbale.GroupBy and anonymous method.
                 orderby namespaceTypes.Count() descending, namespaceTypes.Key // ParallelEnumerbale.OrderByDescending, ParallelEnumerbale.ThenBy and anonymous method.
                 select namespaceTypes; // Omitted.
@@ -126,7 +125,7 @@
         internal static void CompiledLinqToObjects(IEnumerable<Type> types)
         {
             IEnumerable<IGrouping<string, Type>> query = types
-                .Where(type => type.BaseType == typeof(MulticastDelegate)) // Enumerbale.Where and anonymous method.
+                .Where(type => type.GetTypeInfo().BaseType == typeof(MulticastDelegate)) // Enumerbale.Where and anonymous method.
                 .GroupBy(type => type.Namespace) // Enumerbale.GroupBy and anonymous method.
                 .OrderByDescending(namespaceTypes => namespaceTypes.Count()) // Enumerbale.OrderByDescending and anonymous method.
                 .ThenBy(namespaceTypes => namespaceTypes.Key); // Enumerbale.ThenBy and anonymous method.
@@ -136,7 +135,7 @@
         internal static void CompiledParallelLinq(ParallelQuery<Type> types)
         {
             ParallelQuery<IGrouping<string, Type>> query = types
-                .Where(type => type.BaseType == typeof(MulticastDelegate)) // ParallelEnumerbale.Where and anonymous method.
+                .Where(type => type.GetTypeInfo().BaseType == typeof(MulticastDelegate)) // ParallelEnumerbale.Where and anonymous method.
                 .GroupBy(type => type.Namespace) // ParallelEnumerbale.GroupBy and anonymous method.
                 .OrderByDescending(namespaceTypes => namespaceTypes.Count()) // ParallelEnumerbale.OrderByDescending and anonymous method.
                 .ThenBy(namespaceTypes => namespaceTypes.Key); // ParallelEnumerbale.ThenBy and anonymous method.

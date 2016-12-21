@@ -6,8 +6,8 @@
 
     using Dixin.Common;
     using Dixin.Diagnostics;
+    using Dixin.Linq.Tests;
     using Dixin.Management;
-    using Dixin.TestTools.UnitTesting;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 

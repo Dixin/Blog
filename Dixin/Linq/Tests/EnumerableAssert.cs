@@ -1,9 +1,7 @@
-﻿namespace Dixin.TestTools.UnitTesting
+﻿namespace Dixin.Linq.Tests
 {
     using System.Collections.Generic;
     using System.Linq;
-
-    using Dixin.Linq;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 

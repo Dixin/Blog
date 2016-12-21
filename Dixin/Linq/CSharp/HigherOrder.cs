@@ -72,7 +72,7 @@
 
         internal static void ArrayForEach(Uri[] array)
         {
-            Array.ForEach(array, uri => Trace.WriteLine(uri));
+            Uri[] notNull = Array.FindAll(array, uri => uri != null);
         }
     }
 

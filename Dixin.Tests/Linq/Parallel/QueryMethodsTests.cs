@@ -13,7 +13,9 @@
             QueryMethods.OptInOutParallel();
             QueryMethods.QueryExpression();
             QueryMethods.ForEachForAll();
+#if NETFX
             QueryMethods.ForEachForAllTimeSpans();
+#endif
             QueryMethods.VisualizeForEachForAll();
             QueryMethods.WhereSelect();
         }
@@ -33,7 +35,9 @@
         [TestMethod]
         public void ExecutionModeTest()
         {
+#if NETFX
             QueryMethods.ExecutionMode();
+#endif
         }
 
         [TestMethod]
@@ -50,7 +54,9 @@
         {
             QueryMethods.CommutativeAssociative();
             QueryMethods.AggregateCorrectness();
+#if NETFX
             QueryMethods.VisualizeAggregate();
+#endif
             QueryMethods.MergeForAggregate();
         }
     }

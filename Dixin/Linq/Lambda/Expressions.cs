@@ -1,7 +1,6 @@
 ﻿namespace Dixin.Linq.Lambda
 {
     using System;
-    using System.Diagnostics;
     using System.Linq;
 
     internal static class Expressions
@@ -32,7 +31,7 @@
             Func<double, double> abs = Math.Abs;
 
             Func<double, double> absSqrt1 = sqrt.o(abs); // Composition: sqrt after abs.
-            Trace.WriteLine(absSqrt1(-2D)); // 1.4142135623731
+            absSqrt1(-2D).WriteLine(); // 1.4142135623731
         }
 
         internal static void Associativity()
@@ -42,9 +41,9 @@
             Func<double, double> log = Math.Log;
 
             Func<double, double> absSqrtLog1 = log.o(sqrt).o(abs); // Composition: (log o sqrt) o abs.
-            Trace.WriteLine(absSqrtLog1(-2D)); // 0.34642256747438094
+            absSqrtLog1(-2D).WriteLine(); // 0.34642256747438094
             Func<double, double> absSqrtLog2 = log.o(sqrt.o(abs)); // Composition: log o (sqrt o abs).
-            Trace.WriteLine(absSqrtLog2(-2D)); // 0.34642256747438094
+            absSqrtLog2(-2D).WriteLine(); // 0.34642256747438094
         }
     }
 }

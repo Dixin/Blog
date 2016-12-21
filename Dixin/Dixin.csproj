@@ -24,7 +24,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;NETFX</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>..\Tools\CodeAnalysis.ruleset</CodeAnalysisRuleSet>
@@ -78,7 +78,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;NETFX</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeContractsEnableRuntimeChecking>False</CodeContractsEnableRuntimeChecking>
@@ -134,7 +134,10 @@
       <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="FSharp.Core, Version=4.3.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="FSharp.Core, Version=4.4.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\FSharp.Core.4.0.0.1\lib\net40\FSharp.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="LinqToTwitter.AspNet, Version=3.2.0.30483, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\linqtotwitter.4.1.0\lib\net45\LinqToTwitter.AspNet.dll</HintPath>
       <Private>True</Private>
@@ -175,16 +178,24 @@
       <HintPath>..\packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8\Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.ServiceBus, Version=2.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\WindowsAzure.ServiceBus.2.5.1.0\lib\net40-full\Microsoft.ServiceBus.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.TeamFoundation.Client, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\TestAgent\Microsoft.TeamFoundation.Client.dll</HintPath>
+      <HintPath>..\packages\Microsoft.TeamFoundationServer.ExtendedClient.14.102.0\lib\net45\Microsoft.TeamFoundation.Client.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.TeamFoundation.WorkItemTracking.Client, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\TestAgent\Microsoft.TeamFoundation.WorkItemTracking.Client.dll</HintPath>
+      <HintPath>..\packages\Microsoft.TeamFoundationServer.ExtendedClient.14.102.0\lib\net45\Microsoft.TeamFoundation.WorkItemTracking.Client.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="Microsoft.VisualStudio.Services.WebApi, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.VisualStudio.Services.Client.14.102.0\lib\net45\Microsoft.VisualStudio.Services.WebApi.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
       <Private>True</Private>
@@ -193,20 +204,24 @@
       <HintPath>..\packages\Microsoft.WebSockets.0.2.3.1\lib\net45\Microsoft.WebSockets.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.WindowsAzure.Configuration, Version=1.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.WindowsAzure.ConfigurationManager.1.7.0.0\lib\net35-full\Microsoft.WindowsAzure.Configuration.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Mono.Cecil, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.9.6.3\lib\net45\Mono.Cecil.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Cecil.Mdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.Mdb.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.9.6.3\lib\net45\Mono.Cecil.Mdb.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Cecil.Pdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.Pdb.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.9.6.3\lib\net45\Mono.Cecil.Pdb.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Cecil.Rocks, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.Rocks.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.9.6.3\lib\net45\Mono.Cecil.Rocks.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -226,6 +241,10 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data.Linq" />
+    <Reference Include="System.IdentityModel.Tokens.Jwt, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.4.0.0\lib\net45\System.IdentityModel.Tokens.Jwt.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Interactive, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Interactive.3.1.1\lib\net45\System.Interactive.dll</HintPath>
       <Private>True</Private>
@@ -355,7 +374,7 @@
       <DependentUpon>AdventureWorks.edmx</DependentUpon>
     </Compile>
     <Content Include="Linq\CSharp\AnonymousFunction.js" />
-    <None Include="Linq\CSharp\Func.il" />
+    <Content Include="Linq\CSharp\Func.il" />
     <Content Include="Linq\EntityFramework\Concurrency.sql" />
     <Content Include="Linq\EntityFramework\FullWithViews\FullAdventureWorksWithViews.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
@@ -387,9 +406,11 @@
     <Compile Include="Runtime\Serialization\Serializer.cs" />
     <Compile Include="Diagnostics\Tracing\Event.cs" />
     <Compile Include="Linq\LinqToXml\Modeling.cs" />
-    <Compile Include="Linq\Parallel\HelperMethods.cs" />
+    <Compile Include="Linq\Parallel\Functions.cs" />
     <Compile Include="Linq\Parallel\QueryMethods.cs" />
-    <Compile Include="Linq\Parallel\QueryMethods.Ordering.cs" />
+    <Compile Include="Linq\Parallel\QueryMethods.Ordering.cs">
+      <DependentUpon>QueryMethods.cs</DependentUpon>
+    </Compile>
     <Compile Include="Linq\Parallel\ParallelQueryExtensions.cs" />
     <Compile Include="Linq\Parallel\Partitioning.cs" />
     <Compile Include="Linq\Parallel\Performance.cs" />
@@ -491,7 +512,6 @@
     <Compile Include="Linq\CategoryTheory\NaturalTransformation.cs" />
     <Compile Include="Linq\CategoryTheory\Performance.cs" />
     <Compile Include="Linq\CategoryTheory\ReflectionHelper.cs" />
-    <Compile Include="Linq\CategoryTheory\TraceHelper.cs" />
     <Compile Include="Linq\Lambda\Combinators.Bckw.cs" />
     <Compile Include="Linq\Functional\Concat`1.cs" />
     <Compile Include="Linq\Functional\Sequence`1.cs" />
@@ -559,7 +579,7 @@
     <Compile Include="IO\Compression\SevenZip.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Security\Cryptography\X509CertificateHelper.cs" />
-    <Compile Include="TestTools\UnitTesting\EnumerableAssert.cs" />
+    <Compile Include="Linq\Tests\EnumerableAssert.cs" />
     <Compile Include="Text\EncodingHelper.cs" />
     <Compile Include="Threading\SpinLockSlim.cs" />
     <Compile Include="Web\Mvc\HtmlHelperExtensions.cs" />
@@ -577,9 +597,9 @@
       <Generator>EntityModelCodeGenerator</Generator>
       <LastGenOutput>AdventureWorks.Designer.cs</LastGenOutput>
     </EntityDeploy>
-    <None Include="Linq\CSharp\Composition.hs" />
-    <None Include="Linq\CSharp\Data.il" />
-    <None Include="Linq\CSharp\HigherOrder.hs" />
+    <Content Include="Linq\CSharp\Composition.hs" />
+    <Content Include="Linq\CSharp\Data.il" />
+    <Content Include="Linq\CSharp\HigherOrder.hs" />
     <None Include="Linq\EntityFramework\EntityDataModel\AdventureWorks.edmx.diagram">
       <DependentUpon>AdventureWorks.edmx</DependentUpon>
     </None>
@@ -587,25 +607,30 @@
     <None Include="Linq\EntityFramework\FullWithViews\EF.Reverse.POCO.ttinclude" />
     <None Include="Linq\EntityFramework\Full\EF.Reverse.POCO.Core.ttinclude" />
     <None Include="Linq\EntityFramework\Full\EF.Reverse.POCO.ttinclude" />
-    <None Include="Linq\Introduction\LinqToDocumentDB.json" />
-    <None Include="Linq\Introduction\LinqToJson.json" />
+    <Content Include="Linq\Introduction\LinqToDocumentDB.json" />
+    <Content Include="Linq\Introduction\LinqToJson.json" />
     <Compile Include="Linq\EntityFramework\QueryMethods.cs" />
     <None Include="Linq\Lambda\SkiCompiler.hs" />
-    <None Include="Linq\LinqToXml\AspNetRss.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Linq\LinqToXml\FlickrRss.dc.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Linq\LinqToXml\FlickrRss.flickr.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Linq\LinqToXml\FlickrRss.media.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Linq\LinqToXml\FlickrRss.xsd">
-      <SubType>Designer</SubType>
-    </None>
+    <Content Include="Linq\LinqToXml\AspNetRss.xsd">
+      <SubType>
+      </SubType>
+    </Content>
+    <Content Include="Linq\LinqToXml\FlickrRss.dc.xsd">
+      <SubType>
+      </SubType>
+    </Content>
+    <Content Include="Linq\LinqToXml\FlickrRss.flickr.xsd">
+      <SubType>
+      </SubType>
+    </Content>
+    <Content Include="Linq\LinqToXml\FlickrRss.media.xsd">
+      <SubType>
+      </SubType>
+    </Content>
+    <Content Include="Linq\LinqToXml\FlickrRss.xsd">
+      <SubType>
+      </SubType>
+    </Content>
     <None Include="Management\Automation\VirtualHardDisk.ps1" />
     <None Include="packages.config" />
   </ItemGroup>
@@ -616,7 +641,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Linq\Introduction\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>DotNetPublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
@@ -643,11 +668,13 @@
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Azure.DocumentDB.1.11.0\build\Microsoft.Azure.DocumentDB.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Azure.DocumentDB.1.11.0\build\Microsoft.Azure.DocumentDB.targets'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.TeamFoundationServer.ExtendedClient.14.102.0\build\Microsoft.TeamFoundationServer.ExtendedClient.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.TeamFoundationServer.ExtendedClient.14.102.0\build\Microsoft.TeamFoundationServer.ExtendedClient.targets'))" />
   </Target>
   <PropertyGroup>
     <SsdtUnitTestVersion>2.0</SsdtUnitTestVersion>
   </PropertyGroup>
   <Import Project="..\packages\Microsoft.Azure.DocumentDB.1.11.0\build\Microsoft.Azure.DocumentDB.targets" Condition="Exists('..\packages\Microsoft.Azure.DocumentDB.1.11.0\build\Microsoft.Azure.DocumentDB.targets')" />
+  <Import Project="..\packages\Microsoft.TeamFoundationServer.ExtendedClient.14.102.0\build\Microsoft.TeamFoundationServer.ExtendedClient.targets" Condition="Exists('..\packages\Microsoft.TeamFoundationServer.ExtendedClient.14.102.0\build\Microsoft.TeamFoundationServer.ExtendedClient.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

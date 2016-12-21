@@ -5,7 +5,7 @@
 
     using Dixin.Linq;
     using Dixin.Linq.LinqToObjects;
-    using Dixin.TestTools.UnitTesting;
+    using Dixin.Linq.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -41,6 +41,7 @@
             }
         }
 
+#if NETFX
         [TestMethod]
         public void RetryTest()
         {
@@ -61,6 +62,7 @@
                 .ToArray();
             EnumerableAssert.AreSequentialEqual(new int[] { 5, 6 }, retry);
         }
+#endif
 
         [TestMethod]
         public void InsertTest()

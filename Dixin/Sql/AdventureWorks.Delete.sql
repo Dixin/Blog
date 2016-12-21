@@ -355,3 +355,10 @@ WHERE ProductID NOT IN (
             ProductID
         FROM Production.Product
         ORDER BY ProductID DESC);
+
+ALTER TABLE [Production].[Product]
+ALTER COLUMN [Style] nchar(1);
+
+UPDATE [Production].[Product]
+SET [Style] = N'M'
+WHERE [Style] IS NULL;

@@ -19,7 +19,7 @@
             Assert.AreEqual(factorial(1U), 1U.Church().Factorial().Unchurch());
             Assert.AreEqual(factorial(2U), 2U.Church().Factorial().Unchurch());
             Assert.AreEqual(factorial(3U), 3U.Church().Factorial().Unchurch());
-            Assert.AreEqual(factorial(8U), 8U.Church().Factorial().Unchurch());
+            Assert.AreEqual(factorial(7U), 7U.Church().Factorial().Unchurch());
         }
 
         [TestMethod]

@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
 
     public static partial class NaturalTransformations
     {
@@ -27,9 +26,9 @@
 
             Func<int> funcInt32 = () => 2;
             Lazy<string> lazyString = leftComposition(funcInt32);
-            Trace.WriteLine(lazyString.Value); // 1.41
+            lazyString.Value.WriteLine(); // 1.41
             lazyString = rightComposition(funcInt32);
-            Trace.WriteLine(lazyString.Value); // 1.41
+            lazyString.Value.WriteLine(); // 1.41
         }
     }
 

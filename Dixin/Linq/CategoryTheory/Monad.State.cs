@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Linq;
 
     using Microsoft.FSharp.Core;
@@ -75,8 +74,8 @@
                 from value3 in source3 // source3: State<string, char> = resetState => (@, resetState).
                 select new string[] { state1, state2, state3 }; // Define query.
             Tuple<string[], string> result = query(initialState); // Execute query with initial state.
-            result.Item1.ForEach(state => Trace.WriteLine(state)); // initialState newState resetState
-            Trace.WriteLine(result.Item2); // Final state: resetState
+            result.Item1.WriteLines(); // initialState newState resetState
+            result.Item2.WriteLine(); // Final state: resetState
         }
     }
 
@@ -159,8 +158,8 @@
                 from unit4 in PushState(5) // State<IEnumerable<int>, Unit>.
                 select stack; // Define query.
             Tuple<IEnumerable<int>, IEnumerable<int>> result = query(initialStack); // Execute query with initial state.
-            result.Item1.ForEach(value => Trace.WriteLine(value)); // 0 0 0 0 1 2
-            result.Item2.ForEach(value => Trace.WriteLine(value)); // 0 1 2 5
+            result.Item1.WriteLines(); // 0 0 0 0 1 2
+            result.Item2.WriteLines(); // 0 1 2 5
         }
     }
 

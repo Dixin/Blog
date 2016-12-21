@@ -73,11 +73,11 @@
     {
         internal static void DelegateTypes()
         {
-            Assembly mscorlib = typeof(object).Assembly;
+            Assembly coreLibrary = typeof(object).GetTypeInfo().Assembly;
             Dictionary<string, List<Type>> delegateTypes = new Dictionary<string, List<Type>>();
-            foreach (Type type in mscorlib.GetExportedTypes())
+            foreach (Type type in coreLibrary.GetExportedTypes())
             {
-                if (type.BaseType == typeof(MulticastDelegate))
+                if (type.GetTypeInfo().BaseType == typeof(MulticastDelegate))
                 {
                     List<Type> namespaceTypes;
                     if (!delegateTypes.TryGetValue(type.Namespace, out namespaceTypes))

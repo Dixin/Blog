@@ -17,7 +17,6 @@
         {
             get
             {
-                // Message is copied from mscorlib.dll string table, where key is InvalidOperation_NoValue.
                 if (!this.HasValue)
                 {
                     throw new InvalidOperationException($"{nameof(Optional<T>)} object must have a value.");

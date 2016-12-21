@@ -3,9 +3,11 @@ namespace Dixin.Linq.Parallel
     using System;
     using System.Collections.Generic;
     using System.Linq;
+#if NETFX
     using System.Threading;
 
     using Microsoft.ConcurrencyVisualizer.Instrumentation;
+#endif
 
     public static partial class Visualizer
     {
@@ -16,6 +18,7 @@ namespace Dixin.Linq.Parallel
         internal static void Visualize<TSource>(
             this IEnumerable<TSource> source, Action<TSource> action, string span = Sequential, int category = 0)
         {
+#if NETFX
             using (Markers.EnterSpan(category, span))
             {
                 MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
@@ -27,11 +30,13 @@ namespace Dixin.Linq.Parallel
                     }
                 });
             }
+#endif
         }
 
         internal static void Visualize<TSource>(
             this ParallelQuery<TSource> source, Action<TSource> action, string span = Parallel, int category = 1)
         {
+#if NETFX
             using (Markers.EnterSpan(category, span))
             {
                 MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
@@ -43,6 +48,7 @@ namespace Dixin.Linq.Parallel
                     }
                 });
             }
+#endif
         }
     }
 
@@ -56,17 +62,21 @@ namespace Dixin.Linq.Parallel
             string span = Sequential,
             int category = 0)
         {
+#if NETFX
             MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
             return query(
                 source,
                 value =>
+                {
+                    using (markerSeries.EnterSpan(
+                        category, funcSpan?.Invoke(value) ?? value.ToString()))
                     {
-                        using (markerSeries.EnterSpan(
-                            category, funcSpan?.Invoke(value) ?? value.ToString()))
-                        {
-                            return func(value);
-                        }
-                    });
+                        return func(value);
+                    }
+                });
+#else
+            return query(source, func);
+#endif
         }
 
         internal static ParallelQuery<TResult> Visualize<TSource, TMiddle, TResult>(
@@ -76,17 +86,21 @@ namespace Dixin.Linq.Parallel
             Func<TSource, string> funcSpan = null,
             string span = Parallel)
         {
+#if NETFX
             MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
             return query(
                 source,
                 value =>
+                {
+                    using (markerSeries.EnterSpan(
+                        Thread.CurrentThread.ManagedThreadId, funcSpan?.Invoke(value) ?? value.ToString()))
                     {
-                        using (markerSeries.EnterSpan(
-                            Thread.CurrentThread.ManagedThreadId, funcSpan?.Invoke(value) ?? value.ToString()))
-                        {
-                            return func(value);
-                        }
-                    });
+                        return func(value);
+                    }
+                });
+#else
+            return query(source, func);
+#endif
         }
     }
 
@@ -98,6 +112,7 @@ namespace Dixin.Linq.Parallel
             Func<TSource, TSource, TSource> func,
             string span = nameof(ParallelEnumerable.Aggregate))
         {
+#if NETFX
             MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
             return aggregate(
                 source,
@@ -108,6 +123,9 @@ namespace Dixin.Linq.Parallel
                         return func(accumulate, value);
                     }
                 });
+#else
+            return aggregate(source, func);
+#endif
         }
 
         internal static TAccumulate Visualize<TSource, TAccumulate>(
@@ -117,6 +135,7 @@ namespace Dixin.Linq.Parallel
             Func<TAccumulate, TSource, TAccumulate> func,
             string span = nameof(ParallelEnumerable.Aggregate))
         {
+#if NETFX
             MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
             return aggregate(
                 source,
@@ -128,6 +147,9 @@ namespace Dixin.Linq.Parallel
                         return func(accumulate, value);
                     }
                 });
+#else
+            return aggregate(source, seed, func);
+#endif
         }
 
         internal static TResult Visualize<TSource, TAccumulate, TResult>(
@@ -138,6 +160,7 @@ namespace Dixin.Linq.Parallel
             Func<TAccumulate, TResult> resultSelector,
             string span = nameof(ParallelEnumerable.Aggregate))
         {
+#if NETFX
             MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
             return aggregate(
                 source,
@@ -150,6 +173,9 @@ namespace Dixin.Linq.Parallel
                     }
                 },
                 resultSelector);
+#else
+            return aggregate(source, seed, func, resultSelector);
+#endif
         }
 
         internal static TResult Visualize<TSource, TAccumulate, TResult>(
@@ -162,6 +188,7 @@ namespace Dixin.Linq.Parallel
             string span = nameof(ParallelEnumerable.Aggregate))
 
         {
+#if NETFX
             MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
             return aggregate(
                 source,
@@ -181,6 +208,9 @@ namespace Dixin.Linq.Parallel
                         }
                     },
                 resultSelector);
+#else
+            return aggregate(source, seed, updateAccumulatorFunc, combineAccumulatorsFunc, resultSelector);
+#endif
         }
 
         internal static TResult Visualize<TSource, TAccumulate, TResult>(
@@ -193,6 +223,7 @@ namespace Dixin.Linq.Parallel
             string span = nameof(ParallelEnumerable.Aggregate))
 
         {
+#if NETFX
             MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
             return aggregate(
                 source,
@@ -212,6 +243,9 @@ namespace Dixin.Linq.Parallel
                     }
                 },
                 resultSelector);
+#else
+            return aggregate(source, seedFactory, updateAccumulatorFunc, combineAccumulatorsFunc, resultSelector);
+#endif
         }
     }
 }

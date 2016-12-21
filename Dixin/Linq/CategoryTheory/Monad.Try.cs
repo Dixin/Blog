@@ -1,7 +1,6 @@
 ﻿namespace Dixin.Linq.CategoryTheory
 {
     using System;
-    using System.Diagnostics;
 
     using Microsoft.FSharp.Core;
 
@@ -143,12 +142,12 @@
             Try<int> query = from nullableInt32 in Try(() => 
                                 string.IsNullOrEmpty(value) ? default(int?) : Convert.ToInt32(value)) // Try<int32?>
                              from result in TryStrictFactorial(nullableInt32) // Try<int>.
-                             from unit in Try(() => Trace.WriteLine(result)) // Try<Unit>.
+                             from unit in Try(() => result.WriteLine()) // Try<Unit>.
                              select result; // Define query.
             return query
                 .Catch(exception => // Catch all and rethrow.
                     {
-                        Trace.WriteLine(exception);
+                        exception.WriteLine();
                         return Throw<int>(exception);
                     })
                 .Catch<int, ArgumentNullException>(exception => 1) // When argument is null, factorial is 1.

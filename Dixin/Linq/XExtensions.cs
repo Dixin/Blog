@@ -5,8 +5,11 @@
     using System.Linq;
     using System.Xml;
     using System.Xml.Linq;
+
+#if NETFX
     using System.Xml.Schema;
     using System.Xml.Xsl;
+#endif
 
     public static partial class XExtensions
     {
@@ -121,6 +124,7 @@
         public static string XPath(this XAttribute source, string parentXPath = null) => 
             CombineXPath(parentXPath ?? source.Parent?.XPath(), $"@{source.Name.XPath(source.Parent)}");
 
+#if NETFX
         public static XmlSchemaSet InferSchema(this XNode source)
         {
             XmlSchemaInference schemaInference = new XmlSchemaInference();
@@ -169,5 +173,6 @@
                 return result;
             }
         }
+#endif
     }
 }

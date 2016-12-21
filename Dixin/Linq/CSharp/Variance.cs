@@ -6,6 +6,8 @@
     using System.Linq;
     using System.Reflection;
 
+    using Mono.Cecil;
+
     internal class Base { }
 
     internal class Derived : Base { }
@@ -347,43 +349,44 @@
 
     internal static partial class Variances
     {
-        internal static IEnumerable<Type> GetTypesWithVariance(Assembly assembly)
+        internal static IEnumerable<TypeDefinition> GetTypesWithVariance(AssemblyDefinition assembly)
         {
             try
             {
-                return assembly.GetExportedTypes()
-                    .Where(type => type.IsGenericTypeDefinition && type.GetGenericArguments().Any(argument =>
-                        (argument.GenericParameterAttributes & GenericParameterAttributes.Covariant)
-                        == GenericParameterAttributes.Covariant
-                        || (argument.GenericParameterAttributes & GenericParameterAttributes.Contravariant)
-                        == GenericParameterAttributes.Contravariant));
+                return assembly.Modules.SelectMany(module => module.GetTypes())
+                    .Where(type => type.IsPublic && type.HasGenericParameters && type.GenericParameters.Any(argument =>
+                        !argument.IsNonVariant));
             }
             catch (TypeLoadException)
             {
-                return Enumerable.Empty<Type>();
+                return Enumerable.Empty<TypeDefinition>();
             }
         }
 
-        internal static IEnumerable<Assembly> GetAssemblies(string directory) => 
+        internal static IEnumerable<AssemblyDefinition> GetAssemblies(string directory) =>
             Directory.EnumerateFiles(directory, "*.dll")
                 .Select(file =>
+                {
+                    try
                     {
-                        try
-                        {
-                            return Assembly.Load(AssemblyName.GetAssemblyName(file));
-                        }
-                        catch (BadImageFormatException)
-                        {
-                            return null;
-                        }
-                    })
+                        return AssemblyDefinition.ReadAssembly(file);
+                    }
+                    catch (ArgumentException)
+                    {
+                        return null;
+                    }
+                    catch (BadImageFormatException)
+                    {
+                        return null;
+                    }
+                })
                 .Where(assembly => assembly != null);
 
-        internal static IEnumerable<Type> GetTypesWithVariance()
+        internal static IEnumerable<TypeDefinition> GetTypesWithVariance()
         {
-            string mscorlibPath = typeof(object).Assembly.Location;
-            string gacPath = Path.GetDirectoryName(mscorlibPath);
-            return GetAssemblies(gacPath)
+            string coreLibraryPath = typeof(object).GetTypeInfo().Assembly.Location;
+            string coreLibraryDirectory = Path.GetDirectoryName(coreLibraryPath);
+            return GetAssemblies(coreLibraryDirectory)
                 .SelectMany(GetTypesWithVariance)
                 .OrderBy(type => type.Name);
         }

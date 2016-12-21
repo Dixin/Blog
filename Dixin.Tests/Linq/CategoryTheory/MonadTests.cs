@@ -7,7 +7,7 @@
 
     using Dixin.Linq;
     using Dixin.Linq.CategoryTheory;
-    using Dixin.TestTools.UnitTesting;
+    using Dixin.Linq.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -587,14 +587,14 @@
             Func<int, Func<int, Func<string, string>>> f = x => y => z =>
                 {
                     isExecuted1 = true;
-                    return (x + y + z.Length).ToString(CultureInfo.InstalledUICulture);
+                    return (x + y + z.Length).ToString(CultureInfo.InvariantCulture);
                 };
             Cps<int, string> query = from x in 1.Cps<int, int>()
                                      from y in 2.Cps<int, int>()
                                      from z in "abc".Cps<int, string>()
                                      select f(x)(y)(z);
             Assert.IsFalse(isExecuted1); // Deferred and lazy.
-            Assert.AreEqual((1 + 2 + "abc".Length).ToString(CultureInfo.InstalledUICulture).Length, query(x => x.Length)); // Execution.
+            Assert.AreEqual((1 + 2 + "abc".Length).ToString(CultureInfo.InvariantCulture).Length, query(x => x.Length)); // Execution.
             Assert.IsTrue(isExecuted1);
 
             // Monad law 1: m.Monad().SelectMany(f) == f(m)
@@ -636,14 +636,14 @@
             Func<int, Func<int, Func<string, string>>> f = x => y => z =>
             {
                 isExecuted1 = true;
-                return (x + y + z.Length).ToString(CultureInfo.InstalledUICulture);
+                return (x + y + z.Length).ToString(CultureInfo.InvariantCulture);
             };
             Try<string> query = from x in 1.Try()
                                 from y in 2.Try()
                                 from z in "abc".Try()
                                 select f(x)(y)(z);
             Assert.IsFalse(isExecuted1); // Deferred and lazy.
-            Assert.AreEqual((1 + 2 + "abc".Length).ToString(CultureInfo.InstalledUICulture), query.Value); // Execution.
+            Assert.AreEqual((1 + 2 + "abc".Length).ToString(CultureInfo.InvariantCulture), query.Value); // Execution.
             Assert.IsTrue(isExecuted1);
 
             // Monad law 1: m.Monad().SelectMany(f) == f(m)
