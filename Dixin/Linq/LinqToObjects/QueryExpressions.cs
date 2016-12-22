@@ -328,16 +328,18 @@ namespace Dixin.Linq.LinqToObjects
                 WorkItemCollection workItems = workItemStore.Query(wiql); // WorkItemCollection implements IEnumerable.
 
                 IEnumerable<IGrouping<string, WorkItem>> workItemGroups =
-                        from WorkItem workItem in workItems
+                        from WorkItem workItem in workItems // Cast.
                         group workItem by workItem.CreatedBy; // Group work items in local memory.
                 // ...
             }
         }
+#endif
 
+#if NETFX
         internal static void CastNonGenericIEnumerable2()
         {
             SettingsPropertyCollection properties = ProfileBase.Properties; // SettingsPropertyCollection implements IEnumerable.
-            IEnumerable<SettingsProperty> genericProperties = from SettingsProperty property in properties
+            IEnumerable<SettingsProperty> genericProperties = from SettingsProperty property in properties // Cast.
                                                               select property;
         }
 #endif

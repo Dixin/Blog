@@ -97,10 +97,12 @@
         internal static void Range()
         {
             IEnumerable<int> range = Enumerable.Range(-1, 5); // Define query.
-            foreach (int int32 in range) // Execute query.
-            {
-                int32.WriteLine(); // -1 0 1 2 3
-            }
+            range.WriteLines(); // Execute query. -1 0 1 2 3
+            // Equivalent to:
+            // foreach (int int32 in range)
+            // {
+            //    int32.WriteLine();
+            // }
         }
 
         internal static void LargeRange()
@@ -181,7 +183,7 @@
             // 0:zero 1:one 2:two 3:three 4:four
         }
 
-        internal static void Let()
+        internal static void CompiledLet()
         {
             IEnumerable<int> source = Enumerable.Range(-2, 5);
             IEnumerable<string> absoluteValues = source
@@ -192,10 +194,12 @@
             // Math.Abs(-2):2 Math.Abs(-1):1 Math.Abs(1):1 Math.Abs(2):2
         }
 
-        internal static MemberInfo[] GetDeclaredMembers(this Type type) => type.GetTypeInfo().GetMembers(
-            BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly);
+        internal static MemberInfo[] GetDeclaredMembers(this Type type) => 
+            type.GetTypeInfo().GetMembers(
+                BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 
-        internal static bool IsObsolete(this MemberInfo member) => member.IsDefined(typeof(ObsoleteAttribute), false);
+        internal static bool IsObsolete(this MemberInfo member) => 
+            member.IsDefined(attributeType: typeof(ObsoleteAttribute), inherit: false);
 
         internal static void SelectMany()
         {
@@ -743,7 +747,9 @@
                 // ...
             }
         }
+#endif
 
+#if NETFX
         internal static void CastNonGenericIEnumerable2()
         {
             SettingsPropertyCollection properties = ProfileBase.Properties; // SettingsPropertyCollection implements IEnumerable.
@@ -925,8 +931,6 @@
 
         internal static IEnumerable<int> EmptyInt32Source() => Enumerable.Empty<int>();
 
-        internal static IEnumerable<int?> NullableInt32Source() => new int?[] { -1, 1, 2, 3, -4, null };
-
         internal static void FirstLast()
         {
             int firstOfSource = Int32Source().First().WriteLine(); // -1
@@ -1006,7 +1010,7 @@
             Character singleCharacter = Characters().Single(); // InvalidOperationException.
             Character fromAsgard = Characters()
                 .Single(character => "Asgard".Equals(character.PlaceOfBirth, StringComparison.Ordinal))
-                .WriteLine();  // Thor.
+                .WriteLine();  // Thor
 
             Character loki = Characters().Single(
                 character => "Loki".Equals(character.Name, StringComparison.Ordinal)); // InvalidOperationException.
@@ -1130,14 +1134,14 @@
                 .Select(type => new { Type = type, Count = type.GetDeclaredMembers().Length })
                 .OrderByDescending(typeWithDeclaredMemberCount => typeWithDeclaredMemberCount.Count)
                 .TakeWhile(typeWithDeclaredMemberCount =>
+                {
+                    if (maxDeclaredMemberCount == 0)
                     {
-                        if (maxDeclaredMemberCount == 0)
-                        {
-                            // If maxDeclaredMemberCount is not initialized, initialize it.
-                            maxDeclaredMemberCount = typeWithDeclaredMemberCount.Count;
-                        }
-                        return typeWithDeclaredMemberCount.Count == maxDeclaredMemberCount;
-                    }); // If more multiple types have the same max declared member count, take all of those types.
+                        // If maxDeclaredMemberCount is not initialized, initialize it.
+                        maxDeclaredMemberCount = typeWithDeclaredMemberCount.Count;
+                    }
+                    return typeWithDeclaredMemberCount.Count == maxDeclaredMemberCount;
+                }); // If more multiple types have the same max declared member count, take all of those types.
             typesWithMaxDeclaredMemberCount.WriteLines(type => $"{type.Type.FullName}:{type.Count}"); // Execute query. System.Convert:311
         }
 
@@ -1169,7 +1173,7 @@
                         MemberCount = currentMaxDeclaredMemberCount
                     };
                 }); // Define query.
-            typesWithMaxDeclaredMemberCount.Types.WriteLines(type => 
+            typesWithMaxDeclaredMemberCount.Types.WriteLines(type =>
                 $"{type.FullName}:{typesWithMaxDeclaredMemberCount.MemberCount}"); // Execute query. System.Convert:311
         }
 
@@ -1186,8 +1190,8 @@
 
         internal static void MinMaxGeneric()
         {
-            Characters().Min().WriteLine(); // JAVIS
-            Characters().Max().WriteLine(); // Vision
+            Character min = Characters().Min().WriteLine(); // JAVIS
+            Character max = Characters().Max().WriteLine(); // Vision
         }
 
         internal static void SumAverage()
@@ -1219,13 +1223,6 @@
 
         #region Quantifiers
 
-        internal static void All()
-        {
-            bool allNegative = Int32Source().All(int32 => int32 < 0).WriteLine(); // False
-            bool allPositive = SingleInt32Source().All(int32 => int32 > 0).WriteLine(); // True
-            bool allGreaterThanMax = EmptyInt32Source().All(int32 => int32 > int.MaxValue).WriteLine(); // True
-        }
-
         internal static void Any()
         {
             bool anyInSource = Int32Source().Any().WriteLine(); // True
@@ -1238,6 +1235,13 @@
             bool anyNegative = Int32Source().Any(int32 => int32 < 0).WriteLine(); // True
             bool anyPositive = SingleInt32Source().Any(int32 => int32 > 0).WriteLine(); // True
             bool any0 = EmptyInt32Source().Any(_ => true).WriteLine(); // False
+        }
+
+        internal static void All()
+        {
+            bool allNegative = Int32Source().All(int32 => int32 < 0).WriteLine(); // False
+            bool allPositive = SingleInt32Source().All(int32 => int32 > 0).WriteLine(); // True
+            bool allGreaterThanMax = EmptyInt32Source().All(int32 => int32 > int.MaxValue).WriteLine(); // True
         }
 
         internal static void Contains()

@@ -39,7 +39,7 @@
         {
             Select();
             SelectWithIndex();
-            Let();
+            CompiledLet();
             SelectMany();
             FluentSelectMany();
             CompiledSelectManyWithResultSelector();

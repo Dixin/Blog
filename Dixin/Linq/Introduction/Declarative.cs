@@ -4,6 +4,8 @@
     using System.ComponentModel.DataAnnotations;
     using System.Diagnostics.Contracts;
 
+    using Dixin.Linq.Resources;
+
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]

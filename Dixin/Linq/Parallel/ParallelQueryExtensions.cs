@@ -18,22 +18,22 @@ namespace Dixin.Linq.Parallel
 
     public static class ParallelQueryExtensions
     {
-        private static readonly PropertyInfo QuerySettingsProperty = typeof(ParallelQuery).GetProperty(
+        private static readonly PropertyInfo QuerySettingsProperty = typeof(ParallelQuery).GetTypeInfo().GetProperty(
             "SpecifiedQuerySettings", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
 
         private static readonly Type QuerySettingsType = typeof(ParallelQuery).GetTypeInfo().Assembly.GetType(
             "System.Linq.Parallel.QuerySettings");
 
-        private static readonly PropertyInfo TaskSchedulerProperty = QuerySettingsType.GetProperty(
+        private static readonly PropertyInfo TaskSchedulerProperty = QuerySettingsType.GetTypeInfo().GetProperty(
             "TaskScheduler", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
 
-        private static readonly PropertyInfo DegreeOfParallelismProperty = QuerySettingsType.GetProperty(
+        private static readonly PropertyInfo DegreeOfParallelismProperty = QuerySettingsType.GetTypeInfo().GetProperty(
             "DegreeOfParallelism", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
 
-        private static readonly PropertyInfo ExecutionModeProperty = QuerySettingsType.GetProperty(
+        private static readonly PropertyInfo ExecutionModeProperty = QuerySettingsType.GetTypeInfo().GetProperty(
             "ExecutionMode", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
 
-        private static readonly PropertyInfo MergeOptionsProperty = QuerySettingsType.GetProperty(
+        private static readonly PropertyInfo MergeOptionsProperty = QuerySettingsType.GetTypeInfo().GetProperty(
             "MergeOptions", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
 
         public static QuerySettings SpecifiedQuerySettings(this ParallelQuery source)

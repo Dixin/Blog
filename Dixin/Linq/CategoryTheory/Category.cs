@@ -5,11 +5,6 @@
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
-#if !NETFX
-    using System.Runtime.Loader;
-
-    using Microsoft.Extensions.DependencyModel;
-#endif
 
     public interface ICategory<TObject, TMorphism>
     {

@@ -1,10 +1,12 @@
-﻿namespace Dixin.Tests.Linq.CSharp
+﻿#if NETFX
+namespace Dixin.Tests.Linq.CSharp
 {
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.Linq;
 
     using Dixin.Linq.Introduction;
+    using Dixin.Linq.Resources;
     using Dixin.Linq.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -61,3 +63,4 @@
         }
     }
 }
+#endif

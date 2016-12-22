@@ -179,6 +179,7 @@ namespace Dixin.Tests.Linq
             document.Root.ReplaceWith(element6);
         }
 
+#if NETFX
         [TestMethod]
         public void TextTest()
         {
@@ -209,5 +210,6 @@ namespace Dixin.Tests.Linq
                 (element8.XPathEvaluate((element8.LastNode as XText).XPath()) as IEnumerable<object>).Single(),
                 element8.LastNode);
         }
+#endif
     }
 }

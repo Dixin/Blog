@@ -10,6 +10,8 @@
 
     module FSharpQueryExpressions =
 
+        let nullableInt32Source: unit -> Nullable<int>[] = fun () -> [| new Nullable<int>(-1); new Nullable<int>(1); new Nullable<int>(2); new Nullable<int>(3); new Nullable<int>(-4); new Nullable<int>() |];
+
         // #region Filtering
 
         let where: seq<int> =
@@ -168,26 +170,26 @@
             
         let sortByNullable: seq<Nullable<int>> =
             query {
-                for int' in QueryMethods.NullableInt32Source() do
+                for int' in nullableInt32Source() do
                 sortByNullable int'
             }
 
         let sortByNullableDescending: seq<Nullable<int>> =
             query {
-                for int' in QueryMethods.NullableInt32Source() do
+                for int' in nullableInt32Source() do
                 sortByNullableDescending int'
             }
 
         let thenByNullable: seq<Nullable<int>> =
             query {
-                for int' in QueryMethods.NullableInt32Source() do
+                for int' in nullableInt32Source() do
                 sortByNullable int'
                 thenByNullable int'
             }
 
         let thenByNullableDescending: seq<Nullable<int>> =
             query {
-                for int' in QueryMethods.NullableInt32Source() do
+                for int' in nullableInt32Source() do
                 sortByNullable int'
                 thenByNullableDescending int'
             }
@@ -281,25 +283,25 @@
 
         let minByNullable: Nullable<int> =
             query {
-                for int' in QueryMethods.NullableInt32Source() do
+                for int' in nullableInt32Source() do
                 minByNullable int'
             }
 
         let maxByNullable: Nullable<int> =
             query {
-                for int' in QueryMethods.NullableInt32Source() do
+                for int' in nullableInt32Source() do
                 maxByNullable int'
             }
 
         let averageByNullable: Nullable<float> =
             query {
-                for int' in QueryMethods.NullableInt32Source() do
+                for int' in nullableInt32Source() do
                 averageByNullable (Nullable.float int')
             }
 
         let sumByNullable: Nullable<int> =
             query {
-                for int' in QueryMethods.NullableInt32Source() do
+                for int' in nullableInt32Source() do
                 sumByNullable int'
             }
 
