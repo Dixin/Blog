@@ -121,15 +121,12 @@
 
         private static ApplicationExpression ToApplication(this Expression expression)
         {
-            ApplicationExpression application = expression as ApplicationExpression;
-            if (application != null)
+            switch (expression)
             {
-                return application;
-            }
-            InvocationExpression invocation = expression as InvocationExpression;
-            if (invocation != null)
-            {
-                return new ApplicationExpression(invocation.Expression, invocation.Arguments.Single());
+                case ApplicationExpression application:
+                    return application;
+                case InvocationExpression invocation:
+                    return new ApplicationExpression(invocation.Expression, invocation.Arguments.Single());
             }
             throw new ArgumentOutOfRangeException(nameof(expression));
         }

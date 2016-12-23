@@ -94,12 +94,10 @@
             where TException : Exception => 
                 new Try<T>(() =>
                 {
-                    TException exception;
-                    if (source.HasException && (exception = source.Exception as TException) != null
+                    if (source.HasException && source.Exception is TException exception && exception != null
                         && (when == null || when(exception)))
                     {
                         source = handler(exception);
-                        
                     }
                     return source.HasException ? (default(T), source.Exception) : (source.Value, (Exception)null);
                 });

@@ -77,19 +77,15 @@
 
         public static int Count<TSource>(this IEnumerable<TSource> source)
         {
-            ICollection<TSource> genericCollection = source as ICollection<TSource>;
-            if (genericCollection != null)
+            switch (source)
             {
-                return genericCollection.Count;
+                case ICollection<TSource> genericCollection:
+                    return genericCollection.Count;
+                case ICollection collection:
+                    return collection.Count;
+                default:
+                    return source.Aggregate(0, (count, value) => checked(count + 1));
             }
-
-            ICollection collection = source as ICollection;
-            if (collection != null)
-            {
-                return collection.Count;
-            }
-
-            return source.Aggregate(0, (count, value) => checked(count + 1));
         }
 
         public static int Count<TSource>
@@ -127,26 +123,21 @@
 
         public static TSource ElementAt<TSource>(this IEnumerable<TSource> source, int index)
         {
-            IList<TSource> list = source as IList<TSource>;
-            if (list != null)
+            if (source is IList<TSource> list)
             {
                 return list[index];
             }
-
-            if (index < 0)
+            if (index >= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(index));
-            }
-
-            using (IEnumerator<TSource> iterator = source.GetEnumerator())
-            {
-                (bool, TSource) result = iterator.ElementAt(index, -1);
-                if (result.Item1)
+                using (IEnumerator<TSource> iterator = source.GetEnumerator())
                 {
-                    return result.Item2;
+                    (bool, TSource) result = iterator.ElementAt(index, -1);
+                    if (result.Item1)
+                    {
+                        return result.Item2;
+                    }
                 }
             }
-
             throw new ArgumentOutOfRangeException(nameof(index));
         }
 
@@ -154,8 +145,7 @@
         {
             if (index >= 0)
             {
-                IList<TSource> list = source as IList<TSource>;
-                if (list != null)
+                if (source is IList<TSource> list)
                 {
                     if (index < list.Count)
                     {
@@ -170,7 +160,6 @@
                     }
                 }
             }
-
             return default(TSource);
         }
 
@@ -193,8 +182,7 @@
 
         public static TSource First<TSource>(this IEnumerable<TSource> source)
         {
-            IList<TSource> list = source as IList<TSource>;
-            if (list != null)
+            if (source is IList<TSource> list)
             {
                 if (list.Count > 0)
                 {
@@ -211,7 +199,6 @@
                     }
                 }
             }
-
             throw new InvalidOperationException("Sequence contains no elements.");
         }
 
@@ -220,8 +207,7 @@
 
         public static TSource FirstOrDefault<TSource>(this IEnumerable<TSource> source)
         {
-            IList<TSource> list = source as IList<TSource>;
-            if (list != null)
+            if (source is IList<TSource> list)
             {
                 if (list.Count > 0)
                 {
@@ -320,8 +306,7 @@
 
         public static TSource Last<TSource>(this IEnumerable<TSource> source)
         {
-            IList<TSource> list = source as IList<TSource>;
-            if (list != null)
+            if (source is IList<TSource> list)
             {
                 int count = list.Count;
                 if (count > 0)
@@ -339,7 +324,6 @@
                     return last.Value;
                 }
             }
-
             throw new InvalidOperationException("Sequence contains no elements.");
         }
 
@@ -348,13 +332,11 @@
 
         public static TSource LastOrDefault<TSource>(this IEnumerable<TSource> source)
         {
-            IList<TSource> list = source as IList<TSource>;
-            if (list != null)
+            if (source is IList<TSource> list)
             {
                 int count = list.Count;
                 return count > 0 ? list[count - 1] : default(TSource);
             }
-
             return source.Aggregate(default(TSource), (last, value) => value);
         }
 
@@ -433,8 +415,7 @@
 
         public static TSource Single<TSource>(this IEnumerable<TSource> source)
         {
-            IList<TSource> list = source as IList<TSource>;
-            if (list != null)
+            if (source is IList<TSource> list)
             {
                 int count = list.Count;
                 if (count == 0)
@@ -474,8 +455,7 @@
 
         public static TSource SingleOrDefault<TSource>(this IEnumerable<TSource> source)
         {
-            IList<TSource> list = source as IList<TSource>;
-            if (list != null)
+            if (source is IList<TSource> list)
             {
                 int count = list.Count;
                 if (count == 0)
@@ -506,7 +486,6 @@
                     }
                 }
             }
-
             throw new InvalidOperationException("Sequence contains more than one element.");
         }
 
@@ -561,43 +540,45 @@
 
         public static TSource[] ToArray<TSource>(this IEnumerable<TSource> source)
         {
-            ICollection<TSource> genericCollection = source as ICollection<TSource>;
-            if (genericCollection != null)
+            switch(source)
             {
-                TSource[] array = new TSource[genericCollection.Count];
-                genericCollection.CopyTo(array, 0);
-                return array;
-            }
-
-            ICollection collection = source as ICollection;
-            if (collection != null)
-            {
-                TSource[] array = new TSource[collection.Count];
-                collection.CopyTo(array, 0);
-                return array;
-            }
-
-            const int InitialLength = 4;
-            var result = source.Aggregate(
-                new { Length = 0, Array = new TSource[InitialLength] },
-                (current, value) =>
+                case ICollection<TSource> genericCollection:
                 {
-                    int length = current.Length;
-                    TSource[] array = current.Array;
-                    if (length == array.Length)
-                    {
-                        Array.Resize(ref array, checked(length * 2)); // Doubles size when full.
-                        array[length] = value;
-                        return new { Length = length + 1, Array = array };
-                    }
-
+                    TSource[] array = new TSource[genericCollection.Count];
+                    genericCollection.CopyTo(array, 0);
+                    return array;
+                }
+                case ICollection collection:
+                {
+                    TSource[] array = new TSource[collection.Count];
+                    collection.CopyTo(array, 0);
+                    return array;
+                }
+                default:
+                {
+                    const int InitialLength = 4;
+                    var result = source.Aggregate(
+                        new { Length = 0, Array = new TSource[InitialLength] },
+                        (current, value) =>
+                        {
+                            int length = current.Length;
+                            TSource[] array = current.Array;
+                            if (length == array.Length)
+                            {
+                                Array.Resize(ref array, checked(length * 2)); // Doubles size when full.
                     array[length] = value;
-                    return new { Length = length + 1, Array = array };
-                });
+                                return new { Length = length + 1, Array = array };
+                            }
 
-            TSource[] resultArray = result.Array;
-            Array.Resize(ref resultArray, result.Length); // Finalizes size when done.
-            return resultArray;
+                            array[length] = value;
+                            return new { Length = length + 1, Array = array };
+                        });
+
+                    TSource[] resultArray = result.Array;
+                    Array.Resize(ref resultArray, result.Length); // Finalizes size when done.
+                    return resultArray;
+                }
+            }
         }
 
         public static Dictionary<TKey, TElement> ToDictionary<TSource, TKey, TElement>(
@@ -643,7 +624,7 @@
             return new Lookup<TKey, TElement>(
                 groupsWithNonNullKey.ToDictionary(
                     group => group.Key,
-                    group => new Grouping<TKey, TElement>(group.Key, group.Value) as IGrouping<TKey, TElement>,
+                    group => (IGrouping<TKey, TElement>)new Grouping<TKey, TElement>(group.Key, group.Value),
                     comparer),
                 new Grouping<TKey, TElement>(default(TKey), groupWithNullKey),
                 groupWithNullKey.Count > 0);

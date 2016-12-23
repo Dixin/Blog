@@ -1298,11 +1298,8 @@
 
     internal partial class Character
     {
-        public override bool Equals(object obj)
-        {
-            Character other = obj as Character;
-            return other != null && string.Equals(this.Name, other.Name, StringComparison.Ordinal);
-        }
+        public override bool Equals(object obj) => 
+            obj is Character other && other != null && string.Equals(this.Name, other.Name, StringComparison.Ordinal);
 
         public override int GetHashCode() => this.Name?.GetHashCode() ?? 0;
 

@@ -36,26 +36,28 @@
             int[] result = sequence.ToArray(); // 0 1.
         }
 
-        internal static IEnumerable<TResult> CastWithCreate<TResult>
-            (this IEnumerable source) => source as IEnumerable<TResult> ?? EnumerableEx.Create<TResult>(async yield =>
-                {
-                    foreach (object value in source)
+        internal static IEnumerable<TResult> CastWithCreate<TResult>(this IEnumerable source) =>
+            source is IEnumerable<TResult> genericSource
+                ? genericSource
+                : EnumerableEx.Create<TResult>(async yield =>
                     {
-                        await yield.Return((TResult)value); // yield return (TResult)value;
-                    }
-                });
-
-        internal static IEnumerable<TResult> CreateWithCreate<TResult>
-            (Func<IEnumerator<TResult>> getEnumerator) => EnumerableEx.Create<TResult>(async yield =>
-                {
-                    using (IEnumerator<TResult> iterator = getEnumerator())
-                    {
-                        while (iterator.MoveNext())
+                        foreach (object value in source)
                         {
-                            await yield.Return(iterator.Current); // yield return iterator.Current;
+                            await yield.Return((TResult)value); // yield return (TResult)value;
                         }
+                    });
+
+        internal static IEnumerable<TResult> CreateWithCreate<TResult>(Func<IEnumerator<TResult>> getEnumerator) => 
+            EnumerableEx.Create<TResult>(async yield =>
+            {
+                using (IEnumerator<TResult> iterator = getEnumerator())
+                {
+                    while (iterator.MoveNext())
+                    {
+                        await yield.Return(iterator.Current); // yield return iterator.Current;
                     }
-                });
+                }
+            });
 
         #endregion
 

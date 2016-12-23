@@ -15,7 +15,7 @@
         [TestMethod]
         public void AddTest()
         {
-            Assert.AreEqual(3, Functions.Add(1, 2));
+            Assert.AreEqual(3, Add(1, 2));
         }
 
         [TestMethod]

@@ -11,7 +11,7 @@
         // value.Sequence(hasValue) is the alias of (hasValue ? value.Sequence() : Enumerable.Empty<TSource>())
         internal static IEnumerable<TSource> ToEnumerable<TSource>(this TSource value, bool hasValue = false)
         {
-            // return hasValue ? EnumerableEx.Return(value) : Enumerable.Empty<TSource>();
+            // return hasValue ? new TSource[] { value } : Enumerable.Empty<TSource>();
             if (hasValue)
             {
                 yield return value;

@@ -41,10 +41,10 @@ namespace Dixin.Linq.Parallel
             object querySettings = QuerySettingsProperty.GetValue(source);
             return new QuerySettings()
                 {
-                    TaskScheduler = TaskSchedulerProperty.GetValue(querySettings) as TaskScheduler,
-                    DegreeOfParallelism = DegreeOfParallelismProperty.GetValue(querySettings) as int?,
-                    ExecutionMode = ExecutionModeProperty.GetValue(querySettings) as ParallelExecutionMode?,
-                    MergeOptions = MergeOptionsProperty.GetValue(querySettings) as ParallelMergeOptions?
+                    TaskScheduler = (TaskScheduler)TaskSchedulerProperty.GetValue(querySettings),
+                    DegreeOfParallelism = (int?)DegreeOfParallelismProperty.GetValue(querySettings),
+                    ExecutionMode = (ParallelExecutionMode?)ExecutionModeProperty.GetValue(querySettings),
+                    MergeOptions = (ParallelMergeOptions?)MergeOptionsProperty.GetValue(querySettings)
                 };
         }
     }

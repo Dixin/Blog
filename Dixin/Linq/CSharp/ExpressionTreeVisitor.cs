@@ -164,7 +164,7 @@
             BinaryExpression binary, OpCode postfix, LambdaExpression expression) =>
                 this.VisitNode(binary.Left, expression)
                     .Concat(this.VisitNode(binary.Right, expression))
-                    .Concat(Enumerable.Repeat((postfix, (double?)null), 1)); // left, right, postfix
+                    .Concat(new (OpCode, double?)[] { (postfix, (double?)null) }); // left, right, postfix
     }
 #endif
 

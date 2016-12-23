@@ -135,13 +135,11 @@
         public TPrice Price => this.price;
 
         [DebuggerHidden]
-        public override bool Equals(object value)
-        {
-            AnonymousType0<TName, TPrice> type = value as AnonymousType0<TName, TPrice>;
-            return type != null
-                && EqualityComparer<TName>.Default.Equals(this.name, type.name)
-                && EqualityComparer<TPrice>.Default.Equals(this.price, type.price);
-        }
+        public override bool Equals(object value) =>
+            value is AnonymousType0<TName, TPrice> type
+            && type != null
+            && EqualityComparer<TName>.Default.Equals(this.name, type.name)
+            && EqualityComparer<TPrice>.Default.Equals(this.price, type.price);
 
         // Other members.
     }
@@ -243,35 +241,24 @@ namespace System
 
         public T2 Item2 { get; }
 
-        public override bool Equals(object obj) => 
+        public override bool Equals(object obj) =>
             ((IStructuralEquatable)this).Equals(obj, EqualityComparer<object>.Default);
 
-        bool IStructuralEquatable.Equals(object other, IEqualityComparer comparer)
-        {
-            if (other == null)
-            {
-                return false;
-            }
+        bool IStructuralEquatable.Equals(object other, IEqualityComparer comparer) =>
+            other != null && other is Tuple<T1, T2> objTuple && objTuple != null
+            && comparer.Equals(this.Item1, objTuple.Item1) && comparer.Equals(this.Item2, objTuple.Item2);
 
-            Tuple<T1, T2> objTuple = other as Tuple<T1, T2>;
-
-            return objTuple != null && comparer.Equals(this.Item1, objTuple.Item1)
-                && comparer.Equals(this.Item2, objTuple.Item2);
-        }
-
-        int IComparable.CompareTo(object obj) => 
+        int IComparable.CompareTo(object obj) =>
             ((IStructuralComparable)this).CompareTo(obj, Comparer<object>.Default);
 
         int IStructuralComparable.CompareTo(object other, IComparer comparer)
         {
-            if (other == null)
+            if(other is Tuple<T1, T2> otherTuple)
             {
-                return 1;
+                int compareResult = comparer.Compare(this.Item1, otherTuple.Item1);
+                return compareResult != 0 ? compareResult : comparer.Compare(this.Item2, otherTuple.Item2);
             }
-
-            Tuple<T1, T2> otherTuple = other as Tuple<T1, T2>;
-            int compareResult = comparer.Compare(this.Item1, otherTuple.Item1);
-            return compareResult != 0 ? compareResult : comparer.Compare(this.Item2, otherTuple.Item2);
+            return 1;
         }
 
         // Other members.

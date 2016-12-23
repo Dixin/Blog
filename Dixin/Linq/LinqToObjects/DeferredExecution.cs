@@ -358,16 +358,15 @@
             {
                 throw new ArgumentNullException(nameof(selector));
             }
-            return SelectGenerator(source, selector);
-        }
 
-        private static IEnumerable<TResult> SelectGenerator<TSource, TResult>(
-            IEnumerable<TSource> source, Func<TSource, TResult> selector)
-        {
-            foreach (TSource value in source)
+            IEnumerable<TResult> SelectGenerator()
             {
-                yield return selector(value);
+                foreach (TSource value in source)
+                {
+                    yield return selector(value);
+                }
             }
+            return SelectGenerator();
         }
 #endif
     }

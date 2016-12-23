@@ -136,11 +136,8 @@
     {
         public override int GetHashCode() => this.Unchurch().GetHashCode();
 
-        public override bool Equals(object obj)
-        {
-            NumeralWrapper numeral = obj as NumeralWrapper;
-            return (object)numeral != null && this.Equal(numeral).Unchurch();
-        }
+        public override bool Equals(object obj) => 
+            obj is NumeralWrapper numeral && (object)numeral != null && this.Equal(numeral).Unchurch();
     }
 
     public static partial class NumeralWrapperExtensions

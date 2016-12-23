@@ -13,42 +13,47 @@
 
     public static partial class XExtensions
     {
-        public static IEnumerable<XObject> DescendantObjects(this XObject source) => 
+        public static IEnumerable<XObject> DescendantObjects(this XObject source) =>
             Enumerable
                 .Empty<XObject>()
                 .Concat(
-                    (source as XElement)?.Attributes() // T is covariant in IEnumerable<T>.
-                    ?? Enumerable.Empty<XObject>())
+                    source is XElement element
+                        ? element.Attributes() // T is covariant in IEnumerable<T>.
+                        : Enumerable.Empty<XObject>())
                 .Concat(
-                    (source as XContainer)?
-                        .DescendantNodes()
-                        .SelectMany(descendant => Enumerable
-                            .Repeat<XObject>(descendant, 1)
-                            .Concat(
-                                (descendant as XElement)?.Attributes() // T is covariant in IEnumerable<T>.
-                                ?? Enumerable.Empty<XObject>()))
-                    ?? Enumerable.Empty<XObject>());
+                    source is XContainer container
+                        ? container
+                            .DescendantNodes()
+                            .SelectMany(descendant => Enumerable
+                                .Repeat<XObject>(descendant, 1)
+                                .Concat(
+                                    descendant is XElement descendantElement
+                                        ? descendantElement.Attributes() // T is covariant in IEnumerable<T>.
+                                        : Enumerable.Empty<XObject>()))
+                        : Enumerable.Empty<XObject>());
     }
 
     public static partial class XExtensions
     {
-        public static IEnumerable<XObject> SelfAndDescendantObjects(this XObject source) => 
+        public static IEnumerable<XObject> SelfAndDescendantObjects(this XObject source) =>
             Enumerable
                 .Repeat(source, 1)
                 .Concat(source.DescendantObjects());
 
-        public static IEnumerable<XName> Names(this XContainer source) => 
-            ((source as XElement)?.DescendantsAndSelf() ?? source.Descendants())
-                .SelectMany(element => Enumerable
-                    .Repeat(element.Name, 1)
-                    .Concat(element
-                        .Attributes()
-                        .Select(attribute => attribute.Name)))
+        public static IEnumerable<XName> Names(this XContainer source) =>
+            (source is XElement element
+                ? element.DescendantsAndSelf()
+                : source.Descendants())
+                    .SelectMany(descendantElement => Enumerable
+                        .Repeat(descendantElement.Name, 1)
+                        .Concat(descendantElement
+                            .Attributes()
+                            .Select(attribute => attribute.Name)))
                 .Distinct();
 
-        public static IEnumerable<XAttribute> AllAttributes(this XContainer source) => 
-            ((source as XElement)?.DescendantsAndSelf() ?? source.Descendants())
-                .SelectMany(element => element.Attributes());
+        public static IEnumerable<XAttribute> AllAttributes(this XContainer source) =>
+            (source is XElement element ? element.DescendantsAndSelf() : source.Descendants())
+                .SelectMany(elementOrDescendant => elementOrDescendant.Attributes());
 
         public static IEnumerable<(string, XNamespace)> Namespaces(this XContainer source) =>
             source // Namespaces are defined as xmlns:prefix="namespace" attributes.
@@ -101,7 +106,7 @@
             return CombineXPath(parentXPath, selfXPath, predicate);
         }
 
-        public static string XPath(this XElement source, string parentXPath = null) => 
+        public static string XPath(this XElement source, string parentXPath = null) =>
             string.IsNullOrEmpty(parentXPath) && source.Parent == null && source.Document == null
                 ? "/" // source is an element on the fly, not attached to any parent node.
                 : source.XPath(
@@ -109,19 +114,19 @@
                     source.Name.XPath(source),
                     sibling => sibling.Name == source.Name);
 
-        public static string XPath(this XComment source, string parentXPath = null) => 
+        public static string XPath(this XComment source, string parentXPath = null) =>
             source.XPath(parentXPath ?? source.Parent?.XPath(), "comment()");
 
-        public static string XPath(this XText source, string parentXPath = null) => 
+        public static string XPath(this XText source, string parentXPath = null) =>
             source.XPath(parentXPath ?? source.Parent?.XPath(), "text()");
 
-        public static string XPath(this XProcessingInstruction source, string parentXPath = null) => 
+        public static string XPath(this XProcessingInstruction source, string parentXPath = null) =>
             source.XPath(
                 parentXPath ?? source.Parent?.XPath(),
                 $"processing-instruction('{source.Target}')",
                 sibling => string.Equals(sibling.Target, source.Target, StringComparison.Ordinal));
 
-        public static string XPath(this XAttribute source, string parentXPath = null) => 
+        public static string XPath(this XAttribute source, string parentXPath = null) =>
             CombineXPath(parentXPath ?? source.Parent?.XPath(), $"@{source.Name.XPath(source.Parent)}");
 
 #if NETFX
@@ -163,7 +168,7 @@
 #endif
 
 #if NETFX
-        public static IEnumerable<(XObject, string, IXmlSchemaInfo)> GetValidities(this XDocument source) => 
+        public static IEnumerable<(XObject, string, IXmlSchemaInfo)> GetValidities(this XDocument source) =>
             source.Root.GetValidities();
 
         public static XDocument XslTransform(this XNode source, XNode xsl)

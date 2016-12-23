@@ -11,43 +11,45 @@
     {
         internal static TSource[] ToArray<TSource>(this IEnumerable<TSource> source)
         {
-            ICollection<TSource> genericCollection = source as ICollection<TSource>;
-            if (genericCollection != null)
+            switch(source)
             {
-                TSource[] array = new TSource[genericCollection.Count];
-                genericCollection.CopyTo(array, 0);
-                return array;
-            }
-
-            ICollection collection = source as ICollection;
-            if (collection != null)
-            {
-                TSource[] array = new TSource[collection.Count];
-                collection.CopyTo(array, 0);
-                return array;
-            }
-
-            using (IEnumerator<TSource> iterator = source.GetEnumerator())
-            {
-                if (!iterator.MoveNext()) // source is empty.
+                case ICollection<TSource> genericCollection:
                 {
-                    return new TSource[0];
+                    TSource[] array = new TSource[genericCollection.Count];
+                    genericCollection.CopyTo(array, 0);
+                    return array;
                 }
-
-                const int initialLength = 4;
-                TSource[] array = new TSource[initialLength];
-                int length = 0;
-                do
+                case ICollection collection:
                 {
-                    if (array.Length == length)
+                    TSource[] array = new TSource[collection.Count];
+                    collection.CopyTo(array, 0);
+                    return array;
+                }
+                default:
+                {
+                    using (IEnumerator<TSource> iterator = source.GetEnumerator())
                     {
-                        Array.Resize(ref array, checked(length * 2)); // Double the size when full.
+                        if (!iterator.MoveNext()) // source is empty.
+                        {
+                            return new TSource[0];
+                        }
+
+                        const int initialLength = 4;
+                        TSource[] array = new TSource[initialLength];
+                        int length = 0;
+                        do
+                        {
+                            if (array.Length == length)
+                            {
+                                Array.Resize(ref array, checked(length * 2)); // Double the size when full.
+                            }
+                            array[length++] = iterator.Current;
+                        }
+                        while (iterator.MoveNext());
+                        Array.Resize(ref array, length); // Finalize the size when done.
+                        return array;
                     }
-                    array[length++] = iterator.Current;
                 }
-                while (iterator.MoveNext());
-                Array.Resize(ref array, length); // Finalize the size when done.
-                return array;
             }
         }
     }
@@ -123,12 +125,18 @@
 #if DEMO
         internal static IEnumerable<TResult> Cast<TResult>(this IEnumerable source)
         {
-            IEnumerable<TResult> generic = source as IEnumerable<TResult>;
-            if (generic != null)
+            foreach (object value in source)
+            {
+                yield return (TResult)value; // Deferred execution.
+            }
+        }
+
+        internal static IEnumerable<TResult> Cast<TResult>(this IEnumerable source)
+        {
+            if (source is IEnumerable<TResult> generic)
             {
                 return generic; // Cannot be compiled.
             }
-
             foreach (object value in source)
             {
                 yield return (TResult)value; // Deferred execution.
@@ -136,20 +144,23 @@
         }
 #endif
 
-        internal static IEnumerable<TResult> Cast<TResult>(this IEnumerable source) => 
-            source as IEnumerable<TResult> ?? source.CastGenerator<TResult>(); // Deferred execution.
-
-        private static IEnumerable<TResult> CastGenerator<TResult>(this IEnumerable source)
+        internal static IEnumerable<TResult> Cast<TResult>(this IEnumerable source)
         {
-            foreach (object value in source)
+            IEnumerable<TResult> CastGenerator()
             {
-                yield return (TResult)value; // Deferred execution.
+                foreach (object value in source)
+                {
+                    yield return (TResult)value; // Deferred execution.
+                }
             }
+            return source is IEnumerable<TResult> genericSource
+                ? genericSource
+                : CastGenerator(); // Deferred execution.
         }
 
-        #endregion
+#endregion
 
-        #region Generation
+#region Generation
 
         internal static IEnumerable<TResult> Empty<TResult>() => Array.Empty<TResult>();
 
@@ -194,9 +205,9 @@
             }
         }
 
-        #endregion
+#endregion
 
-        #region Filtering
+#region Filtering
 
         internal static IEnumerable<TSource> Where<TSource>(
             this IEnumerable<TSource> source,
@@ -236,9 +247,9 @@
             }
         }
 
-        #endregion
+#endregion
 
-        #region Mapping
+#region Mapping
 
         internal static IEnumerable<TResult> Select<TSource, TResult>(
             this IEnumerable<TSource> source, Func<TSource, TResult> selector)
@@ -318,9 +329,9 @@
             }
         }
 
-        #endregion
+#endregion
 
-        #region Grouping
+#region Grouping
 
         internal static IEnumerable<IGrouping<TKey, TSource>> GroupByWithToLookup<TSource, TKey>(
             this IEnumerable<TSource> source,
@@ -379,9 +390,9 @@
             }
         }
 
-        #endregion
+#endregion
 
-        #region Join
+#region Join
 
         internal static IEnumerable<TResult> Join<TOuter, TInner, TKey, TResult>(
             this IEnumerable<TOuter> outer,
@@ -420,9 +431,9 @@
             }
         }
 
-        #endregion
+#endregion
 
-        #region Concatenation
+#region Concatenation
 
         internal static IEnumerable<TSource> Concat<TSource>(
             this IEnumerable<TSource> first, IEnumerable<TSource> second)
@@ -438,9 +449,9 @@
             }
         }
 
-        #endregion
+#endregion
 
-        #region Set
+#region Set
 
         internal static IEnumerable<TSource> Distinct<TSource>(
             this IEnumerable<TSource> source, IEqualityComparer<TSource> comparer = null)
@@ -562,9 +573,9 @@
             }
         }
 
-        #endregion
+#endregion
 
-        #region Convolution
+#region Convolution
 
         internal static IEnumerable<TResult> Zip<TFirst, TSecond, TResult>(
             this IEnumerable<TFirst> first,
@@ -581,9 +592,9 @@
             }
         }
 
-        #endregion
+#endregion
 
-        #region Partioning
+#region Partioning
 
         internal static IEnumerable<TSource> Skip<TSource>(this IEnumerable<TSource> source, int count)
         {
@@ -691,14 +702,13 @@
             }
         }
 
-        #endregion
+#endregion
 
-        #region Element
+#region Element
 
         internal static TSource First<TSource>(this IEnumerable<TSource> source)
         {
-            IList<TSource> list = source as IList<TSource>;
-            if (list != null)
+            if (source is IList<TSource> list)
             {
                 if (list.Count > 0)
                 {
@@ -715,7 +725,6 @@
                     }
                 }
             }
-
             throw new InvalidOperationException("Sequence contains no elements.");
         }
 
@@ -734,8 +743,7 @@
 
         internal static TSource FirstOrDefault<TSource>(this IEnumerable<TSource> source)
         {
-            IList<TSource> list = source as IList<TSource>;
-            if (list != null)
+            if (source is IList<TSource> list)
             {
                 if (list.Count > 0)
                 {
@@ -772,8 +780,7 @@
 
         internal static TSource Last<TSource>(this IEnumerable<TSource> source)
         {
-            IList<TSource> list = source as IList<TSource>;
-            if (list != null)
+            if (source is IList<TSource> list)
             {
                 int count = list.Count;
                 if (count > 0)
@@ -803,8 +810,7 @@
 
         internal static TSource Last<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
-            IList<TSource> list = source as IList<TSource>;
-            if (list != null)
+            if (source is IList<TSource> list)
             {
                 for (int index = list.Count - 1; index >= 0; index--)
                 {
@@ -844,8 +850,7 @@
 
         internal static TSource LastOrDefault<TSource>(this IEnumerable<TSource> source)
         {
-            IList<TSource> list = source as IList<TSource>;
-            if (list != null)
+            if (source is IList<TSource> list)
             {
                 int count = list.Count;
                 if (count > 0)
@@ -876,8 +881,7 @@
         internal static TSource LastOrDefault<TSource>(
             this IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
-            IList<TSource> list = source as IList<TSource>;
-            if (list != null)
+            if (source is IList<TSource> list)
             {
                 for (int index = list.Count - 1; index >= 0; index--)
                 {
@@ -905,8 +909,7 @@
 
         internal static TSource ElementAt<TSource>(this IEnumerable<TSource> source, int index)
         {
-            IList<TSource> list = source as IList<TSource>;
-            if (list != null)
+            if (source is IList<TSource> list)
             {
                 return list[index];
             }
@@ -934,8 +937,7 @@
         {
             if (index >= 0)
             {
-                IList<TSource> list = source as IList<TSource>;
-                if (list != null)
+                if (source is IList<TSource> list)
                 {
                     if (index < list.Count)
                     {
@@ -962,8 +964,7 @@
 
         internal static TSource Single<TSource>(this IEnumerable<TSource> source)
         {
-            IList<TSource> list = source as IList<TSource>;
-            if (list != null)
+            if (source is IList<TSource> list)
             {
                 switch (list.Count)
                 {
@@ -1021,8 +1022,7 @@
 
         internal static TSource SingleOrDefault<TSource>(this IEnumerable<TSource> source)
         {
-            IList<TSource> list = source as IList<TSource>;
-            if (list != null)
+            if (source is IList<TSource> list)
             {
                 switch (list.Count)
                 {
@@ -1079,9 +1079,9 @@
             return default(TSource);
         }
 
-        #endregion
+#endregion
 
-        #region Aggregation
+#region Aggregation
 
         internal static TResult Aggregate<TSource, TAccumulate, TResult>(
             this IEnumerable<TSource> source,
@@ -1132,28 +1132,23 @@
 
         internal static int Count<TSource>(this IEnumerable<TSource> source)
         {
-            ICollection<TSource> genericCollection = source as ICollection<TSource>;
-            if (genericCollection != null)
+            switch (source)
             {
-                return genericCollection.Count;
+                case ICollection<TSource> genericCollection:
+                    return genericCollection.Count;
+                case ICollection collection:
+                    return collection.Count;
+                default:
+                    int count = 0;
+                    using (IEnumerator<TSource> iterator = source.GetEnumerator())
+                    {
+                        while (iterator.MoveNext())
+                        {
+                            count = checked(count + 1); // Comparing foreach loop, iterator.Current is never called.
+                        }
+                    }
+                    return count;
             }
-
-            ICollection collection = source as ICollection;
-            if (collection != null)
-            {
-                return collection.Count;
-            }
-
-            int count = 0;
-            using (IEnumerator<TSource> iterator = source.GetEnumerator())
-            {
-                while (iterator.MoveNext())
-                {
-                    count = checked(count + 1); // Comparing foreach loop, iterator.Current is never called.
-                }
-            }
-
-            return count;
         }
 
         internal static int Count<TSource>(
@@ -1290,9 +1285,9 @@
         internal static decimal Average<TSource>
             (this IEnumerable<TSource> source, Func<TSource, decimal> selector) => source.Select(selector).Average();
 
-        #endregion
+#endregion
 
-        #region Quantifiers
+#region Quantifiers
 
         internal static bool All<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate)
         {
@@ -1349,9 +1344,9 @@
             return false;
         }
 
-        #endregion
+#endregion
 
-        #region Equality
+#region Equality
 
         internal static bool SequenceEqual<TSource>(
             this IEnumerable<TSource> first,
@@ -1379,6 +1374,6 @@
             return true;
         }
 
-        #endregion
+#endregion
     }
 }
