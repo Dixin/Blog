@@ -1,6 +1,5 @@
 namespace Dixin.Linq.Introduction
 {
-#if NETFX
     using System;
     using System.Diagnostics;
     using System.Linq;
@@ -41,10 +40,10 @@ namespace Dixin.Linq.Introduction
 
     internal static partial class LinqToDocumentDB
     {
-        internal static void QueryExpression()
+        internal static void QueryExpression(string key)
         {
             using (DocumentClient client = new DocumentClient(
-                new Uri("https://dixin.documents.azure.com:443/"), "PrimaryKey"))
+                new Uri("https://dixin.documents.azure.com:443/"), key))
             {
                 IOrderedQueryable<Store> source = client.CreateDocumentQuery<Store>(
                     UriFactory.CreateDocumentCollectionUri("dixin", "Store")); // Get source.
@@ -62,10 +61,10 @@ namespace Dixin.Linq.Introduction
 
     internal static partial class LinqToDocumentDB
     {
-        internal static void QueryMethods()
+        internal static void QueryMethods(string key)
         {
             using (DocumentClient client = new DocumentClient(
-                new Uri("https://dixin.documents.azure.com:443/"), "PrimaryKey"))
+                new Uri("https://dixin.documents.azure.com:443/"), key))
             {
                 IOrderedQueryable<Store> source = client.CreateDocumentQuery<Store>(
                     UriFactory.CreateDocumentCollectionUri("dixin", "Store")); // Get source.
@@ -80,5 +79,4 @@ namespace Dixin.Linq.Introduction
             }
         }
     }
-#endif
 }

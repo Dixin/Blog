@@ -51,6 +51,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Dixin.Core", "Dixin.Core\Di
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dixin.Tests.Core", "Dixin.Tests.Core\Dixin.Tests.Core.csproj", "{B7441C55-E2E7-4CFF-AEC1-779D218A12BD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dixin.Console.Core", "Dixin.Console.Core\Dixin.Console.Core.csproj", "{0DBE7AD2-6B7A-4CB7-8249-90F1CAEFC63E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -181,6 +183,18 @@ Global
 		{B7441C55-E2E7-4CFF-AEC1-779D218A12BD}.Release|x64.Build.0 = Release|x64
 		{B7441C55-E2E7-4CFF-AEC1-779D218A12BD}.Release|x86.ActiveCfg = Release|x86
 		{B7441C55-E2E7-4CFF-AEC1-779D218A12BD}.Release|x86.Build.0 = Release|x86
+		{0DBE7AD2-6B7A-4CB7-8249-90F1CAEFC63E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DBE7AD2-6B7A-4CB7-8249-90F1CAEFC63E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DBE7AD2-6B7A-4CB7-8249-90F1CAEFC63E}.Debug|x64.ActiveCfg = Debug|x64
+		{0DBE7AD2-6B7A-4CB7-8249-90F1CAEFC63E}.Debug|x64.Build.0 = Debug|x64
+		{0DBE7AD2-6B7A-4CB7-8249-90F1CAEFC63E}.Debug|x86.ActiveCfg = Debug|x86
+		{0DBE7AD2-6B7A-4CB7-8249-90F1CAEFC63E}.Debug|x86.Build.0 = Debug|x86
+		{0DBE7AD2-6B7A-4CB7-8249-90F1CAEFC63E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DBE7AD2-6B7A-4CB7-8249-90F1CAEFC63E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DBE7AD2-6B7A-4CB7-8249-90F1CAEFC63E}.Release|x64.ActiveCfg = Release|x64
+		{0DBE7AD2-6B7A-4CB7-8249-90F1CAEFC63E}.Release|x64.Build.0 = Release|x64
+		{0DBE7AD2-6B7A-4CB7-8249-90F1CAEFC63E}.Release|x86.ActiveCfg = Release|x86
+		{0DBE7AD2-6B7A-4CB7-8249-90F1CAEFC63E}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
