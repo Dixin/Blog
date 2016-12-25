@@ -22,12 +22,11 @@
         internal static void Closure()
         {
             int outer = 1; // Outside the scope of function add.
-            Func<int> add = () =>
-                {
-                    int local = 2; // Inside the scope of function add.
-                    return local + outer;
-                };
-            Trace.WriteLine(add()); // 3
+            new Action(() =>
+            {
+                int local = 2; // Inside the scope of function add.
+                Trace.WriteLine(local + outer);
+            })(); // 3
         }
     }
 
@@ -36,24 +35,24 @@
         [CompilerGenerated]
         private sealed class DisplayClass0
         {
-            public int outer;
+            public int Outer;
 
-            internal int Add()
+            internal void Add()
             {
                 int local = 2;
-                return local + this.outer;
+                Trace.WriteLine(local + this.Outer);
             }
         }
 
-        internal static void Closure()
+        internal static void CompiledClosure()
         {
-            DisplayClass0 closure = new DisplayClass0();
-            closure.outer = 1;
-            Func<int> add = closure.Add;
-            Trace.WriteLine(add()); // 3
+            int outer = 1;
+            DisplayClass0 display = new DisplayClass0() { Outer = outer };
+            display.Add(); // 3
         }
     }
 
+#if DEMO
     internal static partial class Functions
     {
         internal static void Outer()
@@ -214,4 +213,5 @@
             // Code.
         }
     }
+#endif
 }

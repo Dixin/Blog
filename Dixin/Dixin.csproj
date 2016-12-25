@@ -415,6 +415,7 @@
     <Compile Include="Linq\CSharp\Composition.cs" />
     <Compile Include="Linq\CSharp\Curry.cs" />
     <Compile Include="Linq\CSharp\Immutability.cs" />
+    <Compile Include="Linq\CSharp\PatternMatch.cs" />
     <Compile Include="Linq\CSharp\Purity.cs" />
     <Compile Include="Linq\Lambda\ChurchAggregateList.Generic.cs" />
     <Compile Include="Linq\Lambda\ChurchNumeral.Generic.cs" />
@@ -490,6 +491,7 @@
     <Compile Include="Linq\LinqToXml\Manipulation.cs" />
     <Compile Include="Linq\LinqToXml\QueryMethods.cs" />
     <Compile Include="Linq\XExtensions.cs" />
+    <Compile Include="Linq\CSharp\LocalFunction.cs" />
     <Compile Include="Runtime\Serialization\Serializer.cs" />
     <Compile Include="Diagnostics\Tracing\Event.cs" />
     <Compile Include="Linq\LinqToXml\Modeling.cs" />

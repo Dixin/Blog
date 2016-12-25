@@ -414,36 +414,44 @@
         }
     }
 
+#if DEMO
     internal partial class Data
     {
-        internal bool InstanceEquals(Data other) => this.value == other.value;
+        private int value;
 
-        internal static bool StaticEquals(Data @this, Data other) => @this.value == other.value;
+        internal Data(int value) => this.value = value; // Constructor.
+
+        internal int ReadOnlyValue => this.value; // Rread only property.
+
+        internal int ReadWriteValue // Read write property.
+        {
+            get => this.value;
+            set => this.value = value;
+        }
+
+        internal bool Equals(Data other) => this.value == other.value; // Instance method.
+
+        internal static bool Equals(Data @this, Data other) => @this.value == other.value; // Static method.
+
+        internal void WriteLine() => Trace.WriteLine(this.value); // Method returning void.
+
+        internal object NotImplemented() => throw new NotImplementedException(); // Method throwing exception.
+
+        public static Data operator +(Data data1, Data Data) => new Data(data1.value + Data.value); // Operator.
+
+        public static explicit operator int(Data value) => value.value; // explicit convertion.
+
+        public static implicit operator Data(int value) => new Data(value); // implicit convertion.
     }
 
     internal static partial class DataExtensions
     {
-        internal static bool ExtensionEquals(Data @this, Data other) => @this.Value == other.Value;
-    }
-
-    internal partial class Data
-    {
-        internal void TraceLine() => Trace.WriteLine(this.value);
+        internal static bool Equals(Data @this, Data other) => @this.ReadOnlyValue == other.Value; // Extension method.
     }
 
     internal partial class Data : IComparable<Data>
     {
-        int IComparable<Data>.CompareTo(Data other) => this.value.CompareTo(other.value);
-    }
-
-#if DEMO
-    internal partial class Data
-    {
-        public static Data operator +(Data data1, Data data2) => new Data(data1.value + data2.value); // op_Addition method.
-
-        public static explicit operator int(Data value) => value.value; // op_Explicit method.
-
-        public static implicit operator Data(int value) => new Data(value); // op_Implicit method.
+        int IComparable<Data>.CompareTo(Data other) => this.value.CompareTo(other.value); // Explicit interface implementaion.
     }
 
     internal partial class Device
@@ -453,27 +461,31 @@
             get { return this.Price / 2; }
         }
     }
-#endif
+    //
 
     internal partial class Device
     {
         internal decimal HalfPrice => this.Price / 2; // get_HalfPrice method.
     }
+#endif
 
-#if DEMO
-    internal partial class Category
+    internal partial class Links
     {
         private readonly Uri[] links;
 
-        internal Category(Uri[] links)
-        {
-            this.links = links;
-        }
+        internal Links(Uri[] links) => this.links = links;
 
-        internal Uri this[int index] => this.links[index]; // get_Item method.
+        internal Uri this[long index] => this.links[index]; // Read only indexer.
+
+        internal Uri this[int index] // Read write indexer.
+        {
+            get => this.links[index];
+            set => this.links[index] = value;
+        }
     }
 
-    [Table(Name = "Production.Product")]
+#if DEMO
+        [Table(Name = "Production.Product")]
     public partial class Product : INotifyPropertyChanging, INotifyPropertyChanged
     {
         public Product()

@@ -337,6 +337,7 @@
     <Compile Include="Linq\CategoryTheory\CategoryTests.cs" />
     <Compile Include="Linq\CategoryTheory\LinqHelper.cs" />
     <Compile Include="Linq\Connection.cs" />
+    <Compile Include="Linq\CSharp\LocalFunctionsTests.cs" />
     <Compile Include="Linq\EntityFramework\ConcurrencyTests.cs" />
     <Compile Include="Linq\EntityFramework\LazinessTests.cs" />
     <Compile Include="Linq\EntityFramework\SaveChangesTests.cs" />
