@@ -415,7 +415,7 @@
     <Compile Include="Linq\CSharp\Composition.cs" />
     <Compile Include="Linq\CSharp\Curry.cs" />
     <Compile Include="Linq\CSharp\Immutability.cs" />
-    <Compile Include="Linq\CSharp\PatternMatch.cs" />
+    <Compile Include="Linq\CSharp\PatternMatching.cs" />
     <Compile Include="Linq\CSharp\Purity.cs" />
     <Compile Include="Linq\Lambda\ChurchAggregateList.Generic.cs" />
     <Compile Include="Linq\Lambda\ChurchNumeral.Generic.cs" />
@@ -596,7 +596,6 @@
     <Compile Include="Linq\Functional\Sequence`1.cs" />
     <Compile Include="Linq\Functional\EnumerableExtensions.Linq.cs" />
     <Compile Include="Linq\Functional\Lookup`1.cs" />
-    <Compile Include="Linq\CSharp\Closure.cs" />
     <Compile Include="Linq\CSharp\Variance.cs" />
     <Compile Include="Linq\CSharp\HigherOrder.cs" />
     <Compile Include="Linq\LinqToObjects\DeferredExecution.cs" />

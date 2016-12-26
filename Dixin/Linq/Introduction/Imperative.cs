@@ -79,8 +79,7 @@
             {
                 if (type.GetTypeInfo().BaseType == typeof(MulticastDelegate))
                 {
-                    List<Type> namespaceTypes;
-                    if (!delegateTypes.TryGetValue(type.Namespace, out namespaceTypes))
+                    if (!delegateTypes.TryGetValue(type.Namespace, out List<Type> namespaceTypes))
                     {
                         namespaceTypes = delegateTypes[type.Namespace] = new List<Type>();
                     }

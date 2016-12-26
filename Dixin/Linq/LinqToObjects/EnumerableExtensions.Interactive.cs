@@ -478,8 +478,7 @@
             IDictionary<TValue, IEnumerable<TResult>> sources,
             IEnumerable<TResult> defaultSource = null) => Defer(() =>
         {
-            IEnumerable<TResult> result;
-            if (!sources.TryGetValue(selector(), out result))
+            if (!sources.TryGetValue(selector(), out IEnumerable<TResult> result))
             {
                 result = defaultSource ?? Enumerable.Empty<TResult>();
             }

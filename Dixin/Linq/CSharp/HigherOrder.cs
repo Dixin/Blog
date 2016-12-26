@@ -5,6 +5,8 @@
     using System.Diagnostics;
     using System.Linq;
 
+    internal partial class Data { }
+
     internal static partial class Functions
     {
         internal static Data FirstOrder(Data value)
@@ -102,7 +104,7 @@
         internal static void Function()
         {
             Function value = Function; // Named function.
-            value = () => { }; // Anonymous function.
+            new Function(() => { })(); // Anonymous function.
         }
     }
 
@@ -139,6 +141,12 @@
         {
             const int outer = 1;
 
+            void AccessOuter()
+            {
+                const int local = 2;
+                int sum = local + outer;
+            }
+
             Function accessOuter = () =>
             {
                 const int local = 2;
@@ -164,6 +172,13 @@
 
         internal static void NestedFunction()
         {
+            void Outer()
+            {
+                void Inner()
+                {
+                }
+            }
+
             Function outer = () =>
             {
                 Function inner = () => { };

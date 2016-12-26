@@ -16,8 +16,7 @@
                 .Range(0, Math.Min(forcedDegreeOfParallelism, queue.Count))
                 .Select(_ => new Thread(() =>
                     {
-                        TSource value;
-                        while (queue.TryDequeue(out value))
+                        while (queue.TryDequeue(out TSource value))
                         {
                             action(value);
                         }

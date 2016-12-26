@@ -128,7 +128,7 @@
         }
 
         [CompilerGenerated]
-        private static int LocalBinarySearch<T>(int startIndex, int endIndex, ref Display1<T> display)
+        private static int CompiledLocalBinarySearch<T>(int startIndex, int endIndex, ref Display1<T> display)
         {
             if (startIndex > endIndex)
             {
@@ -141,31 +141,40 @@
                 return middleIndex;
             }
             return compare <= 0
-                ? LocalBinarySearch(middleIndex + 1, endIndex, ref display)
-                : LocalBinarySearch(startIndex, middleIndex - 1, ref display);
+                ? CompiledLocalBinarySearch(middleIndex + 1, endIndex, ref display)
+                : CompiledLocalBinarySearch(startIndex, middleIndex - 1, ref display);
         }
 
         internal static int CompiledBinarySearchWithClosure<T>(IList<T> source, T value, IComparer<T> comparer = null)
         {
             Display1<T> display = new Display1<T>()
-                {
-                    Source = source,
-                    Value = value,
-                    Comparer = comparer
-                };
-            return LocalBinarySearch(0, source.Count - 1, ref display);
+            {
+                Source = source,
+                Value = value,
+                Comparer = comparer
+            };
+            return CompiledLocalBinarySearch(0, source.Count - 1, ref display);
         }
 
-        private static void Function(int outer)
+        internal static void FunctionMember()
         {
-            void LocalFunction(int inner)
+            void LocalFunction()
             {
                 void LocalFunctionInLocalFunction()
                 {
-                    Trace.WriteLine(outer + inner);
-                    ;
                 }
             }
+        }
+
+        internal static Action AnonymousFunctionWithLocalFunction()
+        {
+            return () =>
+            {
+                void LocalFunction()
+                {
+                }
+                LocalFunction();
+            };
         }
 
         internal class Display
@@ -179,7 +188,7 @@
             }
         }
 
-        internal static void Closure2()
+        internal static void LocalFunctionClosure2()
         {
             int outer = 1; // Outside the scope of function Add.
             void Add()
@@ -203,10 +212,10 @@
             Trace.WriteLine(local + display.Outer);
         }
 
-        internal static void CompiledClosure()
+        internal static void CompiledLocalFunctionClosure()
         {
             int outer = 1; // Outside the scope of function Add.
-            Display0 display = new Display0() {Outer = outer};
+            Display0 display = new Display0() { Outer = outer };
             Add(ref display); // 3
         }
 
@@ -228,7 +237,7 @@
         internal static void CompiledOuter()
         {
             int outer = 1;
-            Display0 closure = new Display0 {Outer = outer};
+            Display0 closure = new Display0 { Outer = outer };
             Add(ref closure);
             closure.Outer = outer = 3;
             Add(ref closure);
@@ -288,7 +297,7 @@
             List<Action> localFunctions = new List<Action>();
             for (int outer = 0; outer < 3; outer++)
             {
-                Display2 display = new Display2() {CopyOfOuter = outer}; // outer is 0, 1, 2.
+                Display2 display = new Display2() { CopyOfOuter = outer }; // outer is 0, 1, 2.
                 // When outer changes, display.CopyOfOuter does not change.
                 localFunctions.Add(display.LocalFunction);
             } // display.CcopyOfOuter is 0, 1, 2.

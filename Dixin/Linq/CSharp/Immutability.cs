@@ -188,25 +188,128 @@
 
         internal static void TupleAndList()
         {
-            Tuple<string, decimal> tuple1 = new Tuple<string, decimal>("Surface Book", 1349.00M);
-            Tuple<string, decimal> tuple2 = Tuple.Create("Surface Book", 1349.00M);
+            ValueTuple<string, decimal> tuple = new ValueTuple<string, decimal>("Surface Book", 1349M);
             List<string> list = new List<string>() { "Surface Book", "1349.00M" };
         }
 
 #if DEMO
-        internal static var Method(var value) // Cannot be compiled.
+        internal static var Method(var values) // Cannot be compiled.
         {
-            var value1; // Cannot be compiled.
-            var value2 = null; // Cannot be compiled.
-            return value2;
+            return values;
         }
 #endif
 
-        internal static Tuple<string, decimal> Method(Tuple<string, decimal> value)
+        internal static ValueTuple<string, decimal> Method(ValueTuple<string, decimal> values)
         {
-            Tuple<string, decimal> value1;
-            Tuple<string, decimal> value2 = null;
-            return value2;
+            return values;
+        }
+
+        internal static void TupleTypeLiteral()
+        {
+            (string, decimal) tuple1 = ("Surface Pro 4", 899M);
+            // Compiled to: 
+            // ValueTuple<string, decimal> tuple1 = new ValueTuple<string, decimal>("Surface Pro 4", 899M);
+
+            (int, bool, (string, decimal)) tuple2 = (1, true, ("Surface Studio", 2999M));
+            // ValueTuple<int, bool, ValueTuple<string, decimal>> tuple2 = 
+            //    new ValueTuple<int, bool, ValueTuple<string, decimal>>(1, true, ("Surface Studio", 2999M))
+        }
+
+        internal static (string, decimal) MethodReturnMultipleValues()
+        // internal static ValueTuple<string, decimal> MethodReturnMultipleValues()
+        {
+            string returnValue1 = default(string);
+            int returnValue2 = default(int);
+
+            (string, decimal) Function() => (returnValue1, returnValue2);
+            // ValueTuple<string, decimal> Function() => new ValueTuple<string, decimal>(returnValue1, returnValue2);
+
+            Func<(string, decimal)> function = () => (returnValue1, returnValue2);
+            // Func<ValueTuple<string, decimal>> function = () => new ValueTuple<string, decimal>(returnValue1, returnValue2);
+
+            return (returnValue1, returnValue2);
+        }
+
+        internal static void ElementName()
+        {
+            (string Name, decimal Price) tuple1 = ("Surface Pro 4", 899M);
+            tuple1.Name.WriteLine();
+            tuple1.Price.WriteLine();
+            // Compiled to: 
+            // ValueTuple<string, decimal> tuple1 = new ValueTuple<string, decimal>("Surface Pro 4", 899M);
+            // TraceExtensions.WriteLine(tuple1.Item1);
+            // TraceExtensions.WriteLine(tuple1.Item2)
+
+            (string Name, decimal Price) tuple2 = (ProductNanme: "Surface Book", ProductPrice: 1349M);
+            tuple2.Name.WriteLine(); // Element names on the right are ignore.
+
+            var tuple3 = (Name: "Surface Studio", Price: 2999M);
+            tuple3.Name.WriteLine(); // Element names are available through var.
+
+            ValueTuple<string, decimal> tuple4 = (Name: "Xbox One", Price: 179M);
+            tuple4.Item1.WriteLine(); // Element names are not available on ValueTuple<T1, T2>.
+            tuple4.Item2.WriteLine();
+
+            (string Name, decimal Price) Function((string Name, decimal Price) tuple)
+            {
+                tuple.Name.WriteLine(); // Parameter element names are available in function.
+                return (tuple.Name, tuple.Price - 10M);
+            };
+            var tuple5 = Function(("Xbox One S", 299M));
+            tuple5.Name.WriteLine(); // Return value element names are available through var.
+            tuple5.Price.WriteLine();
+
+            Func<(string Name, decimal Price), (string Name, decimal Price)> function = tuple =>
+            {
+                tuple.Name.WriteLine(); // Parameter element names are available in function.
+                return (tuple.Name, tuple.Price - 100M);
+            };
+            var tuple6 = function(("HoloLens", 3000M));
+            tuple5.Name.WriteLine(); // Return value element names are available through var.
+            tuple5.Price.WriteLine();
+        }
+
+        internal static void DeconstructTuple()
+        {
+            (string, decimal) GetProductInfo() => ("HoLoLens", 3000M);
+            var (name, price) = GetProductInfo();
+            name.WriteLine(); // name is string.
+            price.WriteLine(); // price is decimal.
+        }
+    }
+
+    internal partial class Device
+    {
+        internal void Deconstruct(out string name, out string description, out decimal price)
+        {
+            name = this.Name;
+            description = this.Description;
+            price = this.Price;
+        }
+    }
+
+    internal static class DeviceExtensions
+    {
+        internal static void Deconstruct(this Device device, out string name, out string description, out decimal price)
+        {
+            name = device.Name;
+            description = device.Description;
+            price = device.Price;
+        }
+    }
+
+    internal static partial class Immutability
+    { 
+        internal static void DeconstructDevice()
+        {
+            Device GetDevice() => new Device() { Name = "Surface studio", Description = "All-in-one PC.", Price = 2999M };
+            var (name, description, price) = GetDevice();
+            // Compiled to:
+            // string name; string description; decimal prive;
+            // surfaceStudio.Deconstruct(out name, out description, out price);
+            name.WriteLine(); // Surface studio
+            description.WriteLine(); // All-in-one PC.
+            price.WriteLine(); // 2999
         }
     }
 }
@@ -260,6 +363,55 @@ namespace System
             }
             return 1;
         }
+
+        // Other members.
+    }
+}
+
+namespace System
+{
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Runtime.InteropServices;
+
+    internal interface ITupleInternal
+    {
+        int Size
+        {
+            get;
+        }
+
+        int GetHashCode(IEqualityComparer comparer);
+
+        string ToStringEnd();
+    }
+
+    [StructLayout(LayoutKind.Auto)]
+    public struct ValueTuple<T1, T2> : IEquatable<ValueTuple<T1, T2>>, IStructuralEquatable, IStructuralComparable, IComparable, IComparable<ValueTuple<T1, T2>>, ITupleInternal
+    {
+        public T1 Item1;
+
+        public T2 Item2;
+
+        public ValueTuple(T1 item1, T2 item2)
+        {
+            this.Item1 = item1;
+            this.Item2 = item2;
+        }
+
+        public override bool Equals(object obj) => obj is ValueTuple<T1, T2> tuple && this.Equals(tuple);
+
+        public bool Equals(ValueTuple<T1, T2> other) =>
+            EqualityComparer<T1>.Default.Equals(this.Item1, other.Item1)
+            && EqualityComparer<T2>.Default.Equals(this.Item2, other.Item2);
+
+        public int CompareTo(ValueTuple<T1, T2> other)
+        {
+            int compareItem1 = Comparer<T1>.Default.Compare(this.Item1, other.Item1);
+            return compareItem1 != 0 ? compareItem1 : Comparer<T2>.Default.Compare(this.Item2, other.Item2);
+        }
+
+        public override string ToString() => $"({this.Item1}, {this.Item2})";
 
         // Other members.
     }

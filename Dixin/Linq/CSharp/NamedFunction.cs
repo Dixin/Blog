@@ -421,7 +421,7 @@
 
         internal Data(int value) => this.value = value; // Constructor.
 
-        internal int ReadOnlyValue => this.value; // Rread only property.
+        internal int ReadOnlyValue => this.value; // Read only property.
 
         internal int ReadWriteValue // Read write property.
         {
@@ -437,6 +437,12 @@
 
         internal object NotImplemented() => throw new NotImplementedException(); // Method throwing exception.
 
+        internal int GetValue()
+        {
+            int LocalFunction() => this.value; // Local function.
+            return LocalFunction();
+        }
+
         public static Data operator +(Data data1, Data Data) => new Data(data1.value + Data.value); // Operator.
 
         public static explicit operator int(Data value) => value.value; // explicit convertion.
@@ -444,43 +450,29 @@
         public static implicit operator Data(int value) => new Data(value); // implicit convertion.
     }
 
-    internal static partial class DataExtensions
-    {
-        internal static bool Equals(Data @this, Data other) => @this.ReadOnlyValue == other.Value; // Extension method.
-    }
-
     internal partial class Data : IComparable<Data>
     {
         int IComparable<Data>.CompareTo(Data other) => this.value.CompareTo(other.value); // Explicit interface implementaion.
     }
 
-    internal partial class Device
+    internal static partial class DataExtensions
     {
-        internal decimal HalfPrice
-        {
-            get { return this.Price / 2; }
-        }
-    }
-    //
-
-    internal partial class Device
-    {
-        internal decimal HalfPrice => this.Price / 2; // get_HalfPrice method.
+        internal static bool Equals(Data @this, Data other) => @this.ReadOnlyValue == other.Value; // Extension method.
     }
 #endif
 
-    internal partial class Links
+    internal partial class Data
     {
-        private readonly Uri[] links;
+        private readonly int[] values;
 
-        internal Links(Uri[] links) => this.links = links;
+        internal Data(int[] values) => this.values = values;
 
-        internal Uri this[long index] => this.links[index]; // Read only indexer.
+        internal int this[long index] => this.values[index]; // Read only indexer.
 
-        internal Uri this[int index] // Read write indexer.
+        internal int this[int index] // Read write indexer.
         {
-            get => this.links[index];
-            set => this.links[index] = value;
+            get => this.values[index];
+            set => this.values[index] = value;
         }
     }
 

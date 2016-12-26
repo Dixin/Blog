@@ -605,12 +605,12 @@ namespace Dixin.Linq.CSharp
         {
             Device device = new Device();
             device.Name = "Surface Book";
-            device.Price = 1499;
+            device.Price = 1349M;
         }
 
         internal static void ObjectInitializer()
         {
-            Device device = new Device() { Name = "Surface Book", Price = 1499 };
+            Device device = new Device() { Name = "Surface Book", Price = 1349M };
         }
     }
 

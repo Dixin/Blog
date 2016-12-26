@@ -180,4 +180,50 @@
             })(1);
         }
     }
+
+    internal class DisplayClass
+    {
+        int outer = 0; // Outside the scope of method Add.
+
+        internal int Add()
+        {
+            int local = 1; // Inside the scope of method Add.
+            return local + this.outer; // 1.
+        }
+    }
+
+    internal static partial class Functions
+    {
+        internal static void AnonymousFunctionClosure()
+        {
+            int outer = 1; // Outside the scope of function add.
+            new Action(() =>
+            {
+                int local = 2; // Inside the scope of function add.
+                Trace.WriteLine(local + outer);
+            })(); // 3
+        }
+    }
+
+    internal static partial class CompiledFunctions
+    {
+        [CompilerGenerated]
+        private sealed class DisplayClass0
+        {
+            public int Outer;
+
+            internal void Add()
+            {
+                int local = 2;
+                Trace.WriteLine(local + this.Outer);
+            }
+        }
+
+        internal static void CompiledAnonymousFunctionClosure()
+        {
+            int outer = 1;
+            DisplayClass0 display = new DisplayClass0() { Outer = outer };
+            display.Add(); // 3
+        }
+    }
 }
