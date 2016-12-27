@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
   <PropertyGroup>
     <TargetFramework>netstandard1.6</TargetFramework>
-    <AssemblyName>Dixin.Core</AssemblyName>
+    <AssemblyName>Tutorial.Core</AssemblyName>
     <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.6' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
@@ -9,21 +9,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="**\*.cs" />
-    <Compile Include="..\Dixin\Linq\CategoryTheory\*.cs" />
-    <Compile Include="..\Dixin\Linq\CSharp\*.cs" />
-    <Compile Include="..\Dixin\Linq\Introduction\*.cs" />
-    <Compile Include="..\Dixin\Linq\Lambda\*.cs" />
-    <Compile Include="..\Dixin\Linq\LinqToObjects\*.cs" />
-    <Compile Include="..\Dixin\Linq\LinqToXml\*.cs" />
-    <Compile Include="..\Dixin\Linq\Parallel\*.cs" />
-    <Compile Include="..\Dixin\Linq\Tests\*.cs" />
-    <Compile Include="..\Dixin\Linq\*.cs" />
     <EmbeddedResource Include="**\*.resx" />
-    <EmbeddedResource Include="compiler\resources\**\*" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="EnterpriseLibrary.TransientFaultHandling.Core" Version="1.0.0" />
     <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="1.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.1.0" />
     <PackageReference Include="Microsoft.FSharp.Core.netcore" Version="1.0.0-alpha-161205" />
     <PackageReference Include="Mono.Cecil" Version="0.10.0-beta1-v2" />
     <PackageReference Include="MSTest.TestFramework">
@@ -53,10 +44,24 @@
     <PackageReference Include="System.Xml.XPath" Version="4.3.0" />
     <PackageReference Include="System.Xml.XPath.XDocument" Version="4.3.0" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="C:\Users\dixin\Documents\GitHub\CodeSnippets\Dixin.Shared\Linq\Resources\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="C:\Users\dixin\Documents\GitHub\CodeSnippets\Dixin.Shared\Linq\Resources\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
   <PropertyGroup Label="Configuration">
     <RootNamespace>Dixin</RootNamespace>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DefineConstants>$(DefineConstants);RELEASE</DefineConstants>
   </PropertyGroup>
+  <Import Project="..\Tutorial.Shared\Tutorial.Shared.projitems" Label="Shared" />
 </Project>

@@ -1,0 +1,17 @@
+﻿[
+    {
+        "id": "1424",
+        "Name": "Closeout Boutique",
+        "Address": {
+            "AddressType": "Main Office",
+            "AddressLine1": "1050 Oak Street",
+            "Location": {
+                "City": "Seattle",
+                "StateProvinceName": "Washington"
+            },
+            "PostalCode": "98104",
+            "CountryRegionName": "United States"
+        }
+    }
+    // More documents.
+]
