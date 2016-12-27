@@ -292,12 +292,12 @@
 
         internal static void TupleConstructor()
         {
-            Trace.WriteLine(new Tuple<bool, int, decimal, string>(true, int.MaxValue, decimal.MaxValue, string.Empty));
+            Trace.WriteLine(new ValueTuple<bool, int, decimal, string>(true, int.MaxValue, decimal.MaxValue, string.Empty));
         }
 
         internal static void TupleCreate()
         {
-            Trace.WriteLine(Tuple.Create(true, int.MaxValue, decimal.MaxValue, string.Empty));
+            Trace.WriteLine(ValueTuple.Create(true, int.MaxValue, decimal.MaxValue, string.Empty));
         }
     }
 
@@ -607,9 +607,9 @@ namespace System
     }
 
     [Serializable]
-    public class Tuple<T1, T2, T3, T4> : IStructuralEquatable, IStructuralComparable, IComparable, ITuple
+    public class ValueTuple<T1, T2, T3, T4> : IStructuralEquatable, IStructuralComparable, IComparable, ITuple
     {
-        public Tuple(T1 item1, T2 item2, T3 item3, T4 item4);
+        public ValueTuple(T1 item1, T2 item2, T3 item3, T4 item4);
 
         // Other members.
     }
@@ -617,11 +617,11 @@ namespace System
 
 namespace System
 {
-    public static class Tuple
+    public static class ValueTuple
     {
-        public static Tuple<T1, T2, T3, T4> Create<T1, T2, T3, T4>(T1 item1, T2 item2, T3 item3, T4 item4)
+        public static ValueTuple<T1, T2, T3, T4> Create<T1, T2, T3, T4>(T1 item1, T2 item2, T3 item3, T4 item4)
         {
-            return new Tuple<T1, T2, T3, T4>(item1, item2, item3, item4);
+            return new ValueTuple<T1, T2, T3, T4>(item1, item2, item3, item4);
         }
     }
 }
