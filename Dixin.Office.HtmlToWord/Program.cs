@@ -144,6 +144,10 @@
                         {
                             Trace.WriteLine(Invariant($"Downloading {picture.LinkFormat.SourceFullName}"));
                             picture.LinkFormat.SavePictureWithDocument = true;
+                            if (picture.Width > 470)
+                            {
+                                picture.Width = 470;
+                            }
                         });
 
             Trace.WriteLine(Invariant($"Applying template {template}"));
