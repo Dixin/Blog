@@ -49,8 +49,13 @@ CREATE TABLE [Production].[Product](
     /* Other ignored columns. */)
 GO
 
-ALTER TABLE [Production].[Product] ADD [RowVersion] rowversion NOT NULL
-GO
+BEGIN TRANSACTION
+ALTER TABLE [Warehouse].[StockItems] SET (SYSTEM_VERSIONING = OFF);   
+ALTER TABLE [Warehouse].[StockItems] ADD [RowVersion] rowversion NOT NULL;
+ALTER TABLE [Warehouse].[StockItems_Archive] ADD [RowVersion] rowversion NOT NULL;
+ALTER TABLE [Warehouse].[StockItems]    
+SET (SYSTEM_VERSIONING = ON (HISTORY_TABLE = [Warehouse].[StockItems_Archive]));   
+COMMIT;
 
 CREATE TABLE [Production].[ProductPhoto](
     [ProductPhotoID] int IDENTITY(1,1) NOT NULL

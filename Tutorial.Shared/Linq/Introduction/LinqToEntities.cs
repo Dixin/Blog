@@ -6,19 +6,19 @@
 
     using Dixin.Linq.EntityFramework;
 
-    using Product = Dixin.Linq.EntityFramework.Product;
+    using StockItem = Dixin.Linq.EntityFramework.StockItem;
 
     internal static partial class LinqToEntities
     {
         internal static void QueryExpression()
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
+            using (WideWorldImporters adventureWorks = new WideWorldImporters())
             {
-                IQueryable<Product> source = adventureWorks.Products; // Get source.
+                IQueryable<StockItem> source = adventureWorks.StockItems; // Get source.
                 IQueryable<string> query = from product in source
-                                           where product.ProductSubcategory.ProductCategory.Name == "Bikes"
-                                           orderby product.ListPrice
-                                           select product.Name; // Define query.
+                                           where product.Supplier.SupplierCategory.SupplierCategoryName == "Bikes"
+                                           orderby product.UnitPrice
+                                           select product.StockItemName; // Define query.
                 foreach (string result in query) // Execute query.
                 {
                     Trace.WriteLine(result);
@@ -31,13 +31,13 @@
     {
         internal static void QueryMethods()
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
+            using (WideWorldImporters adventureWorks = new WideWorldImporters())
             {
-                IQueryable<Product> source = adventureWorks.Products; // Get source.
+                IQueryable<StockItem> source = adventureWorks.StockItems; // Get source.
                 IQueryable<string> query = source
-                    .Where(product => product.ProductSubcategory.ProductCategory.Name == "Bikes")
-                    .OrderBy(product => product.ListPrice)
-                    .Select(product => product.Name); // Define query.
+                    .Where(product => product.Supplier.SupplierCategory.SupplierCategoryName == "Bikes")
+                    .OrderBy(product => product.UnitPrice)
+                    .Select(product => product.StockItemName); // Define query.
                 foreach (string result in query) // Execute query.
                 {
                     Trace.WriteLine(result);
@@ -50,13 +50,13 @@
     {
         internal static string[] ProductNames(string categoryName)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
+            using (WideWorldImporters adventureWorks = new WideWorldImporters())
             {
                 IQueryable<string> query =
-                    from product in adventureWorks.Products
-                    where product.ProductSubcategory.ProductCategory.Name == categoryName
-                    orderby product.ListPrice ascending
-                    select product.Name; // Define query.
+                    from product in adventureWorks.StockItems
+                    where product.Supplier.SupplierCategory.SupplierCategoryName == categoryName
+                    orderby product.UnitPrice ascending
+                    select product.StockItemName; // Define query.
                 return query.ToArray(); // Execute query.
             }
         }
@@ -66,13 +66,13 @@
     {
         internal static string[] ProductNames(string categoryName, int pageSize, int pageIndex)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
+            using (WideWorldImporters adventureWorks = new WideWorldImporters())
             {
                 IQueryable<string> query =
-                    (from product in adventureWorks.Products
-                     where product.ProductSubcategory.ProductCategory.Name == categoryName
-                     orderby product.ListPrice ascending
-                     select product.Name)
+                    (from product in adventureWorks.StockItems
+                     where product.Supplier.SupplierCategory.SupplierCategoryName == categoryName
+                     orderby product.UnitPrice ascending
+                     select product.StockItemName)
                     .Skip(pageSize * checked(pageIndex - 1))
                     .Take(pageSize); // Define query.
                 return query.ToArray(); // Execute query.
@@ -84,13 +84,13 @@
     {
         internal static string[] ProductNames2(string categoryName, int pageSize, int pageIndex)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
+            using (WideWorldImporters adventureWorks = new WideWorldImporters())
             {
                 IQueryable<string> query = adventureWorks
-                    .Products
-                    .Where(product => product.ProductSubcategory.ProductCategory.Name == categoryName)
-                    .OrderBy(product => product.ListPrice)
-                    .Select(product => product.Name)
+                    .StockItems
+                    .Where(product => product.Supplier.SupplierCategory.SupplierCategoryName == categoryName)
+                    .OrderBy(product => product.UnitPrice)
+                    .Select(product => product.StockItemName)
                     .Skip(pageSize * checked(pageIndex - 1))
                     .Take(pageSize); // Define query.
                 return query.ToArray(); // Execute query.

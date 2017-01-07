@@ -5,7 +5,6 @@
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
 #endif
-    using System.Diagnostics;
     using System.Linq;
 
 #if !NETFX
@@ -13,170 +12,163 @@
     using Microsoft.EntityFrameworkCore.ChangeTracking;
 #endif
 
+#if NETFX
+    using EntityEntry = System.Data.Entity.Infrastructure.DbEntityEntry;
+#endif
+
     internal static partial class Changes
     {
-        internal static ProductCategory Create()
+        internal static SupplierCategory Create(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                ProductCategory category = new ProductCategory() { Name = nameof(ProductCategory) };
-                ProductSubcategory subcategory = new ProductSubcategory() { Name = nameof(ProductSubcategory) };
-                adventureWorks.ProductSubcategories.Add(subcategory);
-                subcategory.ProductCategory = category;
-                // Equivalent to: category.ProductSubcategories.Add(subcategory);
-                Trace.WriteLine(adventureWorks.ChangeTracker.Entries()
-                    .Count(tracking => tracking.State == EntityState.Added)); // 2
-                Trace.WriteLine(category.ProductCategoryID); // 0
-                Trace.WriteLine(subcategory.ProductCategoryID); // 0
-                Trace.WriteLine(subcategory.ProductSubcategoryID); // 0
+            SupplierCategory category = new SupplierCategory() { SupplierCategoryName = nameof(SupplierCategory) };
+            category.SupplierCategoryID.WriteLine(); // 0
+            adventureWorks.SupplierCategories.Add(category);
+            EntityEntry tracking = adventureWorks.ChangeTracker.Entries().Single();
+            tracking.State.WriteLine(); // Added
 
-                Trace.WriteLine(adventureWorks.SaveChanges()); // 2
-                Trace.WriteLine(adventureWorks.ChangeTracker.Entries()
-                    .Count(tracking => tracking.State != EntityState.Unchanged)); // 0
-                Trace.WriteLine(category.ProductCategoryID); // 25
-                Trace.WriteLine(subcategory.ProductCategoryID); // 25
-                Trace.WriteLine(subcategory.ProductSubcategoryID); // 50
-                return category;
-            }
+            adventureWorks.SaveChanges().WriteLine(); // 1
+            category.SupplierCategoryID.WriteLine(); // 25
+            tracking.State.WriteLine(); // Unchanged
+            return category;
+        }
+
+        internal static StockGroup CreateWithRelationship(WideWorldImporters adventureWorks)
+        {
+            const string groupName = "USB";
+            StockGroup group = new StockGroup() { StockGroupName = groupName };
+            adventureWorks.StockItems.Where(item => item.StockItemName.StartsWith(groupName))
+                .Select(item => item.StockItemID)
+                .ForEach(id => group.StockItemStockGroups.Add(new StockItemStockGroup() { StockItemID = id }));
+            group.StockItemStockGroups.WriteLines(relationship => $"{relationship.StockGroupID}:{relationship.StockItemID}");
+            // 0:9 0:10 0:11 0:15 0:8 0:12 0:14 0:5 0:6 0:7 0:13 0:4 0:1 0:2
+            adventureWorks.StockGroups.Add(group);
+            adventureWorks.ChangeTracker.Entries().Count(tracking => tracking.State != EntityState.Unchanged).WriteLine(); // 15
+
+            adventureWorks.SaveChanges().WriteLine(); // 15
+
+            adventureWorks.ChangeTracker.Entries().Count(tracking => tracking.State != EntityState.Unchanged).WriteLine(); // 0
+            group.StockGroupID.WriteLine(); // 11
+            group.StockItemStockGroups.WriteLines(relationship => $"{relationship.StockGroupID}:{relationship.StockItemID}");
+            // 11:9 11:10 11:11 11:15 11:8 11:12 11:14 11:5 11:6 11:7 11:13 11:4 11:1 11:2
+            return group;
         }
     }
 
     internal static partial class Changes
     {
-        internal static void Update()
+        internal static void Update(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                ProductCategory category = adventureWorks.ProductCategories
-                    .Single(entity => entity.Name == "Bikes");
-                ProductSubcategory subcategory = adventureWorks.ProductSubcategories
-                    .Single(entity => entity.Name == nameof(ProductSubcategory));
-                Trace.WriteLine(
-                    $"({subcategory.ProductSubcategoryID}, {subcategory.Name}, {subcategory.ProductCategoryID})");
-                // (48, ProductSubcategory, 25)
+            SupplierCategory category = adventureWorks.SupplierCategories
+                .Single(entity => entity.SupplierCategoryName == "Bikes");
+            Supplier subcategory = adventureWorks.Suppliers
+                .Single(entity => entity.SupplierName == nameof(Supplier));
 
-                subcategory.Name = "Update"; // Update property.
-                subcategory.ProductCategory = category; // Update association (foreign key).
-                Trace.WriteLine(adventureWorks.ChangeTracker.Entries()
-                    .Count(tracking => tracking.State != EntityState.Unchanged)); // 1
-                Trace.WriteLine(
-                    $"({subcategory.ProductSubcategoryID}, {subcategory.Name}, {subcategory.ProductCategoryID})");
-                // (48, Update, 1)
+            $"({subcategory.SupplierID}, {subcategory.SupplierName}, {subcategory.SupplierCategoryID})".WriteLine();
+            // (48, ProductSubcategory, 25)
 
-                Trace.WriteLine(adventureWorks.SaveChanges()); // 1
-            }
+            subcategory.SupplierName = "Update"; // Update property.
+            subcategory.SupplierCategory = category; // Update association (foreign key).
+            adventureWorks.ChangeTracker.Entries().Count(tracking => tracking.State != EntityState.Unchanged)
+                .WriteLine(); // 1
+
+            $"({subcategory.SupplierID}, {subcategory.SupplierName}, {subcategory.SupplierCategoryID})"
+                .WriteLine(); // (48, Update, 1)
+
+            adventureWorks.SaveChanges().WriteLine(); // 1
         }
 
-        internal static void SaveNoChanges()
+        internal static void SaveNoChanges(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                ProductCategory category = adventureWorks.ProductCategories.Find(1);
-                string originalName = category.Name;
-                category.Name = Guid.NewGuid().ToString(); // Update property value.
-                category.Name = originalName; // Update property back to original value.
-                Trace.WriteLine(adventureWorks.ChangeTracker.HasChanges()); // False
-                Trace.WriteLine(adventureWorks.SaveChanges()); // 0
-            }
+            SupplierCategory category = adventureWorks.SupplierCategories.Find(1);
+            string originalName = category.SupplierCategoryName;
+            category.SupplierCategoryName = Guid.NewGuid().ToString(); // Update property value.
+            category.SupplierCategoryName = originalName; // Update property back to original value.
+            adventureWorks.ChangeTracker.HasChanges().WriteLine(); // False
+            adventureWorks.SaveChanges().WriteLine(); // 0
         }
 
-        internal static void UpdateWithoutRead(int categoryId)
+        internal static void UpdateWithoutRead(WideWorldImporters adventureWorks, int categoryId)
         {
-            ProductCategory category = new ProductCategory()
+            SupplierCategory category = new SupplierCategory()
             {
-                ProductCategoryID = categoryId,
-                Name = Guid.NewGuid().ToString()
+                SupplierCategoryID = categoryId,
+                SupplierCategoryName = Guid.NewGuid().ToString()
             };
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                adventureWorks.ProductCategories.Attach(category);
-#if NETFX
-                DbEntityEntry<ProductCategory> tracking = adventureWorks.ChangeTracker.Entries<ProductCategory>()
-                    .Single();
-#else
-                EntityEntry<ProductCategory> tracking = adventureWorks.ChangeTracker.Entries<ProductCategory>()
-                    .Single();
+            adventureWorks.SupplierCategories.Attach(category);
+            EntityEntry tracking = adventureWorks.ChangeTracker.Entries<SupplierCategory>()
+                .Single();
+            tracking.State.WriteLine(); // Unchanged
+            tracking.State = EntityState.Modified;
+            adventureWorks.SaveChanges().WriteLine(); // 1
+        }
+
+        internal static void Delete(WideWorldImporters adventureWorks)
+        {
+            Supplier subcategory = adventureWorks.Suppliers
+                .OrderByDescending(entity => entity.SupplierID).First();
+            adventureWorks.ChangeTracker.Entries().Count().WriteLine(); // 1
+            adventureWorks.ChangeTracker.Entries<Supplier>().Single().State.WriteLine(); // Unchanged
+
+            adventureWorks.Suppliers.Remove(subcategory);
+            adventureWorks.ChangeTracker.Entries<Supplier>().Single().State.WriteLine(); // Deleted
+            adventureWorks.SaveChanges().WriteLine(); // 1
+        }
+
+        internal static void DeleteWithoutRead(WideWorldImporters adventureWorks, int categoryId)
+        {
+            SupplierCategory category = new SupplierCategory() { SupplierCategoryID = categoryId };
+            adventureWorks.SupplierCategories.Attach(category);
+            adventureWorks.ChangeTracker.Entries().Count().WriteLine(); // 1
+            adventureWorks.ChangeTracker.Entries<SupplierCategory>().Single().State.WriteLine(); // Unchanged
+
+            adventureWorks.SupplierCategories.Remove(category);
+            adventureWorks.ChangeTracker.Entries<SupplierCategory>().Single().State.WriteLine(); // Deleted
+            adventureWorks.SaveChanges().WriteLine(); // 1.
+        }
+
+        internal static void DeleteWithAssociation(WideWorldImporters adventureWorks)
+        {
+            SupplierCategory category = adventureWorks.SupplierCategories.Find(1);
+            adventureWorks.ChangeTracker.Entries().Count().WriteLine(); // 1
+
+            adventureWorks.SupplierCategories.Remove(category);
+            adventureWorks.ChangeTracker.Entries().Count(tracking => tracking.State == EntityState.Deleted)
+                .WriteLine(); // 1
+            adventureWorks.SaveChanges().WriteLine();
+            // System.Data.Entity.Infrastructure.DbUpdateException: An error occurred while updating the entries. See the inner exception for details.
+            // ---> System.Data.Entity.Core.UpdateException: An error occurred while updating the entries. See the inner exception for details.
+            // ---> System.Data.SqlClient.SqlException: The DELETE statement conflicted with the REFERENCE constraint "FK_ProductSubcategory_ProductCategory_ProductCategoryID". The conflict occurred in database "D:\DIXIN\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\ADVENTUREWORKS_DATA.MDF", table "Production.ProductSubcategory", column 'ProductCategoryID'.
+        }
+
+        internal static void DeleteAllAssociated(WideWorldImporters adventureWorks)
+        {
+            Create(adventureWorks); // Create category "ProductCategory" and its subcategory "ProductSubcategory".
+            SupplierCategory category = adventureWorks.SupplierCategories
+#if !NETFX
+                .Include(entity => entity.Suppliers)
 #endif
-                Trace.WriteLine(tracking.State); // Unchanged
-                tracking.State = EntityState.Modified;
-                Trace.WriteLine(adventureWorks.SaveChanges()); // 1
-            }
+                .Single(entity => entity.SupplierCategoryName == nameof(SupplierCategory));
+            Supplier subcategory = category.Suppliers.Single();
+            adventureWorks.ChangeTracker.Entries().Count().WriteLine(); // 2
+
+            adventureWorks.SupplierCategories.Remove(category);
+            // Optional: adventureWorks.ProductSubcategories.Remove(subcategory);
+            adventureWorks.ChangeTracker.Entries().Count(tracking => tracking.State == EntityState.Deleted)
+                .WriteLine(); // 2
+            adventureWorks.SaveChanges().WriteLine(); // 2
         }
 
-        internal static void Delete()
+        internal static void UntrackedChanges(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                ProductSubcategory subcategory = adventureWorks.ProductSubcategories
-                    .OrderByDescending(entity => entity.ProductSubcategoryID).First();
-                Trace.WriteLine(adventureWorks.ChangeTracker.Entries().Count()); // 1
-                Trace.WriteLine(adventureWorks.ChangeTracker.Entries<ProductSubcategory>().Single().State); // Unchanged
-
-                adventureWorks.ProductSubcategories.Remove(subcategory);
-                Trace.WriteLine(adventureWorks.ChangeTracker.Entries<ProductSubcategory>().Single().State); // Deleted
-                Trace.WriteLine(adventureWorks.SaveChanges()); // 1
-            }
-        }
-
-        internal static void DeleteWithoutRead(int categoryId)
-        {
-            ProductCategory category = new ProductCategory() { ProductCategoryID = categoryId };
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                adventureWorks.ProductCategories.Attach(category);
-                Trace.WriteLine(adventureWorks.ChangeTracker.Entries().Count()); // 1
-                Trace.WriteLine(adventureWorks.ChangeTracker.Entries<ProductCategory>().Single().State); // Unchanged
-
-                adventureWorks.ProductCategories.Remove(category);
-                Trace.WriteLine(adventureWorks.ChangeTracker.Entries<ProductCategory>().Single().State); // Deleted
-                Trace.WriteLine(adventureWorks.SaveChanges()); // 1.
-            }
-        }
-
-        internal static void DeleteWithAssociation()
-        {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                ProductCategory category = adventureWorks.ProductCategories.Find(1);
-                Trace.WriteLine(adventureWorks.ChangeTracker.Entries().Count()); // 1
-
-                adventureWorks.ProductCategories.Remove(category);
-                Trace.WriteLine(adventureWorks.ChangeTracker.Entries()
-                    .Count(tracking => tracking.State == EntityState.Deleted)); // 1
-                Trace.WriteLine(adventureWorks.SaveChanges());
-                // System.Data.Entity.Infrastructure.DbUpdateException: An error occurred while updating the entries. See the inner exception for details.
-                // ---> System.Data.Entity.Core.UpdateException: An error occurred while updating the entries. See the inner exception for details.
-                // ---> System.Data.SqlClient.SqlException: The DELETE statement conflicted with the REFERENCE constraint "FK_ProductSubcategory_ProductCategory_ProductCategoryID". The conflict occurred in database "D:\DIXIN\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\ADVENTUREWORKS_DATA.MDF", table "Production.ProductSubcategory", column 'ProductCategoryID'.
-            }
-        }
-
-        internal static void DeleteAllAssociated()
-        {
-            Create(); // Create category "ProductCategory" and its subcategory "ProductSubcategory".
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                ProductCategory category = adventureWorks.ProductCategories
-                    .Single(entity => entity.Name == nameof(ProductCategory));
-                ProductSubcategory subcategory = category.ProductSubcategories.Single();
-                Trace.WriteLine(adventureWorks.ChangeTracker.Entries().Count()); // 2
-
-                adventureWorks.ProductCategories.Remove(category);
-                // Optional: adventureWorks.ProductSubcategories.Remove(subcategory);
-                Trace.WriteLine(adventureWorks.ChangeTracker.Entries()
-                    .Count(tracking => tracking.State == EntityState.Deleted)); // 2
-                Trace.WriteLine(adventureWorks.SaveChanges()); // 2
-            }
-        }
-
-        internal static void UntrackedChanges()
-        {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                ProductCategory untracked = adventureWorks.ProductCategories.AsNoTracking().First();
-                adventureWorks.ProductCategories.Remove(untracked);
-                Trace.WriteLine(adventureWorks.SaveChanges());
-                // InvalidOperationException: The object cannot be deleted because it was not found in the ObjectStateManager.
-            }
+            SupplierCategory untracked = adventureWorks.SupplierCategories.AsNoTracking().First();
+            adventureWorks.SupplierCategories.Remove(untracked);
+            adventureWorks.SaveChanges().WriteLine();
+#if NETFX
+            // InvalidOperationException: The object cannot be deleted because it was not found in the ObjectStateManager.
+#else
+            // Microsoft.EntityFrameworkCore.DbUpdateException: An error occurred while updating the entries. 
+            // ---> System.Data.SqlClient.SqlException: The DELETE statement conflicted with the REFERENCE constraint "FK_ProductSubcategory_ProductCategory_ProductCategoryID". The conflict occurred in database "C:\DATA\GITHUB\DATA\ADVENTUREWORKS_DATA.MDF", table "Production.ProductSubcategory", column 'ProductCategoryID'. The statement has been terminated.
+#endif
         }
     }
 }

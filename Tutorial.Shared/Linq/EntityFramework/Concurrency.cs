@@ -8,7 +8,6 @@ namespace Dixin.Linq.EntityFramework
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
 #endif
-    using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
 
@@ -27,7 +26,7 @@ namespace Dixin.Linq.EntityFramework
     {
         public static string ToRowVersionString(this byte[] rowVersion) =>
             $"0x{BitConverter.ToString(rowVersion).Replace("-", string.Empty)}";
-            // $"0x{BitConverter.ToUInt64(rowVersion.Reverse().ToArray(), 0).ToString("X16")}";
+        // $"0x{BitConverter.ToUInt64(rowVersion.Reverse().ToArray(), 0).ToString("X16")}";
     }
 
     internal partial class DbReaderWriter : IDisposable
@@ -55,46 +54,46 @@ namespace Dixin.Linq.EntityFramework
 
     internal static partial class Concurrency
     {
-        internal static void NoCheck(AdventureWorks adventureWorks1, AdventureWorks adventureWorks2) // Check no column, last client wins.
+        internal static void NoCheck(WideWorldImporters adventureWorks1, WideWorldImporters adventureWorks2, WideWorldImporters adventureWorks3) // Check no column, last client wins.
         {
             const int id = 1;
             using (DbReaderWriter readerWriter1 = new DbReaderWriter(adventureWorks1))
             using (DbReaderWriter readerWriter2 = new DbReaderWriter(adventureWorks2))
             {
-                ProductCategory categoryCopy1 = readerWriter1.Read<ProductCategory>(id);
-                ProductCategory categoryCopy2 = readerWriter2.Read<ProductCategory>(id);
+                SupplierCategory categoryCopy1 = readerWriter1.Read<SupplierCategory>(id);
+                SupplierCategory categoryCopy2 = readerWriter2.Read<SupplierCategory>(id);
 
-                readerWriter1.Write(() => categoryCopy1.Name = nameof(readerWriter1));
-                readerWriter2.Write(() => categoryCopy2.Name = nameof(readerWriter2)); // Win.
+                readerWriter1.Write(() => categoryCopy1.SupplierCategoryName = nameof(readerWriter1));
+                readerWriter2.Write(() => categoryCopy2.SupplierCategoryName = nameof(readerWriter2)); // Win.
             }
-            using (DbReaderWriter readerWriter3 = new DbReaderWriter(new AdventureWorks()))
+            using (DbReaderWriter readerWriter3 = new DbReaderWriter(adventureWorks3))
             {
-                ProductCategory category3 = readerWriter3.Read<ProductCategory>(id);
-                Trace.WriteLine(category3.Name); // readerWriter2
+                SupplierCategory category3 = readerWriter3.Read<SupplierCategory>(id);
+                category3.SupplierCategoryName.WriteLine(); // readerWriter2
             }
         }
     }
 
     internal static partial class Concurrency
     {
-        internal static void ConcurrencyCheck(AdventureWorks adventureWorks1, AdventureWorks adventureWorks2)
+        internal static void ConcurrencyCheck(WideWorldImporters adventureWorks1, WideWorldImporters adventureWorks2)
         {
             using (DbReaderWriter readerWriter1 = new DbReaderWriter(adventureWorks1))
             using (DbReaderWriter readerWriter2 = new DbReaderWriter(adventureWorks2))
             {
                 const int id = 1;
-                ProductPhoto photoCopy1 = readerWriter1.Read<ProductPhoto>(id);
-                ProductPhoto photoCopy2 = readerWriter2.Read<ProductPhoto>(id);
+                StockGroup photoCopy1 = readerWriter1.Read<StockGroup>(id);
+                StockGroup photoCopy2 = readerWriter2.Read<StockGroup>(id);
 
                 readerWriter1.Write(() =>
                 {
-                    photoCopy1.LargePhotoFileName = nameof(readerWriter1);
-                    photoCopy1.ModifiedDate = DateTime.Now;
+                    photoCopy1.StockGroupName = nameof(readerWriter1);
+                    //photoCopy1.ValidTo = DateTime.Now;
                 });
                 readerWriter2.Write(() =>
                 {
-                    photoCopy2.LargePhotoFileName = nameof(readerWriter2);
-                    photoCopy2.ModifiedDate = DateTime.Now;
+                    photoCopy2.StockGroupName = nameof(readerWriter2);
+                    //photoCopy2.ValidTo = DateTime.Now;
                 });
                 // System.Data.Entity.Infrastructure.DbUpdateConcurrencyException: Store update, insert, or delete statement affected an unexpected number of rows (0).Entities may have been modified or deleted since entities were loaded.See http://go.microsoft.com/fwlink/?LinkId=472540 for information on understanding and handling optimistic concurrency exceptions. 
                 // ---> System.Data.Entity.Core.OptimisticConcurrencyException: Store update, insert, or delete statement affected an unexpected number of rows (0).Entities may have been modified or deleted since entities were loaded.See http://go.microsoft.com/fwlink/?LinkId=472540 for information on understanding and handling optimistic concurrency exceptions.
@@ -102,7 +101,7 @@ namespace Dixin.Linq.EntityFramework
         }
     }
 
-    public partial class Product
+    public partial class StockItemHolding
     {
         [SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
@@ -112,20 +111,20 @@ namespace Dixin.Linq.EntityFramework
 
     internal static partial class Concurrency
     {
-        internal static void RowVersion()
+        internal static void RowVersion(WideWorldImporters adventureWorks1, WideWorldImporters adventureWorks2)
         {
-            using (DbReaderWriter readerWriter1 = new DbReaderWriter(new AdventureWorks()))
-            using (DbReaderWriter readerWriter2 = new DbReaderWriter(new AdventureWorks()))
+            using (DbReaderWriter readerWriter1 = new DbReaderWriter(adventureWorks1))
+            using (DbReaderWriter readerWriter2 = new DbReaderWriter(adventureWorks2))
             {
-                const int id = 999;
-                Product productCopy1 = readerWriter1.Read<Product>(id);
-                Trace.WriteLine(productCopy1.RowVersion.ToRowVersionString()); // 0x0000000000000803
-                Product productCopy2 = readerWriter2.Read<Product>(id);
-                Trace.WriteLine(productCopy2.RowVersion.ToRowVersionString()); // 0x0000000000000803
+                const int id = 1;
+                StockItemHolding productCopy1 = readerWriter1.Read<StockItemHolding>(id);
+                productCopy1.RowVersion.ToRowVersionString().WriteLine(); // 0x0000000000000803
+                StockItemHolding productCopy2 = readerWriter2.Read<StockItemHolding>(id);
+                productCopy2.RowVersion.ToRowVersionString().WriteLine(); // 0x0000000000000803
 
-                readerWriter1.Write(() => productCopy1.Name = nameof(readerWriter1));
-                Trace.WriteLine(productCopy1.RowVersion.ToRowVersionString()); // 0x00000000000324B1
-                readerWriter2.Write(() => readerWriter2.Set<Product>().Remove(productCopy2));
+                readerWriter1.Write(() => productCopy1.BinLocation = nameof(readerWriter1));
+                productCopy1.RowVersion.ToRowVersionString().WriteLine(); // 0x00000000000324B1
+                readerWriter2.Write(() => readerWriter2.Set<StockItemHolding>().Remove(productCopy2));
                 // System.Data.Entity.Infrastructure.DbUpdateConcurrencyException: Store update, insert, or delete statement affected an unexpected number of rows (0). Entities may have been modified or deleted since entities were loaded. See http://go.microsoft.com/fwlink/?LinkId=472540 for information on understanding and handling optimistic concurrency exceptions.
                 // ---> System.Data.Entity.Core.OptimisticConcurrencyException: Store update, insert, or delete statement affected an unexpected number of rows (0). Entities may have been modified or deleted since entities were loaded. See http://go.microsoft.com/fwlink/?LinkId=472540 for information on understanding and handling optimistic concurrency exceptions.
             }
@@ -155,50 +154,56 @@ namespace Dixin.Linq.EntityFramework
 
     internal static partial class Concurrency
     {
-        internal static void UpdateProduct(Action<EntityEntry> resolveProductConflict)
+        internal static void UpdateProduct(WideWorldImporters adventureWorks1, WideWorldImporters adventureWorks2, WideWorldImporters adventureWorks3, Action<EntityEntry> resolveProductConflict)
         {
-            const int id = 950;
-            using (DbReaderWriter readerWriter1 = new DbReaderWriter(new AdventureWorks()))
-            using (DbReaderWriter readerWriter2 = new DbReaderWriter(new AdventureWorks()))
+            const int id = 1;
+            using (DbReaderWriter readerWriter1 = new DbReaderWriter(adventureWorks1))
+            using (DbReaderWriter readerWriter2 = new DbReaderWriter(adventureWorks2))
             {
-                Product productCopy1 = readerWriter1.Read<Product>(id);
-                Product productCopy2 = readerWriter2.Read<Product>(id);
+                StockItemHolding productCopy1 = readerWriter1.Read<StockItemHolding>(id);
+                StockItemHolding productCopy2 = readerWriter2.Read<StockItemHolding>(id);
                 readerWriter1.Write(() =>
-                    {
-                        productCopy1.Name = nameof(readerWriter1);
-                        productCopy1.ListPrice = 100;
-                    });
+                {
+                    productCopy1.BinLocation = nameof(readerWriter1);
+                    productCopy1.QuantityOnHand = 100;
+                });
                 readerWriter2.Write(
                     change: () =>
-                        {
-                            productCopy2.Name = nameof(readerWriter2);
-                            productCopy2.ProductSubcategoryID = 1;
-                        },
+                    {
+                        productCopy2.BinLocation = nameof(readerWriter2);
+                        productCopy2.LastCostPrice = 0.1M;
+                    },
                     handleDbUpdateConcurrencyException: exception =>
-                        {
-                            // Logging.
-                            EntityEntry tracking = exception.Entries.Single();
-                            Product original = (Product)tracking.OriginalValues.ToObject();
-                            Product updateTo = (Product)tracking.CurrentValues.ToObject();
-                            Product database = productCopy1; // Values saved in database.
+                    {
+                        // Logging.
+                        EntityEntry tracking = exception.Entries.Single();
+#if NETFX
+                        StockItemHolding original = (StockItemHolding)tracking.OriginalValues.ToObject();
+#else
+                        PropertyValues originalValues = tracking.OriginalValues.Clone();
+                        originalValues.SetValues(tracking.OriginalValues);
+                        StockItemHolding original = (StockItemHolding)originalValues.ToObject();
+#endif
+                        StockItemHolding updateTo = (StockItemHolding)tracking.CurrentValues.ToObject();
+                        StockItemHolding database = productCopy1; // Values saved in database.
 
-                            Trace.WriteLine(
-                                $"Original:  ({original.Name},   {original.ListPrice}, {original.ProductSubcategoryID}, {original.RowVersion.ToRowVersionString()})");
-                            Trace.WriteLine(
-                                $"Database:  ({database.Name}, {database.ListPrice}, {database.ProductSubcategoryID}, {database.RowVersion.ToRowVersionString()})");
-                            Trace.WriteLine(
-                                $"Update to: ({updateTo.Name}, {updateTo.ListPrice}, {updateTo.ProductSubcategoryID})");
+                        $"Original:  ({original.BinLocation},   {original.LastCostPrice}, {original.QuantityOnHand}, {original.RowVersion.ToRowVersionString()})"
+                            .WriteLine();
+                        $"Database:  ({database.BinLocation}, {database.LastCostPrice}, {database.QuantityOnHand}, {database.RowVersion.ToRowVersionString()})"
+                            .WriteLine();
+                        $"Update to: ({updateTo.BinLocation}, {updateTo.LastCostPrice}, {updateTo.QuantityOnHand})"
+                            .WriteLine();
 
-                            // Resolve product conflict.
-                            resolveProductConflict(tracking);
-                        });
+                        // Resolve product conflict.
+                        resolveProductConflict(tracking);
+                    });
             }
 
-            using (DbReaderWriter readerWriter3 = new DbReaderWriter(new AdventureWorks()))
+            using (DbReaderWriter readerWriter3 = new DbReaderWriter(adventureWorks3))
             {
-                Product resolved = readerWriter3.Read<Product>(id);
-                Trace.WriteLine(
-                    $"Resolved:  ({resolved.Name}, {resolved.ListPrice}, {resolved.ProductSubcategoryID}, {resolved.RowVersion.ToRowVersionString()})");
+                StockItemHolding resolved = readerWriter3.Read<StockItemHolding>(id);
+
+                $"Resolved:  ({resolved.BinLocation}, {resolved.LastCostPrice}, {resolved.QuantityOnHand}, {resolved.RowVersion.ToRowVersionString()})".WriteLine();
             }
         }
     }
@@ -222,81 +227,85 @@ namespace Dixin.Linq.EntityFramework
 
     internal static partial class Concurrency
     {
-        internal static void UpdateProductDatabaseWins() =>
-            UpdateProduct(resolveProductConflict: tracking =>
-                {
-                    Trace.WriteLine(tracking.State); // Modified
-                    Trace.WriteLine(tracking.Property(nameof(Product.Name)).IsModified); // True
-                    Trace.WriteLine(tracking.Property(nameof(Product.ListPrice)).IsModified); // False
-                    Trace.WriteLine(tracking.Property(nameof(Product.ProductSubcategoryID)).IsModified); // True
+        internal static void UpdateProductDatabaseWins(WideWorldImporters adventureWorks1, WideWorldImporters adventureWorks2, WideWorldImporters adventureWorks3) =>
+            UpdateProduct(adventureWorks1, adventureWorks2, adventureWorks3, resolveProductConflict: tracking =>
+            {
+                tracking.State.WriteLine(); // Modified
+                tracking.Property(nameof(StockItem.StockItemName)).IsModified.WriteLine(); // True
+                tracking.Property(nameof(StockItem.UnitPrice)).IsModified.WriteLine(); // False
+                tracking.Property(nameof(StockItem.SupplierID)).IsModified.WriteLine(); // True
 
-                    tracking.Reload();
+                tracking.Reload();
 
-                    Trace.WriteLine(tracking.State); // Unchanged
-                    Trace.WriteLine(tracking.Property(nameof(Product.Name)).IsModified); // False
-                    Trace.WriteLine(tracking.Property(nameof(Product.ListPrice)).IsModified); // False
-                    Trace.WriteLine(tracking.Property(nameof(Product.ProductSubcategoryID)).IsModified); // False
-                });
+                tracking.State.WriteLine(); // Unchanged
+                tracking.Property(nameof(StockItem.StockItemName)).IsModified.WriteLine(); // False
+                tracking.Property(nameof(StockItem.UnitPrice)).IsModified.WriteLine(); // False
+                tracking.Property(nameof(StockItem.SupplierID)).IsModified.WriteLine(); // False
+            });
         // Original:  (ML Crankset,   256.4900, 8, 0x00000000000007D1)
         // Database:  (readerWriter1, 100.0000, 8, 0x0000000000036335)
         // Update to: (readerWriter2, 256.4900, 1)
         // Resolved:  (readerWriter1, 100.0000, 8, 0x0000000000036335)
 
-        internal static void UpdateProductClientWins() =>
-            UpdateProduct(resolveProductConflict: tracking =>
-                {
-                    PropertyValues databaseValues = tracking.GetDatabaseValues();
-                    // Refresh original values, which go to WHERE clause.
-                    tracking.OriginalValues.SetValues(databaseValues);
+        internal static void UpdateProductClientWins(WideWorldImporters adventureWorks1, WideWorldImporters adventureWorks2, WideWorldImporters adventureWorks3) =>
+            UpdateProduct(adventureWorks1, adventureWorks2, adventureWorks3, resolveProductConflict: tracking =>
+            {
+                PropertyValues databaseValues = tracking.GetDatabaseValues();
+                // Refresh original values, which go to WHERE clause.
+                tracking.OriginalValues.SetValues(databaseValues);
 
-                    Trace.WriteLine(tracking.State); // Modified
-                    Trace.WriteLine(tracking.Property(nameof(Product.Name)).IsModified); // True
-                    Trace.WriteLine(tracking.Property(nameof(Product.ListPrice)).IsModified); // True
-                    Trace.WriteLine(tracking.Property(nameof(Product.ProductSubcategoryID)).IsModified); // True
-                });
+                tracking.State.WriteLine(); // Modified
+                tracking.Property(nameof(StockItem.StockItemName)).IsModified.WriteLine(); // True
+                tracking.Property(nameof(StockItem.UnitPrice)).IsModified.WriteLine(); // True
+                tracking.Property(nameof(StockItem.SupplierID)).IsModified.WriteLine(); // True
+            });
         // Original:  (ML Crankset,   256.4900, 8, 0x00000000000007D1)
         // Database:  (readerWriter1, 100.0000, 8, 0x0000000000036336)
         // Update to: (readerWriter2, 256.4900, 1)
         // Resolved:  (readerWriter2, 256.4900, 1, 0x0000000000036337)
 
-        internal static void UpdateProductMergeClientAndDatabase() =>
-            UpdateProduct(resolveProductConflict: tracking =>
-                {
-                    PropertyValues databaseValues = tracking.GetDatabaseValues();
-                    PropertyValues originalValues = tracking.OriginalValues.Clone();
-                    // Refresh original values, which go to WHERE clause.
-                    tracking.OriginalValues.SetValues(databaseValues);
-                    // If database has an different value for a property, then retain the database value.
-#if NETFX
-                    databaseValues.PropertyNames // Navigation properties are not included.
-                        .Where(property => !object.Equals(originalValues[property], databaseValues[property]))
-                        .ForEach(property => tracking.Property(property).IsModified = false);
-#else
-                    databaseValues.Properties // Navigation properties are not included.
-                        .Where(property => !object.Equals(originalValues[property.Name], databaseValues[property.Name]))
-                        .ForEach(property => tracking.Property(property.Name).IsModified = false);
+        internal static void UpdateProductMergeClientAndDatabase(WideWorldImporters adventureWorks1, WideWorldImporters adventureWorks2, WideWorldImporters adventureWorks3) =>
+            UpdateProduct(adventureWorks1, adventureWorks2, adventureWorks3, resolveProductConflict: tracking =>
+            {
+                PropertyValues originalValues = tracking.OriginalValues.Clone();
+#if !NETFX
+                originalValues.SetValues(tracking.OriginalValues);
 #endif
-                    Trace.WriteLine(tracking.State); // Modified
-                    Trace.WriteLine(tracking.Property(nameof(Product.Name)).IsModified); // False
-                    Trace.WriteLine(tracking.Property(nameof(Product.ListPrice)).IsModified); // False
-                    Trace.WriteLine(tracking.Property(nameof(Product.ProductSubcategoryID)).IsModified); // True
-                });
+                PropertyValues databaseValues = tracking.GetDatabaseValues();
+                // Refresh original values, which go to WHERE clause.
+                tracking.OriginalValues.SetValues(databaseValues);
+                // If database has an different value for a property, then retain the database value.
+#if NETFX
+                databaseValues.PropertyNames // Navigation properties are not included.
+                    .Where(property => !object.Equals(originalValues[property], databaseValues[property]))
+                    .ForEach(property => tracking.Property(property).IsModified = false);
+#else
+                databaseValues.Properties // Navigation properties are not included.
+                    .Where(property => !object.Equals(originalValues[property.Name], databaseValues[property.Name]))
+                    .ForEach(property => tracking.Property(property.Name).IsModified = false);
+#endif
+                tracking.State.WriteLine(); // Modified
+                tracking.Property(nameof(StockItem.StockItemName)).IsModified.WriteLine(); // False
+                tracking.Property(nameof(StockItem.UnitPrice)).IsModified.WriteLine(); // False
+                tracking.Property(nameof(StockItem.SupplierID)).IsModified.WriteLine(); // True
+            });
         // Original:  (ML Crankset,   256.4900, 8, 0x00000000000007D1)
         // Database:  (readerWriter1, 100.0000, 8, 0x0000000000036338)
         // Update to: (readerWriter2, 256.4900, 1)
         // Resolved:  (readerWriter1, 100.0000, 1, 0x0000000000036339)
 
-        internal static void DeleteProductDatabaseWins(Action<EntityEntry> resolveProductConflict)
+        internal static void DeleteProductDatabaseWins(
+            WideWorldImporters adventureWorks1, WideWorldImporters adventureWorks2, WideWorldImporters adventureWorks3, Action<EntityEntry> resolveProductConflict)
         {
-            const int id = 950;
-            using (DbReaderWriter readerWriter1 = new DbReaderWriter(new AdventureWorks()))
-            using (DbReaderWriter readerWriter2 = new DbReaderWriter(new AdventureWorks()))
+            const int id = 1;
+            using (DbReaderWriter readerWriter1 = new DbReaderWriter(adventureWorks1))
+            using (DbReaderWriter readerWriter2 = new DbReaderWriter(adventureWorks2))
             {
-                Product productCopy1 = readerWriter1.Read<Product>(id);
-                Product productCopy2 = readerWriter2.Read<Product>(id);
-                readerWriter1.Write(() => readerWriter1.Set<Product>().Remove(productCopy1));
+                StockItem productCopy1 = readerWriter1.Read<StockItem>(id);
+                StockItem productCopy2 = readerWriter2.Read<StockItem>(id);
+                readerWriter1.Write(() => readerWriter1.Set<StockItem>().Remove(productCopy1));
                 readerWriter2.Write(
-                    change: () => readerWriter2.Set<Product>().Remove(productCopy2),
+                    change: () => readerWriter2.Set<StockItem>().Remove(productCopy2),
                     handleDbUpdateConcurrencyException: exception =>
                         {
                             EntityEntry tracking = exception.Entries.Single();
@@ -304,23 +313,24 @@ namespace Dixin.Linq.EntityFramework
                         });
             }
 
-            using (DbReaderWriter readerWriter3 = new DbReaderWriter(new AdventureWorks()))
+            using (DbReaderWriter readerWriter3 = new DbReaderWriter(adventureWorks3))
             {
-                Trace.WriteLine(readerWriter3.Read<Product>(id) == null);
+                (readerWriter3.Read<StockItem>(id) == null).WriteLine();
             }
         }
 
-        internal static void DeleteProductClientWins(Action<EntityEntry> resolveProductConflict)
+        internal static void DeleteProductClientWins(
+            WideWorldImporters adventureWorks1, WideWorldImporters adventureWorks2, WideWorldImporters adventureWorks3, Action<EntityEntry> resolveProductConflict)
         {
-            const int id = 950;
-            using (DbReaderWriter readerWriter1 = new DbReaderWriter(new AdventureWorks()))
-            using (DbReaderWriter readerWriter2 = new DbReaderWriter(new AdventureWorks()))
+            const int id = 1;
+            using (DbReaderWriter readerWriter1 = new DbReaderWriter(adventureWorks1))
+            using (DbReaderWriter readerWriter2 = new DbReaderWriter(adventureWorks2))
             {
-                Product productCopy1 = readerWriter1.Read<Product>(id);
-                Product productCopy2 = readerWriter2.Read<Product>(id);
-                readerWriter1.Write(() => readerWriter1.Set<Product>().Remove(productCopy1));
+                StockItem productCopy1 = readerWriter1.Read<StockItem>(id);
+                StockItem productCopy2 = readerWriter2.Read<StockItem>(id);
+                readerWriter1.Write(() => readerWriter1.Set<StockItem>().Remove(productCopy1));
                 readerWriter2.Write(
-                    change: () => readerWriter2.Set<Product>().Remove(productCopy2),
+                    change: () => readerWriter2.Set<StockItem>().Remove(productCopy2),
                     handleDbUpdateConcurrencyException: exception =>
                     {
                         EntityEntry tracking = exception.Entries.Single();
@@ -328,9 +338,9 @@ namespace Dixin.Linq.EntityFramework
                     });
             }
 
-            using (DbReaderWriter readerWriter3 = new DbReaderWriter(new AdventureWorks()))
+            using (DbReaderWriter readerWriter3 = new DbReaderWriter(adventureWorks3))
             {
-                Trace.WriteLine(readerWriter3.Read<Product>(id) == null);
+                (readerWriter3.Read<StockItem>(id) == null).WriteLine();
             }
         }
     }
@@ -453,6 +463,9 @@ namespace Dixin.Linq.EntityFramework
                         {
                             // When entity is already updated, refresh original values, which go to WHERE clause.
                             PropertyValues originalValues = tracking.OriginalValues.Clone();
+#if !NETFX
+                            originalValues.SetValues(tracking.OriginalValues);
+#endif
                             tracking.OriginalValues.SetValues(databaseValues);
                             // If database has an different value for a property, then retain the database value.
 #if NETFX
@@ -475,23 +488,19 @@ namespace Dixin.Linq.EntityFramework
 
     internal static partial class Concurrency
     {
-        internal static void SaveChanges()
+        internal static void SaveChanges(WideWorldImporters adventureWorks1, WideWorldImporters adventureWorks2)
         {
-            using (AdventureWorks adventureWorks1 = new AdventureWorks())
-            using (AdventureWorks adventureWorks2 = new AdventureWorks())
-            {
-                const int id = 950;
-                Product productCopy1 = adventureWorks1.Products.Find(id);
-                Product productCopy2 = adventureWorks2.Products.Find(id);
+            const int id = 1;
+            StockItem productCopy1 = adventureWorks1.StockItems.Find(id);
+            StockItem productCopy2 = adventureWorks2.StockItems.Find(id);
 
-                productCopy1.Name = nameof(adventureWorks1);
-                productCopy1.ListPrice = 100;
-                adventureWorks1.SaveChanges();
+            productCopy1.StockItemName = nameof(adventureWorks1);
+            productCopy1.UnitPrice = 100;
+            adventureWorks1.SaveChanges();
 
-                productCopy2.Name = nameof(adventureWorks2);
-                productCopy2.ProductSubcategoryID = 1;
-                adventureWorks2.SaveChanges(RefreshConflict.MergeClientAndStore);
-            }
+            productCopy2.StockItemName = nameof(adventureWorks2);
+            productCopy2.SupplierID = 1;
+            adventureWorks2.SaveChanges(RefreshConflict.MergeClientAndStore);
         }
     }
 }

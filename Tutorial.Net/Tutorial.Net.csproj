@@ -254,7 +254,6 @@
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Common\AppDomainData.cs" />
-    <Compile Include="Linq\EntityFramework\AdventureWorks.Views.cs" />
     <Compile Include="Linq\EntityFramework\EntityDataModel\AdventureWorks.Designer.cs">
       <DependentUpon>AdventureWorks.edmx</DependentUpon>
       <AutoGen>True</AutoGen>

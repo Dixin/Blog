@@ -1,40 +1,59 @@
 ﻿namespace Dixin.Linq.EntityFramework
 {
+#if !NETFX
+    using System;
+#endif
     using System.Data.Common;
 #if NETFX
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
-#else
-    using System.Data.SqlClient;
 #endif
-    using System.Diagnostics;
+    using System.Data.SqlClient;
     using System.Linq;
 
 #if !NETFX
     using Microsoft.EntityFrameworkCore;
 #endif
 
-    public partial class AdventureWorks : DbContext
-    {
 #if NETFX
-        public AdventureWorks()
-            : base(ConnectionStrings.AdventureWorks)
+    public partial class WideWorldImporters : DbContext
+    {
+        public WideWorldImporters(DbConnection connection = null)
+            : base(
+                  existingConnection: connection ?? new SqlConnection(ConnectionStrings.AdventureWorks),
+                  contextOwnsConnection: connection == null)
         {
         }
-#else
-        public AdventureWorks(DbConnection connection = null)
-            : base(new DbContextOptionsBuilder<AdventureWorks>().UseSqlServer(
-                connection ?? new SqlConnection(ConnectionStrings.AdventureWorks)).Options)
-        {
-        }
-#endif
     }
+#else
+    public partial class WideWorldImporters : DbContext
+    {
+        public WideWorldImporters(DbConnection connection = null)
+            : base(new DbContextOptionsBuilder<WideWorldImporters>().UseSqlServer(
+                connection ?? new SqlConnection(ConnectionStrings.AdventureWorks),
+                option => option.EnableRetryOnFailure(maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null)).Options)
+        {
+        }
+    }
+#endif
+
+#if DEMO
+    public class RetryConfiguration : DbConfiguration
+    {
+        public RetryConfiguration()
+        {
+            this.SetExecutionStrategy(
+                providerInvariantName: "System.Data.SqlClient",
+                getExecutionStrategy: () => new SqlAzureExecutionStrategy(maxRetryCount: 5, maxDelay: TimeSpan.FromSeconds(30)));
+        }
+    }
+#endif
 
     internal static partial class Query
     {
         internal static void Dispose()
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
+            using (WideWorldImporters adventureWorks = new WideWorldImporters())
             {
                 // Unit of work.
             }
@@ -45,22 +64,21 @@
     {
         internal static void Table()
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
+            using (WideWorldImporters adventureWorks = new WideWorldImporters())
             {
-                IQueryable<ProductCategory> allRowsInTable = adventureWorks.ProductCategories;
-                allRowsInTable.ForEach(categoryRow => Trace.WriteLine(
-                    $"{categoryRow.ProductCategoryID}:{categoryRow.Name}"));
+                IQueryable<SupplierCategory> allRowsInTable = adventureWorks.SupplierCategories;
+                allRowsInTable.WriteLines(categoryRow => $"{categoryRow.SupplierCategoryID}:{categoryRow.SupplierCategoryName}");
                 // 1:Bikes 2:Components 3:Clothing 4:Accessories 
             }
         }
     }
 
 #if NETFX
-    public partial class AdventureWorks
+    public partial class WideWorldImporters
     {
-        static AdventureWorks()
+        static WideWorldImporters()
         {
-            Database.SetInitializer(new NullDatabaseInitializer<AdventureWorks>()); // Call once.
+            Database.SetInitializer(new NullDatabaseInitializer<WideWorldImporters>()); // Call once.
             // Equivalent to: Database.SetInitializer<AdventureWorks>(null);
         }
     }

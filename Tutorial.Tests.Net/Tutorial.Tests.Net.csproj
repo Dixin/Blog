@@ -219,15 +219,6 @@
     <Compile Include="..\Tools\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Linq\LinqToSql\ChangesTests.cs" />
-    <Compile Include="Linq\LinqToSql\ConcurrencyTests.cs" />
-    <Compile Include="Linq\LinqToSql\FunctionsTests.cs" />
-    <Compile Include="Linq\LinqToSql\LazinessTests.cs" />
-    <Compile Include="Linq\LinqToSql\LogTests.cs" />
-    <Compile Include="Linq\LinqToSql\PerformanceTests.cs" />
-    <Compile Include="Linq\LinqToSql\QueryMethodsTests.cs" />
-    <Compile Include="Linq\LinqToSql\TransactionTests.cs" />
-    <Compile Include="Linq\LinqToSql\TranslationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -244,6 +235,9 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Linq\" />
   </ItemGroup>
   <Import Project="..\Tutorial.Tests.Shared\Tutorial.Tests.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -6,7 +6,7 @@
     using System.Data.Entity;
     using System.Data.Entity.ModelConfiguration;
 
-    [Table(nameof(vProductAndDescription), Schema = AdventureWorks.Production)]
+    [Table(nameof(vProductAndDescription), Schema = WideWorldImporters.Purchasing)]
     public class vProductAndDescription
     {
         [Key]
@@ -29,7 +29,7 @@
         }
     }
 
-    public partial class AdventureWorks
+    public partial class WideWorldImporters
     {
         public DbSet<vProductAndDescription> ProductAndDescriptions { get; set; }
     }

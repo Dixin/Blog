@@ -1,113 +1,132 @@
 ﻿namespace Dixin.Linq.EntityFramework
 {
-#if NETFX
     using System;
     using System.Collections.Generic;
     using System.Data.Common;
+#if NETFX
     using System.Data.Entity;
     using System.Data.Entity.Core.EntityClient;
     using System.Data.Entity.Core.Objects;
     using System.Data.Entity.Infrastructure;
+#endif
     using System.Data.SqlClient;
     using System.Diagnostics;
     using System.Linq;
     using System.Linq.Expressions;
+    using System.Reflection;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
+#if NETFX
     using System.Transactions;
 
     using Dixin.Linq.EntityFramework.Full;
     using Dixin.Linq.EntityFramework.FullWithViews;
+#else
+
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.ChangeTracking;
+    using Microsoft.EntityFrameworkCore.Storage;
+    using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
+#endif
 
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
     using IsolationLevel = System.Data.IsolationLevel;
 
+#if NETFX
+    using EntityEntry = System.Data.Entity.Infrastructure.DbEntityEntry;
+    using PropertyValues = System.Data.Entity.Infrastructure.DbPropertyValues;
+    using IDbContextTransaction = System.Data.Entity.DbContextTransaction;
+#endif
+
+#if NETFX
     public class LegacyAdventureWorks : ObjectContext
     {
-        private ObjectSet<Product> products;
+        private ObjectSet<StockItem> products;
 
         public LegacyAdventureWorks()
-            : base((EntityConnection)new AdventureWorks().ObjectContext().Connection)
+            : base((EntityConnection)new WideWorldImporters().ObjectContext().Connection)
         {
         }
 
-        public ObjectSet<Product> Products => this.products ?? (this.products = this.CreateObjectSet<Product>());
+        public ObjectSet<StockItem> StockItems => this.products ?? (this.products = this.CreateObjectSet<StockItem>());
     }
 
     internal static class CompiledQueries
     {
         private static readonly Func<LegacyAdventureWorks, decimal, IQueryable<string>> GetProductNamesCompiled =
             CompiledQuery.Compile((LegacyAdventureWorks adventureWorks, decimal listPrice) => adventureWorks
-                .Products
-                .Where(product => product.ListPrice == listPrice)
-                .Select(product => product.Name));
+                .StockItems
+                .Where(product => product.UnitPrice == listPrice)
+                .Select(product => product.StockItemName));
 
         internal static IQueryable<string> GetProductNames
             (this LegacyAdventureWorks adventureWorks, decimal listPrice) =>
                 GetProductNamesCompiled(adventureWorks, listPrice);
     }
+#endif
 
     internal static partial class Performance
     {
         internal static void AddRange()
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
+            using (WideWorldImporters adventureWorks = new WideWorldImporters())
             {
-                adventureWorks.ProductCategories.Load(); // Warm up.
+                adventureWorks.SupplierCategories.Load(); // Warm up.
             }
-            using (AdventureWorks adventureWorks = new AdventureWorks())
+            using (WideWorldImporters adventureWorks = new WideWorldImporters())
             {
                 Stopwatch stopwatch = Stopwatch.StartNew();
-                IEnumerable<ProductCategory> categories = Enumerable
-                    .Range(0, 100).Select(index => new ProductCategory() { Name = index.ToString() });
-                DbSet<ProductCategory> repository = adventureWorks.ProductCategories;
-                foreach (ProductCategory category in categories)
+                IEnumerable<SupplierCategory> categories = Enumerable
+                    .Range(-100, 100).Select(tempId => new SupplierCategory() { SupplierCategoryID = tempId, SupplierCategoryName = tempId.ToString() });
+                DbSet<SupplierCategory> repository = adventureWorks.SupplierCategories;
+                foreach (SupplierCategory category in categories)
                 {
                     repository.Add(category);
                 }
                 stopwatch.Stop();
-                Trace.WriteLine(stopwatch.ElapsedMilliseconds); // 1682
+                stopwatch.ElapsedMilliseconds.WriteLine(); // 48
             }
-            using (AdventureWorks adventureWorks = new AdventureWorks())
+            using (WideWorldImporters adventureWorks = new WideWorldImporters())
             {
                 Stopwatch stopwatch = Stopwatch.StartNew();
-                IEnumerable<ProductCategory> categories = Enumerable
-                    .Range(0, 100).Select(index => new ProductCategory() { Name = index.ToString() });
-                adventureWorks.ProductCategories.AddRange(categories);
+                IEnumerable<SupplierCategory> categories = Enumerable
+                    .Range(-100, 100).Select(tempId => new SupplierCategory() { SupplierCategoryID = tempId, SupplierCategoryName = tempId.ToString() });
+                adventureWorks.SupplierCategories.AddRange(categories);
                 stopwatch.Stop();
-                Trace.WriteLine(stopwatch.ElapsedMilliseconds); // 2
+                stopwatch.ElapsedMilliseconds.WriteLine(); // 2
             }
         }
 
         internal static void RemoveRange()
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
+            using (WideWorldImporters adventureWorks = new WideWorldImporters())
             {
-                adventureWorks.Products.Load(); // Warm up.
+                adventureWorks.StockItems.Load(); // Warm up.
             }
-            using (AdventureWorks adventureWorks = new AdventureWorks())
+            using (WideWorldImporters adventureWorks = new WideWorldImporters())
             {
                 Stopwatch stopwatch = Stopwatch.StartNew();
-                Product[] products = adventureWorks.Products.ToArray();
-                DbSet<Product> repository = adventureWorks.Products;
-                foreach (Product product in products)
+                StockItem[] products = adventureWorks.StockItems.ToArray();
+                DbSet<StockItem> repository = adventureWorks.StockItems;
+                foreach (StockItem product in products)
                 {
                     repository.Remove(product);
                 }
                 stopwatch.Stop();
-                Trace.WriteLine(stopwatch.ElapsedMilliseconds); // 1682
+                stopwatch.ElapsedMilliseconds.WriteLine(); // 1682
             }
-            using (AdventureWorks adventureWorks = new AdventureWorks())
+            using (WideWorldImporters adventureWorks = new WideWorldImporters())
             {
                 Stopwatch stopwatch = Stopwatch.StartNew();
-                Product[] products = adventureWorks.Products.ToArray();
-                adventureWorks.Products.RemoveRange(products);
+                StockItem[] products = adventureWorks.StockItems.ToArray();
+                adventureWorks.StockItems.RemoveRange(products);
                 stopwatch.Stop();
-                Trace.WriteLine(stopwatch.ElapsedMilliseconds); // 2
+                stopwatch.ElapsedMilliseconds.WriteLine(); // 2
             }
         }
 
+#if NETFX
         internal static void MappingViews()
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -116,7 +135,7 @@
                 adventureWorks.Production_ProductCategories.Load();
             }
             stopwatch.Stop();
-            Trace.WriteLine(stopwatch.ElapsedMilliseconds); // 4786
+            stopwatch.ElapsedMilliseconds.WriteLine(); // 4786
 
             stopwatch.Restart();
             using (FullAdventureWorksWithViews adventureWorks = new FullAdventureWorksWithViews())
@@ -124,106 +143,107 @@
                 adventureWorks.Production_ProductCategories.Load();
             }
             stopwatch.Stop(); // 1340
-            Trace.WriteLine(stopwatch.ElapsedMilliseconds);
+            stopwatch.ElapsedMilliseconds.WriteLine();
+        }
+#endif
+
+        internal static void CachedEntity(WideWorldImporters adventureWorks)
+        {
+            SupplierCategory category1 = adventureWorks.SupplierCategories
+                .Single(entity => entity.SupplierCategoryID == 1);
+            category1.SupplierCategoryName = "Cache";
+
+            SupplierCategory category2 = adventureWorks.SupplierCategories
+                .Single(entity => entity.SupplierCategoryName == "Other Wholesaler");
+            category2.SupplierCategoryName.WriteLine(); // Cache
+            (category1 == category2).WriteLine(); // True
+
+#if NETFX
+            SupplierCategory category3 = adventureWorks.SupplierCategories
+                .SqlQuery(@"
+                    SELECT TOP (1) [SupplierCategories].[SupplierCategoryID], [SupplierCategories].[SupplierCategoryName], [SupplierCategories].[LastEditedBy]
+                    FROM [Purchasing].[SupplierCategories]
+                    ORDER BY [SupplierCategories].[SupplierCategoryID]")
+                .Single();
+#else
+            SupplierCategory category3 = adventureWorks.SupplierCategories
+                .FromSql(@"
+                    SELECT TOP (1) [SupplierCategories].[SupplierCategoryID], [SupplierCategories].[SupplierCategoryName], [SupplierCategories].[LastEditedBy]
+                    FROM [Purchasing].[SupplierCategories]
+                    ORDER BY [SupplierCategories].[SupplierCategoryID]")
+                .Single();
+#endif
+            (category1 == category3).WriteLine(); // True
         }
 
-        internal static void CachedEntity()
+        internal static void UncachedEntity(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                ProductCategory category1 = adventureWorks.ProductCategories
-                    .Single(entity => entity.ProductCategoryID == 1);
-                category1.Name = "Cache";
+            SupplierCategory category1 = adventureWorks.SupplierCategories
+                .Single(entity => entity.SupplierCategoryID == 1);
+            category1.SupplierCategoryName = "Cache";
 
-                ProductCategory category2 = adventureWorks.ProductCategories
-                    .Single(entity => entity.Name == "Bikes");
-                Trace.WriteLine(category2.Name); // Cache
-                Trace.WriteLine(category1 == category2); // True
+            SupplierCategory category2 = adventureWorks.SupplierCategories
+                .AsNoTracking().Single(entity => entity.SupplierCategoryName == "Other Wholesaler");
+            category2.SupplierCategoryName.WriteLine(); // Other Wholesaler
+            (category1 == category2).WriteLine(); // False
 
-                ProductCategory category3 = adventureWorks.ProductCategories
-                    .SqlQuery(@"
-                        SELECT TOP (1) [ProductCategory].[ProductCategoryID], [ProductCategory].[Name]
-                        FROM [Production].[ProductCategory]
-                        ORDER BY [ProductCategory].[ProductCategoryID]")
-                    .Single();
-                Trace.WriteLine(category1 == category3); // True
-            }
+#if NETFX
+            SupplierCategory category3 = adventureWorks.Database
+                .SqlQuery<SupplierCategory>(@"
+                    SELECT TOP (1) [SupplierCategories].[SupplierCategoryID], [SupplierCategories].[SupplierCategoryName], [SupplierCategories].[LastEditedBy]
+                    FROM [Purchasing].[SupplierCategories]
+                    ORDER BY [SupplierCategories].[SupplierCategoryID]")
+                .Single();
+#else
+            SupplierCategory category3 = adventureWorks.SupplierCategories
+                .FromSql(@"
+                    SELECT TOP (1) [SupplierCategories].[SupplierCategoryID], [SupplierCategories].[SupplierCategoryName], [SupplierCategories].[LastEditedBy]
+                    FROM [Purchasing].[SupplierCategories]
+                    ORDER BY [SupplierCategories].[SupplierCategoryID]")
+                .Single();
+#endif
+            (category1 == category3).WriteLine(); // False
         }
 
-        internal static void UncachedEntity()
+        internal static void Find(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                ProductCategory category1 = adventureWorks.ProductCategories
-                    .Single(entity => entity.ProductCategoryID == 1);
-                category1.Name = "Cache";
-
-                ProductCategory category2 = adventureWorks.ProductCategories
-                    .AsNoTracking().Single(entity => entity.Name == "Bikes");
-                Trace.WriteLine(category2.Name); // Bikes
-                Trace.WriteLine(category1 == category2); // False
-
-                ProductCategory category3 = adventureWorks.Database
-                    .SqlQuery<ProductCategory>(@"
-                        SELECT TOP (1) [ProductCategory].[ProductCategoryID], [ProductCategory].[Name]
-                        FROM [Production].[ProductCategory]
-                        ORDER BY [ProductCategory].[ProductCategoryID]")
-                    .Single();
-                Trace.WriteLine(category1 == category3); // False
-            }
+            StockItem[] products = adventureWorks.StockItems
+                .Where(product => product.StockItemName.StartsWith("Road")).ToArray(); // SELECT.
+            StockItem fromCache = adventureWorks.StockItems.Find(999); // No database query.
+            products.Contains(fromCache).WriteLine(); // True
         }
 
-        internal static void Find()
+        internal static void TranslationCache(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                Product[] products = adventureWorks.Products
-                    .Where(product => product.Name.StartsWith("Road")).ToArray(); // SELECT.
-                Product fromCache = adventureWorks.Products.Find(999); // No database query.
-                Trace.WriteLine(products.Contains(fromCache)); // True
-            }
+            int minLength = 1;
+            IQueryable<SupplierCategory> query = adventureWorks.SupplierCategories
+                .Where(category => category.SupplierCategoryName.Length >= minLength)
+                .Include(category => category.Suppliers);
+            query.Load();
         }
 
-        internal static void TranslationCache()
+        internal static void UncachedTranslation(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                int minLength = 1;
-                IQueryable<ProductCategory> query = adventureWorks.ProductCategories
-                    .Where(category => category.Name.Length >= minLength)
-                    .Include(category => category.ProductSubcategories);
-                query.Load();
-            }
+            IQueryable<SupplierCategory> queryWithConstant1 = adventureWorks.SupplierCategories
+                .Where(category => category.SupplierCategoryName.Length >= 1);
+            queryWithConstant1.Load();
+
+            IQueryable<SupplierCategory> queryWithConstant2 = adventureWorks.SupplierCategories
+                .Where(category => category.SupplierCategoryName.Length >= 10);
+            queryWithConstant2.Load();
         }
 
-        internal static void UncachedTranslation()
+        internal static void CachedTranslation(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                IQueryable<ProductCategory> queryWithConstant1 = adventureWorks.ProductCategories
-                    .Where(category => category.Name.Length >= 1);
-                queryWithConstant1.Load();
+            int minLength = 1;
+            IQueryable<SupplierCategory> queryWithClosure1 = adventureWorks.SupplierCategories
+                .Where(category => category.SupplierCategoryName.Length >= minLength);
+            queryWithClosure1.Load();
 
-                IQueryable<ProductCategory> queryWithConstant2 = adventureWorks.ProductCategories
-                    .Where(category => category.Name.Length >= 10);
-                queryWithConstant2.Load();
-            }
-        }
-
-        internal static void CachedTranslation()
-        {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                int minLength = 1;
-                IQueryable<ProductCategory> queryWithClosure1 = adventureWorks.ProductCategories
-                    .Where(category => category.Name.Length >= minLength);
-                queryWithClosure1.Load();
-
-                minLength = 10;
-                IQueryable<ProductCategory> queryWithClosure2 = adventureWorks.ProductCategories
-                    .Where(category => category.Name.Length >= minLength);
-                queryWithClosure2.Load();
-            }
+            minLength = 10;
+            IQueryable<SupplierCategory> queryWithClosure2 = adventureWorks.SupplierCategories
+                .Where(category => category.SupplierCategoryName.Length >= minLength);
+            queryWithClosure2.Load();
         }
 
         [CompilerGenerated]
@@ -238,135 +258,125 @@
             public int minLength;
         }
 
-        internal static void CompiledCachedTranslation()
+        internal static void CompiledCachedTranslation(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                int minLength = 1;
-                DisplayClass1 displayClass1 = new DisplayClass1() { minLength = minLength };
-                IQueryable<ProductCategory> queryWithClosure1 = adventureWorks.ProductCategories
-                    .Where(category => category.Name.Length >= displayClass1.minLength);
-                queryWithClosure1.Load();
+            int minLength = 1;
+            DisplayClass1 displayClass1 = new DisplayClass1() { minLength = minLength };
+            IQueryable<SupplierCategory> queryWithClosure1 = adventureWorks.SupplierCategories
+                .Where(category => category.SupplierCategoryName.Length >= displayClass1.minLength);
+            queryWithClosure1.Load();
 
-                minLength = 10;
-                DisplayClass1 displayClass2 = new DisplayClass1() { minLength = minLength };
-                IQueryable<ProductCategory> queryWithClosure2 = adventureWorks.ProductCategories
-                    .Where(category => category.Name.Length >= displayClass2.minLength);
-                queryWithClosure2.Load();
-            }
+            minLength = 10;
+            DisplayClass1 displayClass2 = new DisplayClass1() { minLength = minLength };
+            IQueryable<SupplierCategory> queryWithClosure2 = adventureWorks.SupplierCategories
+                .Where(category => category.SupplierCategoryName.Length >= displayClass2.minLength);
+            queryWithClosure2.Load();
         }
 
         internal static void Translation()
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
+            using (WideWorldImporters adventureWorks = new WideWorldImporters())
             {
-                adventureWorks.Products.Load(); // Warm up.
+                adventureWorks.StockItems.Load(); // Warm up.
             }
 
-            Func<string, Expression<Func<Product, bool>>> getPredicateWithConstant = startWith =>
+            Func<string, Expression<Func<StockItem, bool>>> getPredicateWithConstant = startWith =>
                 {
-                    ParameterExpression productParameterExpression = Expression.Parameter(typeof(Product), "product");
+                    ParameterExpression productParameterExpression = Expression.Parameter(typeof(StockItem), "product");
                     Func<string, bool> startsWithMethod = string.Empty.StartsWith;
-                    Expression<Func<Product, bool>> predicateExpression = Expression.Lambda<Func<Product, bool>>(
+                    Expression<Func<StockItem, bool>> predicateExpression = Expression.Lambda<Func<StockItem, bool>>(
                         Expression.Call(
-                            instance: Expression.Property(productParameterExpression, nameof(Product.Name)),
-                            method: startsWithMethod.Method,
+                            instance: Expression.Property(productParameterExpression, nameof(StockItem.StockItemName)),
+                            method: startsWithMethod.GetMethodInfo(),
                             arguments: Expression.Constant(startWith, typeof(string))),
                         productParameterExpression);
                     return predicateExpression;
                 };
 
-            Func<string, Expression<Func<Product, bool>>> getPredicateWithVariable =
-                startWith => product => product.Name.StartsWith(startWith);
+            Func<string, Expression<Func<StockItem, bool>>> getPredicateWithVariable =
+                startWith => product => product.StockItemName.StartsWith(startWith);
 
-            using (AdventureWorks adventureWorks = new AdventureWorks())
+            using (WideWorldImporters adventureWorks = new WideWorldImporters())
             {
                 Stopwatch stopwatch = Stopwatch.StartNew();
                 Enumerable.Range(0, 1000).ForEach(value =>
                     {
-                        IQueryable<Product> query = adventureWorks.Products
+                        IQueryable<StockItem> query = adventureWorks.StockItems
                             .Where(getPredicateWithConstant(value.ToString()));
                         query.Load();
                     });
                 stopwatch.Stop();
-                Trace.WriteLine(stopwatch.ElapsedMilliseconds);
+                stopwatch.ElapsedMilliseconds.WriteLine();
 
                 stopwatch.Restart();
                 Enumerable.Range(0, 1000).ForEach(value =>
                     {
-                        IQueryable<Product> query = adventureWorks.Products
+                        IQueryable<StockItem> query = adventureWorks.StockItems
                             .Where(getPredicateWithVariable(value.ToString()));
                         query.Load();
                     });
                 stopwatch.Stop();
-                Trace.WriteLine(stopwatch.ElapsedMilliseconds);
+                stopwatch.ElapsedMilliseconds.WriteLine();
             }
         }
 
-        internal static void UncachedSkipTake()
+        internal static void UncachedSkipTake(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                int skip = 1;
-                int take = 1;
-                IQueryable<ProductSubcategory> skipTakeWithVariable1 = adventureWorks.ProductSubcategories
-                    .OrderBy(p => p.ProductSubcategoryID).Skip(skip).Take(take);
-                skipTakeWithVariable1.Load();
+            int skip = 1;
+            int take = 1;
+            IQueryable<Supplier> skipTakeWithVariable1 = adventureWorks.Suppliers
+                .OrderBy(p => p.SupplierID).Skip(skip).Take(take);
+            skipTakeWithVariable1.Load();
 
-                skip = 10;
-                take = 10;
-                IQueryable<ProductSubcategory> skipTakeWithVariable2 = adventureWorks.ProductSubcategories
-                    .OrderBy(p => p.ProductSubcategoryID).Skip(skip).Take(take);
-                skipTakeWithVariable2.Load();
-            }
+            skip = 10;
+            take = 10;
+            IQueryable<Supplier> skipTakeWithVariable2 = adventureWorks.Suppliers
+                .OrderBy(p => p.SupplierID).Skip(skip).Take(take);
+            skipTakeWithVariable2.Load();
         }
 
-        internal static void CachedSkipTake()
+#if NETFX
+        internal static void CachedSkipTake(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                int skip = 1;
-                int take = 1;
-                IQueryable<ProductSubcategory> skipTakeWithClosure1 = adventureWorks.ProductSubcategories
-                    .OrderBy(p => p.ProductSubcategoryID).Skip(() => skip).Take(() => take);
-                skipTakeWithClosure1.Load();
+            int skip = 1;
+            int take = 1;
+            IQueryable<Supplier> skipTakeWithClosure1 = adventureWorks.Suppliers
+                .OrderBy(p => p.SupplierID).Skip(() => skip).Take(() => take);
+            skipTakeWithClosure1.Load();
 
-                skip = 10;
-                take = 10;
-                IQueryable<ProductSubcategory> skipTakeWithClosure2 = adventureWorks.ProductSubcategories
-                    .OrderBy(p => p.ProductSubcategoryID).Skip(() => skip).Take(() => take);
-                skipTakeWithClosure2.Load();
-            }
+            skip = 10;
+            take = 10;
+            IQueryable<Supplier> skipTakeWithClosure2 = adventureWorks.Suppliers
+                .OrderBy(p => p.SupplierID).Skip(() => skip).Take(() => take);
+            skipTakeWithClosure2.Load();
         }
+#endif
     }
 
     internal static partial class Performance
     {
-        internal static async Task Async()
+        internal static async Task Async(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                IQueryable<ProductCategory> categories = adventureWorks.ProductCategories;
-                await categories.ForEachAsync( // Async version of foreach/ForEach.
-                    category => Trace.WriteLine(category.Name));
+            IQueryable<SupplierCategory> categories = adventureWorks.SupplierCategories;
+            await categories.ForEachAsync( // Async version of foreach/ForEach.
+                category => category.SupplierCategoryName.WriteLine());
 
-                ProductSubcategory subcategory = await adventureWorks.ProductSubcategories
-                    .FirstAsync(entity => entity.Name.Contains("Bike")); // Async version of First.
-                Trace.WriteLine(subcategory.Name);
+            StockItem[] products = await adventureWorks.StockItems
+                .Where(product => product.UnitPrice <= 10)
+                .ToArrayAsync(); // Async version of ToArray.
 
-                Product[] products = await adventureWorks.Products
-                    .Where(product => product.ListPrice <= 10)
-                    .ToArrayAsync(); // Async version of ToArray.
+            Supplier subcategory = await adventureWorks.Suppliers
+                .FirstAsync(entity => entity.SupplierName.Contains("A Datum Corporation")); // Async version of First.
+            subcategory.SupplierName.WriteLine();
 
-                adventureWorks.Products.RemoveRange(products);
-                await adventureWorks.SaveChangesAsync(); // Async version of SaveChanges.
-            }
+            subcategory.SupplierName = nameof(Supplier);
+            await adventureWorks.SaveChangesAsync(); // Async version of SaveChanges.
         }
     }
 
     public static partial class DbEntityEntryExtensions
     {
-        public static async Task<DbEntityEntry> RefreshAsync(this DbEntityEntry tracking, RefreshConflict refreshMode)
+        public static async Task<EntityEntry> RefreshAsync(this EntityEntry tracking, RefreshConflict refreshMode)
         {
             switch (refreshMode)
             {
@@ -377,7 +387,7 @@
                     }
                 case RefreshConflict.ClientWins:
                     {
-                        DbPropertyValues databaseValues = await tracking.GetDatabaseValuesAsync();
+                        PropertyValues databaseValues = await tracking.GetDatabaseValuesAsync();
                         if (databaseValues == null)
                         {
                             tracking.State = EntityState.Detached;
@@ -390,18 +400,24 @@
                     }
                 case RefreshConflict.MergeClientAndStore:
                     {
-                        DbPropertyValues databaseValues = await tracking.GetDatabaseValuesAsync();
+                        PropertyValues databaseValues = await tracking.GetDatabaseValuesAsync();
                         if (databaseValues == null)
                         {
                             tracking.State = EntityState.Detached;
                         }
                         else
                         {
-                            DbPropertyValues originalValues = tracking.OriginalValues.Clone();
+                            PropertyValues originalValues = tracking.OriginalValues.Clone();
                             tracking.OriginalValues.SetValues(databaseValues);
+#if NETFX
                             databaseValues.PropertyNames
                                 .Where(property => !object.Equals(originalValues[property], databaseValues[property]))
                                 .ForEach(property => tracking.Property(property).IsModified = false);
+#else
+                            databaseValues.Properties
+                                .Where(property => !object.Equals(originalValues[property.Name], databaseValues[property.Name]))
+                                .ForEach(property => tracking.Property(property.Name).IsModified = false);
+#endif
                         }
                         break;
                     }
@@ -413,7 +429,7 @@
     public static partial class DbContextExtensions
     {
         public static async Task<int> SaveChangesAsync(
-            this DbContext context, Func<IEnumerable<DbEntityEntry>, Task> resolveConflictsAsync, int retryCount = 3)
+            this DbContext context, Func<IEnumerable<EntityEntry>, Task> resolveConflictsAsync, int retryCount = 3)
         {
             if (retryCount <= 0)
             {
@@ -435,7 +451,7 @@
         }
 
         public static async Task<int> SaveChangesAsync(
-            this DbContext context, Func<IEnumerable<DbEntityEntry>, Task> resolveConflictsAsync, RetryStrategy retryStrategy)
+            this DbContext context, Func<IEnumerable<EntityEntry>, Task> resolveConflictsAsync, RetryStrategy retryStrategy)
         {
             RetryPolicy retryPolicy = new RetryPolicy(
                 new TransientDetection<DbUpdateConcurrencyException>(), retryStrategy);
@@ -458,7 +474,7 @@
             return await context.SaveChangesAsync(
                 async conflicts =>
                 {
-                    foreach (DbEntityEntry tracking in conflicts)
+                    foreach (EntityEntry tracking in conflicts)
                     {
                         await tracking.RefreshAsync(refreshMode);
                     }
@@ -467,11 +483,11 @@
         }
 
         public static async Task<int> SaveChangesAsync(
-            this DbContext context, RefreshConflict refreshMode, RetryStrategy retryStrategy) => 
+            this DbContext context, RefreshConflict refreshMode, RetryStrategy retryStrategy) =>
                 await context.SaveChangesAsync(
                     async conflicts =>
                         {
-                            foreach (DbEntityEntry tracking in conflicts)
+                            foreach (EntityEntry tracking in conflicts)
                             {
                                 await tracking.RefreshAsync(refreshMode);
                             }
@@ -481,52 +497,53 @@
 
     internal static partial class Performance
     {
-        internal static async Task SaveChangesAsync()
+        internal static async Task SaveChangesAsync(WideWorldImporters adventureWorks1, WideWorldImporters adventureWorks2)
         {
-            using (AdventureWorks adventureWorks1 = new AdventureWorks())
-            using (AdventureWorks adventureWorks2 = new AdventureWorks())
-            {
-                const int id = 950;
-                Product productCopy1 = await adventureWorks1.Products.FindAsync(id);
-                Product productCopy2 = await adventureWorks2.Products.FindAsync(id);
+            const int id = 1;
+            StockItem productCopy1 = await adventureWorks1.StockItems.FindAsync(id);
+            StockItem productCopy2 = await adventureWorks2.StockItems.FindAsync(id);
 
-                productCopy1.Name = nameof(adventureWorks1);
-                productCopy1.ListPrice = 100;
-                await adventureWorks1.SaveChangesAsync();
+            productCopy1.StockItemName = nameof(adventureWorks1);
+            productCopy1.UnitPrice = 100;
+            await adventureWorks1.SaveChangesAsync();
 
-                productCopy2.Name = nameof(adventureWorks2);
-                productCopy2.ProductSubcategoryID = 1;
-                await adventureWorks2.SaveChangesAsync(RefreshConflict.MergeClientAndStore);
-            }
+            productCopy2.StockItemName = nameof(adventureWorks2);
+            productCopy2.SupplierID = 1;
+            await adventureWorks2.SaveChangesAsync(RefreshConflict.MergeClientAndStore);
         }
 
-        internal static async Task DbContextTransactionAsync()
+#if !NETFX
+        internal static async Task DbContextTransactionAsync(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            using (DbContextTransaction transaction = adventureWorks.Database.BeginTransaction(
+            await adventureWorks.Database.CreateExecutionStrategy().Execute(async () => 
+            {
+                using (IDbContextTransaction transaction = await adventureWorks.Database.BeginTransactionAsync(
                 IsolationLevel.ReadUncommitted))
-            {
-                try
                 {
-                    Trace.WriteLine(adventureWorks.QueryCurrentIsolationLevel()); // ReadUncommitted
+                    try
+                    {
+                        adventureWorks.QueryCurrentIsolationLevel().WriteLine(); // ReadUncommitted
 
-                    ProductCategory category = new ProductCategory() { Name = nameof(ProductCategory) };
-                    adventureWorks.ProductCategories.Add(category);
-                    Trace.WriteLine(await adventureWorks.SaveChangesAsync()); // 1
+                        SupplierCategory category = new SupplierCategory() { SupplierCategoryName = nameof(SupplierCategory) };
+                        adventureWorks.SupplierCategories.Add(category);
+                        adventureWorks.SaveChanges().WriteLine(); // 1
 
-                    Trace.WriteLine(await adventureWorks.Database.ExecuteSqlCommandAsync(
-                        "DELETE FROM [Production].[ProductCategory] WHERE [Name] = {0}",
-                        nameof(ProductCategory))); // 1
-                    transaction.Commit();
+                        adventureWorks.Database.ExecuteSqlCommand(
+                            sql: "DELETE FROM [Purchasing].[SupplierCategories] WHERE [SupplierCategoryName] = {0}",
+                            parameters: nameof(SupplierCategory)).WriteLine(); // 1
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
                 }
-                catch
-                {
-                    transaction.Rollback();
-                    throw;
-                }
-            }
+            });
         }
+#endif
 
+#if !NETFX
         internal static async Task DbTransactionAsync()
         {
             using (SqlConnection connection = new SqlConnection(ConnectionStrings.AdventureWorks))
@@ -536,25 +553,28 @@
                 {
                     try
                     {
-                        using (AdventureWorks adventureWorks = new AdventureWorks(connection))
+                        using (WideWorldImporters adventureWorks = new WideWorldImporters(connection))
                         {
-                            adventureWorks.Database.UseTransaction(transaction);
-                            Trace.WriteLine(adventureWorks.QueryCurrentIsolationLevel()); // Serializable
+                            await adventureWorks.Database.CreateExecutionStrategy().Execute(async () =>
+                            {
+                                adventureWorks.Database.UseTransaction(transaction);
+                                adventureWorks.QueryCurrentIsolationLevel().WriteLine(); // Serializable
 
-                            ProductCategory category = new ProductCategory() { Name = nameof(ProductCategory) };
-                            adventureWorks.ProductCategories.Add(category);
-                            Trace.WriteLine(await adventureWorks.SaveChangesAsync()); // 1.
+                                SupplierCategory category = new SupplierCategory() { SupplierCategoryName = nameof(SupplierCategory) };
+                                adventureWorks.SupplierCategories.Add(category);
+                                (await adventureWorks.SaveChangesAsync()).WriteLine(); // 1.
+                            });
                         }
 
                         using (DbCommand command = connection.CreateCommand())
                         {
-                            command.CommandText = "DELETE FROM [Production].[ProductCategory] WHERE [Name] = @p0";
+                            command.CommandText = "DELETE FROM [Purchasing].[SupplierCategories] WHERE [SupplierCategoryName] = @p0";
                             DbParameter parameter = command.CreateParameter();
                             parameter.ParameterName = "@p0";
-                            parameter.Value = nameof(ProductCategory);
+                            parameter.Value = nameof(SupplierCategory);
                             command.Parameters.Add(parameter);
                             command.Transaction = transaction;
-                            Trace.WriteLine(await command.ExecuteNonQueryAsync()); // 1
+                            (await command.ExecuteNonQueryAsync()).WriteLine(); // 1
                         }
                         transaction.Commit();
                     }
@@ -566,7 +586,9 @@
                 }
             }
         }
+#endif
 
+#if NETFX
         internal static async Task TransactionScopeAsync()
         {
             using (TransactionScope scope = new TransactionScope(
@@ -582,15 +604,15 @@
                     using (DbDataReader reader = await command.ExecuteReaderAsync())
                     {
                         await reader.ReadAsync();
-                        Trace.WriteLine(reader[0]); // RepeatableRead
+                        reader[0].WriteLine(); // RepeatableRead
                     }
                 }
 
-                using (AdventureWorks adventureWorks = new AdventureWorks())
+                using (WideWorldImporters adventureWorks = new WideWorldImporters())
                 {
-                    ProductCategory category = new ProductCategory() { Name = nameof(ProductCategory) };
-                    adventureWorks.ProductCategories.Add(category);
-                    Trace.WriteLine(await adventureWorks.SaveChangesAsync()); // 1
+                    SupplierCategory category = new SupplierCategory() { SupplierCategoryName = nameof(SupplierCategory) };
+                    adventureWorks.SupplierCategories.Add(category);
+                    await adventureWorks.SaveChangesAsync().WriteLine(); // 1
                 }
 
                 using (DbConnection connection = new SqlConnection(ConnectionStrings.AdventureWorks))
@@ -599,18 +621,18 @@
                     command.CommandText = "DELETE FROM [Production].[ProductCategory] WHERE [Name] = @p0";
                     DbParameter parameter = command.CreateParameter();
                     parameter.ParameterName = "@p0";
-                    parameter.Value = nameof(ProductCategory);
+                    parameter.Value = nameof(SupplierCategory);
                     command.Parameters.Add(parameter);
 
                     await connection.OpenAsync();
-                    Trace.WriteLine(await command.ExecuteNonQueryAsync()); // 1
+                    (await command.ExecuteNonQueryAsync()).WriteLine(); // 1
                 }
 
                 scope.Complete();
             }
         }
-    }
 #endif
+    }
 }
 
 #if DEMO

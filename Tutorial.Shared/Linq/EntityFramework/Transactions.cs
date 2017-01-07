@@ -6,7 +6,6 @@ namespace Dixin.Linq.EntityFramework
     using System.Data.Entity.Infrastructure;
 #endif
     using System.Data.SqlClient;
-    using System.Diagnostics;
     using System.Linq;
 
 #if NETFX
@@ -24,29 +23,26 @@ namespace Dixin.Linq.EntityFramework
 
     internal static partial class Transactions
     {
-        internal static void Default()
+        internal static void Default(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
+            SupplierCategory category = adventureWorks.SupplierCategories.First();
+            category.SupplierCategoryName = "Update"; // Valid value.g
+            Supplier subcategory = adventureWorks.Suppliers.First();
+            subcategory.SupplierCategoryID = -1; // Invalid value.
+            try
             {
-                ProductCategory category = adventureWorks.ProductCategories.First();
-                category.Name = "Update"; // Valid value.g
-                ProductSubcategory subcategory = adventureWorks.ProductSubcategories.First();
-                subcategory.ProductCategoryID = -1; // Invalid value.
-                try
-                {
-                    adventureWorks.SaveChanges();
-                }
-                catch (DbUpdateException exception)
-                {
-                    Trace.WriteLine(exception);
-                    // System.Data.Entity.Infrastructure.DbUpdateException: An error occurred while updating the entries. See the inner exception for details.
-                    // ---> System.Data.Entity.Core.UpdateException: An error occurred while updating the entries. See the inner exception for details. 
-                    // ---> System.Data.SqlClient.SqlException: The UPDATE statement conflicted with the FOREIGN KEY constraint "FK_ProductSubcategory_ProductCategory_ProductCategoryID". The conflict occurred in database "D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\ADVENTUREWORKS_DATA.MDF", table "Production.ProductCategory", column 'ProductCategoryID'. The statement has been terminated.
-                    adventureWorks.Entry(category).Reload();
-                    Trace.WriteLine(category.Name); // Accessories
-                    adventureWorks.Entry(subcategory).Reload();
-                    Trace.WriteLine(subcategory.ProductCategoryID); // 1
-                }
+                adventureWorks.SaveChanges();
+            }
+            catch (DbUpdateException exception)
+            {
+                exception.WriteLine();
+                // System.Data.Entity.Infrastructure.DbUpdateException: An error occurred while updating the entries. See the inner exception for details.
+                // ---> System.Data.Entity.Core.UpdateException: An error occurred while updating the entries. See the inner exception for details. 
+                // ---> System.Data.SqlClient.SqlException: The UPDATE statement conflicted with the FOREIGN KEY constraint "FK_ProductSubcategory_ProductCategory_ProductCategoryID". The conflict occurred in database "D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\ADVENTUREWORKS_DATA.MDF", table "Production.ProductCategory", column 'ProductCategoryID'. The statement has been terminated.
+                adventureWorks.Entry(category).Reload();
+                category.SupplierCategoryName.WriteLine(); // Accessories
+                adventureWorks.Entry(subcategory).Reload();
+                subcategory.SupplierCategoryID.WriteLine(); // 1
             }
         }
     }
@@ -71,10 +67,10 @@ namespace Dixin.Linq.EntityFramework
 #if NETFX
             return context.Database.SqlQuery<string>(CurrentIsolationLevelSql).Single();
 #else
-            using (DbConnection connection = new SqlConnection(ConnectionStrings.AdventureWorks))
-            using (DbCommand command = connection.CreateCommand())
+            using (DbCommand command = context.Database.GetDbConnection().CreateCommand())
             {
-                command.CommandText = ConnectionStrings.AdventureWorks;
+                command.CommandText = CurrentIsolationLevelSql;
+                command.Transaction = context.Database.CurrentTransaction.GetDbTransaction();
                 return (string)command.ExecuteScalar();
             }
 #endif
@@ -83,42 +79,38 @@ namespace Dixin.Linq.EntityFramework
 
     internal static partial class Transactions
     {
-        internal static void DbContextTransaction()
+        internal static void DbContextTransaction(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            using (IDbContextTransaction transaction = adventureWorks.Database.BeginTransaction(
-                IsolationLevel.ReadUncommitted))
+#if !NETFX
+            adventureWorks.Database.CreateExecutionStrategy().Execute(() =>
             {
-                try
-                {
-                    Trace.WriteLine(adventureWorks.QueryCurrentIsolationLevel()); // ReadUncommitted
-
-                    ProductCategory category = new ProductCategory() { Name = nameof(ProductCategory) };
-                    adventureWorks.ProductCategories.Add(category);
-                    Trace.WriteLine(adventureWorks.SaveChanges()); // 1
-
-                    Trace.WriteLine(adventureWorks.Database.ExecuteSqlCommand(
-                        "DELETE FROM [Production].[ProductCategory] WHERE [Name] = {0}",
-                        nameof(ProductCategory))); // 1
-                    transaction.Commit();
-                }
-                catch
-                {
-                    transaction.Rollback();
-                    throw;
-                }
-            }
-        }
-    }
-
-    public partial class AdventureWorks
-    {
-#if NETFX
-        public AdventureWorks(DbConnection connection, bool contextOwnsConnection = false)
-            : base(connection, contextOwnsConnection)
-        {
-        }
 #endif
+                using (IDbContextTransaction transaction = adventureWorks.Database.BeginTransaction(
+                    IsolationLevel.ReadUncommitted))
+                {
+                    try
+                    {
+                        adventureWorks.QueryCurrentIsolationLevel().WriteLine(); // ReadUncommitted
+
+                        SupplierCategory category = new SupplierCategory() { SupplierCategoryName = nameof(SupplierCategory) };
+                        adventureWorks.SupplierCategories.Add(category);
+                        adventureWorks.SaveChanges().WriteLine(); // 1
+
+                        adventureWorks.Database.ExecuteSqlCommand(
+                            "DELETE FROM [Purchasing].[SupplierCategories] WHERE [SupplierCategoryName] = {0}",
+                            nameof(SupplierCategory)).WriteLine(); // 1
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
+                }
+#if !NETFX
+            });
+#endif
+        }
     }
 
     internal static partial class Transactions
@@ -132,25 +124,32 @@ namespace Dixin.Linq.EntityFramework
                 {
                     try
                     {
-                        using (AdventureWorks adventureWorks = new AdventureWorks(connection))
+                        using (WideWorldImporters adventureWorks = new WideWorldImporters(connection))
                         {
-                            adventureWorks.Database.UseTransaction(transaction);
-                            Trace.WriteLine(adventureWorks.QueryCurrentIsolationLevel()); // Serializable
+#if !NETFX
+                            adventureWorks.Database.CreateExecutionStrategy().Execute(() =>
+                            {
+#endif
+                                adventureWorks.Database.UseTransaction(transaction);
+                                adventureWorks.QueryCurrentIsolationLevel().WriteLine(); // Serializable
 
-                            ProductCategory category = new ProductCategory() { Name = nameof(ProductCategory) };
-                            adventureWorks.ProductCategories.Add(category);
-                            Trace.WriteLine(adventureWorks.SaveChanges()); // 1.
+                                SupplierCategory category = new SupplierCategory() { SupplierCategoryName = nameof(SupplierCategory) };
+                                adventureWorks.SupplierCategories.Add(category);
+                                adventureWorks.SaveChanges().WriteLine(); // 1.
+#if !NETFX
+                            });
+#endif
                         }
 
                         using (DbCommand command = connection.CreateCommand())
                         {
-                            command.CommandText = "DELETE FROM [Production].[ProductCategory] WHERE [Name] = @p0";
+                            command.CommandText = "DELETE FROM [Purchasing].[SupplierCategories] WHERE [SupplierCategoryName] = @p0";
                             DbParameter parameter = command.CreateParameter();
                             parameter.ParameterName = "@p0";
-                            parameter.Value = nameof(ProductCategory);
+                            parameter.Value = nameof(SupplierCategory);
                             command.Parameters.Add(parameter);
                             command.Transaction = transaction;
-                            Trace.WriteLine(command.ExecuteNonQuery()); // 1
+                            command.ExecuteNonQuery().WriteLine(); // 1
                         }
                         transaction.Commit();
                     }
@@ -178,15 +177,15 @@ namespace Dixin.Linq.EntityFramework
                     using (DbDataReader reader = command.ExecuteReader())
                     {
                         reader.Read();
-                        Trace.WriteLine(reader[0]); // RepeatableRead
+                        reader[0].WriteLine(); // RepeatableRead
                     }
                 }
 
-                using (AdventureWorks adventureWorks = new AdventureWorks())
+                using (WideWorldImporters adventureWorks = new WideWorldImporters())
                 {
-                    ProductCategory category = new ProductCategory() { Name = nameof(ProductCategory) };
-                    adventureWorks.ProductCategories.Add(category);
-                    Trace.WriteLine(adventureWorks.SaveChanges()); // 1
+                    SupplierCategory category = new SupplierCategory() { SupplierCategoryName = nameof(SupplierCategory) };
+                    adventureWorks.SupplierCategories.Add(category);
+                    adventureWorks.SaveChanges().WriteLine(); // 1
                 }
 
                 using (DbConnection connection = new SqlConnection(ConnectionStrings.AdventureWorks))
@@ -195,11 +194,11 @@ namespace Dixin.Linq.EntityFramework
                     command.CommandText = "DELETE FROM [Production].[ProductCategory] WHERE [Name] = @p0";
                     DbParameter parameter = command.CreateParameter();
                     parameter.ParameterName = "@p0";
-                    parameter.Value = nameof(ProductCategory);
+                    parameter.Value = nameof(SupplierCategory);
                     command.Parameters.Add(parameter);
 
                     connection.Open();
-                    Trace.WriteLine(command.ExecuteNonQuery()); // 1
+                    command.ExecuteNonQuery().WriteLine(); // 1
                 }
 
                 scope.Complete();

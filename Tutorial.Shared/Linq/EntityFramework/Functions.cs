@@ -24,7 +24,7 @@
         public string LastName { get; set; }
     }
 
-    public partial class AdventureWorks
+    public partial class WideWorldImporters
     {
         public ObjectResult<ManagerEmployee> GetManagerEmployees(int businessEntityId)
         {

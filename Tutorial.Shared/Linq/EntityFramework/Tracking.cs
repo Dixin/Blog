@@ -3,173 +3,157 @@ namespace Dixin.Linq.EntityFramework
 #if NETFX
     using System.Data.Entity;
 #endif
-    using System.Diagnostics;
     using System.Linq;
 
 #if !NETFX
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.ChangeTracking;
 #endif
 
     internal static partial class Tracking
     {
-        internal static void EntitiesFromSameDbContext()
+        internal static void EntitiesFromSameDbContext(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                Product productById = adventureWorks.Products
-                    .Single(product => product.ProductID == 999);
-                Trace.WriteLine(adventureWorks.ChangeTracker.Entries().Count()); // 1
+            StockItem productById = adventureWorks.StockItems
+                .Single(product => product.StockItemID == 1);
+            adventureWorks.ChangeTracker.Entries().Count().WriteLine(); // 1
 
-                Product productByName = adventureWorks.Products
-                    .Single(product => product.Name == "Road-750 Black, 52");
-                Trace.WriteLine(adventureWorks.ChangeTracker.Entries().Count()); // 1
-                Trace.WriteLine(object.ReferenceEquals(productById, productByName)); // True
-            }
+            StockItem productByName = adventureWorks.StockItems
+                .Single(product => product.StockItemName == "USB missile launcher (Green)");
+            adventureWorks.ChangeTracker.Entries().Count().WriteLine(); // 1
+            object.ReferenceEquals(productById, productByName).WriteLine(); // True
         }
     }
 
     internal static partial class Tracking
     {
-        internal static void ObjectsFromSameDbContext()
+        internal static void ObjectsFromSameDbContext(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                var productById = adventureWorks.Products
-                    .Select(product => new { ProductID = product.ProductID, Name = product.Name })
-                    .Single(product => product.ProductID == 999);
-                var productByName = adventureWorks.Products
-                    .Select(product => new { ProductID = product.ProductID, Name = product.Name })
-                    .Single(product => product.Name == "Road-750 Black, 52");
-                Trace.WriteLine(adventureWorks.ChangeTracker.Entries().Count()); // 0
-                Trace.WriteLine(object.ReferenceEquals(productById, productByName)); // False
-            }
+            var productById = adventureWorks.StockItems
+                .Select(product => new { ProductID = product.StockItemID, Name = product.StockItemName })
+                .Single(product => product.ProductID == 1);
+            var productByName = adventureWorks.StockItems
+                .Select(product => new { ProductID = product.StockItemID, Name = product.StockItemName })
+                .Single(product => product.Name == "USB missile launcher (Green)");
+            adventureWorks.ChangeTracker.Entries().Count().WriteLine(); // 0
+            object.ReferenceEquals(productById, productByName).WriteLine(); // False
         }
 
         internal static void EntitiesFromDbContexts()
         {
-            Product productById;
-            Product productByName;
-            using (AdventureWorks adventureWorks = new AdventureWorks())
+            StockItem productById;
+            StockItem productByName;
+            using (WideWorldImporters adventureWorks = new WideWorldImporters())
             {
-                productById = adventureWorks.Products.Single(product => product.ProductID == 999);
+                productById = adventureWorks.StockItems.Single(product => product.StockItemID == 1);
             }
-            using (AdventureWorks adventureWorks = new AdventureWorks())
+            using (WideWorldImporters adventureWorks = new WideWorldImporters())
             {
-                productByName = adventureWorks.Products.Single(product => product.Name == "Road-750 Black, 52");
+                productByName = adventureWorks.StockItems.Single(product => product.StockItemName == "USB missile launcher (Green)");
             }
-            Trace.WriteLine(object.ReferenceEquals(productById, productByName)); // False.
+            object.ReferenceEquals(productById, productByName).WriteLine(); // False.
         }
 
-        internal static void EntityChanges()
+        internal static void EntityChanges(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
+            StockItem toCreate = new StockItem() { StockItemName = nameof(toCreate), UnitPrice = 1 };
+            adventureWorks.StockItems.Add(toCreate); // Create entity.
+            StockItem read = adventureWorks.StockItems.Single(product => product.StockItemID == 1); // Read entity.
+            IQueryable<StockItem> toUpdate = adventureWorks.StockItems
+                .Where(product => product.StockItemName.Contains("HL"));
+            toUpdate.ForEach(product => product.UnitPrice += 100); // Update entities.
+            IQueryable<StockItem> toDelete = adventureWorks.StockItems
+                .Where(product => product.StockItemName.Contains("ML"));
+            adventureWorks.StockItems.RemoveRange(toDelete); // Delete entities.
+
+            adventureWorks.ChangeTracker.HasChanges().WriteLine(); // True
+            adventureWorks.ChangeTracker.Entries<StockItem>().ForEach(tracking =>
             {
-                Product toCreate = new Product() { Name = nameof(toCreate), ListPrice = 1 };
-                adventureWorks.Products.Add(toCreate); // Create entity.
-                Product read = adventureWorks.Products.Single(product => product.ProductID == 999); // Read entity.
-                IQueryable<Product> toUpdate = adventureWorks.Products
-                    .Where(product => product.Name.Contains("HL"));
-                toUpdate.ForEach(product => product.ListPrice += 100); // Update entities.
-                IQueryable<Product> toDelete = adventureWorks.Products
-                    .Where(product => product.Name.Contains("ML"));
-                adventureWorks.Products.RemoveRange(toDelete); // Delete entities.
-
-                Trace.WriteLine(adventureWorks.ChangeTracker.HasChanges()); // True
-                adventureWorks.ChangeTracker.Entries<Product>().ForEach(tracking =>
-                    {
-                        Product changed = tracking.Entity;
-                        switch (tracking.State)
-                        {
-                            case EntityState.Added:
-                            case EntityState.Deleted:
-                            case EntityState.Unchanged:
-                                Trace.WriteLine($"{tracking.State}: ({changed.ProductID}, {changed.Name}, {changed.ListPrice})");
-                                break;
-                            case EntityState.Modified:
-                                Product original = (Product)tracking.OriginalValues.ToObject();
-                                Trace.WriteLine(
-                                    $"{tracking.State}: ({original.ProductID}, {original.Name}, {original.ListPrice}) => ({changed.ProductID}, {changed.Name}, {changed.ListPrice})");
-                                break;
-                        }
-                    });
-                // Added: (0, toCreate, 1)
-                // Modified: (951, HL Crankset, 404.9900) => (951, HL Crankset, 504.9900)
-                // Modified: (996, HL Bottom Bracket, 121.4900) => (996, HL Bottom Bracket, 221.4900)
-                // Deleted: (950, ML Crankset, 256.4900)
-                // Deleted: (995, ML Bottom Bracket, 101.2400)
-                // Unchanged: (999, Road-750 Black, 52, 539.9900)
-            }
-        }
-
-        internal static void Attach()
-        {
-            Product onTheFly = new Product() { ProductID = 950, Name = "ML Crankset", ListPrice = 539.99M };
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                Trace.WriteLine(adventureWorks.ChangeTracker.Entries().Count()); // 0
-
-                adventureWorks.Products.Attach(onTheFly);
-                Trace.WriteLine(adventureWorks.ChangeTracker.Entries().Count()); // 1
-                Trace.WriteLine(adventureWorks.ChangeTracker.Entries<Product>().Single().State); // Unchanged
-                onTheFly.Name = "After attaching";
-                Trace.WriteLine(adventureWorks.ChangeTracker.Entries<Product>().Single().State); // Modified
-                adventureWorks.ChangeTracker.Entries<Product>().ForEach(tracking => Trace.WriteLine(
-                    $"{tracking.State}: {tracking.OriginalValues[nameof(Product.Name)]} => {tracking.CurrentValues[nameof(Product.Name)]}"));
-                // Modified: ML Crankset => After attaching
-            }
-        }
-
-        internal static void AssociationChanges()
-        {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                ProductSubcategory subcategory = adventureWorks.ProductSubcategories
-                    .Include(entity => entity.Products).Single(entity => entity.ProductSubcategoryID == 8);
-                Trace.WriteLine(subcategory.Products.Count); // 2
-                Trace.WriteLine(subcategory.Products
-                    .All(product => product.ProductSubcategory == subcategory)); // True
-
-                subcategory.Products.Clear();
-                // Equivalent to: subcategory.Products.ForEach(product => product.ProductSubcategory = null);
-                Trace.WriteLine(subcategory.Products.Count); // 0
-                Trace.WriteLine(subcategory.Products
-                    .All(product => product.ProductSubcategory == null)); // True
-                adventureWorks.ChangeTracker.Entries<Product>().ForEach(tracking =>
-                    {
-                        Product original = (Product)tracking.OriginalValues.ToObject();
-                        Product changed = tracking.Entity;
-                        Trace.WriteLine(
-                            $"{tracking.State}: ({original.ProductID}, {original.Name}, {original.ProductSubcategoryID}) => ({changed.ProductID}, {changed.Name}, {changed.ProductSubcategoryID})");
-                    });
-                // Modified: (950, ML Crankset, 8) => (950, ML Crankset, )
-                // Modified: (951, HL Crankset, 8) => (951, HL Crankset, )
-            }
-        }
-
-        internal static void AsNoTracking()
-        {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                Product untracked = adventureWorks.Products.AsNoTracking().First();
-                Trace.WriteLine(adventureWorks.ChangeTracker.Entries().Count()); // 0
-            }
-        }
-
-        internal static void DetectChanges()
-        {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
+                StockItem changed = tracking.Entity;
+                switch (tracking.State)
+                {
+                    case EntityState.Added:
+                    case EntityState.Deleted:
+                    case EntityState.Unchanged:
+                        $"{tracking.State}: ({changed.StockItemID}, {changed.StockItemName}, {changed.UnitPrice})".WriteLine();
+                        break;
+                    case EntityState.Modified:
 #if NETFX
-                adventureWorks.Configuration.AutoDetectChangesEnabled = false;
+                        StockItem original = (StockItem)tracking.OriginalValues.ToObject();
 #else
-                adventureWorks.ChangeTracker.AutoDetectChangesEnabled = false;
+                        PropertyValues originalValues = tracking.OriginalValues.Clone();
+                        originalValues.SetValues(tracking.OriginalValues);
+                        StockItem original = (StockItem)originalValues.ToObject();
 #endif
-                Product product = adventureWorks.Products.First();
-                product.ListPrice += 100;
-                Trace.WriteLine(adventureWorks.ChangeTracker.HasChanges()); // False
-                adventureWorks.ChangeTracker.DetectChanges();
-                Trace.WriteLine(adventureWorks.ChangeTracker.HasChanges()); // True
-            }
+                        $"{tracking.State}: ({original.StockItemID}, {original.StockItemName}, {original.UnitPrice}) => ({changed.StockItemID}, {changed.StockItemName}, {changed.UnitPrice})"
+                            .WriteLine();
+                        break;
+                }
+            });
+            // Added: (0, toCreate, 1)
+            // Modified: (951, HL Crankset, 404.9900) => (951, HL Crankset, 504.9900)
+            // Modified: (996, HL Bottom Bracket, 121.4900) => (996, HL Bottom Bracket, 221.4900)
+            // Deleted: (950, ML Crankset, 256.4900)
+            // Deleted: (995, ML Bottom Bracket, 101.2400)
+            // Unchanged: (1, Road-750 Black, 52, 539.9900)
+        }
+
+        internal static void Attach(WideWorldImporters adventureWorks)
+        {
+            StockItem onTheFly = new StockItem() { StockItemID = 950, StockItemName = "ML Crankset", UnitPrice = 539.99M };
+            adventureWorks.ChangeTracker.Entries().Count().WriteLine(); // 0
+
+            adventureWorks.StockItems.Attach(onTheFly);
+            adventureWorks.ChangeTracker.Entries().Count().WriteLine(); // 1
+            adventureWorks.ChangeTracker.Entries<StockItem>().Single().State.WriteLine(); // Unchanged
+            onTheFly.StockItemName = "After attaching";
+            adventureWorks.ChangeTracker.Entries<StockItem>().Single().State.WriteLine(); // Modified
+            adventureWorks.ChangeTracker.Entries<StockItem>().WriteLines(tracking =>
+                $"{tracking.State}: {tracking.OriginalValues[nameof(StockItem.StockItemName)]} => {tracking.CurrentValues[nameof(StockItem.StockItemName)]}");
+            // Modified: ML Crankset => After attaching
+        }
+
+        internal static void AssociationChanges(WideWorldImporters adventureWorks)
+        {
+            Supplier subcategory = adventureWorks.Suppliers
+                .Include(entity => entity.StockItems).Single(entity => entity.SupplierID == 8);
+            subcategory.StockItems.Count.WriteLine(); // 2
+            subcategory.StockItems
+                .All(product => product.Supplier == subcategory).WriteLine(); // True
+
+            subcategory.StockItems.Clear();
+            // Equivalent to: subcategory.Products.ForEach(product => product.ProductSubcategory = null);
+            subcategory.StockItems.Count.WriteLine(); // 0
+            subcategory.StockItems
+                .All(product => product.Supplier == null).WriteLine(); // True
+            adventureWorks.ChangeTracker.Entries<StockItem>().WriteLines(tracking =>
+            {
+                StockItem original = (StockItem)tracking.OriginalValues.ToObject();
+                StockItem changed = tracking.Entity;
+                return $"{tracking.State}: ({original.StockItemID}, {original.StockItemName}, {original.SupplierID}) => ({changed.StockItemID}, {changed.StockItemName}, {changed.SupplierID})";
+            });
+            // Modified: (950, ML Crankset, 8) => (950, ML Crankset, )
+            // Modified: (951, HL Crankset, 8) => (951, HL Crankset, )
+        }
+
+        internal static void AsNoTracking(WideWorldImporters adventureWorks)
+        {
+            StockItem untracked = adventureWorks.StockItems.AsNoTracking().First();
+            adventureWorks.ChangeTracker.Entries().Count().WriteLine(); // 0
+        }
+
+        internal static void DetectChanges(WideWorldImporters adventureWorks)
+        {
+#if NETFX
+            adventureWorks.Configuration.AutoDetectChangesEnabled = false;
+#else
+            adventureWorks.ChangeTracker.AutoDetectChangesEnabled = false;
+#endif
+            StockItem product = adventureWorks.StockItems.First();
+            product.UnitPrice += 100;
+            adventureWorks.ChangeTracker.HasChanges().WriteLine(); // False
+            adventureWorks.ChangeTracker.DetectChanges();
+            adventureWorks.ChangeTracker.HasChanges().WriteLine(); // True
         }
     }
 }

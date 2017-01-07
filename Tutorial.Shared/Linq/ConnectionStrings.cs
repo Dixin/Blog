@@ -16,16 +16,17 @@
     {
 #if NETFX
         internal static string AdventureWorks { get; } =
-            ConfigurationManager.ConnectionStrings.Cast<ConnectionStringSettings>().FirstOrDefault()?.ConnectionString
-            ?? @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\AdventureWorks_Data.mdf;Integrated Security=True;Connect Timeout=30";
+            @"Server=dixinyan-t460s;Database=WideWorldImporters;Integrated Security=False;User ID=sa;Password=ftSq1@zure;";
 #else
         internal static string AdventureWorks
         {
             get
             {
-                string directory = Path.GetDirectoryName(typeof(ConnectionStrings).GetTypeInfo().Assembly.Location);
-                string path = Path.Combine(directory, @"..\..\..\..\Data\AdventureWorks_Data.mdf");
-                return $@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename={Path.GetFullPath(path)};Integrated Security=True;Connect Timeout=30";
+                // string directory = Path.GetDirectoryName(typeof(ConnectionStrings).GetTypeInfo().Assembly.Location);
+                // string path = Path.Combine(directory, @"..\..\..\..\Data\AdventureWorks_Data.mdf");
+                // return $@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename={Path.GetFullPath(path)};Integrated Security=True;Connect Timeout=30";
+                // return "Server=dixinyan-t460s;Database=WideWorldImporters;Integrated Security=False;User ID=sa;Password=ftSq1@zure;Connect Timeout=30;Encrypt=True;TrustServerCertificate=True;";
+                return "Server=dixinyan-t460s;Database=WideWorldImporters;Integrated Security=False;User ID=sa;Password=ftSq1@zure;";
             }
         }
 #endif

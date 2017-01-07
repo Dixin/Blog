@@ -4,60 +4,72 @@
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
-    public partial class ProductCategory
+#if NETFX
+    using System.Data.Entity;
+#else
+    using Microsoft.EntityFrameworkCore;
+#endif
+
+    public partial class SupplierCategory
     {
-        public virtual ICollection<ProductSubcategory> ProductSubcategories { get; set; }
-            = new HashSet<ProductSubcategory>();
+        public virtual ICollection<Supplier> Suppliers { get; set; }
+            = new HashSet<Supplier>();
     }
 
-    public partial class ProductSubcategory
+    public partial class Supplier
     {
-        // public int? ProductCategoryID { get; set; }
-        public virtual ProductCategory ProductCategory { get; set; }
+        // public int? SupplierCategoryID { get; set; }
+        public virtual SupplierCategory SupplierCategory { get; set; }
     }
 
-    public partial class ProductSubcategory
+    public partial class Supplier
     {
-        public virtual ICollection<Product> Products { get; set; } = new HashSet<Product>();
+        public virtual ICollection<StockItem> StockItems { get; set; } = new HashSet<StockItem>();
     }
 
-    public partial class Product
+    public partial class StockItem
     {
-        // public int? ProductSubcategoryID { get; set; }
-        public virtual ProductSubcategory ProductSubcategory { get; set; }
+        // public int? SupplierID { get; set; }
+        public virtual Supplier Supplier { get; set; }
     }
 
-    [Table(nameof(ProductProductPhoto), Schema = AdventureWorks.Production)]
-    public partial class ProductProductPhoto
+    [Table(nameof(WideWorldImporters.StockItemStockGroups), Schema = WideWorldImporters.Warehouse)]
+    public partial class StockItemStockGroup
     {
         [Key]
-        [Column(Order = 0)]
-        public int ProductID { get; set; }
+        public int StockItemStockGroupID { get; set; }
 
-        [Key]
-        [Column(Order = 1)]
-        public int ProductPhotoID { get; set; }
+        public int StockItemID { get; set; }
+
+        public int StockGroupID { get; set; }
+
+        public int LastEditedBy { get; set; } = 1;
     }
 
-    public partial class Product
+    public partial class WideWorldImporters
     {
-        public virtual ICollection<ProductProductPhoto> ProductProductPhotos { get; set; }
-            = new HashSet<ProductProductPhoto>();
+        public DbSet<StockItemStockGroup> StockItemStockGroups { get; set; }
     }
 
-    public partial class ProductPhoto
+    public partial class StockItem
     {
-        public virtual ICollection<ProductProductPhoto> ProductProductPhotos { get; set; }
-            = new HashSet<ProductProductPhoto>();
+        public virtual ICollection<StockItemStockGroup> StockItemStockGroups { get; set; }
+            = new HashSet<StockItemStockGroup>();
     }
 
-    public partial class ProductProductPhoto
+    public partial class StockGroup
     {
-        // public int ProductID { get; set; }
-        public virtual Product Product { get; set; }
+        public virtual ICollection<StockItemStockGroup> StockItemStockGroups { get; set; }
+            = new HashSet<StockItemStockGroup>();
+    }
 
-        // public int ProductPhotoID { get; set; }
-        public virtual ProductPhoto ProductPhoto { get; set; }
+    public partial class StockItemStockGroup
+    {
+        // public int StockItemID { get; set; }
+        public virtual StockItem StockItem { get; set; }
+
+        // public int StockGroupsID { get; set; }
+        public virtual StockGroup StockGroup { get; set; }
     }
 }
 

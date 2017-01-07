@@ -1,4 +1,13 @@
 ﻿-- DefaultIfEmpty
+SELECT [t].[ProductCategoryID], [t].[Name]
+FROM (
+    SELECT NULL AS [empty]
+) AS [empty]
+LEFT JOIN (
+    SELECT [p].[ProductCategoryID], [p].[Name]
+    FROM [Production].[ProductCategory] AS [p]
+) AS [t] ON 1 = 1
+
 SELECT 
     [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
     [Extent1].[Name] AS [Name]
@@ -6,6 +15,9 @@ SELECT
     LEFT OUTER JOIN [Production].[ProductCategory] AS [Extent1] ON 1 = 1
 
 -- DefaultIfEmptyWithPrimitive
+SELECT [category].[ProductCategoryID]
+FROM [Production].[ProductCategory] AS [category]
+
 SELECT 
     CASE WHEN ([Project1].[C1] IS NULL) THEN -1 ELSE [Project1].[ProductCategoryID] END AS [C1]
     FROM   ( SELECT 1 AS X ) AS [SingleRowTable1]
@@ -15,9 +27,15 @@ SELECT
         FROM [Production].[ProductCategory] AS [Extent1] ) AS [Project1] ON 1 = 1
 
 -- DefaultIfEmptyWithEntity
+SELECT [p].[ProductCategoryID], [p].[Name]
+FROM [Production].[ProductCategory] AS [p]
 -- NotSupportedException.
 
 -- Where
+SELECT [category].[ProductCategoryID], [category].[Name]
+FROM [Production].[ProductCategory] AS [category]
+WHERE [category].[ProductCategoryID] > 0
+
 SELECT 
     [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
     [Extent1].[Name] AS [Name]
@@ -25,6 +43,10 @@ SELECT
     WHERE [Extent1].[ProductCategoryID] > 0
 
 -- WhereWithOr
+SELECT [category].[ProductCategoryID], [category].[Name]
+FROM [Production].[ProductCategory] AS [category]
+WHERE ([category].[ProductCategoryID] <= 1) OR ([category].[ProductCategoryID] >= 4)
+
 SELECT 
     [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
     [Extent1].[Name] AS [Name]
@@ -32,6 +54,10 @@ SELECT
     WHERE ([Extent1].[ProductCategoryID] <= 1) OR ([Extent1].[ProductCategoryID] >= 4)
 
 -- WhereWithAnd
+SELECT [category].[ProductCategoryID], [category].[Name]
+FROM [Production].[ProductCategory] AS [category]
+WHERE ([category].[ProductCategoryID] > 0) AND ([category].[ProductCategoryID] < 5)
+
 SELECT 
     [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
     [Extent1].[Name] AS [Name]
@@ -39,6 +65,10 @@ SELECT
     WHERE ([Extent1].[ProductCategoryID] > 0) AND ([Extent1].[ProductCategoryID] < 5)
 
 -- WhereAndWhere
+SELECT [category].[ProductCategoryID], [category].[Name]
+FROM [Production].[ProductCategory] AS [category]
+WHERE ([category].[ProductCategoryID] > 0) AND ([category].[ProductCategoryID] < 5)
+
 SELECT 
     [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
     [Extent1].[Name] AS [Name]
@@ -46,6 +76,10 @@ SELECT
     WHERE ([Extent1].[ProductCategoryID] > 0) AND ([Extent1].[ProductCategoryID] < 5)
 
 -- WhereWithIs
+SELECT [product].[ProductID], [product].[ListPrice], [product].[Name], [product].[ProductSubcategoryID], [product].[RowVersion], [product].[Style]
+FROM [Production].[Product] AS [product]
+WHERE [product].[Style] IN (N'W', N'U', N'M') AND ([product].[Style] = N'U')
+
 SELECT 
     '0X0X' AS [C1], 
     [Extent1].[ProductID] AS [ProductID], 
@@ -57,6 +91,10 @@ SELECT
     WHERE [Extent1].[Style] = N'U'
 
 -- OfTypeWithEntiy
+SELECT [p].[ProductID], [p].[ListPrice], [p].[Name], [p].[ProductSubcategoryID], [p].[RowVersion], [p].[Style]
+FROM [Production].[Product] AS [p]
+WHERE [p].[Style] = N'U'
+
 SELECT 
     '0X0X' AS [C1], 
     [Extent1].[ProductID] AS [ProductID], 
@@ -68,19 +106,35 @@ SELECT
     WHERE [Extent1].[Style] = N'U'
 
 -- OfTypeWithPromitive
+SELECT [p].[ProductSubcategoryID]
+FROM [Production].[Product] AS [p]
+WHERE ([p].[Style] = N'W') OR (([p].[Style] = N'U') OR ([p].[Style] = N'M'))
 -- NotSupportedException.
 
 -- Select
+SELECT [category].[Name] + [category].[Name]
+FROM [Production].[ProductCategory] AS [category]
+
 SELECT 
     [Extent1].[Name] + [Extent1].[Name] AS [C1]
     FROM [Production].[ProductCategory] AS [Extent1]
 
 -- SelectWithStringConcat
+SELECT [category].[Name] + [category].[Name]
+FROM [Production].[ProductCategory] AS [category]
+
 SELECT 
     [Extent1].[Name] + [Extent1].[Name] AS [C1]
     FROM [Production].[ProductCategory] AS [Extent1]
 
 -- SelectAnonymousType
+SELECT [product].[Name], CASE
+    WHEN [product].[ListPrice] > 1000.0
+    THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT)
+END
+FROM [Production].[Product] AS [product]
+WHERE ([product].[Style] = N'W') OR (([product].[Style] = N'U') OR ([product].[Style] = N'M'))
+
 SELECT 
     1 AS [C1], 
     [Extent1].[Name] AS [Name], 
@@ -91,6 +145,10 @@ SELECT
     FROM [Production].[Product] AS [Extent1]
 
 -- GroupBy
+SELECT [subcategory].[ProductSubcategoryID], [subcategory].[Name], [subcategory].[ProductCategoryID]
+FROM [Production].[ProductSubcategory] AS [subcategory]
+ORDER BY [subcategory].[ProductCategoryID]
+
 SELECT 
     [Project2].[ProductCategoryID] AS [ProductCategoryID], 
     [Project2].[C1] AS [C1], 
@@ -107,6 +165,10 @@ SELECT
     ORDER BY [Project2].[ProductCategoryID] ASC, [Project2].[C1] ASC
 
 -- GroupByWithResultSelector
+SELECT [subcategory].[ProductSubcategoryID], [subcategory].[Name], [subcategory].[ProductCategoryID]
+FROM [Production].[ProductSubcategory] AS [subcategory]
+ORDER BY [subcategory].[ProductCategoryID]
+
 SELECT 
     [GroupBy1].[K1] AS [ProductCategoryID], 
     [GroupBy1].[A1] AS [C1]
@@ -118,6 +180,10 @@ SELECT
     )  AS [GroupBy1]
 
 -- GroupByAndSelect
+SELECT [subcategory].[ProductSubcategoryID], [subcategory].[Name], [subcategory].[ProductCategoryID]
+FROM [Production].[ProductSubcategory] AS [subcategory]
+ORDER BY [subcategory].[ProductCategoryID]
+
 SELECT 
     [GroupBy1].[K1] AS [ProductCategoryID], 
     [GroupBy1].[A1] AS [C1]
@@ -129,6 +195,10 @@ SELECT
     )  AS [GroupBy1]
 
 -- GroupByAndSelectMany
+SELECT [subcategory].[ProductSubcategoryID], [subcategory].[Name], [subcategory].[ProductCategoryID]
+FROM [Production].[ProductSubcategory] AS [subcategory]
+ORDER BY [subcategory].[ProductCategoryID]
+
 SELECT 
     [Extent2].[ProductSubcategoryID] AS [ProductSubcategoryID], 
     [Extent2].[Name] AS [Name], 
@@ -139,6 +209,11 @@ SELECT
     INNER JOIN [Production].[ProductSubcategory] AS [Extent2] ON [Distinct1].[ProductCategoryID] = [Extent2].[ProductCategoryID]
 
 -- GroupByMultipleKeys
+SELECT [product].[ProductID], [product].[ListPrice], [product].[Name], [product].[ProductSubcategoryID], [product].[RowVersion], [product].[Style]
+FROM [Production].[Product] AS [product]
+WHERE [product].[Style] IN (N'W', N'U', N'M')
+ORDER BY [product].[ProductSubcategoryID], [product].[ListPrice]
+
 SELECT 
     1 AS [C1], 
     [GroupBy1].[K2] AS [ProductSubcategoryID], 
@@ -153,6 +228,10 @@ SELECT
     )  AS [GroupBy1]
 
 -- InnerJoinWithJoin
+SELECT [subcategory].[Name], [category].[Name]
+FROM [Production].[ProductSubcategory] AS [subcategory]
+INNER JOIN [Production].[ProductCategory] AS [category] ON [subcategory].[ProductCategoryID] = [category].[ProductCategoryID]
+
 SELECT 
     [Extent2].[ProductCategoryID] AS [ProductCategoryID], 
     [Extent1].[Name] AS [Name], 
@@ -161,6 +240,11 @@ SELECT
     INNER JOIN [Production].[ProductCategory] AS [Extent2] ON [Extent1].[ProductCategoryID] = [Extent2].[ProductCategoryID]
 
 -- InnerJoinWithSelectMany
+SELECT [subcategory].[Name], [category].[Name]
+FROM [Production].[ProductSubcategory] AS [subcategory]
+CROSS JOIN [Production].[ProductCategory] AS [category]
+WHERE [subcategory].[ProductCategoryID] = [category].[ProductCategoryID]
+
 SELECT 
     [Extent2].[ProductCategoryID] AS [ProductCategoryID], 
     [Extent1].[Name] AS [Name], 
@@ -169,6 +253,10 @@ SELECT
     INNER JOIN [Production].[ProductCategory] AS [Extent2] ON [Extent1].[ProductCategoryID] = [Extent2].[ProductCategoryID]
 
 -- InnerJoinWithGroupJoin
+SELECT [subcategory].[Name], [category].[Name]
+FROM [Production].[ProductSubcategory] AS [subcategory]
+INNER JOIN [Production].[ProductCategory] AS [category] ON [subcategory].[ProductCategoryID] = [category].[ProductCategoryID]
+
 SELECT 
     [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
     [Extent1].[Name] AS [Name], 
@@ -177,6 +265,11 @@ SELECT
     INNER JOIN [Production].[ProductCategory] AS [Extent2] ON [Extent1].[ProductCategoryID] = [Extent2].[ProductCategoryID]
 
 -- InnerJoinWithSelect
+SELECT [subcategory].[Name], [category].[Name]
+FROM [Production].[ProductSubcategory] AS [subcategory]
+CROSS JOIN [Production].[ProductCategory] AS [category]
+WHERE [category].[ProductCategoryID] = [subcategory].[ProductCategoryID]
+
 SELECT 
     [Extent2].[ProductCategoryID] AS [ProductCategoryID], 
     [Extent1].[Name] AS [Name], 
@@ -185,6 +278,10 @@ SELECT
     INNER JOIN [Production].[ProductCategory] AS [Extent2] ON [Extent1].[ProductCategoryID] = [Extent2].[ProductCategoryID]
 
 -- InnerJoinWithAssociation
+SELECT [subcategory].[Name], [subcategory.ProductCategory].[Name]
+FROM [Production].[ProductSubcategory] AS [subcategory]
+INNER JOIN [Production].[ProductCategory] AS [subcategory.ProductCategory] ON [subcategory].[ProductCategoryID] = [subcategory.ProductCategory].[ProductCategoryID]
+
 SELECT 
     [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
     [Extent1].[Name] AS [Name], 
@@ -193,6 +290,12 @@ SELECT
     INNER JOIN [Production].[ProductCategory] AS [Extent2] ON [Extent1].[ProductCategoryID] = [Extent2].[ProductCategoryID]
 
 -- MultipleInnerJoinsWithAssociations
+SELECT [product].[Name], [product.ProductProductPhotos.ProductPhoto].[LargePhotoFileName]
+FROM [Production].[Product] AS [product]
+INNER JOIN [Production].[ProductProductPhoto] AS [product.ProductProductPhotos] ON [product].[ProductID] = [product.ProductProductPhotos].[ProductID]
+INNER JOIN [Production].[ProductPhoto] AS [product.ProductProductPhotos.ProductPhoto] ON [product.ProductProductPhotos].[ProductPhotoID] = [product.ProductProductPhotos.ProductPhoto].[ProductPhotoID]
+WHERE ([product].[Style] = N'W') OR (([product].[Style] = N'U') OR ([product].[Style] = N'M'))
+
 SELECT 
     [Extent1].[ProductID] AS [ProductID], 
     [Extent1].[Name] AS [Name], 
@@ -202,6 +305,10 @@ SELECT
     INNER JOIN [Production].[ProductPhoto] AS [Extent3] ON [Extent2].[ProductPhotoID] = [Extent3].[ProductPhotoID]
 
 -- InnerJoinWithMultipleKeys
+SELECT [subcategory].[Name], [category].[Name]
+FROM [Production].[ProductSubcategory] AS [subcategory]
+INNER JOIN [Production].[ProductCategory] AS [category] ON ([subcategory].[ProductCategoryID] = [category].[ProductCategoryID]) AND ([subcategory].[Name] = [category].[Name])
+
 SELECT 
     [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
     [Extent1].[Name] AS [Name], 

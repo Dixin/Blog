@@ -1,15 +1,12 @@
 ﻿namespace Dixin.Linq.EntityFramework
 {
-#if NETFX
     using System;
-#endif
     using System.Collections.Generic;
-#if NETFX
     using System.Data.Common;
+#if NETFX
     using System.Data.Entity;
     using System.Data.Entity.Core.Common.CommandTrees;
 #endif
-    using System.Diagnostics;
     using System.Linq;
 
 #if NETFX
@@ -18,26 +15,29 @@
 
 #if !NETFX
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Infrastructure;
+    using Microsoft.EntityFrameworkCore.Query.Expressions;
+    using Microsoft.EntityFrameworkCore.Storage;
 #endif
 
-#if NETFX
     public static class QueryableExtensions
     {
-        public static IEnumerator<TSource> GetIterator<TSource>(
-            this IQueryable<TSource> query, DbContext dbContext)
+#if NETFX
+        public static IEnumerator<TEntity> GetIterator<TEntity>(
+            this IQueryable<TEntity> query, DbContext dbContext)
         {
-            IEnumerator<TSource> sqlReader = null;
+            IEnumerator<TEntity> sqlReader = null;
             bool isSqlExecuted = false;
-            return new Iterator<TSource>(
+            return new Iterator<TEntity>(
                 state: IteratorState.Start,
                 start: () =>
                     {
-                        Trace.WriteLine("|_Convert expression tree to database command tree.");
-                        DbQueryCommandTree commandTree = dbContext.Convert(query.Expression);
-                        Trace.WriteLine("|_Generate SQL from database command tree.");
+                        "|_Convert expression tree to database command tree.".WriteLine();
+                        DbQueryCommandTree commandTree = dbContext.Compile(query.Expression);
+                        "|_Generate SQL from database command tree.".WriteLine();
                         DbCommand sql = dbContext.Generate(commandTree);
-                        Trace.WriteLine("|_Build SQL query.");
-                        IEnumerable<TSource> sqlQuery = dbContext.Database.SqlQuery<TSource>(
+                        "|_Build SQL query.".WriteLine();
+                        IEnumerable<TEntity> sqlQuery = dbContext.Database.SqlQuery<TEntity>(
                             sql.CommandText,
                             sql.Parameters.Cast<DbParameter>().Select(parameter => parameter.Value).ToArray());
                         sqlReader = sqlQuery.GetEnumerator();
@@ -46,253 +46,245 @@
                     {
                         if (!isSqlExecuted)
                         {
-                            Trace.WriteLine("|_Execute SQL query.");
+                            "|_Execute SQL query.".WriteLine();
                             isSqlExecuted = true;
                         }
-                        Trace.WriteLine($"|_Try reading a row and materializing to {typeof(TSource).Name} object.");
+                        $"|_Read a row and materialize to {typeof(TEntity).Name} entity.".WriteLine();
                         return sqlReader.MoveNext();
                     },
                 getCurrent: () => sqlReader.Current,
                 dispose: () => sqlReader.Dispose());
         }
+#endif
+
+#if !NETFX
+        public static IEnumerator<TEntity> GetIterator<TEntity>(
+            this IQueryable<TEntity> query, DbContext dbContext) where TEntity : class
+        {
+            IReadOnlyDictionary<string, object> parameters = null;
+            IRelationalCommand command = null;
+            RelationalDataReader reader = null;
+            Func<DbDataReader, TEntity> materializer = null;
+            return new Iterator<TEntity>(
+                state: IteratorState.Start,
+                start: () =>
+                {
+                    "|_Convert expression tree to database command tree.".WriteLine();
+                    (SelectExpression Expression, IReadOnlyDictionary<string, object> Parameters) result = dbContext.Compile(query.Expression);
+                    SelectExpression selectExpression = result.Expression;
+                    parameters = result.Parameters;
+                    "|_Generate SQL from database command tree.".WriteLine();
+                    command = dbContext.Generate(selectExpression, parameters);
+                    "|_Build SQL query.".WriteLine();
+                    materializer = dbContext.GetMaterializer<TEntity>(selectExpression, parameters);
+                },
+                moveNext: () =>
+                {
+                    if (reader == null)
+                    {
+                        "|_Execute SQL query.".WriteLine();
+                        IRelationalConnection connection = dbContext.GetService<IRelationalConnection>();
+                        reader = command.ExecuteReader(connection, parameters);
+                    }
+                    $"|_Read a row and materialize to {typeof(TEntity).Name} entity.".WriteLine();
+                    return reader.DbDataReader.Read();
+                },
+                getCurrent: () => materializer(reader.DbDataReader),
+                dispose: () => reader.Dispose());
+        }
+#endif
     }
 
     internal static partial class Laziness
     {
-        internal static void WhereAndSelect()
+        internal static void WhereAndSelect(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
+            IQueryable<SupplierCategory> categories = adventureWorks.SupplierCategories
+                .Where(category => category.SupplierCategoryID > 1);
+            // categories.WriteLines(category => category.Name));
+            "Iterator - Create from LINQ to Entities query.".WriteLine();
+            using (IEnumerator<SupplierCategory> iterator = categories
+                .GetIterator(adventureWorks)) // products.GetEnumerator()
             {
-                IQueryable<Product> products = adventureWorks.Products
-                    .Where(product => product.Name.StartsWith("M"));
-                // products.ForEach(product => Trace.WriteLine(product));
-                Trace.WriteLine("Get iterator from LINQ to Entities query.");
-                using (IEnumerator<Product> iterator = products
-                    .GetIterator(adventureWorks)) // products.GetEnumerator()
-                {
-                    while (new Func<bool>(() =>
-                        {
-                            Trace.WriteLine("Try moving iterator to next.");
-                            return iterator.MoveNext(); // Translate and execute query.
-                        })())
+                while (new Func<bool>(() =>
                     {
-                        Product product = iterator.Current;
-                        Trace.WriteLine($"Get iterator current product: {product.Name}.");
-                    }
+                        "Iterator - Movie to next.".WriteLine();
+                        return iterator.MoveNext(); // Translate and execute query.
+                    })())
+                {
+                    SupplierCategory category = iterator.Current;
+                    $"Iterator - Get current.: {category.SupplierCategoryName}.".WriteLine();
                 }
             }
         }
     }
-#endif
 
     internal static partial class Laziness
     {
-        internal static void ImplicitLazyLoading()
+        internal static void ImplicitLazyLoading(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                ProductSubcategory subcategory = adventureWorks.ProductSubcategories.First(); // Database query.
-                Trace.WriteLine(subcategory.Name);
-                ProductCategory associatedCategory = subcategory.ProductCategory; // Database query.
-                Trace.WriteLine(associatedCategory.Name);
-                ICollection<Product> associatedProducts = subcategory.Products; // Database query.
-                Trace.WriteLine(associatedProducts.Count);
-            }
+            Supplier subcategory = adventureWorks.Suppliers.First(); // Database query.
+            subcategory.SupplierName.WriteLine();
+            SupplierCategory associatedCategory = subcategory.SupplierCategory; // Database query.
+            associatedCategory.SupplierCategoryName.WriteLine();
+            ICollection<StockItem> associatedProducts = subcategory.StockItems; // Database query.
+            associatedProducts.Count.WriteLine();
         }
 
-        internal static void ExplicitLazyLoading()
+        internal static void ExplicitLazyLoading(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                ProductSubcategory subcategory = adventureWorks.ProductSubcategories.First(); // Database query.
-                Trace.WriteLine(subcategory.Name);
-                adventureWorks
-                    .Entry(subcategory) // Return DbEntityEntry<ProductSubcategory>.
-                    .Reference(entity => entity.ProductCategory) // Return DbReferenceEntry<ProductSubcategory, ProductCategory>.
-                    .Load(); // Database query.
-                Trace.WriteLine(subcategory.ProductCategory.Name);
-                adventureWorks
-                    .Entry(subcategory) // Return DbEntityEntry<ProductSubcategory>.
-                    .Collection(entity => entity.Products) // Return DbCollectionEntry<ProductSubcategory, Product>.
-                    .Load(); // Database query.
-                Trace.WriteLine(subcategory.Products.Count);
-            }
+            Supplier subcategory = adventureWorks.Suppliers.First(); // Database query.
+            subcategory.SupplierName.WriteLine();
+            adventureWorks
+                .Entry(subcategory) // Return DbEntityEntry<ProductSubcategory>.
+                .Reference(entity => entity.SupplierCategory) // Return DbReferenceEntry<ProductSubcategory, ProductCategory>.
+                .Load(); // Database query.
+            subcategory.SupplierCategory.SupplierCategoryName.WriteLine();
+            adventureWorks
+                .Entry(subcategory) // Return DbEntityEntry<ProductSubcategory>.
+                .Collection(entity => entity.StockItems) // Return DbCollectionEntry<ProductSubcategory, Product>.
+                .Load(); // Database query.
+            subcategory.StockItems.Count.WriteLine();
         }
 
-        internal static void ExplicitLazyLoadingWithQuery()
+        internal static void ExplicitLazyLoadingWithQuery(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                ProductSubcategory subcategory = adventureWorks.ProductSubcategories.First(); // Database query.
-                Trace.WriteLine(subcategory.Name);
-                string associatedCategoryName = adventureWorks
-                    .Entry(subcategory).Reference(entity => entity.ProductCategory)
-                    .Query() // Return IQueryable<ProductCategory>.
-                    .Select(category => category.Name).Single(); // Database query.
-                Trace.WriteLine(associatedCategoryName);
-                int associatedProductsCount = adventureWorks
-                    .Entry(subcategory).Collection(entity => entity.Products)
-                    .Query() // Return IQueryable<Product>.
-                    .Count(); // Database query.
-                Trace.WriteLine(associatedProductsCount);
-            }
+            Supplier subcategory = adventureWorks.Suppliers.First(); // Database query.
+            subcategory.SupplierName.WriteLine();
+            string associatedCategoryName = adventureWorks
+                .Entry(subcategory).Reference(entity => entity.SupplierCategory)
+                .Query() // Return IQueryable<ProductCategory>.
+                .Select(category => category.SupplierCategoryName).Single(); // Database query.
+            associatedCategoryName.WriteLine();
+            int associatedProductsCount = adventureWorks
+                .Entry(subcategory).Collection(entity => entity.StockItems)
+                .Query() // Return IQueryable<Product>.
+                .Count(); // Database query.
+            associatedProductsCount.WriteLine();
         }
 
-        internal static void LazyLoadingAndDeferredExecution()
+        internal static void LazyLoadingAndDeferredExecution(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                IQueryable<ProductSubcategory> subcategories = adventureWorks.ProductSubcategories;
-                subcategories
-                    .ForEach(subcategory => Trace.WriteLine( // Reading subcategories is in progress.
-                        $"{subcategory.ProductCategory.Name}/{subcategory.Name}: {subcategory.Products.Count}"));
-                // EntityCommandExecutionException: There is already an open DataReader associated with this Command which must be closed first.
-            }
+            IQueryable<Supplier> subcategories = adventureWorks.Suppliers;
+            subcategories
+                .ForEach(subcategory =>  // Reading subcategories is in progress.
+                    $"{subcategory.SupplierCategory.SupplierCategoryName}/{subcategory.SupplierName}: {subcategory.StockItems.Count}".WriteLine());
+            // EntityCommandExecutionException: There is already an open DataReader associated with this Command which must be closed first.
         }
 
-        internal static void LazyLoadingAndImmediateExecution()
+        internal static void LazyLoadingAndImmediateExecution(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                IQueryable<ProductSubcategory> subcategories = adventureWorks.ProductSubcategories;
-                subcategories
-                    .ToArray() // Finish reading subcategories.
-                    .ForEach(subcategory => Trace.WriteLine(
-                        $"{subcategory.ProductCategory/* Finish reading category. */.Name}/{subcategory.Name}: {subcategory.Products/* Finish reading products. */.Count}"));
-            }
+            IQueryable<Supplier> subcategories = adventureWorks.Suppliers;
+            subcategories
+                .ToArray() // Finish reading subcategories.
+                .ForEach(subcategory =>
+                    $"{subcategory.SupplierCategory/* Finish reading category. */.SupplierCategoryName}/{subcategory.SupplierName}: {subcategory.StockItems/* Finish reading products. */.Count}".WriteLine());
         }
 
-        internal static void EagerLoadingWithInclude()
+        internal static void EagerLoadingWithInclude(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                IQueryable<ProductSubcategory> subcategories = adventureWorks.ProductSubcategories
-                    .Include(subcategory => subcategory.ProductCategory)
-                    .Include(subcategory => subcategory.Products);
-                subcategories.ForEach(subcategory => Trace.WriteLine(
-                    $"{subcategory.ProductCategory.Name}/{subcategory.Name}: {subcategory.Products.Count}"));
-            }
+            IQueryable<Supplier> subcategories = adventureWorks.Suppliers
+                .Include(subcategory => subcategory.SupplierCategory)
+                .Include(subcategory => subcategory.StockItems);
+            subcategories.WriteLines(subcategory =>
+                $"{subcategory.SupplierCategory.SupplierCategoryName}/{subcategory.SupplierName}: {subcategory.StockItems.Count}");
         }
 
-        internal static void EagerLoadingWithIncludeAndSelect()
+        internal static void EagerLoadingWithIncludeAndSelect(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                IQueryable<ProductCategory> categories = adventureWorks.ProductCategories
-                    .Include(category => category.ProductSubcategories.Select(subcategory => subcategory.Products));
-                categories.ForEach(category => Trace.WriteLine(
-                    $@"{category.Name}: {string.Join(", ", category.ProductSubcategories
-                        .Select(subcategory => $"{subcategory.Name}-{subcategory.Products.Count}"))}"));
-            }
+            IQueryable<SupplierCategory> categories = adventureWorks.SupplierCategories
+                .Include(category => category.Suppliers.Select(subcategory => subcategory.StockItems));
+            categories.WriteLines(category =>
+                $@"{category.SupplierCategoryName}: {string.Join(", ", category.Suppliers
+                    .Select(subcategory => $"{subcategory.SupplierName}-{subcategory.StockItems.Count}"))}");
         }
 
-        internal static void EagerLoadingWithSelect()
+        internal static void EagerLoadingWithSelect(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
+            var subcategories = adventureWorks.Suppliers.Select(subcategory => new
             {
-                var subcategories = adventureWorks.ProductSubcategories.Select(subcategory => new
-                {
-                    Name = subcategory.Name,
-                    CategoryName = subcategory.ProductCategory.Name,
-                    ProductCount = subcategory.Products.Count
-                });
-                subcategories.ForEach(subcategory => Trace.WriteLine(
-                    $"{subcategory.CategoryName}/{subcategory.Name}: {subcategory.ProductCount}"));
-            }
+                Name = subcategory.SupplierName,
+                CategoryName = subcategory.SupplierCategory.SupplierCategoryName,
+                ProductCount = subcategory.StockItems.Count
+            });
+            subcategories.WriteLines(subcategory =>
+                $"{subcategory.CategoryName}/{subcategory.Name}: {subcategory.ProductCount}");
         }
 
-        internal static void PrintSubcategoriesWithLazyLoading()
+        internal static void PrintSubcategoriesWithLazyLoading(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                ProductSubcategory[] subcategories = adventureWorks.ProductSubcategories
-                    .GroupBy(subcategory => subcategory.ProductCategoryID, (key, group) => group.FirstOrDefault())
-                    .ToArray(); // 1 query for N subcategories.
-                subcategories.ForEach(subcategory => Trace.WriteLine(
-                    $"{subcategory.Name} ({subcategory.ProductCategory.Name})")); // N queries.
-            }
+            Supplier[] subcategories = adventureWorks.Suppliers
+                .GroupBy(subcategory => subcategory.SupplierCategoryID, (key, group) => group.FirstOrDefault())
+                .ToArray(); // 1 query for N subcategories.
+            subcategories.WriteLines(subcategory =>
+                $"{subcategory.SupplierName} ({subcategory.SupplierCategory.SupplierCategoryName})"); // N queries.
         }
 
-        internal static void PrintSubcategoriesWithEagerLoading()
+        internal static void PrintSubcategoriesWithEagerLoading(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                ProductSubcategory[] subcategories = adventureWorks.ProductSubcategories
-                    .GroupBy(subcategory => subcategory.ProductCategoryID, (key, group) => group.FirstOrDefault())
-                    .Include(subcategory => subcategory.ProductCategory)
-                    .ToArray(); // 1 query for N subcategories.
-                subcategories.ForEach(subcategory => Trace.WriteLine(
-                    $"{subcategory.Name} ({subcategory.ProductCategory.Name})")); // N queries.
-            }
+            Supplier[] subcategories = adventureWorks.Suppliers
+                .GroupBy(subcategory => subcategory.SupplierCategoryID, (key, group) => group.FirstOrDefault())
+                .Include(subcategory => subcategory.SupplierCategory)
+                .ToArray(); // 1 query for N subcategories.
+            subcategories.WriteLines(subcategory =>
+                $"{subcategory.SupplierName} ({subcategory.SupplierCategory.SupplierCategoryName})"); // N queries.
         }
 
-        internal static void ConditionalEagerLoadingWithInclude()
+        internal static void ConditionalEagerLoadingWithInclude(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                IQueryable<ProductSubcategory> subcategories = adventureWorks.ProductSubcategories
-                    .Include(subcategory => subcategory.Products.Where(product => product.ListPrice > 0));
-                subcategories.ForEach(subcategory => Trace.WriteLine(
-                    $@"{subcategory.Name}: {string.Join(
-                        ", ", subcategory.Products.Select(product => product.Name))}"));
-                // ArgumentException: The Include path expression must refer to a navigation property defined on the type. Use dotted paths for reference navigation properties and the Select operator for collection navigation properties.
-            }
+            IQueryable<Supplier> subcategories = adventureWorks.Suppliers
+                .Include(subcategory => subcategory.StockItems.Where(product => product.UnitPrice > 0));
+            subcategories.WriteLines(subcategory =>
+                $@"{subcategory.SupplierName}: {string.Join(
+                    ", ", subcategory.StockItems.Select(product => product.StockItemName))}");
+            // ArgumentException: The Include path expression must refer to a navigation property defined on the type. Use dotted paths for reference navigation properties and the Select operator for collection navigation properties.
         }
 
-        internal static void ConditionalEagerLoadingWithSelect()
+        internal static void ConditionalEagerLoadingWithSelect(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
+            var subcategories = adventureWorks.Suppliers.Select(subcategory => new
             {
-                var subcategories = adventureWorks.ProductSubcategories.Select(subcategory => new
-                {
-                    Subcategory = subcategory,
-                    Products = subcategory.Products.Where(product => product.ListPrice > 0)
-                });
-                subcategories.ForEach(subcategory => Trace.WriteLine(
-                    $@"{subcategory.Subcategory.Name}: {string.Join(
-                        ", ", subcategory.Products.Select(product => product.Name))}"));
-            }
+                Subcategory = subcategory,
+                Products = subcategory.StockItems.Where(product => product.UnitPrice > 0)
+            });
+            subcategories.WriteLines(subcategory =>
+                $@"{subcategory.Subcategory.SupplierName}: {string.Join(
+                    ", ", subcategory.Products.Select(product => product.StockItemName))}");
         }
 
 #if NETFX
-        internal static void DisableLazyLoading()
+        internal static void DisableLazyLoading(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                adventureWorks.Configuration.LazyLoadingEnabled = false;
-                ProductSubcategory subcategory = adventureWorks.ProductSubcategories.First(); // Database query.
-                Trace.WriteLine(subcategory.Name);
-                ProductCategory associatedCategory = subcategory.ProductCategory; // No database query.
-                Trace.WriteLine(associatedCategory == null); // True
-                ICollection<Product> associatedProducts = subcategory.Products; // No database query.
-                Trace.WriteLine(associatedProducts.Count); // 0
-            }
+            adventureWorks.Configuration.LazyLoadingEnabled = false;
+            Supplier subcategory = adventureWorks.Suppliers.First(); // Database query.
+            subcategory.SupplierName.WriteLine();
+            SupplierCategory associatedCategory = subcategory.SupplierCategory; // No database query.
+            (associatedCategory == null).WriteLine(); // True
+            ICollection<StockItem> associatedProducts = subcategory.StockItems; // No database query.
+            associatedProducts.Count.WriteLine(); // 0
         }
 
-        internal static void DisableProxy()
+        internal static void DisableProxy(WideWorldImporters adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                adventureWorks.Configuration.ProxyCreationEnabled = false;
-                ProductSubcategory subcategory = adventureWorks.ProductSubcategories.First(); // Database query.
-                Trace.WriteLine(subcategory.Name);
-                ProductCategory associatedCategory = subcategory.ProductCategory; // No database query.
-                Trace.WriteLine(associatedCategory == null); // True
-                ICollection<Product> associatedProducts = subcategory.Products; // No database query.
-                Trace.WriteLine(associatedProducts.Count); // 0
-            }
+            adventureWorks.Configuration.ProxyCreationEnabled = false;
+            Supplier subcategory = adventureWorks.Suppliers.First(); // Database query.
+            subcategory.SupplierName.WriteLine();
+            SupplierCategory associatedCategory = subcategory.SupplierCategory; // No database query.
+            (associatedCategory == null).WriteLine(); // True
+            ICollection<StockItem> associatedProducts = subcategory.StockItems; // No database query.
+            associatedProducts.Count.WriteLine(); // 0
         }
 #endif
     }
 
     internal static class DataAccess
     {
-        internal static IQueryable<Product> QueryCategoryProducts(string category)
+        internal static IQueryable<StockItem> QueryCategoryProducts(string category)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
+            using (WideWorldImporters adventureWorks = new WideWorldImporters())
             {
-                return adventureWorks.Products.Where(
-                    product => product.ProductSubcategory.ProductCategory.Name == category);
+                return adventureWorks.StockItems.Where(
+                    product => product.Supplier.SupplierCategory.SupplierCategoryName == category);
             }
         }
     }
@@ -301,8 +293,8 @@
     {
         internal static void RenderCategoryProducts(string category) => DataAccess
             .QueryCategoryProducts(category)
-            .Select(product => product.Name)
-            .ForEach(name => Trace.WriteLine(name));
+            .Select(product => product.StockItemName)
+            .WriteLines();
         // InvalidOperationException: The operation cannot be completed because the DbContext has been disposed.
     }
 }

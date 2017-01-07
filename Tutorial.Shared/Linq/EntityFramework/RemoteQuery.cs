@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.Data.SqlClient;
-    using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Linq.Expressions;
@@ -46,12 +45,12 @@
             InfixVisitor infixVisitor = new InfixVisitor();
             Expression<Func<double, double, double>> expression1 = (a, b) => a * a + b * b;
             string infixExpression1 = infixVisitor.VisitBody(expression1);
-            Trace.WriteLine(infixExpression1); // ((@a * @a) + (@b * @b))
+            infixExpression1.WriteLine(); // ((@a * @a) + (@b * @b))
 
             Expression<Func<double, double, double, double, double, double>> expression2 =
                 (a, b, c, d, e) => a + b - c * d / 2 + e * 3;
             string infixExpression2 = infixVisitor.VisitBody(expression2);
-            Trace.WriteLine(infixExpression2); // (((@a + @b) - ((@c * @d) / 2)) + (@e * 3))
+            infixExpression2.WriteLine(); // (((@a + @b) - ((@c * @d) / 2)) + (@e * 3))
         }
     }
 
@@ -133,16 +132,16 @@
         {
             Expression<Func<double, double, double>> expression1 = (a, b) => a * a + b * b;
             Func<double, double, double> local1 = expression1.Compile();
-            Trace.WriteLine(local1(1, 2)); // 5
+            local1(1, 2).WriteLine(); // 5
             Func<double, double, double> remote1 = BinaryArithmeticTranslator.Sql(expression1);
-            Trace.WriteLine(remote1(1, 2)); // 5
+            remote1(1, 2).WriteLine(); // 5
 
             Expression<Func<double, double, double, double, double, double>> expression2 =
                 (a, b, c, d, e) => a + b - c * d / 2 + e * 3;
             Func<double, double, double, double, double, double> local2 = expression2.Compile();
-            Trace.WriteLine(local2(1, 2, 3, 4, 5)); // 12
+            local2(1, 2, 3, 4, 5).WriteLine(); // 12
             Func<double, double, double, double, double, double> remote2 = BinaryArithmeticTranslator.Sql(expression2);
-            Trace.WriteLine(remote2(1, 2, 3, 4, 5)); // 12
+            remote2(1, 2, 3, 4, 5).WriteLine(); // 12
         }
     }
 }
