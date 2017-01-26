@@ -25,10 +25,37 @@ namespace Dixin.Office.HtmlToWord
         {
             this.Write("<html>\r\n    <head>\r\n        <title>");
             this.Write(this.ToStringHelper.ToStringWithCulture(this.Title));
-            this.Write("</title>\r\n        <style type=\"text/css\">\r\n            table {\r\n                b" +
-                    "order-collapse: collapse;\r\n            }\r\n\r\n            table, th, td {\r\n       " +
-                    "         border: 1px solid black;\r\n            }\r\n        </style>\r\n    </head>\r" +
-                    "\n    <body>\r\n");
+            this.Write(@"</title>
+        <style type=""text/css"">
+            table {
+                border-collapse: collapse;
+            }
+
+            table, th, td {
+                border: 1px solid black;
+            }
+
+            pre.code {
+                background: #f5f5f5;
+				padding: 3px;
+            }
+
+            blockquote {
+                border: 1px solid #AAAAAA;
+				margin: 0px;
+                background: none;
+                padding-top: 5px;
+                padding-bottom: 5px;
+            }
+			
+			blockquote p, blockquote ul, blockquote ol {
+				margin-left: 3px;
+				margin-righ: 3px;
+			}
+        </style>
+    </head>
+    <body>
+");
  
 foreach (IGrouping<string, Tuple<string, string>> chapter in this.Chapters)
 {

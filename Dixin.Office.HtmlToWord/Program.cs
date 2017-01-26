@@ -88,17 +88,14 @@
                                                     .Wrap(Invariant($"<h{i + 2}/>"))
                                                     .Parent()
                                                     .Find("a").Contents().Unwrap());
-                                        sectionArticle.Find("pre span").Css("background", string.Empty);
                                         sectionArticle.Find("p")
                                             .Select(paragraph => paragraph.Cq())
                                             .ForEach(paragraph =>
                                                     {
                                                         string paragraphText = paragraph.Text().Trim();
-                                                        if ((paragraph.Children().Length == 0 &&
-                                                             string.IsNullOrWhiteSpace(paragraphText))
-                                                            ||
-                                                            paragraphText.StartsWith(
-                                                                "[LinQ via C#", StringComparison.OrdinalIgnoreCase))
+                                                        if ((paragraph.Children().Length == 0
+                                                            && string.IsNullOrWhiteSpace(paragraphText))
+                                                            || paragraphText.StartsWith("[LinQ via C#", StringComparison.OrdinalIgnoreCase))
                                                         {
                                                             paragraph.Remove();
                                                         }
