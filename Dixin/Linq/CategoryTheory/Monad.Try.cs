@@ -6,11 +6,11 @@
 
     public struct Try<T>
     {
-        private readonly Lazy<Tuple<T, Exception>> factory;
+        private readonly Lazy<(T, Exception)> factory;
 
-        public Try(Func<Tuple<T, Exception>> factory)
+        public Try(Func<(T, Exception)> factory)
         {
-            this.factory = new Lazy<Tuple<T, Exception>>(() =>
+            this.factory = new Lazy<(T, Exception)>(() =>
                 {
                     try
                     {
@@ -18,7 +18,7 @@
                     }
                     catch (Exception exception)
                     {
-                        return default(T).Tuple(exception);
+                        return (default(T), exception);
                     }
                 });
         }
@@ -39,7 +39,7 @@
 
         public bool HasException => this.Exception != null;
 
-        public static implicit operator Try<T>(T value) => new Try<T>(() => value.Tuple((Exception)null));
+        public static implicit operator Try<T>(T value) => new Try<T>(() => (value, (Exception)null));
     }
 
     public static partial class TryExtensions
@@ -53,14 +53,14 @@
                 {
                     if (source.HasException)
                     {
-                        return default(TResult).Tuple(source.Exception);
+                        return (default(TResult), source.Exception);
                     }
                     Try<TSelector> result = selector(source.Value);
                     if (result.HasException)
                     {
-                        return default(TResult).Tuple(result.Exception);
+                        return (default(TResult), result.Exception);
                     }
-                    return resultSelector(source.Value, result.Value).Tuple((Exception)null);
+                    return (resultSelector(source.Value, result.Value), (Exception)null);
                 });
 
         // Wrap: TSource -> Try<TSource>
@@ -74,19 +74,19 @@
 
     public static partial class TryExtensions
     {
-        public static Try<T> Throw<T>(this Exception exception) => new Try<T>(() => default(T).Tuple(exception));
+        public static Try<T> Throw<T>(this Exception exception) => new Try<T>(() => (default(T), exception));
     }
 
     public static partial class TryExtensions
     {
         public static Try<T> Try<T>(Func<T> function) =>
-            new Try<T>(() => function().Tuple((Exception)null));
+            new Try<T>(() => (function(), (Exception)null));
 
         public static Try<Unit> Try(Action action) =>
             new Try<Unit>(() =>
             {
                 action();
-                return default(Unit).Tuple((Exception)null);
+                return (default(Unit), (Exception)null);
             });
 
         public static Try<T> Catch<T, TException>(
@@ -94,14 +94,12 @@
             where TException : Exception => 
                 new Try<T>(() =>
                 {
-                    TException exception;
-                    if (source.HasException && (exception = source.Exception as TException) != null
+                    if (source.HasException && source.Exception is TException exception && exception != null
                         && (when == null || when(exception)))
                     {
                         source = handler(exception);
-                        
                     }
-                    return source.HasException ? default(T).Tuple(source.Exception) : source.Value.Tuple((Exception)null);
+                    return source.HasException ? (default(T), source.Exception) : (source.Value, (Exception)null);
                 });
 
         public static Try<T> Catch<T>(

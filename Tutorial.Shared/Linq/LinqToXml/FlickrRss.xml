@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:flickr="urn:flickr:user">
+  <channel>
+    <item>
+      <title>Microsoft Way, Microsoft Campus</title>
+      <dc:date.Taken>2011-11-02T16:45:54-08:00</dc:date.Taken>
+      <author flickr:profile="https://www.flickr.com/people/dixin/">nobody@flickr.com (Dixin Yan)</author>
+      <media:content url="https://farm3.staticflickr.com/2875/9215169916_f8fa57c3da_b.jpg" type="image/jpeg" height="681" width="1024"/>
+      <media:title>Microsoft Way, Microsoft Campus</media:title>
+      <media:description type="html">
+        <p>Microsoft Campus is the informal name of Microsoft's corporate headquarters, located at One Microsoft Way in Redmond, Washington. Microsoft initially moved onto the grounds of the campus on February 26, 1986. <a href="http://en.wikipedia.org/wiki/Microsoft_Redmond_Campus" rel="nofollow">en.wikipedia.org/wiki/Microsoft_Redmond_Campus</a></p>
+      </media:description>
+      <media:thumbnail url="https://farm3.staticflickr.com/2875/9215169916_f8fa57c3da_s.jpg" height="75" width="75"/>
+      <media:credit role="photographer">Dixin Yan</media:credit>
+      <media:category scheme="urn:flickr:tags">microsoft</media:category>
+      <!-- Other elements. -->
+    </item>
+    <!-- Other items. -->
+  </channel>
+</rss>

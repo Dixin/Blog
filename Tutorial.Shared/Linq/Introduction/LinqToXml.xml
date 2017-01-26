@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Dixin's Blog</title>
+    <link>https://weblogs.asp.net:443/dixin/</link>
+    <description>https://weblogs.asp.net:443/dixin/</description>
+    <item>
+      <title>EntityFramework.Functions: Code First Functions for Entity Framework</title>
+      <link>https://weblogs.asp.net/dixin/entityframework.functions</link>
+      <description><!-- Description. --></description>
+      <pubDate>Mon Dec 17, 2015 06:27:56 GMT</pubDate>
+      <guid isPermaLink="true">https://weblogs.asp.net/dixin/entityframework.functions</guid>
+      <category>.NET</category>
+      <category>LINQ</category>
+      <category>Entity Framework</category>
+      <category>LINQ to Entities</category>
+      <category>Code First</category>
+    </item>
+    <!-- More items. -->
+  </channel>
+</rss>

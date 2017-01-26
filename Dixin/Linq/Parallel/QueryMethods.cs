@@ -113,6 +113,7 @@ namespace Dixin.Linq.Parallel
                     });
         }
 
+        //  using static Functions;
         internal static void WhereSelect()
         {
             Enumerable
@@ -204,12 +205,12 @@ namespace Dixin.Linq.Parallel
                 .WithMergeOptions(ParallelMergeOptions.NotBuffered)
                 .Select(value => value + Compute(0, 1000));
             notBuffered.ForEach(value =>
+            {
+                if (value <= 5 || value >= count - 5)
                 {
-                    if (value <= 5 || value >= count - 5)
-                    {
-                        $"{value}:{stopwatch.ElapsedMilliseconds}".WriteLine();
-                    }
-                });
+                    $"{value}:{stopwatch.ElapsedMilliseconds}".WriteLine();
+                }
+            });
             // 0:43 1:155 2:158 3:244 4:244 5:245 99995:245 99996:246 99997:246 99998:247 99999:247
 
             stopwatch.Restart();
@@ -217,12 +218,12 @@ namespace Dixin.Linq.Parallel
                 .WithMergeOptions(ParallelMergeOptions.AutoBuffered)
                 .Select(value => value + Compute(0, 1000));
             autoBuffered.ForEach(value =>
+            {
+                if (value <= 5 || value >= count - 5)
                 {
-                    if (value <= 5 || value >= count - 5)
-                    {
-                        $"{value}:{stopwatch.ElapsedMilliseconds}".WriteLine();
-                    }
-                });
+                    $"{value}:{stopwatch.ElapsedMilliseconds}".WriteLine();
+                }
+            });
             // 0:101 1:184 2:186 3:188 4:191 5:192 99995:199 99996:202 99997:226 99998:227 99999:227
 
             stopwatch.Restart();
@@ -230,12 +231,12 @@ namespace Dixin.Linq.Parallel
                 .WithMergeOptions(ParallelMergeOptions.FullyBuffered)
                 .Select(value => value + Compute(0, 1000));
             fullyBuffered.ForEach(value =>
+            {
+                if (value <= 5 || value >= count - 5)
                 {
-                    if (value <= 5 || value >= count - 5)
-                    {
-                        $"{value}:{stopwatch.ElapsedMilliseconds}".WriteLine();
-                    }
-                });
+                    $"{value}:{stopwatch.ElapsedMilliseconds}".WriteLine();
+                }
+            });
             // 0:186 1:187 2:187 3:188 4:189 5:189 99995:190 99996:190 99997:191 99998:191 99999:192
         }
 
@@ -338,27 +339,28 @@ namespace Dixin.Linq.Parallel
             {
                 MarkerSeries markerSeries = Markers.CreateMarkerSeries("Sequential subtract");
                 int sequentialSubtract = Enumerable.Range(0, count).Aggregate((a, b) =>
+                {
+                    using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, $"{a}, {b} => {a - b}"))
                     {
-                        using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, $"{a}, {b} => {a - b}"))
-                        {
-                            return a - b + Compute();
-                        }
-                    });
+                        return a - b + Compute();
+                    }
+                });
             }
 
             using (Markers.EnterSpan(1, "Parallel subtract"))
             {
                 MarkerSeries markerSeries = Markers.CreateMarkerSeries("Parallel subtract");
                 int parallelSubtract = ParallelEnumerable.Range(0, count).Aggregate((a, b) =>
+                {
+                    using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, $"{a}, {b} => {a - b}"))
                     {
-                        using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, $"{a}, {b} => {a - b}"))
-                        {
-                            return a - b + Compute();
-                        }
-                    });
+                        return a - b + Compute();
+                    }
+                });
             }
         }
 #endif
+
         internal static void MergeForAggregate()
         {
             int count = Environment.ProcessorCount * 2;

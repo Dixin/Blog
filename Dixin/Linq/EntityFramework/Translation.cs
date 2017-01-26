@@ -124,7 +124,7 @@
                 .GetPrimitiveTypes(DataSpace.CSpace)
                 .Single(type => type.ClrEquivalentType == typeof(string)));
             TypeUsage nameRowTypeUsage = TypeUsage.CreateDefaultTypeUsage(RowType.Create(
-                Enumerable.Repeat(EdmProperty.Create(nameof(Product.Name), stringTypeUsage), 1),
+                new EdmProperty[] { EdmProperty.Create(nameof(Product.Name), stringTypeUsage) },
                 Enumerable.Empty<MetadataProperty>()));
             TypeUsage productTypeUsage = TypeUsage.CreateDefaultTypeUsage(metadata
                 .GetType(nameof(Product), "CodeFirstDatabaseSchema", DataSpace.SSpace));
@@ -242,7 +242,7 @@
                 .GetPrimitiveTypes(DataSpace.CSpace)
                 .Single(type => type.ClrEquivalentType == typeof(string)));
             TypeUsage nameRowTypeUsage = TypeUsage.CreateDefaultTypeUsage(RowType.Create(
-                Enumerable.Repeat(EdmProperty.Create(nameof(Product.Name), stringTypeUsage), 1),
+                new EdmProperty[] { EdmProperty.Create(nameof(Product.Name), stringTypeUsage) },
                 Enumerable.Empty<MetadataProperty>()));
             TypeUsage productTypeUsage = TypeUsage.CreateDefaultTypeUsage(metadata
                 .GetType(nameof(Product), "CodeFirstDatabaseSchema", DataSpace.SSpace));

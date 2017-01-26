@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Resources;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyDescription("Code snippets for blog https://weblogs.asp.net/dixin.")]
+[assembly: AssemblyDescription("Code snippets for https://weblogs.asp.net/dixin.")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
