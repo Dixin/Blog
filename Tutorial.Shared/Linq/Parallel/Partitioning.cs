@@ -46,10 +46,7 @@
 
     internal struct Data
     {
-        internal Data(int value)
-        {
-            this.Value = value;
-        }
+        internal Data(int value) => this.Value = value;
 
         internal int Value { get; }
 

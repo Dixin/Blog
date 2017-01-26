@@ -9,31 +9,31 @@
         public static IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
-            Func<TKey, TKey, int> compare) => 
+            Func<TKey, TKey, int> compare) =>
                 source.OrderBy(keySelector, compare.ToComparer());
 
         public static IOrderedEnumerable<TSource> OrderBy2<TSource, TKey>(
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
-            Func<TKey, TKey, int> compare) => 
+            Func<TKey, TKey, int> compare) =>
                 source.OrderBy(keySelector, compare.ToComparer());
 
         public static IOrderedEnumerable<TSource> OrderByDescending<TSource, TKey>(
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
-            Func<TKey, TKey, int> compare) => 
+            Func<TKey, TKey, int> compare) =>
                 source.OrderByDescending(keySelector, compare.ToComparer());
 
         public static IOrderedEnumerable<TSource> ThenBy<TSource, TKey>(
             this IOrderedEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
-            Func<TKey, TKey, int> compare) => 
+            Func<TKey, TKey, int> compare) =>
                 source.ThenBy(keySelector, compare.ToComparer());
 
         public static IOrderedEnumerable<TSource> ThenByDescending<TSource, TKey>(
             this IOrderedEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
-            Func<TKey, TKey, int> compare) => 
+            Func<TKey, TKey, int> compare) =>
                 source.ThenByDescending(keySelector, compare.ToComparer());
     }
 
@@ -45,7 +45,7 @@
             Func<TSource, TElement> elementSelector,
             Func<TKey, IEnumerable<TElement>, TResult> resultSelector,
             Func<TKey, TKey, bool> equality,
-            Func<TKey, int> getHashCode = null) => 
+            Func<TKey, int> getHashCode = null) =>
                 source.GroupBy(keySelector, elementSelector, resultSelector, equality.ToComparer(getHashCode));
 
         public static IEnumerable<TResult> Join<TOuter, TInner, TKey, TResult>(
@@ -55,7 +55,7 @@
             Func<TInner, TKey> innerKeySelector,
             Func<TOuter, TInner, TResult> resultSelector,
             Func<TKey, TKey, bool> equality,
-            Func<TKey, int> getHashCode = null) => 
+            Func<TKey, int> getHashCode = null) =>
                 outer.Join(inner, outerKeySelector, innerKeySelector, resultSelector, equality.ToComparer(getHashCode));
 
         public static IEnumerable<TResult> GroupJoin<TOuter, TInner, TKey, TResult>(
@@ -65,7 +65,7 @@
             Func<TInner, TKey> innerKeySelector,
             Func<TOuter, IEnumerable<TInner>, TResult> resultSelector,
             Func<TKey, TKey, bool> equality,
-            Func<TKey, int> getHashCode = null) => 
+            Func<TKey, int> getHashCode = null) =>
                 outer.GroupJoin(
                     inner,
                     outerKeySelector,
@@ -76,28 +76,28 @@
         public static IEnumerable<TSource> Distinct<TSource>(
             this IEnumerable<TSource> source,
             Func<TSource, TSource, bool> equality,
-            Func<TSource, int> getHashCode = null) => 
+            Func<TSource, int> getHashCode = null) =>
                 source.Distinct(equality.ToComparer(getHashCode));
 
         public static IEnumerable<TSource> Union<TSource>(
             this IEnumerable<TSource> first,
             IEnumerable<TSource> second,
             Func<TSource, TSource, bool> equality,
-            Func<TSource, int> getHashCode = null) => 
+            Func<TSource, int> getHashCode = null) =>
                 first.Union(second, equality.ToComparer(getHashCode));
 
         public static IEnumerable<TSource> Intersect<TSource>(
             this IEnumerable<TSource> first,
             IEnumerable<TSource> second,
             Func<TSource, TSource, bool> equality,
-            Func<TSource, int> getHashCode = null) => 
+            Func<TSource, int> getHashCode = null) =>
                 first.Intersect(second, equality.ToComparer(getHashCode));
 
         public static IEnumerable<TSource> Except<TSource>(
             this IEnumerable<TSource> first,
             IEnumerable<TSource> second,
             Func<TSource, TSource, bool> equality,
-            Func<TSource, int> getHashCode = null) => 
+            Func<TSource, int> getHashCode = null) =>
                 first.Except(second, equality.ToComparer(getHashCode));
     }
 
@@ -139,10 +139,7 @@
     {
         private readonly Func<T, T, int> compare;
 
-        public ComparerWrapper(Func<T, T, int> compare)
-        {
-            this.compare = compare;
-        }
+        public ComparerWrapper(Func<T, T, int> compare) => this.compare = compare;
 
         public int Compare(T x, T y) => this.compare(x, y);
     }

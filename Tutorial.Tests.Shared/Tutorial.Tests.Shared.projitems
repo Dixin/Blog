@@ -9,6 +9,24 @@
     <Import_RootNamespace>Tutorial.Tests.Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CategoryTheory\ApplicativeTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CategoryTheory\BifunctorTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CategoryTheory\CategoryTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CategoryTheory\EnumerableExtensionsTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CategoryTheory\FunctorTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CategoryTheory\LinqHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CategoryTheory\MonadTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CategoryTheory\MonoidTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CategoryTheory\NaturalTransformationsTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CategoryTheory\PerformanceTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\Connection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\BinaryArithmeticCompilerTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\ContactTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\GenericTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\ImperativeTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\LocalFunctionsTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\PrefixVisitorTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\VariancesTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\BinaryArithmeticTranslatorTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\ChangesTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\ConcurrencyTests.cs" />
@@ -23,6 +41,35 @@
     <Compile Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\TransactionHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\TransactionTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\TranslationTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)TestAssembly.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\EnumerableXTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\Functional\FunctionalQueryMethodsTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\Lambda\ChurchAggregateListTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\Lambda\ChurchAggregateListWrapperTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\Lambda\ChurchBooleanTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\Lambda\ChurchListTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\Lambda\ChurchNestedListTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\Lambda\ChurchNumeralTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\Lambda\ChurchNumeralWrapperTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\Lambda\ChurchPredicateTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\Lambda\ChurchSignedNumeralTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\Lambda\ChurchTupleTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\Lambda\CombinatorsTests.Ski.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\Lambda\CombinatorTests.FixedPoint.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\Lambda\CombinatorTests.Iota.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\LinqToObjects\DeferredExecutionTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\LinqToObjects\EnumerableQueryMethodsTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\LinqToObjects\IteratorPatternTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\LinqToObjects\LinkedListSequenceTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\LinqToObjects\QueryMethodsTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\LinqToXml\DomTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\LinqToXml\ManipulationTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\LinqToXml\ModelingTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\LinqToXml\QueryMethodsTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\Parallel\PartitioningTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\Parallel\PerformanceTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\Parallel\QueryMethods.OrderingTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\Parallel\QueryMethodsTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\XExtensionsTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\XExtensionsTests.XPath.cs" />
   </ItemGroup>
 </Project>

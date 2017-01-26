@@ -154,12 +154,8 @@
     {
         private readonly Sequence<T, TData> sequence;
 
-        public Generator(
-            TData data,
-            Func<TData, Iterator<T>> iteratorFactory)
-        {
+        public Generator(TData data, Func<TData, Iterator<T>> iteratorFactory) => 
             this.sequence = new Sequence<T, TData>(data, iteratorFactory);
-        }
 
         public IEnumerator<T> GetEnumerator() => this.sequence.GetEnumerator();
 

@@ -30,10 +30,7 @@
     {
         private readonly Lazy<(T1, T2)> lazy;
 
-        public Lazy(Func<(T1, T2)> factory)
-        {
-            this.lazy = new Lazy<(T1, T2)>(factory);
-        }
+        public Lazy(Func<(T1, T2)> factory) => this.lazy = new Lazy<(T1, T2)>(factory);
 
         public T1 Value1 => this.lazy.Value.Item1;
 

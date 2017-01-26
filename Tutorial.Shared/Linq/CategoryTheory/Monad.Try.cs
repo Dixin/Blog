@@ -8,20 +8,18 @@
     {
         private readonly Lazy<(T, Exception)> factory;
 
-        public Try(Func<(T, Exception)> factory)
-        {
+        public Try(Func<(T, Exception)> factory) =>
             this.factory = new Lazy<(T, Exception)>(() =>
+            {
+                try
                 {
-                    try
-                    {
-                        return factory();
-                    }
-                    catch (Exception exception)
-                    {
-                        return (default(T), exception);
-                    }
-                });
-        }
+                    return factory();
+                }
+                catch (Exception exception)
+                {
+                    return (default(T), exception);
+                }
+            });
 
         public T Value
         {
