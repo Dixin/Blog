@@ -121,7 +121,7 @@ exec sp_executesql N'SELECT
         CASE WHEN (((CASE WHEN ([Extent1].[Style] = N''M'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''U'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''W'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN ''0X'' WHEN ([Extent1].[Style] = N''M'') THEN ''0X0X'' WHEN ([Extent1].[Style] = N''U'') THEN ''0X1X'' ELSE ''0X2X'' END AS [C1]
         FROM [Production].[Product] AS [Extent1]
         WHERE [Extent1].[ProductID] = @p0
-    )  AS [Limit1]',N'@p0 int',@p0=950
+    )  AS [Limit1]',N'@p0 int',@p0=999
 
 exec sp_executesql N'SELECT 
     [Limit1].[C1] AS [C1], 
@@ -139,21 +139,21 @@ exec sp_executesql N'SELECT
         CASE WHEN (((CASE WHEN ([Extent1].[Style] = N''M'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''U'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''W'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN ''0X'' WHEN ([Extent1].[Style] = N''M'') THEN ''0X0X'' WHEN ([Extent1].[Style] = N''U'') THEN ''0X1X'' ELSE ''0X2X'' END AS [C1]
         FROM [Production].[Product] AS [Extent1]
         WHERE [Extent1].[ProductID] = @p0
-    )  AS [Limit1]',N'@p0 int',@p0=950
+    )  AS [Limit1]',N'@p0 int',@p0=999
 
 exec sp_executesql N'UPDATE [Production].[Product]
 SET [Name] = @0, [ListPrice] = @1
 WHERE (([ProductID] = @2) AND ([RowVersion] = @3))
 SELECT [RowVersion]
 FROM [Production].[Product]
-WHERE @@ROWCOUNT > 0 AND [ProductID] = @2',N'@0 nvarchar(50),@1 decimal(18,2),@2 int,@3 binary(8)',@0=N'readerWriter1',@1=100.00,@2=950,@3=0x00000000000007D1
+WHERE @@ROWCOUNT > 0 AND [ProductID] = @2',N'@0 nvarchar(50),@1 decimal(18,2),@2 int,@3 binary(8)',@0=N'readerWriter1',@1=100.00,@2=999,@3=0x00000000000007D1
 
 exec sp_executesql N'UPDATE [Production].[Product]
 SET [Name] = @0, [ProductSubcategoryID] = @1
 WHERE (([ProductID] = @2) AND ([RowVersion] = @3))
 SELECT [RowVersion]
 FROM [Production].[Product]
-WHERE @@ROWCOUNT > 0 AND [ProductID] = @2',N'@0 nvarchar(50),@1 int,@2 int,@3 binary(8)',@0=N'readerWriter2',@1=1,@2=950,@3=0x00000000000007D1
+WHERE @@ROWCOUNT > 0 AND [ProductID] = @2',N'@0 nvarchar(50),@1 int,@2 int,@3 binary(8)',@0=N'readerWriter2',@1=1,@2=999,@3=0x00000000000007D1
 
 SELECT 
     CASE WHEN (((CASE WHEN ([Extent1].[Style] = N'M') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N'U') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N'W') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN '0X' WHEN ([Extent1].[Style] = N'M') THEN '0X0X' WHEN ([Extent1].[Style] = N'U') THEN '0X1X' ELSE '0X2X' END AS [C1], 
@@ -163,7 +163,7 @@ SELECT
     [Extent1].[ListPrice] AS [ListPrice], 
     [Extent1].[ProductSubcategoryID] AS [ProductSubcategoryID]
     FROM [Production].[Product] AS [Extent1]
-    WHERE [Extent1].[ProductID] = 950
+    WHERE [Extent1].[ProductID] = 999
 
 exec sp_executesql N'SELECT 
     [Limit1].[C1] AS [C1], 
@@ -181,7 +181,7 @@ exec sp_executesql N'SELECT
         CASE WHEN (((CASE WHEN ([Extent1].[Style] = N''M'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''U'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''W'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN ''0X'' WHEN ([Extent1].[Style] = N''M'') THEN ''0X0X'' WHEN ([Extent1].[Style] = N''U'') THEN ''0X1X'' ELSE ''0X2X'' END AS [C1]
         FROM [Production].[Product] AS [Extent1]
         WHERE [Extent1].[ProductID] = @p0
-    )  AS [Limit1]',N'@p0 int',@p0=950
+    )  AS [Limit1]',N'@p0 int',@p0=999
 
 -- ClientWins
 exec sp_executesql N'SELECT 
@@ -200,7 +200,7 @@ exec sp_executesql N'SELECT
         CASE WHEN (((CASE WHEN ([Extent1].[Style] = N''M'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''U'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''W'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN ''0X'' WHEN ([Extent1].[Style] = N''M'') THEN ''0X0X'' WHEN ([Extent1].[Style] = N''U'') THEN ''0X1X'' ELSE ''0X2X'' END AS [C1]
         FROM [Production].[Product] AS [Extent1]
         WHERE [Extent1].[ProductID] = @p0
-    )  AS [Limit1]',N'@p0 int',@p0=950
+    )  AS [Limit1]',N'@p0 int',@p0=999
 
 exec sp_executesql N'SELECT 
     [Limit1].[C1] AS [C1], 
@@ -218,21 +218,21 @@ exec sp_executesql N'SELECT
         CASE WHEN (((CASE WHEN ([Extent1].[Style] = N''M'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''U'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''W'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN ''0X'' WHEN ([Extent1].[Style] = N''M'') THEN ''0X0X'' WHEN ([Extent1].[Style] = N''U'') THEN ''0X1X'' ELSE ''0X2X'' END AS [C1]
         FROM [Production].[Product] AS [Extent1]
         WHERE [Extent1].[ProductID] = @p0
-    )  AS [Limit1]',N'@p0 int',@p0=950
+    )  AS [Limit1]',N'@p0 int',@p0=999
 
 exec sp_executesql N'UPDATE [Production].[Product]
 SET [Name] = @0, [ListPrice] = @1
 WHERE (([ProductID] = @2) AND ([RowVersion] = @3))
 SELECT [RowVersion]
 FROM [Production].[Product]
-WHERE @@ROWCOUNT > 0 AND [ProductID] = @2',N'@0 nvarchar(50),@1 decimal(18,2),@2 int,@3 binary(8)',@0=N'readerWriter1',@1=100.00,@2=950,@3=0x00000000000007D1
+WHERE @@ROWCOUNT > 0 AND [ProductID] = @2',N'@0 nvarchar(50),@1 decimal(18,2),@2 int,@3 binary(8)',@0=N'readerWriter1',@1=100.00,@2=999,@3=0x00000000000007D1
 
 exec sp_executesql N'UPDATE [Production].[Product]
 SET [Name] = @0, [ProductSubcategoryID] = @1
 WHERE (([ProductID] = @2) AND ([RowVersion] = @3))
 SELECT [RowVersion]
 FROM [Production].[Product]
-WHERE @@ROWCOUNT > 0 AND [ProductID] = @2',N'@0 nvarchar(50),@1 int,@2 int,@3 binary(8)',@0=N'readerWriter2',@1=1,@2=950,@3=0x00000000000007D1
+WHERE @@ROWCOUNT > 0 AND [ProductID] = @2',N'@0 nvarchar(50),@1 int,@2 int,@3 binary(8)',@0=N'readerWriter2',@1=1,@2=999,@3=0x00000000000007D1
 
 exec sp_executesql N'SELECT 
     [Limit1].[ProductID] AS [ProductID], 
@@ -250,14 +250,14 @@ exec sp_executesql N'SELECT
         CASE WHEN (CASE WHEN (((CASE WHEN ([Extent1].[Style] = N''M'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''U'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''W'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN ''0X'' WHEN ([Extent1].[Style] = N''M'') THEN ''0X0X'' WHEN ([Extent1].[Style] = N''U'') THEN ''0X1X'' ELSE ''0X2X'' END LIKE ''0X%'') THEN [Extent1].[ProductSubcategoryID] END AS [C5]
         FROM [Production].[Product] AS [Extent1]
         WHERE ((CASE WHEN (CASE WHEN (((CASE WHEN ([Extent1].[Style] = N''M'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''U'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''W'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN ''0X'' WHEN ([Extent1].[Style] = N''M'') THEN ''0X0X'' WHEN ([Extent1].[Style] = N''U'') THEN ''0X1X'' ELSE ''0X2X'' END LIKE ''0X%'') THEN [Extent1].[ProductID] END) = @p0) OR ((CASE WHEN (CASE WHEN (((CASE WHEN ([Extent1].[Style] = N''M'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''U'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''W'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN ''0X'' WHEN ([Extent1].[Style] = N''M'') THEN ''0X0X'' WHEN ([Extent1].[Style] = N''U'') THEN ''0X1X'' ELSE ''0X2X'' END LIKE ''0X%'') THEN [Extent1].[ProductID] END IS NULL) AND (@p0 IS NULL))
-    )  AS [Limit1]',N'@p0 int',@p0=950
+    )  AS [Limit1]',N'@p0 int',@p0=999
 
 exec sp_executesql N'UPDATE [Production].[Product]
 SET [Name] = @0, [ListPrice] = @1, [ProductSubcategoryID] = @2
 WHERE (([ProductID] = @3) AND ([RowVersion] = @4))
 SELECT [RowVersion]
 FROM [Production].[Product]
-WHERE @@ROWCOUNT > 0 AND [ProductID] = @3',N'@0 nvarchar(50),@1 decimal(18,2),@2 int,@3 int,@4 binary(8)',@0=N'readerWriter2',@1=256.49,@2=1,@3=950,@4=0x0000000000036336
+WHERE @@ROWCOUNT > 0 AND [ProductID] = @3',N'@0 nvarchar(50),@1 decimal(18,2),@2 int,@3 int,@4 binary(8)',@0=N'readerWriter2',@1=256.49,@2=1,@3=999,@4=0x0000000000036336
 
 exec sp_executesql N'SELECT 
     [Limit1].[C1] AS [C1], 
@@ -275,7 +275,7 @@ exec sp_executesql N'SELECT
         CASE WHEN (((CASE WHEN ([Extent1].[Style] = N''M'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''U'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''W'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN ''0X'' WHEN ([Extent1].[Style] = N''M'') THEN ''0X0X'' WHEN ([Extent1].[Style] = N''U'') THEN ''0X1X'' ELSE ''0X2X'' END AS [C1]
         FROM [Production].[Product] AS [Extent1]
         WHERE [Extent1].[ProductID] = @p0
-    )  AS [Limit1]',N'@p0 int',@p0=950
+    )  AS [Limit1]',N'@p0 int',@p0=999
 
 -- MergeClientAndDatabase
 exec sp_executesql N'SELECT 
@@ -294,7 +294,7 @@ exec sp_executesql N'SELECT
         CASE WHEN (((CASE WHEN ([Extent1].[Style] = N''M'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''U'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''W'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN ''0X'' WHEN ([Extent1].[Style] = N''M'') THEN ''0X0X'' WHEN ([Extent1].[Style] = N''U'') THEN ''0X1X'' ELSE ''0X2X'' END AS [C1]
         FROM [Production].[Product] AS [Extent1]
         WHERE [Extent1].[ProductID] = @p0
-    )  AS [Limit1]',N'@p0 int',@p0=950
+    )  AS [Limit1]',N'@p0 int',@p0=999
 
 exec sp_executesql N'SELECT 
     [Limit1].[C1] AS [C1], 
@@ -312,21 +312,21 @@ exec sp_executesql N'SELECT
         CASE WHEN (((CASE WHEN ([Extent1].[Style] = N''M'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''U'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''W'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN ''0X'' WHEN ([Extent1].[Style] = N''M'') THEN ''0X0X'' WHEN ([Extent1].[Style] = N''U'') THEN ''0X1X'' ELSE ''0X2X'' END AS [C1]
         FROM [Production].[Product] AS [Extent1]
         WHERE [Extent1].[ProductID] = @p0
-    )  AS [Limit1]',N'@p0 int',@p0=950
+    )  AS [Limit1]',N'@p0 int',@p0=999
 
 exec sp_executesql N'UPDATE [Production].[Product]
 SET [Name] = @0, [ListPrice] = @1
 WHERE (([ProductID] = @2) AND ([RowVersion] = @3))
 SELECT [RowVersion]
 FROM [Production].[Product]
-WHERE @@ROWCOUNT > 0 AND [ProductID] = @2',N'@0 nvarchar(50),@1 decimal(18,2),@2 int,@3 binary(8)',@0=N'readerWriter1',@1=100.00,@2=950,@3=0x00000000000007D1
+WHERE @@ROWCOUNT > 0 AND [ProductID] = @2',N'@0 nvarchar(50),@1 decimal(18,2),@2 int,@3 binary(8)',@0=N'readerWriter1',@1=100.00,@2=999,@3=0x00000000000007D1
 
 exec sp_executesql N'UPDATE [Production].[Product]
 SET [Name] = @0, [ProductSubcategoryID] = @1
 WHERE (([ProductID] = @2) AND ([RowVersion] = @3))
 SELECT [RowVersion]
 FROM [Production].[Product]
-WHERE @@ROWCOUNT > 0 AND [ProductID] = @2',N'@0 nvarchar(50),@1 int,@2 int,@3 binary(8)',@0=N'readerWriter2',@1=1,@2=950,@3=0x00000000000007D1
+WHERE @@ROWCOUNT > 0 AND [ProductID] = @2',N'@0 nvarchar(50),@1 int,@2 int,@3 binary(8)',@0=N'readerWriter2',@1=1,@2=999,@3=0x00000000000007D1
 
 exec sp_executesql N'SELECT 
     [Limit1].[ProductID] AS [ProductID], 
@@ -344,14 +344,14 @@ exec sp_executesql N'SELECT
         CASE WHEN (CASE WHEN (((CASE WHEN ([Extent1].[Style] = N''M'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''U'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''W'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN ''0X'' WHEN ([Extent1].[Style] = N''M'') THEN ''0X0X'' WHEN ([Extent1].[Style] = N''U'') THEN ''0X1X'' ELSE ''0X2X'' END LIKE ''0X%'') THEN [Extent1].[ProductSubcategoryID] END AS [C5]
         FROM [Production].[Product] AS [Extent1]
         WHERE ((CASE WHEN (CASE WHEN (((CASE WHEN ([Extent1].[Style] = N''M'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''U'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''W'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN ''0X'' WHEN ([Extent1].[Style] = N''M'') THEN ''0X0X'' WHEN ([Extent1].[Style] = N''U'') THEN ''0X1X'' ELSE ''0X2X'' END LIKE ''0X%'') THEN [Extent1].[ProductID] END) = @p0) OR ((CASE WHEN (CASE WHEN (((CASE WHEN ([Extent1].[Style] = N''M'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''U'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''W'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN ''0X'' WHEN ([Extent1].[Style] = N''M'') THEN ''0X0X'' WHEN ([Extent1].[Style] = N''U'') THEN ''0X1X'' ELSE ''0X2X'' END LIKE ''0X%'') THEN [Extent1].[ProductID] END IS NULL) AND (@p0 IS NULL))
-    )  AS [Limit1]',N'@p0 int',@p0=950
+    )  AS [Limit1]',N'@p0 int',@p0=999
 
 exec sp_executesql N'UPDATE [Production].[Product]
 SET [ProductSubcategoryID] = @0
 WHERE (([ProductID] = @1) AND ([RowVersion] = @2))
 SELECT [RowVersion]
 FROM [Production].[Product]
-WHERE @@ROWCOUNT > 0 AND [ProductID] = @1',N'@0 int,@1 int,@2 binary(8)',@0=1,@1=950,@2=0x0000000000036338
+WHERE @@ROWCOUNT > 0 AND [ProductID] = @1',N'@0 int,@1 int,@2 binary(8)',@0=1,@1=999,@2=0x0000000000036338
 
 exec sp_executesql N'SELECT 
     [Limit1].[C1] AS [C1], 
@@ -369,4 +369,4 @@ exec sp_executesql N'SELECT
         CASE WHEN (((CASE WHEN ([Extent1].[Style] = N''M'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''U'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1) AND ((CASE WHEN ([Extent1].[Style] = N''W'') THEN cast(1 as bit) ELSE cast(0 as bit) END) <> 1)) THEN ''0X'' WHEN ([Extent1].[Style] = N''M'') THEN ''0X0X'' WHEN ([Extent1].[Style] = N''U'') THEN ''0X1X'' ELSE ''0X2X'' END AS [C1]
         FROM [Production].[Product] AS [Extent1]
         WHERE [Extent1].[ProductID] = @p0
-    )  AS [Limit1]',N'@p0 int',@p0=950
+    )  AS [Limit1]',N'@p0 int',@p0=999

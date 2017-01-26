@@ -1,0 +1,113 @@
+﻿namespace Dixin.Tests.Linq.EntityFramework
+{
+#if NETFX
+    using System.Data.Entity.Infrastructure;
+#endif
+    using System.Diagnostics;
+
+    using Dixin.Linq.EntityFramework;
+
+#if !NETFX
+    using Microsoft.EntityFrameworkCore;
+#endif
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using static TransactionHelper;
+
+    [TestClass]
+    public class ConcurrencyTests
+    {
+        [TestMethod]
+        public void DetectConflictTest()
+        {
+#if NETFX
+            using (new TransactionHelper())
+            {
+                Concurrency.NoCheck(new DbReaderWriter(new AdventureWorks()), new DbReaderWriter(new AdventureWorks()), new DbReaderWriter(new AdventureWorks()));
+            }
+            using (new TransactionHelper())
+            {
+                try
+                {
+                    Concurrency.ConcurrencyCheck(new DbReaderWriter(new AdventureWorks()), new DbReaderWriter(new AdventureWorks()));
+                    Assert.Fail();
+                }
+                catch (DbUpdateConcurrencyException exception)
+                {
+                    Trace.WriteLine(exception);
+                }
+            }
+            using (new TransactionHelper())
+            {
+                try
+                {
+                    Concurrency.RowVersion(new DbReaderWriter(new AdventureWorks()), new DbReaderWriter(new AdventureWorks()));
+                    Assert.Fail();
+                }
+                catch (DbUpdateConcurrencyException exception)
+                {
+                    Trace.WriteLine(exception);
+                }
+            }
+#else
+            Rollback((adventureWorks1, adventureWorks2, adventureWorks3) => Concurrency.NoCheck(new DbReaderWriter(adventureWorks1), new DbReaderWriter(adventureWorks2), new DbReaderWriter(adventureWorks3)));
+            Rollback((adventureWorks1, adventureWorks2) =>
+            {
+                try
+                {
+                    Concurrency.ConcurrencyCheck(new DbReaderWriter(adventureWorks1), new DbReaderWriter(adventureWorks2));
+                    Assert.Fail();
+                }
+                catch (DbUpdateConcurrencyException exception)
+                {
+                    Trace.WriteLine(exception);
+                }
+            });
+            Rollback((adventureWorks1, adventureWorks2) =>
+            {
+                try
+                {
+                    Concurrency.RowVersion(new DbReaderWriter(adventureWorks1), new DbReaderWriter(adventureWorks2));
+                    Assert.Fail();
+                }
+                catch (DbUpdateConcurrencyException exception)
+                {
+                    Trace.WriteLine(exception);
+                }
+            });
+#endif
+        }
+
+        [TestMethod]
+        public void UpdateConflictTest()
+        {
+#if NETFX
+            using (new TransactionHelper())
+            {
+                Concurrency.UpdateProductDatabaseWins(new DbReaderWriter(new AdventureWorks()), new DbReaderWriter(new AdventureWorks()), new DbReaderWriter(new AdventureWorks()));
+            }
+            using (new TransactionHelper())
+            {
+                Concurrency.UpdateProductClientWins(new DbReaderWriter(new AdventureWorks()), new DbReaderWriter(new AdventureWorks()), new DbReaderWriter(new AdventureWorks()));
+            }
+            using (new TransactionHelper())
+            {
+                Concurrency.UpdateProductMergeClientAndDatabase(new DbReaderWriter(new AdventureWorks()), new DbReaderWriter(new AdventureWorks()), new DbReaderWriter(new AdventureWorks()));
+            }
+            using (new TransactionHelper())
+            {
+                Concurrency.SaveChanges(new AdventureWorks(), new AdventureWorks());
+            }
+#else
+            Rollback((adventureWorks1, adventureWorks2, adventureWorks3) => 
+                Concurrency.UpdateProductDatabaseWins(new DbReaderWriter(adventureWorks1), new DbReaderWriter(adventureWorks2), new DbReaderWriter(adventureWorks3)));
+            Rollback((adventureWorks1, adventureWorks2, adventureWorks3) => 
+                Concurrency.UpdateProductClientWins(new DbReaderWriter(adventureWorks1), new DbReaderWriter(adventureWorks2), new DbReaderWriter(adventureWorks3)));
+            Rollback((adventureWorks1, adventureWorks2, adventureWorks3) => 
+                Concurrency.UpdateProductMergeClientAndDatabase(new DbReaderWriter(adventureWorks1), new DbReaderWriter(adventureWorks2), new DbReaderWriter(adventureWorks3)));
+            Rollback((adventureWorks1, adventureWorks2) => 
+                Concurrency.SaveChanges(adventureWorks1, adventureWorks2));
+#endif
+        }
+    }
+}

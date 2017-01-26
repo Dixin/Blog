@@ -8,14 +8,8 @@ MethodCallExpression (NodeType = Call, Type = IQueryable<string>)
   | |_Method = Queryable.Where<Product>
   | |_Object = null
   | |_Arguments
-  |   |_MethodCallExpression (NodeType = Call, Type = IQueryable<Product>)
-  |   | |_Method = ObjectQuery<Product>.MergeAs
-  |   | |_Object
-  |   | | |_ConstantExpression (NodeType = Constant, Type = ObjectQuery<Product>)
-  |   | |  |_Value = new ObjectQuery<Product>(...)
-  |   | |_Arguments
-  |   |   |_ConstantExpression (NodeType = Constant, Type = MergeOption)
-  |   |     |_Value = MergeOption.AppendOnly
+  |   |_ConstantExpression (NodeType = Constant, Type = IQueryable<Product>)
+  |   | |_Value = new EntityQueryable<Product>(adventureWorks.GetService<IAsyncQueryProvider>())
   |   |_UnaryExpression (NodeType = Quote, Type = Expression<Func<Product, bool>>)
   |     |_Operand
   |       |_Expression<Func<Product, bool>> (NodeType = Lambda, Type = Func<Product, bool>)
@@ -23,17 +17,19 @@ MethodCallExpression (NodeType = Call, Type = IQueryable<string>)
   |         | |_ParameterExpression (NodeType = Parameter, Type = Product)
   |         |   |_Name = "product"
   |         |_Body
-  |           |_MethodCallExpression (NodeType = Call, Type = bool)
-  |             |_Method = string.StartsWith
-  |             |_Object
-  |             | |_PropertyExpression (NodeType = MemberAccess, Type = string)
+  |           |_BinaryExpression (NodeType = GreaterThan, Type = bool)
+  |             |_Left
+  |             | |_MemberExpression (NodeType = MemberAccess, Type = int)
+  |             |   |_Member = "Length"
   |             |   |_Expression
-  |             |     |_ParameterExpression (NodeType = Parameter, Type = Product)
-  |             |     | |_Name = "product"
-  |             |     |_Member = "Name"
-  |             |_Arguments
-  |               |_ConstantExpression (NodeType = Constant, Type = string)
-  |                 |_Value = "M"
+  |             |     |_MemberExpression (NodeType = MemberAccess, Type = string)
+  |             |       |_Member = "Name"
+  |             |       |_Expression
+  |             |         |_ParameterExpression (NodeType = Parameter, Type = Product)
+  |             |           |_Name = "product"
+  |             |_Right
+  |               |_ConstantExpression (NodeType = Constant, Type = int)
+  |                 |_Value = 10
   |_UnaryExpression (NodeType = Quote, Type = Expression<Func<Product, string>>)
     |_Operand
       |_Expression<Func<Product, string>> (NodeType = Lambda, Type = Func<Product, string>)
@@ -41,11 +37,70 @@ MethodCallExpression (NodeType = Call, Type = IQueryable<string>)
         | |_ParameterExpression (NodeType = Parameter, Type = Product)
         |   |_Name = "product"
         |_Body
-          |_PropertyExpression (NodeType = MemberAccess, Type = string)
-            |_Expression
-            | |_ParameterExpression (NodeType = Parameter, Type = Product)
-            |   |_Name = "product"
+          |_MemberExpression (NodeType = MemberAccess, Type = string)
             |_Member = "Name"
+            |_Expression
+              |_ParameterExpression (NodeType = Parameter, Type = Product)
+                |_Name = "product"
+
+SelectExpression (NodeType = Extension, Type = string)
+|_Porjection
+| |_AliasExpression (NodeType = Extension, Type = string)
+|   |_Expression
+|       |_ColumnExpression (NodeType = Extension, Type = string)
+|       |_Name = "Name"
+|       |_Property = Product.Name
+|       |_Table
+|           |_TableExpression (NodeType = Extension, Type = object)
+|           |_Schema = "Production"
+|           |_Name = "Product"
+|           |_Alias = "product"
+|_Tables
+| |_TableExpression (NodeType = Extension, Type = object)
+|   |_Schema = "Production"
+|   |_Name = "Product"
+|   |_Alias = "product"
+|_Predicate
+  |_BinaryExpression (NodeType = GreaterThan, Type = bool)
+  |_left
+  | |_SqlFunctionExpression (NodeType = Extension, Type = int)
+  |   |_FunctionName = "LEN"
+  |   |_Arguments
+  |     |_AliasExpression (NodeType = Extension, Type = string)
+  |       |_Expression
+  |         |_ColumnExpression (NodeType = Extension, Type = string)
+  |           |_Name = "Name"
+  |           |_Property = Product.Name
+  |           |_Table
+  |             |_TableExpression (NodeType = Extension, Type = object)
+  |               |_Schema = "Production"
+  |               |_Name = "Product"
+  |               |_Alias = "product"
+  |_Right
+    |_ConstantExpression (NodeType = Constant, Type = int)
+    |_Value = 1
+
+
+SelectExpression (NodeType = Extension, Type = string)
+|_Limit
+| |_ConstantExpression (NodeType = Constant, Type = int)
+|   |_Value = 1
+|_Porjection
+| |_AliasExpression (NodeType = Extension, Type = string)
+|   |_Expression
+|       |_ColumnExpression (NodeType = Extension, Type = string)
+|       |_Name = "Name"
+|       |_Property = Product.Name
+|       |_Table
+|         |_TableExpression (NodeType = Extension, Type = object)
+|         |_Schema = "Production"
+|         |_Name = "Product"
+|         |_Alias = "product"
+|_Tables
+  |_TableExpression (NodeType = Extension, Type = object)
+    |_Schema = "Production"
+    |_Name = "Product"
+    |_Alias = "product"
 
 SelectFirst:
 
@@ -57,14 +112,8 @@ MethodCallExpression (NodeType = Call, Type = string)
     |_Method = Queryable.Select<Product, string>
     |_Object = null
     |_Arguments
-      |_MethodCallExpression (NodeType = Call, Type = IQueryable<Product>)
-      | |_Method = ObjectQuery<Product>.MergeAs
-      | |_Object
-      | | |_ConstantExpression (NodeType = Constant, Type = ObjectQuery<Product>)
-      | |  |_Value = new ObjectQuery<Product>(...)
-      | |_Arguments
-      |   |_ConstantExpression (NodeType = Constant, Type = MergeOption)
-      |     |_Value = MergeOption.AppendOnly
+      |_ConstantExpression (NodeType = Constant, Type = IQueryable<Product>)
+      | |_Value = new EntityQueryable<Product>(adventureWorks.GetService<IAsyncQueryProvider>())
       |_UnaryExpression (NodeType = Quote, Type = Expression<Func<Product, string>>)
        |_Operand
           |_Expression<Func<Product, string>> (NodeType = Lambda, Type = Func<Product, string>)
@@ -72,11 +121,11 @@ MethodCallExpression (NodeType = Call, Type = string)
             | |_ParameterExpression (NodeType = Parameter, Type = Product)
             |   |_Name = "product"
             |_Body
-              |_PropertyExpression (NodeType = MemberAccess, Type = string)
-                |_Expression
-                | |_ParameterExpression (NodeType = Parameter, Type = Product)
-                |   |_Name = "product"
+              |_MemberExpression (NodeType = MemberAccess, Type = string)
                 |_Member = "Name"
+                |_Expression
+                  |_ParameterExpression (NodeType = Parameter, Type = Product)
+                    |_Name = "product"
 
 WhereSelect:
 
@@ -96,21 +145,24 @@ DbQueryCommandTree
     |       |     |_DbScanExpression (ExpressionKind = Scan, ResultType = Collection(Product))
     |       |       |_Target = Products
     |       |_Predicate
-    |         |_DbLikeExpression (ExpressionKind = Like, ResultType = Edm.Boolean)
-    |           |_Argument
-    |           | |_DbPropertyExpression (ExpressionKind = Property, ResultType = Edm.String)
-    |           |   |_Property = Product.Name
-    |           |   |_Instance
-    |           |     |_DbVariableReferenceExpression (ExpressionKind = VariableReference, ResultType = Product)
-    |           |       |_VariableName = 'Extent1'
-    |           |_Pattern
-    |             |_DbConstantExpression (ExpressionKind = Constant, ResultType = Edm.String)
-    |               |_Value = 'M%'
+    |         |_DbComparisonExpression (ExpressionKind = GreaterThan, ResultType = Edm.Boolean)
+    |           |_Left
+    |           | |_DbFunctionExpression (ExpressionKind = Function, ResultType = Edm.Int32)
+    |           |   |_Function = Edm.Length
+    |           |   |_Arguments
+    |           |     |_DbPropertyExpression (ExpressionKind = Property, ResultType = Edm.String)
+    |           |       |_Property = 'Name'
+    |           |       |_Instance
+    |           |         |_DbVariableReferenceExpression (ExpressionKind = VariableReference, ResultType = Product)
+    |           |           |_VariableName = 'Extent1'
+    |           |_Right
+    |             |_DbConstantExpression (ExpressionKind = Constant, ResultType = Edm.Int32)
+    |               |_Value = 10
     |_Projection
       |_DbNewInstanceExpression (ExpressionKind = NewInstance, ResultType = Row['Name' = Edm.String])
         |_Arguments
           |_DbPropertyExpression (ExpressionKind = Property, ResultType = Edm.String)
-            |_Property = Product.Name
+            |_Property = 'Name'
             |_Instance
               |_DbVariableReferenceExpression (ExpressionKind = VariableReference, ResultType = Product)
                 |_VariableName = 'Filter1'
@@ -136,7 +188,7 @@ DbQueryCommandTree
       |_DbNewInstanceExpression (ExpressionKind = NewInstance, ResultType = Row['Name' = Edm.String])
         |_Arguments
           |_DbPropertyExpression (ExpressionKind = Property, ResultType = Edm.String)
-            |_Property = Product.Name
+            |_Property = "Name"
             |_Instance
               |_DbVariableReferenceExpression (ExpressionKind = VariableReference, ResultType = Product)
                 |_VariableName = 'Limit1'

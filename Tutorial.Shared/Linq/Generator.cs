@@ -99,10 +99,7 @@
             }
         }
 
-        public void Reset()
-        {
-            throw new NotSupportedException();
-        }
+        public void Reset() => throw new NotSupportedException();
 
         internal Iterator<T> SetStateToStart()
         {
@@ -271,10 +268,7 @@
             }
         }
 
-        public void Reset()
-        {
-            throw new NotSupportedException();
-        }
+        public void Reset() => throw new NotSupportedException();
     }
 
     public partial class Generator<T, TData> // : IEnumerable<T>

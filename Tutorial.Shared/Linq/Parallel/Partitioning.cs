@@ -164,7 +164,6 @@
             Parallel.ForEach(new DynamicPartitioner<int>(source), value => Compute(value));
         }
 
-#if NETFX
         internal static void VisualizeDynamicPartitioner()
         {
             IEnumerable<int> source = Enumerable.Range(0, Environment.ProcessorCount * 4);
@@ -179,7 +178,6 @@
                     }
                 });
         }
-#endif
 
         internal static IList<IList<TSource>> GetPartitions<TSource>(IEnumerable<TSource> partitionsSource, int partitionCount)
         {
@@ -191,16 +189,16 @@
                 .Range(0, partitionCount)
                 .Select(_ => partitionsSource.GetEnumerator())
                 .Select((partitionIterator, partitionIndex) => new Thread(() =>
+                {
+                    IList<TSource> partition = partitions[partitionIndex];
+                    using (partitionIterator)
                     {
-                        IList<TSource> partition = partitions[partitionIndex];
-                        using (partitionIterator)
+                        while (partitionIterator.MoveNext())
                         {
-                            while (partitionIterator.MoveNext())
-                            {
-                                partition.Add(partitionIterator.Current);
-                            }
+                            partition.Add(partitionIterator.Current);
                         }
-                    }))
+                    }
+                }))
                 .ToArray();
             partitioningThreads.ForEach(thread => thread.Start());
             partitioningThreads.ForEach(thread => thread.Join());

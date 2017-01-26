@@ -1,62 +1,78 @@
 ﻿namespace Dixin.Linq.EntityFramework
 {
-#if NETFX
+    using System;
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+#if EF
     using System.Data.Entity;
 #else
     using Microsoft.EntityFrameworkCore;
 #endif
 
-    public class WomensProduct : Product
+#if EF
+    using ModelBuilder = System.Data.Entity.DbModelBuilder;
+#endif
+
+    [Table(nameof(TransactionHistory), Schema = AdventureWorks.Production)]
+    public abstract class TransactionHistory
+    {
+        [Key]
+        public int TransactionID { get; set; }
+
+        public int ProductID { get; set; }
+
+        public DateTime TransactionDate { get; set; }
+
+        public int Quantity { get; set; }
+
+        public decimal ActualCost { get; set; }
+    }
+
+    public class PurchaseTransactionHistory : TransactionHistory
     {
     }
 
-    public class MensProduct : Product
+    public class SalesTransactionHistory : TransactionHistory
     {
     }
 
-    public class UniversalProduct : Product
+    public class WorkTransactionHistory : TransactionHistory
     {
     }
 
-    public partial class Product
-    {
-        // public string Style { get; set; } causes an EntityCommandCompilationException: Condition member 'Product.Style' with a condition other than 'IsNull=False' is mapped. Either remove the condition on Product.Style or remove it from the mapping.
-    }
+    public enum TransactionType { P, S, W }
 
-    public enum Style
+    public partial class AdventureWorks
     {
-        W,
-        M,
-        U
+        private void MapDiscriminator(ModelBuilder modelBuilder) // Called by OnModelCreating.
+        {
+#if EF
+            modelBuilder
+                .Entity<TransactionHistory>()
+                .Map<PurchaseTransactionHistory>(mapping => mapping.Requires(nameof(TransactionType))
+                    .HasValue(nameof(TransactionType.P)))
+                .Map<SalesTransactionHistory>(mapping => mapping.Requires(nameof(TransactionType))
+                    .HasValue(nameof(TransactionType.S)))
+                .Map<WorkTransactionHistory>(mapping => mapping.Requires(nameof(TransactionType))
+                    .HasValue(nameof(TransactionType.W)));
+#else
+            modelBuilder.Entity<TransactionHistory>()
+                .HasDiscriminator<string>(nameof(TransactionType))
+                .HasValue<PurchaseTransactionHistory>(nameof(TransactionType.P))
+                .HasValue<SalesTransactionHistory>(nameof(TransactionType.S))
+                .HasValue<WorkTransactionHistory>(nameof(TransactionType.W));
+#endif
+        }
     }
 
     public partial class AdventureWorks
     {
-#if NETFX
-        protected override void OnModelCreating(DbModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
+        public DbSet<TransactionHistory> Transactions { get; set; }
 
-            modelBuilder
-                .Entity<Product>()
-                .Map<WomensProduct>(mapping => mapping.Requires(nameof(Style)).HasValue(nameof(Style.W)))
-                .Map<MensProduct>(mapping => mapping.Requires(nameof(Style)).HasValue(nameof(Style.M)))
-                .Map<UniversalProduct>(mapping => mapping.Requires(nameof(Style)).HasValue(nameof(Style.U)));
-        }
-#else
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
+        public DbSet<PurchaseTransactionHistory> PurchaseTransactions { get; set; }
 
-            modelBuilder.Entity<Product>()
-                .HasDiscriminator<string>(nameof(Style))
-                .HasValue<WomensProduct>(nameof(Style.W))
-                .HasValue<MensProduct>(nameof(Style.M))
-                .HasValue<UniversalProduct>(nameof(Style.U));
+        public DbSet<SalesTransactionHistory> SalesTransactions { get; set; }
 
-            modelBuilder.Entity<ProductProductPhoto>()
-                .HasKey(productProductPhoto => new { productProductPhoto.ProductID, productProductPhoto.ProductPhotoID });
-        }
-#endif
+        public DbSet<WorkTransactionHistory> WorkTransactions { get; set; }
     }
 }

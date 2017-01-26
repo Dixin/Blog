@@ -20,7 +20,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;NETFX</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;NETFX, EF</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -28,7 +28,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;NETFX</DefineConstants>
+    <DefineConstants>TRACE;NETFX,EF</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -254,7 +254,6 @@
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="Common\AppDomainData.cs" />
-    <Compile Include="Linq\EntityFramework\AdventureWorks.Views.cs" />
     <Compile Include="Linq\EntityFramework\EntityDataModel\AdventureWorks.Designer.cs">
       <DependentUpon>AdventureWorks.edmx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -271,7 +270,7 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="Linq\LinqToSql\Associations.cs" />
+    <Compile Include="Linq\LinqToSql\Relationship.cs" />
     <Compile Include="Linq\LinqToSql\Changes.cs" />
     <Compile Include="Linq\LinqToSql\Concurrency.cs" />
     <Compile Include="Linq\LinqToSql\Database.cs" />

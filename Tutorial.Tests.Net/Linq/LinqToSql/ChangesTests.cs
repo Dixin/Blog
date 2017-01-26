@@ -18,7 +18,7 @@
             Tracking.EntitiesFromDataContexts();
             Tracking.EntityChanges();
             Tracking.Attach();
-            Tracking.AssociationChanges();
+            Tracking.RelationshipChanges();
             try
             {
                 Tracking.DisableObjectTracking();
@@ -40,7 +40,7 @@
                 Changes.UpdateWithNoChange();
                 Changes.Delete();
                 Changes.DeleteWithNoQuery(subcategoryId);
-                Changes.DeleteWithAssociation();
+                Changes.DeleteWithRelationship();
                 try
                 {
                     Changes.UntrackedChanges();

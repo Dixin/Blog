@@ -76,8 +76,16 @@
                 const int id = 1;
                 ProductPhoto photo1 = readerWriter1.Read<ProductPhoto>(id);
                 ProductPhoto photo2 = readerWriter2.Read<ProductPhoto>(id);
-                readerWriter1.Write(() => photo1.LargePhotoFileName = nameof(readerWriter1));
-                readerWriter2.Write(() => photo2.LargePhotoFileName = nameof(readerWriter2)); // ChangeConflictException.
+                readerWriter1.Write(() =>
+                {
+                    photo1.LargePhotoFileName = nameof(readerWriter1);
+                    photo1.ModifiedDate = DateTime.Now;
+                });
+                readerWriter2.Write(() =>
+                {
+                    photo2.LargePhotoFileName = nameof(readerWriter1);
+                    photo2.ModifiedDate = DateTime.Now;
+                }); // ChangeConflictException.
             } // ROLLBACK TRANSACTION.
         }
     }

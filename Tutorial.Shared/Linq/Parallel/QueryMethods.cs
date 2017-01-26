@@ -26,7 +26,7 @@ namespace Dixin.Linq.Parallel
                 .Select(type => type.FullName) // ParallelEnumerable.Select.
                 .AsSequential() // Return IEnumerable<Type>.
                 .OrderBy(name => name); // Enumerable.OrderBy.
-            obsoleteTypes.ForEach(name => name.WriteLine());
+            obsoleteTypes.WriteLines();
         }
     }
 
@@ -41,7 +41,7 @@ namespace Dixin.Linq.Parallel
                      select type.FullName).AsSequential()
                 orderby name
                 select name;
-            obsoleteTypes.ForEach(name => name.WriteLine());
+            obsoleteTypes.WriteLines();
         }
 
         internal static void ForEachForAll()
@@ -55,7 +55,6 @@ namespace Dixin.Linq.Parallel
                 .ForAll(value => value.WriteLine()); // 2 6 4 0 5 3 7 1
         }
 
-#if NETFX
         internal static void ForEachForAllTimeSpans()
         {
             string sequentialTimeSpanName = nameof(EnumerableEx.ForEach);
@@ -92,7 +91,6 @@ namespace Dixin.Linq.Parallel
                 });
             }
         }
-#endif
 
         internal static void VisualizeForEachForAll()
         {
@@ -107,10 +105,10 @@ namespace Dixin.Linq.Parallel
             ParallelEnumerable
                 .Range(0, Environment.ProcessorCount * 2)
                 .Visualize(value =>
-                    {
-                        Enumerable.Range(0, 10000000).ForEach();
-                        value.WriteLine();
-                    });
+                {
+                    Enumerable.Range(0, 10000000).ForEach();
+                    value.WriteLine();
+                });
         }
 
         //  using static Functions;
@@ -161,7 +159,6 @@ namespace Dixin.Linq.Parallel
                 .Visualize(value => Compute());
         }
 
-#if NETFX
         public static void ExecutionMode()
         {
             int count = Environment.ProcessorCount * 10000;
@@ -187,7 +184,6 @@ namespace Dixin.Linq.Parallel
                     .ToArray();
             }
         }
-#endif
 
         internal static void Except() => 
             ParallelEnumerable
@@ -278,7 +274,7 @@ namespace Dixin.Linq.Parallel
             ParallelEnumerable.Range(0, count)
                 .WithMergeOptions(ParallelMergeOptions.NotBuffered)
                 .Select(value => Compute(value))
-                .ForEach(value => $"{value}:{stopwatch.ElapsedMilliseconds}".WriteLine());
+                .WriteLines(value => $"{value}:{stopwatch.ElapsedMilliseconds}");
             // 0:132 2:273 1:315 4:460 3:579 6:611 5:890 7:1103
 
             stopwatch.Restart();
@@ -286,7 +282,7 @@ namespace Dixin.Linq.Parallel
                 .WithMergeOptions(ParallelMergeOptions.NotBuffered)
                 .Select(value => Compute(value))
                 .OrderBy(value => value)
-                .ForEach(value => $"{value}:{stopwatch.ElapsedMilliseconds}".WriteLine());
+                .WriteLines(value => $"{value}:{stopwatch.ElapsedMilliseconds}");
             // 0:998 1:999 2:999 3:1000 4:1000 5:1000 6:1001 7:1001
 
             stopwatch.Restart();
@@ -294,7 +290,7 @@ namespace Dixin.Linq.Parallel
                 .WithMergeOptions(ParallelMergeOptions.FullyBuffered)
                 .Select(value => Compute(value))
                 .OrderBy(value => value)
-                .ForEach(value => $"{value}:{stopwatch.ElapsedMilliseconds}".WriteLine());
+                .WriteLines(value => $"{value}:{stopwatch.ElapsedMilliseconds}");
             // 0:984 1:985 2:985 3:986 4:987 5:987 6:988 7:989
         }
 

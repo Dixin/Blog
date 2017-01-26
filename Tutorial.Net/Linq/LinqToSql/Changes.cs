@@ -81,7 +81,7 @@
             }
         }
 
-        internal static void DeleteWithAssociation()
+        internal static void DeleteWithRelationship()
         {
             Create(); // Insert ProductCategory "Category" and ProductSubcategory "Subcategory".
             using (AdventureWorks adventureWorks = new AdventureWorks())

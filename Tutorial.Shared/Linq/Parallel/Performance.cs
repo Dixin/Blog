@@ -3,16 +3,16 @@
     using System;
     using System.IO;
     using System.Linq;
+    using System.Net.Http;
     using System.Reflection;
-#if NETFX
-    using System.Net;
     using System.Threading;
     using System.Xml.Linq;
 
+#if NETFX
     using Microsoft.ConcurrencyVisualizer.Instrumentation;
+#endif
 
     using static Dixin.Linq.LinqToXml.Modeling;
-#endif
 
     using static Functions;
 
@@ -25,17 +25,17 @@
             int[] source = EnumerableX.RandomInt32().Take(count).ToArray();
             Stopwatch stopwatch = Stopwatch.StartNew();
             Enumerable.Range(0, run).ForEach(_ =>
-                {
-                    int[] sequential = source.OrderBy(keySelector).ToArray();
-                });
+            {
+                int[] sequential = source.OrderBy(keySelector).ToArray();
+            });
             stopwatch.Stop();
             $"Sequential:{stopwatch.ElapsedMilliseconds}".WriteLine();
 
             stopwatch.Restart();
             Enumerable.Range(0, run).ForEach(_ =>
-                {
-                    int[] parallel1 = source.AsParallel().OrderBy(keySelector).ToArray();
-                });
+            {
+                int[] parallel1 = source.AsParallel().OrderBy(keySelector).ToArray();
+            });
             stopwatch.Stop();
             $"Parallel:{stopwatch.ElapsedMilliseconds}".WriteLine();
         }
@@ -55,40 +55,39 @@
 
     internal static partial class Performance
     {
-#if NETFX
         private static void Download(string[] urls)
         {
             urls.Visualize(url =>
                 {
-                    using (WebClient webClient = new WebClient())
+                    using (HttpClient httpClient = new HttpClient())
                     {
-                        webClient.DownloadData(url);
+                        httpClient.GetByteArrayAsync(url).Wait();
                     }
                 });
 
             urls.AsParallel()
                 .WithDegreeOfParallelism(10)
                 .Visualize(url =>
+                {
+                    using (HttpClient httpClient = new HttpClient())
                     {
-                        using (WebClient webClient = new WebClient())
-                        {
-                            webClient.DownloadData(url);
-                        }
-                    });
+                        httpClient.GetByteArrayAsync(url).Wait();
+                    }
+                });
 
             using (Markers.EnterSpan(-1, nameof(ParallelEnumerableX.ForceParallel)))
             {
                 MarkerSeries markerSeries = Markers.CreateMarkerSeries(nameof(ParallelEnumerableX.ForceParallel));
                 urls.ForceParallel(
-                    url =>
-                        {
-                            using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, url))
-                            using (WebClient webClient = new WebClient())
-                            {
-                                webClient.DownloadData(url);
-                            }
-                        },
-                    10);
+                url =>
+                {
+                    using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, url))
+                    using (HttpClient httpClient = new HttpClient())
+                    {
+                        httpClient.GetByteArrayAsync(url).Wait();
+                    }
+                },
+                10);
             }
         }
 
@@ -113,7 +112,6 @@
                 .ToArray();
             Download(contents);
         }
-#endif
 
         internal static void ReadFiles()
         {

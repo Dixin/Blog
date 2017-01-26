@@ -27,7 +27,7 @@ CREATE TABLE [Production].[ProductSubcategory](
         CONSTRAINT [FK_ProductSubcategory_ProductCategory_ProductCategoryID] FOREIGN KEY
         REFERENCES [Production].[ProductCategory] ([ProductCategoryID]),
 
-    /* Other ignored columns. */)
+    /* Other columns. */)
 GO
 
 CREATE TABLE [Production].[Product](
@@ -40,13 +40,9 @@ CREATE TABLE [Production].[Product](
 
     [ProductSubcategoryID] int NULL
         CONSTRAINT [FK_Product_ProductSubcategory_ProductSubcategoryID] FOREIGN KEY
-        REFERENCES [Production].[ProductSubcategory] ([ProductSubcategoryID]),
-
-    [Style] nchar(2) NULL
-        CONSTRAINT [CK_Product_Style] 
-        CHECK (UPPER([Style]) = N'U' OR UPPER([Style]) = N'M' OR UPPER([Style]) = N'W' OR [Style] IS NULL)
+        REFERENCES [Production].[ProductSubcategory] ([ProductSubcategoryID])
     
-    /* Other ignored columns. */)
+    /* Other columns. */)
 GO
 
 ALTER TABLE [Production].[Product] ADD [RowVersion] rowversion NOT NULL
@@ -61,7 +57,7 @@ CREATE TABLE [Production].[ProductPhoto](
     [ModifiedDate] datetime NOT NULL 
         CONSTRAINT [DF_ProductPhoto_ModifiedDate] DEFAULT (GETDATE())
 
-    /* Other ignored columns. */)
+    /* Other columns. */)
 GO
 
 CREATE TABLE [Production].[ProductProductPhoto](
@@ -75,5 +71,29 @@ CREATE TABLE [Production].[ProductProductPhoto](
 
     CONSTRAINT [PK_ProductProductPhoto_ProductID_ProductPhotoID] PRIMARY KEY NONCLUSTERED ([ProductID], [ProductPhotoID])
     
-    /* Other ignored columns. */)
+    /* Other columns. */)
+GO
+
+CREATE TABLE [Person].[Person](
+	[BusinessEntityID] int NOT NULL
+		CONSTRAINT [PK_Person_BusinessEntityID] PRIMARY KEY CLUSTERED,
+
+	[FirstName] [dbo].[Name] NOT NULL,
+
+	[LastName] [dbo].[Name] NOT NULL
+
+	/* Other columns. */)
+GO
+
+CREATE TABLE [HumanResources].[Employee](
+	[BusinessEntityID] int NOT NULL
+		CONSTRAINT [PK_Employee_BusinessEntityID] PRIMARY KEY CLUSTERED
+		CONSTRAINT [FK_Employee_Person_BusinessEntityID] FOREIGN KEY
+        REFERENCES [Person].[Person] ([BusinessEntityID]),
+	
+	[JobTitle] nvarchar(50) NOT NULL,
+
+	[HireDate] date NOT NULL
+
+	/* Other columns. */)
 GO

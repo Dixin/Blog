@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+  <PropertyGroup Label="Configuration">
+    <RootNamespace>Dixin.Tests</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="**\*.cs" />
+    <EmbeddedResource Include="**\*.resx" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="EnterpriseLibrary.TransientFaultHandling.Core" Version="1.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.1.0" />
+    <PackageReference Include="Microsoft.FSharp.Core.netcore" Version="1.0.0-alpha-161205" />
+    <PackageReference Include="Microsoft.NETCore.App" Version="1.1.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-preview-20161123-03" />
+    <PackageReference Include="Mono.Cecil" Version="0.10.0-beta1-v2" />
+    <PackageReference Include="MSTest.TestAdapter" Version="1.1.5-preview" />
+    <PackageReference Include="MSTest.TestFramework" Version="1.0.6-preview" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Tutorial.Core\Tutorial.Core.csproj" />
+  </ItemGroup>
+  <Import Project="..\Tutorial.Tests.Shared\Tutorial.Tests.Shared.projitems" Label="Shared" />
+</Project>

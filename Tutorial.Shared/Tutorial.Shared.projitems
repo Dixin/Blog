@@ -50,14 +50,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\QueryExpressionPattern.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\Syntax.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\Variance.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Association.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Relationship.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Changes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Concurrency.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Database.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\DbContextExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Functions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Inheritance.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Laziness.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Loading.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Log.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Performance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\QueryExpressions.cs" />
@@ -148,6 +148,9 @@
     <Content Include="$(MSBuildThisFileDirectory)Linq\CSharp\Func.il" />
     <Content Include="$(MSBuildThisFileDirectory)Linq\CSharp\HigherOrder.hs" />
     <Content Include="$(MSBuildThisFileDirectory)Linq\CSharp\LambdaExpression.txt" />
+    <Content Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\AdventureWorks.Trim.sql" />
+    <Content Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Inheritance.sql" />
+    <Content Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Log.sql" />
     <Content Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Translation.txt" />
     <Content Include="$(MSBuildThisFileDirectory)Linq\Introduction\LinqToDocumentDB.json" />
     <Content Include="$(MSBuildThisFileDirectory)Linq\Introduction\LinqToDocumentDB.sql" />
@@ -169,7 +172,7 @@
     <None Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Concurrency.sql" />
     <None Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Database.sql" />
     <None Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Functions.sql" />
-    <None Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Laziness.sql" />
+    <None Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Loading.sql" />
     <None Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Mapping.sql" />
     <None Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Performance.sql" />
     <None Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\QueryMethods.sql" />

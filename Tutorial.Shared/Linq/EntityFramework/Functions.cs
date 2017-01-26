@@ -1,6 +1,6 @@
 ﻿namespace Dixin.Linq.EntityFramework
 {
-#if NETFX
+#if EF
     using System.ComponentModel.DataAnnotations.Schema;
     using System.Data.Entity.Core.Objects;
     using System.Data.Entity.Infrastructure;

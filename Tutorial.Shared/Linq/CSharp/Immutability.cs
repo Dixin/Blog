@@ -311,6 +311,19 @@
             description.WriteLine(); // All-in-one PC.
             price.WriteLine(); // 2999
         }
+
+        internal static void Performance()
+        {
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            (int, bool, string)[] tuples = Enumerable.Repeat(0, 1_000_000).Select(_ => (Int32: 1, Boolean: true, String: nameof(Performance))).ToArray();
+            stopwatch.Stop(); // 26
+            stopwatch.ElapsedMilliseconds.WriteLine();
+
+            stopwatch = Stopwatch.StartNew();
+            var anonymous = Enumerable.Repeat(0, 1_000_000).Select(_ => new { Int32 = 1, Boolean = true, String = nameof(Performance) }).ToArray();
+            stopwatch.Stop(); // 114
+            stopwatch.ElapsedMilliseconds.WriteLine();
+        }
     }
 }
 

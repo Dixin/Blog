@@ -2,47 +2,35 @@
 {
 #if NETFX
     using System.Configuration;
-    using System.Linq;
 #endif
+    using System.Data.SqlClient;
     using System.IO;
     using System.Reflection;
 
-    internal static partial class ConnectionStrings
-    {
-        internal const string LocalDb = @"Data Source=(LocalDB)\MSSQLLocalDB;Integrated Security=True;Connect Timeout=30";
-    }
+#if !NETFX
+    using Microsoft.Extensions.Configuration;
+#endif
 
-    internal static partial class ConnectionStrings
+    internal static class ConnectionStrings
     {
-#if NETFX
         internal static string AdventureWorks { get; } =
-            ConfigurationManager.ConnectionStrings.Cast<ConnectionStringSettings>().FirstOrDefault()?.ConnectionString
-            ?? @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\AdventureWorks_Data.mdf;Integrated Security=True;Connect Timeout=30";
+#if NETFX
+            ConfigurationManager.ConnectionStrings[nameof(AdventureWorks)].ConnectionString.FormatFilePath();
 #else
-        internal static string AdventureWorks
+            new ConfigurationBuilder().AddJsonFile("app.json").Build()
+                .GetConnectionString(nameof(AdventureWorks)).FormatFilePath();
+#endif
+
+        private static string FormatFilePath(this string connectionString)
         {
-            get
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder() { ConnectionString = connectionString };
+            if (string.IsNullOrEmpty(builder.AttachDBFilename) || Path.IsPathRooted(builder.AttachDBFilename))
             {
-                string directory = Path.GetDirectoryName(typeof(ConnectionStrings).GetTypeInfo().Assembly.Location);
-                string path = Path.Combine(directory, @"..\..\..\..\Data\AdventureWorks_Data.mdf");
-                return $@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename={Path.GetFullPath(path)};Integrated Security=True;Connect Timeout=30";
+                return connectionString;
             }
-        }
-#endif
-    }
-
-#if DEMO
-    internal static partial class ConnectionStrings
-    {
-        internal const string AdventureWorks = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\AdventureWorks_Data.mdf;Integrated Security=True;Connect Timeout=30";
-    }
-
-    internal static partial class ConnectionStrings
-    {
-        static ConnectionStrings()
-        {
-            AppDomain.CurrentDomain.SetData("DataDirectory", @"D:\Dixin\GitHub\CodeSnippets\Data");
+            string directory = Path.GetDirectoryName(typeof(ConnectionStrings).GetTypeInfo().Assembly.Location);
+            builder.AttachDBFilename = Path.GetFullPath(Path.Combine(directory, builder.AttachDBFilename));
+            return builder.ConnectionString;
         }
     }
-#endif
 }

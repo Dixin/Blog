@@ -18,7 +18,7 @@
         public void EagerLoadingTest()
         {
             Laziness.EagerLoadingWithSelect();
-            Laziness.EagerLoadingWithAssociation();
+            Laziness.EagerLoadingWithRelationship();
             Laziness.ConditionalEagerLoading();
         }
 

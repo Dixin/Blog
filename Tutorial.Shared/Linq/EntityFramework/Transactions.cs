@@ -1,15 +1,14 @@
 namespace Dixin.Linq.EntityFramework
 {
     using System.Data.Common;
-#if NETFX
+#if EF
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
 #endif
     using System.Data.SqlClient;
-    using System.Diagnostics;
     using System.Linq;
 
-#if NETFX
+#if EF
     using System.Transactions;
 #else
 
@@ -17,108 +16,109 @@ namespace Dixin.Linq.EntityFramework
     using Microsoft.EntityFrameworkCore.Storage;
 #endif
 
-#if NETFX
+#if EF
     using IDbContextTransaction = System.Data.Entity.DbContextTransaction;
 #endif
     using IsolationLevel = System.Data.IsolationLevel;
 
     internal static partial class Transactions
     {
-        internal static void Default()
+        internal static void ExecutionStrategy2(AdventureWorks adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
+            adventureWorks.Database.CreateExecutionStrategy().Execute(() =>
             {
-                ProductCategory category = adventureWorks.ProductCategories.First();
-                category.Name = "Update"; // Valid value.g
-                ProductSubcategory subcategory = adventureWorks.ProductSubcategories.First();
-                subcategory.ProductCategoryID = -1; // Invalid value.
-                try
-                {
-                    adventureWorks.SaveChanges();
-                }
-                catch (DbUpdateException exception)
-                {
-                    Trace.WriteLine(exception);
-                    // System.Data.Entity.Infrastructure.DbUpdateException: An error occurred while updating the entries. See the inner exception for details.
-                    // ---> System.Data.Entity.Core.UpdateException: An error occurred while updating the entries. See the inner exception for details. 
-                    // ---> System.Data.SqlClient.SqlException: The UPDATE statement conflicted with the FOREIGN KEY constraint "FK_ProductSubcategory_ProductCategory_ProductCategoryID". The conflict occurred in database "D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\ADVENTUREWORKS_DATA.MDF", table "Production.ProductCategory", column 'ProductCategoryID'. The statement has been terminated.
-                    adventureWorks.Entry(category).Reload();
-                    Trace.WriteLine(category.Name); // Accessories
-                    adventureWorks.Entry(subcategory).Reload();
-                    Trace.WriteLine(subcategory.ProductCategoryID); // 1
-                }
+                // Single retry operation, which can have custom transaction.
+            });
+        }
+    }
+
+    internal static partial class Transactions
+    {
+        internal static void Default(AdventureWorks adventureWorks)
+        {
+            ProductCategory category = adventureWorks.ProductCategories.First();
+            category.Name = "Update"; // Valid value.g
+            ProductSubcategory subcategory = adventureWorks.ProductSubcategories.First();
+            subcategory.ProductCategoryID = -1; // Invalid value.
+            try
+            {
+                adventureWorks.SaveChanges();
+            }
+            catch (DbUpdateException exception)
+            {
+                exception.WriteLine();
+                // System.Data.Entity.Infrastructure.DbUpdateException: An error occurred while updating the entries. See the inner exception for details.
+                // ---> System.Data.Entity.Core.UpdateException: An error occurred while updating the entries. See the inner exception for details. 
+                // ---> System.Data.SqlClient.SqlException: The UPDATE statement conflicted with the FOREIGN KEY constraint "FK_ProductSubcategory_ProductCategory_ProductCategoryID". The conflict occurred in database "D:\ONEDRIVE\WORKS\DRAFTS\CODESNIPPETS\DATA\ADVENTUREWORKS_DATA.MDF", table "Production.ProductCategory", column 'ProductCategoryID'. The statement has been terminated.
+                adventureWorks.Entry(category).Reload();
+                category.Name.WriteLine(); // Accessories
+                adventureWorks.Entry(subcategory).Reload();
+                subcategory.ProductCategoryID.WriteLine(); // 1
             }
         }
     }
 
     public static partial class DbContextExtensions
     {
-        public const string CurrentIsolationLevelSql = @"
+        public static readonly string CurrentIsolationLevelSql = $@"
             SELECT
                 CASE transaction_isolation_level
-                    WHEN 0 THEN N'Unspecified'
-                    WHEN 1 THEN N'ReadUncommitted'
-                    WHEN 2 THEN N'ReadCommitted'
-                    WHEN 3 THEN N'RepeatableRead'
-                    WHEN 4 THEN N'Serializable'
-                    WHEN 5 THEN N'Snapshot'
+                    WHEN 0 THEN N'{nameof(IsolationLevel.Unspecified)}'
+                    WHEN 1 THEN N'{nameof(IsolationLevel.ReadUncommitted)}'
+                    WHEN 2 THEN N'{nameof(IsolationLevel.ReadCommitted)}'
+                    WHEN 3 THEN N'{nameof(IsolationLevel.RepeatableRead)}'
+                    WHEN 4 THEN N'{nameof(IsolationLevel.Serializable)}'
+                    WHEN 5 THEN N'{nameof(IsolationLevel.Snapshot)}'
                 END
             FROM sys.dm_exec_sessions
             WHERE session_id = @@SPID";
 
-        public static string QueryCurrentIsolationLevel(this DbContext context)
-        {
-#if NETFX
-            return context.Database.SqlQuery<string>(CurrentIsolationLevelSql).Single();
+#if EF
+        public static string CurrentIsolationLevel(this DbContext context) =>
+            context.Database.SqlQuery<string>(CurrentIsolationLevelSql).Single();
 #else
-            using (DbConnection connection = new SqlConnection(ConnectionStrings.AdventureWorks))
-            using (DbCommand command = connection.CreateCommand())
+        public static string CurrentIsolationLevel(this DbContext context)
+        {
+            using (DbCommand command = context.Database.GetDbConnection().CreateCommand())
             {
-                command.CommandText = ConnectionStrings.AdventureWorks;
+                command.CommandText = CurrentIsolationLevelSql;
+                command.Transaction = context.Database.CurrentTransaction.GetDbTransaction();
                 return (string)command.ExecuteScalar();
             }
-#endif
         }
+#endif
     }
 
     internal static partial class Transactions
     {
-        internal static void DbContextTransaction()
+        internal static void DbContextTransaction(AdventureWorks adventureWorks)
         {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            using (IDbContextTransaction transaction = adventureWorks.Database.BeginTransaction(
-                IsolationLevel.ReadUncommitted))
+            adventureWorks.Database.CreateExecutionStrategy().Execute(() =>
             {
-                try
+                using (IDbContextTransaction transaction = adventureWorks.Database.BeginTransaction(
+                    IsolationLevel.ReadUncommitted))
                 {
-                    Trace.WriteLine(adventureWorks.QueryCurrentIsolationLevel()); // ReadUncommitted
+                    try
+                    {
+                        adventureWorks.CurrentIsolationLevel().WriteLine(); // ReadUncommitted
 
-                    ProductCategory category = new ProductCategory() { Name = nameof(ProductCategory) };
-                    adventureWorks.ProductCategories.Add(category);
-                    Trace.WriteLine(adventureWorks.SaveChanges()); // 1
+                        ProductCategory category = new ProductCategory() { Name = nameof(ProductCategory) };
+                        adventureWorks.ProductCategories.Add(category);
+                        adventureWorks.SaveChanges().WriteLine(); // 1
 
-                    Trace.WriteLine(adventureWorks.Database.ExecuteSqlCommand(
-                        "DELETE FROM [Production].[ProductCategory] WHERE [Name] = {0}",
-                        nameof(ProductCategory))); // 1
-                    transaction.Commit();
+                        adventureWorks.Database.ExecuteSqlCommand(
+                            sql: "DELETE FROM [Production].[ProductCategory] WHERE [Name] = {0}",
+                            parameters: nameof(ProductCategory)).WriteLine(); // 1
+                        transaction.Commit();
+                    }
+                    catch
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
                 }
-                catch
-                {
-                    transaction.Rollback();
-                    throw;
-                }
-            }
+            });
         }
-    }
-
-    public partial class AdventureWorks
-    {
-#if NETFX
-        public AdventureWorks(DbConnection connection, bool contextOwnsConnection = false)
-            : base(connection, contextOwnsConnection)
-        {
-        }
-#endif
     }
 
     internal static partial class Transactions
@@ -134,14 +134,16 @@ namespace Dixin.Linq.EntityFramework
                     {
                         using (AdventureWorks adventureWorks = new AdventureWorks(connection))
                         {
-                            adventureWorks.Database.UseTransaction(transaction);
-                            Trace.WriteLine(adventureWorks.QueryCurrentIsolationLevel()); // Serializable
+                            adventureWorks.Database.CreateExecutionStrategy().Execute(() =>
+                            {
+                                adventureWorks.Database.UseTransaction(transaction);
+                                adventureWorks.CurrentIsolationLevel().WriteLine(); // Serializable
 
-                            ProductCategory category = new ProductCategory() { Name = nameof(ProductCategory) };
-                            adventureWorks.ProductCategories.Add(category);
-                            Trace.WriteLine(adventureWorks.SaveChanges()); // 1.
+                                ProductCategory category = new ProductCategory() { Name = nameof(ProductCategory) };
+                                adventureWorks.ProductCategories.Add(category);
+                                adventureWorks.SaveChanges().WriteLine(); // 1.
+                            });
                         }
-
                         using (DbCommand command = connection.CreateCommand())
                         {
                             command.CommandText = "DELETE FROM [Production].[ProductCategory] WHERE [Name] = @p0";
@@ -150,7 +152,7 @@ namespace Dixin.Linq.EntityFramework
                             parameter.Value = nameof(ProductCategory);
                             command.Parameters.Add(parameter);
                             command.Transaction = transaction;
-                            Trace.WriteLine(command.ExecuteNonQuery()); // 1
+                            command.ExecuteNonQuery().WriteLine(); // 1
                         }
                         transaction.Commit();
                     }
@@ -163,47 +165,58 @@ namespace Dixin.Linq.EntityFramework
             }
         }
 
-#if NETFX
+#if EF
         internal static void TransactionScope()
         {
-            using (TransactionScope scope = new TransactionScope(
-                TransactionScopeOption.Required,
-                new TransactionOptions() { IsolationLevel = System.Transactions.IsolationLevel.RepeatableRead }))
+            new ExecutionStrategy().Execute(() =>
             {
-                using (DbConnection connection = new SqlConnection(ConnectionStrings.AdventureWorks))
-                using (DbCommand command = connection.CreateCommand())
-                {
-                    command.CommandText = DbContextExtensions.CurrentIsolationLevelSql;
-                    connection.Open();
-                    using (DbDataReader reader = command.ExecuteReader())
+                using (TransactionScope scope = new TransactionScope(
+                    scopeOption: TransactionScopeOption.Required,
+                    transactionOptions: new TransactionOptions()
                     {
-                        reader.Read();
-                        Trace.WriteLine(reader[0]); // RepeatableRead
+                        IsolationLevel = System.Transactions.IsolationLevel.RepeatableRead
+                    }))
+                {
+                    using (DbConnection connection = new SqlConnection(ConnectionStrings.AdventureWorks))
+                    using (DbCommand command = connection.CreateCommand())
+                    {
+                        command.CommandText = DbContextExtensions.CurrentIsolationLevelSql;
+                        connection.Open();
+                        using (DbDataReader reader = command.ExecuteReader())
+                        {
+                            reader.Read();
+                            reader[0].WriteLine(); // RepeatableRead
+                        }
                     }
+
+                    using (AdventureWorks adventureWorks = new AdventureWorks())
+                    {
+                        ProductCategory category = new ProductCategory() { Name = nameof(ProductCategory) };
+                        adventureWorks.ProductCategories.Add(category);
+                        adventureWorks.SaveChanges().WriteLine(); // 1
+                    }
+
+                    using (AdventureWorks adventureWorks = new AdventureWorks())
+                    {
+                        adventureWorks.CurrentIsolationLevel().WriteLine(); // RepeatableRead
+                    }
+
+                    using (DbConnection connection = new SqlConnection(ConnectionStrings.AdventureWorks))
+                    using (DbCommand command = connection.CreateCommand())
+                    {
+                        command.CommandText = "DELETE FROM [Production].[ProductCategory] WHERE [Name] = @p0";
+                        DbParameter parameter = command.CreateParameter();
+                        parameter.ParameterName = "@p0";
+                        parameter.Value = nameof(ProductCategory);
+                        command.Parameters.Add(parameter);
+
+                        connection.Open();
+                        command.ExecuteNonQuery().WriteLine(); // 1
+                    }
+
+                    scope.Complete();
                 }
-
-                using (AdventureWorks adventureWorks = new AdventureWorks())
-                {
-                    ProductCategory category = new ProductCategory() { Name = nameof(ProductCategory) };
-                    adventureWorks.ProductCategories.Add(category);
-                    Trace.WriteLine(adventureWorks.SaveChanges()); // 1
-                }
-
-                using (DbConnection connection = new SqlConnection(ConnectionStrings.AdventureWorks))
-                using (DbCommand command = connection.CreateCommand())
-                {
-                    command.CommandText = "DELETE FROM [Production].[ProductCategory] WHERE [Name] = @p0";
-                    DbParameter parameter = command.CreateParameter();
-                    parameter.ParameterName = "@p0";
-                    parameter.Value = nameof(ProductCategory);
-                    command.Parameters.Add(parameter);
-
-                    connection.Open();
-                    Trace.WriteLine(command.ExecuteNonQuery()); // 1
-                }
-
-                scope.Complete();
-            }
+            });
         }
 #endif
     }

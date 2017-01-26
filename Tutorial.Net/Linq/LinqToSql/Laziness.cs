@@ -29,7 +29,7 @@
                 $"{subcategory.Category}/{subcategory}: {string.Join(", ", subcategory.Products)}"));
         }
 
-        internal static void EagerLoadingWithAssociation()
+        internal static void EagerLoadingWithRelationship()
         {
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {

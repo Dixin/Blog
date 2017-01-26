@@ -71,15 +71,15 @@
             QueryMethods.InnerJoinWithSelectMany();
             QueryMethods.InnerJoinWithGroupJoin();
             QueryMethods.InnerJoinWithSelect();
-            QueryMethods.InnerJoinWithAssociation();
-            QueryMethods.MultipleInnerJoinsWithAssociations();
+            QueryMethods.InnerJoinWithRelationship();
+            QueryMethods.MultipleInnerJoinsWithRelationship();
             QueryMethods.InnerJoinWithMultipleKeys();
             QueryMethods.InnerJoinWithGroupJoin();
             QueryMethods.LeftOuterJoinWithGroupJoin();
             QueryMethods.LeftOuterJoinWithSelect();
             QueryMethods.LeftOuterJoinWithGroupJoinAndSelectMany();
             QueryMethods.LeftOuterJoinWithSelectAndSelectMany();
-            QueryMethods.LeftOuterJoinWithAssociation();
+            QueryMethods.LeftOuterJoinWithRelationship();
             QueryMethods.CrossJoinWithSelectMany();
             QueryMethods.CrossJoinWithJoin();
             QueryMethods.SelfJoin();
@@ -90,10 +90,10 @@
         {
             QueryMethods.CrossApplyWithGroupByAndTake();
             QueryMethods.CrossApplyWithGroupJoinAndTake();
-            QueryMethods.CrossApplyWithAssociationAndTake();
+            QueryMethods.CrossApplyWithRelationshipAndTake();
             QueryMethods.OuterApplyWithGroupByAndFirstOrDefault(); // TODO.N+1.
             QueryMethods.OuterApplyWithGroupJoinAndFirstOrDefault(); // TODO.N+1.
-            QueryMethods.OuterApplyWithAssociationAndFirstOrDefault(); // TODO.N+1.
+            QueryMethods.OuterApplyWithRelationshipAndFirstOrDefault(); // TODO.N+1.
         }
 
         [TestMethod]

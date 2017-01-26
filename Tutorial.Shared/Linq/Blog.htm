@@ -540,29 +540,34 @@
                 <ul>
                     <li>Sequential vs. parallel
                     <li>CPU bound vs. IO bound
-                    <li>Conclusion</li>
+                    <li>Summary</li>
                 </ul>
             </li>
         </ol>
     <li>
-        <h1><a href="https://weblogs.asp.net/dixin/Tags/Entity%20Framework" target="_blank">Entity Framework and LINQ to Entities</a></h1>
+        <h1><a href="https://weblogs.asp.net/dixin/Tags/Entity%20Framework" target="_blank">Entity Framework/Core and LINQ to Entities</a></h1>
         <ol>
             <li>
-                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-and-linq-to-entities-1-remote-query" target="_blank">Remote Query</a></h2>
+                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-core-and-linq-to-entities-1-remote-query" target="_blank">Remote Query</a></h2>
                 <ul>
+                    <li>Entity Framework and Entity Framework Core
+                    <li>SQL database
                     <li>Remote query vs. local query
-                    <li>Function vs. expression tree
-                    <li>Trace SQL query execution</li>
+                    <li>Function vs. expression tree</li>
                 </ul>
             <li>
-                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-and-linq-to-entities-2-object-relational-mapping" target="_blank">Object-Relational Mapping</a></h2>
+                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-and-linq-to-entities-2-object-relational-mapping" target="_blank">Modeling Database: Object-Relational Mapping</a></h2>
                 <ul>
                     <li>Data types
                     <li>Database
+                        <ul>
+                            <li>Connection resiliency and execution strategy</li>
+                        </ul>
                     <li>Tables</li>
                     <li>
                         Relationships
                         <ul>
+                            <li>One-to-one
                             <li>One-to-many
                             <li>Many-to-many</li>
                         </ul>
@@ -571,17 +576,16 @@
                     <li>Stored procedures and functions</li>
                 </ul>
             <li>
-                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-and-linq-to-entities-3-logging" target="_blank">Logging</a></h2>
+                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-core-and-linq-to-entities-3-logging-and-tracing-queries" target="_blank">Logging</a></h2>
                 <ul>
-                    <li>DbQuery&lt;T&gt;.ToString
-                    <li>Database.Log
-                    <li>IDbCommandInterceptor</li>
+                    <li>Application side logging
+                    <li>Database side tracing with Extended Events</li>
                 </ul>
             <li>
-                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-and-linq-to-entities-4-query-methods" target="_blank">Query Methods</a></h2>
+                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-core-and-linq-to-entities-4-query-methods" target="_blank">Query Methods</a></h2>
                 <ul>
                     <li>
-                        Return a new IEnumerable&lt;T&gt; sequence
+                        Return a new IQueryable&lt;T&gt; source
                         <ul>
                             <li>Generation: DefaultIfEmpty
                             <li>Filtering (restriction): Where, OfType
@@ -592,14 +596,7 @@
                                 <ul>
                                     <li>Inner join: Join, SelectMany, GroupJoin, Select
                                     <li>Outer join: GroupJoin, Select, SelectMany
-                                    <li>Cross join: SelectMany, Join
-                                    <li>Self join: GroupJoin</li>
-                                </ul>
-                            <li>
-                                Apply
-                                <ul>
-                                    <li>Cross apply: GroupBy, Join
-                                    <li>Outer apply: GroupBy, Join</li>
+                                    <li>Cross join and self join: SelectMany, Join</li>
                                 </ul>
                             <li>Concatenation: Concat
                             <li>Set: Distinct, Union, Intersect, Except
@@ -617,60 +614,54 @@
                     </li>
                 </ul>
             <li>
-                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-and-linq-to-entities-5-query-translation" target="_blank">Query Translation</a></h2>
+                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-and-linq-to-entities-5-query-translation" target="_blank">Query Translation Implementation</a></h2>
                 <ul>
                     <li>
-                        Code to expression tree
+                        Code to LINQ expression tree
                         <ul>
                             <li>IQueryable&lt;T&gt; and IQueryProvider
                             <li>Queryable methods
-                            <li>Build LINQ to Entities queries and expressions</li>
+                            <li>Build LINQ to Entities abstract syntax tree</li>
                         </ul>
                     <li>
-                        Expression tree to database command tree
+                        .NET expression tree to database expression tree
                         <ul>
-                            <li>DbExpression and DbCommandTree
-                            <li>Convert Expression to DbExpression
-                            <li>Query methods translation
-                            <li>.NET APIs translation
-                            <li>Remote method call vs. local method call
-                            <li>Database functions translation</li>
+                            <li>Database query abstract syntax tree
+                            <li>Compile LINQ expressions to database expressions
+                            <li>Compile LINQ query method calls
+                            <li>Compile .NET API calls
+                            <li>Remote API call vs. local API call
+                            <li>Compile database function call</li>
                         </ul>
                     <li>
-                        Database command tree to SQL
+                        Database expression tree to SQL
                         <ul>
-                            <li>DbExpressionVisitor&lt;TResultType&gt; and SqlGenerator
-                            <li>Database command tree to SQL</li>
-                        </ul>
-                    <li>
-                        Log the translation
-                        <ul>
-                            <li>DbProviderServices and SqlProviderServices
-                            <li>Log database command tree</li>
+                            <li>SQL generator and SQL command
+                            <li>Generate SQL from database expression tree</li>
                         </ul>
                     </li>
                 </ul>
             <li>
-                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-and-linq-to-entities-6-deferred-execution-laziness-loading-and-eager-loading" target="_blank">Deferred Execution, Laziness Loading and Eager Loading</a></h2>
+                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-core-and-linq-to-entities-6-query-data-loading" target="_blank">Query Data Loading</a></h2>
                 <ul>
                     <li>
                         Deferred execution
                         <ul>
                             <li>Iterator pattern
-                            <li>Lazy/eager evaluation</li>
+                            <li>Lazy evaluation vs. eager evaluation</li>
                         </ul>
+                    <li>Explicit loading
+                    <li>Eager loading
                     <li>
-                        Lazy loading and eager loading
+                        Lazy loading
                         <ul>
-                            <li>Implicit and explicit lazy loading
-                            <li>Eager loading
                             <li>The N + 1 problem
                             <li>Disable lazy loading</li>
                         </ul>
                     </li>
                 </ul>
             <li>
-                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-and-linq-to-entities-7-data-changes" target="_blank">Data Changes</a></h2>
+                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-core-and-linq-to-entities-7-data-changes-and-transactions" target="_blank">Data Changes and Transactions</a></h2>
                 <ul>
                     <li>Repository pattern and unit of work pattern
                     <li>
@@ -678,8 +669,8 @@
                         <ul>
                             <li>Track entities
                             <li>Track entity changes and property changes
-                            <li>Track association changes
-                            <li>Disable tracking</li>
+                            <li>Track relationship changes
+                            <li>Enable and disable tracking</li>
                         </ul>
                     <li>
                         Change data
@@ -688,14 +679,15 @@
                             <li>Update
                             <li>Delete</li>
                         </ul>
+                    <li>
+                        Transaction
+                        <ul>
+                            <li>Transaction with connection resiliency and execution strategy
+                            <li>EF/Core transaction
+                            <li>ADO.NET transaction
+                            <li>Transaction scope</li>
+                        </ul>
                     </li>
-                </ul>
-            <li>
-                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-and-linq-to-entities-8-transactions" target="_blank">Transactions</a></h2>
-                <ul>
-                    <li>DbContextTransaction
-                    <li>DbTransaction
-                    <li>TransactionScope</li>
                 </ul>
             <li>
                 <h2><a href="https://weblogs.asp.net/dixin/entity-framework-and-linq-to-entities-9-optimistic-concurrency" target="_blank">Optimistic Concurrency</a></h2>

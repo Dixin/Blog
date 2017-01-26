@@ -1,37 +1,30 @@
 ﻿namespace Dixin.Linq.EntityFramework
 {
-#if NETFX
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
+#if EF
     using System.Data.Entity;
-    using System.Data.Entity.ModelConfiguration;
+#else
+    using Microsoft.EntityFrameworkCore;
+#endif
 
-    [Table(nameof(vProductAndDescription), Schema = AdventureWorks.Production)]
-    public class vProductAndDescription
+    [Table(nameof(vEmployee), Schema = AdventureWorks.HumanResources)]
+    public class vEmployee
     {
         [Key]
-        public int ProductID { get; set; }
+        public int BusinessEntityID { get; set; }
 
-        public string Name { get; set; }
+        public string FirstName { get; set; }
 
-        public string ProductModel { get; set; }
+        public string LastName { get; set; }
 
-        public string CultureID { get; set; }
+        public string JobTitle { get; set; }
 
-        public string Description { get; set; }
-    }
-
-    public class vProductAndDescriptionMapping : EntityTypeConfiguration<vProductAndDescription>
-    {
-        public vProductAndDescriptionMapping()
-        {
-            this.ToTable(nameof(vProductAndDescription));
-        }
+        // Other columns.
     }
 
     public partial class AdventureWorks
     {
-        public DbSet<vProductAndDescription> ProductAndDescriptions { get; set; }
+        public DbSet<vEmployee> vEmployees { get; set; }
     }
-#endif
 }

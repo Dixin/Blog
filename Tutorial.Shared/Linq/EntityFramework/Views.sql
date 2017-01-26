@@ -1,17 +1,13 @@
-﻿CREATE VIEW [Production].[vProductAndDescriptionh] 
-WITH SCHEMABINDING 
+﻿CREATE VIEW [HumanResources].[vEmployee] 
 AS 
 SELECT 
-    [product].[ProductID],
-    [product].[Name],
-    [model].[Name] AS [ProductModel],
-    [culture].[CultureID],
-    [description].[Description] 
-FROM [Production].[Product] [product]
-    INNER JOIN [Production].[ProductModel] [model]
-    ON [product].[ProductModelID] = model.[ProductModelID] 
-    INNER JOIN [Production].[ProductModelProductDescriptionCulture] [culture]
-    ON [model].[ProductModelID] = [culture].[ProductModelID] 
-    INNER JOIN [Production].[ProductDescription] [description]
-    ON [culture].[ProductDescriptionID] = [description].[ProductDescriptionID];
+    e.[BusinessEntityID],
+    p.[FirstName],
+    p.[LastName],
+    e.[JobTitle]  
+    -- Other columns.
+FROM [HumanResources].[Employee] e
+	INNER JOIN [Person].[Person] p
+	ON p.[BusinessEntityID] = e.[BusinessEntityID]
+    /* Other tables. */;
 GO

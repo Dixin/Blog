@@ -98,7 +98,7 @@
             }
         }
 
-        internal static void AssociationChanges()
+        internal static void RelationshipChanges()
         {
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {

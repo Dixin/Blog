@@ -252,7 +252,7 @@ namespace Dixin.Linq.LinqToSql
                 $"{category.Category}: {category.Subcategory}")); // Execute query.
         }
 
-        internal static void InnerJoinWithAssociation()
+        internal static void InnerJoinWithRelationship()
         {
             IQueryable<ProductSubcategory> outer = AdventureWorks.ProductSubcategories;
             var subcategories = outer.Select(subcategory =>
@@ -261,7 +261,7 @@ namespace Dixin.Linq.LinqToSql
                 $"{subcategory.Category}: {subcategory.Subcategory}")); // Execute query.
         }
 
-        internal static void MultipleInnerJoinsWithAssociations()
+        internal static void MultipleInnerJoinsWithRelationship()
         {
             IQueryable<Product> source = AdventureWorks.Products;
             var products = source.SelectMany(
@@ -298,11 +298,11 @@ namespace Dixin.Linq.LinqToSql
                 subcategory => subcategory.ProductCategoryID,
                 (category, subcategories) => new
                 {
-                    Category = category.Name,
-                    Subcategories = subcategories.Select(subcategory => subcategory.Name)
+                    Subcategory = category.Name,
+                    Products = subcategories.Select(subcategory => subcategory.Name)
                 }); // Define query.
             categories.ForEach(category => Trace.WriteLine(
-                $"{category.Category}: {string.Join(", ", category.Subcategories)}")); // Execute query.
+                $"{category.Subcategory}: {string.Join(", ", category.Products)}")); // Execute query.
         }
 
         internal static void LeftOuterJoinWithSelect()
@@ -358,7 +358,7 @@ namespace Dixin.Linq.LinqToSql
                 $"{category.Category}: {category.Subcategory}")); // Execute query.
         }
 
-        internal static void LeftOuterJoinWithAssociation()
+        internal static void LeftOuterJoinWithRelationship()
         {
             IQueryable<ProductCategory> source = AdventureWorks.ProductCategories;
             var categories = source.SelectMany(
@@ -448,7 +448,7 @@ namespace Dixin.Linq.LinqToSql
                 $"{category.Category.Name}: {category.FirstSubcategory?.Name}")); // Execute query.
         }
 
-        internal static void CrossApplyWithAssociationAndTake()
+        internal static void CrossApplyWithRelationshipAndTake()
         {
             IQueryable<ProductCategory> source = AdventureWorks.ProductCategories;
             var categories = source
@@ -486,7 +486,7 @@ namespace Dixin.Linq.LinqToSql
                 $"{category.Category.Name}: {category.FirstSubcategory?.Name}")); // Execute query.
         }
 
-        internal static void OuterApplyWithAssociationAndFirstOrDefault()
+        internal static void OuterApplyWithRelationshipAndFirstOrDefault()
         {
             IQueryable<ProductCategory> source = AdventureWorks.ProductCategories;
             var categories = source.Select(category => new
