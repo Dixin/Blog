@@ -156,7 +156,7 @@
         }
     }
 
-    internal static partial class Query
+    internal static partial class UnitOfWork
     {
         internal static void Dispose()
         {
@@ -167,37 +167,19 @@
         }
     }
 
-    internal static partial class Query
-    {
-        internal static void Table()
-        {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                IQueryable<ProductCategory> allRowsInTable = adventureWorks.ProductCategories;
-                allRowsInTable.WriteLines(categoryRow => $"{categoryRow.ProductCategoryID}:{categoryRow.Name}");
-                // 1:Bikes 2:Components 3:Clothing 4:Accessories 
-            }
-        }
-    }
-
 #if EF
     public partial class AdventureWorks
     {
-        static AdventureWorks()
-        {
-            Database.SetInitializer(new NullDatabaseInitializer<AdventureWorks>()); // Call once.
-            // Equivalent to: Database.SetInitializer<AdventureWorks>(null);
-        }
+        static AdventureWorks() =>
+            Database.SetInitializer(new NullDatabaseInitializer<AdventureWorks>());
     }
 #endif
 
 #if DEMO
     public class SqlConfiguration : DbConfiguration
     {
-        public SqlConfiguration()
-        {
-            this.SetManifestTokenResolver(new SqlManifestTokenResolver());
-        }
+        public SqlConfiguration() =>
+             this.SetManifestTokenResolver(new SqlManifestTokenResolver());
     }
 
     public class SqlManifestTokenResolver : IManifestTokenResolver

@@ -11,9 +11,9 @@
     public class QueryMethodsTests
     {
         [TestMethod]
-        public void QueryTable()
+        public void QueryTableTests()
         {
-            Query.Table();
+            Performance.Initialize();
         }
 
         [TestMethod]

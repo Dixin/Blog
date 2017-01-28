@@ -1,4 +1,4 @@
-﻿DBCC FREEPROCCACHE
+﻿ALTER DATABASE SCOPED CONFIGURATION CLEAR PROCEDURE_CACHE;
 
 -- Shows query plans including itself.
 SELECT 
@@ -33,26 +33,18 @@ INNER JOIN sys.syscacheobjects ON sys.syscacheobjects.bucketid = sys.dm_exec_cac
 CROSS APPLY sys.dm_exec_query_plan(sys.dm_exec_query_stats.plan_handle)
 CROSS APPLY sys.dm_exec_sql_text(sys.dm_exec_query_stats.sql_handle)
 
-SELECT 
-    [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
-    [Extent1].[Name] AS [Name]
-    FROM [Production].[ProductCategory] AS [Extent1]
-    WHERE (LEN([Extent1].[Name])) >= 1
+SELECT [product].[ProductID], [product].[ListPrice], [product].[Name], [product].[ProductSubcategoryID], [product].[RowVersion]
+FROM [Production].[Product] AS [product]
+WHERE LEN([product].[Name]) >= 1
 
-SELECT 
-    [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
-    [Extent1].[Name] AS [Name]
-    FROM [Production].[ProductCategory] AS [Extent1]
-    WHERE (LEN([Extent1].[Name])) >= 10
+SELECT [product].[ProductID], [product].[ListPrice], [product].[Name], [product].[ProductSubcategoryID], [product].[RowVersion]
+FROM [Production].[Product] AS [product]
+WHERE LEN([product].[Name]) >= 10
 
-exec sp_executesql N'SELECT 
-    [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
-    [Extent1].[Name] AS [Name]
-    FROM [Production].[ProductCategory] AS [Extent1]
-    WHERE (LEN([Extent1].[Name])) >= @p__linq__0',N'@p__linq__0 int',@p__linq__0=1
+exec sp_executesql N'SELECT [product].[ProductID], [product].[ListPrice], [product].[Name], [product].[ProductSubcategoryID], [product].[RowVersion]
+FROM [Production].[Product] AS [product]
+WHERE LEN([product].[Name]) >= @__minLength_0',N'@__minLength_0 int',@__minLength_0=1
 
-exec sp_executesql N'SELECT 
-    [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
-    [Extent1].[Name] AS [Name]
-    FROM [Production].[ProductCategory] AS [Extent1]
-    WHERE (LEN([Extent1].[Name])) >= @p__linq__0',N'@p__linq__0 int',@p__linq__0=10
+exec sp_executesql N'SELECT [product].[ProductID], [product].[ListPrice], [product].[Name], [product].[ProductSubcategoryID], [product].[RowVersion]
+FROM [Production].[Product] AS [product]
+WHERE LEN([product].[Name]) >= @__minLength_0',N'@__minLength_0 int',@__minLength_0=10

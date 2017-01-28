@@ -46,13 +46,13 @@
             Performance.UncachedEntity(new AdventureWorks());
             Performance.Find(new AdventureWorks());
             Performance.TranslationCache(new AdventureWorks());
-            Performance.UncachedTranslation(new AdventureWorks());
-            Performance.CachedTranslation(new AdventureWorks());
-            Performance.CompiledCachedTranslation(new AdventureWorks());
+            Performance.UnreusedTranslationCache(new AdventureWorks());
+            Performance.ReusedTranslationCache(new AdventureWorks());
+            Performance.CompiledReusedTranslationCache(new AdventureWorks());
             Performance.Translation();
-            Performance.UncachedSkipTake(new AdventureWorks());
+            Performance.UnresuedSkipTakeTranslationCache(new AdventureWorks());
 #if NETFX
-            Performance.CachedSkipTake(new AdventureWorks());
+            Performance.ResuedSkipTakeTranslationCache(new AdventureWorks());
 #endif
         }
 
@@ -81,12 +81,11 @@
         [TestMethod]
         public async Task AsyncTransactionTest()
         {
+            await Performance.DbContextTransactionAsync(new AdventureWorks());
+            await Performance.DbTransactionAsync();
 #if NETFX
             await Performance.TransactionScopeAsync();
-#else
-            await Performance.DbContextTransactionAsync(new AdventureWorks());
 #endif
-            await Performance.DbTransactionAsync();
         }
     }
 }

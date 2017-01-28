@@ -84,15 +84,15 @@
 #if NETFX
             using (new TransactionHelper())
             {
-                Concurrency.UpdateProductDatabaseWins(new DbReaderWriter(new AdventureWorks()), new DbReaderWriter(new AdventureWorks()), new DbReaderWriter(new AdventureWorks()));
+                Concurrency.DatabaseWins(new DbReaderWriter(new AdventureWorks()), new DbReaderWriter(new AdventureWorks()), new DbReaderWriter(new AdventureWorks()));
             }
             using (new TransactionHelper())
             {
-                Concurrency.UpdateProductClientWins(new DbReaderWriter(new AdventureWorks()), new DbReaderWriter(new AdventureWorks()), new DbReaderWriter(new AdventureWorks()));
+                Concurrency.ClientWins(new DbReaderWriter(new AdventureWorks()), new DbReaderWriter(new AdventureWorks()), new DbReaderWriter(new AdventureWorks()));
             }
             using (new TransactionHelper())
             {
-                Concurrency.UpdateProductMergeClientAndDatabase(new DbReaderWriter(new AdventureWorks()), new DbReaderWriter(new AdventureWorks()), new DbReaderWriter(new AdventureWorks()));
+                Concurrency.MergeClientAndDatabase(new DbReaderWriter(new AdventureWorks()), new DbReaderWriter(new AdventureWorks()), new DbReaderWriter(new AdventureWorks()));
             }
             using (new TransactionHelper())
             {
@@ -100,11 +100,11 @@
             }
 #else
             Rollback((adventureWorks1, adventureWorks2, adventureWorks3) => 
-                Concurrency.UpdateProductDatabaseWins(new DbReaderWriter(adventureWorks1), new DbReaderWriter(adventureWorks2), new DbReaderWriter(adventureWorks3)));
+                Concurrency.DatabaseWins(new DbReaderWriter(adventureWorks1), new DbReaderWriter(adventureWorks2), new DbReaderWriter(adventureWorks3)));
             Rollback((adventureWorks1, adventureWorks2, adventureWorks3) => 
-                Concurrency.UpdateProductClientWins(new DbReaderWriter(adventureWorks1), new DbReaderWriter(adventureWorks2), new DbReaderWriter(adventureWorks3)));
+                Concurrency.ClientWins(new DbReaderWriter(adventureWorks1), new DbReaderWriter(adventureWorks2), new DbReaderWriter(adventureWorks3)));
             Rollback((adventureWorks1, adventureWorks2, adventureWorks3) => 
-                Concurrency.UpdateProductMergeClientAndDatabase(new DbReaderWriter(adventureWorks1), new DbReaderWriter(adventureWorks2), new DbReaderWriter(adventureWorks3)));
+                Concurrency.MergeClientAndDatabase(new DbReaderWriter(adventureWorks1), new DbReaderWriter(adventureWorks2), new DbReaderWriter(adventureWorks3)));
             Rollback((adventureWorks1, adventureWorks2) => 
                 Concurrency.SaveChanges(adventureWorks1, adventureWorks2));
 #endif

@@ -788,7 +788,7 @@ namespace Dixin.Tests.Linq.EntityFramework
 
                     productCopy2.Name = Name2;
                     productCopy2.ProductSubcategoryID = UpdatedSubcategory;
-                    Assert.AreEqual(0, context2.SaveChanges(RefreshConflict.StoreWins, Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy.DefaultFixed));
+                    Assert.AreEqual(0, context2.SaveChanges(RefreshConflict.StoreWins, RetryStrategy.DefaultFixed));
                 }
                 using (AdventureWorks context3 = new AdventureWorks())
                 {
@@ -819,7 +819,7 @@ namespace Dixin.Tests.Linq.EntityFramework
 
                     productCopy2.Name = Name2;
                     productCopy2.ProductSubcategoryID = 1;
-                    Assert.AreEqual(1, context2.SaveChanges(RefreshConflict.ClientWins, Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy.DefaultFixed));
+                    Assert.AreEqual(1, context2.SaveChanges(RefreshConflict.ClientWins, RetryStrategy.DefaultFixed));
                 }
                 using (AdventureWorks context3 = new AdventureWorks())
                 {
@@ -850,7 +850,7 @@ namespace Dixin.Tests.Linq.EntityFramework
 
                     productCopy2.Name = Name2;
                     productCopy2.ProductSubcategoryID = 1;
-                    Assert.AreEqual(1, context2.SaveChanges(RefreshConflict.MergeClientAndStore, Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy.DefaultFixed));
+                    Assert.AreEqual(1, context2.SaveChanges(RefreshConflict.MergeClientAndStore, RetryStrategy.DefaultFixed));
                 }
                 using (AdventureWorks context3 = new AdventureWorks())
                 {
@@ -880,7 +880,7 @@ namespace Dixin.Tests.Linq.EntityFramework
 
                     productCopy2.Name = Name2;
                     productCopy2.ProductSubcategoryID = UpdatedSubcategory;
-                    Assert.AreEqual(0, context2.SaveChanges(RefreshConflict.StoreWins, Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy.DefaultFixed));
+                    Assert.AreEqual(0, context2.SaveChanges(RefreshConflict.StoreWins, RetryStrategy.DefaultFixed));
                 }
                 using (AdventureWorks context3 = new AdventureWorks())
                 {
@@ -907,7 +907,7 @@ namespace Dixin.Tests.Linq.EntityFramework
 
                     productCopy2.Name = Name2;
                     productCopy2.ProductSubcategoryID = UpdatedSubcategory;
-                    Assert.AreEqual(0, context2.SaveChanges(RefreshConflict.ClientWins, Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy.DefaultFixed));
+                    Assert.AreEqual(0, context2.SaveChanges(RefreshConflict.ClientWins, RetryStrategy.DefaultFixed));
                 }
                 using (AdventureWorks context3 = new AdventureWorks())
                 {
@@ -934,7 +934,7 @@ namespace Dixin.Tests.Linq.EntityFramework
 
                     productCopy2.Name = Name2;
                     productCopy2.ProductSubcategoryID = UpdatedSubcategory;
-                    Assert.AreEqual(0, context2.SaveChanges(RefreshConflict.MergeClientAndStore, Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy.DefaultFixed));
+                    Assert.AreEqual(0, context2.SaveChanges(RefreshConflict.MergeClientAndStore, RetryStrategy.DefaultFixed));
                 }
                 using (AdventureWorks context3 = new AdventureWorks())
                 {
@@ -960,7 +960,7 @@ namespace Dixin.Tests.Linq.EntityFramework
                     Assert.AreEqual(1, context1.SaveChanges());
 
                     context2.Products.Remove(productCopy2);
-                    Assert.AreEqual(0, context2.SaveChanges(RefreshConflict.StoreWins, Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy.DefaultFixed));
+                    Assert.AreEqual(0, context2.SaveChanges(RefreshConflict.StoreWins, RetryStrategy.DefaultFixed));
                 }
                 using (AdventureWorks context3 = new AdventureWorks())
                 {
@@ -986,7 +986,7 @@ namespace Dixin.Tests.Linq.EntityFramework
                     Assert.AreEqual(1, context1.SaveChanges());
 
                     context2.Products.Remove(productCopy2);
-                    Assert.AreEqual(0, context2.SaveChanges(RefreshConflict.ClientWins, Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy.DefaultFixed));
+                    Assert.AreEqual(0, context2.SaveChanges(RefreshConflict.ClientWins, RetryStrategy.DefaultFixed));
                 }
                 using (AdventureWorks context3 = new AdventureWorks())
                 {
@@ -1012,7 +1012,7 @@ namespace Dixin.Tests.Linq.EntityFramework
                     Assert.AreEqual(1, context1.SaveChanges());
 
                     context2.Products.Remove(productCopy2);
-                    Assert.AreEqual(0, context2.SaveChanges(RefreshConflict.MergeClientAndStore, Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy.DefaultFixed));
+                    Assert.AreEqual(0, context2.SaveChanges(RefreshConflict.MergeClientAndStore, RetryStrategy.DefaultFixed));
                 }
                 using (AdventureWorks context3 = new AdventureWorks())
                 {
@@ -1039,7 +1039,7 @@ namespace Dixin.Tests.Linq.EntityFramework
                     Assert.AreEqual(1, context1.SaveChanges());
 
                     context2.Products.Remove(productCopy2);
-                    Assert.AreEqual(0, context2.SaveChanges(RefreshConflict.StoreWins, Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy.DefaultFixed));
+                    Assert.AreEqual(0, context2.SaveChanges(RefreshConflict.StoreWins, RetryStrategy.DefaultFixed));
                 }
                 using (AdventureWorks context3 = new AdventureWorks())
                 {
@@ -1069,7 +1069,7 @@ namespace Dixin.Tests.Linq.EntityFramework
                     Assert.AreEqual(1, context1.SaveChanges());
 
                     context2.Products.Remove(productCopy2);
-                    Assert.AreEqual(1, context2.SaveChanges(RefreshConflict.ClientWins, Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy.DefaultFixed));
+                    Assert.AreEqual(1, context2.SaveChanges(RefreshConflict.ClientWins, RetryStrategy.DefaultFixed));
                 }
                 using (AdventureWorks context3 = new AdventureWorks())
                 {
@@ -1096,7 +1096,7 @@ namespace Dixin.Tests.Linq.EntityFramework
                     Assert.AreEqual(1, context1.SaveChanges());
 
                     context2.Products.Remove(productCopy2);
-                    Assert.AreEqual(1, context2.SaveChanges(RefreshConflict.MergeClientAndStore, Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy.DefaultFixed));
+                    Assert.AreEqual(1, context2.SaveChanges(RefreshConflict.MergeClientAndStore, RetryStrategy.DefaultFixed));
                 }
                 using (AdventureWorks context3 = new AdventureWorks())
                 {
@@ -1153,7 +1153,7 @@ namespace Dixin.Tests.Linq.EntityFramework
 
                     productCopy2.Name = Name2;
                     productCopy2.ProductSubcategoryID = UpdatedSubcategory;
-                    Assert.AreEqual(0, await context2.SaveChangesAsync(RefreshConflict.StoreWins, Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy.DefaultFixed));
+                    Assert.AreEqual(0, await context2.SaveChangesAsync(RefreshConflict.StoreWins, RetryStrategy.DefaultFixed));
                 }
                 using (AdventureWorks context3 = new AdventureWorks())
                 {
@@ -1184,7 +1184,7 @@ namespace Dixin.Tests.Linq.EntityFramework
 
                     productCopy2.Name = Name2;
                     productCopy2.ProductSubcategoryID = 1;
-                    Assert.AreEqual(1, await context2.SaveChangesAsync(RefreshConflict.ClientWins, Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy.DefaultFixed));
+                    Assert.AreEqual(1, await context2.SaveChangesAsync(RefreshConflict.ClientWins, RetryStrategy.DefaultFixed));
                 }
                 using (AdventureWorks context3 = new AdventureWorks())
                 {
@@ -1215,7 +1215,7 @@ namespace Dixin.Tests.Linq.EntityFramework
 
                     productCopy2.Name = Name2;
                     productCopy2.ProductSubcategoryID = 1;
-                    Assert.AreEqual(1, await context2.SaveChangesAsync(RefreshConflict.MergeClientAndStore, Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy.DefaultFixed));
+                    Assert.AreEqual(1, await context2.SaveChangesAsync(RefreshConflict.MergeClientAndStore, RetryStrategy.DefaultFixed));
                 }
                 using (AdventureWorks context3 = new AdventureWorks())
                 {
@@ -1245,7 +1245,7 @@ namespace Dixin.Tests.Linq.EntityFramework
 
                     productCopy2.Name = Name2;
                     productCopy2.ProductSubcategoryID = UpdatedSubcategory;
-                    Assert.AreEqual(0, await context2.SaveChangesAsync(RefreshConflict.StoreWins, Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy.DefaultFixed));
+                    Assert.AreEqual(0, await context2.SaveChangesAsync(RefreshConflict.StoreWins, RetryStrategy.DefaultFixed));
                 }
                 using (AdventureWorks context3 = new AdventureWorks())
                 {
@@ -1272,7 +1272,7 @@ namespace Dixin.Tests.Linq.EntityFramework
 
                     productCopy2.Name = Name2;
                     productCopy2.ProductSubcategoryID = UpdatedSubcategory;
-                    Assert.AreEqual(0, await context2.SaveChangesAsync(RefreshConflict.ClientWins, Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy.DefaultFixed));
+                    Assert.AreEqual(0, await context2.SaveChangesAsync(RefreshConflict.ClientWins, RetryStrategy.DefaultFixed));
                 }
                 using (AdventureWorks context3 = new AdventureWorks())
                 {
@@ -1299,7 +1299,7 @@ namespace Dixin.Tests.Linq.EntityFramework
 
                     productCopy2.Name = Name2;
                     productCopy2.ProductSubcategoryID = UpdatedSubcategory;
-                    Assert.AreEqual(0, await context2.SaveChangesAsync(RefreshConflict.MergeClientAndStore, Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy.DefaultFixed));
+                    Assert.AreEqual(0, await context2.SaveChangesAsync(RefreshConflict.MergeClientAndStore, RetryStrategy.DefaultFixed));
                 }
                 using (AdventureWorks context3 = new AdventureWorks())
                 {
@@ -1325,7 +1325,7 @@ namespace Dixin.Tests.Linq.EntityFramework
                     Assert.AreEqual(1, await context1.SaveChangesAsync());
 
                     context2.Products.Remove(productCopy2);
-                    Assert.AreEqual(0, await context2.SaveChangesAsync(RefreshConflict.StoreWins, Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy.DefaultFixed));
+                    Assert.AreEqual(0, await context2.SaveChangesAsync(RefreshConflict.StoreWins, RetryStrategy.DefaultFixed));
                 }
                 using (AdventureWorks context3 = new AdventureWorks())
                 {
@@ -1351,7 +1351,7 @@ namespace Dixin.Tests.Linq.EntityFramework
                     Assert.AreEqual(1, await context1.SaveChangesAsync());
 
                     context2.Products.Remove(productCopy2);
-                    Assert.AreEqual(0, await context2.SaveChangesAsync(RefreshConflict.ClientWins, Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy.DefaultFixed));
+                    Assert.AreEqual(0, await context2.SaveChangesAsync(RefreshConflict.ClientWins, RetryStrategy.DefaultFixed));
                 }
                 using (AdventureWorks context3 = new AdventureWorks())
                 {
@@ -1377,7 +1377,7 @@ namespace Dixin.Tests.Linq.EntityFramework
                     Assert.AreEqual(1, await context1.SaveChangesAsync());
 
                     context2.Products.Remove(productCopy2);
-                    Assert.AreEqual(0, await context2.SaveChangesAsync(RefreshConflict.MergeClientAndStore, Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy.DefaultFixed));
+                    Assert.AreEqual(0, await context2.SaveChangesAsync(RefreshConflict.MergeClientAndStore, RetryStrategy.DefaultFixed));
                 }
                 using (AdventureWorks context3 = new AdventureWorks())
                 {
@@ -1404,7 +1404,7 @@ namespace Dixin.Tests.Linq.EntityFramework
                     Assert.AreEqual(1, await context1.SaveChangesAsync());
 
                     context2.Products.Remove(productCopy2);
-                    Assert.AreEqual(0, await context2.SaveChangesAsync(RefreshConflict.StoreWins, Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy.DefaultFixed));
+                    Assert.AreEqual(0, await context2.SaveChangesAsync(RefreshConflict.StoreWins, RetryStrategy.DefaultFixed));
                 }
                 using (AdventureWorks context3 = new AdventureWorks())
                 {
@@ -1434,7 +1434,7 @@ namespace Dixin.Tests.Linq.EntityFramework
                     Assert.AreEqual(1, await context1.SaveChangesAsync());
 
                     context2.Products.Remove(productCopy2);
-                    Assert.AreEqual(1, await context2.SaveChangesAsync(RefreshConflict.ClientWins, Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy.DefaultFixed));
+                    Assert.AreEqual(1, await context2.SaveChangesAsync(RefreshConflict.ClientWins, RetryStrategy.DefaultFixed));
                 }
                 using (AdventureWorks context3 = new AdventureWorks())
                 {
@@ -1461,7 +1461,7 @@ namespace Dixin.Tests.Linq.EntityFramework
                     Assert.AreEqual(1, await context1.SaveChangesAsync());
 
                     context2.Products.Remove(productCopy2);
-                    Assert.AreEqual(1, await context2.SaveChangesAsync(RefreshConflict.MergeClientAndStore, Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.RetryStrategy.DefaultFixed));
+                    Assert.AreEqual(1, await context2.SaveChangesAsync(RefreshConflict.MergeClientAndStore, RetryStrategy.DefaultFixed));
                 }
                 using (AdventureWorks context3 = new AdventureWorks())
                 {
