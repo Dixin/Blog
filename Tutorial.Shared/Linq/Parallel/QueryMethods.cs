@@ -327,7 +327,6 @@ namespace Dixin.Linq.Parallel
             parallelSubtract.WriteLine(); // 2
         }
 
-#if NETFX
         internal static void VisualizeAggregate()
         {
             int count = Environment.ProcessorCount * 2;
@@ -355,7 +354,6 @@ namespace Dixin.Linq.Parallel
                 });
             }
         }
-#endif
 
         internal static void MergeForAggregate()
         {
