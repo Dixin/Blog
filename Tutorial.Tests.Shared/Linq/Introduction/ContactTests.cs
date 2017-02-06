@@ -1,5 +1,4 @@
-﻿#if NETFX
-namespace Dixin.Tests.Linq.CSharp
+﻿namespace Dixin.Tests.Linq.Introduction
 {
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
@@ -63,4 +62,3 @@ namespace Dixin.Tests.Linq.CSharp
         }
     }
 }
-#endif

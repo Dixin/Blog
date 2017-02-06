@@ -45,9 +45,9 @@
     {
         internal static void OrderBy()
         {
-            OrderBy(5, 10000, value => value); // Sequential:11    Parallel:1422
-            OrderBy(5000, 100, value => value); // Sequential:114   Parallel:107
-            OrderBy(500000, 100, value => value); // Sequential:18210 Parallel:8204
+            OrderBy(5, 10_000, value => value); // Sequential:11    Parallel:1422
+            OrderBy(5_000, 100, value => value); // Sequential:114   Parallel:107
+            OrderBy(500_000, 100, value => value); // Sequential:18210 Parallel:8204
 
             OrderBy(Environment.ProcessorCount, 10, value => value + Compute()); // Sequential:1605  Parallel:737
         }

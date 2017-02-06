@@ -20,8 +20,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CategoryTheory\NaturalTransformationsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CategoryTheory\PerformanceTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\Connection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\AsyncTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\BinaryArithmeticCompilerTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\ContactTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\Introduction\ContactTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\GenericTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\ImperativeTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\LocalFunctionsTests.cs" />
