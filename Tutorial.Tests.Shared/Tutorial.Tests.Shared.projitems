@@ -22,6 +22,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Linq\Connection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\AsyncTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\BinaryArithmeticCompilerTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\FundamentalsTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\ParametersTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\Introduction\ContactTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\GenericTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\ImperativeTests.cs" />

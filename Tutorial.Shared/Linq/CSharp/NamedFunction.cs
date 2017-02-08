@@ -4,6 +4,22 @@
     using System.Diagnostics;
     using System.IO;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
+
+    internal static partial class Functions
+    {
+#if NETFX
+        internal static string GetCurrentName()
+        {
+            return MethodBase.GetCurrentMethod().Name;
+        }
+#else
+        internal static string GetCurrentName([CallerMemberName] string name = null)
+        {
+            return name;
+        }
+#endif
+    }
 
     internal partial class Data
     {
@@ -11,17 +27,12 @@
 
         static Data()
         {
-#if NETFX
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // .cctor
-#endif
+            Trace.WriteLine(Functions.GetCurrentName());
         }
 
         internal Data(int value)
         {
-#if NETFX
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // .ctor
-#endif
-
+            Trace.WriteLine(Functions.GetCurrentName());
             this.value = value;
         }
 
@@ -35,25 +46,19 @@
     {
         public static Data operator +(Data data1, Data data2)
         {
-#if NETFX
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Addition
-#endif
+            Trace.WriteLine(Functions.GetCurrentName());
             return new Data(data1.value + data2.value);
         }
 
         public static explicit operator int(Data value)
         {
-#if NETFX
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Explicit
-#endif
+            Trace.WriteLine(Functions.GetCurrentName());
             return value.value;
         }
 
         public static implicit operator Data(int value)
         {
-#if NETFX
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Implicit
-#endif
+            Trace.WriteLine(Functions.GetCurrentName());
             return new Data(value);
         }
     }
@@ -62,25 +67,19 @@
     {
         public static Data op_Addition(Data data1, Data data2)
         {
-#if NETFX
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Addition
-#endif
+            Trace.WriteLine(Functions.GetCurrentName());
             return new Data(data1.value + data2.value);
         }
 
         public static int op_Explicit(Data data)
         {
-#if NETFX
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Explicit
-#endif
+            Trace.WriteLine(Functions.GetCurrentName());
             return data.value;
         }
 
         public static Data op_Implicit(int data)
         {
-#if NETFX
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Implicit
-#endif
+            Trace.WriteLine(Functions.GetCurrentName());
             return new Data(data);
         }
     }
@@ -103,16 +102,12 @@
         {
             get
             {
-#if NETFX
-                Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // get_Description
-#endif
+                Trace.WriteLine(Functions.GetCurrentName());
                 return this.description;
             }
             set
             {
-#if NETFX
-                Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // set_Description
-#endif
+                Trace.WriteLine(Functions.GetCurrentName());
                 this.description = value;
             }
         }
@@ -131,13 +126,13 @@
 
         internal string get_Description() // Body of Description's getter.
         {
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // get_Description
+            Trace.WriteLine(Functions.GetCurrentName()); // get_Description
             return this.description;
         }
 
         internal void set_Description(string value) // Body of Description's setter.
         {
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // set_Description
+            Trace.WriteLine(Functions.GetCurrentName()); // set_Description
             this.description = value;
         }
     }
@@ -165,16 +160,12 @@
         {
             get
             {
-#if NETFX
-                Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // get_Item
-#endif
+                Trace.WriteLine(Functions.GetCurrentName());
                 return this.links[index];
             }
             set
             {
-#if NETFX
-                Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // set_Item
-#endif
+                Trace.WriteLine(Functions.GetCurrentName());
                 this.links[index] = value;
             }
         }
@@ -198,13 +189,13 @@
 
         internal Uri get_Item(int index) // Body of indexer's getter.
         {
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // get_Item
+            Trace.WriteLine(Functions.GetCurrentName()); // get_Item
             return this.links[index];
         }
 
         internal Uri set_Item(int index, Uri value) // Body of indexer's setter.
         {
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // set_Item
+            Trace.WriteLine(Functions.GetCurrentName()); // set_Item
             this.links[index] = value;
         }
     }

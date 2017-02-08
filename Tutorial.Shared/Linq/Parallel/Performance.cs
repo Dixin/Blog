@@ -55,36 +55,36 @@
 
     internal static partial class Performance
     {
-        private static void Download(string[] urls)
+        private static void Download(string[] uris)
         {
-            urls.Visualize(url =>
+            uris.Visualize(uri =>
+            {
+                using (HttpClient httpClient = new HttpClient())
                 {
-                    using (HttpClient httpClient = new HttpClient())
-                    {
-                        httpClient.GetByteArrayAsync(url).Wait();
-                    }
-                });
+                    httpClient.GetByteArrayAsync(uri).Wait();
+                }
+            });
 
-            urls.AsParallel()
+            uris.AsParallel()
                 .WithDegreeOfParallelism(10)
-                .Visualize(url =>
+                .Visualize(uri =>
                 {
                     using (HttpClient httpClient = new HttpClient())
                     {
-                        httpClient.GetByteArrayAsync(url).Wait();
+                        httpClient.GetByteArrayAsync(uri).Wait();
                     }
                 });
 
             using (Markers.EnterSpan(-1, nameof(ParallelEnumerableX.ForceParallel)))
             {
                 MarkerSeries markerSeries = Markers.CreateMarkerSeries(nameof(ParallelEnumerableX.ForceParallel));
-                urls.ForceParallel(
-                url =>
+                uris.ForceParallel(
+                uri =>
                 {
-                    using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, url))
+                    using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, uri))
                     using (HttpClient httpClient = new HttpClient())
                     {
-                        httpClient.GetByteArrayAsync(url).Wait();
+                        httpClient.GetByteArrayAsync(uri).Wait();
                     }
                 },
                 10);
@@ -97,7 +97,7 @@
                 LoadXDocument("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2")
                 .Descendants((XNamespace)"http://search.yahoo.com/mrss/" + "thumbnail")
                 .Attributes("url")
-                .Select(url => (string)url)
+                .Select(uri => (string)uri)
                 .ToArray();
             Download(thumbnails);
         }
@@ -108,7 +108,7 @@
                 LoadXDocument("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2")
                 .Descendants((XNamespace)"http://search.yahoo.com/mrss/" + "content")
                 .Attributes("url")
-                .Select(url => (string)url)
+                .Select(uri => (string)uri)
                 .ToArray();
             Download(contents);
         }

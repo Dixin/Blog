@@ -117,40 +117,40 @@
             XNode.DeepEquals(document.Root, element2).WriteLine(); // True
         }
 
-        internal static XDocument LoadXDocument(string url)
+        internal static XDocument LoadXDocument(string uri)
         {
 #if NETFX
-            return XDocument.Load(url);
+            return XDocument.Load(uri);
 #else
             using (HttpClient httpClient = new HttpClient())
-            using (Stream downloadStream = httpClient.GetStreamAsync(url).Result)
+            using (Stream downloadStream = httpClient.GetStreamAsync(uri).Result)
             {
                 return XDocument.Load(downloadStream);
             }
 #endif
         }
 
-        internal static XElement LoadXElement(string url)
+        internal static XElement LoadXElement(string uri)
         {
 #if NETFX
-            return XElement.Load(url);
+            return XElement.Load(uri);
 #else
             using (HttpClient httpClient = new HttpClient())
-            using (Stream downloadStream = httpClient.GetStreamAsync(url).Result)
+            using (Stream downloadStream = httpClient.GetStreamAsync(uri).Result)
             {
                 return XElement.Load(downloadStream);
             }
 #endif
         }
 
-        internal static XmlReader CreateReader(string url)
+        internal static XmlReader CreateReader(string uri)
         {
 #if NETFX
-            return XmlReader.Create(url);
+            return XmlReader.Create(uri);
 #else
             using (HttpClient httpClient = new HttpClient())
             {
-                Stream downloadStream = httpClient.GetStreamAsync(url).Result;
+                Stream downloadStream = httpClient.GetStreamAsync(uri).Result;
                 return XmlReader.Create(downloadStream);
             }
 #endif
@@ -173,9 +173,9 @@
             // System.Xml.XmlException: The 'ul' start tag on line 68 position 116 does not match the end tag of 'div'. Line 154, position 109.
         }
 
-        internal static IEnumerable<XElement> RssItems(string rssUrl)
+        internal static IEnumerable<XElement> RssItems(string rssUri)
         {
-            using (XmlReader reader = CreateReader(rssUrl))
+            using (XmlReader reader = CreateReader(rssUri))
             {
                 reader.MoveToContent();
                 while (reader.Read())

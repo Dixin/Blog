@@ -20,7 +20,7 @@ namespace System.Collections.Generic
 }
 #endif
 
-namespace Dixin.Linq.LinqToObjects
+namespace Dixin.Linq.CSharp
 {
     using System;
     using System.Collections.Generic;

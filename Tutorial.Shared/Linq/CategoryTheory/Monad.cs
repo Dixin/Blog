@@ -699,11 +699,11 @@
 
     public static partial class TaskExtensions
     {
-        internal static async Task WorkflowAsync(string url)
+        internal static async Task WorkflowAsync(string uri)
         {
             using (HttpClient httpClient = new HttpClient())
             {
-                Task<string> query = from response in httpClient.GetAsync(url) // Return Task<HttpResponseMessage>.
+                Task<string> query = from response in httpClient.GetAsync(uri) // Return Task<HttpResponseMessage>.
                                      from stream in response.Content.ReadAsStreamAsync() // Return Task<Stream>.
                                      from text in new StreamReader(stream).ReadToEndAsync() // Return Task<string>.
                                      select text; // Define and execute query.

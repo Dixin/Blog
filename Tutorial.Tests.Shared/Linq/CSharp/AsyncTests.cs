@@ -16,5 +16,12 @@
             object result = await Functions.CompiledAsync(value);
             Assert.AreEqual(value, result);
         }
+
+        [TestMethod]
+        public async Task FuncAwaitableTest()
+        {
+            int result = await Functions.ReturnFuncAwaitable(1);
+            Assert.AreEqual(1, result);
+        }
     }
 }

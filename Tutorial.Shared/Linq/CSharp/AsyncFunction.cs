@@ -1,4 +1,5 @@
-﻿namespace Dixin.Linq.CSharp
+﻿
+namespace Dixin.Linq.CSharp
 {
     using System;
     using System.Collections.Generic;
@@ -11,6 +12,7 @@
     using System.Net.Http;
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
+    using System.Security;
     using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
@@ -314,26 +316,26 @@
 
         [CompilerGenerated]
         [StructLayout(LayoutKind.Auto)]
-        private struct AsyncStateMachine<T> : IAsyncStateMachine
+        private struct AsyncStateMachine<TResult> : IAsyncStateMachine
         {
             public int State;
 
-            public AsyncTaskMethodBuilder<T> Builder;
+            public AsyncTaskMethodBuilder<TResult> Builder;
 
-            public T Value;
+            public TResult Value;
 
-            private TaskAwaiter<T> awaiter;
+            private TaskAwaiter<TResult> awaiter;
 
             void IAsyncStateMachine.MoveNext()
             {
-                T result;
+                TResult result;
                 try
                 {
                     switch (this.State)
                     {
                         case -1: // Start code from the beginning to the 1st await.
                             // Workflow begins.
-                            T value1 = Start(this.Value);
+                            TResult value1 = Start(this.Value);
                             this.awaiter = Async1(value1).GetAwaiter();
                             if (this.awaiter.IsCompleted)
                             {
@@ -350,8 +352,8 @@
                             }
                         case 0: // Continuation code from after the 1st await to the 2nd await.
                             // The task returned by Async1 is completed. The result is available immediately through GetResult.
-                            T result1 = this.awaiter.GetResult();
-                            T value2 = Continuation1(result1);
+                            TResult result1 = this.awaiter.GetResult();
+                            TResult value2 = Continuation1(result1);
                             this.awaiter = Async2(value2).GetAwaiter();
                             if (this.awaiter.IsCompleted)
                             {
@@ -368,8 +370,8 @@
                             }
                         case 1: // Continuation code from after the 2nd await to the 3rd await.
                             // The task returned by Async2 is completed. The result is available immediately through GetResult.
-                            T result2 = this.awaiter.GetResult();
-                            T value3 = Continuation2(result2);
+                            TResult result2 = this.awaiter.GetResult();
+                            TResult value3 = Continuation2(result2);
                             this.awaiter = Async3(value3).GetAwaiter();
                             if (this.awaiter.IsCompleted)
                             {
@@ -386,7 +388,7 @@
                             }
                         case 2: // Continuation code from after the 3rd await to the end.
                             // The task returned by Async3 is completed. The result is available immediately through GetResult.
-                            T result3 = this.awaiter.GetResult();
+                            TResult result3 = this.awaiter.GetResult();
                             result = Continuation3(result3);
                             this.State = -2; // -2 means end.
                             this.Builder.SetResult(result);
@@ -557,16 +559,16 @@
             };
 
             string result = await readAsync(readPath);
-            await writeAsync(writePath, result); 
+            await writeAsync(writePath, result);
         }
 
-        internal static void AsyncAnonymous(string readPath, string writePath)
+        internal static async Task AsyncAnonymous(string readPath, string writePath)
         {
             Task<Task<string>> task1 = new Task<Task<string>>(async () => await ReadAsync(readPath));
-            //string contents = await task1.Unwrap(); // Equivalent to: string contents = await await task1;
+            string contents = await task1.Unwrap(); // Equivalent to: string contents = await await task1;
 
             Task<Task> task2 = new Task<Task>(async () => await WriteAsync(writePath, null));
-            //await task2.Unwrap(); // Equivalent to: await await task2;
+            await task2.Unwrap(); // Equivalent to: await await task2;
         }
 
         internal static async Task RunAsync(string readPath, string writePath)
@@ -578,34 +580,130 @@
             await task2;
         }
 
-        private static IDictionary<string, byte[]> cache = new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
+        internal static async FuncAwaitable<T> ReturnFuncAwaitable<T>(T value)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(1));
+            return value;
+        }
+
+        internal static async Task CallReturnFuncAwaitable<T>(T value)
+        {
+            T result = await ReturnFuncAwaitable(value);
+        }
+
+        private static IDictionary<string, byte[]> cache = 
+            new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
 
         internal static async Task<byte[]> DownloadAsyncTask(string uri)
         {
-            if (cache.TryGetValue(uri, out byte[] result))
+            if (cache.TryGetValue(uri, out byte[] cachedResult))
             {
-                return result;
+                return cachedResult;
             }
             using (HttpClient httpClient = new HttpClient())
             {
-                result = await httpClient.GetByteArrayAsync(uri);
+                byte[] result = await httpClient.GetByteArrayAsync(uri);
                 cache.Add(uri, result);
                 return result;
             }
         }
 
-        internal static async ValueTask<byte[]> DownloadAsyncValueTask(string uri)
+        internal static ValueTask<byte[]> DownloadAsyncValueTask(string uri)
         {
-            if (cache.TryGetValue(uri, out byte[] result))
+            return cache.TryGetValue(uri, out byte[] cachedResult)
+                ? new ValueTask<byte[]>(cachedResult)
+                : new ValueTask<byte[]>(DownloadAsync());
+
+            async Task<byte[]> DownloadAsync()
             {
-                return result;
+                using (HttpClient httpClient = new HttpClient())
+                {
+                    byte[] result = await httpClient.GetByteArrayAsync(uri);
+                    cache.Add(uri, result);
+                    return result;
+                }
             }
-            using (HttpClient httpClient = new HttpClient())
+        }
+    }
+
+    [AsyncMethodBuilder(typeof(AsyncFuncAwaitableMethodBuilder<>))]
+    public class FuncAwaitable<TResult> : IAwaitable<TResult>
+    {
+        private readonly Func<TResult> function;
+
+        public FuncAwaitable(Func<TResult> function) => this.function = function;
+
+        public IAwaiter<TResult> GetAwaiter() => new FuncAwaiter<TResult>(Task.Run(this.function));
+    }
+
+    public class AsyncFuncAwaitableMethodBuilder<TResult>
+    {
+        private AsyncTaskMethodBuilder<TResult> taskMethodBuilder;
+
+        private TResult result;
+
+        private bool hasResult;
+
+        private bool useBuilder;
+
+        public static AsyncFuncAwaitableMethodBuilder<TResult> Create() =>
+            new AsyncFuncAwaitableMethodBuilder<TResult>()
             {
-                result = await httpClient.GetByteArrayAsync(uri);
-                cache.Add(uri, result);
-                return result;
+                taskMethodBuilder = AsyncTaskMethodBuilder<TResult>.Create()
+            };
+
+        public void Start<TStateMachine>(ref TStateMachine stateMachine) where TStateMachine : IAsyncStateMachine =>
+            this.taskMethodBuilder.Start(ref stateMachine);
+
+        public void SetStateMachine(IAsyncStateMachine stateMachine) =>
+            this.taskMethodBuilder.SetStateMachine(stateMachine);
+
+        public void SetResult(TResult result)
+        {
+            if (this.useBuilder)
+            {
+                this.taskMethodBuilder.SetResult(result);
             }
+            else
+            {
+                this.result = result;
+                this.hasResult = true;
+            }
+        }
+
+        public void SetException(Exception exception) => this.taskMethodBuilder.SetException(exception);
+
+        public FuncAwaitable<TResult> Task
+        {
+            get
+            {
+                if (this.hasResult)
+                {
+                    TResult result = this.result;
+                    return new FuncAwaitable<TResult>(() => result);
+                }
+                else
+                {
+                    this.useBuilder = true;
+                    Task<TResult> task = this.taskMethodBuilder.Task;
+                    return new FuncAwaitable<TResult>(() => task.Result);
+                }
+            }
+        }
+
+        public void AwaitOnCompleted<TAwaiter, TStateMachine>(ref TAwaiter awaiter, ref TStateMachine stateMachine)
+            where TAwaiter : INotifyCompletion where TStateMachine : IAsyncStateMachine
+        {
+            this.useBuilder = true;
+            this.taskMethodBuilder.AwaitOnCompleted(ref awaiter, ref stateMachine);
+        }
+
+        public void AwaitUnsafeOnCompleted<TAwaiter, TStateMachine>(
+            ref TAwaiter awaiter, ref TStateMachine stateMachine)
+            where TAwaiter : ICriticalNotifyCompletion where TStateMachine : IAsyncStateMachine
+        {
+            this.useBuilder = true;
+            this.taskMethodBuilder.AwaitUnsafeOnCompleted(ref awaiter, ref stateMachine);
         }
     }
 }
@@ -768,6 +866,25 @@ namespace System.Threading.Tasks
         public static Task Run(Func<Task> function);
 
         public static Task<TResult> Run<TResult>(Func<Task<TResult>> function);
+    }
+}
+
+namespace System.Threading.Tasks
+{
+    using System.Runtime.CompilerServices;
+    using System.Runtime.InteropServices;
+
+    [AsyncMethodBuilder(typeof(AsyncValueTaskMethodBuilder<>))]
+	[StructLayout(LayoutKind.Auto)]
+	public struct ValueTask<TResult> : IEquatable<ValueTask<TResult>>
+	{
+        public ValueTask(TResult result);
+
+        public ValueTask(Task<TResult> task);
+
+        public ValueTaskAwaiter<TResult> GetAwaiter();
+
+        // Other members.
     }
 }
 #endif

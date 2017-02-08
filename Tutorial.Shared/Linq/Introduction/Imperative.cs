@@ -130,7 +130,7 @@
 
     internal class WebContentDownloader
     {
-        internal string Download(string url)
+        internal string Download(string uri)
         {
             throw new NotImplementedException();
         }
@@ -165,9 +165,9 @@
             this.uploader = uploader;
         }
 
-        internal void Build(string url)
+        internal void Build(string uri)
         {
-            string html = this.downloader.Download(url);
+            string html = this.downloader.Download(uri);
             FileInfo word = this.converter.Convert(html);
             this.uploader.Upload(word);
         }

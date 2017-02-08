@@ -5,7 +5,7 @@ namespace Dixin.Linq.Introduction
 
     internal static partial class Functional
     {
-        internal static string DownloadWebContent(string url)
+        internal static string DownloadWebContent(string uri)
         {
             throw new NotImplementedException();
         }
@@ -23,9 +23,9 @@ namespace Dixin.Linq.Introduction
         internal static Action<string> GetDocumentBuilder(
             Func<string, string> download, Func<string, FileInfo> convert, Action<FileInfo> upload)
         {
-            return url =>
+            return uri =>
                 {
-                    string html = download(url);
+                    string html = download(uri);
                     FileInfo word = convert(html);
                     upload(word);
                 };
