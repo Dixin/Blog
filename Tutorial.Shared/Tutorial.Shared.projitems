@@ -149,6 +149,7 @@
     <Content Include="$(MSBuildThisFileDirectory)Linq\CSharp\Func.il" />
     <Content Include="$(MSBuildThisFileDirectory)Linq\CSharp\HigherOrder.hs" />
     <Content Include="$(MSBuildThisFileDirectory)Linq\CSharp\LambdaExpression.txt" />
+    <Content Include="$(MSBuildThisFileDirectory)Linq\CSharp\Optional.il" />
     <Content Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\AdventureWorks.Trim.sql" />
     <Content Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Inheritance.sql" />
     <Content Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Log.sql" />

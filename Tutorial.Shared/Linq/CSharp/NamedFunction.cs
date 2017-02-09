@@ -27,12 +27,12 @@
 
         static Data()
         {
-            Trace.WriteLine(Functions.GetCurrentName());
+            Trace.WriteLine(Functions.GetCurrentName()); // .cctor
         }
 
         internal Data(int value)
         {
-            Trace.WriteLine(Functions.GetCurrentName());
+            Trace.WriteLine(Functions.GetCurrentName()); // .ctor
             this.value = value;
         }
 
@@ -46,17 +46,17 @@
     {
         public static Data operator +(Data data1, Data data2)
         {
-            Trace.WriteLine(Functions.GetCurrentName());
+            Trace.WriteLine(Functions.GetCurrentName()); // op_Addition
             return new Data(data1.value + data2.value);
         }
 
-        public static explicit operator int(Data value)
+        public static explicit operator int(Data value) // op_Explicit
         {
             Trace.WriteLine(Functions.GetCurrentName());
             return value.value;
         }
 
-        public static implicit operator Data(int value)
+        public static implicit operator Data(int value) // op_Implicit
         {
             Trace.WriteLine(Functions.GetCurrentName());
             return new Data(value);
@@ -67,19 +67,19 @@
     {
         public static Data op_Addition(Data data1, Data data2)
         {
-            Trace.WriteLine(Functions.GetCurrentName());
+            Trace.WriteLine(Functions.GetCurrentName()); // op_Addition
             return new Data(data1.value + data2.value);
         }
 
         public static int op_Explicit(Data data)
         {
-            Trace.WriteLine(Functions.GetCurrentName());
+            Trace.WriteLine(Functions.GetCurrentName()); // op_Explicit
             return data.value;
         }
 
         public static Data op_Implicit(int data)
         {
-            Trace.WriteLine(Functions.GetCurrentName());
+            Trace.WriteLine(Functions.GetCurrentName()); // op_Implicit
             return new Data(data);
         }
     }
@@ -102,12 +102,12 @@
         {
             get
             {
-                Trace.WriteLine(Functions.GetCurrentName());
+                Trace.WriteLine(Functions.GetCurrentName()); // get_Description
                 return this.description;
             }
             set
             {
-                Trace.WriteLine(Functions.GetCurrentName());
+                Trace.WriteLine(Functions.GetCurrentName()); // set_Description
                 this.description = value;
             }
         }
@@ -160,12 +160,12 @@
         {
             get
             {
-                Trace.WriteLine(Functions.GetCurrentName());
+                Trace.WriteLine(Functions.GetCurrentName()); // get_Item
                 return this.links[index];
             }
             set
             {
-                Trace.WriteLine(Functions.GetCurrentName());
+                Trace.WriteLine(Functions.GetCurrentName()); // set_Item
                 this.links[index] = value;
             }
         }
