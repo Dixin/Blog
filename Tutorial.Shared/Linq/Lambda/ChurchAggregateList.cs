@@ -4,9 +4,8 @@
 
     using static ChurchBoolean;
 
-    // dynamic AggregateListNode<out T>(dynamic x, Func<dynamic, T, dynamic> f);
-    // Curried from: dynamic AggregateListNode<out T>(dynamic x, Func<T, dynamic, dynamic> f).
-    // AggregateListNode is the alias of: Func<dynamic, Func<Func<dynamic, Func<T, dynamic>>, dynamic>>.
+    // Curried from: (dynamic, dynamic -> T -> dynamic) -> dynamic.
+    // AggregateListNode is the alias of: dynamic -> (dynamic -> T -> dynamic) -> dynamic.
     public delegate Func<Func<dynamic, Func<T, dynamic>>, dynamic> AggregateListNode<out T>(dynamic x);
 
     public static partial class ChurchAggregateList<T>

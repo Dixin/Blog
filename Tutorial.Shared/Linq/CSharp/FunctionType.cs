@@ -6,34 +6,48 @@
     using System.Reflection;
     using System.Threading.Tasks;
 
+    // () -> void
     internal delegate void FuncToVoid();
 
-    internal delegate void FuncStringToVoid(string value);
+    // string -> void
+    internal delegate void FuncStringToVoid(string @string);
 
+    // () -> int
     internal delegate int FuncToInt32();
 
-    internal delegate int FuncStringInt32ToInt32(string value1, int value2);
+    // (string, int) -> int
+    internal delegate int FuncStringInt32ToInt32(string @string, int int32);
 
-    internal delegate string FuncStringToString(string value);
+    // string -> string
+    internal delegate string FuncStringToString(string @string);
 
+    // () -> bool
     internal delegate bool FuncToBoolean();
 
+    // () -> string
     internal delegate string FuncToString();
 
+    // () -> object
     internal delegate object FuncToObject();
 
 #if DEMO
+    // () -> TResult
     internal delegate TResult Func<TResult>();
 
+    // (T1, T2) -> TResult
     internal delegate TResult Func<T1, T2, TResult>(T1 value1, T2 value2);
 #endif
 
+    // (T, T) -> int
     internal delegate int NewComparison<in T>(T x, T y);
 
+    // (string, string) -> TResult
     internal delegate TResult FuncStringString<TResult>(string value1, string value2);
 
+    // (T1, T2) -> int
     internal delegate int FuncToInt32<T1, T2>(T1 value1, T2 value2);
 
+    // (string, string) -> int
     internal delegate int FuncStringStringToInt32(string value1, string value2);
 
     internal static partial class Functions
@@ -302,18 +316,23 @@ namespace System
 {
     public static class Math
     {
+        // (double, double) -> double
         public static double Log(double a, double newBase);
 
+        // (int, int) -> int
         public static int Max(int val1, int val2);
 
+        // (double, int) -> double
         public static double Round(double value, int digits);
 
+        // (decimal, MidpointRounding) -> decimal
         public static decimal Round(decimal d, MidpointRounding mode);
     }
 }
 
 namespace System
 {
+    // (T, T) -> int
     public delegate int Comparison<in T>(T x, T y);
 }
 
@@ -321,65 +340,66 @@ namespace System.Threading
 {
     using System.Runtime.InteropServices;
 
+    // object -> void
     public delegate void SendOrPostCallback(object state);
 
-    [ComVisible(true)]
+    // object -> void
     public delegate void ContextCallback(object state);
 
-    [ComVisible(false)]
+    // object -> void
     public delegate void ParameterizedThreadStart(object obj);
 
-    [ComVisible(true)]
+    // object -> void
     public delegate void WaitCallback(object state);
 
-    [ComVisible(true)]
+    // object -> void
     public delegate void TimerCallback(object state);
 }
 
 namespace System
 {
-    public delegate void Action();
-
-    public delegate void Action<in T>(T obj);
-
-    public delegate void Action<in T1, in T2>(T1 arg1, T2 arg2);
-
-    public delegate void Action<in T1, in T2, in T3>(T1 arg1, T2 arg2, T3 arg3);
-
-    public delegate void Action<in T1, in T2, in T3, in T4>(T1 arg1, T2 arg2, T3 arg3, T4 arg4);
-
-    // ...
-
-    public delegate void Action<in T1, in T2, in T3, in T4, in T5, in T6, in T7, in T8, in T9, in T10, in T11, in T12, in T13, in T14, in T15, in T16>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15, T16 arg16);
-}
-
-namespace System
-{
+    // () -> TResult
     public delegate TResult Func<out TResult>();
 
+    // T -> TResult
     public delegate TResult Func<in T, out TResult>(T arg);
 
+    // (T1, T2) -> TResult
     public delegate TResult Func<in T1, in T2, out TResult>(T1 arg1, T2 arg2);
 
+    // (T1, T2, T3) -> TResult
     public delegate TResult Func<in T1, in T2, in T3, out TResult>(T1 arg1, T2 arg2, T3 arg3);
 
+    // (T1, T2, T3, T4) -> TResult
     public delegate TResult Func<in T1, in T2, in T3, in T4, out TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4);
 
     // ...
 
+    // (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16) -> TResult
     public delegate TResult Func<in T1, in T2, in T3, in T4, in T5, in T6, in T7, in T8, in T9, in T10, in T11, in T12, in T13, in T14, in T15, in T16, out TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15, T16 arg16);
 }
 
-namespace System.Globalization
+namespace System
 {
-    using System.Runtime.InteropServices;
+    // () -> void
+    public delegate void Action();
 
-    [ComVisible(true)]
-    [Serializable]
-    public class SortKey
-    {
-        public static int Compare(SortKey sortkey1, SortKey sortkey2);
-    }
+    // T -> void
+    public delegate void Action<in T>(T obj);
+
+    // (T1, T2) -> void
+    public delegate void Action<in T1, in T2>(T1 arg1, T2 arg2);
+
+    // (T1, T2, T3) -> void
+    public delegate void Action<in T1, in T2, in T3>(T1 arg1, T2 arg2, T3 arg3);
+
+    // (T1, T2, T3, T4) -> void
+    public delegate void Action<in T1, in T2, in T3, in T4>(T1 arg1, T2 arg2, T3 arg3, T4 arg4);
+
+    // ...
+
+    // (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16) -> void
+    public delegate void Action<in T1, in T2, in T3, in T4, in T5, in T6, in T7, in T8, in T9, in T10, in T11, in T12, in T13, in T14, in T15, in T16>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8, T9 arg9, T10 arg10, T11 arg11, T12 arg12, T13 arg13, T14 arg14, T15 arg15, T16 arg16);
 }
 
 namespace System
@@ -404,26 +424,26 @@ namespace System
     }
 }
 
-namespace System.Net
+namespace System
 {
-    using System.ComponentModel;
-    using System.Runtime.InteropServices;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Reflection;
 
-    [ComVisible(true)]
-    public class WebClient : Component
+    [DefaultMember("Chars")]
+    public sealed class String : IEnumerable<char>, IEnumerable, IComparable, IComparable<String>, IConvertible, IEquatable<String>
     {
-        public string DownloadString(string address);
-    }
-}
+        public static bool IsNullOrEmpty(String value);
 
-namespace System.IO
-{
-    using System.Runtime.InteropServices;
+        public static bool IsNullOrWhiteSpace(String value);
 
-    [ComVisible(true)]
-    public static class File
-    {
-        public static string ReadAllText(string path);
+        public bool Contains(String value);
+
+        public bool Equals(String value);
+
+        public bool StartsWith(String value);
+
+        public bool EndsWith(String value);
     }
 }
 #endif

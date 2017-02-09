@@ -4,7 +4,7 @@ namespace Dixin.Linq.Lambda
 
     using static ChurchBoolean;
 
-    // Tuple is the alias of Func<Func<dynamic, Func<dynamic, dynamic>>, dynamic>.
+    // Tuple is the alias of (dynamic -> dynamic -> dynamic) -> dynamic.
     public delegate dynamic Tuple<out T1, out T2>(Boolean f);
 
     public static partial class ChurchTuple<T1, T2>

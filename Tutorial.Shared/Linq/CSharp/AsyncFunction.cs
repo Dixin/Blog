@@ -38,7 +38,7 @@ namespace Dixin.Linq.CSharp
                 }
                 else
                 {
-                    File.AppendAllText(writePath, antecedentTask.Result);
+                    File.WriteAllText(writePath, antecedentTask.Result);
                 }
             });
             continuationTask.Wait();

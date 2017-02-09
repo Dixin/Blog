@@ -19,8 +19,8 @@
         }
     }
 
-    // Curried from dynamic Numeral(Func<dynamic, dynamic> f, dynamic x).
-    // Numeral is the alias for Func<Func<dynamic, dynamic>, Func<dynamic, dynamic>>.
+    // Curried from (dynamic -> dynamic, dynamic) -> dynamic.
+    // Numeral is the alias of (dynamic -> dynamic) -> dynamic -> dynamic.
     public delegate Func<dynamic, dynamic> Numeral(Func<dynamic, dynamic> f);
 
     public static partial class ChurchNumeral
