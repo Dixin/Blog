@@ -14,7 +14,8 @@
         public void DotNetCategoryObjectsTest()
         {
             DotNetCategory category = new DotNetCategory();
-            EnumerableAssert.Multiple(category.Objects);
+            Type[] types = category.Objects.ToArray();
+            EnumerableAssert.Multiple(types);
         }
 
         [TestMethod]

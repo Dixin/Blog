@@ -134,29 +134,6 @@ namespace System.ComponentModel
     }
 }
 
-namespace System
-{
-    using System.Collections;
-    using System.Runtime.InteropServices;
-
-    public interface ICloneable
-    {
-        object Clone();
-    }
-
-    [ComVisible(true)]
-    [Serializable]
-    public abstract class Array : ICloneable, IList, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable
-    {
-        public object Clone()
-        {
-            return base.MemberwiseClone(); // Object.MemberwiseClone.
-        }
-
-        // Other members.
-    }
-}
-
 namespace System.Data.SqlClient
 {
     using System.ComponentModel;
@@ -721,17 +698,17 @@ namespace Dixin.Linq.CSharp
             }
         }
 
-        internal static int AddWithLog(int int32A, int int32B)
+        internal static int AddWithLog(int value1, int value2)
         {
-            int sum = int32A + int32B;
-            Trace.WriteLine(string.Format("{0}: {1} + {2} => {3}", DateTime.Now.ToString("o"), int32A, int32B, sum));
+            int sum = value1 + value2;
+            Trace.WriteLine(string.Format("{0}: {1} + {2} => {3}", DateTime.Now.ToString("o"), value1, value2, sum));
             return sum;
         }
 
-        internal static int StringInterpolation(int int32A, int int32B)
+        internal static int StringInterpolation(int value1, int value2)
         {
-            int sum = int32A + int32B;
-            Trace.WriteLine($"{DateTime.Now.ToString("o")}: {int32A} + {int32B} => {sum}");
+            int sum = value1 + value2;
+            Trace.WriteLine($"{DateTime.Now.ToString("o")}: {value1} + {value2} => {sum}");
             return sum;
         }
     }

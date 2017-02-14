@@ -79,15 +79,15 @@
             {
                 MarkerSeries markerSeries = Markers.CreateMarkerSeries(nameof(ParallelEnumerableX.ForceParallel));
                 uris.ForceParallel(
-                uri =>
-                {
-                    using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, uri))
-                    using (HttpClient httpClient = new HttpClient())
+                    uri =>
                     {
-                        httpClient.GetByteArrayAsync(uri).Wait();
-                    }
-                },
-                10);
+                        using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, uri))
+                        using (HttpClient httpClient = new HttpClient())
+                        {
+                            httpClient.GetByteArrayAsync(uri).Wait();
+                        }
+                    },
+                    10);
             }
         }
 

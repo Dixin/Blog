@@ -13,7 +13,7 @@
         {
             using (IEnumerator<T> iterator = actual?.GetEnumerator())
             {
-                Assert.IsTrue(iterator?.MoveNext() != true, message, parameters);
+                Assert.IsTrue(iterator?.MoveNext() ?? false, message, parameters);
             }
         }
 

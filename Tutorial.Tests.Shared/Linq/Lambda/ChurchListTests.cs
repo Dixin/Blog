@@ -3,6 +3,7 @@
     using System;
     using System.Diagnostics;
 
+    using Dixin.Linq;
     using Dixin.Linq.Lambda;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -32,7 +33,7 @@
             }
             catch (InvalidCastException exception)
             {
-                Trace.WriteLine(exception);
+                exception.WriteLine();
             }
         }
 
@@ -68,7 +69,7 @@
             }
             catch (InvalidCastException exception)
             {
-                Trace.WriteLine(exception);
+                exception.WriteLine();
             }
         }
     }

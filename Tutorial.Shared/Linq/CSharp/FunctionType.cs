@@ -129,28 +129,33 @@
 
         internal static void Static()
         {
-            Func<int, int, int> func1 = Math.Max;
+            Func<int, int, int> func1 = Math.Max; // new Func<int, int, int>(Math.Max);
+            int result1 = func1(1, 2); // func1.Invoke(1, 2);;
+            Trace.WriteLine(func1.Target == null); // True
             MethodInfo method1 = func1.GetMethodInfo();
             Trace.WriteLine($"{method1.DeclaringType}: {method1}"); // System.Math: Int32 Max(Int32, Int32)
-            Trace.WriteLine(func1.Target == null); // True
 
-            Func<int, int, int> func2 = Math.Max;
-            Trace.WriteLine(func1 == func2);
+            Func<int, int, int> func2 = Math.Max; // new Func<int, int, int>(Math.Max);
+            Trace.WriteLine(object.ReferenceEquals(func1, func2)); // False
+            Trace.WriteLine(func1 == func2); // True
         }
 
         internal static void Instance()
         {
             object object1 = new object();
             Func<object, bool> func1 = object1.Equals; // new Func<object, bool>(object1.Equals);
+            Trace.WriteLine(ReferenceEquals(func1.Target, object1)); // True
             MethodInfo method2 = func1.GetMethodInfo();
             Trace.WriteLine($"{method2.DeclaringType}: {method2}"); // System.Object: Boolean Equals(System.Object)
-            Trace.WriteLine(ReferenceEquals(func1.Target, object1)); // True
 
-            char object2 = new char();
+            object object2 = new object();
             Func<object, bool> func2 = object2.Equals; // new Func<object, bool>(object2.Equals);
+            Trace.WriteLine(ReferenceEquals(func2.Target, object2)); // True
+            Trace.WriteLine(object.ReferenceEquals(func1, func2)); // False
             Trace.WriteLine(func1 == func2); // False
 
             Func<object, bool> func3 = object1.Equals; // new Func<object, bool>(object1.Equals);
+            Trace.WriteLine(object.ReferenceEquals(func1, func3)); // False
             Trace.WriteLine(func1 == func3); // True
         }
 
@@ -404,16 +409,8 @@ namespace System
 
 namespace System
 {
-    using System.Reflection;
-    using System.Runtime.InteropServices;
-    using System.Runtime.Serialization;
-
-    [ClassInterface(ClassInterfaceType.AutoDual)]
-    [ComVisible(true)]
-    public abstract class Delegate : ICloneable, ISerializable
+    public abstract class Delegate
     {
-        public MethodInfo Method { get; }
-
         public object Target { get; }
 
         public static bool operator ==(Delegate d1, Delegate d2);
@@ -421,6 +418,14 @@ namespace System
         public static bool operator !=(Delegate d1, Delegate d2);
 
         // Other members.
+    }
+}
+
+namespace System.Reflection
+{
+    public static class RuntimeReflectionExtensions
+    {
+        public static MethodInfo GetMethodInfo(this Delegate del);
     }
 }
 

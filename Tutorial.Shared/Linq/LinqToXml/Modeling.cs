@@ -42,8 +42,7 @@
                         new XElement(
                             @namespace + "source",
                             "https://github.com/Dixin/CodeSnippets/tree/master/Dixin/Linq"))));
-            // Serialize XDocument to string.
-            rss.ToString().WriteLine();
+            rss.ToString().WriteLine(); // Serialize XDocument to string.
         }
     }
 
@@ -188,18 +187,12 @@
             }
         }
 
-#if NETFX
         internal static void Write()
         {
             XDocument document1 = LoadXDocument("https://weblogs.asp.net/dixin/rss");
-            document1.Save(Path.GetTempFileName());
+            document1.Save(File.OpenWrite(Path.GetTempFileName()));
 
             XElement element1 = new XElement("element", string.Empty);
-            using (XmlTextWriter writer = new XmlTextWriter(Console.Out))
-            {
-                element1.WriteTo(writer); // <element></element>
-            }
-
             XDocument document2 = new XDocument();
             using (XmlWriter writer = document2.CreateWriter())
             {
@@ -218,7 +211,6 @@
             element2.ToString(SaveOptions.DisableFormatting).WriteLine();
             // <element><child attribute="value">text</child></element>
         }
-#endif
 
         internal static void XNodeToString()
         {
@@ -240,14 +232,14 @@
         {
             Func<IEnumerable<XElement>> getChildElements = () => Enumerable
                 .Range(0, 5)
-                .Do(value => value.WriteLine())
-                .Select(value => new XElement("child", value));
+                .Select(value => new XElement("child", value.WriteLine()));
 
             XElement immediate1 = new XElement("parent", getChildElements()); // 0 1 2 3 4.
 
             XStreamingElement deferred1 = new XStreamingElement("parent", getChildElements());
             deferred1.ToString(SaveOptions.DisableFormatting).WriteLine();
-            // 0 1 2 3 4 <parent><child>0</child><child>1</child><child>2</child><child>3</child><child>4</child></parent>
+            // 0 1 2 3 4 
+            // <parent><child>0</child><child>1</child><child>2</child><child>3</child><child>4</child></parent>
 
             XElement immediate2 = new XElement("parent", immediate1.Elements());
             XStreamingElement deferred2 = new XStreamingElement("parent", immediate1.Elements());

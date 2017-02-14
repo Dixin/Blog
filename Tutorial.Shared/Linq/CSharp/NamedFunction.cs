@@ -468,22 +468,22 @@
     }
 
 #if DEMO
-        [Table(Name = "Production.Product")]
+    [Table(Name = "Production.Product")]
     public partial class Product : INotifyPropertyChanging, INotifyPropertyChanged
     {
         public Product()
         {
-            this.OnCreated();
+            this.OnCreated(); // Call.
         }
 
-        partial void OnCreated();
+        partial void OnCreated(); // Signature.
 
         // Other members.
     }
 
     public partial class Product
     {
-        partial void OnCreated()
+        partial void OnCreated() // Optional implementation.
         {
             Trace.WriteLine($"{nameof(Product)} is created.");
         }
@@ -499,9 +499,9 @@ namespace Dixin.Linq.CSharp
 
     internal static partial class Functions
     {
-        internal static void UsingStatic(int int32A, int int32B)
+        internal static void UsingStatic()
         {
-            int result = Max(int32A, int32B); // Compiled to Math.Max(int32A, int32B).
+            int result = Max(1, 2); // Compiled to Math.Max(1, 2).
             WriteLine(Monday); // Compiled to Trace.WriteLine(DayOfWeek.Monday).
         }
     }
