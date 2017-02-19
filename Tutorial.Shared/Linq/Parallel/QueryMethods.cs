@@ -68,7 +68,7 @@ namespace Dixin.Linq.Parallel
                     using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, value.ToString()))
                     {
                         // Add workload to extend the action execution to a more visible timespan.
-                        Enumerable.Range(0, 10000000).ForEach();
+                        Enumerable.Range(0, 10_000_000).ForEach();
                         value.WriteLine();
                     }
                 });
@@ -85,7 +85,7 @@ namespace Dixin.Linq.Parallel
                     using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, value.ToString()))
                     {
                         // Add workload to extends the action execution to a more visible timespan.
-                        Enumerable.Range(0, 10000000).ForEach();
+                        Enumerable.Range(0, 10_000_000).ForEach();
                         value.WriteLine();
                     }
                 });
@@ -98,7 +98,7 @@ namespace Dixin.Linq.Parallel
                 .Range(0, Environment.ProcessorCount * 2)
                 .Visualize(value =>
                     {
-                        Enumerable.Range(0, 10000000).ForEach();
+                        Enumerable.Range(0, 10_000_000).ForEach();
                         value.WriteLine();
                     });
 
@@ -106,7 +106,7 @@ namespace Dixin.Linq.Parallel
                 .Range(0, Environment.ProcessorCount * 2)
                 .Visualize(value =>
                 {
-                    Enumerable.Range(0, 10000000).ForEach();
+                    Enumerable.Range(0, 10_000_000).ForEach();
                     value.WriteLine();
                 });
         }
@@ -161,7 +161,7 @@ namespace Dixin.Linq.Parallel
 
         public static void ExecutionMode()
         {
-            int count = Environment.ProcessorCount * 10000;
+            int count = Environment.ProcessorCount * 10_000;
             using (Markers.EnterSpan(-1, nameof(Enumerable)))
             {
                 Enumerable
@@ -195,7 +195,7 @@ namespace Dixin.Linq.Parallel
 
         internal static void MergeForSelect()
         {
-            int count = 100000;
+            int count = 100_000;
             Stopwatch stopwatch = Stopwatch.StartNew();
             ParallelQuery<int> notBuffered = ParallelEnumerable.Range(0, count)
                 .WithMergeOptions(ParallelMergeOptions.NotBuffered)
@@ -243,7 +243,7 @@ namespace Dixin.Linq.Parallel
             Stopwatch stopwatch = Stopwatch.StartNew();
             ParallelQuery<int> notBuffered = ParallelEnumerable.Range(0, count)
                 .WithMergeOptions(ParallelMergeOptions.NotBuffered)
-                .TakeWhile(value => value + Compute(0, 100000) >= 0);
+                .TakeWhile(value => value + Compute(0, 100_000) >= 0);
             notBuffered.ForEach(value =>
                 {
                     if (value <= 5 || value >= count - 5)
@@ -256,7 +256,7 @@ namespace Dixin.Linq.Parallel
             stopwatch.Restart();
             ParallelQuery<int> fullyBuffered = ParallelEnumerable.Range(0, count)
                 .WithMergeOptions(ParallelMergeOptions.FullyBuffered)
-                .TakeWhile(value => value + Compute(0, 100000) >= 0);
+                .TakeWhile(value => value + Compute(0, 100_000) >= 0);
             fullyBuffered.ForEach(value =>
                 {
                     if (value <= 5 || value >= count - 5)
@@ -327,7 +327,6 @@ namespace Dixin.Linq.Parallel
             parallelSubtract.WriteLine(); // 2
         }
 
-#if NETFX
         internal static void VisualizeAggregate()
         {
             int count = Environment.ProcessorCount * 2;
@@ -355,7 +354,6 @@ namespace Dixin.Linq.Parallel
                 });
             }
         }
-#endif
 
         internal static void MergeForAggregate()
         {

@@ -134,29 +134,6 @@ namespace System.ComponentModel
     }
 }
 
-namespace System
-{
-    using System.Collections;
-    using System.Runtime.InteropServices;
-
-    public interface ICloneable
-    {
-        object Clone();
-    }
-
-    [ComVisible(true)]
-    [Serializable]
-    public abstract class Array : ICloneable, IList, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable
-    {
-        public object Clone()
-        {
-            return base.MemberwiseClone(); // Object.MemberwiseClone.
-        }
-
-        // Other members.
-    }
-}
-
 namespace System.Data.SqlClient
 {
     using System.ComponentModel;
@@ -288,11 +265,11 @@ namespace Dixin.Linq.CSharp
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
 
-    internal static partial class Syntax
+    internal static partial class Fundamentals
     {
-        internal static void Dispose()
+        internal static void Dispose(string connectionString)
         {
-            SqlConnection connection = new SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB");
+            SqlConnection connection = new SqlConnection(connectionString);
             try
             {
                 // Use connection object.
@@ -309,11 +286,11 @@ namespace Dixin.Linq.CSharp
         }
     }
 
-    internal static partial class Syntax
+    internal static partial class Fundamentals
     {
-        internal static void Using()
+        internal static void Using(string connectionString)
         {
-            using (SqlConnection connection = new SqlConnection(@"Data Source=(LocalDB)\MSSQLLocalDB"))
+            using (SqlConnection connection = new SqlConnection(connectionString))
             {
                 // Use connection object.
                 connection.Open();
@@ -340,7 +317,7 @@ namespace Dixin.Linq.CSharp
         }
     }
 
-    internal static partial class Syntax
+    internal static partial class Fundamentals
     {
         internal static void InterfaceMembers()
         {
@@ -389,7 +366,7 @@ namespace Dixin.Linq.CSharp
         T Pop();
     }
 
-    internal static partial class Syntax
+    internal static partial class Fundamentals
     {
         internal static void Stack()
         {
@@ -469,7 +446,7 @@ namespace Dixin.Linq.CSharp
         }
     }
 
-    internal static partial class Syntax
+    internal static partial class Fundamentals
     {
         internal static void CloseType()
         {
@@ -599,7 +576,7 @@ namespace Dixin.Linq.CSharp
         }
     }
 
-    internal static partial class Syntax
+    internal static partial class Fundamentals
     {
         internal static void SetProperties()
         {
@@ -630,7 +607,7 @@ namespace Dixin.Linq.CSharp
         }
     }
 
-    internal static partial class Syntax
+    internal static partial class Fundamentals
     {
         internal static void CollectionInitializer(Device device1, Device device2)
         {
@@ -650,7 +627,7 @@ namespace Dixin.Linq.CSharp
         internal Device this[int id] { set { } }
     }
 
-    internal static partial class Syntax
+    internal static partial class Fundamentals
     {
         internal static void IndexInitializer(Device device1, Device device2)
         {
@@ -665,26 +642,26 @@ namespace Dixin.Linq.CSharp
         }
     }
 
-    internal static partial class Syntax
+    internal static partial class Fundamentals
     {
-        internal static void DefaultValueForNull(Uri nullableValue)
+        internal static void DefaultValueForNull(Uri nullable)
         {
-            Uri value;
-            if ((object)nullableValue != null)
+            Uri uri;
+            if ((object)nullable != null)
             {
-                value = nullableValue;
+                uri = nullable;
             }
             else
             {
-                value = new Uri("https://localhost"); // Default value for null.
+                uri = new Uri("https://weblogs.asp.net/dixin"); // Default value for null.
             }
-            // value is not null.
+            // uri is not null.
         }
 
-        internal static void NullCoalescing(Uri nullableValue)
+        internal static void NullCoalescing(Uri nullable)
         {
-            Uri value = nullableValue ?? new Uri("https://localhost");
-            // value is not null.
+            Uri uri = nullable ?? new Uri("https://weblogs.asp.net/dixin");
+            // uri is not null.
         }
 
         internal static void MemberAccess(Uri nullableValue)
@@ -705,33 +682,33 @@ namespace Dixin.Linq.CSharp
             string result = nullableValue?.ToString();
         }
 
-        internal static void ArgumentCheck(Uri url)
+        internal static void ArgumentCheck(Uri uri)
         {
-            if (url == null)
+            if (uri == null)
             {
-                throw new ArgumentNullException("url");
+                throw new ArgumentNullException("uri");
             }
         }
 
-        internal static void NameOf(Uri url)
+        internal static void NameOf(Uri uri)
         {
-            if (url == null)
+            if (uri == null)
             {
-                throw new ArgumentNullException(nameof(url));
+                throw new ArgumentNullException(nameof(uri));
             }
         }
 
-        internal static int AddWithLog(int int32A, int int32B)
+        internal static int AddWithLog(int value1, int value2)
         {
-            int sum = int32A + int32B;
-            Trace.WriteLine(string.Format("{0}: {1} + {2} => {3}", DateTime.Now.ToString("o"), int32A, int32B, sum));
+            int sum = value1 + value2;
+            Trace.WriteLine(string.Format("{0}: {1} + {2} => {3}", DateTime.Now.ToString("o"), value1, value2, sum));
             return sum;
         }
 
-        internal static int StringInterpolation(int int32A, int int32B)
+        internal static int StringInterpolation(int value1, int value2)
         {
-            int sum = int32A + int32B;
-            Trace.WriteLine($"{DateTime.Now.ToString("o")}: {int32A} + {int32B} => {sum}");
+            int sum = value1 + value2;
+            Trace.WriteLine($"{DateTime.Now.ToString("o")}: {value1} + {value2} => {sum}");
             return sum;
         }
     }

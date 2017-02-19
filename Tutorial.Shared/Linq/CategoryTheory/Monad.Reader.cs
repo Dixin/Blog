@@ -37,7 +37,7 @@
 
     public static partial class ReaderExtensions
     {
-        private static Reader<IConfiguration, Stream> DownloadHtmlContent(string url) => 
+        private static Reader<IConfiguration, Stream> DownloadHtmlContent(string uri) => 
             configuration => default(Stream); // Return download stram.
 
         private static Reader<IConfiguration, string> SaveHtmlToFile(Stream htmlStream) =>
@@ -49,10 +49,10 @@
         private static Reader<IConfiguration, Unit> UploadFileToOneDrive(string localFilePath) =>
             configuration => default(Unit); // Return void.
 
-        internal static void Workflow(IConfiguration configuration, string url, string wordTemplatePath)
+        internal static void Workflow(IConfiguration configuration, string uri, string wordTemplatePath)
         {
             Reader<IConfiguration, string> query = 
-                from htmlContent in DownloadHtmlContent(url) // Reader<IConfiguration, Steam>.
+                from htmlContent in DownloadHtmlContent(uri) // Reader<IConfiguration, Steam>.
                 from htmlFile in SaveHtmlToFile(htmlContent) // Reader<IConfiguration, string>.
                 from wordFile in ConvertHtmlFileToWordFile(htmlFile, wordTemplatePath) // Reader<IConfiguration, string>.
                 from unit in UploadFileToOneDrive(wordFile) // Reader<IConfiguration, Unit>.

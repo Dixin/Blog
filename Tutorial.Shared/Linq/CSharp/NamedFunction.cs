@@ -4,6 +4,22 @@
     using System.Diagnostics;
     using System.IO;
     using System.Reflection;
+    using System.Runtime.CompilerServices;
+
+    internal static partial class Functions
+    {
+#if NETFX
+        internal static string GetCurrentName()
+        {
+            return MethodBase.GetCurrentMethod().Name;
+        }
+#else
+        internal static string GetCurrentName([CallerMemberName] string name = null)
+        {
+            return name;
+        }
+#endif
+    }
 
     internal partial class Data
     {
@@ -11,17 +27,12 @@
 
         static Data()
         {
-#if NETFX
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // .cctor
-#endif
+            Trace.WriteLine(Functions.GetCurrentName()); // .cctor
         }
 
         internal Data(int value)
         {
-#if NETFX
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // .ctor
-#endif
-
+            Trace.WriteLine(Functions.GetCurrentName()); // .ctor
             this.value = value;
         }
 
@@ -35,25 +46,19 @@
     {
         public static Data operator +(Data data1, Data data2)
         {
-#if NETFX
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Addition
-#endif
+            Trace.WriteLine(Functions.GetCurrentName()); // op_Addition
             return new Data(data1.value + data2.value);
         }
 
-        public static explicit operator int(Data value)
+        public static explicit operator int(Data value) // op_Explicit
         {
-#if NETFX
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Explicit
-#endif
+            Trace.WriteLine(Functions.GetCurrentName());
             return value.value;
         }
 
-        public static implicit operator Data(int value)
+        public static implicit operator Data(int value) // op_Implicit
         {
-#if NETFX
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Implicit
-#endif
+            Trace.WriteLine(Functions.GetCurrentName());
             return new Data(value);
         }
     }
@@ -62,25 +67,19 @@
     {
         public static Data op_Addition(Data data1, Data data2)
         {
-#if NETFX
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Addition
-#endif
+            Trace.WriteLine(Functions.GetCurrentName()); // op_Addition
             return new Data(data1.value + data2.value);
         }
 
         public static int op_Explicit(Data data)
         {
-#if NETFX
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Explicit
-#endif
+            Trace.WriteLine(Functions.GetCurrentName()); // op_Explicit
             return data.value;
         }
 
         public static Data op_Implicit(int data)
         {
-#if NETFX
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Implicit
-#endif
+            Trace.WriteLine(Functions.GetCurrentName()); // op_Implicit
             return new Data(data);
         }
     }
@@ -103,16 +102,12 @@
         {
             get
             {
-#if NETFX
-                Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // get_Description
-#endif
+                Trace.WriteLine(Functions.GetCurrentName()); // get_Description
                 return this.description;
             }
             set
             {
-#if NETFX
-                Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // set_Description
-#endif
+                Trace.WriteLine(Functions.GetCurrentName()); // set_Description
                 this.description = value;
             }
         }
@@ -131,13 +126,13 @@
 
         internal string get_Description() // Body of Description's getter.
         {
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // get_Description
+            Trace.WriteLine(Functions.GetCurrentName()); // get_Description
             return this.description;
         }
 
         internal void set_Description(string value) // Body of Description's setter.
         {
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // set_Description
+            Trace.WriteLine(Functions.GetCurrentName()); // set_Description
             this.description = value;
         }
     }
@@ -165,16 +160,12 @@
         {
             get
             {
-#if NETFX
-                Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // get_Item
-#endif
+                Trace.WriteLine(Functions.GetCurrentName()); // get_Item
                 return this.links[index];
             }
             set
             {
-#if NETFX
-                Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // set_Item
-#endif
+                Trace.WriteLine(Functions.GetCurrentName()); // set_Item
                 this.links[index] = value;
             }
         }
@@ -198,13 +189,13 @@
 
         internal Uri get_Item(int index) // Body of indexer's getter.
         {
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // get_Item
+            Trace.WriteLine(Functions.GetCurrentName()); // get_Item
             return this.links[index];
         }
 
         internal Uri set_Item(int index, Uri value) // Body of indexer's setter.
         {
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // set_Item
+            Trace.WriteLine(Functions.GetCurrentName()); // set_Item
             this.links[index] = value;
         }
     }
@@ -477,22 +468,22 @@
     }
 
 #if DEMO
-        [Table(Name = "Production.Product")]
+    [Table(Name = "Production.Product")]
     public partial class Product : INotifyPropertyChanging, INotifyPropertyChanged
     {
         public Product()
         {
-            this.OnCreated();
+            this.OnCreated(); // Call.
         }
 
-        partial void OnCreated();
+        partial void OnCreated(); // Signature.
 
         // Other members.
     }
 
     public partial class Product
     {
-        partial void OnCreated()
+        partial void OnCreated() // Optional implementation.
         {
             Trace.WriteLine($"{nameof(Product)} is created.");
         }
@@ -508,9 +499,9 @@ namespace Dixin.Linq.CSharp
 
     internal static partial class Functions
     {
-        internal static void UsingStatic(int int32A, int int32B)
+        internal static void UsingStatic()
         {
-            int result = Max(int32A, int32B); // Compiled to Math.Max(int32A, int32B).
+            int result = Max(1, 2); // Compiled to Math.Max(1, 2).
             WriteLine(Monday); // Compiled to Trace.WriteLine(DayOfWeek.Monday).
         }
     }

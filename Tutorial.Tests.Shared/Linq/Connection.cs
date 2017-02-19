@@ -1,11 +1,8 @@
 ﻿namespace Dixin.Tests.Linq
 {
-#if NETFX
-    using System.Configuration;
-    using System.Linq;
+    using System.Data.SqlClient;
 
     using Dixin.Linq;
-#endif
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -15,10 +12,16 @@
         [TestMethod]
         public void ConnectionStringsTest()
         {
-#if NETFX
             string connectionString = ConnectionStrings.AdventureWorks;
-            Assert.AreEqual(ConfigurationManager.ConnectionStrings.Cast<ConnectionStringSettings>().First().ConnectionString, connectionString);
-#endif
+            Assert.IsFalse(string.IsNullOrWhiteSpace(connectionString));
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder()
+            {
+                ConnectionString = ConnectionStrings.AdventureWorks
+            };
+            if (!string.IsNullOrWhiteSpace(builder.AttachDBFilename))
+            {
+                Assert.IsFalse(builder.AttachDBFilename.Contains(".."));
+            }
         }
     }
 }

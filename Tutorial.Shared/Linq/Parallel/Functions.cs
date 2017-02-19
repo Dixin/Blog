@@ -4,7 +4,7 @@ namespace Dixin.Linq.Parallel
 
     internal static class Functions
     {
-        internal static int Compute(int value = 0, int iteration = 10000000)
+        internal static int Compute(int value = 0, int iteration = 10_000_000)
         {
             Enumerable.Range(0, iteration * (value + 1)).ForEach();
             return value;

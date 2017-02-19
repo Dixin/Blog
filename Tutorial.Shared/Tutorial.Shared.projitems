@@ -44,11 +44,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\Immutability.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\LocalFunction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\NamedFunction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\Parameters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\PatternMatching.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\Purity.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\QueryExpression.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\QueryExpressionPattern.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\Syntax.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\Fundamentals.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\Variance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Relationship.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Changes.cs" />
@@ -148,6 +149,7 @@
     <Content Include="$(MSBuildThisFileDirectory)Linq\CSharp\Func.il" />
     <Content Include="$(MSBuildThisFileDirectory)Linq\CSharp\HigherOrder.hs" />
     <Content Include="$(MSBuildThisFileDirectory)Linq\CSharp\LambdaExpression.txt" />
+    <Content Include="$(MSBuildThisFileDirectory)Linq\CSharp\Optional.il" />
     <Content Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\AdventureWorks.Trim.sql" />
     <Content Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Inheritance.sql" />
     <Content Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Log.sql" />
@@ -180,5 +182,8 @@
     <None Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Tables.sql" />
     <None Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\Views.sql" />
     <None Include="$(MSBuildThisFileDirectory)Linq\Lambda\SkiCompiler.hs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PRIResource Include="$(MSBuildThisFileDirectory)Linq\Resources\Resources1.resw" />
   </ItemGroup>
 </Project>

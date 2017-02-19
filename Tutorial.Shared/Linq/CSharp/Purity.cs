@@ -99,21 +99,9 @@ namespace System
 {
     public static class Math
     {
-        public static int Abs(int value)
-        {
-            if (value >= 0)
-            {
-                return value;
-            }
-            else
-            {
-                if (value == int.MinValue)
-                {
-                    throw new OverflowException("Negating the mimimum value of a twos compliment nuumber is invalid.");
-                }
-                return -value;
-            }
-        }
+        public static int Max(int val1, int val2) => (val1 >= val2) ? val1 : val2;
+
+        public static int Min(int val1, int val2) => (val1 <= val2) ? val1 : val2;
     }
 }
 

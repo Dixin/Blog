@@ -191,7 +191,7 @@
             outputBase = outputDerived;
 
             // When calling outputBase.ToOutput, outputDerived.ToOutput executes.
-            // outputBase.ToOutput should output Base object, outputDerived.ToOutput outputs Derived.
+            // outputBase.ToOutput should output Base, outputDerived.ToOutput outputs Derived.
             // The actual Derived output is the required Base output. This always works.
             Base output1 = outputBase.ToOutput();
 

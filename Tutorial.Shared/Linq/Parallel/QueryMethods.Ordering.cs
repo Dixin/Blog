@@ -38,7 +38,7 @@
         {
             Random random = new Random();
             Model[] source = Enumerable
-                .Range(0, Environment.ProcessorCount * 10000)
+                .Range(0, Environment.ProcessorCount * 10_000)
                 .Select(_ => new Model(name: Guid.NewGuid().ToString(), weight: random.Next(1, 100)))
                 .ToArray();
 
@@ -143,7 +143,7 @@
     {
         internal static void JoinAsUnordered()
         {
-            int count = Environment.ProcessorCount * 10000;
+            int count = Environment.ProcessorCount * 10_000;
             Random random = new Random();
             ParallelQuery<Model> outer = Enumerable
                 .Repeat(0, count)
@@ -190,7 +190,7 @@
 
         internal static void MergeOptionForOrder()
         {
-            int[] source = Enumerable.Range(0, Environment.ProcessorCount * 1000000).ToArray();
+            int[] source = Enumerable.Range(0, Environment.ProcessorCount * 1_000_000).ToArray();
             List<int> fullyBuffered = new List<int>();
             source
                 .AsParallel()

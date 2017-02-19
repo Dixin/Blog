@@ -232,7 +232,7 @@
             {
                 ProductCategory untracked = adventureWorks.ProductCategories.AsNoTracking().First();
                 adventureWorks.ProductCategories.Remove(untracked); // Track no deletion.
-                adventureWorks.SaveChanges();
+                adventureWorks.SaveChanges().WriteLine();
 #if EF
                 // InvalidOperationException: The object cannot be deleted because it was not found in the ObjectStateManager.
 #else

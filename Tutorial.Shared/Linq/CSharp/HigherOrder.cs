@@ -222,11 +222,8 @@
 namespace System
 {
     using System.Collections;
-    using System.Runtime.InteropServices;
 
-    [ComVisible(true)]
-    [Serializable]
-    public abstract class Array : ICloneable, IList, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable
+    public abstract class Array : ICollection, IEnumerable, IList, IStructuralComparable, IStructuralEquatable
     {
         public static T[] FindAll<T>(T[] array, Predicate<T> match);
     }

@@ -15,8 +15,8 @@
         {
             using (HttpClient httpClient = new HttpClient())
             {
-                const string feedUrl = "https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&lang=en-us&format=json&jsoncallback=?";
-                JObject feed = JObject.Parse((await httpClient.GetStringAsync(feedUrl)).TrimStart('(').TrimEnd(')'));
+                string feedUri = "https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&lang=en-us&format=json&jsoncallback=?";
+                JObject feed = JObject.Parse((await httpClient.GetStringAsync(feedUri)).TrimStart('(').TrimEnd(')'));
                 IEnumerable<JToken> source = feed["items"]; // Get source.
                 IEnumerable<string> query = from item in source
                                             where ((string)item["tags"]).Contains("microsoft")
@@ -36,8 +36,8 @@
         {
             using (HttpClient httpClient = new HttpClient())
             {
-                const string feedUrl = "https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&lang=en-us&format=json&jsoncallback=?";
-                JObject feed = JObject.Parse((await httpClient.GetStringAsync(feedUrl)).TrimStart('(').TrimEnd(')'));
+                string feedUri = "https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&lang=en-us&format=json&jsoncallback=?";
+                JObject feed = JObject.Parse((await httpClient.GetStringAsync(feedUri)).TrimStart('(').TrimEnd(')'));
                 IEnumerable<JToken> source = feed["items"]; // Get source.
                 IEnumerable<string> query = source
                     .Where(item => ((string)item["tags"]).Contains("microsoft"))

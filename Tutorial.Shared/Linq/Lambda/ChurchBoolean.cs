@@ -6,8 +6,8 @@ namespace Dixin.Linq.Lambda
     using static Dixin.Linq.Lambda.Boolean;
 #endif
 
-    // Curried from dynamic Boolean(dynamic @true, dynamic @false).
-    // Boolean is the alias of Func<dynamic, Func<dynamic, dynamic>>.
+    // Curried from (dynamic, dynamic) -> dynamic.
+    // Boolean is the alias of dynamic -> dynamic -> dynamic,
     public delegate Func<dynamic, dynamic> Boolean(dynamic @true);
 
     public static partial class ChurchBoolean

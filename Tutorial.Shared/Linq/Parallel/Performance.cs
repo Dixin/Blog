@@ -45,9 +45,9 @@
     {
         internal static void OrderBy()
         {
-            OrderBy(5, 10000, value => value); // Sequential:11    Parallel:1422
-            OrderBy(5000, 100, value => value); // Sequential:114   Parallel:107
-            OrderBy(500000, 100, value => value); // Sequential:18210 Parallel:8204
+            OrderBy(5, 10_000, value => value); // Sequential:11    Parallel:1422
+            OrderBy(5_000, 100, value => value); // Sequential:114   Parallel:107
+            OrderBy(500_000, 100, value => value); // Sequential:18210 Parallel:8204
 
             OrderBy(Environment.ProcessorCount, 10, value => value + Compute()); // Sequential:1605  Parallel:737
         }
@@ -55,39 +55,39 @@
 
     internal static partial class Performance
     {
-        private static void Download(string[] urls)
+        private static void Download(string[] uris)
         {
-            urls.Visualize(url =>
+            uris.Visualize(uri =>
+            {
+                using (HttpClient httpClient = new HttpClient())
                 {
-                    using (HttpClient httpClient = new HttpClient())
-                    {
-                        httpClient.GetByteArrayAsync(url).Wait();
-                    }
-                });
+                    httpClient.GetByteArrayAsync(uri).Wait();
+                }
+            });
 
-            urls.AsParallel()
+            uris.AsParallel()
                 .WithDegreeOfParallelism(10)
-                .Visualize(url =>
+                .Visualize(uri =>
                 {
                     using (HttpClient httpClient = new HttpClient())
                     {
-                        httpClient.GetByteArrayAsync(url).Wait();
+                        httpClient.GetByteArrayAsync(uri).Wait();
                     }
                 });
 
             using (Markers.EnterSpan(-1, nameof(ParallelEnumerableX.ForceParallel)))
             {
                 MarkerSeries markerSeries = Markers.CreateMarkerSeries(nameof(ParallelEnumerableX.ForceParallel));
-                urls.ForceParallel(
-                url =>
-                {
-                    using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, url))
-                    using (HttpClient httpClient = new HttpClient())
+                uris.ForceParallel(
+                    uri =>
                     {
-                        httpClient.GetByteArrayAsync(url).Wait();
-                    }
-                },
-                10);
+                        using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, uri))
+                        using (HttpClient httpClient = new HttpClient())
+                        {
+                            httpClient.GetByteArrayAsync(uri).Wait();
+                        }
+                    },
+                    10);
             }
         }
 
@@ -97,7 +97,7 @@
                 LoadXDocument("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2")
                 .Descendants((XNamespace)"http://search.yahoo.com/mrss/" + "thumbnail")
                 .Attributes("url")
-                .Select(url => (string)url)
+                .Select(uri => (string)uri)
                 .ToArray();
             Download(thumbnails);
         }
@@ -108,7 +108,7 @@
                 LoadXDocument("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2")
                 .Descendants((XNamespace)"http://search.yahoo.com/mrss/" + "content")
                 .Attributes("url")
-                .Select(url => (string)url)
+                .Select(uri => (string)uri)
                 .ToArray();
             Download(contents);
         }

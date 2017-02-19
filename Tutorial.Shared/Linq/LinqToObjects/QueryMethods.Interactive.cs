@@ -14,26 +14,26 @@
         internal static void Defer()
         {
             Func<IEnumerable<int>> sequenceFactory = () =>
-                {
-                    "Executing factory.".WriteLine();
-                    return Enumerable.Empty<int>();
-                };
-            IEnumerable<int> sequence1 = sequenceFactory() // sequenceFactory immediate executes.
+            {
+                "Executing factory.".WriteLine();
+                return Enumerable.Empty<int>();
+            };
+            IEnumerable<int> sequence1 = sequenceFactory() // Executing factory.
                 .Where(int32 => int32 > 0);
-            IEnumerable<int> sequence2 = EnumerableEx.Defer(sequenceFactory) // sequenceFactory does not execute.
+            IEnumerable<int> sequence2 = EnumerableEx.Defer(sequenceFactory)
                 .Where(int32 => int32 > 0);
         }
 
         internal static void Create()
         {
             IEnumerable<int> sequence = EnumerableEx.Create<int>(async yield =>
-                {
-                    await yield.Return(0); // yield return 0;
-                    await yield.Return(1); // yield return 1;
-                    await yield.Break(); // yield break;
-                    await yield.Return(2); // yield return 2;
-                });
-            int[] result = sequence.ToArray(); // 0 1.
+            {
+                await yield.Return(0); // yield return 0;
+                await yield.Return(1); // yield return 1;
+                await yield.Break(); // yield break;
+                await yield.Return(2); // yield return 2;
+            });
+            sequence.WriteLine(); // 0 1
         }
 
         internal static IEnumerable<TResult> CastWithCreate<TResult>(this IEnumerable source) =>

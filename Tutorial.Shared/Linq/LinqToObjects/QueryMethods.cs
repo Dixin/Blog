@@ -26,8 +26,8 @@
         internal static IEnumerable<AssemblyDefinition> Libraries(string directory) => 
             Directory.EnumerateFiles(directory, "*.dll").TrySelect(AssemblyDefinition.ReadAssembly);
 
-        internal static IEnumerable<byte[]> ReadAll(IEnumerable<string> fileUrls) =>
-            fileUrls
+        internal static IEnumerable<byte[]> ReadAll(IEnumerable<string> fileUris) =>
+            fileUris
                 .Select(File.ReadAllBytes)
                 .Retry<byte[], Exception>(new FixedInterval(3, TimeSpan.FromSeconds(1)));
     }

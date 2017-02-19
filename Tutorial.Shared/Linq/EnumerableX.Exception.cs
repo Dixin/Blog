@@ -92,7 +92,7 @@
                             break;
                         }
                     }
-                    catch (TException exception) when (handler?.Invoke(exception) != true)
+                    catch (TException exception) when (handler?.Invoke(exception) ?? false)
                     {
                         break;
                     }
@@ -335,7 +335,7 @@
                     isTransient,
                     retryingHandler);
             }
-            catch (TException exception) when (@catch?.Invoke(exception) != true)
+            catch (TException exception) when (@catch?.Invoke(exception) ?? false)
             {
             }
 
@@ -367,7 +367,7 @@
                                 yield break; // End of source.
                             }
                         }
-                        catch (TException exception) when (@catch?.Invoke(exception) != true)
+                        catch (TException exception) when (@catch?.Invoke(exception) ?? false)
                         {
                             lastException = exception;
                             break; // Next retry.
@@ -386,7 +386,7 @@
 
                             value = iterator.Current;
                         }
-                        catch (TException exception) when (@catch?.Invoke(exception) != true)
+                        catch (TException exception) when (@catch?.Invoke(exception) ?? false)
                         {
                             lastException = exception;
                             break; // Next retry.

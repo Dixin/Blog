@@ -1,5 +1,6 @@
 ﻿namespace Dixin.Linq.CategoryTheory
 {
+    using Mono.Cecil;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -47,10 +48,7 @@
     public partial class DotNetCategory : ICategory<Type, Delegate>
     {
         public IEnumerable<Type> Objects =>
-            // TODO: AppDomain.CurrentDomain.GetAssemblies().SelectMany(assembly => assembly.GetExportedTypes());
-            GetReferences(typeof(DotNetCategory).GetTypeInfo().Assembly)
-                .Concat(new Assembly[] { typeof(object).GetTypeInfo().Assembly })
-                .Distinct()
+            SelfAndReferences(typeof(DotNetCategory).GetTypeInfo().Assembly)
                 .SelectMany(assembly => assembly.GetExportedTypes());
 
         public Delegate Compose(Delegate morphism2, Delegate morphism1) =>
@@ -67,10 +65,17 @@
             typeof(Functions).GetTypeInfo().GetMethod(nameof(Functions.Id)).MakeGenericMethod(@object)
                 .CreateDelegate(typeof(Func<,>).MakeGenericType(@object, @object));
 
-        private static IEnumerable<Assembly> GetReferences(Assembly assembly) =>
-            assembly.GetName().Name.Equals("mscorlib", StringComparison.Ordinal)
-                ? new Assembly[] { assembly }
-                : new Assembly[] { assembly }.Concat(assembly.GetReferencedAssemblies()
-                    .SelectMany(reference => GetReferences(Assembly.Load(reference))));
+        private static IEnumerable<Assembly> SelfAndReferences(
+            Assembly self, HashSet<Assembly> selfAndReferences = null)
+        {
+            selfAndReferences = selfAndReferences ?? new HashSet<Assembly>();
+            if (selfAndReferences.Add(self))
+            {
+                self.GetReferencedAssemblies().ForEach(reference => 
+                    SelfAndReferences(Assembly.Load(reference), selfAndReferences));
+                return selfAndReferences;
+            }
+            return Enumerable.Empty<Assembly>(); // Circular or duplicate reference.
+        }
     }
 }

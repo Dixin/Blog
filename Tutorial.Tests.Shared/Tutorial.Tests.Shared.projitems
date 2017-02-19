@@ -20,8 +20,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CategoryTheory\NaturalTransformationsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CategoryTheory\PerformanceTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\Connection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\AsyncTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\BinaryArithmeticCompilerTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\ContactTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\FunctionTypeTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\FundamentalsTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\ParametersTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\Introduction\ContactTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\GenericTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\ImperativeTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\CSharp\LocalFunctionsTests.cs" />
@@ -43,6 +47,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\TranslationTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\EnumerableXTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\Functional\FunctionalQueryMethodsTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\Introduction\LinqTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\Lambda\ChurchAggregateListTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\Lambda\ChurchAggregateListWrapperTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\Lambda\ChurchBooleanTests.cs" />
