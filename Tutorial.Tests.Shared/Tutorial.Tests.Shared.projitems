@@ -47,6 +47,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Linq\EntityFramework\TranslationTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\EnumerableXTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\Functional\FunctionalQueryMethodsTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Linq\Introduction\LinqTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\Lambda\ChurchAggregateListTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\Lambda\ChurchAggregateListWrapperTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Linq\Lambda\ChurchBooleanTests.cs" />

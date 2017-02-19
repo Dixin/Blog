@@ -6,6 +6,7 @@
   <Import Project="..\Tutorial.Shared\Tutorial.Shared.projitems" Label="Shared" />
   <ItemGroup>
     <PackageReference Include="EnterpriseLibrary.TransientFaultHandling.Core" Version="1.0.0" />
+    <PackageReference Include="linqtotwitter" Version="4.2.0-beta2" />
     <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="1.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.1.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.1.0" />
