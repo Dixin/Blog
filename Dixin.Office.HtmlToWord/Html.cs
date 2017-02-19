@@ -52,6 +52,10 @@ namespace Dixin.Office.HtmlToWord
 				margin-left: 3px;
 				margin-righ: 3px;
 			}
+			
+			blockquote ul, blockquote ol {
+				padding-left: 40px;
+			}
         </style>
     </head>
     <body>
