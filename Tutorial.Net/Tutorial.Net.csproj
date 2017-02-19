@@ -7,7 +7,7 @@
     <ProjectGuid>{EF2D6DEA-AA43-47FD-B00A-EAE7544BF88D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Dixin</RootNamespace>
+    <RootNamespace>Tutorial</RootNamespace>
     <AssemblyName>Tutorial.Net</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -253,39 +253,40 @@
     <Compile Include="..\Tools\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Linq\EntityFramework\EntityDataModel\AdventureWorks.Designer.cs">
+    <Compile Include="LinqToEntities\AdventureWorks.Views.cs" />
+    <Compile Include="LinqToEntities\EntityDataModel\AdventureWorks.Designer.cs">
       <DependentUpon>AdventureWorks.edmx</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="Linq\EntityFramework\FullWithViews\FullAdventureWorksWithViews.cs">
-      <DependentUpon>FullAdventureWorksWithViews.tt</DependentUpon>
+    <Compile Include="LinqToEntities\FullWithViews\FullAdventureWorksWithView.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
+      <DependentUpon>FullAdventureWorksWithView.tt</DependentUpon>
     </Compile>
-    <Compile Include="Linq\EntityFramework\FullWithViews\FullAdventureWorksWithViews.Views.cs" />
-    <Compile Include="Linq\EntityFramework\Full\FullAdventureWorks.cs">
+    <Compile Include="LinqToEntities\FullWithViews\FullAdventureWorksWithViews.Views.cs" />
+    <Compile Include="LinqToEntities\Full\FullAdventureWorks.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
       <DependentUpon>FullAdventureWorks.tt</DependentUpon>
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="Linq\LinqToSql\Relationship.cs" />
-    <Compile Include="Linq\LinqToSql\Changes.cs" />
-    <Compile Include="Linq\LinqToSql\Concurrency.cs" />
-    <Compile Include="Linq\LinqToSql\Database.cs" />
-    <Compile Include="Linq\LinqToSql\Functions.cs" />
-    <Compile Include="Linq\LinqToSql\Inheritance.cs" />
-    <Compile Include="Linq\LinqToSql\Laziness.cs" />
-    <Compile Include="Linq\LinqToSql\Log.cs" />
-    <Compile Include="Linq\LinqToSql\Performance.cs" />
-    <Compile Include="Linq\LinqToSql\QueryMethods.cs" />
-    <Compile Include="Linq\LinqToSql\TableHelper.cs" />
-    <Compile Include="Linq\LinqToSql\Tables.cs" />
-    <Compile Include="Linq\LinqToSql\Tracking.cs" />
-    <Compile Include="Linq\LinqToSql\Transactions.cs" />
-    <Compile Include="Linq\LinqToSql\Translation.cs" />
-    <Compile Include="Linq\LinqToSql\Views.cs" />
-    <Compile Include="Linq\Resources\Resources.Designer.cs">
+    <Compile Include="LinqToSql\Relationship.cs" />
+    <Compile Include="LinqToSql\Changes.cs" />
+    <Compile Include="LinqToSql\Concurrency.cs" />
+    <Compile Include="LinqToSql\Database.cs" />
+    <Compile Include="LinqToSql\Functions.cs" />
+    <Compile Include="LinqToSql\Inheritance.cs" />
+    <Compile Include="LinqToSql\Laziness.cs" />
+    <Compile Include="LinqToSql\Log.cs" />
+    <Compile Include="LinqToSql\Performance.cs" />
+    <Compile Include="LinqToSql\QueryMethods.cs" />
+    <Compile Include="LinqToSql\TableHelper.cs" />
+    <Compile Include="LinqToSql\Tables.cs" />
+    <Compile Include="LinqToSql\Tracking.cs" />
+    <Compile Include="LinqToSql\Transactions.cs" />
+    <Compile Include="LinqToSql\Translation.cs" />
+    <Compile Include="LinqToSql\Views.cs" />
+    <Compile Include="Resources\Resources.Designer.cs">
       <DependentUpon>Resources.resx</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -294,46 +295,47 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <EntityDeploy Include="Linq\EntityFramework\EntityDataModel\AdventureWorks.edmx">
+    <EntityDeploy Include="LinqToEntities\EntityDataModel\AdventureWorks.edmx">
       <Generator>EntityModelCodeGenerator</Generator>
       <LastGenOutput>AdventureWorks.Designer.cs</LastGenOutput>
     </EntityDeploy>
-    <None Include="Linq\EntityFramework\EntityDataModel\AdventureWorks.edmx.diagram">
+    <None Include="LinqToEntities\EntityDataModel\AdventureWorks.edmx.diagram">
       <DependentUpon>AdventureWorks.edmx</DependentUpon>
     </None>
-    <None Include="Linq\EntityFramework\FullWithViews\EF.Reverse.POCO.Core.ttinclude" />
-    <None Include="Linq\EntityFramework\FullWithViews\EF.Reverse.POCO.ttinclude" />
-    <None Include="Linq\EntityFramework\Full\EF.Reverse.POCO.Core.ttinclude" />
-    <None Include="Linq\EntityFramework\Full\EF.Reverse.POCO.ttinclude" />
+    <None Include="LinqToEntities\FullWithViews\EF.Reverse.POCO.Core.ttinclude" />
+    <None Include="LinqToEntities\FullWithViews\EF.Reverse.POCO.ttinclude" />
+    <None Include="LinqToEntities\Full\EF.Reverse.POCO.Core.ttinclude" />
+    <None Include="LinqToEntities\Full\EF.Reverse.POCO.ttinclude" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Linq\Resources\Resources.resx">
+    <EmbeddedResource Include="Resources\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Linq\EntityFramework\FullWithViews\FullAdventureWorksWithViews.tt">
+    <Content Include="LinqToEntities\FullWithViews\FullAdventureWorksWithView.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>FullAdventureWorksWithViews.cs</LastGenOutput>
+      <LastGenOutput>FullAdventureWorksWithView.cs</LastGenOutput>
     </Content>
-    <Content Include="Linq\EntityFramework\Full\FullAdventureWorks.tt">
+    <Content Include="LinqToEntities\Full\FullAdventureWorks.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>FullAdventureWorks.cs</LastGenOutput>
     </Content>
-    <Content Include="Linq\LinqToSql\Changes.sql" />
-    <Content Include="Linq\LinqToSql\Functions.sql" />
-    <Content Include="Linq\LinqToSql\Laziness.sql" />
-    <Content Include="Linq\LinqToSql\Mapping.sql" />
-    <Content Include="Linq\LinqToSql\Performance.sql" />
-    <Content Include="Linq\LinqToSql\QueryMethods.sql" />
-    <Content Include="Linq\LinqToSql\Translation.sql" />
+    <Content Include="LinqToSql\Changes.sql" />
+    <Content Include="LinqToSql\Functions.sql" />
+    <Content Include="LinqToSql\Laziness.sql" />
+    <Content Include="LinqToSql\Mapping.sql" />
+    <Content Include="LinqToSql\Performance.sql" />
+    <Content Include="LinqToSql\QueryMethods.sql" />
+    <Content Include="LinqToSql\Translation.sql" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="..\Tutorial.Shared\Tutorial.Shared.projitems" Label="Shared" />
