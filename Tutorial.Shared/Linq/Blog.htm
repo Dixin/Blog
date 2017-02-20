@@ -38,10 +38,135 @@
         list-style: disc;
     }
 </style>
-<p>This is a tutorial of LINQ technologies and functional programming in C# language. The contents was initially based on my <a href="https://weblogs.asp.net/dixin/archive/2009/09/21/linq-via-csharp-events-posters-design.aspx" target="_blank">LINQ via C# talks</a>. Hope it helps.</p>
-<p><a href="$LinqViaCSharp7_Dixin_DesktopDesign.f[2].png"><img width="640" height="263" title="LinqViaCSharp7_Dixin_DesktopDesign.fw2.fw" style="border: 0px currentcolor; display: inline; background-image: none;" alt="LinqViaCSharp7_Dixin_DesktopDesign.fw2.fw" src="$LinqViaCSharp7_Dixin_DesktopDesign.f[1].png" border="0"></a></p>
-<p>Please click <a href="https://weblogs.asp.net/dixin/linq-via-csharp-introduction" target="_blank">here</a> for full introduction of this tutorial. All code examples are available on <a href="https://github.com/Dixin/CodeSnippets/tree/master/Dixin/Linq" target="_blank">GitHub</a>.</p>
-<p>Contents:</p>
+<p><a href="$LinqViaCSharp7_Dixin_DesktopDesign.f[1].png"><img width="640" height="263" title="LinqViaCSharp7_Dixin_DesktopDesign.fw2.fw" style="border: 0px currentcolor; display: inline; background-image: none;" alt="LinqViaCSharp7_Dixin_DesktopDesign.fw2.fw" src="$LinqViaCSharp7_Dixin_DesktopDesign.f[2].png" border="0"></a></p>
+<h1>Keywords</h1>
+<p>C#7, LINQ, functional programming, .NET, .NET Core, Category Theory.</p>
+<h1>Abstract</h1>
+<p>This tutorial discusses <strong>cross platform LINQ and functional programming via C#, covering both .NET Framework and .NET Core</strong>. C# is an open source, cross platform language, and LINQ is the data access capabilities integrated in C# language. This tutorial covers the latest C# 7.0 language, cross-platform LINQ technologies for different data domains, and functional programming in details; and demystifies their <strong>quintessential mathematical theories</strong>. This tutorial covers .NET Framework for Windows, and .NET Core for cross platform. The target audiences are those who wants to learn how to use LINQ to work with data domains to build cross platform applications and services, and those who wants to learn functional programming. Some basic understanding of programming and C# is necessary.
+<ul>
+    <li>Web: <a href="https://weblogs.asp.net/dixin/linq-via-csharp">https://weblogs.asp.net/dixin/linq-via-csharp</a>
+    <li>PDF: <a href="https://1drv.ms/f/s!Au65NmpCJL2jjeEGIG9JdE5FQObK0w">https://1drv.ms/f/s!Au65NmpCJL2jjeEGIG9JdE5FQObK0w</a></li>
+</ul>
+<h1>Introduction</h1>
+<p>The contents are organized as the following chapters:</p>
+<ul>
+    <li>
+        <b>Part 1 Code </b>- covers functional programming via C#, and fundamentals of LINQ.
+        <ul>
+            <li>
+                <b>Chapter 1 Introduction</b>
+                <ul>
+                    <li>What is LINQ, how LINQ uses language to work with many different data domains.
+                    <li>Programming paradigm, imperative vs. declarative programming, object-oriented vs. functional programming.</li>
+                </ul>
+            <li>
+                <b>Chapter 2 Functional C#</b>
+                <ul>
+                    <li>C# fundamentals for beginners.
+                    <li>Aspects of functional programming via C#, including function type, named/anonymous/local function, closure, lambda, higher-order function, currying, partial application, first class function, function composition, query expression, covariance/contravariance, immutability, tuple, purity, async function, pattern matching, etc., including how C# is processed at compile time and runtime.</li>
+                </ul>
+            </li>
+        </ul>
+    <li>
+        <b>Part 2 Data</b> - covers how to use functional LINQ to work with different data domains in the real world, and how LINQ works internally.
+        <ul>
+            <li>
+                <b>Chapter 3 LINQ to Objects</b>
+                <ul>
+                    <li>How to use functional LINQ queries to work with objects, covering all LINQ and Ix.
+                    <li>How the LINQ to Objects query methods are implemented, how to implement useful custom LINQ queries.</li>
+                </ul>
+            <li>
+                <b>Chapter 4 LINQ to XML</b>
+                <ul>
+                    <li>How to modeling XML data, and use functional LINQ queries to work with XML data.
+                    <li>How to use the other LINQ to XML APIs to manipulate XML data.</li>
+                </ul>
+            <li>
+                <b>Chapter 5 Parallel LINQ</b>
+                <ul>
+                    <li>How to use parallelized functional LINQ queries to work with objects.
+                    <li>Performance analysis for parallel/sequential LINQ queries.</li>
+                </ul>
+            <li>
+                <b>Chapter 6 Entity Framework/Core and LINQ to Entities</b>
+                <ul>
+                    <li>How to model database with object-relational mapping, and use functional LINQ queries to work with relational data in database.
+                    <li>How the C# LINQ to Entities queries are implemented to work with database.
+                    <li>How to change data in database, and handle concurrent conflicts.
+                    <li>Performance tips and asynchrony.</li>
+                </ul>
+            </li>
+        </ul>
+    <li>
+        <b>Part 3 Theories</b> - demystifies the abstract mathematics theories, which are the rationale and foundations of LINQ and functional programming.
+        <ul>
+            <li>
+                <b>Chapter 7 Lambda Calculus via C#</b>
+                <ul>
+                    <li>Core concepts of lambda calculus, bound and free variables, reduction (α-conversion, β-reduction, η-conversion), etc.
+                    <li>How to use lambda functions to represent values, data structures and computation, including Church Boolean, Church numbers, Church pair, Church list, and their operations.
+                    <li>Combinators and combinatory logic, including SKI combinator calculus, fixed point combinator for function recursion, etc.</li>
+                </ul>
+            <li>
+                <b>Chapter 8 Category Theory via C#</b>
+                <ul>
+                    <li>Core concepts of category theory, including category, object, morphism, monoid, functor, natural transformation, applicative functor, monad, and their laws.
+                    <li>How these concepts are applied in functional programming and LINQ.
+                    <li>How to manage I/O, state, exception handling, shared environment, logging, and continuation, etc., in functional programming.</li>
+                </ul>
+            </li>
+        </ul>
+    </li>
+</ul>
+<p>This tutorial delivers highly reusable knowledge:
+<ul>
+    <li>It covers C# knowledge in detail, which can be generally used in any programming paradigms other than functional programming.
+    <li>It is a cross platform tutorial, covering both .NET Framework for Windows and .NET Core for Windows, Mac, Linux.
+    <li>It delivers LINQ usage and implementation for mainstream data domains, which also enables developer to use the LINQ technologies for other data domains, or build custom LINQ APIs for specific data scenarios. 
+    <li>It also demystifies the abstract mathematics knowledge for functional programming, which applies to all functional languages, so it greatly helps understanding any other functional languages too.</li>
+</ul>
+<p>As a fun of functional programming, LINQ, C#, and .NET technologies, hope this helps.</p>
+<p><a href="$20150522_202020724_iOS2.jpg"><img width="348" height="348" title="20150522_202020724_iOS" style="border: 0px currentcolor; display: inline; background-image: none;" alt="20150522_202020724_iOS" src="$20150522_202020724_iOS_thumb.jpg" border="0"></a></p>
+<h1>Acclaim</h1>
+<p>The following are the acclaim from Microsoft:</p>
+<ul>
+    <li>“This book covers LINQ and underlying functional programming concepts comprehensively. It employs tutorials and examples to illustrate various features and applications. The underlying theory is thoroughly explained as well to strengthen your understanding of the topic. Whether you are a beginner or journeyman, you will gain in-depth knowledge of the subject through this book.”
+        <br>Alok Parmesh<br>Microsoft Senior Software Engineer
+    <li>“This is an excellent book on LINQ as it goes beyond covering how to program with LINQ but articulates the theory behind it and mechanics of the language, a coverage which is not easy to come by. Understanding this level of detail is necessary to program with LINQ to develop first class applications that are efficient and maintainable.”
+        <br>Ari Bertan<br>Microsoft Senior Software Engineer
+    <li>“This is a great book if you want to learn LINQ in C# and functional programming in C# in depth. You can see Dixin’s deep expertise and feel his obsession for technologies. I started using C# since it was born, but I still learned new things from this book. It is an easy to read the book, and there are lots of well-picked code examples. I have no doubt that readers will become experts on the topics after reading this book.”
+        <br>Paul Lou<br>Microsoft Senior Software Engineer
+    <li>“This is a great book for C# developers, it covers both basic C# programming concepts for the beginners new to the .NET world, and C# advanced constructs for experienced .NET programmers. The book is up to date, talks C# 7 new language features and demonstrates how you can use them for functional programming. Thanks for the awesome work!”
+        <br>Mark Zhou<br>Microsoft Senior Software Engineer
+    <li>“This is an excellent in depth C# functional programming and LINQ book. It explains complicated technology with clear, concise and accurate examples. I would love to encourage everybody who want to improve their productivity and efficiency of C# programming to have a read of this book.”
+        <br>Jacky Gao <br>Microsoft Research Software Engineer
+    <li>“Since LINQ has been introduced into .NET Framework, it has been becoming more and more important and powerful to .NET developers. This book greatly breaks down LINQ and functional programming into well-organized pieces, and makes me much more easily understand how to use LINQ and functional programming better than I used to. I highly recommend this book to .NET developers with C#.” 
+        <br>Tom Zhou<br>Microsoft Senior Software Engineer
+    <li>“Awesome book for developers who are interested in learning or advancing LINQ or functional programming. It covers real world examples and theories. I have been using C# for more than 10 years but still learned new knowledge from this book. It is well organized and lots of concrete code samples, easy for readers to digest.” 
+        <br>Carol Hu<br>Microsoft Senior Software Engineer
+    <li>“I like the way the author presented the detailed knowledge with a lot of examples. As a data scientist with statistics background in a number of industries, I can pick up C# programming and LINQ quickly when I followed the book. The book was concise and easy to read. It was a pleasant experience for me to spend my time emerging myself in the book in the sunshine weekday afternoon.”
+        <br>Xue Liu<br>Microsoft Data Scientist
+    <li>“Great book! Takes a hands-on approach to LINQ/functional programming in an easy to understand format. I would highly recommend this book to developers looking to develop expertise in C#, LINQ, functional programming.”
+        <br>Himanshu Lal<br>Microsoft Principal Software Engineering Manager 
+    </li>
+</ul>
+<p>The following are the acclaim from technical community:</p>
+<ul>
+    <li>“This excellent book is an in-depth and also readable exploration of C# functional programming and LINQ programming. It covers .NET Framework and .NET Core in great detail.”
+        <br>Yang Sha<br>Google Senior Software Engineer
+    <li>“Dixin did an excellent job to write this book for anyone who wants to learn LINQ/functional programming in C#. It has lots of very practical hands-on materials so it is very easy to learn from. It also contains lots of details and has well explained the theory, so it can be used as one stop reference book!”
+        <br>Hua Wang<br>Uber Senior Software Engineer
+    <li>“This book is a really terrific .NET book, which covers C# language fundamental and LINQ in depth. And it enormously broaden my vision for the explanation about functional programming. It would be really helpful for my work in the future.”
+        <br>Kerry Jiang<br>MVP
+    <li>“After reading the draft version of the book, I found that this book is really a great tutorial. It covers almost everything about LINQ and functional programming with the latest C# language. It is a fundamental and also in-depth book for both beginners and also senior developers who want to have a deep dive into LINQ technologies, functional programming, and building cross platform applications. I highly recommend this book to all of you.”
+        <br>Tony Qu<br>MVP
+    <li>“This book offers a comprehensive, in-depth, yet easy-to-understand introduction to functional C# programming and LINQ. Filled with detailed explanations and real-world examples, this book is highly valuable for beginners and experienced developers alike.”
+        <br>Shuang Zhao<br>Assistant Professor, Department of Computer Science, University of California, Irvine
+    </li>
+</ul>
+<h1>Contents</h1>
+<p>All code examples are available on <a href="https://github.com/Dixin/CodeSnippets/tree/master/" target="_blank">GitHub</a>, and All contents are available online:</p>
 <ol>
     <li>
         <h1><a href="https://weblogs.asp.net/dixin/Tags/Introducing%20LINQ" target="_blank">Introduction</a></h1>
@@ -583,7 +708,8 @@
                 <h2><a href="https://weblogs.asp.net/dixin/entity-framework-core-and-linq-to-entities-2-modeling-database-object-relational-mapping" target="_blank">Modeling Database: Object-Relational Mapping</a></h2>
                 <ul>
                     <li>Data types
-                    <li>Database
+                    <li>
+                        Database
                         <ul>
                             <li>Connection resiliency and execution strategy</li>
                         </ul>
@@ -716,7 +842,7 @@
             <li>
                 <h2><a href="https://weblogs.asp.net/dixin/entity-framework-core-and-linq-to-entities-8-optimistic-concurrency" target="_blank">Optimistic Concurrency</a></h2>
                 <ul>
-                    <li>Detect Concurrent conflicts
+                    <li>Detect concurrent conflicts
                     <li>
                         Resolve concurrent conflicts
                         <ul>
@@ -754,252 +880,253 @@
                 </ul>
             </li>
         </ol>
-    <!--
-    <li>
-        <h1>LINQ to SQL</h1>
-        <ol>
-            <li>
-                <h2><a href="https://weblogs.asp.net/dixin/archive/2010/03/29/understanding-linq-to-sql-1-object-relational-mapping.aspx" target="_blank">Object-Relational Mapping</a></h2>
-                <ul>
-                    <li>Create C# models from SQL schema
-                    <li>Implement the mapping
-                    <li>Customize the mapping
-                    <li>
-                        Work with model
-                        <ul>
-                            <li>Partial class
-                            <li>Partial method
-                            <li>INotifyPropertyChanging and INotifyPropertyChanged interfaces</li>
-                        </ul>
-                    <li>Create SQL schema from C# models</li>
-                </ul>
-            <li>
-                <h2><a href="https://weblogs.asp.net/dixin/archive/2010/03/30/understanding-linq-to-sql-2-iqueryable-lt-t-gt.aspx" target="_blank">IQueryable&lt;T&gt;</a></h2>
-                <ul>
-                    <li>IQueryable and IQueryable&lt;T&gt;
-                    <li>IQueryable and IQueryable&lt;T&gt; extensions
-                    <li>Table&lt;T&gt;
-                    <li>IEnumerable&lt;T&gt; extensions vs. IQueryable&lt;T&gt; extensions</li>
-                </ul>
-            <li>
-                <h2><a href="https://weblogs.asp.net/dixin/archive/2010/04/06/understanding-linq-to-sql-3-expression-tree.aspx" target="_blank">Expression Tree</a></h2>
-                <ul>
-                    <li>Anonymous method vs. expression tree
-                    <li>Expression tree for LINQ to SQL
-                    <li>Translate expression tree to SQL
-                    <li>Expression tree types
-                    <li>Expression tree for DLR
-                    <li>Visualize expression tree while debugging</li>
-                </ul>
-            <li>
-                <h2><a href="https://weblogs.asp.net/dixin/archive/2010/04/15/understanding-linq-to-sql-4-data-retrieving-via-query-methods.aspx" target="_blank">Data Retrieving Via Query Methods</a></h2>
-                <ul>
-                    <li>Supported and Unsupported query methods
-                    <li>
-                        Restriction
-                        <ul>
-                            <li>WHERE
-                            <li>AND / OR
-                            <li>LIKE
-                            <li>IN
-                            <li>IS / NOT / NULL</li>
-                        </ul>
-                    <li>
-                        Projection
-                        <ul>
-                            <li>SELECT
-                            <li>Explicitly construct entity
-                            <li>CASE</li>
-                        </ul>
-                    <li>
-                        Ordering
-                        <ul>
-                            <li>ORDER BY / ASC / DESC</li>
-                        </ul>
-                    <li>
-                        Join
-                        <ul>
-                            <li>Natural join
-                            <li>INNER JOIN
-                            <li>
-                                OUTER JOIN
-                                <ul>
-                                    <li>Association</li>
-                                </ul>
-                            <li>CROSS JOIN
-                            <li>Self JOIN</li>
-                        </ul>
-                    <li>
-                        Grouping and aggregation
-                        <ul>
-                            <li>GROUP BY / aggregate functions
-                            <li>HAVING</li>
-                        </ul>
-                    <li>
-                        Set
-                        <ul>
-                            <li>DISTINCT
-                            <li>UNION
-                            <li>EXISTS
-                            <li>NOT EXISTS</li>
-                        </ul>
-                    <li>
-                        Partitioning
-                        <ul>
-                            <li>TOP
-                            <li>ROW_NUMBER()
-                            <li>BETWEEN … AND</li>
-                        </ul>
-                    <li>
-                        Concatenation
-                        <ul>
-                            <li>UNION ALL</li>
-                        </ul>
-                    <li>
-                        Qualifiers
-                        <ul>
-                            <li>CASE / EXISTS</li>
-                        </ul>
-                    <li>Other query methods</li>
-                </ul>
-            <li>
-                <h2><a href="https://weblogs.asp.net/dixin/archive/2010/04/19/understanding-linq-to-sql-5-remote-and-local-method-call.aspx" target="_blank">Remote And Local Method Call</a></h2>
-                <ul>
-                    <li>Remote method call
-                    <li>Local method call
-                    <li>Remote method recognition</li>
-                </ul>
-            <li>
-                <h2><a href="https://weblogs.asp.net/dixin/archive/2010/04/19/understanding-linq-to-sql-6-working-with-deferred-execution.aspx" target="_blank">Working With Deferred Execution</a></h2>
-                <ul>
-                    <li>Deferred execution and DataContext
-                    <li>
-                        Deferred execution and eager loading
-                        <ul>
-                            <li>DataLoadOptions.LoadWith()
-                            <li>DataLoadOptions.AssociateWith()
-                            <li>DataContext.DeferredLoadingEnabled</li>
-                        </ul>
-                    </li>
-                </ul>
-            <li>
-                <h2><a href="https://weblogs.asp.net/dixin/archive/2010/04/20/understanding-linq-to-sql-7-data-changing.aspx" target="_blank">Data Changing</a></h2>
-                <ul>
-                    <li>
-                        Object Identity
-                        <ul>
-                            <li>Identity of entity objects
-                            <li>Identity and DataContext
-                            <li>Identity of projected objects (non-entity objects)</li>
-                        </ul>
-                    <li>
-                        Track changes
-                        <ul>
-                            <li>State change
-                            <li>Association change
-                            <li>Change set</li>
-                        </ul>
-                    <li>
-                        Submit changes
-                        <ul>
-                            <li>
-                                INSERT
-                                <ul>
-                                    <li>Work with IDENTITY column</li>
-                                </ul>
-                            <li>UPDATE
-                            <li>DELETE</li>
-                        </ul>
-                    <li>Read-only DataContext</li>
-                </ul>
-            <li>
-                <h2><a href="https://weblogs.asp.net/dixin/archive/2010/04/22/understanding-linq-to-sql-8-transaction.aspx" target="_blank" mce_href="/dixin/archive/2010/04/22/understanding-linq-to-sql-8-transaction.aspx">Transaction</a></h2>
-                <ul>
-                    <li>Implementing transaction (BEGIN / COMMIT / ROLLBACK)
-                    <li>Default transaction
-                    <li>Custom transactions</li>
-                </ul>
-            <li>
-                <h2><a href="https://weblogs.asp.net/dixin/archive/2010/04/26/understanding-linq-to-sql-9-concurrent-conflict.aspx" target="_blank" mce_href="/dixin/archive/2010/04/26/understanding-linq-to-sql-9-concurrent-conflict.aspx">Concurrent conflict</a></h2>
-                <ul>
-                    <li>Conflicts in concurrent data access
-                    <li>
-                        Optimistic concurrency control
-                        <ul>
-                            <li>Update check
-                            <li>Time stamp</li>
-                        </ul>
-                    <li>
-                        Handle ChangeConflictException
-                        <ul>
-                            <li>Merge changes to resolve conflict</li>
-                        </ul>
-                    <li>More about concurrency</li>
-                </ul>
-            <li>
-                <h2><a href="https://weblogs.asp.net/dixin/archive/2010/05/12/understanding-linq-to-sql-10-implementing-linq-to-sql-provider.aspx" target="_blank" mce_href="/dixin/archive/2010/05/12/understanding-linq-to-sql-10-implementing-linq-to-sql-provider.aspx">Implementing LINQ to SQL Provider</a></h2>
-                <ul>
-                    <li>
-                        The provider model
-                        <ul>
-                            <li>Implement IQueryable&lt;T&gt; and IOrderedQueryable&lt;T&gt;
-                            <li>Implement IQueryProvider</li>
-                        </ul>
-                    <li>
-                        Query method internals
-                        <ul>
-                            <li>Deferred execution methods
-                            <li>Eager execution methods</li>
-                        </ul>
-                    <li>
-                        Work together
-                        <ul>
-                            <li>Query a collection of items (deferred execution)
-                            <li>Query a single item (eager execution)
-                            <li>Aggregate (eager execution)
-                            <li>SQL translating and executing</li>
-                        </ul>
-                    <li>
-                        LINQ Providers
-                        <ul>
-                            <li>Built-in IQueryable LINQ Providers
-                            <li>LINQ to Everything
-                            <li>LINQ to Objects provider</li>
-                        </ul>
-                    </li>
-                </ul>
-            <li>
-                <h2><a href="https://weblogs.asp.net/dixin/archive/2011/01/31/understanding-linq-to-sql-11-performance.aspx" target="_blank" mce_href="/dixin/archive/2011/01/31/understanding-linq-to-sql-11-performance.aspx">Performance</a></h2>
-                <ul>
-                    <li>O/R mapping overhead
-                    <li>
-                        Data retrieving overhead
-                        <ul>
-                            <li>Compiled query
-                            <li>Static SQL / stored procedures without translating</li>
-                        </ul>
-                    <li>
-                        Data changing overhead
-                        <ul>
-                            <li>Bulk deleting / updating</li>
-                        </ul>
-                    <li>
-                        Query plan overhead
-                        <ul>
-                            <li>.NET 3.5
-                            <li>.NET 4.0</li>
-                        </ul>
-                    </li>
-                </ul>
-            </li>
-        </ol>-->
+        <!--
+        <li>
+            <h1>LINQ to SQL</h1>
+            <ol>
+                <li>
+                    <h2><a href="https://weblogs.asp.net/dixin/archive/2010/03/29/understanding-linq-to-sql-1-object-relational-mapping.aspx" target="_blank">Object-Relational Mapping</a></h2>
+                    <ul>
+                        <li>Create C# models from SQL schema
+                        <li>Implement the mapping
+                        <li>Customize the mapping
+                        <li>
+                            Work with model
+                            <ul>
+                                <li>Partial class
+                                <li>Partial method
+                                <li>INotifyPropertyChanging and INotifyPropertyChanged interfaces</li>
+                            </ul>
+                        <li>Create SQL schema from C# models</li>
+                    </ul>
+                <li>
+                    <h2><a href="https://weblogs.asp.net/dixin/archive/2010/03/30/understanding-linq-to-sql-2-iqueryable-lt-t-gt.aspx" target="_blank">IQueryable&lt;T&gt;</a></h2>
+                    <ul>
+                        <li>IQueryable and IQueryable&lt;T&gt;
+                        <li>IQueryable and IQueryable&lt;T&gt; extensions
+                        <li>Table&lt;T&gt;
+                        <li>IEnumerable&lt;T&gt; extensions vs. IQueryable&lt;T&gt; extensions</li>
+                    </ul>
+                <li>
+                    <h2><a href="https://weblogs.asp.net/dixin/archive/2010/04/06/understanding-linq-to-sql-3-expression-tree.aspx" target="_blank">Expression Tree</a></h2>
+                    <ul>
+                        <li>Anonymous method vs. expression tree
+                        <li>Expression tree for LINQ to SQL
+                        <li>Translate expression tree to SQL
+                        <li>Expression tree types
+                        <li>Expression tree for DLR
+                        <li>Visualize expression tree while debugging</li>
+                    </ul>
+                <li>
+                    <h2><a href="https://weblogs.asp.net/dixin/archive/2010/04/15/understanding-linq-to-sql-4-data-retrieving-via-query-methods.aspx" target="_blank">Data Retrieving Via Query Methods</a></h2>
+                    <ul>
+                        <li>Supported and Unsupported query methods
+                        <li>
+                            Restriction
+                            <ul>
+                                <li>WHERE
+                                <li>AND / OR
+                                <li>LIKE
+                                <li>IN
+                                <li>IS / NOT / NULL</li>
+                            </ul>
+                        <li>
+                            Projection
+                            <ul>
+                                <li>SELECT
+                                <li>Explicitly construct entity
+                                <li>CASE</li>
+                            </ul>
+                        <li>
+                            Ordering
+                            <ul>
+                                <li>ORDER BY / ASC / DESC</li>
+                            </ul>
+                        <li>
+                            Join
+                            <ul>
+                                <li>Natural join
+                                <li>INNER JOIN
+                                <li>
+                                    OUTER JOIN
+                                    <ul>
+                                        <li>Association</li>
+                                    </ul>
+                                <li>CROSS JOIN
+                                <li>Self JOIN</li>
+                            </ul>
+                        <li>
+                            Grouping and aggregation
+                            <ul>
+                                <li>GROUP BY / aggregate functions
+                                <li>HAVING</li>
+                            </ul>
+                        <li>
+                            Set
+                            <ul>
+                                <li>DISTINCT
+                                <li>UNION
+                                <li>EXISTS
+                                <li>NOT EXISTS</li>
+                            </ul>
+                        <li>
+                            Partitioning
+                            <ul>
+                                <li>TOP
+                                <li>ROW_NUMBER()
+                                <li>BETWEEN … AND</li>
+                            </ul>
+                        <li>
+                            Concatenation
+                            <ul>
+                                <li>UNION ALL</li>
+                            </ul>
+                        <li>
+                            Qualifiers
+                            <ul>
+                                <li>CASE / EXISTS</li>
+                            </ul>
+                        <li>Other query methods</li>
+                    </ul>
+                <li>
+                    <h2><a href="https://weblogs.asp.net/dixin/archive/2010/04/19/understanding-linq-to-sql-5-remote-and-local-method-call.aspx" target="_blank">Remote And Local Method Call</a></h2>
+                    <ul>
+                        <li>Remote method call
+                        <li>Local method call
+                        <li>Remote method recognition</li>
+                    </ul>
+                <li>
+                    <h2><a href="https://weblogs.asp.net/dixin/archive/2010/04/19/understanding-linq-to-sql-6-working-with-deferred-execution.aspx" target="_blank">Working With Deferred Execution</a></h2>
+                    <ul>
+                        <li>Deferred execution and DataContext
+                        <li>
+                            Deferred execution and eager loading
+                            <ul>
+                                <li>DataLoadOptions.LoadWith()
+                                <li>DataLoadOptions.AssociateWith()
+                                <li>DataContext.DeferredLoadingEnabled</li>
+                            </ul>
+                        </li>
+                    </ul>
+                <li>
+                    <h2><a href="https://weblogs.asp.net/dixin/archive/2010/04/20/understanding-linq-to-sql-7-data-changing.aspx" target="_blank">Data Changing</a></h2>
+                    <ul>
+                        <li>
+                            Object Identity
+                            <ul>
+                                <li>Identity of entity objects
+                                <li>Identity and DataContext
+                                <li>Identity of projected objects (non-entity objects)</li>
+                            </ul>
+                        <li>
+                            Track changes
+                            <ul>
+                                <li>State change
+                                <li>Association change
+                                <li>Change set</li>
+                            </ul>
+                        <li>
+                            Submit changes
+                            <ul>
+                                <li>
+                                    INSERT
+                                    <ul>
+                                        <li>Work with IDENTITY column</li>
+                                    </ul>
+                                <li>UPDATE
+                                <li>DELETE</li>
+                            </ul>
+                        <li>Read-only DataContext</li>
+                    </ul>
+                <li>
+                    <h2><a href="https://weblogs.asp.net/dixin/archive/2010/04/22/understanding-linq-to-sql-8-transaction.aspx" target="_blank" mce_href="/dixin/archive/2010/04/22/understanding-linq-to-sql-8-transaction.aspx">Transaction</a></h2>
+                    <ul>
+                        <li>Implementing transaction (BEGIN / COMMIT / ROLLBACK)
+                        <li>Default transaction
+                        <li>Custom transactions</li>
+                    </ul>
+                <li>
+                    <h2><a href="https://weblogs.asp.net/dixin/archive/2010/04/26/understanding-linq-to-sql-9-concurrent-conflict.aspx" target="_blank" mce_href="/dixin/archive/2010/04/26/understanding-linq-to-sql-9-concurrent-conflict.aspx">Concurrent conflict</a></h2>
+                    <ul>
+                        <li>Conflicts in concurrent data access
+                        <li>
+                            Optimistic concurrency control
+                            <ul>
+                                <li>Update check
+                                <li>Time stamp</li>
+                            </ul>
+                        <li>
+                            Handle ChangeConflictException
+                            <ul>
+                                <li>Merge changes to resolve conflict</li>
+                            </ul>
+                        <li>More about concurrency</li>
+                    </ul>
+                <li>
+                    <h2><a href="https://weblogs.asp.net/dixin/archive/2010/05/12/understanding-linq-to-sql-10-implementing-linq-to-sql-provider.aspx" target="_blank" mce_href="/dixin/archive/2010/05/12/understanding-linq-to-sql-10-implementing-linq-to-sql-provider.aspx">Implementing LINQ to SQL Provider</a></h2>
+                    <ul>
+                        <li>
+                            The provider model
+                            <ul>
+                                <li>Implement IQueryable&lt;T&gt; and IOrderedQueryable&lt;T&gt;
+                                <li>Implement IQueryProvider</li>
+                            </ul>
+                        <li>
+                            Query method internals
+                            <ul>
+                                <li>Deferred execution methods
+                                <li>Eager execution methods</li>
+                            </ul>
+                        <li>
+                            Work together
+                            <ul>
+                                <li>Query a collection of items (deferred execution)
+                                <li>Query a single item (eager execution)
+                                <li>Aggregate (eager execution)
+                                <li>SQL translating and executing</li>
+                            </ul>
+                        <li>
+                            LINQ Providers
+                            <ul>
+                                <li>Built-in IQueryable LINQ Providers
+                                <li>LINQ to Everything
+                                <li>LINQ to Objects provider</li>
+                            </ul>
+                        </li>
+                    </ul>
+                <li>
+                    <h2><a href="https://weblogs.asp.net/dixin/archive/2011/01/31/understanding-linq-to-sql-11-performance.aspx" target="_blank" mce_href="/dixin/archive/2011/01/31/understanding-linq-to-sql-11-performance.aspx">Performance</a></h2>
+                    <ul>
+                        <li>O/R mapping overhead
+                        <li>
+                            Data retrieving overhead
+                            <ul>
+                                <li>Compiled query
+                                <li>Static SQL / stored procedures without translating</li>
+                            </ul>
+                        <li>
+                            Data changing overhead
+                            <ul>
+                                <li>Bulk deleting / updating</li>
+                            </ul>
+                        <li>
+                            Query plan overhead
+                            <ul>
+                                <li>.NET 3.5
+                                <li>.NET 4.0</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </li>
+            </ol>-->
     <li>
         <h1><a href="https://weblogs.asp.net/dixin/Tags/Lambda%20Calculus" target="_blank">Lambda Calculus via C#</a></h1>
         <ol>
             <li>
                 <h2><a href="https://weblogs.asp.net/dixin/lambda-calculus-via-c-1-fundamentals" target="_blank">Fundamentals</a></h2>
                 <ul>
-                    <li>Expression
+                    <li>
+                        Expression
                         <ul>
                             <li>Bound variable vs. free variable</li>
                         </ul>
@@ -1012,7 +1139,8 @@
                             <li>Normal order
                             <li>Applicative order</li>
                         </ul>
-                    <li>Function composition
+                    <li>
+                        Function composition
                         <ul>
                             <li>Associativity
                             <li>Unit</li>
@@ -1191,4 +1319,4 @@
         </ol>
     </li>
 </ol>
-<p>This list will be updated when the contents are updated.</p>
+<p></p>

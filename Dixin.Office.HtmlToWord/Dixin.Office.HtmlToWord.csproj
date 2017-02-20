@@ -61,6 +61,18 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\Dixin\Common\Argument.cs">
+      <Link>Argument.cs</Link>
+    </Compile>
+    <Compile Include="..\Dixin\Common\ExceptionExtensions.cs">
+      <Link>ExceptionExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\Dixin\Common\ValidatedNotNullAttribute.cs">
+      <Link>ValidatedNotNullAttribute.cs</Link>
+    </Compile>
+    <Compile Include="..\Dixin\IO\PathHelper.cs">
+      <Link>PathHelper.cs</Link>
+    </Compile>
     <Compile Include="..\Tools\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
@@ -107,12 +119,6 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Dixin\Dixin.csproj">
-      <Project>{348fde06-d850-4118-8796-e2aee8df6376}</Project>
-      <Name>Dixin</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
