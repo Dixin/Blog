@@ -213,7 +213,7 @@
             query1.Count().WriteLine(); // 20
 
             IEnumerable<XElement> query2 = rss.XPathSelectElements("/rss/channel/item/media:category");
-            // System.Xml.XPath.XPathException: Namespace Manager or XsltContext needed. This query has a prefix, variable, or user-defined function.
+            // XPathException: Namespace Manager or XsltContext needed. This query has a prefix, variable, or user-defined function.
         }
 
         internal static void XPathEvaluateValue()

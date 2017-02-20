@@ -1,18 +1,20 @@
 ﻿namespace Tutorial.LinqToEntities
 {
+#if EF
     using System;
     using System.Collections.Generic;
     using System.Data.Common;
-#if EF
     using System.Data.Entity;
     using System.Data.Entity.Core.Common.CommandTrees;
-#endif
+    using System.Data.SqlClient;
+    using System.Linq;
+#else
+    using System;
+    using System.Collections.Generic;
     using System.Data.SqlClient;
     using System.Linq;
 
-#if !EF
     using Microsoft.EntityFrameworkCore;
-    using Microsoft.EntityFrameworkCore.Infrastructure;
     using Microsoft.EntityFrameworkCore.Query.Expressions;
     using Microsoft.EntityFrameworkCore.Storage;
 #endif

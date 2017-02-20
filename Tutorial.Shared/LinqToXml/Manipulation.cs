@@ -1,11 +1,16 @@
 ﻿namespace Tutorial.LinqToXml
 {
+#if NETFX
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Xml.Linq;
-#if NETFX
     using System.Xml.Schema;
+#else
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Xml.Linq;
 #endif
 
     using static Modeling;
@@ -196,7 +201,7 @@
                     if (args.Exception != null)
                     {
                         args.Exception.WriteLine();
-                        // System.Xml.Schema.XmlSchemaValidationException: The element 'channel' has invalid child element 'pubDate'. List of possible elements expected: 'item'.
+                        // XmlSchemaValidationException: The element 'channel' has invalid child element 'pubDate'. List of possible elements expected: 'item'.
                     }
                 });
         }

@@ -1,25 +1,25 @@
 namespace Tutorial.LinqToEntities
 {
-    using System.Data.Common;
 #if EF
+    using System.Data.Common;
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
-#endif
+    using System.Data.SqlClient;
+    using System.Linq;
+    using System.Transactions;
+    
+    using IDbContextTransaction = System.Data.Entity.DbContextTransaction;
+    using IsolationLevel = System.Data.IsolationLevel;
+#else
+    using System.Data.Common;
     using System.Data.SqlClient;
     using System.Linq;
 
-#if EF
-    using System.Transactions;
-#else
-
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Storage;
-#endif
 
-#if EF
-    using IDbContextTransaction = System.Data.Entity.DbContextTransaction;
-#endif
     using IsolationLevel = System.Data.IsolationLevel;
+#endif
 
     internal static partial class Transactions
     {

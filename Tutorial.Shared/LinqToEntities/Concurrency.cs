@@ -1,25 +1,31 @@
 namespace Tutorial.LinqToEntities
 {
+#if EF
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
-#if EF
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
-#endif
+    using System.Diagnostics.CodeAnalysis;
+    using System.Linq;
+    
+    using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+
+    using EntityEntry = System.Data.Entity.Infrastructure.DbEntityEntry;
+    using PropertyValues = System.Data.Entity.Infrastructure.DbPropertyValues;
+#else
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
     using System.Diagnostics.CodeAnalysis;
     using System.Linq;
 
-#if !EF
+
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.ChangeTracking;
-#endif
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
-
-#if EF
-    using EntityEntry = System.Data.Entity.Infrastructure.DbEntityEntry;
-    using PropertyValues = System.Data.Entity.Infrastructure.DbPropertyValues;
 #endif
 
     internal partial class DbReaderWriter : IDisposable

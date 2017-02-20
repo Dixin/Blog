@@ -1,29 +1,28 @@
 ﻿namespace Tutorial.LinqToEntities
 {
+#if EF
     using System;
     using System.Data.Common;
-#if EF
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
     using System.Data.Entity.SqlServer;
     using System.Runtime.Remoting.Messaging;
-#endif
     using System.Data.SqlClient;
-    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
-
-#if !EF
-    using Microsoft.EntityFrameworkCore;
-#endif
-
-#if EF
+    
     using ModelBuilder = System.Data.Entity.DbModelBuilder;
     using DatabaseFacade = System.Data.Entity.Database;
     using ChangeTracker = System.Data.Entity.Infrastructure.DbChangeTracker;
     using EntityEntry = System.Data.Entity.Infrastructure.DbEntityEntry;
     using PropertyEntry = System.Data.Entity.Infrastructure.DbPropertyEntry;
     using IDbContextTransaction = System.Data.Entity.DbContextTransaction;
+#else
+    using System;
+    using System.Data.Common;
+    using System.Data.SqlClient;
+
+    using Microsoft.EntityFrameworkCore;
 #endif
 
 #if EF

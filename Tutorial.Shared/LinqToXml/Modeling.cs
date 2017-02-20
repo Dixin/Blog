@@ -1,17 +1,22 @@
 ﻿namespace Tutorial.LinqToXml
 {
+#if NETFX
     using System;
     using System.Collections.Generic;
     using System.IO;
-#if !NETFX
-    using System.IO;
-#endif
     using System.Linq;
-#if !NETFX
-    using System.Net.Http;
-#endif
     using System.Xml;
     using System.Xml.Linq;
+#else
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Net;
+    using System.Net.Http;
+    using System.Xml;
+    using System.Xml.Linq;
+#endif
 
     internal static partial class Modeling
     {
@@ -121,8 +126,9 @@
 #if NETFX
             return XDocument.Load(uri);
 #else
-            using (HttpClient httpClient = new HttpClient())
-            using (Stream downloadStream = httpClient.GetStreamAsync(uri).Result)
+            WebRequest request = WebRequest.Create(uri);
+            using (WebResponse response = request.EndGetResponse(request.BeginGetResponse(null, null)))
+            using (Stream downloadStream = response.GetResponseStream())
             {
                 return XDocument.Load(downloadStream);
             }
@@ -134,8 +140,9 @@
 #if NETFX
             return XElement.Load(uri);
 #else
-            using (HttpClient httpClient = new HttpClient())
-            using (Stream downloadStream = httpClient.GetStreamAsync(uri).Result)
+            WebRequest request = WebRequest.Create(uri);
+            using (WebResponse response = request.EndGetResponse(request.BeginGetResponse(null, null)))
+            using (Stream downloadStream = response.GetResponseStream())
             {
                 return XElement.Load(downloadStream);
             }
@@ -147,11 +154,10 @@
 #if NETFX
             return XmlReader.Create(uri);
 #else
-            using (HttpClient httpClient = new HttpClient())
-            {
-                Stream downloadStream = httpClient.GetStreamAsync(uri).Result;
-                return XmlReader.Create(downloadStream);
-            }
+            WebRequest request = WebRequest.Create(uri);
+            WebResponse response = request.EndGetResponse(request.BeginGetResponse(null, null));
+            Stream downloadStream = response.GetResponseStream();
+            return XmlReader.Create(downloadStream);
 #endif
         }
 

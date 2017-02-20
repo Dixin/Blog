@@ -1,6 +1,5 @@
 ﻿namespace Tutorial.Introduction
 {
-#if NETFX
     using System.Diagnostics;
     using System.Linq;
 
@@ -97,5 +96,4 @@
             }
         }
     }
-#endif
 }

@@ -2,12 +2,14 @@
 {
 #if NETFX
     using System.Configuration;
-#endif
+    using System.Data.SqlClient;
+    using System.IO;
+    using System.Reflection;
+#else
     using System.Data.SqlClient;
     using System.IO;
     using System.Reflection;
 
-#if !NETFX
     using Microsoft.Extensions.Configuration;
 #endif
 

@@ -2,10 +2,10 @@ namespace Tutorial.LinqToEntities
 {
 #if EF
     using System.Data.Entity;
-#endif
+    using System.Linq;
+#else
     using System.Linq;
 
-#if !EF
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.ChangeTracking;
 #endif

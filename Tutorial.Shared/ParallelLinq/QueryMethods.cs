@@ -1,18 +1,28 @@
 namespace Tutorial.ParallelLinq
 {
+#if NETFX
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
     using System.Threading;
 
-#if NETFX
     using Microsoft.ConcurrencyVisualizer.Instrumentation;
-#endif
 
     using static Functions;
 
     using Stopwatch = System.Diagnostics.Stopwatch;
+#else
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
+    using System.Threading;
+
+    using static Functions;
+
+    using Stopwatch = System.Diagnostics.Stopwatch;
+#endif
 
     internal static partial class QueryMethods
     {

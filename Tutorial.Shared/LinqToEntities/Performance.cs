@@ -1,14 +1,13 @@
 ﻿namespace Tutorial.LinqToEntities
 {
+#if EF
     using System;
     using System.Collections.Generic;
     using System.Data.Common;
-#if EF
     using System.Data.Entity;
     using System.Data.Entity.Core.EntityClient;
     using System.Data.Entity.Core.Objects;
     using System.Data.Entity.Infrastructure;
-#endif
     using System.Data.SqlClient;
     using System.Diagnostics;
     using System.Linq;
@@ -16,26 +15,37 @@
     using System.Reflection;
     using System.Runtime.CompilerServices;
     using System.Threading.Tasks;
-#if EF
     using System.Transactions;
 
     using Tutorial.LinqToEntities.Full;
     using Tutorial.LinqToEntities.FullWithViews;
-#else
-
-    using Microsoft.EntityFrameworkCore;
-    using Microsoft.EntityFrameworkCore.ChangeTracking;
-    using Microsoft.EntityFrameworkCore.Storage;
-#endif
 
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
     using IsolationLevel = System.Data.IsolationLevel;
 
-#if EF
     using EntityEntry = System.Data.Entity.Infrastructure.DbEntityEntry;
-    using PropertyValues = System.Data.Entity.Infrastructure.DbPropertyValues;
     using IDbContextTransaction = System.Data.Entity.DbContextTransaction;
+    using PropertyValues = System.Data.Entity.Infrastructure.DbPropertyValues;
+#else
+    using System;
+    using System.Collections.Generic;
+    using System.Data.Common;
+    using System.Data.SqlClient;
+    using System.Diagnostics;
+    using System.Linq;
+    using System.Linq.Expressions;
+    using System.Reflection;
+    using System.Runtime.CompilerServices;
+    using System.Threading.Tasks;
+
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.ChangeTracking;
+    using Microsoft.EntityFrameworkCore.Storage;
+
+    using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+
+    using IsolationLevel = System.Data.IsolationLevel;
 #endif
 
 #if EF
@@ -86,7 +96,7 @@
                 //        COUNT(1) AS [A1]
                 //        FROM [dbo].[__MigrationHistory] AS [Extent1]
                 //        WHERE [Extent1].[ContextKey] = @p__linq__0
-                //    )  AS [GroupBy1]',N'@p__linq__0 nvarchar(4000)',@p__linq__0=N'Tutorial.EntityFramework.AdventureWorks'
+                //    )  AS [GroupBy1]',N'@p__linq__0 nvarchar(4000)',@p__linq__0=N'Tutorial.LinqToEntities.AdventureWorks'
 
                 // SELECT 
                 //    [GroupBy1].[A1] AS [C1]

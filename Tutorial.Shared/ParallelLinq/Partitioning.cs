@@ -1,13 +1,19 @@
 ﻿namespace Tutorial.ParallelLinq
 {
+#if NETFX
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
 
-#if NETFX
     using Microsoft.ConcurrencyVisualizer.Instrumentation;
+#else
+    using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading;
 #endif
 
     using static Functions;

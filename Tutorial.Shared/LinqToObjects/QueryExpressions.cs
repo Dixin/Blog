@@ -1,22 +1,26 @@
 namespace Tutorial.LinqToObjects
 {
+#if NETFX
     using System;
     using System.Collections;
     using System.Collections.Generic;
-#if NETFX
     using System.Configuration;
-#endif
     using System.Linq;
     using System.Reflection;
-#if NETFX
     using System.Web.Profile;
-#endif
 
-    using Tutorial.Functional;
-
-#if NETFX
     using Microsoft.TeamFoundation.Client;
     using Microsoft.TeamFoundation.WorkItemTracking.Client;
+
+    using Tutorial.Functional;
+#else
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Reflection;
+
+    using Tutorial.Functional;
 #endif
 
     internal static class QueryExpressions

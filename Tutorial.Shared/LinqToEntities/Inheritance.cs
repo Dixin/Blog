@@ -1,16 +1,18 @@
 ﻿namespace Tutorial.LinqToEntities
 {
+#if EF
     using System;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
-#if EF
     using System.Data.Entity;
-#else
-    using Microsoft.EntityFrameworkCore;
-#endif
-
-#if EF
+    
     using ModelBuilder = System.Data.Entity.DbModelBuilder;
+#else
+    using System;
+    using System.ComponentModel.DataAnnotations;
+    using System.ComponentModel.DataAnnotations.Schema;
+
+    using Microsoft.EntityFrameworkCore;
 #endif
 
     [Table(nameof(TransactionHistory), Schema = AdventureWorks.Production)]

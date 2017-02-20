@@ -1,19 +1,17 @@
 ﻿namespace Tutorial.LinqToEntities
 {
-    using System;
 #if EF
+    using System;
     using System.Data.Entity;
-    using System.Data.Entity.Infrastructure;
-#endif
     using System.Linq;
 
-#if !EF
+    using EntityEntry = System.Data.Entity.Infrastructure.DbEntityEntry;
+#else
+    using System;
+    using System.Linq;
+
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.ChangeTracking;
-#endif
-
-#if EF
-    using EntityEntry = System.Data.Entity.Infrastructure.DbEntityEntry;
 #endif
 
     internal static partial class Changes

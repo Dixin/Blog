@@ -4,9 +4,9 @@
     using System.ComponentModel.DataAnnotations;
     using System.Diagnostics.Contracts;
 
-    using Tutorial.Resources;
-
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using Tutorial.Resources;
 
     [TestClass]
     public class QueryMethodsTests

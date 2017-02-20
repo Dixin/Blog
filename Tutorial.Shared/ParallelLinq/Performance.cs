@@ -1,5 +1,6 @@
 ﻿namespace Tutorial.ParallelLinq
 {
+#if NETFX
     using System;
     using System.IO;
     using System.Linq;
@@ -8,15 +9,28 @@
     using System.Threading;
     using System.Xml.Linq;
 
-#if NETFX
     using Microsoft.ConcurrencyVisualizer.Instrumentation;
-#endif
 
     using static Tutorial.LinqToXml.Modeling;
 
     using static Functions;
 
     using Stopwatch = System.Diagnostics.Stopwatch;
+#else
+    using System;
+    using System.IO;
+    using System.Linq;
+    using System.Net.Http;
+    using System.Reflection;
+    using System.Threading;
+    using System.Xml.Linq;
+
+    using static Tutorial.LinqToXml.Modeling;
+
+    using static Functions;
+
+    using Stopwatch = System.Diagnostics.Stopwatch;
+#endif
 
     internal static partial class Performance
     {

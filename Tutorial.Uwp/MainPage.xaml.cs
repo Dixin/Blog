@@ -31,7 +31,7 @@
             SynchronizationContext synchronizationContext3 = SynchronizationContext.Current;
             Debug.WriteLine(synchronizationContext1 == synchronizationContext3); // False
             this.Button.Background = new SolidColorBrush(Colors.Yellow); // UI update fails.
-            // System.Exception: The application called an interface that was marshalled for a different thread.
+            // Exception: The application called an interface that was marshalled for a different thread.
         }
     }
 }
