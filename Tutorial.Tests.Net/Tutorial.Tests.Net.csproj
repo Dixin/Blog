@@ -7,7 +7,7 @@
     <ProjectGuid>{3CAF498E-E98C-4986-AD9D-C3D6D1047508}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Dixin.Tests</RootNamespace>
+    <RootNamespace>Totorial.Tests</RootNamespace>
     <AssemblyName>Tutorial.Tests.Net</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -219,18 +219,19 @@
     <Compile Include="..\Tools\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Linq\LinqToSql\ChangesTests.cs" />
-    <Compile Include="Linq\LinqToSql\ConcurrencyTests.cs" />
-    <Compile Include="Linq\LinqToSql\FunctionsTests.cs" />
-    <Compile Include="Linq\LinqToSql\LazinessTests.cs" />
-    <Compile Include="Linq\LinqToSql\LogTests.cs" />
-    <Compile Include="Linq\LinqToSql\PerformanceTests.cs" />
-    <Compile Include="Linq\LinqToSql\QueryMethodsTests.cs" />
-    <Compile Include="Linq\LinqToSql\TransactionTests.cs" />
-    <Compile Include="Linq\LinqToSql\TranslationTests.cs" />
+    <Compile Include="LinqToSql\ChangesTests.cs" />
+    <Compile Include="LinqToSql\ConcurrencyTests.cs" />
+    <Compile Include="LinqToSql\FunctionsTests.cs" />
+    <Compile Include="LinqToSql\LazinessTests.cs" />
+    <Compile Include="LinqToSql\LogTests.cs" />
+    <Compile Include="LinqToSql\PerformanceTests.cs" />
+    <Compile Include="LinqToSql\QueryMethodsTests.cs" />
+    <Compile Include="LinqToSql\TransactionTests.cs" />
+    <Compile Include="LinqToSql\TranslationTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
@@ -245,6 +246,7 @@
     </None>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="..\Tutorial.Tests.Shared\Tutorial.Tests.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.TeamFoundationServer.ExtendedClient.14.102.0\build\Microsoft.TeamFoundationServer.ExtendedClient.targets" Condition="Exists('..\packages\Microsoft.TeamFoundationServer.ExtendedClient.14.102.0\build\Microsoft.TeamFoundationServer.ExtendedClient.targets')" />
