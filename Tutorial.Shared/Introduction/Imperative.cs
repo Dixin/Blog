@@ -128,58 +128,67 @@
         }
     }
 
-    internal class WebContentDownloader
+    internal class WebClient
     {
-        internal string Download(string uri)
+        internal FileInfo Download(Uri uri)
         {
-            throw new NotImplementedException();
+            return default(FileInfo);
         }
     }
 
-    internal class WordConverter
+    internal class DocumentConverter
     {
-        internal FileInfo Convert(string html)
+        internal DocumentConverter(FileInfo template)
         {
-            throw new NotImplementedException();
+            this.Template = template;
+        }
+
+        internal FileInfo Template { get; private set; }
+
+        internal FileInfo ToWord(FileInfo htmlDocument)
+        {
+            return default(FileInfo);
         }
     }
 
-    internal class OneDriveUploader
+    internal class OneDriveClient
     {
         internal void Upload(FileInfo file)
         {
-            throw new NotImplementedException();
         }
     }
 
     internal class DocumentBuilder
     {
-        private readonly WebContentDownloader downloader;
-        private readonly WordConverter converter;
-        private readonly OneDriveUploader uploader;
+        private readonly WebClient webClient;
 
-        internal DocumentBuilder(WebContentDownloader downloader, WordConverter converter, OneDriveUploader uploader)
+        private readonly DocumentConverter documentConverter;
+
+        private readonly OneDriveClient oneDriveClient;
+
+        internal DocumentBuilder(
+            WebClient webClient, DocumentConverter documentConverter, OneDriveClient oneDriveClient)
         {
-            this.downloader = downloader;
-            this.converter = converter;
-            this.uploader = uploader;
+            this.webClient = webClient;
+            this.documentConverter = documentConverter;
+            this.oneDriveClient = oneDriveClient;
         }
 
-        internal void Build(string uri)
+        internal void Build(Uri uri)
         {
-            string html = this.downloader.Download(uri);
-            FileInfo word = this.converter.Convert(html);
-            this.uploader.Upload(word);
+            FileInfo htmlDocument = this.webClient.Download(uri);
+            FileInfo wordDocument = this.documentConverter.ToWord(htmlDocument);
+            this.oneDriveClient.Upload(wordDocument);
         }
     }
 
     internal partial class Imperative
     {
-        internal static void BuildDocument()
+        internal static void BuildDocument(Uri uri, FileInfo template)
         {
             DocumentBuilder builder = new DocumentBuilder(
-                new WebContentDownloader(), new WordConverter(), new OneDriveUploader());
-            builder.Build("https://weblogs.asp.net/dixin/linq-via-csharp");
+                new WebClient(), new DocumentConverter(template), new OneDriveClient());
+            builder.Build(uri);
         }
     }
 }
