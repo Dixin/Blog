@@ -11,17 +11,18 @@
 
     internal static partial class LinqToJson
     {
-        internal static async Task QueryExpression()
+        internal static async Task QueryExpression(string apiKey)
         {
             using (HttpClient httpClient = new HttpClient())
             {
-                string feedUri = "https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&lang=en-us&format=json&jsoncallback=?";
-                JObject feed = JObject.Parse((await httpClient.GetStringAsync(feedUri)).TrimStart('(').TrimEnd(')'));
-                IEnumerable<JToken> source = feed["items"]; // Get source.
-                IEnumerable<string> query = from item in source
-                                            where ((string)item["tags"]).Contains("microsoft")
-                                            orderby (DateTime)item["published"]
-                                            select (string)item["title"]; // Create query.
+                string feedUri = $"https://api.tumblr.com/v2/blog/dixinyan.tumblr.com/posts/photo?api_key={apiKey}";
+                JObject feed = JObject.Parse((await httpClient.GetStringAsync(feedUri)));
+                IEnumerable<JToken> source = feed["response"]["posts"]; // Get source.
+                IEnumerable<string> query =
+                    from post in source
+                    where post["tags"].Any(tag => "Microsoft".Equals((string)tag, StringComparison.OrdinalIgnoreCase))
+                    orderby (DateTime)post["date"]
+                    select (string)post["summary"]; // Create query.
                 foreach (string result in query) // Execute query.
                 {
                     Trace.WriteLine(result);
@@ -32,17 +33,18 @@
 
     internal static partial class LinqToJson
     {
-        internal static async Task QueryMethods()
+        internal static async Task QueryMethods(string apiKey)
         {
             using (HttpClient httpClient = new HttpClient())
             {
-                string feedUri = "https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&lang=en-us&format=json&jsoncallback=?";
-                JObject feed = JObject.Parse((await httpClient.GetStringAsync(feedUri)).TrimStart('(').TrimEnd(')'));
-                IEnumerable<JToken> source = feed["items"]; // Get source.
+                string feedUri = $"https://api.tumblr.com/v2/blog/dixinyan.tumblr.com/posts/photo?api_key={apiKey}";
+                JObject feed = JObject.Parse((await httpClient.GetStringAsync(feedUri)));
+                IEnumerable<JToken> source = feed["response"]["posts"]; // Get source.
                 IEnumerable<string> query = source
-                    .Where(item => ((string)item["tags"]).Contains("microsoft"))
-                    .OrderBy(item => (DateTime)item["published"])
-                    .Select(item => (string)item["title"]); // Create query.
+                    .Where(post => post["tags"].Any(tag => 
+                        "Microsoft".Equals((string)tag, StringComparison.OrdinalIgnoreCase)))
+                    .OrderBy(post => (DateTime)post["date"])
+                    .Select(post => (string)post["summary"]); // Create query.
                 foreach (string result in query) // Execute query.
                 {
                     Trace.WriteLine(result);

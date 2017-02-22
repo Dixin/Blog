@@ -356,5 +356,21 @@ WHERE ProductID NOT IN (
         FROM Production.Product
         ORDER BY ProductID DESC);
 
+DECLARE @Max int
+SELECT @Max = MAX(ProductCategoryID) FROM Production.ProductCategory
+IF @max IS NUll
+  SET @max = 0
+DBCC CHECKIDENT (N'Production.ProductCategory', RESEED, @max)
+
+SELECT @Max = MAX(ProductSubcategoryID) FROM Production.ProductSubcategory
+IF @max IS NUll
+  SET @max = 0
+DBCC CHECKIDENT (N'Production.ProductSubcategory', RESEED, @max)
+
+SELECT @Max = MAX(ProductID) FROM Production.Product
+IF @max IS NUll
+  SET @max = 0
+DBCC CHECKIDENT (N'Production.Product', RESEED, @max)
+
 DELETE Production.ProductSubcategory
 WHERE ProductSubcategoryID NOT IN (SELECT ProductSubcategoryID FROM Production.Product)

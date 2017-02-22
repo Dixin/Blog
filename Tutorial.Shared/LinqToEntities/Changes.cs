@@ -2,12 +2,14 @@
 {
 #if EF
     using System;
+    using System.Collections.Generic;
     using System.Data.Entity;
     using System.Linq;
 
     using EntityEntry = System.Data.Entity.Infrastructure.DbEntityEntry;
 #else
     using System;
+    using System.Collections.Generic;
     using System.Linq;
 
     using Microsoft.EntityFrameworkCore;
@@ -22,15 +24,17 @@
             {
                 ProductCategory category = new ProductCategory() { Name = "Create" };
                 ProductSubcategory subcategory = new ProductSubcategory() { Name = "Create" };
-                adventureWorks.ProductSubcategories.Add(subcategory); // Track creation.
-                subcategory.ProductCategory = category;
-                // Equivalent to: category.ProductSubcategories.Add(subcategory);
-                adventureWorks.ChangeTracker.Entries()
-                    .Count(tracking => tracking.State == EntityState.Added).WriteLine(); // 2
-                object.ReferenceEquals(category.ProductSubcategories.Single(), subcategory).WriteLine(); // True.
+                category.ProductSubcategories = new HashSet<ProductSubcategory>() { subcategory };
+                // Equivalent to: subcategory.ProductCategory = category;
                 category.ProductCategoryID.WriteLine(); // 0
                 subcategory.ProductCategoryID.WriteLine(); // 0
                 subcategory.ProductSubcategoryID.WriteLine(); // 0
+
+                adventureWorks.ProductCategories.Add(category); // Track creation.
+                // Equivalent to: adventureWorks.ProductSubcategories.Add(subcategory);
+                adventureWorks.ChangeTracker.Entries()
+                    .Count(tracking => tracking.State == EntityState.Added).WriteLine(); // 2
+                object.ReferenceEquals(category.ProductSubcategories.Single(), subcategory).WriteLine(); // True
 
                 adventureWorks.SaveChanges().WriteLine(); // 2
                 // BEGIN TRANSACTION
@@ -41,7 +45,7 @@
                 //    FROM [Production].[ProductCategory]
                 //    WHERE @@ROWCOUNT = 1 AND [ProductCategoryID] = scope_identity();
                 //    ',N'@p0 nvarchar(50)',@p0=N'Create'
-
+                //
                 //    exec sp_executesql N'SET NOCOUNT ON;
                 //    INSERT INTO [Production].[ProductCategory] ([Name])
                 //    VALUES (@p0);
@@ -53,9 +57,9 @@
 
                 adventureWorks.ChangeTracker.Entries()
                     .Count(tracking => tracking.State != EntityState.Unchanged).WriteLine(); // 0
-                category.ProductCategoryID.WriteLine(); // 25
-                subcategory.ProductCategoryID.WriteLine(); // 25
-                subcategory.ProductSubcategoryID.WriteLine(); // 50
+                category.ProductCategoryID.WriteLine(); // 5
+                subcategory.ProductCategoryID.WriteLine(); // 5
+                subcategory.ProductSubcategoryID.WriteLine(); // 38
                 return category;
             } // Unit of work.
         }
@@ -228,7 +232,9 @@
         {
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {
-                ProductCategory untracked = adventureWorks.ProductCategories.AsNoTracking().First();
+                ProductCategory untracked = adventureWorks.ProductCategories
+                    .AsNoTracking()
+                    .Single(category => category.Name == "Bikes");
                 adventureWorks.ProductCategories.Remove(untracked); // Track no deletion.
                 adventureWorks.SaveChanges().WriteLine();
 #if EF
