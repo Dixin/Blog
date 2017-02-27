@@ -21,7 +21,7 @@
         {
             Empty();
             Range();
-            LargeRange();
+            MaxRange();
             DefaultIfEmpty();
             DefaultIfEmptyWithDefaultValue();
         }

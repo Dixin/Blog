@@ -5,6 +5,8 @@
     using System.Linq;
     using System.Linq.Expressions;
 
+    using static Tutorial.LinqToObjects.EnumerableX;
+
     internal static partial class Translation
     {
         private static readonly AdventureWorks AdventureWorks = new AdventureWorks();

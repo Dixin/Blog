@@ -8,6 +8,7 @@
     using System.Xml.XPath;
 
     using static Modeling;
+    using static Tutorial.LinqToObjects.EnumerableX;
 
     internal static partial class QueryMethods
     {

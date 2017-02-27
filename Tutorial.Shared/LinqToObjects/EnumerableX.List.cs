@@ -1,8 +1,7 @@
-﻿namespace Tutorial
+﻿namespace Tutorial.LinqToObjects
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
 
     public static partial class EnumerableX
     {
@@ -15,33 +14,30 @@
                 throw new ArgumentOutOfRangeException(nameof(index), $"{nameof(index)} must be 0 or greater than 0.");
             }
 
-            return InsertGenerator(source, index, value);
-        }
-
-        private static IEnumerable<TSource> InsertGenerator<TSource>(
-            IEnumerable<TSource> source, int index, TSource value)
-        {
-            int currentIndex = 0;
-            foreach (TSource sourceValue in source)
+            IEnumerable<TSource> InsertGenerator()
             {
-                if (currentIndex == index)
+                int currentIndex = 0;
+                foreach (TSource sourceValue in source)
+                {
+                    if (currentIndex == index)
+                    {
+                        yield return value;
+                    }
+                    yield return sourceValue;
+                    currentIndex = checked(currentIndex + 1);
+                }
+                if (index == currentIndex)
                 {
                     yield return value;
                 }
-                yield return sourceValue;
-                currentIndex = checked(currentIndex + 1);
+                else if (index > currentIndex)
+                {
+                    throw new ArgumentOutOfRangeException(
+                        nameof(index),
+                        $"Index {index} must be equal to or less than the count of sequance {currentIndex}.");
+                }
             }
-
-            if (index == currentIndex)
-            {
-                yield return value;
-            }
-            else if (index > currentIndex)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(index),
-                    $"Index {index} must be equal to or less than the count of sequance {currentIndex}.");
-            }
+            return InsertGenerator();
         }
 
         public static IEnumerable<TSource> RemoveAt<TSource>(this IEnumerable<TSource> source, int index)
@@ -50,28 +46,25 @@
             {
                 throw new ArgumentOutOfRangeException(nameof(index), $"{nameof(index)} must be 0 or greater than 0.");
             }
-
-            return RemoveAtGenerator(source, index);
-        }
-
-        private static IEnumerable<TSource> RemoveAtGenerator<TSource>(IEnumerable<TSource> source, int index)
-        {
-            int currentIndex = 0;
-            foreach (TSource value in source)
+            IEnumerable<TSource> RemoveAtGenerator()
             {
-                if (currentIndex != index)
+                int currentIndex = 0;
+                foreach (TSource value in source)
                 {
-                    yield return value;
+                    if (currentIndex != index)
+                    {
+                        yield return value;
+                    }
+                    currentIndex = checked(currentIndex + 1);
                 }
-                currentIndex = checked(currentIndex + 1);
+                if (index >= currentIndex)
+                {
+                    throw new ArgumentOutOfRangeException(
+                        nameof(index),
+                        $"index {index} must be equal to or less than the last index of source {currentIndex}.");
+                }
             }
-
-            if (index >= currentIndex)
-            {
-                throw new ArgumentOutOfRangeException(
-                    nameof(index), 
-                    $"index {index} must be equal to or less than the last index of source {currentIndex}.");
-            }
+            return RemoveAtGenerator();
         }
 
         public static IEnumerable<TSource> Remove<TSource>(
@@ -100,14 +93,9 @@
             IEqualityComparer<TSource> comparer = null)
         {
             comparer = comparer ?? EqualityComparer<TSource>.Default;
-            bool isRemoved = false;
             foreach (TSource value in source)
             {
-                if (comparer.Equals(value, remove))
-                {
-                    isRemoved = true;
-                }
-                else
+                if (!comparer.Equals(value, remove))
                 {
                     yield return value;
                 }
@@ -127,7 +115,6 @@
             {
                 source = source.Take(count.Value);
             }
-
             int index = checked(0 + startIndex);
             foreach (TSource value in source)
             {
@@ -153,7 +140,6 @@
             {
                 source = source.Take(count.Value);
             }
-
             int lastIndex = -1;
             int index = checked(0 + startIndex);
             foreach (TSource value in source)

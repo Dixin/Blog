@@ -244,23 +244,23 @@
                 data: default((TSource[], int)),
                 iteratorFactory: data => new Iterator<TSource>(
                     start: () =>
-                        {
-                            "Reverse query starts.".WriteLine();
-                            TSource[] values = source.ToArray();
-                            $"Reverse query evaluated all {values.Length} value(s) in input sequence.".WriteLine();
+                    {
+                        "Reverse query starts.".WriteLine();
+                        TSource[] values = source.ToArray();
+                        $"Reverse query evaluated all {values.Length} value(s) in input sequence.".WriteLine();
 
-                            data = (values, values.Length - 1);
-                        },
+                        data = (values, values.Length - 1);
+                    },
                     moveNext: () => data.Item2 >= 0,
                     getCurrent: () =>
-                        {
-                            TSource[] values = data.Item1;
-                            int lastIndex = data.Item2;
-                            data = (values, lastIndex - 1);
+                    {
+                        TSource[] values = data.Item1;
+                        int lastIndex = data.Item2;
+                        data = (values, lastIndex - 1);
 
-                            $"Reverse query is yielding index {lastIndex} of input sequence.".WriteLine();
-                            return values[lastIndex];
-                        },
+                        $"Reverse query is yielding index {lastIndex} of input sequence.".WriteLine();
+                        return values[lastIndex];
+                    },
                     end: () => "Reverse query ends.".WriteLine()));
 
         internal static void ForEachSelectAndReverse()
@@ -307,18 +307,18 @@
         internal static IEnumerable<TResult> DeferredSelect<TSource, TResult>(
             this IEnumerable<TSource> source, Func<TSource, TResult> selector)
         {
-            if (source == null)
+            if (source == null) // Deferred execution.
             {
                 throw new ArgumentNullException(nameof(source));
             }
-            if (selector == null)
+            if (selector == null) // Deferred execution.
             {
                 throw new ArgumentNullException(nameof(selector));
             }
 
             foreach (TSource value in source)
             {
-                yield return selector(value);
+                yield return selector(value); // Deferred execution.
             }
         }
     }
@@ -350,11 +350,11 @@
         internal static IEnumerable<TResult> Select<TSource, TResult>(
             this IEnumerable<TSource> source, Func<TSource, TResult> selector)
         {
-            if (source == null)
+            if (source == null) // Immediate execution.
             {
                 throw new ArgumentNullException(nameof(source));
             }
-            if (selector == null)
+            if (selector == null) // Immediate execution.
             {
                 throw new ArgumentNullException(nameof(selector));
             }
@@ -363,7 +363,7 @@
             {
                 foreach (TSource value in source)
                 {
-                    yield return selector(value);
+                    yield return selector(value); // Deferred execution.
                 }
             }
             return SelectGenerator();

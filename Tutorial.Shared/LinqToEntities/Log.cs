@@ -7,6 +7,8 @@
     using System.Data.Entity.Infrastructure.Interception;
     using System.Linq;
 
+    using static Tutorial.LinqToObjects.EnumerableX;
+
     internal static partial class Log
     {
         internal static void DbQueryToString()
@@ -122,6 +124,8 @@
 
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Logging;
+
+    using static Tutorial.LinqToObjects.EnumerableX;
 #endif
 
 #if !EF

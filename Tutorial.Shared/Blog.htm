@@ -39,22 +39,29 @@
     }
 </style>
 <p><a href="$LinqViaCSharp7_Dixin_DesktopDesign.f[1].png"><img width="640" height="263" title="LinqViaCSharp7_Dixin_DesktopDesign.fw2.fw" style="border: 0px currentcolor; display: inline; background-image: none;" alt="LinqViaCSharp7_Dixin_DesktopDesign.fw2.fw" src="$LinqViaCSharp7_Dixin_DesktopDesign.f[2].png" border="0"></a></p>
-<h1>Keywords</h1>
-<p>C#7, LINQ, functional programming, .NET, .NET Core, Category Theory.</p>
-<h1>Abstract</h1>
-<p>This tutorial discusses <strong>cross platform LINQ and functional programming via C#, covering both .NET Framework and .NET Core</strong>. C# is an open source, cross platform language, and LINQ is the data access capabilities integrated in C# language. This tutorial covers the latest C# 7.0 language, cross-platform LINQ technologies for different data domains, and functional programming in details; and demystifies their <strong>quintessential mathematical theories</strong>. This tutorial covers .NET Framework for Windows, and .NET Core for cross platform. The target audiences are those who wants to learn how to use LINQ to work with data domains to build cross platform applications and services, and those who wants to learn functional programming. Some basic understanding of programming and C# is necessary.
+<ul>
+    <li><a href="#keywords">Keywords</a></li>
+    <li><a href="#abstract">Abstract</a></li>
+    <li><a href="#contentsataglance">Contents at a Glance</a></li>
+    <li><a href="#acclaim">Acclaim</a></li>
+    <li><a href="#contents">Contents</a></li>
+</ul>
+<h1 id="keywords">Keywords</h1>
+<p>C#7, LINQ, Functional Programming, .NET, .NET Core, Lambda Calculus, Category Theory.</p>
+<h1 id="abstract">Abstract</h1>
+<p>This tutorial discusses <strong>cross platform LINQ and functional programming via C#, covering both .NET Framework (Windows) and .NET Core (Linux, Mac, Windows)</strong>. C# is an open source, cross platform language, and LINQ is the data access capabilities integrated in C# language. This tutorial covers the latest C# 7.0 language, cross-platform LINQ technologies for different data domains, and functional programming in details; and demystifies their <strong>quintessential mathematical theories</strong>. The target audiences are those who wants to learn how to use LINQ to work with data domains to build cross platform applications and services, and those who wants to learn functional programming. Some basic understanding of programming and C# is necessary.
 <ul>
     <li>Web: <a href="https://weblogs.asp.net/dixin/linq-via-csharp">https://weblogs.asp.net/dixin/linq-via-csharp</a>
     <li>PDF: <a href="https://1drv.ms/f/s!Au65NmpCJL2jjeEGIG9JdE5FQObK0w">https://1drv.ms/f/s!Au65NmpCJL2jjeEGIG9JdE5FQObK0w</a></li>
 </ul>
-<h1>Introduction</h1>
+<h1 id="contentsataglance">Contents at a Glance</h1>
 <p>The contents are organized as the following chapters:</p>
 <ul>
     <li>
         <b>Part 1 Code </b>- covers functional programming via C#, and fundamentals of LINQ.
         <ul>
             <li>
-                <b>Chapter 1 Introduction</b>
+                <b>Chapter 1 LINQ and Functional Paradigm</b>
                 <ul>
                     <li>What is LINQ, how LINQ uses language to work with many different data domains.
                     <li>Programming paradigm, imperative vs. declarative programming, object-oriented vs. functional programming.</li>
@@ -121,14 +128,14 @@
 </ul>
 <p>This tutorial delivers highly reusable knowledge:
 <ul>
-    <li>It covers C# knowledge in detail, which can be generally used in any programming paradigms other than functional programming.
+    <li>It covers C# knowledge in detail, which can be generally applied in any programming paradigms besides functional programming.
     <li>It is a cross platform tutorial, covering both .NET Framework for Windows and .NET Core for Windows, Mac, Linux.
-    <li>It delivers LINQ usage and implementation for mainstream data domains, which also enables developer to use the LINQ technologies for other data domains, or build custom LINQ APIs for specific data scenarios. 
-    <li>It also demystifies the abstract mathematics knowledge for functional programming, which applies to all functional languages, so it greatly helps understanding any other functional languages too.</li>
+    <li>It demonstrates both usage and implementation of LINQ for mainstream data domains, which also enables developer to use the LINQ technologies for other data domains, or build custom LINQ APIs for specific data scenarios. 
+    <li>It also demystifies the abstract mathematics knowledge for functional programming, which applies to general functional programming, so it greatly helps developers understanding any other functional languages too.</li>
 </ul>
 <p>As a fun of functional programming, LINQ, C#, and .NET technologies, hope this helps.</p>
 <p><a href="$20150522_202020724_iOS2.jpg"><img width="348" height="348" title="20150522_202020724_iOS" style="border: 0px currentcolor; display: inline; background-image: none;" alt="20150522_202020724_iOS" src="$20150522_202020724_iOS_thumb.jpg" border="0"></a></p>
-<h1>Acclaim</h1>
+<h1 id="acclaim">Acclaim</h1>
 <p>The following are the acclaim from Microsoft:</p>
 <ul>
     <li>“This book covers LINQ and underlying functional programming concepts comprehensively. It employs tutorials and examples to illustrate various features and applications. The underlying theory is thoroughly explained as well to strengthen your understanding of the topic. Whether you are a beginner or journeyman, you will gain in-depth knowledge of the subject through this book.”
@@ -153,6 +160,8 @@
 </ul>
 <p>The following are the acclaim from technical community:</p>
 <ul>
+    <li>“This book offers a comprehensive, in-depth, yet easy-to-understand introduction to functional C# programming and LINQ. Filled with detailed explanations and real-world examples, this book is highly valuable for beginners and experienced developers alike.”
+        <br>Shuang Zhao<br>Assistant Professor, Department of Computer Science, University of California, Irvine
     <li>“This book provides very comprehensive treatment of LINQ. Dixin did a tremendous job at collecting information and wrote real world examples, and nothing makes more sense when it comes to LINQ. This book also covers underlying functional programming concepts in great detail and shows how to take advantage of the LINQ language features in everyday application code. I'm happy with the book and highly recommended it.”
         <br>Yong Zheng<br>Google Senior Software Engineer
     <li>“This excellent book is an in-depth and also readable exploration of C# functional programming and LINQ programming. It covers .NET Framework and .NET Core in great detail.”
@@ -165,15 +174,13 @@
         <br>Kerry Jiang<br>MVP
     <li>“After reading the draft version of the book, I found that this book is really a great tutorial. It covers almost everything about LINQ and functional programming with the latest C# language. It is a fundamental and also in-depth book for both beginners and also senior developers who want to have a deep dive into LINQ technologies, functional programming, and building cross platform applications. I highly recommend this book to all of you.”
         <br>Tony Qu<br>MVP
-    <li>“This book offers a comprehensive, in-depth, yet easy-to-understand introduction to functional C# programming and LINQ. Filled with detailed explanations and real-world examples, this book is highly valuable for beginners and experienced developers alike.”
-        <br>Shuang Zhao<br>Assistant Professor, Department of Computer Science, University of California, Irvine
     </li>
 </ul>
-<h1>Contents</h1>
+<h1 id="contents">Contents</h1>
 <p>All code examples are available on <a href="https://github.com/Dixin/CodeSnippets/tree/master/" target="_blank">GitHub</a>, and All contents are available online:</p>
 <ol>
     <li>
-        <h1><a href="https://weblogs.asp.net/dixin/Tags/Introducing%20LINQ" target="_blank">Introduction</a></h1>
+        <h1><a href="https://weblogs.asp.net/dixin/Tags/Introducing%20LINQ" target="_blank">LINQ and Functional Paradigm</a></h1>
         <ol>
             <li>
                 <h2><a href="https://weblogs.asp.net/dixin/linq-via-csharp-introduction" target="_blank">Getting Started</a></h2>
@@ -197,7 +204,7 @@
                             <li>LINQ to DataSets
                             <li>LINQ to Entities
                             <li>LINQ to SQL
-                            <li>LINQ to DocumentDB
+                            <li>LINQ to NoSQL (LINQ to DocumentDB)
                             <li>LINQ to JSON
                             <li>LINQ to Twitter</li>
                         </ul>
@@ -422,19 +429,20 @@
         <h1><a href="https://weblogs.asp.net/dixin/Tags/LINQ%20to%20Objects" target="_blank">LINQ to Objects</a></h1>
         <ol>
             <li>
-                <h2><a href="https://weblogs.asp.net/dixin/understanding-linq-to-objects-1-local-sequential-query" target="_blank">Local Sequential Query</a></h2>
+                <h2><a href="https://weblogs.asp.net/dixin/linq-to-objects-local-sequential-query" target="_blank">Local Sequential Query</a></h2>
                 <ul>
                     <li>Iteration pattern and foreach statement
                     <li>
                         IEnumerable&lt;T&gt; and IEnumerator&lt;T&gt;
                         <ul>
                             <li>EnumerableAssert utility
-                            <li>foreach loop vs. for loop</li>
+                            <li>foreach loop vs. for loop
+                            <li>Non-generic sequence vs. generic sequence</li>
                         </ul>
                     <li>LINQ to Objects queryable types</li>
                 </ul>
             <li>
-                <h2><a href="https://weblogs.asp.net/dixin/understanding-linq-to-objects-2-query-methods-and-query-expressions" target="_blank">Query Methods and Query Expressions</a></h2>
+                <h2><a href="https://weblogs.asp.net/dixin/linq-to-objects-query-methods-operators-and-query-expressions" target="_blank">Query Methods (Operators) and Query Expressions</a></h2>
                 <ul>
                     <li>
                         Return a new IEnumerable&lt;T&gt; sequence
@@ -473,7 +481,7 @@
                     <li>Queries in other languages</li>
                 </ul>
             <li>
-                <h2><a href="https://weblogs.asp.net/dixin/understanding-linq-to-objects-4-generator" target="_blank">Generator</a></h2>
+                <h2><a href="https://weblogs.asp.net/dixin/linq-to-objects-generator" target="_blank">Generator</a></h2>
                 <ul>
                     <li>Implement iterator pattern
                     <li>Generate sequence and iterator
@@ -481,7 +489,7 @@
                     <li>Iterator and generator in other languages</li>
                 </ul>
             <li>
-                <h2><a href="https://weblogs.asp.net/dixin/understanding-linq-to-objects-5-deferred-execution-lazy-evaluation-and-eager-evaluation" target="_blank">Deferred Execution, Lazy Evaluation and Eager Evaluation</a></h2>
+                <h2><a href="https://weblogs.asp.net/dixin/linq-to-objects-deferred-execution-lazy-evaluation-and-eager-evaluation" target="_blank">Deferred Execution, Lazy Evaluation and Eager Evaluation</a></h2>
                 <ul>
                     <li>
                         Deferred execution vs. immediate execution
@@ -491,7 +499,7 @@
                     <li>Lazy evaluation vs. eager evaluation</li>
                 </ul>
             <li>
-                <h2><a href="https://weblogs.asp.net/dixin/understanding-linq-to-objects-6-query-methods-implementation" target="_blank">Query Methods Implementation</a></h2>
+                <h2><a href="https://weblogs.asp.net/dixin/linq-to-objects-query-methods-implementation" target="_blank">Query Methods Implementation</a></h2>
                 <ul>
                     <li>Argument check and deferred execution
                     <li>
@@ -525,7 +533,7 @@
                     </li>
                 </ul>
             <li>
-                <h2><a href="https://weblogs.asp.net/dixin/understanding-linq-to-objects-7-interactive-extensions-ix" target="_blank">Interactive Extensions (Ix)</a></h2>
+                <h2><a href="https://weblogs.asp.net/dixin/linq-to-objects-interactive-extensions-ix" target="_blank">Interactive Extensions (Ix)</a></h2>
                 <ul>
                     <li>
                         Returns a new IEnumerable&lt;T&gt; sequence
@@ -556,7 +564,7 @@
                     </li>
                 </ul>
             <li>
-                <h2><a href="https://weblogs.asp.net/dixin/understanding-linq-to-objects-8-more-useful-queries" target="_blank">More Useful Queries</a></h2>
+                <h2><a href="https://weblogs.asp.net/dixin/linq-to-objects-custom-query-methods" target="_blank">Custom Query Methods</a></h2>
                 <ul>
                     <li>
                         Returns a new IEnumerable&lt;T&gt; sequence (deferred execution)
@@ -604,7 +612,7 @@
                     <li>Deferred construction</li>
                 </ul>
             <li>
-                <h2><a href="https://weblogs.asp.net/dixin/linq-to-xml-2-query-methods" target="_blank">Query Methods</a></h2>
+                <h2><a href="https://weblogs.asp.net/dixin/linq-to-xml-2-query-methods" target="_blank">Query Methods (Operators)</a></h2>
                 <ul>
                     <li>Navigation
                     <li>Ordering
@@ -662,7 +670,7 @@
                     </li>
                 </ul>
             <li>
-                <h2><a href="https://weblogs.asp.net/dixin/parallel-linq-3-query-methods" target="_blank">Query Methods</a></h2>
+                <h2><a href="https://weblogs.asp.net/dixin/parallel-linq-3-query-methods" target="_blank">Query Methods (Operators)</a></h2>
                 <ul>
                     <li>
                         Query settings
@@ -736,7 +744,7 @@
                     <li>Database side tracing with Extended Events</li>
                 </ul>
             <li>
-                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-core-and-linq-to-entities-4-query-methods" target="_blank">Query Methods</a></h2>
+                <h2><a href="https://weblogs.asp.net/dixin/entity-framework-core-and-linq-to-entities-4-query-methods" target="_blank">Query Methods (Operators)</a></h2>
                 <ul>
                     <li>
                         Return a new IQueryable&lt;T&gt; source

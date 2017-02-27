@@ -1,9 +1,11 @@
-﻿namespace Tutorial.Tests
+﻿namespace Tutorial.Tests.LinqToXml
 {
     using System.Linq;
     using System.Xml.Linq;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using Tutorial.LinqToXml;
 
     [TestClass]
     public partial class XExtensionsTests

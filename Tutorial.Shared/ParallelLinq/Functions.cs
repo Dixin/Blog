@@ -2,6 +2,8 @@ namespace Tutorial.ParallelLinq
 {
     using System.Linq;
 
+    using static Tutorial.LinqToObjects.EnumerableX;
+
     internal static class Functions
     {
         internal static int Compute(int value = 0, int iteration = 10_000_000)

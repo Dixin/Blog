@@ -113,9 +113,9 @@
             // }
         }
 
-        internal static void LargeRange()
+        internal static void MaxRange()
         {
-            IEnumerable<int> range = Enumerable.Range(int.MinValue, int.MaxValue); // Define query.
+            IEnumerable<int> range = Enumerable.Range(1, int.MaxValue); // Define query.
         }
 
         internal static void Repeat()

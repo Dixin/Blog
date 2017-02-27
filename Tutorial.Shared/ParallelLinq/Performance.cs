@@ -11,10 +11,11 @@
 
     using Microsoft.ConcurrencyVisualizer.Instrumentation;
 
+    using static Functions;
+    using static Tutorial.LinqToObjects.EnumerableX;
     using static Tutorial.LinqToXml.Modeling;
 
-    using static Functions;
-
+    using EnumerableX = Tutorial.LinqToObjects.EnumerableX;
     using Stopwatch = System.Diagnostics.Stopwatch;
 #else
     using System;
@@ -25,10 +26,11 @@
     using System.Threading;
     using System.Xml.Linq;
 
+    using static Functions;
+    using static Tutorial.LinqToObjects.EnumerableX;
     using static Tutorial.LinqToXml.Modeling;
 
-    using static Functions;
-
+    using EnumerableX = Tutorial.LinqToObjects.EnumerableX;
     using Stopwatch = System.Diagnostics.Stopwatch;
 #endif
 

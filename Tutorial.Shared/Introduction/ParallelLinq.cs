@@ -13,7 +13,7 @@ namespace Tutorial.Introduction
             ParallelQuery<double> query = from int32 in source
                                           where int32 > 0
                                           orderby int32
-                                          select Math.Sqrt(int32); // Create query.
+                                          select Math.Sqrt(int32); // Define query.
             query.ForAll(result => Trace.WriteLine(result)); // Execute query.
         }
 
@@ -24,7 +24,7 @@ namespace Tutorial.Introduction
             ParallelQuery<double> query = source
                 .Where(int32 => int32 > 0)
                 .OrderBy(int32 => int32)
-                .Select(int32 => Math.Sqrt(int32)); // Create query.
+                .Select(int32 => Math.Sqrt(int32)); // Define query.
             query.ForAll(result => Trace.WriteLine(result)); // Execute query.
         }
     }

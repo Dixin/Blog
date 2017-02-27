@@ -1,4 +1,4 @@
-﻿namespace Tutorial
+﻿namespace Tutorial.LinqToXml
 {
     using System;
     using System.Collections.Generic;

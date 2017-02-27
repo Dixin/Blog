@@ -1,11 +1,13 @@
 ﻿namespace Tutorial.Tests.LinqToObjects
 {
-    using System.Linq;
-
     using Tutorial.LinqToObjects;
     using Tutorial.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using System.Reflection;
+
+    using Enumerable = System.Linq.Enumerable;
+    using EnumerableEx = System.Linq.EnumerableEx;
 
     [TestClass]
     public class IteratorPatternTests
@@ -68,6 +70,12 @@
             EnumerableAssert.AreSequentialEqual(
                 Enumerable.Where(enumerable, x => x > 0),
                 IteratorPattern.Where(enumerable, x => x > 0));
+        }
+
+        [TestMethod]
+        public void SequenceTest()
+        {
+            IteratorPattern.NonGenericSequences();
         }
     }
 }

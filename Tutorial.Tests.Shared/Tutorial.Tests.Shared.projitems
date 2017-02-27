@@ -45,7 +45,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\TransactionHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\TransactionTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\TranslationTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)EnumerableXTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\EnumerableXTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introduction\LinqTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Lambda\ChurchAggregateListTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Lambda\ChurchAggregateListWrapperTests.cs" />
@@ -73,7 +73,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ParallelLinq\PerformanceTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParallelLinq\QueryMethods.OrderingTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParallelLinq\QueryMethodsTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)XExtensionsTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)XExtensionsTests.XPath.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToXml\XExtensionsTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToXml\XExtensionsTests.XPath.cs" />
   </ItemGroup>
 </Project>

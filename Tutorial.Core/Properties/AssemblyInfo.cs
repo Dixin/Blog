@@ -6,3 +6,4 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo("Tutorial.Console.Core")]
 [assembly: InternalsVisibleTo("Tutorial.FSharp.Core")]
 [assembly: InternalsVisibleTo("Tutorial.Tests.Core")]
+[assembly: InternalsVisibleTo("Tutorial.Tests.External.Core")]

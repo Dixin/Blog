@@ -7,6 +7,9 @@
     using System.Runtime.CompilerServices;
 
     using CustomLinq = Tutorial.LinqToObjects.EnumerableExtensions;
+    using EnumerableX = Tutorial.LinqToObjects.EnumerableX;
+
+    using static Tutorial.LinqToObjects.EnumerableX;
 
     public static partial class EnumerableExtensions
     {

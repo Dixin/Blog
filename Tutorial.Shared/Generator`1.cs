@@ -26,27 +26,44 @@
 
         private readonly Action end;
 
+        private readonly bool ignoreException;
+
         public Iterator(
-            IteratorState state = IteratorState.Create,
             Action start = null,
             Func<bool> moveNext = null,
             Func<T> getCurrent = null,
             Action dispose = null,
-            Action end = null)
+            Action end = null,
+            bool ignoreException = false,
+            bool resetCurrentForEnd = false)
         {
-            this.State = state;
             this.start = start ?? (() => { });
             this.moveNext = moveNext ?? (() => false);
             this.getCurrent = getCurrent ?? (() => default(T));
-            this.dispose = dispose ?? (() => { });
+            this.dispose = dispose = dispose ?? (() => { });
             this.end = end ?? (() => { });
+            this.ignoreException = ignoreException;
+            if (resetCurrentForEnd)
+            {
+                this.dispose = () =>
+                {
+                    dispose();
+                    this.Current = default(T);
+                };
+            }
         }
 
         public T Current { get; private set; }
 
         object IEnumerator.Current => this.Current;
 
-        internal IteratorState State { get; private set; } // IteratorState: Create.
+        internal IteratorState State { get; private set; } = IteratorState.Create; // IteratorState: Create.
+
+        internal Iterator<T> Start()
+        {
+            this.State = IteratorState.Start;  // IteratorState: Create => Start.
+            return this;
+        }
 
         public bool MoveNext()
         {
@@ -68,12 +85,11 @@
                         this.State = IteratorState.End; // IteratorState: MoveNext => End.
                         this.dispose();
                         this.end();
-                        return false;
-                    default:
-                        return false;
+                        break;
                 }
+                return false;
             }
-            catch // IteratorState: Start, MoveNext, End => End.
+            catch when (!this.ignoreException) // IteratorState: Start, MoveNext, End => End.
             {
                 this.State = IteratorState.Error;
                 this.Dispose();
@@ -91,7 +107,6 @@
                 }
                 finally
                 {
-                    // https://msdn.microsoft.com/en-us/library/ty8d3wta.aspx
                     // Unexecuted finally blocks are executed before the thread is aborted.
                     this.State = IteratorState.End; // IteratorState: Error => End.
                     this.dispose();
@@ -100,48 +115,22 @@
         }
 
         public void Reset() => throw new NotSupportedException();
-
-        internal Iterator<T> SetStateToStart()
-        {
-            this.State = IteratorState.Start;  // IteratorState: Create => Start.
-            return this;
-        }
     }
 
     public class Sequence<T, TData> : IEnumerable<T>
     {
-        private readonly int initialThreadId = Environment.CurrentManagedThreadId;
-
         private readonly TData data;
 
         private readonly Func<TData, Iterator<T>> iteratorFactory;
 
-        public Sequence(TData data, Func<TData, Iterator<T>> iteratorFactory)
+        public Sequence(Func<TData, Iterator<T>> iteratorFactory, TData data = default(TData))
         {
             this.data = data;
             this.iteratorFactory = iteratorFactory;
-            this.InitialIterator = iteratorFactory(data);
         }
 
-        internal Iterator<T> InitialIterator { get; }
-
-        public IEnumerator<T> GetEnumerator()
-        {
-            Iterator<T> iterator;
-            if (this.InitialIterator.State == IteratorState.Create
-                && this.initialThreadId == Environment.CurrentManagedThreadId)
-            {
-                // Where called by the same thread and iteration is not started, reuse the same iterator.
-                iterator = this.InitialIterator;
-            }
-            else
-            {
-                // If the iteration is already started, or the iteration is requested from a different thread, return a new iterator.
-                iterator = this.iteratorFactory(this.data);
-            }
-            iterator.SetStateToStart(); // IteratorState: Create => Start.
-            return iterator;
-        }
+        public IEnumerator<T> GetEnumerator() =>
+            this.iteratorFactory(this.data).Start(); // IteratorState: Create => Start.
 
         IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
     }
@@ -152,22 +141,45 @@
 
     public class Generator<T, TData> : IGenerator<T>
     {
-        private readonly Sequence<T, TData> sequence;
+        private readonly int initialThreadId = Environment.CurrentManagedThreadId;
 
-        public Generator(TData data, Func<TData, Iterator<T>> iteratorFactory) => 
-            this.sequence = new Sequence<T, TData>(data, iteratorFactory);
+        private readonly TData data;
 
-        public IEnumerator<T> GetEnumerator() => this.sequence.GetEnumerator();
+        private readonly Func<TData, Iterator<T>> iteratorFactory;
+
+        private Iterator<T> iterator;
+
+        public Generator(Func<TData, Iterator<T>> iteratorFactory, TData data = default(TData))
+        {
+            this.iteratorFactory = iteratorFactory;
+            this.data = data;
+            this.iterator = iteratorFactory(data);
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            if (this.iterator.State == IteratorState.Create
+                && this.initialThreadId == Environment.CurrentManagedThreadId)
+            {
+                // Where called by the same thread and iteration is not started, reuse the same iterator.
+                this.iterator.Start();
+                return this;
+            }
+            // If the iteration is already started, or the iteration is requested from a different thread, return a new iterator.
+            Generator<T, TData> generator = new Generator<T, TData>(this.iteratorFactory, this.data);
+            generator.iterator.Start();
+            return generator;
+        }
 
         IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
 
-        public void Dispose() => this.sequence.InitialIterator.Dispose();
+        public void Dispose() => this.iterator.Dispose();
 
-        public bool MoveNext() => this.sequence.InitialIterator.MoveNext();
+        public bool MoveNext() => this.iterator.MoveNext();
 
-        public void Reset() => this.sequence.InitialIterator.Reset();
+        public void Reset() => this.iterator.Reset();
 
-        public T Current => this.sequence.InitialIterator.Current;
+        public T Current => this.iterator.Current;
 
         object IEnumerator.Current => this.Current;
     }

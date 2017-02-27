@@ -5,48 +5,61 @@ namespace Tutorial.LinqToObjects
     using System.Collections.Generic;
     using System.Linq;
 
-    internal class Lookup<TKey, TElement> : ILookup<TKey, TElement>
+    public partial class Lookup<TKey, TElement> : ILookup<TKey, TElement>
     {
-        private readonly IDictionary<TKey, IGrouping<TKey, TElement>> groupsWithNonNullKey;
+        private readonly Dictionary<int, Grouping<TKey, TElement>> groups =
+            new Dictionary<int, Grouping<TKey, TElement>>();
 
-        private readonly IGrouping<TKey, TElement> groupWithNullKey;
+        private readonly IEqualityComparer<TKey> eqqualityComparer;
 
-        private readonly bool hasGroupWithNullKey;
+        public Lookup(IEqualityComparer<TKey> eqqualityComparer = null) =>
+            this.eqqualityComparer = eqqualityComparer ?? EqualityComparer<TKey>.Default;
 
-        internal Lookup(
-            IDictionary<TKey, IGrouping<TKey, TElement>> groupsWithNonNullKey, 
-            IGrouping<TKey, TElement> groupWithNullKey, 
-            bool hasElementWithNullKey)
-        {
-            this.groupsWithNonNullKey = groupsWithNonNullKey;
-            this.groupWithNullKey = groupWithNullKey; // Dictionary<TKey, TElement> does not support null key.
-            this.hasGroupWithNullKey = hasElementWithNullKey;
-            this.Count = this.groupsWithNonNullKey.Count + (this.hasGroupWithNullKey ? 1 : 0);
-        }
+        private int GetHashCode(TKey key) => key == null
+            ? -1
+            : this.eqqualityComparer.GetHashCode(key) & int.MaxValue;
+        // int.MaxValue is 0b01111111_11111111_11111111_11111111. So the result of & is always > -1.
 
-        public IEnumerator<IGrouping<TKey, TElement>> GetEnumerator()
-        {
-            foreach (IGrouping<TKey, TElement> group in this.groupsWithNonNullKey.Values)
-            {
-                yield return group; // Generator implements both IEnumerable<T> and IEnumerator<T>.
-            }
-
-            if (this.hasGroupWithNullKey)
-            {
-                yield return this.groupWithNullKey; // Generator implements both IEnumerable<T> and IEnumerator<T>.
-            }
-        }
+        public IEnumerator<IGrouping<TKey, TElement>> GetEnumerator() => this.groups.Values.GetEnumerator();
 
         IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
 
-        public bool Contains
-            (TKey key) => key == null ? this.hasGroupWithNullKey : this.groupsWithNonNullKey.ContainsKey(key);
+        public bool Contains(TKey key) => this.groups.ContainsKey(this.GetHashCode(key));
 
-        public int Count { get; }
+        public int Count => this.groups.Count;
 
-        public IEnumerable<TElement> this[TKey key] => this.Contains(key)
-            ? (key == null ? this.groupWithNullKey : this.groupsWithNonNullKey[key])
-            // When key does not exist in lookup, return an empty sequence.
-            : (IEnumerable<TElement>)Array.Empty<TElement>();
+        public IEnumerable<TElement> this[TKey key] =>
+            this.groups.TryGetValue(this.GetHashCode(key), out Grouping<TKey, TElement> group)
+                ? (IEnumerable<TElement>)group
+                : Array.Empty<TElement>();
+    }
+
+    public partial class Lookup<TKey, TElement> : ILookup<TKey, TElement>
+    {
+        public Lookup<TKey, TElement> AddRange<TSource>(
+            IEnumerable<TSource> source,
+            Func<TSource, TKey> keySelector,
+            Func<TSource, TElement> elementSelector,
+            bool skipNullKey = false)
+        {
+            foreach (TSource value in source)
+            {
+                TKey key = keySelector(value);
+                if (key == null && skipNullKey)
+                {
+                    continue;
+                }
+                int hashCOde = this.GetHashCode(key);
+                if (this.groups.TryGetValue(hashCOde, out Grouping<TKey, TElement> group))
+                {
+                    group.Add(elementSelector(value));
+                }
+                else
+                {
+                    this.groups.Add(hashCOde, new Grouping<TKey, TElement>(key) { elementSelector(value) });
+                }
+            }
+            return this;
+        }
     }
 }

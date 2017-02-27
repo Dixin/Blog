@@ -8,6 +8,8 @@
     using System.Data.Entity.Core.Common.CommandTrees;
     using System.Data.SqlClient;
     using System.Linq;
+
+    using static Tutorial.LinqToObjects.EnumerableX;
 #else
     using System;
     using System.Collections.Generic;
@@ -27,7 +29,6 @@
         {
             IEnumerator<TEntity> entityIterator = null;
             return new Iterator<TEntity>(
-                state: IteratorState.Start,
                 start: () =>
                 {
                     "| |_Compile LINQ expression tree to database expression tree.".WriteLine();
@@ -47,7 +48,7 @@
                     return entityIterator.Current;
                 },
                 dispose: () => entityIterator.Dispose(),
-                end: () => "  |_End.".WriteLine());
+                end: () => "  |_End.".WriteLine()).Start();
         }
 #else
         public static IEnumerator<TEntity> GetEntityIterator<TEntity>(
@@ -59,7 +60,6 @@
 
             IEnumerator<TEntity> entityIterator = null;
             return new Iterator<TEntity>(
-                state: IteratorState.Start,
                 start: () =>
                 {
                     "| |_Generate SQL from database expression tree.".WriteLine();
@@ -79,7 +79,7 @@
                     return entityIterator.Current;
                 },
                 dispose: () => entityIterator.Dispose(),
-                end: () => "  |_End.".WriteLine());
+                end: () => "  |_End.".WriteLine()).Start();
         }
 #endif
     }

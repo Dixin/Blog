@@ -69,11 +69,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\Transactions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\Translation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\Views.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)EnumerableX.Compare.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)EnumerableX.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)EnumerableX.Exception.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)EnumerableX.List.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Generator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\EnumerableX.Compare.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\EnumerableX.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\EnumerableX.Exception.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\EnumerableX.List.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Generator`1.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introduction\Declarative.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introduction\Functional.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introduction\Functions.cs" />
@@ -113,6 +113,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\EnumerableExtensions.Linq.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\EnumerableExtensions.Order.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\Generator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\Grouping`2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\HashSet`1.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\IteratorPattern.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\Lookup`1.cs" />
@@ -134,7 +135,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ParallelLinq\Visualizer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)EnumerableAssert.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TraceExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)XExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToXml\XExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="$(MSBuildThisFileDirectory)Blog.htm" />

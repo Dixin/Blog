@@ -15,6 +15,8 @@
     using FuncExtensions = Tutorial.CategoryTheory.FuncExtensions;
     using TaskExtensions = Tutorial.CategoryTheory.TaskExtensions;
 
+    using static Tutorial.LinqToObjects.EnumerableX;
+
     [TestClass]
     public class MonadTests
     {

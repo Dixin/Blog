@@ -9,9 +9,10 @@ namespace Tutorial.ParallelLinq
 
     using Microsoft.ConcurrencyVisualizer.Instrumentation;
 
-    using static Functions;
-
     using Stopwatch = System.Diagnostics.Stopwatch;
+
+    using static Functions;
+    using static Tutorial.LinqToObjects.EnumerableX;
 #else
     using System;
     using System.Collections.Generic;
@@ -19,9 +20,10 @@ namespace Tutorial.ParallelLinq
     using System.Reflection;
     using System.Threading;
 
-    using static Functions;
-
     using Stopwatch = System.Diagnostics.Stopwatch;
+
+    using static Functions;
+    using static Tutorial.LinqToObjects.EnumerableX;
 #endif
 
     internal static partial class QueryMethods

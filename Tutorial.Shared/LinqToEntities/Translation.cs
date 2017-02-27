@@ -300,8 +300,7 @@
             return commandDefinition.CreateCommand();
             // SqlVersion sqlVersion = ((SqlProviderManifest)itemCollection.ProviderManifest).SqlVersion;
             // SqlGenerator sqlGenerator = new SqlGenerator(sqlVersion);
-            // HashSet<string> paramsToForceNonUnicode;
-            // string sql = sqlGenerator.GenerateSql(commandTree, out paramsToForceNonUnicode)
+            // string sql = sqlGenerator.GenerateSql(commandTree, HashSet<string> out paramsToForceNonUnicode)
         }
     }
 

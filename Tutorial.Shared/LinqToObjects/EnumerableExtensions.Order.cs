@@ -49,7 +49,7 @@
 
         private readonly Func<TSource, TKey> keySelector;
 
-        private readonly Func<TSource[], Comparison<int>> previousGetComparison; // Comparison<int> is Func<int, int, int>.
+        private readonly Func<TSource[], Func<int, int, int>> previousGetComparison;
 
         internal OrderedSequence(
             IEnumerable<TSource> source,
@@ -60,7 +60,7 @@
             // previousGetComparison is only specified in CreateOrderedEnumerable, 
             // and CreateOrderedEnumerable is only called by ThenBy/ThenByDescending.
             // When OrderBy/OrderByDescending is called, previousGetComparison is not specified.
-            Func<TSource[], Comparison<int>> previousGetComparison = null) // Comparison<int> is Func<int, int, int>.
+            Func<TSource[], Func<int, int, int>> previousGetComparison = null)
         {
             this.source = source;
             this.keySelector = keySelector;
@@ -85,7 +85,7 @@
             }
 
             // GetComparison is only called once for each generator instance.
-            Comparison<int> comparison = this.GetComparison(values); // Comparison<int> is Func<int, int, int>.
+            Func<int, int, int> comparison = this.GetComparison(values);
             Array.Sort(indexMap, (index1, index2) => // index1 < index2
                 {
                     // Format the compareResult. 
@@ -121,7 +121,7 @@
             return keys;
         }
 
-        private Comparison<int> GetComparison(TSource[] values) // Comparison<int> is Func<int, int, int>.
+        private Func<int, int, int> GetComparison(TSource[] values)
         {
             // GetComparison is only called once for each generator instance,
             // so GetKeys is only called once during the ordering query execution.
@@ -135,7 +135,7 @@
             }
 
             // In ThenBy/ThenByDescending.
-            Comparison<int> previousComparison = this.previousGetComparison(values);
+            Func<int, int, int> previousComparison = this.previousGetComparison(values);
             return (index1, index2) =>
             {
                 // Only when previousCompareResult is equal, 

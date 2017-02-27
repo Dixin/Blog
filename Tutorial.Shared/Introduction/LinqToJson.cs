@@ -22,7 +22,7 @@
                     from post in source
                     where post["tags"].Any(tag => "Microsoft".Equals((string)tag, StringComparison.OrdinalIgnoreCase))
                     orderby (DateTime)post["date"]
-                    select (string)post["summary"]; // Create query.
+                    select (string)post["summary"]; // Define query.
                 foreach (string result in query) // Execute query.
                 {
                     Trace.WriteLine(result);
@@ -44,7 +44,7 @@
                     .Where(post => post["tags"].Any(tag => 
                         "Microsoft".Equals((string)tag, StringComparison.OrdinalIgnoreCase)))
                     .OrderBy(post => (DateTime)post["date"])
-                    .Select(post => (string)post["summary"]); // Create query.
+                    .Select(post => (string)post["summary"]); // Define query.
                 foreach (string result in query) // Execute query.
                 {
                     Trace.WriteLine(result);

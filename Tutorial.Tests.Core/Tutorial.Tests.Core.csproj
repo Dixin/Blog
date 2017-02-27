@@ -6,10 +6,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.1.0" />
     <PackageReference Include="Microsoft.FSharp.Core.netcore" Version="1.0.0-alpha-161205" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0-preview-20170106-08" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
     <PackageReference Include="Mono.Cecil" Version="0.10.0-beta1-v2" />
-    <PackageReference Include="MSTest.TestAdapter" Version="1.1.8-rc" />
-    <PackageReference Include="MSTest.TestFramework" Version="1.0.8-rc" />
+    <PackageReference Include="MSTest.TestAdapter" Version="1.1.12" />
+    <PackageReference Include="MSTest.TestFramework" Version="1.1.11" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Tutorial.Core\Tutorial.Core.csproj" />

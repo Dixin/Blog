@@ -198,55 +198,32 @@
         }
     }
 
-    public static partial class TypeExtensions
-    {
-        public static bool IsAssignableTo(this Type from, Type to)
-        {
-            if (to.GetTypeInfo().IsAssignableFrom(from))
-            {
-                return true;
-            }
-
-            if (!to.GetTypeInfo().IsGenericTypeDefinition)
-            {
-                return false;
-            }
-
-            if (from.GetTypeInfo().IsGenericType && from.GetGenericTypeDefinition() == to)
-            {
-                return true; // Collection<int> is assignable to Collection<>.
-            }
-
-            if (to.GetTypeInfo().IsInterface && from.GetTypeInfo().GetInterfaces().Any(
-                @interface => @interface.GetTypeInfo().IsGenericType && @interface.GetGenericTypeDefinition() == to))
-            {
-                return true; // Collection<>/Collection<int> assignable to IEnumerable<>/ICollection<>.
-            }
-
-            Type baseOfFrom = from.GetTypeInfo().BaseType;
-            return baseOfFrom != null && IsAssignableTo(baseOfFrom, to);
-        }
-    }
-
     internal static partial class IteratorPattern
     {
-        internal static IEnumerable<Type> NonGenericSequences(Assembly assembly)
+        internal static void NonGenericSequences()
         {
             Type nonGenericEnumerable = typeof(IEnumerable);
             Type genericEnumerable = typeof(IEnumerable<>);
-            return assembly
+            IEnumerable<Type> nonGenericSequences = typeof(object).GetTypeInfo().Assembly // Core library.
                 .GetExportedTypes()
-                .Where(type => type != nonGenericEnumerable && nonGenericEnumerable.GetTypeInfo().IsAssignableFrom(type))
-                .Except(assembly.GetExportedTypes().Where(type => type.IsAssignableTo(genericEnumerable)))
-                .OrderBy(type => type.FullName);
-        }
-
-        internal static void NonGenericSequences()
-        {
-            foreach (Type nonGenericSequence in NonGenericSequences(typeof(object).GetTypeInfo().Assembly)) // Core library.
+                .Where(type =>
+                {
+                    if (type == nonGenericEnumerable || type == genericEnumerable)
+                    {
+                        return false;
+                    }
+                    Type[] interfaces = type.GetInterfaces();
+                    return interfaces.Any(@interface => @interface == nonGenericEnumerable)
+                        && !interfaces.Any(@interface =>
+                            @interface.GetTypeInfo().IsGenericType
+                            && @interface.GetGenericTypeDefinition() == genericEnumerable);
+                })
+                .OrderBy(type => type.FullName); // Define query.
+            foreach (Type nonGenericSequence in nonGenericSequences) // Execute query.
             {
-                // Console.WriteLine(nonGenericSequence.FullName);
+                nonGenericSequence.FullName.WriteLine();
             }
+#if NETFX
             // System.Array
             // System.Collections.ArrayList
             // System.Collections.BitArray
@@ -278,82 +255,16 @@
             // System.Security.Policy.ApplicationTrustCollection
             // System.Security.Policy.Evidence
             // System.Security.ReadOnlyPermissionSet
-
-            foreach (Type nonGenericSequence in NonGenericSequences(typeof(Uri).GetTypeInfo().Assembly)) // System.dll.
-            {
-                nonGenericSequence.FullName.WriteLine();
-            }
-            // System.CodeDom.CodeAttributeArgumentCollection
-            // System.CodeDom.CodeAttributeDeclarationCollection
-            // System.CodeDom.CodeCatchClauseCollection
-            // System.CodeDom.CodeCommentStatementCollection
-            // System.CodeDom.CodeDirectiveCollection
-            // System.CodeDom.CodeExpressionCollection
-            // System.CodeDom.CodeNamespaceCollection
-            // System.CodeDom.CodeNamespaceImportCollection
-            // System.CodeDom.CodeParameterDeclarationExpressionCollection
-            // System.CodeDom.CodeStatementCollection
-            // System.CodeDom.CodeTypeDeclarationCollection
-            // System.CodeDom.CodeTypeMemberCollection
-            // System.CodeDom.CodeTypeParameterCollection
-            // System.CodeDom.CodeTypeReferenceCollection
-            // System.CodeDom.Compiler.CompilerErrorCollection
-            // System.CodeDom.Compiler.TempFileCollection
-            // System.Collections.Specialized.HybridDictionary
-            // System.Collections.Specialized.IOrderedDictionary
-            // System.Collections.Specialized.ListDictionary
-            // System.Collections.Specialized.NameObjectCollectionBase
-            // System.Collections.Specialized.NameObjectCollectionBase + KeysCollection
-            // System.Collections.Specialized.NameValueCollection
-            // System.Collections.Specialized.OrderedDictionary
-            // System.Collections.Specialized.StringCollection
-            // System.Collections.Specialized.StringDictionary
-            // System.ComponentModel.AttributeCollection
-            // System.ComponentModel.ComponentCollection
-            // System.ComponentModel.Design.DesignerCollection
-            // System.ComponentModel.Design.DesignerOptionService + DesignerOptionCollection
-            // System.ComponentModel.Design.DesignerVerbCollection
-            // System.ComponentModel.EventDescriptorCollection
-            // System.ComponentModel.IBindingList
-            // System.ComponentModel.IBindingListView
-            // System.ComponentModel.ListSortDescriptionCollection
-            // System.ComponentModel.PropertyDescriptorCollection
-            // System.ComponentModel.TypeConverter + StandardValuesCollection
-            // System.Configuration.ConfigXmlDocument
-            // System.Configuration.SchemeSettingElementCollection
-            // System.Configuration.SettingElementCollection
-            // System.Configuration.SettingsAttributeDictionary
-            // System.Configuration.SettingsContext
-            // System.Configuration.SettingsPropertyCollection
-            // System.Configuration.SettingsPropertyValueCollection
-            // System.Configuration.SettingsProviderCollection
-            // System.Diagnostics.CounterCreationDataCollection
-            // System.Diagnostics.EventLogEntryCollection
-            // System.Diagnostics.EventLogPermissionEntryCollection
-            // System.Diagnostics.InstanceDataCollection
-            // System.Diagnostics.InstanceDataCollectionCollection
-            // System.Diagnostics.PerformanceCounterPermissionEntryCollection
-            // System.Diagnostics.ProcessModuleCollection
-            // System.Diagnostics.ProcessThreadCollection
-            // System.Diagnostics.TraceListenerCollection
-            // System.Net.Configuration.AuthenticationModuleElementCollection
-            // System.Net.Configuration.BypassElementCollection
-            // System.Net.Configuration.ConnectionManagementElementCollection
-            // System.Net.Configuration.WebRequestModuleElementCollection
-            // System.Net.CookieCollection
-            // System.Net.CredentialCache
-            // System.Net.WebHeaderCollection
-            // System.Security.Authentication.ExtendedProtection.Configuration.ServiceNameElementCollection
-            // System.Security.Authentication.ExtendedProtection.ServiceNameCollection
-            // System.Security.Cryptography.AsnEncodedDataCollection
-            // System.Security.Cryptography.OidCollection
-            // System.Security.Cryptography.X509Certificates.X509Certificate2Collection
-            // System.Security.Cryptography.X509Certificates.X509CertificateCollection
-            // System.Security.Cryptography.X509Certificates.X509ChainElementCollection
-            // System.Security.Cryptography.X509Certificates.X509ExtensionCollection
-            // System.Text.RegularExpressions.CaptureCollection
-            // System.Text.RegularExpressions.GroupCollection
-            // System.Text.RegularExpressions.MatchCollection
+#else
+            // System.Array
+            // System.Collections.BitArray
+            // System.Collections.CollectionBase
+            // System.Collections.ICollection
+            // System.Collections.IDictionary
+            // System.Collections.IList
+            // System.Resources.IResourceReader
+            // System.Resources.ResourceSet
+#endif
         }
     }
 }

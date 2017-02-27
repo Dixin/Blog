@@ -10,14 +10,14 @@
                 data: false, // bool isValueIterated = false;
                 iteratorFactory: isValueIterated => new Iterator<TSource>(
                     moveNext: () =>
+                    {
+                        while (!isValueIterated)
                         {
-                            while (!isValueIterated)
-                            {
-                                isValueIterated = true;
-                                return true;
-                            }
-                            return false;
-                        },
+                            isValueIterated = true;
+                            return true;
+                        }
+                        return false;
+                    },
                     getCurrent: () => value));
     }
 
@@ -80,7 +80,6 @@
         internal static IEnumerable<TResult> Select<TSource, TResult>(
                 IEnumerable<TSource> source, Func<TSource, TResult> selector) =>
             new Sequence<TResult, IEnumerator<TSource>>(
-                data: null, // IEnumerator<TSource> sourceIterator = null;
                 iteratorFactory: sourceIterator => new Iterator<TResult>(
                     start: () => sourceIterator = source.GetEnumerator(),
                     moveNext: () => sourceIterator.MoveNext(),
@@ -117,12 +116,11 @@
         }
 
         internal static IEnumerable<TSource> Where<TSource>(
-                IEnumerable<TSource> source, Func<TSource, bool> predicate) =>
-            new Sequence<TSource, IEnumerator<TSource>>(
-                data: null, // IEnumerator<TSource> sourceIterator = null;
-                iteratorFactory: sourceIterator => new Iterator<TSource>(
-                    start: () => sourceIterator = source.GetEnumerator(),
-                    moveNext: () =>
+            IEnumerable<TSource> source, Func<TSource, bool> predicate) =>
+                new Sequence<TSource, IEnumerator<TSource>>(
+                    iteratorFactory: sourceIterator => new Iterator<TSource>(
+                        start: () => sourceIterator = source.GetEnumerator(),
+                        moveNext: () =>
                         {
                             while (sourceIterator.MoveNext())
                             {
@@ -133,8 +131,8 @@
                             }
                             return false;
                         },
-                    getCurrent: () => sourceIterator.Current,
-                    dispose: () => sourceIterator?.Dispose()));
+                        getCurrent: () => sourceIterator.Current,
+                        dispose: () => sourceIterator?.Dispose()));
 
         internal static void CompiledForEachWhere<TSource>(
             IEnumerable<TSource> source, Func<TSource, bool> predicate)
@@ -403,7 +401,6 @@
         {
             bool isValueIterated = false;
             return new Iterator<TSource>(
-                state: IteratorState.Start,
                 moveNext: () =>
                 {
                     while (!isValueIterated)
@@ -413,16 +410,15 @@
                     }
                     return false;
                 },
-                getCurrent: () => value);
+                getCurrent: () => value).Start();
         }
 
         internal static IEnumerator<TSource> CompiledRepeatIterator<TSource>(TSource value, int count)
         {
             int index = 0;
             return new Iterator<TSource>(
-                state: IteratorState.Start,
                 moveNext: () => index++ < count,
-                getCurrent: () => value);
+                getCurrent: () => value).Start();
         }
 
         internal static IEnumerator<TResult> CompiledSelectIterator<TSource, TResult>(
@@ -430,11 +426,10 @@
         {
             IEnumerator<TSource> sourceIterator = null;
             return new Iterator<TResult>(
-                state: IteratorState.Start,
                 start: () => sourceIterator = source.GetEnumerator(),
                 moveNext: () => sourceIterator.MoveNext(),
                 getCurrent: () => selector(sourceIterator.Current),
-                dispose: () => sourceIterator?.Dispose());
+                dispose: () => sourceIterator?.Dispose()).Start();
         }
 
         internal static IEnumerator<TSource> CompiledWhereIterator<TSource>(
@@ -442,7 +437,6 @@
         {
             IEnumerator<TSource> sourceIterator = null;
             return new Iterator<TSource>(
-                state: IteratorState.Start,
                 start: () => sourceIterator = source.GetEnumerator(),
                 moveNext: () =>
                 {
@@ -456,7 +450,7 @@
                     return false;
                 },
                 getCurrent: () => sourceIterator.Current,
-                dispose: () => sourceIterator?.Dispose());
+                dispose: () => sourceIterator?.Dispose()).Start();
         }
     }
 }

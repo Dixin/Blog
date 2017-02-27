@@ -1,4 +1,4 @@
-﻿namespace Tutorial
+﻿namespace Tutorial.LinqToObjects
 {
     using System;
     using System.Collections.Generic;

@@ -39,7 +39,6 @@
             }
         }
 
-#if NETFX
         [TestMethod]
         public void RetryTest()
         {
@@ -59,7 +58,6 @@
                 .ToArray();
             EnumerableAssert.AreSequentialEqual(new int[] { 5, 6 }, retry);
         }
-#endif
 
         [TestMethod]
         public void InsertTest()

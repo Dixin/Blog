@@ -22,7 +22,7 @@ namespace Tutorial.Introduction
                 EnumerableRowCollection<string> query = source
                     .Where(product => product.Field<int>("ProductSubcategoryID") == 1)
                     .OrderBy(product => product.Field<decimal>("ListPrice"))
-                    .Select(product => product.Field<string>("Name")); // Create query.
+                    .Select(product => product.Field<string>("Name")); // Define query.
                 foreach (string result in query) // Execute query.
                 {
                     Trace.WriteLine(result);
@@ -47,7 +47,7 @@ namespace Tutorial.Introduction
                 EnumerableRowCollection<string> query = from product in source
                     where product.Field<int>("ProductSubcategoryID") == 1
                     orderby product.Field<decimal>("ListPrice")
-                    select product.Field<string>("Name"); // Create query.
+                    select product.Field<string>("Name"); // Define query.
                 foreach (string result in query) // Execute query.
                 {
                     Trace.WriteLine(result);

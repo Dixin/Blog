@@ -590,7 +590,7 @@
             T result = await ReturnFuncAwaitable(value);
         }
 
-        private static IDictionary<string, byte[]> cache = 
+        private static Dictionary<string, byte[]> cache = 
             new Dictionary<string, byte[]>(StringComparer.OrdinalIgnoreCase);
 
         internal static async Task<byte[]> DownloadAsyncTask(string uri)

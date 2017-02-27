@@ -1,4 +1,4 @@
-﻿namespace Tutorial
+﻿namespace Tutorial.LinqToObjects
 {
     using System;
     using System.Collections;
@@ -15,18 +15,26 @@
 
         public static IEnumerable<TResult> Create<TResult>(Func<TResult> valueFactory, int? count = null)
         {
-            if (count == null)
+            if (count < 0)
             {
-                while (true)
-                {
-                    yield return valueFactory();
-                }
+                throw new ArgumentOutOfRangeException(nameof(count));
             }
 
-            for (int index = 0; index < count; index++)
+            IEnumerable<TResult> CreateGenerator()
             {
-                yield return valueFactory();
+                if (count == null)
+                {
+                    while (true)
+                    {
+                        yield return valueFactory();
+                    }
+                }
+                for (int index = 0; index < count; index++)
+                {
+                    yield return valueFactory(); // Deferred execution.
+                }
             }
+            return CreateGenerator();
         }
 
         public static IEnumerable<int> RandomInt32(int min = int.MinValue, int max = int.MaxValue, Random random = null)
@@ -280,23 +288,6 @@
 
         public static bool IsNotNullOrEmpty<TSource>(this IEnumerable<TSource> source) => source != null && source.Any();
 
-        public static bool ContainsAny<TSource>(
-            this IEnumerable<TSource> source,
-            IEnumerable<TSource> values,
-            IEqualityComparer<TSource> comparer = null)
-        {
-            TSource[] valuesCache = null;
-            return source.Any(value => (valuesCache ?? (valuesCache = values.ToArray())).Contains(value, comparer));
-        }
-
-        public static bool ContainsAll<TSource>(
-            this IEnumerable<TSource> source,
-            IEnumerable<TSource> values,
-            IEqualityComparer<TSource> comparer = null)
-        {
-            TSource[] sourceCache = null;
-            return values.All(value => (sourceCache ?? (sourceCache = source.ToArray())).Contains(value, comparer));
-        }
         #endregion
 
         #region Iteration

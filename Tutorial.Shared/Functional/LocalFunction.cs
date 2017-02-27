@@ -314,7 +314,7 @@
         internal static void Reference()
         {
             // https://msdn.microsoft.com/en-us/library/System.Array.aspx
-            byte[] shortLife = new byte[0X7FFFFFC7]; // Local variable of large array.
+            byte[] shortLife = new byte[0X7FFFFFC7]; // Local variable of large array (Array.MaxByteArrayLength).
             // ...
             void LocalFunction()
             {
@@ -346,7 +346,7 @@
 
         internal static void CompiledReference()
         {
-            byte[] shortLife = new byte[0X7FFFFFC7]; // Local variable of large array.
+            byte[] shortLife = new byte[0X7FFFFFC7]; // Local variable of large array (Array.MaxByteArrayLength).
             // ...
             Display3 display = new Display3();
             display.ShortLife = shortLife;

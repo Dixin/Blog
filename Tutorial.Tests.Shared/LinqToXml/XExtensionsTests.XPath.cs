@@ -1,4 +1,4 @@
-namespace Tutorial.Tests
+namespace Tutorial.Tests.LinqToXml
 {
     using System.Collections.Generic;
     using System.Linq;
@@ -6,6 +6,8 @@ namespace Tutorial.Tests
     using System.Xml.XPath;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using Tutorial.LinqToXml;
 
     public partial class XExtensionsTests
     {

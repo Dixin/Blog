@@ -5,6 +5,8 @@
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+    using static Tutorial.LinqToObjects.EnumerableX;
+
 #if DEMO
     public static partial class EnumerableAssert
     {
