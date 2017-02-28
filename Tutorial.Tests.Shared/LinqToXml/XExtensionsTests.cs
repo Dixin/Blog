@@ -7,6 +7,8 @@
 
     using Tutorial.LinqToXml;
 
+    using EnumerableAssert = Tutorial.LinqToObjects.EnumerableAssert;
+
     [TestClass]
     public partial class XExtensionsTests
     {

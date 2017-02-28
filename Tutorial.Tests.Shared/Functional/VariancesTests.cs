@@ -2,11 +2,12 @@
 {
     using System.Collections.Generic;
     using Tutorial.Functional;
-    using Tutorial.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     using Mono.Cecil;
+
+    using EnumerableAssert = Tutorial.LinqToObjects.EnumerableAssert;
 
     [TestClass]
     public class VariancesTests

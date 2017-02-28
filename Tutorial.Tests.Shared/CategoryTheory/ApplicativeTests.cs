@@ -6,10 +6,10 @@
     using System.Threading.Tasks;
 
     using Tutorial.CategoryTheory;
-    using Tutorial.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+    using EnumerableAssert = Tutorial.LinqToObjects.EnumerableAssert;
     using FuncExtensions = Tutorial.CategoryTheory.FuncExtensions;
 
     internal static class Functions<TSource, TMiddle, TResult>

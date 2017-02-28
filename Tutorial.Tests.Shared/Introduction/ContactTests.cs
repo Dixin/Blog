@@ -4,11 +4,12 @@
     using System.ComponentModel.DataAnnotations;
     using System.Linq;
 
-    using Tutorial;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    
     using Tutorial.Introduction;
     using Tutorial.Resources;
 
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using EnumerableAssert = Tutorial.LinqToObjects.EnumerableAssert;
 
     [TestClass]
     public class ContactTests

@@ -5,9 +5,10 @@
     using System.Linq;
 
     using Tutorial.ParallelLinq;
-    using Tutorial.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using EnumerableAssert = Tutorial.LinqToObjects.EnumerableAssert;
 
     [TestClass]
     public class PartitioningTests

@@ -1,12 +1,11 @@
 ﻿namespace Tutorial.Tests.LinqToObjects
 {
     using Tutorial.LinqToObjects;
-    using Tutorial.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using System.Reflection;
 
     using Enumerable = System.Linq.Enumerable;
+    using EnumerableAssert = Tutorial.LinqToObjects.EnumerableAssert;
     using EnumerableEx = System.Linq.EnumerableEx;
 
     [TestClass]

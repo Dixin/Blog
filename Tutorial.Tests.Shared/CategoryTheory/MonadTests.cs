@@ -12,6 +12,7 @@
     using static Tutorial.CategoryTheory.Functions;
 
     using Enumerable = System.Linq.Enumerable;
+    using EnumerableAssert = Tutorial.LinqToObjects.EnumerableAssert;
     using FuncExtensions = Tutorial.CategoryTheory.FuncExtensions;
     using TaskExtensions = Tutorial.CategoryTheory.TaskExtensions;
 

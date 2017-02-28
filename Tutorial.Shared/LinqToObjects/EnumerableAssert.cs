@@ -1,11 +1,8 @@
-﻿namespace Tutorial
+﻿namespace Tutorial.LinqToObjects
 {
     using System.Collections.Generic;
-    using System.Linq;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-    using static Tutorial.LinqToObjects.EnumerableX;
 
 #if DEMO
     public static partial class EnumerableAssert
@@ -107,9 +104,9 @@
             Assert.IsTrue(actual.IsEmpty(), message, parameters);
         }
 
-        public static void IsNullOrEmpty<T>
-            (IEnumerable<T> actual, string message = null, params object[] parameters) =>
-            Assert.IsTrue(actual.IsNullOrEmpty(), message, parameters);
+        public static void IsNullOrEmpty<T>(
+            IEnumerable<T> actual, string message = null, params object[] parameters) =>
+                Assert.IsTrue(actual.IsNullOrEmpty(), message, parameters);
 
         public static void Any<T>(IEnumerable<T> actual, string message = null, params object[] parameters)
         {

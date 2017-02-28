@@ -7,6 +7,8 @@
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+    using EnumerableAssert = Tutorial.LinqToObjects.EnumerableAssert;
+
     [TestClass]
     public class PerformanceTests
     {

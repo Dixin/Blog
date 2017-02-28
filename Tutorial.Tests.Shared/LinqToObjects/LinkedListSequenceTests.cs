@@ -1,10 +1,10 @@
 ﻿namespace Tutorial.Tests.LinqToObjects
 {
     using System.Collections.Generic;
-    using Tutorial.LinqToObjects;
-    using Tutorial.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using Tutorial.LinqToObjects;
 
     [TestClass]
     public class LinkedListSequenceTests

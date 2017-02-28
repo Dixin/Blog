@@ -2,10 +2,11 @@
 {
     using System.Linq;
 
-    using Tutorial;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+
     using Tutorial.LinqToSql;
 
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using EnumerableAssert = Tutorial.LinqToObjects.EnumerableAssert;
 
     [TestClass]
     public class PerformanceTests

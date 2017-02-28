@@ -3,7 +3,6 @@ namespace Tutorial.Tests.LinqToObjects
     using System.Linq;
 
     using Tutorial.LinqToObjects;
-    using Tutorial.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 

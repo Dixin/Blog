@@ -3,9 +3,10 @@
     using System.Collections.Generic;
 
     using Tutorial.CategoryTheory;
-    using Tutorial.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using EnumerableAssert = Tutorial.LinqToObjects.EnumerableAssert;
 
     [TestClass]
     public class MonoidTests

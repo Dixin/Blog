@@ -5,14 +5,15 @@
     using System.Data.Entity.Core.Objects;
 #endif
     using System.Linq;
-
-    using Tutorial;
+    
     using Tutorial.LinqToEntities;
 
 #if !NETFX
     using Microsoft.EntityFrameworkCore;
 #endif
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using EnumerableAssert = Tutorial.LinqToObjects.EnumerableAssert;
 
     [TestClass]
     public class DatabaseTests

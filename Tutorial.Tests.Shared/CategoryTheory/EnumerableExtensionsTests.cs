@@ -5,9 +5,10 @@
     using System.Linq;
 
     using Tutorial.CategoryTheory;
-    using Tutorial.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using EnumerableAssert = Tutorial.LinqToObjects.EnumerableAssert;
 
     [TestClass]
     public partial class EnumerableSelectManyExtensionsTests

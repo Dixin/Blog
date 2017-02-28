@@ -5,9 +5,11 @@
     using System.Globalization;
     using System.Threading.Tasks;
 
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+
     using Tutorial.CategoryTheory;
 
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using EnumerableAssert = Tutorial.LinqToObjects.EnumerableAssert;
 
     [TestClass]
     public class FunctorTests
