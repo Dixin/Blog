@@ -14,6 +14,7 @@
         Error = -3
     }
 
+#if DEMO
     public class Iterator<T> : IEnumerator<T>
     {
         private readonly Action start;
@@ -26,31 +27,18 @@
 
         private readonly Action end;
 
-        private readonly bool ignoreException;
-
         public Iterator(
             Action start = null,
             Func<bool> moveNext = null,
             Func<T> getCurrent = null,
             Action dispose = null,
-            Action end = null,
-            bool ignoreException = false,
-            bool resetCurrentForEnd = false)
+            Action end = null)
         {
-            this.start = start ?? (() => { });
-            this.moveNext = moveNext ?? (() => false);
-            this.getCurrent = getCurrent ?? (() => default(T));
-            this.dispose = dispose = dispose ?? (() => { });
-            this.end = end ?? (() => { });
-            this.ignoreException = ignoreException;
-            if (resetCurrentForEnd)
-            {
-                this.dispose = () =>
-                {
-                    dispose();
-                    this.Current = default(T);
-                };
-            }
+            this.start = start;
+            this.moveNext = moveNext;
+            this.getCurrent = getCurrent;
+            this.dispose = dispose;
+            this.end = end;
         }
 
         public T Current { get; private set; }
@@ -72,26 +60,25 @@
                 switch (this.State)
                 {
                     case IteratorState.Start:
-                        this.start();
+                        this.start?.Invoke();
                         this.State = IteratorState.MoveNext; // IteratorState: Start => MoveNext.
                         goto case IteratorState.MoveNext;
                     case IteratorState.MoveNext:
-                        if (this.moveNext())
+                        if (this.moveNext?.Invoke() ?? false)
                         {
-                            this.Current = this.getCurrent();
+                            this.Current = this.getCurrent != null ? this.getCurrent() : default(T);
                             return true; // IteratorState: MoveNext => MoveNext.
                         }
-
                         this.State = IteratorState.End; // IteratorState: MoveNext => End.
-                        this.dispose();
-                        this.end();
+                        this.dispose?.Invoke();
+                        this.end?.Invoke();
                         break;
                 }
                 return false;
             }
-            catch when (!this.ignoreException) // IteratorState: Start, MoveNext, End => End.
+            catch
             {
-                this.State = IteratorState.Error;
+                this.State = IteratorState.Error; // IteratorState: Start, MoveNext, End => Error.
                 this.Dispose();
                 throw;
             }
@@ -109,7 +96,111 @@
                 {
                     // Unexecuted finally blocks are executed before the thread is aborted.
                     this.State = IteratorState.End; // IteratorState: Error => End.
-                    this.dispose();
+                    this.dispose?.Invoke();
+                }
+            }
+        }
+
+        public void Reset() => throw new NotSupportedException();
+    }
+#endif
+
+    public class Iterator<T> : IEnumerator<T>
+    {
+        private readonly Action start;
+
+        private readonly Func<bool> moveNext;
+
+        private readonly Func<T> getCurrent;
+
+        private readonly Action dispose;
+
+        private readonly Action end;
+
+        private readonly bool ignoreException;
+
+        private readonly Action resetCurrent;
+
+        public Iterator(
+            Action start = null,
+            Func<bool> moveNext = null,
+            Func<T> getCurrent = null,
+            Action dispose = null,
+            Action end = null,
+            bool ignoreException = false,
+            bool resetCurrent = false)
+        {
+            this.start = start;
+            this.moveNext = moveNext;
+            this.getCurrent = getCurrent;
+            this.dispose = () =>
+            {
+                dispose?.Invoke();
+                if (resetCurrent)
+                {
+                    this.Current = default(T);
+                }
+            };
+            this.end = end;
+            this.ignoreException = ignoreException;
+        }
+
+        public T Current { get; private set; }
+
+        object IEnumerator.Current => this.Current;
+
+        internal IteratorState State { get; private set; } = IteratorState.Create; // IteratorState: Create.
+
+        internal Iterator<T> Start()
+        {
+            this.State = IteratorState.Start;  // IteratorState: Create => Start.
+            return this;
+        }
+
+        public bool MoveNext()
+        {
+            try
+            {
+                switch (this.State)
+                {
+                    case IteratorState.Start:
+                        this.start?.Invoke();
+                        this.State = IteratorState.MoveNext; // IteratorState: Start => MoveNext.
+                        goto case IteratorState.MoveNext;
+                    case IteratorState.MoveNext:
+                        if (this.moveNext?.Invoke() ?? false)
+                        {
+                            this.Current = this.getCurrent != null ? this.getCurrent() : default(T);
+                            return true; // IteratorState: MoveNext => MoveNext.
+                        }
+                        this.State = IteratorState.End; // IteratorState: MoveNext => End.
+                        this.dispose?.Invoke();
+                        this.end?.Invoke();
+                        break;
+                }
+                return false;
+            }
+            catch when (!this.ignoreException)
+            {
+                this.State = IteratorState.Error; // IteratorState: Start, MoveNext, End => Error.
+                this.Dispose();
+                throw;
+            }
+        }
+
+        [SuppressMessage("Microsoft.Design", "CA1063:ImplementIDisposableCorrectly")]
+        public void Dispose()
+        {
+            if (this.State == IteratorState.Error || this.State == IteratorState.MoveNext)
+            {
+                try
+                {
+                }
+                finally
+                {
+                    // Unexecuted finally blocks are executed before the thread is aborted.
+                    this.State = IteratorState.End; // IteratorState: Error => End.
+                    this.dispose?.Invoke();
                 }
             }
         }

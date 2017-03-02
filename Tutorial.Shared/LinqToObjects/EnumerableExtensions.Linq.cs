@@ -242,7 +242,7 @@
                         getCurrent: () => sourceIterator.Current,
                         dispose: () => sourceIterator?.Dispose(),
                         ignoreException: true,
-                        resetCurrentForEnd: true));
+                        resetCurrent: true));
 
         internal static IEnumerable<TSource> Where<TSource>(
             this IEnumerable<TSource> source, Func<TSource, int, bool> predicate)
@@ -294,7 +294,7 @@
                     getCurrent: () => selector(sourceIterator.Current),
                     dispose: () => sourceIterator?.Dispose(),
                     ignoreException: true,
-                    resetCurrentForEnd: true));
+                    resetCurrent: true));
         }
 
         internal static IEnumerable<TResult> Select<TSource, TResult>(
