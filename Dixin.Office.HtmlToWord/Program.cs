@@ -213,7 +213,7 @@
                 Trace.WriteLine(Invariant($"Saving {saveFile} as {saveFormat}"));
                 document.SaveAs2(saveFile, saveFormat);
                 Trace.WriteLine(Invariant($"Exporting {exportFile} as {exportFormat}"));
-                //document.ExportAsFixedFormat(exportFile, exportFormat, CreateBookmarks: WdExportCreateBookmarks.wdExportCreateHeadingBookmarks);
+                document.ExportAsFixedFormat(exportFile, exportFormat, CreateBookmarks: WdExportCreateBookmarks.wdExportCreateHeadingBookmarks, OptimizeFor: WdExportOptimizeFor.wdExportOptimizeForOnScreen);
             }
             finally
             {

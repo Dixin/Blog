@@ -50,12 +50,14 @@ const path = require("path"),
                                         options.acessTokenSecret = acessTokenSecret;
                                         options.client = tumblrClient;
                                         deferred.resolve(options);
+                                        response.end("Auth is done.");
+                                        return;
                                     }
                                 });
                             }
                         });
                     }
-                    response.end("Auth is done.");
+                    response.end("Auth fails.");
                 });
 
                 server.listen(parsedCallbackUrl.port, parsedCallbackUrl.hostname, () => console.log("Waiting for auth."));

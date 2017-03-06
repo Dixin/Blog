@@ -138,3 +138,7 @@ SELECT syscacheobjects.cacheobjtype, dm_exec_cached_plans.usecounts, syscacheobj
 FROM sys.syscacheobjects
 INNER JOIN sys.dm_exec_cached_plans
 ON sys.syscacheobjects.bucketid = sys.dm_exec_cached_plans.bucketid; 
+
+-- Query all supported collations.
+SELECT Name, COLLATIONPROPERTY(name, 'CodePage') AS CodePage, Description
+FROM sys.fn_HelpCollations()
