@@ -73,10 +73,10 @@
     {
         private static void DownloadTest(string[] uris)
         {
-            uris.Visualize(uri => Functions.Download(uri));
+            uris.Visualize(uri => Functions.Download(uri)); // Sequential with no concurrency.
 
             uris.AsParallel()
-                .WithDegreeOfParallelism(10)
+                .WithDegreeOfParallelism(10) // Parallel with max concurrency.
                 .Visualize(uri => Functions.Download(uri));
 
             using (Markers.EnterSpan(-3, nameof(ParallelEnumerableX.ForceParallel)))
@@ -90,7 +90,7 @@
                             Functions.Download(uri);
                         }
                     },
-                    forcedDegreeOfParallelism: 10);
+                    forcedDegreeOfParallelism: 10); // Parallel with forced concurrency.
             }
         }
 

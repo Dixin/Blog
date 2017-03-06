@@ -10,14 +10,14 @@
         [TestMethod]
         public void ComputingTest()
         {
-            Performance.OrderBy();
+            Performance.RunOrderByTest();
         }
 
         [TestMethod]
         public void IOTest()
         {
-            Performance.DownloadSmallFiles();
-            Performance.DownloadLargeFiles();
+            Performance.RunDownloadSmallFilesTest();
+            Performance.RunDownloadLargeFilesTest();
             Performance.ReadFiles();
         }
     }

@@ -179,7 +179,6 @@ namespace Tutorial.Tests.LinqToXml
             document.Root.ReplaceWith(element6);
         }
 
-#if NETFX
         [TestMethod]
         public void TextTest()
         {
@@ -195,7 +194,12 @@ namespace Tutorial.Tests.LinqToXml
             XElement element7 = XElement.Parse("<root><element>Text.</element></root>");
             Assert.AreEqual("/element/text()", element7.Elements().Single().Nodes().OfType<XText>().Single().XPath());
             Assert.AreEqual(
-                (element7.XPathEvaluate(element7.Elements().Single().Nodes().OfType<XText>().Single().XPath(), element7.CreateNamespaceManager()) as IEnumerable<object>).Single(),
+                (element7.XPathEvaluate(element7.Elements().Single().Nodes().OfType<XText>().Single().XPath()) as IEnumerable<object>)
+#if NETFX
+                    .Single(),
+#else
+                    .First(), // Or: Distinct().Single(),
+#endif
                 element7.Elements().Single().Nodes().OfType<XText>().Single());
             document.Add(element7);
             Assert.AreEqual("/root/element/text()", element7.Elements().Single().Nodes().OfType<XText>().Single().XPath());
@@ -203,13 +207,22 @@ namespace Tutorial.Tests.LinqToXml
             XElement element8 = XElement.Parse(@"<root>1<element></element>2</root>");
             Assert.AreEqual("/text()[1]", (element8.FirstNode as XText).XPath());
             Assert.AreEqual(
-                (element8.XPathEvaluate((element8.FirstNode as XText).XPath()) as IEnumerable<object>).Single(),
+                (element8.XPathEvaluate((element8.FirstNode as XText).XPath()) as IEnumerable<object>)
+#if NETFX
+                    .Single(),
+#else
+                    .First(), // Or: Distinct().Single(),
+#endif
                 element8.FirstNode);
             Assert.AreEqual("/text()[2]", (element8.LastNode as XText).XPath());
             Assert.AreEqual(
-                (element8.XPathEvaluate((element8.LastNode as XText).XPath()) as IEnumerable<object>).Single(),
+                (element8.XPathEvaluate((element8.LastNode as XText).XPath()) as IEnumerable<object>)
+#if NETFX
+                    .Single(),
+#else
+                    .First(),
+#endif
                 element8.LastNode);
         }
-#endif
     }
 }
