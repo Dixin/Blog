@@ -16,10 +16,8 @@
         [TestMethod]
         public void IOTest()
         {
-#if NETFX
             Performance.DownloadSmallFiles();
             Performance.DownloadLargeFiles();
-#endif
             Performance.ReadFiles();
         }
     }

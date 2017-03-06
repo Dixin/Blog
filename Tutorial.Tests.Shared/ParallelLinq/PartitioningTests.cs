@@ -45,9 +45,7 @@
         public void DynamicPartitionerTest()
         {
             Partitioning.DynamicPartitioner();
-#if NETFX
             Partitioning.VisualizeDynamicPartitioner();
-#endif
             int partitionCount = Environment.ProcessorCount * 2;
             int valueCount = partitionCount * 10000;
             IEnumerable<int> source = Enumerable.Range(1, valueCount);

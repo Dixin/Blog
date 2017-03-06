@@ -342,7 +342,7 @@
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 Stopwatch stopwatch = Stopwatch.StartNew();
-                Enumerable.Range(0, 1000).ForEach(value =>
+                Enumerable.Range(0, 1_000).ForEach(value =>
                 {
                     IQueryable<Product> query = adventureWorks.Products
                         .Where(getPredicateWithConstant(value.ToString()));
@@ -352,7 +352,7 @@
                 stopwatch.ElapsedMilliseconds.WriteLine();
 
                 stopwatch.Restart();
-                Enumerable.Range(0, 1000).ForEach(value =>
+                Enumerable.Range(0, 1_000).ForEach(value =>
                 {
                     IQueryable<Product> query = adventureWorks.Products
                         .Where(getPredicateWithVariable(value.ToString()));

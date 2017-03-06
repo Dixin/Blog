@@ -28,22 +28,19 @@ namespace Tutorial.ParallelLinq
 
         private readonly string spanName;
 
-        private readonly DateTime start;
+        private readonly DateTime start = DateTime.Now;
 
         public Span(int category, string spanName, string markSeriesName = null)
         {
             this.category = category;
             this.spanName = string.IsNullOrEmpty(markSeriesName) ? spanName : $@"{markSeriesName}\{spanName}";
-            this.start = DateTime.Now;
-            $"{this.start.ToString("o")}: thread id: {Thread.CurrentThread.ManagedThreadId}, category: {this.category}, span: {this.spanName}"
-                .WriteLine();
+            $"Timestamp: {this.start.ToString("o")}, thread: {Thread.CurrentThread.ManagedThreadId}, category: {this.category}, span: {this.spanName}".WriteLine();
         }
 
         public void Dispose()
         {
             DateTime end = DateTime.Now;
-            $"{end.ToString("o")}: thread id: {Thread.CurrentThread.ManagedThreadId}, category: {this.category}, span: {this.spanName}, duration: {end - start}"
-                .WriteLine();
+            $"Timestamp: {end.ToString("o")}, thread: {Thread.CurrentThread.ManagedThreadId}, category: {this.category}, span: {this.spanName}, duration: {end - start}".WriteLine();
         }
     }
 
@@ -64,7 +61,7 @@ namespace Tutorial.ParallelLinq
         internal const string Sequential = nameof(Sequential);
 
         internal static void Visualize<TSource>(
-            this IEnumerable<TSource> source, Action<TSource> action, string span = Sequential, int category = 0)
+            this IEnumerable<TSource> source, Action<TSource> action, string span = Sequential, int category = -1)
         {
             using (Markers.EnterSpan(category, span))
             {
@@ -80,7 +77,7 @@ namespace Tutorial.ParallelLinq
         }
 
         internal static void Visualize<TSource>(
-            this ParallelQuery<TSource> source, Action<TSource> action, string span = Parallel, int category = 1)
+            this ParallelQuery<TSource> source, Action<TSource> action, string span = Parallel, int category = -2)
         {
             using (Markers.EnterSpan(category, span))
             {
@@ -102,9 +99,8 @@ namespace Tutorial.ParallelLinq
             this IEnumerable<TSource> source,
             Func<IEnumerable<TSource>, Func<TSource, TMiddle>, IEnumerable<TResult>> query,
             Func<TSource, TMiddle> func,
-            Func<TSource, string> funcSpan = null,
-            string span = Sequential,
-            int category = 0)
+            Func<TSource, string> spanFactory = null,
+            string span = Sequential)
         {
             MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
             return query(
@@ -112,7 +108,7 @@ namespace Tutorial.ParallelLinq
                 value =>
                 {
                     using (markerSeries.EnterSpan(
-                        category, funcSpan?.Invoke(value) ?? value.ToString()))
+                        Thread.CurrentThread.ManagedThreadId, spanFactory?.Invoke(value) ?? value.ToString()))
                     {
                         return func(value);
                     }
@@ -123,7 +119,7 @@ namespace Tutorial.ParallelLinq
             this ParallelQuery<TSource> source,
             Func<ParallelQuery<TSource>, Func<TSource, TMiddle>, ParallelQuery<TResult>> query,
             Func<TSource, TMiddle> func,
-            Func<TSource, string> funcSpan = null,
+            Func<TSource, string> spanFactory = null,
             string span = Parallel)
         {
             MarkerSeries markerSeries = Markers.CreateMarkerSeries(span);
@@ -132,7 +128,7 @@ namespace Tutorial.ParallelLinq
                 value =>
                 {
                     using (markerSeries.EnterSpan(
-                        Thread.CurrentThread.ManagedThreadId, funcSpan?.Invoke(value) ?? value.ToString()))
+                        Thread.CurrentThread.ManagedThreadId, spanFactory?.Invoke(value) ?? value.ToString()))
                     {
                         return func(value);
                     }

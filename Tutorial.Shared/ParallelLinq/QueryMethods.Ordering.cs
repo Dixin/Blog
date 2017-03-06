@@ -46,7 +46,7 @@
             source
                 .AsParallel()
                 .GroupBy(model => model.Weight, model => model.Name)
-                .ForAll(_ => { });
+                .ForAll();
             stopwatch.Stop();
             stopwatch.ElapsedMilliseconds.WriteLine(); // 35.
 
@@ -55,7 +55,7 @@
                 .AsParallel()
                 .AsUnordered()
                 .GroupBy(model => model.Weight, model => model.Name)
-                .ForAll(_ => { });
+                .ForAll();
             stopwatch.Stop();
             stopwatch.ElapsedMilliseconds.WriteLine(); // 2.
         }
@@ -161,7 +161,7 @@
                     outerPerson => (outerPerson.Weight, outerPerson.Name.Substring(0, 2)),
                     innerPerson => (innerPerson.Weight + 1, innerPerson.Name.Substring(2, 4)),
                     (outerPerson, innerPerson) => new { Outer = outerPerson, Inner = innerPerson })
-                .ForAll(_ => { });
+                .ForAll();
             stopwatch.Stop();
             stopwatch.ElapsedMilliseconds.WriteLine(); // 243
 
@@ -172,7 +172,7 @@
                     outerPerson => (outerPerson.Weight, outerPerson.Name.Substring(0, 2)),
                     innerPerson => (innerPerson.Weight + 1, innerPerson.Name.Substring(2, 4)),
                     (outerPerson, innerPerson) => new { Outer = outerPerson, Inner = innerPerson })
-                .ForAll(_ => { });
+                .ForAll();
             stopwatch.Stop();
             stopwatch.ElapsedMilliseconds.WriteLine(); // 77
 
@@ -183,7 +183,7 @@
                     outerPerson => (outerPerson.Weight, outerPerson.Name.Substring(0, 2)),
                     innerPerson => (innerPerson.Weight + 1, innerPerson.Name.Substring(2, 4)),
                     (outerPerson, innerPerson) => new { Outer = outerPerson, Inner = innerPerson })
-                .ForAll(_ => { });
+                .ForAll();
             stopwatch.Stop();
             stopwatch.ElapsedMilliseconds.WriteLine(); // 64
         }

@@ -6,7 +6,12 @@
     using System.Linq;
     using System.Threading;
 
-    public static class ParallelEnumerableX
+    public static partial class ParallelEnumerableX
+    {
+        public static void ForAll<TSource>(this ParallelQuery<TSource> source) => source.ForAll(Value => { });
+    }
+
+    public static partial class ParallelEnumerableX
     {
         public static void ForceParallel<TSource>(
             this IEnumerable<TSource> source, Action<TSource> action, int forcedDegreeOfParallelism)

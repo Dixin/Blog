@@ -166,7 +166,7 @@
         {
             IQueryable<Product> source = adventureWorks.Products;
             IQueryable<Product> products = source
-                .Where(product => product.ListPrice > 1000)
+                .Where(product => product.ListPrice > 1_000)
                 .Select(product => new Product()
                 {
                     ProductID = product.ProductID,
@@ -186,7 +186,7 @@
         {
             IQueryable<Product> source = adventureWorks.Products;
             var products = source.Select(product =>
-                new { Name = product.Name, IsExpensive = product.ListPrice > 1000 }); // Define query.
+                new { Name = product.Name, IsExpensive = product.ListPrice > 1_000 }); // Define query.
             products.WriteLines(); // Execute query.
             // SELECT [product].[Name], CASE
             //    WHEN [product].[ListPrice] > 1000.0
@@ -1440,7 +1440,7 @@
         internal static void TakeWhile(AdventureWorks adventureWorks)
         {
             IQueryable<Product> source = adventureWorks.Products;
-            IQueryable<Product> products = source.TakeWhile(product => product.ListPrice < 1000); // Define query.
+            IQueryable<Product> products = source.TakeWhile(product => product.ListPrice < 1_000); // Define query.
             products.WriteLines(product => product.Name); // Execute query.
             // NotSupportedException: Could not parse expression 'value(Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1[Product]).SkipWhile(product => (product.ListPrice < 1000))': This overload of the method 'System.Linq.Queryable.SkipWhile' is currently not supported.
         }
@@ -1448,7 +1448,7 @@
         internal static void SkipWhile(AdventureWorks adventureWorks)
         {
             IQueryable<Product> source = adventureWorks.Products;
-            IQueryable<Product> products = source.SkipWhile(product => product.ListPrice < 1000); // Define query.
+            IQueryable<Product> products = source.SkipWhile(product => product.ListPrice < 1_000); // Define query.
             products.WriteLines(product => product.Name); // Execute query.
             // NotSupportedException: Could not parse expression 'value(Microsoft.EntityFrameworkCore.Query.Internal.EntityQueryable`1[Product]).TakeWhile(product => (product.ListPrice < 1000))': This overload of the method 'System.Linq.Queryable.TakeWhile' is currently not supported.
         }
@@ -1636,7 +1636,7 @@
         {
             IQueryable<Product> source = adventureWorks.Products;
             IEnumerable<Product> products = source
-                .Where(product => product.ListPrice > 1000) // Return IQueryable<Product>. LINQ to Entities.
+                .Where(product => product.ListPrice > 1_000) // Return IQueryable<Product>. LINQ to Entities.
                 .AsEnumerable() // Return IEnumerable<Product>. LINQ to Objects from here.
                 .Select(product => new Product()
                 {
@@ -1739,7 +1739,7 @@
         internal static void ElementAtOrDefault(AdventureWorks adventureWorks)
         {
             IQueryable<Product> source = adventureWorks.Products;
-            Product elementAt = source.ElementAtOrDefault(1000); // Execute query.
+            Product elementAt = source.ElementAtOrDefault(1_000); // Execute query.
             // NotSupportedException
         }
 

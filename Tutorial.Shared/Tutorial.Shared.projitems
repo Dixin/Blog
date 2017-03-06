@@ -127,7 +127,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)LinqToXml\QueryMethods.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParallelLinq\Functions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParallelLinq\ParallelEnumerableX.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ParallelLinq\ParallelQueryExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ParallelLinq\ParallelEnumerableX.QuerySettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParallelLinq\Partitioning.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParallelLinq\Performance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParallelLinq\QueryMethods.cs" />
@@ -154,7 +154,6 @@
     <Content Include="$(MSBuildThisFileDirectory)Introduction\LinqToDocumentDB.sql" />
     <Content Include="$(MSBuildThisFileDirectory)Introduction\LinqToJson.json" />
     <Content Include="$(MSBuildThisFileDirectory)Introduction\LinqToXml.xml" />
-    <Content Include="$(MSBuildThisFileDirectory)LambdaCalculus\HTMLPage1.html" />
     <Content Include="$(MSBuildThisFileDirectory)LambdaCalculus\Lambda.txt" />
     <Content Include="$(MSBuildThisFileDirectory)LinqToXml\AspNetRss.xml" />
     <Content Include="$(MSBuildThisFileDirectory)LinqToXml\AspNetRss.xsd" />

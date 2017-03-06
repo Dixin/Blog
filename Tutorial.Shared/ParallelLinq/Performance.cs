@@ -36,7 +36,7 @@
 
     internal static partial class Performance
     {
-        private static void OrderBy(int count, int run, Func<int, int> keySelector)
+        private static void OrderByTest(int count, int run, Func<int, int> keySelector)
         {
             int[] source = EnumerableX.RandomInt32().Take(count).ToArray();
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -59,55 +59,42 @@
 
     internal static partial class Performance
     {
-        internal static void OrderBy()
+        internal static void RunOrderByTest()
         {
-            OrderBy(5, 10_000, value => value); // Sequential:11    Parallel:1422
-            OrderBy(5_000, 100, value => value); // Sequential:114   Parallel:107
-            OrderBy(500_000, 100, value => value); // Sequential:18210 Parallel:8204
+            OrderByTest(5, 10_000, value => value);    // Sequential:11    Parallel:1422
+            OrderByTest(5_000, 100, value => value);   // Sequential:114   Parallel:107
+            OrderByTest(500_000, 100, value => value); // Sequential:18210 Parallel:8204
 
-            OrderBy(Environment.ProcessorCount, 10, value => value + Compute()); // Sequential:1605  Parallel:737
+            OrderByTest(Environment.ProcessorCount, 10, value => value + Compute()); // Sequential:1605  Parallel:737
         }
     }
 
     internal static partial class Performance
     {
-        private static void Download(string[] uris)
+        private static void DownloadTest(string[] uris)
         {
-            uris.Visualize(uri =>
-            {
-                using (HttpClient httpClient = new HttpClient())
-                {
-                    httpClient.GetByteArrayAsync(uri).Wait();
-                }
-            });
+            uris.Visualize(uri => Functions.Download(uri));
 
             uris.AsParallel()
                 .WithDegreeOfParallelism(10)
-                .Visualize(uri =>
-                {
-                    using (HttpClient httpClient = new HttpClient())
-                    {
-                        httpClient.GetByteArrayAsync(uri).Wait();
-                    }
-                });
+                .Visualize(uri => Functions.Download(uri));
 
-            using (Markers.EnterSpan(-1, nameof(ParallelEnumerableX.ForceParallel)))
+            using (Markers.EnterSpan(-3, nameof(ParallelEnumerableX.ForceParallel)))
             {
                 MarkerSeries markerSeries = Markers.CreateMarkerSeries(nameof(ParallelEnumerableX.ForceParallel));
                 uris.ForceParallel(
                     uri =>
                     {
                         using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, uri))
-                        using (HttpClient httpClient = new HttpClient())
                         {
-                            httpClient.GetByteArrayAsync(uri).Wait();
+                            Functions.Download(uri);
                         }
                     },
-                    10);
+                    forcedDegreeOfParallelism: 10);
             }
         }
 
-        internal static void DownloadSmallFiles()
+        internal static void RunDownloadSmallFilesTest()
         {
             string[] thumbnails = 
                 LoadXDocument("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2")
@@ -115,10 +102,10 @@
                 .Attributes("url")
                 .Select(uri => (string)uri)
                 .ToArray();
-            Download(thumbnails);
+            DownloadTest(thumbnails);
         }
 
-        internal static void DownloadLargeFiles()
+        internal static void RunDownloadLargeFilesTest()
         {
             string[] contents = 
                 LoadXDocument("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2")
@@ -126,7 +113,7 @@
                 .Attributes("url")
                 .Select(uri => (string)uri)
                 .ToArray();
-            Download(contents);
+            DownloadTest(contents);
         }
 
         internal static void ReadFiles()

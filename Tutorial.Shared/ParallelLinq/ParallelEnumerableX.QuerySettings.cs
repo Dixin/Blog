@@ -16,7 +16,7 @@ namespace Tutorial.ParallelLinq
         public ParallelMergeOptions? MergeOptions { get; set; }
     }
 
-    public static class ParallelQueryExtensions
+    public static partial class ParallelEnumerableX
     {
         private static readonly PropertyInfo QuerySettingsProperty = typeof(ParallelQuery).GetTypeInfo().GetProperty(
             "SpecifiedQuerySettings", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);

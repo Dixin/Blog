@@ -34,19 +34,19 @@
         internal static void Strip()
         {
             IEnumerable<int> source = Enumerable.Range(0, Environment.ProcessorCount * 4);
-            source.AsParallel().Visualize(ParallelEnumerable.Select, value => Compute(value));
+            source.AsParallel().Visualize(ParallelEnumerable.Select, value => Compute(value)).ForAll();
         }
 
         internal static void StripLoadBalance()
         {
             IEnumerable<int> source = Enumerable.Range(0, Environment.ProcessorCount * 4);
-            source.AsParallel().Visualize(ParallelEnumerable.Select, value => Compute(value % 2));
+            source.AsParallel().Visualize(ParallelEnumerable.Select, value => Compute(value % 2)).ForAll();
         }
 
         internal static void StripForArray()
         {
             int[] array = Enumerable.Range(0, Environment.ProcessorCount * 4).ToArray();
-            Partitioner.Create(array, loadBalance: true).AsParallel().Visualize(value => Compute(value), nameof(Range));
+            Partitioner.Create(array, loadBalance: true).AsParallel().Visualize(value => Compute(value), nameof(Strip));
         }
     }
 
@@ -74,7 +74,7 @@
                         keySelector: data => data, // Key object's GetHashCode will be called.
                         elementSelector: elementSelector),
                     data => Compute(data.Value)) // elementSelector.
-                .ForAll(_ => { });
+                .ForAll();
             // Equivalent to:
             // MarkerSeries markerSeries = Markers.CreateMarkerSeries("Parallel");
             // source.AsParallel()
@@ -86,10 +86,9 @@
             //               {
             //                   Compute(data.Value);
             //               }
-
             //               return data;
             //           })
-            //   .ForAll(_ => { });
+            //   .ForAll();
         }
 
         internal static void HashInJoin()
@@ -105,7 +104,7 @@
                             innerKeySelector: data => data, // Key object's GetHashCode will be called.
                             resultSelector: (outerData, innerData) => resultSelector(outerData)),
                     data => Compute(data.Value)) // resultSelector.
-                .ForAll(_ => { });
+                .ForAll();
         }
 
         internal static void Chunk()
@@ -113,7 +112,7 @@
             IEnumerable<int> source = Enumerable.Range(0, (1 + 2) * 3 * Environment.ProcessorCount + 3);
             Partitioner.Create(source, EnumerablePartitionerOptions.None).AsParallel()
                 .Visualize(ParallelEnumerable.Select, _ => Compute())
-                .ForAll(_ => { });
+                .ForAll();
         }
     }
 
@@ -121,10 +120,7 @@
     {
         protected readonly IBuffer<TSource> buffer;
 
-        public StaticPartitioner(IEnumerable<TSource> source)
-        {
-            this.buffer = source.Share();
-        }
+        public StaticPartitioner(IEnumerable<TSource> source) => this.buffer = source.Share();
 
         public override IList<IEnumerator<TSource>> GetPartitions(int partitionCount)
         {
@@ -158,7 +154,7 @@
             IEnumerable<int> source = Enumerable.Range(0, Environment.ProcessorCount * 4);
             new StaticPartitioner<int>(source).AsParallel()
                 .Visualize(ParallelEnumerable.Select, value => Compute(value))
-                .ForAll(_ => { });
+                .ForAll();
         }
 
         internal static void DynamicPartitioner()

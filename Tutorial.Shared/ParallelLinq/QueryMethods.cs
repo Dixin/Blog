@@ -30,7 +30,7 @@ namespace Tutorial.ParallelLinq
     {
         private static readonly Assembly CoreLibrary = typeof(object).GetTypeInfo().Assembly;
 
-        internal static void OptInOutParallel()
+        internal static void SequentialParallel()
         {
             IEnumerable<string> obsoleteTypes = CoreLibrary.GetExportedTypes() // Return IEnumerable<Type>.
                 .AsParallel() // Return ParallelQuery<Type>.
@@ -71,7 +71,7 @@ namespace Tutorial.ParallelLinq
         {
             string sequentialTimeSpanName = nameof(EnumerableEx.ForEach);
             // Render a timespan for the entire sequential LINQ query execution, with text label "ForEach".
-            using (Markers.EnterSpan(0, sequentialTimeSpanName))
+            using (Markers.EnterSpan(-1, sequentialTimeSpanName))
             {
                 MarkerSeries markerSeries = Markers.CreateMarkerSeries(sequentialTimeSpanName);
                 Enumerable.Range(0, Environment.ProcessorCount * 2).ForEach(value =>
@@ -88,7 +88,7 @@ namespace Tutorial.ParallelLinq
 
             string parallelTimeSpanName = nameof(ParallelEnumerable.ForAll);
             // Render a timespan for the entire parallel LINQ query execution, with text label "ForAll".
-            using (Markers.EnterSpan(1, parallelTimeSpanName))
+            using (Markers.EnterSpan(-2, parallelTimeSpanName))
             {
                 MarkerSeries markerSeries = Markers.CreateMarkerSeries(parallelTimeSpanName);
                 ParallelEnumerable.Range(0, Environment.ProcessorCount * 2).ForAll(value =>
@@ -142,7 +142,7 @@ namespace Tutorial.ParallelLinq
                     ParallelEnumerable.Select,
                     _ => Compute(),
                     value => $"{nameof(ParallelEnumerable.Select)} {value}")
-                .ForAll(_ => { });
+                .ForAll();
         }
 
         internal static void Cancel()
@@ -164,10 +164,10 @@ namespace Tutorial.ParallelLinq
 
         internal static void DegreeOfParallelism()
         {
-            int count = Environment.ProcessorCount * 10;
+            int maxConcurrency = Environment.ProcessorCount * 10;
             ParallelEnumerable
-                .Range(0, count)
-                .WithDegreeOfParallelism(count)
+                .Range(0, maxConcurrency)
+                .WithDegreeOfParallelism(maxConcurrency)
                 .Visualize(value => Compute());
         }
 
@@ -181,14 +181,14 @@ namespace Tutorial.ParallelLinq
                     .ToArray();
             }
 
-            using (Markers.EnterSpan(0, nameof(ParallelExecutionMode.Default)))
+            using (Markers.EnterSpan(-2, nameof(ParallelExecutionMode.Default)))
             {
                 ParallelEnumerable
                     .Range(0, count)
                     .ToArray();
             }
 
-            using (Markers.EnterSpan(1, nameof(ParallelExecutionMode.ForceParallelism)))
+            using (Markers.EnterSpan(-3, nameof(ParallelExecutionMode.ForceParallelism)))
             {
                 ParallelEnumerable
                     .Range(0, count)
@@ -203,54 +203,36 @@ namespace Tutorial.ParallelLinq
                 .Visualize(ParallelEnumerable.Select, value => Compute(value))
                 .Except(ParallelEnumerable.Repeat(0, 1))
                 .Visualize(ParallelEnumerable.Select, value => Compute(value))
-                .ForAll(_ => { });
+                .ForAll();
 
         internal static void MergeForSelect()
         {
-            int count = 100_000;
+            int count = 10;
             Stopwatch stopwatch = Stopwatch.StartNew();
             ParallelQuery<int> notBuffered = ParallelEnumerable.Range(0, count)
                 .WithMergeOptions(ParallelMergeOptions.NotBuffered)
-                .Select(value => value + Compute(0, 1000));
-            notBuffered.ForEach(value =>
-            {
-                if (value <= 5 || value >= count - 5)
-                {
-                    $"{value}:{stopwatch.ElapsedMilliseconds}".WriteLine();
-                }
-            });
-            // 0:43 1:155 2:158 3:244 4:244 5:245 99995:245 99996:246 99997:246 99998:247 99999:247
+                .Select(value => value + Compute(0, 10_000_000));
+            notBuffered.ForEach(value => $"{value}:{stopwatch.ElapsedMilliseconds}".WriteLine());
+            // 0:217 3:283 6:363 8:462 1:521 4:612 7:629 9:637 2:660 5:695
 
             stopwatch.Restart();
             ParallelQuery<int> autoBuffered = ParallelEnumerable.Range(0, count)
                 .WithMergeOptions(ParallelMergeOptions.AutoBuffered)
-                .Select(value => value + Compute(0, 1000));
-            autoBuffered.ForEach(value =>
-            {
-                if (value <= 5 || value >= count - 5)
-                {
-                    $"{value}:{stopwatch.ElapsedMilliseconds}".WriteLine();
-                }
-            });
-            // 0:101 1:184 2:186 3:188 4:191 5:192 99995:199 99996:202 99997:226 99998:227 99999:227
+                .Select(value => value + Compute(0, 10_000_000));
+            autoBuffered.ForEach(value => $"{value}:{stopwatch.ElapsedMilliseconds}".WriteLine());
+            // 6:459 8:493 7:498 9:506 0:648 1:654 2:656 3:684 4:686 5:688
 
             stopwatch.Restart();
             ParallelQuery<int> fullyBuffered = ParallelEnumerable.Range(0, count)
                 .WithMergeOptions(ParallelMergeOptions.FullyBuffered)
-                .Select(value => value + Compute(0, 1000));
-            fullyBuffered.ForEach(value =>
-            {
-                if (value <= 5 || value >= count - 5)
-                {
-                    $"{value}:{stopwatch.ElapsedMilliseconds}".WriteLine();
-                }
-            });
-            // 0:186 1:187 2:187 3:188 4:189 5:189 99995:190 99996:190 99997:191 99998:191 99999:192
+                .Select(value => value + Compute(0, 10_000_000));
+            fullyBuffered.ForEach(value => $"{value}:{stopwatch.ElapsedMilliseconds}".WriteLine());
+            // 0:584 1:589 2:618 3:627 4:629 5:632 6:634 7:636 8:638 9:641
         }
 
         internal static void MergeForTakeWhile()
         {
-            int count = 1000;
+            int count = 1_000;
 
             Stopwatch stopwatch = Stopwatch.StartNew();
             ParallelQuery<int> notBuffered = ParallelEnumerable.Range(0, count)
@@ -293,7 +275,7 @@ namespace Tutorial.ParallelLinq
             ParallelEnumerable.Range(0, count)
                 .WithMergeOptions(ParallelMergeOptions.NotBuffered)
                 .Select(value => Compute(value))
-                .OrderBy(value => value)
+                .OrderBy(value => value) // Eager evaluation.
                 .WriteLines(value => $"{value}:{stopwatch.ElapsedMilliseconds}");
             // 0:998 1:999 2:999 3:1000 4:1000 5:1000 6:1001 7:1001
 
@@ -301,7 +283,7 @@ namespace Tutorial.ParallelLinq
             ParallelEnumerable.Range(0, count)
                 .WithMergeOptions(ParallelMergeOptions.FullyBuffered)
                 .Select(value => Compute(value))
-                .OrderBy(value => value)
+                .OrderBy(value => value) // Eager evaluation.
                 .WriteLines(value => $"{value}:{stopwatch.ElapsedMilliseconds}");
             // 0:984 1:985 2:985 3:986 4:987 5:987 6:988 7:989
         }
@@ -342,7 +324,7 @@ namespace Tutorial.ParallelLinq
         internal static void VisualizeAggregate()
         {
             int count = Environment.ProcessorCount * 2;
-            using (Markers.EnterSpan(0, "Sequential subtract"))
+            using (Markers.EnterSpan(-1, "Sequential subtract"))
             {
                 MarkerSeries markerSeries = Markers.CreateMarkerSeries("Sequential subtract");
                 int sequentialSubtract = Enumerable.Range(0, count).Aggregate((a, b) =>
@@ -354,7 +336,7 @@ namespace Tutorial.ParallelLinq
                 });
             }
 
-            using (Markers.EnterSpan(1, "Parallel subtract"))
+            using (Markers.EnterSpan(-2, "Parallel subtract"))
             {
                 MarkerSeries markerSeries = Markers.CreateMarkerSeries("Parallel subtract");
                 int parallelSubtract = ParallelEnumerable.Range(0, count).Aggregate((a, b) =>
@@ -497,7 +479,9 @@ namespace System.Linq.Parallel
 {
     internal static class Scheduling
     {
-        internal static int DefaultDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 512);
+        internal const int MAX_SUPPORTED_DOP = 512;
+
+        internal static int DefaultDegreeOfParallelism = Math.Min(Environment.ProcessorCount, MAX_SUPPORTED_DOP);
 
         internal static int GetDefaultDegreeOfParallelism() => DefaultDegreeOfParallelism;
     }

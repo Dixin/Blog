@@ -6,10 +6,7 @@
 
     public class CombinatorExpression : Expression
     {
-        private CombinatorExpression(string name)
-        {
-            this.Name = name;
-        }
+        private CombinatorExpression(string name) => this.Name = name;
 
         public static CombinatorExpression S { get; } = new CombinatorExpression(nameof(S));
 
@@ -19,9 +16,9 @@
 
         public string Name { get; }
 
-        public override ExpressionType NodeType => ExpressionType.Constant;
+        public override ExpressionType NodeType { get; } = ExpressionType.Constant;
 
-        public override Type Type => typeof(object);
+        public override Type Type { get; } = typeof(object);
     }
 
     public class ApplicationExpression : Expression
@@ -36,9 +33,9 @@
 
         public Expression Variable { get; }
 
-        public override ExpressionType NodeType => ExpressionType.Invoke;
+        public override ExpressionType NodeType { get; } = ExpressionType.Invoke;
 
-        public override Type Type => typeof(object);
+        public override Type Type { get; } = typeof(object);
     }
 
     public static partial class SkiCompiler

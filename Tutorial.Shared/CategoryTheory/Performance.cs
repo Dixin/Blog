@@ -143,7 +143,7 @@
     internal class Person : IComparable<Person>
     {
         private static readonly string LongString =
-            Enumerable.Range(0, 10000).Select(_ => Guid.NewGuid().ToString()).Aggregate(string.Concat);
+            Enumerable.Range(0, 10_000).Select(_ => Guid.NewGuid().ToString()).Aggregate(string.Concat);
 
         internal string Name { get; private set; }
 
@@ -175,7 +175,7 @@
     internal struct ValuePerson : IComparable<ValuePerson>
     {
         private static readonly string LongString =
-            Enumerable.Range(0, 10000).Select(_ => Guid.NewGuid().ToString()).Aggregate(string.Concat);
+            Enumerable.Range(0, 10_000).Select(_ => Guid.NewGuid().ToString()).Aggregate(string.Concat);
 
         internal string Name { get; private set; }
 
@@ -346,7 +346,7 @@
 
         internal static void StringSequence()
         {
-            IEnumerable<string> array1 = Enumerable.Range(0, 1000).Select(_ => Guid.NewGuid().ToString()).ToArray();
+            IEnumerable<string> array1 = Enumerable.Range(0, 1_000).Select(_ => Guid.NewGuid().ToString()).ToArray();
             IEnumerable<string> array2 = array1.ToArray(); // Copy.
             IEnumerable<string> array3 = array1.ToArray(); // Copy.
             IEnumerable<string> array4 = array1.ToArray(); // Copy.
@@ -359,7 +359,7 @@
 
         internal static void ValueTypeSequence()
         {
-            IEnumerable<ValuePerson> array1 = ValuePerson.Random(1000).ToArray();
+            IEnumerable<ValuePerson> array1 = ValuePerson.Random(1_000).ToArray();
             IEnumerable<ValuePerson> array2 = array1.ToArray(); // Copy.
             IEnumerable<ValuePerson> array3 = array1.ToArray(); // Copy.
             IEnumerable<ValuePerson> array4 = array1.ToArray(); // Copy.
@@ -372,7 +372,7 @@
 
         internal static void ReferenceTypeSequence()
         {
-            IEnumerable<Person> array1 = Person.Random(1000).ToArray();
+            IEnumerable<Person> array1 = Person.Random(1_000).ToArray();
             IEnumerable<Person> array2 = array1.ToArray(); // Copy.
             IEnumerable<Person> array3 = array1.ToArray(); // Copy.
             IEnumerable<Person> array4 = array1.ToArray(); // Copy.
@@ -454,7 +454,7 @@
     {
         internal static void ByPredicate()
         {
-            Person[] array1 = Person.Random(10000).ToArray();
+            Person[] array1 = Person.Random(1_0000).ToArray();
             Person[] array2 = array1.ToArray(); // Copy.
             string minName1 = Guid.NewGuid().ToString();
             string maxName1 = Guid.NewGuid().ToString();
