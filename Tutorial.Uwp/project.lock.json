@@ -21962,10 +21962,10 @@
   },
   "project": {
     "restore": {
-      "projectUniqueName": "C:\\Data\\GitHub\\CodeSnippets\\Tutorial.Uwp\\Tutorial.Uwp.csproj",
+      "projectUniqueName": "D:\\Dixin\\GitHub\\CodeSnippets\\Tutorial.Uwp\\Tutorial.Uwp.csproj",
       "projectName": "Tutorial.Uwp",
-      "projectPath": "C:\\Data\\GitHub\\CodeSnippets\\Tutorial.Uwp\\Tutorial.Uwp.csproj",
-      "projectJsonPath": "C:\\Data\\GitHub\\CodeSnippets\\Tutorial.Uwp\\project.json",
+      "projectPath": "D:\\Dixin\\GitHub\\CodeSnippets\\Tutorial.Uwp\\Tutorial.Uwp.csproj",
+      "projectJsonPath": "D:\\Dixin\\GitHub\\CodeSnippets\\Tutorial.Uwp\\project.json",
       "projectStyle": "ProjectJson"
     },
     "dependencies": {

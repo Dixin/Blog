@@ -46,10 +46,10 @@
                     .Attribute("isPermaLink")) // <category>'s isPermaLink attribute.
                 .Elements("category") // All <category>s under all <item>s.
                 .GroupBy(
-                    category => (string)category, // String value of <category>.
-                    category => category,
-                    (key, group) => new { Name = key, Count = group.Count() },
-                    StringComparer.OrdinalIgnoreCase)
+                    keySelector: category => (string)category, // String value of <category>.
+                    elementSelector: category => category,
+                    resultSelector: (key, group) => new { Name = key, Count = group.Count() },
+                    comparer: StringComparer.OrdinalIgnoreCase)
                 .OrderByDescending(category => category.Count)
                 .Take(5)
                 .Select(category => $"[{category.Name}]:{category.Count}");
