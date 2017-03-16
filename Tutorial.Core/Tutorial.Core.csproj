@@ -1,19 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <TargetFramework>netstandard1.6.1</TargetFramework>
     <RootNamespace>Tutorial</RootNamespace>
   </PropertyGroup>
-  <Import Project="..\Tutorial.Shared\Tutorial.Shared.projitems" Label="Shared" />
+
   <ItemGroup>
     <PackageReference Include="EnterpriseLibrary.TransientFaultHandling.Core" Version="1.0.0" />
     <PackageReference Include="linqtotwitter" Version="4.2.0-beta2" />
-    <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="1.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.1.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Azure.DocumentDB.Core" Version="1.1.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.1.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="1.1.1" />
     <PackageReference Include="Microsoft.FSharp.Core.netcore" Version="1.0.0-alpha-161205" />
     <PackageReference Include="Mono.Cecil" Version="0.10.0-beta1-v2" />
-    <PackageReference Include="MSTest.TestFramework" Version="1.0.8-rc2" />
+    <PackageReference Include="System.Diagnostics.Process" Version="4.3.0" />
     <PackageReference Include="System.Interactive" Version="3.1.1" />
+    <PackageReference Include="System.Linq.Parallel" Version="4.3.0" />
     <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
     <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
     <PackageReference Include="System.Runtime.Serialization.Formatters" Version="4.3.0" />
@@ -23,6 +25,7 @@
     <PackageReference Include="System.Xml.XPath" Version="4.3.0" />
     <PackageReference Include="System.Xml.XPath.XDocument" Version="4.3.0" />
   </ItemGroup>
+
   <ItemGroup>
     <Compile Update="Resources\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
@@ -30,10 +33,14 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
   </ItemGroup>
+
   <ItemGroup>
     <EmbeddedResource Update="Resources\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+
+  <Import Project="..\Tutorial.Shared\Tutorial.Shared.projitems" Label="Shared" />
+
 </Project>

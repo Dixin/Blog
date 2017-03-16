@@ -1,8 +1,11 @@
-﻿namespace Tutorial.LinqToObjects
+﻿namespace Tutorial.Tests.LinqToObjects
 {
     using System.Collections.Generic;
+    using System.Linq;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using static Tutorial.LinqToObjects.EnumerableX;
 
 #if DEMO
     public static partial class EnumerableAssert

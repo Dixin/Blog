@@ -5,14 +5,14 @@
     using System.Globalization;
     using System.Threading.Tasks;
 
-    using Tutorial.CategoryTheory;
-
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using Tutorial.CategoryTheory;
+    using Tutorial.Tests.LinqToObjects;
 
     using static Tutorial.CategoryTheory.Functions;
 
     using Enumerable = System.Linq.Enumerable;
-    using EnumerableAssert = Tutorial.LinqToObjects.EnumerableAssert;
     using FuncExtensions = Tutorial.CategoryTheory.FuncExtensions;
     using TaskExtensions = Tutorial.CategoryTheory.TaskExtensions;
 

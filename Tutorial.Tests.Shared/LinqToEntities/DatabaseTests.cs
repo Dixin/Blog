@@ -3,17 +3,21 @@
 #if NETFX
     using System.Data.Entity;
     using System.Data.Entity.Core.Objects;
-#endif
     using System.Linq;
-    
-    using Tutorial.LinqToEntities;
 
-#if !NETFX
-    using Microsoft.EntityFrameworkCore;
-#endif
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    using EnumerableAssert = Tutorial.LinqToObjects.EnumerableAssert;
+    using Tutorial.LinqToEntities;
+    using Tutorial.Tests.LinqToObjects;
+#else
+    using System.Linq;
+
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using Tutorial.LinqToEntities;
+    using Tutorial.Tests.LinqToObjects;
+#endif
 
     [TestClass]
     public class DatabaseTests

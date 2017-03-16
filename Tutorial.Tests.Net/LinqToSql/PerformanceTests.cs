@@ -5,8 +5,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     using Tutorial.LinqToSql;
-
-    using EnumerableAssert = Tutorial.LinqToObjects.EnumerableAssert;
+    using Tutorial.Tests.LinqToObjects;
 
     [TestClass]
     public class PerformanceTests

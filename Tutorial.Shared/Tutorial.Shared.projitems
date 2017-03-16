@@ -133,7 +133,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)ParallelLinq\QueryMethods.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParallelLinq\QueryMethods.Ordering.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParallelLinq\Visualizer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\EnumerableAssert.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TraceExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToXml\XExtensions.cs" />
   </ItemGroup>

@@ -3,11 +3,10 @@
     using System.Linq;
     using System.Threading.Tasks;
 
-    using Tutorial.LinqToEntities;
-
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    using EnumerableAssert = Tutorial.LinqToObjects.EnumerableAssert;
+    using Tutorial.LinqToEntities;
+    using Tutorial.Tests.LinqToObjects;
 
     [TestClass]
     public class PerformanceTests

@@ -31,6 +31,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Functional\LocalFunctionsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Functional\PrefixVisitorTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Functional\VariancesTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Introduction\EnumerableAssert.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Introduction\QueryMethodsTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\BinaryArithmeticTranslatorTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\ChangesTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\ConcurrencyTests.cs" />

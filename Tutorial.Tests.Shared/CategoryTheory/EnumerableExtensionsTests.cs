@@ -4,11 +4,10 @@
     using System.Collections.Generic;
     using System.Linq;
 
-    using Tutorial.CategoryTheory;
-
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    using EnumerableAssert = Tutorial.LinqToObjects.EnumerableAssert;
+    using Tutorial.CategoryTheory;
+    using Tutorial.Tests.LinqToObjects;
 
     [TestClass]
     public partial class EnumerableSelectManyExtensionsTests

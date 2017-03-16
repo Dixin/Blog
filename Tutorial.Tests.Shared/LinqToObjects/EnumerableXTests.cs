@@ -1,4 +1,4 @@
-﻿namespace Tutorial.Tests
+﻿namespace Tutorial.Tests.LinqToObjects
 {
     using System;
     using System.Collections.Generic;

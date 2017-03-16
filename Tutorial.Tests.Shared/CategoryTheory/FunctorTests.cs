@@ -8,8 +8,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     using Tutorial.CategoryTheory;
-
-    using EnumerableAssert = Tutorial.LinqToObjects.EnumerableAssert;
+    using Tutorial.Tests.LinqToObjects;
 
     [TestClass]
     public class FunctorTests

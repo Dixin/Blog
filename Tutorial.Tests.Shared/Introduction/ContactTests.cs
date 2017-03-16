@@ -8,8 +8,7 @@
     
     using Tutorial.Introduction;
     using Tutorial.Resources;
-
-    using EnumerableAssert = Tutorial.LinqToObjects.EnumerableAssert;
+    using Tutorial.Tests.LinqToObjects;
 
     [TestClass]
     public class ContactTests

@@ -4,11 +4,10 @@
     using System.Collections.Generic;
     using System.Linq;
 
-    using Tutorial.ParallelLinq;
-
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    using EnumerableAssert = Tutorial.LinqToObjects.EnumerableAssert;
+    using Tutorial.ParallelLinq;
+    using Tutorial.Tests.LinqToObjects;
 
     [TestClass]
     public class PartitioningTests

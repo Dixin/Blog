@@ -6,8 +6,7 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     using Tutorial.LinqToXml;
-
-    using EnumerableAssert = Tutorial.LinqToObjects.EnumerableAssert;
+    using Tutorial.Tests.LinqToObjects;
 
     [TestClass]
     public partial class XExtensionsTests

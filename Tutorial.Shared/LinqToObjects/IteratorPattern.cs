@@ -212,7 +212,7 @@
                     {
                         return false;
                     }
-                    Type[] interfaces = type.GetInterfaces();
+                    Type[] interfaces = type.GetTypeInfo().GetInterfaces();
                     return interfaces.Any(@interface => @interface == nonGenericEnumerable)
                         && !interfaces.Any(@interface =>
                             @interface.GetTypeInfo().IsGenericType

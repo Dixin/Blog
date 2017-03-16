@@ -1,13 +1,13 @@
 ﻿namespace Tutorial.Tests.Functional
 {
     using System.Collections.Generic;
-    using Tutorial.Functional;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    using Mono.Cecil;
+    using Tutorial.Functional;
+    using Tutorial.Tests.LinqToObjects;
 
-    using EnumerableAssert = Tutorial.LinqToObjects.EnumerableAssert;
+    using Mono.Cecil;
 
     [TestClass]
     public class VariancesTests

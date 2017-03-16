@@ -4,25 +4,7 @@
     using System.ComponentModel.DataAnnotations;
     using System.Diagnostics.Contracts;
 
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-
     using Tutorial.Resources;
-
-    [TestClass]
-    public class QueryMethodsTests
-    {
-        [TestMethod]
-        public void FilteringTest()
-        {
-            // Unit test.
-        }
-
-        [TestMethod]
-        public void GroupingTest()
-        {
-            // Unit test.
-        }
-    }
 
     public class Contact
     {
