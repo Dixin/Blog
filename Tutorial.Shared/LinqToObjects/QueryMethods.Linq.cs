@@ -6,17 +6,19 @@
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Collections.Immutable;
-    using System.Configuration;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
+    using System.IO;
     using System.Linq;
     using System.Reflection;
-    using System.Web.Profile;
+    using System.Resources;
 
     using Microsoft.TeamFoundation.Client;
     using Microsoft.TeamFoundation.WorkItemTracking.Client;
+    using Microsoft.VisualStudio.Services.Common;
 
     using Tutorial.Functional;
+    using Tutorial.Resources;
 #else
     using System;
     using System.Collections;
@@ -202,11 +204,11 @@
             // Math.Abs(-2):2 Math.Abs(-1):1 Math.Abs(1):1 Math.Abs(2):2
         }
 
-        internal static MemberInfo[] GetDeclaredMembers(this Type type) => 
+        internal static MemberInfo[] GetDeclaredMembers(this Type type) =>
             type.GetTypeInfo().GetMembers(
                 BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 
-        internal static bool IsObsolete(this MemberInfo member) => 
+        internal static bool IsObsolete(this MemberInfo member) =>
             member.IsDefined(attributeType: typeof(ObsoleteAttribute), inherit: false);
 
         internal static void SelectMany()
@@ -740,28 +742,39 @@
         #region Conversion
 
 #if NETFX
-        internal static void CastNonGenericIEnumerable(TfsClientCredentials credentials)
+        internal static void CastNonGeneric(VssCredentials credentials)
         {
             using (TfsTeamProjectCollection projectCollection = new TfsTeamProjectCollection(
                 new Uri("https://dixin.visualstudio.com/DefaultCollection"), credentials))
             {
+                // WorkItemCollection implements IEnumerable.
                 const string wiql = "SELECT * FROM WorkItems WHERE [Work Item Type] = 'Bug' AND State != 'Closed'"; // WIQL does not support GROUP BY.
                 WorkItemStore workItemStore = (WorkItemStore)projectCollection.GetService(typeof(WorkItemStore));
-                WorkItemCollection workItems = workItemStore.Query(wiql); // WorkItemCollection implements IEnumerable.
+                WorkItemCollection workItems = workItemStore.Query(wiql);
 
                 IEnumerable<WorkItem> genericWorkItems = workItems.Cast<WorkItem>(); // Define query.
                 IEnumerable<IGrouping<string, WorkItem>> workItemGroups = genericWorkItems
-                    .GroupBy(workItem => workItem.CreatedBy); // Group work items in local memory.
+                    .GroupBy(workItem => workItem.CreatedBy); // Group work items locally.
                 // ...
             }
         }
 #endif
 
 #if NETFX
-        internal static void CastNonGenericIEnumerable2()
+        internal static void CastMoreNonGeneric()
         {
-            SettingsPropertyCollection properties = ProfileBase.Properties; // SettingsPropertyCollection implements IEnumerable.
-            IEnumerable<SettingsProperty> genericProperties = properties.Cast<SettingsProperty>();
+            // ResourceSet implements IEnumerable.
+            ResourceSet resourceSet = new ResourceManager(typeof(Resources))
+                .GetResourceSet(CultureInfo.CurrentCulture, createIfNotExists: true, tryParents: true);
+            IEnumerable<DictionaryEntry> entries1 = resourceSet.Cast<DictionaryEntry>();
+
+            // ResourceReader implements IEnumerable.
+            Assembly assembly = typeof(QueryMethods).Assembly;
+            using (Stream stream = assembly.GetManifestResourceStream(assembly.GetManifestResourceNames()[0]))
+            using (ResourceReader resourceReader = new ResourceReader(stream))
+            {
+                IEnumerable<DictionaryEntry> entries2 = resourceReader.Cast<DictionaryEntry>();
+            }
         }
 #endif
 
@@ -1306,7 +1319,7 @@
 
     internal partial class Character
     {
-        public override bool Equals(object obj) => 
+        public override bool Equals(object obj) =>
             obj is Character other && other != null && string.Equals(this.Name, other.Name, StringComparison.Ordinal);
 
         public override int GetHashCode() => this.Name?.GetHashCode() ?? 0;

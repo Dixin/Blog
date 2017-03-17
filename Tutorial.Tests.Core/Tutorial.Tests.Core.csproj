@@ -1,8 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>netcoreapp1.1</TargetFramework>
+
+  <PropertyGroup>    
+    <TargetFramework>netcoreapp1.1</TargetFramework>    
     <RootNamespace>Tutorial.Tests</RootNamespace>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.1.1" />
     <PackageReference Include="Microsoft.FSharp.Core.netcore" Version="1.0.0-alpha-161205" />
@@ -11,16 +13,21 @@
     <PackageReference Include="MSTest.TestAdapter" Version="1.1.13" />
     <PackageReference Include="MSTest.TestFramework" Version="1.1.13" />
   </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Tutorial.Core\Tutorial.Core.csproj" />
   </ItemGroup>
+
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
+
   <ItemGroup>
     <None Update="app.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
   <Import Project="..\Tutorial.Tests.Shared\Tutorial.Tests.Shared.projitems" Label="Shared" />
+
 </Project>

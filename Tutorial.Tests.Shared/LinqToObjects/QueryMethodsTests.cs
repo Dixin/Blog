@@ -1,17 +1,27 @@
 ﻿namespace Tutorial.Tests.LinqToObjects
 {
+#if NETFX
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Diagnostics.Contracts;
-#if NETFX
     using System.Net;
+
     using Microsoft.TeamFoundation;
-    using Microsoft.TeamFoundation.Client;
-#endif
+    using Microsoft.VisualStudio.Services.Common;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     using static Tutorial.LinqToObjects.QueryMethods;
+#else
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Diagnostics.Contracts;
+
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using static Tutorial.LinqToObjects.QueryMethods;
+#endif
 
     [TestClass]
     public class QueryMethodsTests
@@ -119,15 +129,17 @@
 #if NETFX
             try
             {
-                CastNonGenericIEnumerable(new TfsClientCredentials(new BasicAuthCredential(
-                    new NetworkCredential("dixinyan@live.com", string.Empty))) { AllowInteractive = false });
+                CastNonGeneric(new VssCredentials(new VssBasicCredential(new NetworkCredential("dixinyan@live.com", "***")))
+                {
+                    PromptType = CredentialPromptType.PromptIfNeeded
+                });
                 Assert.Fail();
             }
             catch (TeamFoundationServerUnauthorizedException exception)
             {
                 Trace.WriteLine(exception);
             }
-            CastNonGenericIEnumerable2();
+            CastMoreNonGeneric();
 #endif
             CastGenericIEnumerable();
             try
