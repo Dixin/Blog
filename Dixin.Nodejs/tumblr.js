@@ -51,13 +51,14 @@ const path = require("path"),
                                         options.client = tumblrClient;
                                         deferred.resolve(options);
                                         response.end("Auth is done.");
-                                        return;
                                     }
                                 });
                             }
                         });
+                    } else {
+                        response.end("Auth fails.");
+                        deferred.reject(new Error("Auth fails."));
                     }
-                    response.end("Auth fails.");
                 });
 
                 server.listen(parsedCallbackUrl.port, parsedCallbackUrl.hostname, () => console.log("Waiting for auth."));

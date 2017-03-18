@@ -1,15 +1,14 @@
 {
   "name": "dixin.nodejs",
   "version": "1.0.0",
-  "description": "Code snippets for blog https://weblogs.asp.net/dixin.",
+  "description": "Dixin.Nodejs",
   "main": "main.js",
   "author": {
-    "name": "Dixin Yan",
-    "email": "dixinyan@live.com"
+    "name": "Dixin"
   },
   "dependencies": {
     "cheerio": "^0.22.0",
-    "oauth": "^0.9.14",
+    "oauth": "^0.9.15",
     "q": "^1.4.1",
     "tumblr.js": "^1.1.1"
   }
