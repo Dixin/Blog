@@ -25,15 +25,15 @@
     {
         internal static void CompiledIsConstantValue(object @object)
         {
-            if (object.Equals(@object, int.MinValue))
+            if (object.Equals(int.MinValue, @object))
             {
                 @object.WriteLine();
             }
-            if (object.Equals(@object, null))
+            if (object.Equals(null, @object))
             {
                 @object.WriteLine();
             }
-            if (object.Equals(@object, DayOfWeek.Monday))
+            if (object.Equals(DayOfWeek.Monday, @object))
             {
                 @object.WriteLine();
             }
@@ -82,7 +82,7 @@
             }
         }
 
-        internal static void CompiledIsWithConditio(object @object)
+        internal static void CompiledIsWithCondition(object @object)
         {
             string @string = @object as string;
             if (@string != null && TimeSpan.TryParse(@string, out TimeSpan timeSpan))
@@ -90,7 +90,18 @@
                 timeSpan.TotalMilliseconds.WriteLine();
             }
         }
+    }
 
+#if DEMO
+    internal partial class Data : IEquatable<Data>
+    {
+        public override bool Equals(object obj) => 
+            obj is Data data && this.Equals(data);
+    }
+#endif
+
+    internal static partial class PatternMatching
+    {
         internal static void IsAnyType(object @object)
         {
             if (@object is var match)
@@ -190,3 +201,17 @@
         }
     }
 }
+
+#if DEMO
+namespace System
+{
+    [Serializable]
+    public class Object
+    {
+        public static bool Equals(object objA, object objB) =>
+            objA == objB || (objA != null && objB != null && objA.Equals(objB));
+
+        // Other members.
+    }
+}
+#endif

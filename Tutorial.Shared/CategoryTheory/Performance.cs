@@ -395,7 +395,7 @@
             int resultIndex = 0;
             foreach (Person person in source)
             {
-                if ((person.Age >= minAge1 && person.Age <= maxAge2 || person.Age >= minAge2 && person.Age <= maxAge2)
+                if ((person.Age >= minAge1 && person.Age <= maxAge1 || person.Age >= minAge2 && person.Age <= maxAge2)
                     && (string.Compare(person.Name, minName1, StringComparison.OrdinalIgnoreCase) >= 0
                         && string.Compare(person.Name, maxName1, StringComparison.OrdinalIgnoreCase) <= 0
                         || string.Compare(person.Name, minName2, StringComparison.OrdinalIgnoreCase) >= 0
@@ -414,7 +414,7 @@
             int minAge1, int maxAge1, int minAge2, int maxAge2,
             string minName1, string maxName1, string minName2, string maxName2)
             => source.Where(person =>
-                (person.Age >= minAge1 && person.Age <= maxAge2 || person.Age >= minAge2 && person.Age <= maxAge2)
+                (person.Age >= minAge1 && person.Age <= maxAge1 || person.Age >= minAge2 && person.Age <= maxAge2)
                 && (string.Compare(person.Name, minName1, StringComparison.OrdinalIgnoreCase) >= 0
                     && string.Compare(person.Name, maxName1, StringComparison.OrdinalIgnoreCase) <= 0
                     || string.Compare(person.Name, minName2, StringComparison.OrdinalIgnoreCase) >= 0

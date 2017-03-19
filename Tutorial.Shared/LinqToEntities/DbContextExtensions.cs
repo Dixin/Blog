@@ -15,8 +15,8 @@
 
     public static partial class DbContextExtensions
     {
-        public static EntityContainer Container
-            (this DbContext context) => ((IObjectContextAdapter)context)
+        public static EntityContainer Container(this IObjectContextAdapter context) => 
+            context
                 .ObjectContext
                 .MetadataWorkspace
                 .GetItemCollection(DataSpace.CSpace)
@@ -26,7 +26,7 @@
         public static ObjectContext ObjectContext
             (this IObjectContextAdapter context) => context.ObjectContext;
 
-        public static TDbConnection Connection<TDbConnection>(this DbContext context)
+        public static TDbConnection Connection<TDbConnection>(this IObjectContextAdapter context)
             where TDbConnection : DbConnection =>
                 ((EntityConnection)context.ObjectContext().Connection)?.StoreConnection as TDbConnection;
     }

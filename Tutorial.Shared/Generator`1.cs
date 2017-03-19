@@ -119,8 +119,6 @@
 
         private readonly bool ignoreException;
 
-        private readonly Action resetCurrent;
-
         public Iterator(
             Action start = null,
             Func<bool> moveNext = null,

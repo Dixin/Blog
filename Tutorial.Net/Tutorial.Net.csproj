@@ -23,6 +23,7 @@
     <DefineConstants>TRACE;DEBUG;NETFX, EF</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>..\Tools\CodeAnalysis.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -341,6 +342,9 @@
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
   <ItemGroup>
+    <CodeAnalysisDictionary Include="..\Tools\CodeAnalysisDictionary.xml">
+      <Link>Properties\CodeAnalysisDictionary.xml</Link>
+    </CodeAnalysisDictionary>
     <Content Include="LinqToEntities\FullWithViews\FullAdventureWorksWithView.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>FullAdventureWorksWithView.cs</LastGenOutput>

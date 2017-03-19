@@ -179,7 +179,7 @@
             var e = File.ReadAllLines(path); // string[].
         }
 
-        internal static void LocalVariableWithType(IEnumerable<int> source, string path)
+        internal static void LocalVariableWithType()
         {
             var f = (Uri)null;
             var g = (Func<int, int>)(int32 => int32 + 1);

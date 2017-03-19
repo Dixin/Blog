@@ -317,8 +317,7 @@ namespace Tutorial.LinqToEntities
                 // Resolved:  (readerWriter1, 100.0000, 1, 0x0000000000036339)
 
         internal static void DeleteProductDatabaseWins(
-           DbReaderWriter readerWriter1, DbReaderWriter readerWriter2, DbReaderWriter readerWriter3,
-           Action<EntityEntry> resolveProductConflict)
+           DbReaderWriter readerWriter1, DbReaderWriter readerWriter2, DbReaderWriter readerWriter3)
         {
             int id = 999;
             Product productCopy1 = readerWriter1.Read<Product>(id);
@@ -337,8 +336,7 @@ namespace Tutorial.LinqToEntities
         }
 
         internal static void DeleteProductClientWins(
-            DbReaderWriter readerWriter1, DbReaderWriter readerWriter2, DbReaderWriter readerWriter3,
-            Action<EntityEntry> resolveProductConflict)
+            DbReaderWriter readerWriter1, DbReaderWriter readerWriter2, DbReaderWriter readerWriter3)
         {
             int id = 999;
             Product productCopy1 = readerWriter1.Read<Product>(id);
@@ -417,7 +415,7 @@ namespace Tutorial.LinqToEntities
         {
             if (retryCount <= 0)
             {
-                throw new ArgumentOutOfRangeException($"{retryCount} must be greater than 0.", nameof(retryCount));
+                throw new ArgumentOutOfRangeException(nameof(retryCount), $"{retryCount} must be greater than 0.");
             }
 
             return context.SaveChanges(

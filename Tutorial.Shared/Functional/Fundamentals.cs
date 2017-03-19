@@ -418,7 +418,7 @@ namespace Tutorial.Functional
 
     internal class Constraint<T> where T : class
     {
-        internal void Method()
+        internal static void Method()
         {
             T value = null;
         }
@@ -437,11 +437,11 @@ namespace Tutorial.Functional
 
     internal partial class Constraints<T1, T2, T3, T4, T5, T6, T7>
     {
-        internal void Method(T3 t3) // where T3 : DbConnectiong
+        internal static void Method(T3 connection) // where T3 : DbConnectiong
         {
-            using (t3) // DbConnection implements IDisposable.
+            using (connection) // DbConnection implements IDisposable.
             {
-                DbCommand command = t3.CreateCommand(); // DbConnection has CreateCommand method.
+                DbCommand command = connection.CreateCommand(); // DbConnection has CreateCommand method.
             }
         }
     }

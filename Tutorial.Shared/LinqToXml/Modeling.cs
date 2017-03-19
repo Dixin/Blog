@@ -196,7 +196,10 @@
         internal static void Write()
         {
             XDocument document1 = LoadXDocument("https://weblogs.asp.net/dixin/rss");
-            document1.Save(File.OpenWrite(Path.GetTempFileName()));
+            using (FileStream stream = File.OpenWrite(Path.GetTempFileName()))
+            {
+                document1.Save(stream);
+            }
 
             XElement element1 = new XElement("element", string.Empty);
             XDocument document2 = new XDocument();

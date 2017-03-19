@@ -137,7 +137,7 @@
 
     public partial class AdventureWorks
     {
-        private void MapCompositePrimaryKey(ModelBuilder modelBuilder) // Called by OnModelCreating.
+        private static void MapCompositePrimaryKey(ModelBuilder modelBuilder) // Called by OnModelCreating.
         {
 #if !EF
             modelBuilder.Entity<ProductProductPhoto>()
@@ -152,7 +152,7 @@
 
     public partial class AdventureWorks
     {
-        private void MapManyToMany(ModelBuilder modelBuilder) // Called by OnModelCreating.
+        private static void MapManyToMany(ModelBuilder modelBuilder) // Called by OnModelCreating.
         {
 #if !EF
             modelBuilder.Entity<ProductProductPhoto>()

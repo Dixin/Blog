@@ -58,7 +58,7 @@ namespace Tutorial.LinqToSql
             MetaType metaType = database.Mapping.GetMetaType(typeof(TEntity));
             if (metaType == null)
             {
-                throw new ArgumentException($"{nameof(TEntity)} must be mapped.", nameof(TEntity));
+                throw new NotSupportedException($"{nameof(TEntity)} must be mapped.");
             }
             MetaDataMember[] primaryKeys = database
                 .Mapping

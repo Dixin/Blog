@@ -46,7 +46,7 @@
 
     public partial class AdventureWorks
     {
-        private void MapDiscriminator(ModelBuilder modelBuilder) // Called by OnModelCreating.
+        private static void MapDiscriminator(ModelBuilder modelBuilder) // Called by OnModelCreating.
         {
 #if EF
             modelBuilder

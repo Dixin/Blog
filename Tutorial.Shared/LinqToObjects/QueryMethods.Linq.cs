@@ -808,7 +808,7 @@
         {
             List<int> list = new List<int>();
             list.Add(0);
-            IEnumerable<int> sequence = list.AsEnumerable(); // enumerable does not have Add method.
+            IEnumerable<int> sequence = list.AsEnumerable(); // sequence does not have Add method.
         }
 
         internal static void AsEnumerableReverse()

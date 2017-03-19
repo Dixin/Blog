@@ -149,9 +149,9 @@
         {
             base.OnModelCreating(modelBuilder);
 
-            this.MapCompositePrimaryKey(modelBuilder);
-            this.MapManyToMany(modelBuilder);
-            this.MapDiscriminator(modelBuilder);
+            MapCompositePrimaryKey(modelBuilder);
+            MapManyToMany(modelBuilder);
+            MapDiscriminator(modelBuilder);
         }
     }
 

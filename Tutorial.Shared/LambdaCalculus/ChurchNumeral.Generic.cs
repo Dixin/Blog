@@ -136,7 +136,7 @@
     {
         public override int GetHashCode() => this.Unchurch().GetHashCode();
 
-        public override bool Equals(object obj) => 
+        public override bool Equals(object obj) =>
             obj is NumeralWrapper numeral && (object)numeral != null && this.Equal(numeral).Unchurch();
     }
 
@@ -173,7 +173,7 @@
 
     public partial class NumeralWrapper
     {
-        public static NumeralWrapper operator |(NumeralWrapper dividend, NumeralWrapper divisor) => dividend.DivideByIgnoreZero(divisor);
+        public static NumeralWrapper operator | (NumeralWrapper dividend, NumeralWrapper divisor) => dividend.DivideByIgnoreZero(divisor);
     }
 
     public static partial class NumeralWrapperExtensions

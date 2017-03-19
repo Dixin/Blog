@@ -98,7 +98,7 @@
                     int compare = before.Value.Count.CompareTo(after.Value.Count);
                     if (compare == 0)
                     {
-                        compare = after.Key.CompareTo(before.Key);
+                        compare = string.Compare(after.Key, before.Key, StringComparison.Ordinal);
                     }
                     if (compare >= 0)
                     {

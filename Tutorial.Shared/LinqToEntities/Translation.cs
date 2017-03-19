@@ -354,11 +354,12 @@
         protected override DbProviderManifest GetDbProviderManifest(string manifestToken) => 
             (DbProviderManifest)RedirectCall(manifestToken);
 
-        protected override DbSpatialDataReader GetDbSpatialDataReader(DbDataReader fromReader, string versionHint) => 
-            (DbSpatialDataReader)RedirectCall<DbDataReader, string>(fromReader, versionHint);
+        protected override DbSpatialDataReader GetDbSpatialDataReader(DbDataReader fromReader, string manifestToken) => 
+            (DbSpatialDataReader)RedirectCall<DbDataReader, string>(fromReader, manifestToken);
 
-        protected override DbSpatialServices DbGetSpatialServices(string versionHint) => 
-            (DbSpatialServices)RedirectCall(versionHint);
+        [Obsolete("Return DbSpatialServices from the GetService method. See http://go.microsoft.com/fwlink/?LinkId=260882 for more information.")]
+        protected override DbSpatialServices DbGetSpatialServices(string manifestToken) => 
+            (DbSpatialServices)RedirectCall(manifestToken);
 
         protected override string DbCreateDatabaseScript(
             string providerManifestToken, StoreItemCollection storeItemCollection) => 
