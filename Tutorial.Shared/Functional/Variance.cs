@@ -1,12 +1,8 @@
 ﻿namespace Tutorial.Functional
 {
-    using System;
     using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
     using System.Reflection;
-
-    using Mono.Cecil;
 
     internal class Base { }
 
@@ -14,7 +10,7 @@
 
     internal static partial class Variances
     {
-        internal static void Object()
+        internal static void Substitute()
         {
             Base @base1 = new Base();
             Base @base2 = new Derived();
@@ -267,7 +263,7 @@
             Func<Base> toBase = () => new Base();
             Func<Derived> toDerived = () => new Derived();
 
-            // Higher-order funcitons.
+            // Higher-order functions.
             ToFunc<Base> toToBase = () => toBase;
             ToFunc<Derived> toToDerived = () => toDerived;
 
@@ -306,7 +302,7 @@
 
         internal static void InputVariance()
         {
-            // Higher-order funcitons.
+            // Higher-order functions.
             ActionToVoid<Derived> derivedToVoidToVoid = (Action<Derived> derivedToVoid) => { };
             ActionToVoid<Base> baseToVoidToVoid = (Action<Base> baseToVoid) => { };
 
@@ -349,46 +345,48 @@
 
     internal static partial class Variances
     {
-        internal static IEnumerable<TypeDefinition> GetTypesWithVariance(AssemblyDefinition assembly)
+        internal static void TypesWithVariance()
         {
-            try
-            {
-                return assembly.Modules.SelectMany(module => module.GetTypes())
-                    .Where(type => type.IsPublic && type.HasGenericParameters && type.GenericParameters.Any(argument =>
-                        !argument.IsNonVariant));
-            }
-            catch (TypeLoadException)
-            {
-                return Enumerable.Empty<TypeDefinition>();
-            }
-        }
-
-        internal static IEnumerable<AssemblyDefinition> GetAssemblies(string directory) =>
-            Directory.EnumerateFiles(directory, "*.dll")
-                .Select(file =>
+            Assembly coreLibrary = typeof(object).GetTypeInfo().Assembly;
+            coreLibrary.GetExportedTypes()
+                .Where(type => type.GetTypeInfo().GetGenericArguments().Any(typeArgument =>
                 {
-                    try
-                    {
-                        return AssemblyDefinition.ReadAssembly(file);
-                    }
-                    catch (ArgumentException)
-                    {
-                        return null;
-                    }
-                    catch (BadImageFormatException)
-                    {
-                        return null;
-                    }
-                })
-                .Where(assembly => assembly != null);
-
-        internal static IEnumerable<TypeDefinition> GetTypesWithVariance()
-        {
-            string coreLibraryPath = typeof(object).GetTypeInfo().Assembly.Location;
-            string coreLibraryDirectory = Path.GetDirectoryName(coreLibraryPath);
-            return GetAssemblies(coreLibraryDirectory)
-                .SelectMany(GetTypesWithVariance)
-                .OrderBy(type => type.Name);
+                    GenericParameterAttributes attributes = typeArgument.GetTypeInfo().GenericParameterAttributes;
+                    return attributes.HasFlag(GenericParameterAttributes.Covariant)
+                        || attributes.HasFlag(GenericParameterAttributes.Contravariant);
+                }))
+                .OrderBy(type => type.FullName)
+                .WriteLines();
+                // System.Action`1[T]
+                // System.Action`2[T1,T2]
+                // System.Action`3[T1,T2,T3]
+                // System.Action`4[T1,T2,T3,T4]
+                // System.Action`5[T1,T2,T3,T4,T5]
+                // System.Action`6[T1,T2,T3,T4,T5,T6]
+                // System.Action`7[T1,T2,T3,T4,T5,T6,T7]
+                // System.Action`8[T1,T2,T3,T4,T5,T6,T7,T8]
+                // System.Collections.Generic.IComparer`1[T]
+                // System.Collections.Generic.IEnumerable`1[T]
+                // System.Collections.Generic.IEnumerator`1[T]
+                // System.Collections.Generic.IEqualityComparer`1[T]
+                // System.Collections.Generic.IReadOnlyCollection`1[T]
+                // System.Collections.Generic.IReadOnlyList`1[T]
+                // System.Comparison`1[T]
+                // System.Converter`2[TInput,TOutput]
+                // System.Func`1[TResult]
+                // System.Func`2[T,TResult]
+                // System.Func`3[T1,T2,TResult]
+                // System.Func`4[T1,T2,T3,TResult]
+                // System.Func`5[T1,T2,T3,T4,TResult]
+                // System.Func`6[T1,T2,T3,T4,T5,TResult]
+                // System.Func`7[T1,T2,T3,T4,T5,T6,TResult]
+                // System.Func`8[T1,T2,T3,T4,T5,T6,T7,TResult]
+                // System.Func`9[T1,T2,T3,T4,T5,T6,T7,T8,TResult]
+                // System.IComparable`1[T]
+                // System.IObservable`1[T]
+                // System.IObserver`1[T]
+                // System.IProgress`1[T]
+                // System.Predicate`1[T]
         }
 
         internal static void LinqToObjects(IEnumerable<Base> baseEnumerable, IEnumerable<Derived> derivedEnumerable)
@@ -447,16 +445,14 @@ namespace System.Collections.Generic
     /// <typeparam name="T">The type of objects to enumerate.This type parameter is covariant. That is, you can use either the type you specified or any type that is more derived. For more information about covariance and contravariance, see Covariance and Contravariance in Generics.</typeparam>
     public interface IEnumerator<out T> : IDisposable, IEnumerator
     {
-        T Current { get; } // T get_Current();
-        // T is covariant for function type Func<T>.
+        T Current { get; } // () –> T, T is covariant.
     }
 
     /// <summary>Exposes the enumerator, which supports a simple iteration over a collection of a specified type.</summary>
     /// <typeparam name="T">The type of objects to enumerate.This type parameter is covariant. That is, you can use either the type you specified or any type that is more derived. For more information about covariance and contravariance, see Covariance and Contravariance in Generics.</typeparam>
     public interface IEnumerable<out T> : IEnumerable
     {
-        IEnumerator<T> GetEnumerator(); // Func<T> GetEnumerator();
-        // T is covariant for higher-order function type Func<Func<T>>.
+        IEnumerator<T> GetEnumerator(); // () –> () –> T, T is covariant.
     }
 }
 
