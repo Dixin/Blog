@@ -50,7 +50,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Functional\QueryExpression.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Functional\QueryExpressionPattern.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Functional\Fundamentals.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Functional\Variance.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Functional\Variances.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\Relationship.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\Changes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\Concurrency.cs" />

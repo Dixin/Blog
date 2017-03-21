@@ -203,17 +203,11 @@ namespace Tutorial.LinqToEntities
                 handleException: exception =>
                 {
                     EntityEntry tracking = exception.Entries.Single();
-#if EF
                     Product original = (Product)tracking.OriginalValues.ToObject();
-#else
-                    PropertyValues originalValues = tracking.OriginalValues.Clone();
-                    originalValues.SetValues(tracking.OriginalValues);
-                    Product original = (Product)originalValues.ToObject();
-#endif
                     Product current = (Product)tracking.CurrentValues.ToObject();
                     Product database = productCopy1; // Values saved in database.
                     $"Original:  ({original.Name},   {original.ListPrice}, {original.ProductSubcategoryID}, {original.RowVersionString})"
-                                .WriteLine();
+                        .WriteLine();
                     $"Database:  ({database.Name}, {database.ListPrice}, {database.ProductSubcategoryID}, {database.RowVersionString})"
                         .WriteLine();
                     $"Update to: ({current.Name}, {current.ListPrice}, {current.ProductSubcategoryID})"
@@ -290,9 +284,6 @@ namespace Tutorial.LinqToEntities
                 UpdateProduct(readerWriter1, readerWriter2, readerWriter3, resolveConflict: tracking =>
                 {
                     PropertyValues originalValues = tracking.OriginalValues.Clone();
-#if !EF
-                    originalValues.SetValues(tracking.OriginalValues);
-#endif
                     PropertyValues databaseValues = tracking.GetDatabaseValues(); // Execute query.
                     // Refresh original values, which go to WHERE clause.
                     tracking.OriginalValues.SetValues(databaseValues);
@@ -474,9 +465,6 @@ namespace Tutorial.LinqToEntities
                     {
                         // When entity is already updated, refresh original values, which go to WHERE clause.
                         PropertyValues originalValues = tracking.OriginalValues.Clone();
-#if !EF
-                        originalValues.SetValues(tracking.OriginalValues);
-#endif
                         tracking.OriginalValues.SetValues(databaseValues);
                         // If database has an different value for a property, then retain the database value.
 #if EF

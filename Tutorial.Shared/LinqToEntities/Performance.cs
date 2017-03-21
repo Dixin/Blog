@@ -451,12 +451,9 @@
                     else
                     {
                         PropertyValues originalValues = tracking.OriginalValues.Clone();
-#if !EF
-                        originalValues.SetValues(tracking.OriginalValues);
-#endif
                         tracking.OriginalValues.SetValues(databaseValues);
 #if EF
-                            databaseValues.PropertyNames
+                        databaseValues.PropertyNames
                             .Where(property => !object.Equals(originalValues[property], databaseValues[property]))
                             .ForEach(property => tracking.Property(property).IsModified = false);
 #else
