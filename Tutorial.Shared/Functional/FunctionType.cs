@@ -73,21 +73,13 @@
 #if DEMO
     public sealed class CompiledFunc<in T1, in T2, out TResult> : MulticastDelegate
     {
-        public CompiledFunc(object @object, IntPtr method)
-        {
-        }
+        public CompiledFunc(object @object, IntPtr method) { }
 
-        public virtual TResult Invoke(T1 arg1, T2 arg2)
-        {
-        }
+        public virtual TResult Invoke(T1 arg1, T2 arg2) { }
 
-        public virtual IAsyncResult BeginInvoke(T1 arg1, T2 arg2, AsyncCallback callback, object @object)
-        {
-        }
+        public virtual IAsyncResult BeginInvoke(T1 arg1, T2 arg2, AsyncCallback callback, object @object) { }
 
-        public virtual void EndInvoke(IAsyncResult result)
-        {
-        }
+        public virtual void EndInvoke(IAsyncResult result) { }
     }
 
     internal static partial class Functions

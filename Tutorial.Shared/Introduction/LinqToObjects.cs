@@ -6,47 +6,16 @@
     using System.Linq;
     using System.Reflection;
 
-    internal partial class LinqToObjects
-    {
-        internal static void QueryExpression()
-        {
-            IEnumerable<int> source = new int[] { 4, 3, 2, 1, 0, -1 }; // Get source.
-            IEnumerable<double> query = from int32 in source
-                                        where int32 > 0
-                                        orderby int32
-                                        select Math.Sqrt(int32); // Define query.
-            foreach (double result in query) // Execute query.
-            {
-                Trace.WriteLine(result);
-            }
-        }
-    }
-
-    internal partial class LinqToObjects
-    {
-        internal static void QueryMethods()
-        {
-            IEnumerable<int> source = new int[] { 4, 3, 2, 1, 0, -1 }; // Get source.
-            IEnumerable<double> query = source
-                .Where(int32 => int32 > 0)
-                .OrderBy(int32 => int32)
-                .Select(int32 => Math.Sqrt(int32)); // Define query.
-            foreach (double result in query) // Execute query.
-            {
-                Trace.WriteLine(result);
-            }
-        }
-    }
-
-    internal static partial class LinqToObjects
+    internal static partial class Linq
     {
         internal static void Dynamic()
         {
             IEnumerable<int> source = new int[] { 4, 3, 2, 1, 0, -1 }; // Get source.
-            IEnumerable<dynamic> query = from dynamic value in source
-                                         where value.ByPass.Compiler.Check > 0
-                                         orderby value.ByPass().Compiler().Check()
-                                         select value & new object(); // Define query.
+            IEnumerable<dynamic> query =
+                from dynamic value in source
+                where value.ByPass.Compiler.Check > 0
+                orderby value.ByPass().Compiler().Check()
+                select value & new object(); // Define query.
             foreach (dynamic result in query) // Execute query.
             {
                 Trace.WriteLine(result);
@@ -54,7 +23,7 @@
         }
     }
 
-    internal static partial class LinqToObjects
+    internal static partial class Linq
     {
         internal static void DelegateTypesQueryExpression()
         {
@@ -77,7 +46,7 @@
         }
     }
 
-    internal static partial class LinqToObjects
+    internal static partial class Linq
     {
         internal static void DelegateTypesQueryMethods()
         {
@@ -99,7 +68,7 @@
         }
     }
 
-    internal partial class LinqToObjects
+    internal partial class Linq
     {
         internal static void CompiledDelegateTypes()
         {

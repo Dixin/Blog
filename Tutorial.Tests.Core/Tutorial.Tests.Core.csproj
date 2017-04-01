@@ -7,11 +7,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="1.1.1" />
-    <PackageReference Include="Microsoft.FSharp.Core.netcore" Version="1.0.0-alpha-161205" />
+    <PackageReference Include="Microsoft.FSharp.Core.netcore" Version="1.0.0-rc-170316-0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
-    <PackageReference Include="Mono.Cecil" Version="0.10.0-beta1-v2" />
-    <PackageReference Include="MSTest.TestAdapter" Version="1.1.13" />
-    <PackageReference Include="MSTest.TestFramework" Version="1.1.13" />
+    <PackageReference Include="Mono.Cecil" Version="0.10.0-beta5" />
+    <PackageReference Include="MSTest.TestAdapter" Version="1.1.14" />
+    <PackageReference Include="MSTest.TestFramework" Version="1.1.14" />
   </ItemGroup>
 
   <ItemGroup>

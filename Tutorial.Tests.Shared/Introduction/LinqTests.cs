@@ -12,8 +12,7 @@
         [TestMethod]
         public async Task LinqToJsonTest()
         {
-            await LinqToJson.QueryExpression("fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4");
-            await LinqToJson.QueryMethods("fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4");
+            await Linq.LinqToJson("fuiKNFp9vQFvjLNvx4sUwti4Yb5yGutBN4Xh10LXZhhRKjWlV4");
         }
     }
 }

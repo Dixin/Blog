@@ -10,10 +10,10 @@ namespace System
     }
 
     [Serializable]
-    public class Exception : ISerializable, _Exception // Derived from System.Object.
+    public class Exception : ISerializable, _Exception // , System.Object.
     {
         internal string _message; // Field.
-        
+
         private Exception _innerException; // Field.
 
         [OptionalField(VersionAdded = 4)]
@@ -69,28 +69,36 @@ namespace System
     }
 }
 
-namespace System.Diagnostics.SymbolStore
+namespace System
 {
-    using System.Runtime.InteropServices;
-
-    [ComVisible(true)]
-    public struct SymbolToken
+    public struct TimeSpan : IComparable, IComparable<TimeSpan>, IEquatable<TimeSpan>, IFormattable // , System.ValueType
     {
-        internal int m_token; // Field.
+        public const long TicksPerMillisecond = 10000; // Constant.
 
-        public SymbolToken(int val) // Constructor.
+        public static readonly TimeSpan Zero = new TimeSpan(0); // Field.
+
+        internal long _ticks; // Field.
+
+        public TimeSpan(long ticks) // COnstructor.
         {
-            this.m_token = val;
+            this._ticks = ticks;
         }
 
-        public bool Equals(SymbolToken obj) // Method.
+        public long Ticks { get { return _ticks; } } // Property.
+
+        public int Milliseconds // Property.
         {
-            return obj.m_token == this.m_token;
+            get { return (int)((_ticks / TicksPerMillisecond) % 1000); }
         }
 
-        public static bool operator ==(SymbolToken a, SymbolToken b) // Operator.
+        public static bool Equals(TimeSpan t1, TimeSpan t2) // Method.
         {
-            return a.Equals(b);
+            return t1._ticks == t2._ticks;
+        }
+
+        public static bool operator ==(TimeSpan t1, TimeSpan t2) // Operator.
+        {
+            return t1._ticks == t2._ticks;
         }
 
         // Other members.
@@ -99,11 +107,8 @@ namespace System.Diagnostics.SymbolStore
 
 namespace System
 {
-    using System.Runtime.InteropServices;
-
-    [ComVisible(true)]
     [Serializable]
-    public enum DayOfWeek
+    public enum DayOfWeek // : int
     {
         Sunday = 0,
         Monday = 1,
@@ -272,9 +277,9 @@ namespace Tutorial.Functional
             SqlConnection connection = new SqlConnection(connectionString);
             try
             {
-                // Use connection object.
                 connection.Open();
-                Trace.WriteLine(connection.ServerVersion); // 13.00.1708
+                Trace.WriteLine(connection.ServerVersion);
+                // Use connection object.
             }
             finally
             {
@@ -292,9 +297,9 @@ namespace Tutorial.Functional
         {
             using (SqlConnection connection = new SqlConnection(connectionString))
             {
-                // Use connection object.
                 connection.Open();
-                Trace.WriteLine(connection.ServerVersion); // 13.00.1708
+                Trace.WriteLine(connection.ServerVersion);
+                // Use connection object.
             }
         }
     }
@@ -308,13 +313,9 @@ namespace Tutorial.Functional
 
     internal class Implementations : IInterface
     {
-        public void Implicit()
-        {
-        }
+        public void Implicit() { }
 
-        void IInterface.Explicit()
-        {
-        }
+        void IInterface.Explicit() { }
     }
 
     internal static partial class Fundamentals

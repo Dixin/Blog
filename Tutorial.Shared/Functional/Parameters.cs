@@ -3,6 +3,7 @@
     using System;
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
+    using System.Text;
 
     internal class Point
     {
@@ -57,7 +58,7 @@
         internal static void Default()
         {
             Point defaultReference = default(Point);
-            (defaultReference is null).WriteLine(); // True.
+            Trace.WriteLine(defaultReference is null); // True
 
             ValuePoint defaultValue = default(ValuePoint);
             Trace.WriteLine(defaultValue.X); // 0
@@ -197,13 +198,18 @@
             PassByValue(GetUri(), value);
         }
 
+        internal static void Named()
+        {
+            UnicodeEncoding unicodeEncoding1 = new UnicodeEncoding(true, true, true);
+            UnicodeEncoding unicodeEncoding2 = new UnicodeEncoding(
+                bigEndian: true, byteOrderMark: true, throwOnInvalidBytes: true);
+        }
+
         internal static void Optional(
             bool required1, char required2,
             int optional1 = int.MaxValue, string optional2 = "Default value.",
             Uri optional3 = null, Guid optional4 = new Guid(),
-            Uri optional5 = default(Uri), Guid optional6 = default(Guid))
-        {
-        }
+            Uri optional5 = default(Uri), Guid optional6 = default(Guid)) { }
 
         internal static void CallOptional()
         {

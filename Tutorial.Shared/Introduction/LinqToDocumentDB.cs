@@ -38,9 +38,9 @@ namespace Tutorial.Introduction
         public string StateProvinceName;
     }
 
-    internal static partial class LinqToDocumentDB
+    internal static partial class Linq
     {
-        internal static void QueryExpression(string key)
+        internal static void LinqToDocumentDB(string key)
         {
             using (DocumentClient client = new DocumentClient(
                 new Uri("https://dixin.documents.azure.com:443/"), key))
@@ -51,27 +51,11 @@ namespace Tutorial.Introduction
                                            where store.Address.Location.City == "Seattle"
                                            orderby store.Name
                                            select store.Name; // Define query.
-                foreach (string result in query) // Execute query.
-                {
-                    Trace.WriteLine(result);
-                }
-            }
-        }
-    }
-
-    internal static partial class LinqToDocumentDB
-    {
-        internal static void QueryMethods(string key)
-        {
-            using (DocumentClient client = new DocumentClient(
-                new Uri("https://dixin.documents.azure.com:443/"), key))
-            {
-                IOrderedQueryable<Store> source = client.CreateDocumentQuery<Store>(
-                    UriFactory.CreateDocumentCollectionUri("dixin", "Store")); // Get source.
-                IQueryable<string> query = source
-                    .Where(store => store.Address.CountryRegionName == "United States")
-                    .OrderBy(store => store.Address.PostalCode)
-                    .Select(store => store.Name); // Define query.
+                // Equivalent to:
+                // IQueryable<string> query = source
+                //    .Where(store => store.Address.CountryRegionName == "United States")
+                //    .OrderBy(store => store.Address.PostalCode)
+                //    .Select(store => store.Name);
                 foreach (string result in query) // Execute query.
                 {
                     Trace.WriteLine(result);

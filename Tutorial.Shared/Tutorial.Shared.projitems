@@ -51,6 +51,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Functional\QueryExpressionPattern.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Functional\Fundamentals.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Functional\Variances.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Introduction\Linq.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\Relationship.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\Changes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\Concurrency.cs" />
@@ -78,15 +79,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Introduction\Functional.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introduction\Functions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introduction\Imperative.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Introduction\LinqToDataSets.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introduction\LinqToDocumentDB.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Introduction\LinqToEntities.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Introduction\LinqToJson.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introduction\LinqToObjects.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introduction\LinqToSql.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Introduction\LinqToTwitter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Introduction\LinqToXml.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Introduction\ParallelLinq.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LambdaCalculus\ChurchAggregateList.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LambdaCalculus\ChurchAggregateList.Generic.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LambdaCalculus\ChurchBoolean.cs" />

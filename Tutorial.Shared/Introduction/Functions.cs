@@ -2,30 +2,28 @@
 {
     using System;
 
-    using Tutorial.CategoryTheory;
-
-    internal static class Functions
+    internal static partial class Functions
     {
-        internal static int Add(int a, int b)
+        internal static int Add(int a, int b) // Pure.
         {
             return a + b;
         }
 
-        internal static void AddToConsole(int a, int b)
+        internal static int AddWithLog(int a, int b) // Impure.
         {
-            Console.WriteLine("{0} => {1}", DateTime.Now.ToString("o"), a + b);
+            int result = a + b;
+            Console.WriteLine("{0} + {1} => {2}", a, b, result);
+            return result;
         }
+    }
 
-        internal static void AddWithCallback(int a, int b, Action<int> callback = null)
+    internal static partial class Functions
+    {
+        internal static int AddWithLog(int a, int b, Action<int, int, int> logger)
         {
-            callback = callback ?? (value => Console.WriteLine(
-                "{0} => {1}", DateTime.Now.ToString("o"), value));
-            callback(a + b);
-        }
-
-        internal static Cps<TContinuation, int> AddCps<TContinuation>(int a, int b)
-        {
-            return continuation => continuation(a + b);
+            int result = a + b;
+            logger(a, b, result);
+            return result;
         }
     }
 }
