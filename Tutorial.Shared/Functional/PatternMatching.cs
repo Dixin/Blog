@@ -68,7 +68,7 @@
         {
             DateTime? nullableDateTime = @object as DateTime?;
             DateTime dateTime = nullableDateTime.GetValueOrDefault();
-            if (nullableDateTime != null) // if (nullableDateTime.HasValue)
+            if (nullableDateTime.HasValue)
             {
                 dateTime.ToString("o").WriteLine();
             }
@@ -126,10 +126,10 @@
                 // Match constant @object.
                 case null:
                     throw new ArgumentNullException(nameof(@object));
-                // Match @object type.
+                // Match value type.
                 case DateTime dateTIme:
                     return dateTIme;
-                // Match @object type with condition.
+                // Match value type with condition.
                 case long ticks when ticks >= 0:
                     return new DateTime(ticks);
                 // Match reference type with condition.
@@ -157,7 +157,7 @@
             // case DateTime dateTIme:
             DateTime? nullableDateTime = @object as DateTime?;
             DateTime dateTime = nullableDateTime.GetValueOrDefault();
-            if (nullableDateTime != null)
+            if (nullableDateTime.HasValue)
             {
                 return dateTime;
             }
@@ -166,7 +166,7 @@
             long? nullableInt64 = @object as long?;
             long ticks = nullableInt64.GetValueOrDefault();
             // when ticks >= 0:
-            if (nullableInt64 != null && ticks >= 0L)
+            if (nullableInt64.HasValue && ticks >= 0L)
             {
                 return new DateTime(ticks);
             }

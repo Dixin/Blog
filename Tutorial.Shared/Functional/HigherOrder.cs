@@ -21,6 +21,7 @@
         }
     }
 
+    // () -> void.
     internal delegate void Function();
 
     internal static partial class Functions
@@ -39,58 +40,72 @@
 
     internal static partial class Functions
     {
-        internal static void AnonymousHigherOrder()
+        internal static void LambdaHigherOrder()
         {
-            Action firstOrder1 = () => Trace.WriteLine(nameof(firstOrder1));
-            firstOrder1(); // firstOrder1
+            Action firstOrder1 = () => nameof(LambdaHigherOrder).WriteLine();
+            firstOrder1(); // LambdaHigherOrder
 
+            // (() -> void) -> void.
+            // Input: function of type () -> void. Output: void.
             Action<Action> higherOrder1 = action => action();
-            higherOrder1(firstOrder1);  // firstOrder1
-            higherOrder1(() => Trace.WriteLine(nameof(higherOrder1))); // higherOrder1
+            higherOrder1(firstOrder1); // firstOrder1
+            higherOrder1(() => nameof(LambdaHigherOrder).WriteLine()); // LambdaHigherOrder
 
-            Func<int> firstOrder2 = () => int.MaxValue;
-            Trace.WriteLine(firstOrder2()); // 0x7FFFFFFF
+            Func<int> firstOrder2 = () => 1;
+            firstOrder2().WriteLine(); // 1
 
+            // () -> (() -> int).
+            // Input: none. Output: function of type () -> int.
             Func<Func<int>> higherOrder2 = () => firstOrder2;
             Func<int> output2 = higherOrder2();
-            Trace.WriteLine(output2()); // 0x7FFFFFFF
+            output2().WriteLine(); // 1
 
-            Func<int, Func<int>> higherOrder3 =
-                int32 => // Input: value of type int.
-                    (() => int32); // Output: function of type Func<int>.
+            // int -> (() -> int).
+            // Input: value of type int. Output: function of type () -> int.
+            Func<int, Func<int>> higherOrder3 = int32 =>
+                (() => int32 + 1);
             Func<int> output3 = higherOrder3(1);
-            Trace.WriteLine(output3()); // 1
+            output3().WriteLine(); // 2
 
-            Func<Func<int>, Func<string>, Func<bool>> higherOrder4 =
-                // Input: int32Factory of type Func<int>, stringFactory of type Func<string>.
-                (int32Factory, stringFactory) =>
-                {
-                    Trace.WriteLine(stringFactory());
-                    return () => int32Factory() > 0; // Output: function of type Func<int>.
-                };
-            Func<bool> output4 = higherOrder4(() => 0, () => nameof(higherOrder4)); // higherOrder4
-            Trace.WriteLine(output4()); // False
+            // (() -> void, () -> int) -> (() -> bool).
+            // Input: function of type () -> void, function of type () -> int. Output: function of type () -> bool.
+            Func<Action, Func<int>, Func<bool>> higherOrder4 = (action, int32Factory) =>
+            {
+                action();
+                return () => int32Factory() > 0;
+            };
+            Func<bool> output4 = higherOrder4(firstOrder1, firstOrder2); // LambdaHigherOrder
+            output4().WriteLine(); // True
+            output4 = higherOrder4(() => nameof(LambdaHigherOrder).WriteLine(), () => 0); // LambdaHigherOrder
+            output4().WriteLine(); // False
+        }
+
+        internal static void AnonymousHigherOrder()
+        {
+            // (() -> void) -> void.
+            new Action<Action>(action => action())(
+                () => nameof(AnonymousHigherOrder).WriteLine());
+
+            // () -> (() -> int).
+            Func<int> output2 = new Func<Func<int>>(() => (() => 1))();
+            output2().WriteLine(); // 1
+
+            // int -> (() -> int).
+            Func<int> output3 = new Func<int, Func<int>>(int32 => (() => int32 + 1))(1);
+            output3().WriteLine(); // 2
+
+            // (() -> int, () -> string) -> (() -> bool).
+            Func<bool> output4 = new Func<Action, Func<int>, Func<bool>>((action, int32Factory) =>
+            {
+                action();
+                return () => int32Factory() > 0;
+            })(() => nameof(LambdaHigherOrder).WriteLine(), () => 0);
+            output4().WriteLine();
         }
 
         internal static void FilterArray(Uri[] array)
         {
             Uri[] notNull = Array.FindAll(array, uri => uri != null);
-        }
-    }
-
-    internal partial class LinqToObjects
-    {
-        internal static void QueryMethods()
-        {
-            IEnumerable<int> source = new int[] { 4, 3, 2, 1, 0, -1 }; // Get source.
-            IEnumerable<double> query = source
-                .Where(predicate: value => value > 0)
-                .OrderBy(keySelector: value => value)
-                .Select(selector: value => Math.Sqrt(value)); // Create query.
-            foreach (double result in query) // Execute query.
-            {
-                Trace.WriteLine(result);
-            }
         }
     }
 
@@ -103,14 +118,14 @@
 
         internal static void Function()
         {
-            Function value = Function; // Named function.
-            new Function(() => { })(); // Anonymous function.
+            Function value1 = Function; // Named function.
+            Function value2 = () => { }; // Anonymous function.
         }
     }
 
     internal static partial class Functions
     {
-        internal static Data dataField = new Data(0);
+        internal static Data field = new Data(0);
 
         internal static Function namedFunctionField = Function;
 
@@ -119,9 +134,9 @@
 
     internal static partial class Functions
     {
-        internal static Data InputOutput(Data value) => value;
+        internal static Data Function(Data value) => value;
 
-        internal static Function InputOutput(Function value) => value;
+        internal static Function Function(Function value) => value;
     }
 
     internal static partial class Functions
@@ -174,9 +189,7 @@
         {
             void Outer()
             {
-                void Inner()
-                {
-                }
+                void Inner() { }
             }
 
             Function outer = () =>
@@ -193,13 +206,15 @@
             Data value1;
             Data value2;
             value1 = value2 = new Data(0);
-            Trace.WriteLine(object.ReferenceEquals(value1, value2)); // True
-            Trace.WriteLine(object.Equals(value1, value2)); // True
+            object.ReferenceEquals(value1, value2).WriteLine(); // True
+            object.Equals(value1, value2).WriteLine(); // True
+            (value1 == value2).WriteLine(); // True
 
             value1 = new Data(1);
             value2 = new Data(1);
-            Trace.WriteLine(object.ReferenceEquals(value1, value2)); // False
-            Trace.WriteLine(object.Equals(value1, value2)); // True
+            object.ReferenceEquals(value1, value2).WriteLine(); // False
+            object.Equals(value1, value2).WriteLine(); // True
+            (value1 == value2).WriteLine(); // True
         }
 
         internal static void FunctionEquality()
@@ -207,13 +222,15 @@
             Function value1;
             Function value2;
             value1 = value2 = () => { };
-            Trace.WriteLine(object.ReferenceEquals(value1, value2)); // True
-            Trace.WriteLine(object.Equals(value1, value2)); // True
+            object.ReferenceEquals(value1, value2).WriteLine(); // True
+            object.Equals(value1, value2).WriteLine(); // True
+            (value1 == value2).WriteLine(); // True
 
             value1 = new Function(Function);
             value2 = new Function(Function);
-            Trace.WriteLine(object.ReferenceEquals(value1, value2)); // False
-            Trace.WriteLine(object.Equals(value1, value2)); // True
+            object.ReferenceEquals(value1, value2).WriteLine(); // False
+            object.Equals(value1, value2).WriteLine(); // True
+            (value1 == value2).WriteLine(); // True
         }
     }
 }

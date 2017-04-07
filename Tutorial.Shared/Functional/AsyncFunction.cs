@@ -173,21 +173,27 @@
                 return await reader.ReadToEndAsync();
             }
         }
+    }
 
+    internal static partial class Functions
+    {
         private static StringBuilder logs = new StringBuilder();
 
         private static StringWriter logWriter = new StringWriter(logs);
 
-        private static async void CollectionChangeAsync(object sender, NotifyCollectionChangedEventArgs e) =>
+        private static async void CollectionChangedAsync(object sender, NotifyCollectionChangedEventArgs e) =>
             await logWriter.WriteLineAsync(e.Action.ToString());
 
         internal static void EventHandler()
         {
             ObservableCollection<int> collection = new ObservableCollection<int>();
-            collection.CollectionChanged += CollectionChangeAsync;
-            collection.Add(1);
+            collection.CollectionChanged += CollectionChangedAsync;
+            collection.Add(1); // Fires CollectionChanged event.
         }
+    }
 
+    internal static partial class Functions
+    {
         internal static async Task AwaitTasks(string path)
         {
             // string contents = await ReadAsync(path);
@@ -217,12 +223,14 @@
 
         internal static async Task HotColdTasks(string path)
         {
-            Task task1 = new Task(() => { });
-            task1.Start();
-            await task1; // Hot task.
+            Task hotTask = new Task(() => { });
+            hotTask.Start();
+            await hotTask;
+            hotTask.Status.WriteLine();
 
-            Task<int> task2 = new Task<int>(() => 0);
-            int result = await task2; // Cold task.
+            Task coldTask = new Task(() => { });
+            await coldTask;
+            coldTask.Status.WriteLine(); // Never executes.
         }
     }
 
@@ -714,7 +722,7 @@ namespace System.Threading.Tasks
 
     public partial class Task : IAsyncResult
     {
-        public Task(Action action);
+        public Task(Action action); // () -> void
 
         public void Start();
 
@@ -739,7 +747,7 @@ namespace System.Threading.Tasks
 
     public partial class Task<TResult> : Task
     {
-        public Task(Func<TResult> function);
+        public Task(Func<TResult> function); // () -> TResult
 
         public TResult Result { get; }
 
@@ -814,7 +822,7 @@ namespace System.Collections.ObjectModel
     {
         public event NotifyCollectionChangedEventHandler CollectionChanged;
 
-        // Other members;
+        // Other members.
     }
 }
 

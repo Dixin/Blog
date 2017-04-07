@@ -93,19 +93,19 @@
 
     internal class PostfixVisitor : BinaryArithmeticExpressionVisitor<List<(OpCode, double?)>>
     {
-        protected override List<(OpCode, double?)> VisitAdd
-            (BinaryExpression add, LambdaExpression expression) => this.VisitBinary(add, OpCodes.Add, expression);
+        protected override List<(OpCode, double?)> VisitAdd(
+            BinaryExpression add, LambdaExpression expression) => this.VisitBinary(add, OpCodes.Add, expression);
 
         protected override List<(OpCode, double?)> VisitConstant(
             ConstantExpression constant, LambdaExpression expression) =>
                 new List<(OpCode, double?)>() { (OpCodes.Ldc_R8, (double?)constant.Value) };
 
-        protected override List<(OpCode, double?)> VisitDivide
-            (BinaryExpression divide, LambdaExpression expression) =>
+        protected override List<(OpCode, double?)> VisitDivide(
+            BinaryExpression divide, LambdaExpression expression) =>
                 this.VisitBinary(divide, OpCodes.Div, expression);
 
-        protected override List<(OpCode, double?)> VisitMultiply
-            (BinaryExpression multiply, LambdaExpression expression) =>
+        protected override List<(OpCode, double?)> VisitMultiply(
+            BinaryExpression multiply, LambdaExpression expression) =>
                 this.VisitBinary(multiply, OpCodes.Mul, expression);
 
         protected override List<(OpCode, double?)> VisitParameter(
@@ -115,8 +115,8 @@
             return new List<(OpCode, double?)>() { (OpCodes.Ldarg_S, (double?)index) };
         }
 
-        protected override List<(OpCode, double?)> VisitSubtract
-            (BinaryExpression subtract, LambdaExpression expression) =>
+        protected override List<(OpCode, double?)> VisitSubtract(
+            BinaryExpression subtract, LambdaExpression expression) =>
                 this.VisitBinary(subtract, OpCodes.Sub, expression);
 
         private List<(OpCode, double?)> VisitBinary( // Recursion: left, right, operator
@@ -177,9 +177,9 @@
 
             PostfixVisitor postfixVisitor = new PostfixVisitor();
             IEnumerable<(OpCode, double?)> postfix = postfixVisitor.VisitBody(infix);
-            foreach ((OpCode, double?) code in postfix)
+            foreach ((OpCode Operator, double? Operand) code in postfix)
             {
-                Trace.WriteLine($"{code.Item1} {code.Item2}");
+                $"{code.Operator} {code.Operand}".WriteLine();
             }
             // ldarg.s 0
             // ldarg.s 1
@@ -210,27 +210,23 @@
             return (TDelegate)(object)dynamicFunction.CreateDelegate(typeof(TDelegate));
         }
 
-        private static void EmitIL(ILGenerator ilGenerator, IEnumerable<(OpCode, double?)> codes)
+        private static void EmitIL(ILGenerator ilGenerator, IEnumerable<(OpCode, double?)> il)
         {
-            foreach ((OpCode, double?) code in codes)
+            foreach ((OpCode Operation, double? Operand) code in il)
             {
-                if (code.Item2.HasValue)
+                if (code.Operand == null)
                 {
-                    if (code.Item1 == OpCodes.Ldarg_S)
-                    {
-                        ilGenerator.Emit(code.Item1, (int)code.Item2.Value); // ldarg.s (int)index
-                    }
-                    else
-                    {
-                        ilGenerator.Emit(code.Item1, code.Item2.Value); // ldc.r8 (double)constant
-                    }
+                    ilGenerator.Emit(code.Operation); // add, sub, mul, div
+                }
+                else if (code.Operation == OpCodes.Ldarg_S)
+                {
+                    ilGenerator.Emit(code.Operation, (int)code.Operand); // ldarg.s (int)index
                 }
                 else
                 {
-                    ilGenerator.Emit(code.Item1); // add, sub, mul, div
+                    ilGenerator.Emit(code.Operation, code.Operand.Value); // ldc.r8 (double)constant
                 }
             }
-
             ilGenerator.Emit(OpCodes.Ret); // Returns the result.
         }
     }

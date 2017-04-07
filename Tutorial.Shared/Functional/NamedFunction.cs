@@ -142,7 +142,7 @@
     {
         internal static void Property(Device device)
         {
-            string description = device.Description; // Compiled to device.get_Description).
+            string description = device.Description; // Compiled to device.get_Description().
             device.Description = string.Empty; // Compiled to device.set_Description(string.Empty).
         }
     }
@@ -406,68 +406,6 @@
     }
 
 #if DEMO
-    internal partial class Data
-    {
-        private int value;
-
-        internal Data(int value) => this.value = value; // Constructor.
-
-        internal int ReadOnlyValue => this.value; // Read only property.
-
-        internal int ReadWriteValue // Read write property.
-        {
-            get => this.value;
-            set => this.value = value;
-        }
-
-        internal bool Equals(Data other) => this.value == other.value; // Instance method.
-
-        internal static bool Equals(Data @this, Data other) => @this.value == other.value; // Static method.
-
-        internal void WriteLine() => Trace.WriteLine(this.value); // Method returning void.
-
-        internal object NotImplemented() => throw new NotImplementedException(); // Method throwing exception.
-
-        internal int GetValue()
-        {
-            int LocalFunction() => this.value; // Local function.
-            return LocalFunction();
-        }
-
-        public static Data operator +(Data data1, Data Data) => new Data(data1.value + Data.value); // Operator.
-
-        public static explicit operator int(Data value) => value.value; // explicit convertion.
-
-        public static implicit operator Data(int value) => new Data(value); // implicit convertion.
-    }
-
-    internal partial class Data : IComparable<Data>
-    {
-        int IComparable<Data>.CompareTo(Data other) => this.value.CompareTo(other.value); // Explicit interface implementaion.
-    }
-
-    internal static partial class DataExtensions
-    {
-        internal static bool Equals(Data @this, Data other) => @this.ReadOnlyValue == other.Value; // Extension method.
-    }
-#endif
-
-    internal partial class Data
-    {
-        private readonly int[] values;
-
-        internal Data(int[] values) => this.values = values;
-
-        internal int this[long index] => this.values[index]; // Read only indexer.
-
-        internal int this[int index] // Read write indexer.
-        {
-            get => this.values[index];
-            set => this.values[index] = value;
-        }
-    }
-
-#if DEMO
     [Table(Name = "Production.Product")]
     public partial class Product : INotifyPropertyChanging, INotifyPropertyChanged
     {
@@ -553,12 +491,7 @@ namespace System.Diagnostics
 
 namespace System
 {
-    using System.Runtime.InteropServices;
-    using System.Runtime.Serialization;
-
-    [Serializable]
-    [StructLayout(LayoutKind.Auto)]
-    public struct DateTime : IComparable, IFormattable, IConvertible, ISerializable, IComparable<DateTime>, IEquatable<DateTime>
+    public struct DateTime : IComparable, IComparable<DateTime>, IConvertible, IEquatable<DateTime>, IFormattable
     {
         public DateTime(long ticks);
 
@@ -568,7 +501,7 @@ namespace System
 
         public DateTime(int year, int month, int day, int hour, int minute, int second, int millisecond);
 
-        // Other constructor overloads.
+        // Other constructor overloads and other members.
     }
 }
 
@@ -585,7 +518,7 @@ namespace System.Data
 
         public object this[int columnIndex] { get; set; }
 
-        // Other indexer overloads.
+        // Other indexer overloads and other members.
     }
 }
 

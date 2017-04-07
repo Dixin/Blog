@@ -44,14 +44,11 @@
         internal static void AnonymousFunction()
         {
             Func<int, bool> isPositive;
-            if (cachedIsPositive != null)
+            if (cachedIsPositive == null)
             {
-                isPositive = cachedIsPositive;
+                cachedIsPositive = new Func<int, bool>(IsPositive);
             }
-            else
-            {
-                isPositive = cachedIsPositive = new Func<int, bool>(IsPositive);
-            }
+            isPositive = cachedIsPositive;
             bool result = isPositive.Invoke(0);
         }
     }
@@ -96,8 +93,17 @@
         internal static void ConstructorCall()
         {
             Func<int, int, int> add = new Func<int, int, int>((int32A, int32B) => int32A + int32B);
-
             Func<int, bool> isPositive = new Func<int, bool>(int32 =>
+            {
+                Trace.WriteLine(int32);
+                return int32 > 0;
+            });
+        }
+
+        internal static void TypeConversion()
+        {
+            Func<int, int, int> add = (Func<int, int, int>)((int32A, int32B) => int32A + int32B);
+            Func<int, bool> isPositive = (Func<int, bool>)(int32 =>
             {
                 Trace.WriteLine(int32);
                 return int32 > 0;
@@ -144,14 +150,11 @@
         internal static void CallLambdaExpressionWithConstructor()
         {
             Func<int, bool> isPositive;
-            if (Container.cachedIsPositive != null)
+            if (Container.cachedIsPositive == null)
             {
-                isPositive = Container.cachedIsPositive;
+                Container.cachedIsPositive = new Func<int, bool>(Container.Singleton.IsPositive);
             }
-            else
-            {
-                isPositive = Container.cachedIsPositive = new Func<int, bool>(Container.Singleton.IsPositive);
-            }
+            isPositive = Container.cachedIsPositive;
             bool result = isPositive.Invoke(1);
         }
     }
@@ -226,4 +229,57 @@
             display.Add(); // 3
         }
     }
+
+#if DEMO
+    internal partial class Data
+    {
+        private int value;
+
+        static Data2() => Trace.WriteLine(Functions.GetCurrentName()); // Static constructor.
+
+        internal Data(int value) => this.value = value; // Constructor.
+
+        internal bool Equals(Data other) => this.value == other.value; // Instance method.
+
+        internal static bool Equals(Data @this, Data other) => @this.value == other.value; // Static method.
+
+        public static Data operator +(Data data1, Data Data) => new Data(data1.value + Data.value); // Operator overload.
+
+        public static explicit operator int(Data value) => value.value; // Conversion operator.
+
+        public static implicit operator Data(int value) => new Data(value); // Conversion operator.
+
+        internal int ReadOnlyValue => this.value; // Property.
+
+        internal int ReadWriteValue
+        {
+            get => this.value; // Property getter.
+            set => this.value = value; // Property setter.
+        }
+
+        internal int this[long index] => throw new NotImplementedException(); // Indexer.
+
+        internal int this[int index]
+        {
+            get => throw new NotImplementedException(); // Indexer getter.
+            set => throw new NotImplementedException(); // Indexer setter.
+        }
+
+        internal int GetValue()
+        {
+            int LocalFunction() => this.value; // Local function.
+            return LocalFunction();
+        }
+    }
+
+    internal static partial class DataExtensions
+    {
+        internal static bool Equals(Data @this, Data other) => @this.ReadOnlyValue == other.Value; // Extension method.
+    }
+
+    internal partial class Data : IComparable<Data>
+    {
+        int IComparable<Data>.CompareTo(Data other) => this.value.CompareTo(other.value); // Explicit interface implementation.
+    }
+#endif
 }

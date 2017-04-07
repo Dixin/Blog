@@ -140,6 +140,7 @@
     <Content Include="$(MSBuildThisFileDirectory)Functional\HigherOrder.hs" />
     <Content Include="$(MSBuildThisFileDirectory)Functional\LambdaExpression.txt" />
     <Content Include="$(MSBuildThisFileDirectory)Functional\Optional.il" />
+    <Content Include="$(MSBuildThisFileDirectory)Introduction\Core.xml" />
     <Content Include="$(MSBuildThisFileDirectory)Introduction\DotNet.txt" />
     <Content Include="$(MSBuildThisFileDirectory)LinqToEntities\AdventureWorks.Trim.sql" />
     <Content Include="$(MSBuildThisFileDirectory)LinqToEntities\Inheritance.sql" />

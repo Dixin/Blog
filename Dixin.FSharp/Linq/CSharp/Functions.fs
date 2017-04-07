@@ -10,18 +10,19 @@
             |> ignore
 
         let Curry : unit -> unit = fun () ->
-            let add: int -> int -> int = fun a b -> a + b
-            let add1: int -> int = add 1
-            let addResult : int = add1 2
+            let curriedAdd2: int -> (int -> int) = fun a -> (fun b -> a + b)
+            let add1: int -> int = curriedAdd2 1
+            let curriedAdd2Result: int = add1 2
+            ()
 
-            let curriedAdd: int -> (int -> int) = fun a -> fun b -> a + b
-            let add1 = curriedAdd 1
-            let curriedAddResult : int = add1 2
+        let DefaultCurry : unit -> unit = fun () ->
+            let add2: int -> int -> int = fun a b -> a + b
+            let add2Result: int = add2 1 2
             ()
 
         let Uncurry : unit -> unit = fun () ->
-            let addTuple: int * int -> int = fun (a, b) -> a + b
-            let addTupleResult = addTuple (1, 2) // addTuple(Tuple.Create(1, 2))
+            let add2Tuple: int * int -> int = fun (a, b) -> a + b
+            let add2TupleResult = add2Tuple (1, 2) // add2Tuple(Tuple.Create(1, 2))
             ()
 
         let CompositionOperator : unit -> unit = fun () ->
@@ -30,6 +31,10 @@
 
             // let (<<) : ('TResult1 -> 'TResult2) -> ('T -> 'TResult1) -> ('T -> 'TResult2) = fun function2 function1 value -> function2 (function1 value)
             let inline (<<) function2 function1 value = function2 (function1 value)
+
+            let composition1 = Int32.Parse >> Math.Abs >> Convert.ToDouble >> Math.Sqrt
+
+            let composition2 = Math.Sqrt << (Convert.ToDouble: int -> double) << (Math.Abs: int -> int) << Int32.Parse
             ()
 
         let Composite : unit -> unit = fun () ->

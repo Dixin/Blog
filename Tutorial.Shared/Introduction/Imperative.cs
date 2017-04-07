@@ -143,9 +143,7 @@
 
     internal class OneDriveClient
     {
-        internal void Upload(FileInfo file)
-        {
-        }
+        internal void Upload(FileInfo file) { }
     }
 
     internal class DocumentBuilder

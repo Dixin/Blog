@@ -15,9 +15,7 @@ namespace Tutorial.Introduction
             return default(FileInfo);
         }
 
-        internal static void UploadToOneDrive(FileInfo file)
-        {
-        }
+        internal static void UploadToOneDrive(FileInfo file) { }
 
         internal static Action<Uri, FileInfo> CreateDocumentBuilder(
             Func<Uri, FileInfo> download, Func<FileInfo, FileInfo, FileInfo> convert, Action<FileInfo> upload)

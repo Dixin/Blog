@@ -5,10 +5,10 @@
     using System.Linq;
     using System.Reflection;
 
-#if DEMO
     internal static partial class Int32Extensions
     {
-        internal static TResult Select<TResult>(this int int32, Func<int, TResult> selector) => selector(int32);
+        internal static TResult Select<TResult>(this int int32, Func<int, TResult> selector) => 
+            selector(int32);
     }
 
     internal static partial class QueryExpression
@@ -17,7 +17,6 @@
         {
             int mapped1 = from zero in default(int) // 0
                           select zero; // 0
-
             double mapped2 = from three in 1 + 2 // 3
                              select Math.Sqrt(three + 1); // 2
         }
@@ -27,14 +26,16 @@
     {
         internal static void CompiledSelectInt32()
         {
-            int mapped1 = default(int).Select(zero => zero); // 0
-            double mapped2 = (1 + 2).Select(three => Math.Sqrt(three + 1)); // 2
+            int mapped1 = Int32Extensions.Select(default(int), zero => zero); // 0
+            double mapped2 = Int32Extensions.Select(1 + 2, three => Math.Sqrt(three + 1)); // 2
         }
     }
 
+#if DEMO
     internal static partial class ObjectExtensions
     {
-        internal static TResult Select<TSource, TResult>(this TSource value, Func<TSource, TResult> selector) => selector(value);
+        internal static TResult Select<TSource, TResult>(this TSource value, Func<TSource, TResult> selector) => 
+            selector(value);
     }
 
     internal static partial class QueryExpression
@@ -47,7 +48,7 @@
 
         internal static void CompiledSelectGuid()
         {
-            string mapped = Guid.NewGuid().Select(newGuid => newGuid.ToString());
+            string mapped = ObjectExtensions.Select(Guid.NewGuid(), newGuid => newGuid.ToString());
         }
     }
 #endif

@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Globalization;
     using System.Linq;
 
@@ -10,117 +9,118 @@
     {
         internal static void OutputAsInput()
         {
-            double input = -2D;
-            double middle = Math.Abs(input);
-            double output = Math.Sqrt(middle);
+            string input = "-2";
+            int output1 = int.Parse(input); // string -> int
+            int output2 = Math.Abs(output1); // int -> int
+            double output3 = Convert.ToDouble(output2); // int -> double
+            double output4 = Math.Sqrt(output3); // double -> double
         }
 
-        internal static double AbsSqrt(double @double) => Math.Sqrt(Math.Abs(@double));
+        // string -> double
+        internal static double Composition(string input) => 
+            Math.Sqrt(Convert.ToDouble(Math.Abs(int.Parse(input))));
 
         internal static void Compose()
         {
-            Func<double, double> sqrt = Math.Sqrt;
-            Func<double, double> abs = Math.Abs;
+            Func<string, int> parse = int.Parse; // string -> int
+            Func<int, int> abs = Math.Abs; // int -> int
+            Func<int, double> convert = Convert.ToDouble; // int -> double
+            Func<double, double> sqrt = Math.Sqrt; // double -> double
 
-            Func<double, double> absSqrt1 = sqrt.After(abs);
-            Trace.WriteLine(absSqrt1(-2D)); // 1.4142135623731
+            // string -> double
+            Func<string, double> composition1 = sqrt.After(convert).After(abs).After(parse);
+            composition1("-2.0").WriteLine(); // 1.4142135623731
 
-            Func<double, double> absSqrt2 = abs.Then(sqrt);
-            Trace.WriteLine(absSqrt2(-2D)); // 1.4142135623731
+            // string -> double
+            Func<string, double> composition2 = parse.Then(abs).Then(convert).Then(sqrt);
+            composition2("-2.0").WriteLine(); // 1.4142135623731
         }
 
         internal static void Linq()
         {
-            Func<IEnumerable<int>, IEnumerable<int>> filter = source => Enumerable.Where(source, int32 => int32 > 0);
-            Func<IEnumerable<int>, IEnumerable<int>> sort = filtered => Enumerable.OrderBy(filtered, int32 => int32);
-            Func<IEnumerable<int>, IEnumerable<double>> map = sorted => Enumerable.Select(sorted, int32 => Math.Sqrt(int32));
-            IEnumerable<double> query = map(sort(filter(new int[] { 4, 3, 2, 1, 0, -1 })));
-            foreach (double result in query) // Execute query.
+            Func<IEnumerable<int>, IEnumerable<int>> where = source => Enumerable.Where(source, int32 => int32 > 0);
+            Func<IEnumerable<int>, IEnumerable<int>> skip = filtered => Enumerable.Skip(filtered, 1);
+            Func<IEnumerable<int>, IEnumerable<int>> take = skipped => Enumerable.Take(skipped, 2);
+            IEnumerable<int> query = take(skip(where(new int[] { 4, 3, 2, 1, 0, -1 })));
+            foreach (int result in query) // Execute query.
             {
-                Trace.WriteLine(result);
+                result.WriteLine();
             }
         }
 
         internal static void ComposeLinq()
         {
-            Func<IEnumerable<int>, IEnumerable<double>> filterSortMap =
+            Func<IEnumerable<int>, IEnumerable<int>> composition =
                 new Func<IEnumerable<int>, IEnumerable<int>>(source => Enumerable.Where(source, int32 => int32 > 0))
-                    .Then(filtered => Enumerable.OrderBy(filtered, int32 => int32))
-                    .Then(sorted => Enumerable.Select(sorted, int32 => Math.Sqrt(int32)));
-            IEnumerable<double> query = filterSortMap(new int[] { 4, 3, 2, 1, 0, -1 });
-            foreach (double result in query) // Execute query.
+                    .Then(filtered => Enumerable.Skip(filtered, 1))
+                    .Then(skipped => Enumerable.Take(skipped, 2));
+            IEnumerable<int> query = composition(new int[] { 4, 3, 2, 1, 0, -1 });
+            foreach (int result in query) // Execute query.
             {
-                Trace.WriteLine(result);
+                result.WriteLine();
+            }
+        }
+
+        // Func<TSource, bool> -> IEnumerable<TSource> -> IEnumerable<TSource>
+        internal static Func<IEnumerable<TSource>, IEnumerable<TSource>> Where<TSource>(
+            Func<TSource, bool> predicate) => (IEnumerable<TSource> source) => Enumerable.Where(source, predicate);
+
+        // int -> IEnumerable<TSource> -> IEnumerable<TSource>
+        internal static Func<IEnumerable<TSource>, IEnumerable<TSource>> Skip<TSource>(
+            int count) => source => Enumerable.Skip(source, count);
+
+        // int -> IEnumerable<TSource> -> IEnumerable<TSource>
+        internal static Func<IEnumerable<TSource>, IEnumerable<TSource>> Take<TSource>(
+            int count) => source => Enumerable.Take(source, count);
+
+        internal static void LinqWithPartialApplication()
+        {
+            // IEnumerable<TSource> -> IEnumerable<TSource>
+            Func<IEnumerable<int>, IEnumerable<int>> where = Where<int>(int32 => int32 > 0);
+            Func<IEnumerable<int>, IEnumerable<int>> skip = Skip<int>(1);
+            Func<IEnumerable<int>, IEnumerable<int>> take = Take<int>(2);
+
+            IEnumerable<int> query = take(skip(where(new int[] { 4, 3, 2, 1, 0, -1 })));
+            foreach (int result in query) // Execute query.
+            {
+                result.WriteLine();
+            }
+        }
+
+        internal static void ComposeLinqWithPartialApplication()
+        {
+            Func<IEnumerable<int>, IEnumerable<int>> composition =
+                Where<int>(int32 => int32 > 0)
+                .Then(Skip<int>(1))
+                .Then(Take<int>(2));
+
+            IEnumerable<int> query = composition(new int[] { 4, 3, 2, 1, 0, -1 });
+            foreach (int result in query) // Execute query.
+            {
+                result.WriteLine();
             }
         }
 
         internal static void Forward()
         {
-            (-2D)
-                .Forward(Math.Abs)
-                .Forward(Math.Sqrt)
-                .ToString(CultureInfo.InvariantCulture)
-                .Forward(Console.WriteLine);
+            "-2"
+                .Forward(int.Parse) // string -> int
+                .Forward(Math.Abs) // int -> int
+                .Forward(Convert.ToDouble) // int -> double
+                .Forward(Math.Sqrt) // double -> double
+                .Forward(Console.WriteLine); // double -> void
 
             // Equivalent to:
-            Console.WriteLine(Math.Sqrt(Math.Abs(-2D)).ToString(CultureInfo.InvariantCulture));
-        }
-
-        internal static void ForwardLinq()
-        {
-            IEnumerable<int> source = new int[] { 4, 3, 2, 1, 0, -1 };
-            IEnumerable<double> query = source
-                .Forward(Enumerable.Where, new Func<int, bool>(int32 => int32 > 0))
-                .Forward(Enumerable.OrderBy, new Func<int, int>(int32 => int32))
-                .Forward(Enumerable.Select, new Func<int, double>(int32 => Math.Sqrt(int32)));
-            foreach (double result in query)
-            {
-                Trace.WriteLine(result);
-            }
-        }
-
-        private static readonly Func<Func<int, bool>, IEnumerable<int>, IEnumerable<int>> 
-            Filter = (predicate, source) => Enumerable.Where(source, predicate);
-
-        private static readonly Func<Func<int, int>, IEnumerable<int>, IEnumerable<int>> 
-            Sort = (keySelector, source) => Enumerable.OrderBy(source, keySelector);
-
-        private static readonly Func<Func<int, double>, IEnumerable<int>, IEnumerable<double>> 
-            Map = (selector, source) => Enumerable.Select(source, selector);
-
-        internal static void ComposeAndPartialApply()
-        {
-            Func<IEnumerable<int>, IEnumerable<double>> filterSortMap =
-                Filter.Partial(int32 => int32 > 0)
-                    .Then(Sort.Partial(int32 => int32))
-                    .Then(Map.Partial(int32 => Math.Sqrt(int32)));
-            IEnumerable<double> query = filterSortMap(new int[] { 4, 3, 2, 1, 0, -1 });
-            foreach (double result in query) // Execute query.
-            {
-                Trace.WriteLine(result);
-            }
-        }
-
-        internal static void ForwardWithPartialApply()
-        {
-            IEnumerable<int> source = new int[] { 4, 3, 2, 1, 0, -1 };
-            IEnumerable<double> query = source
-                .Forward(Filter.Partial(int32 => int32 > 0))
-                .Forward(Sort.Partial(int32 => int32))
-                .Forward(Map.Partial(int32 => Math.Sqrt(int32)));
-            foreach (double result in query)
-            {
-                Trace.WriteLine(result);
-            }
+            Console.WriteLine(Math.Sqrt(Convert.ToDouble(Math.Abs(int.Parse("-2")))));
         }
 
         internal static void ForwardAndNullConditional(IDictionary<string, object> dictionary, string key)
         {
-            object valueObject = dictionary[key];
+            object value = dictionary[key];
             DateTime? dateTime1;
-            if (valueObject != null)
+            if (value != null)
             {
-                dateTime1 = Convert.ToDateTime(valueObject);
+                dateTime1 = Convert.ToDateTime(value);
             }
             else
             {
@@ -128,7 +128,20 @@
             }
 
             // Equivalent to:
-            DateTime? creationDate2 = dictionary[key]?.Forward(Convert.ToDateTime);
+            DateTime? dateTime2 = dictionary[key]?.Forward(Convert.ToDateTime);
+        }
+
+        internal static void ForwardLinqWithPartialApplication()
+        {
+            IEnumerable<int> source = new int[] { 4, 3, 2, 1, 0, -1 };
+            IEnumerable<int> query = source
+                .Forward(Where<int>(int32 => int32 > 0))
+                .Forward(Skip<int>(1))
+                .Forward(Take<int>(2));
+            foreach (int result in query) // Execute query.
+            {
+                result.WriteLine();
+            }
         }
 
         internal static void InstanceMethodChaining(string @string)
@@ -153,11 +166,17 @@ namespace System.Linq
 
     public static class Enumerable
     {
+        // (IEnumerable<TSource>, TSource -> bool) -> IEnumerable<TSource>
         public static IEnumerable<TSource> Where<TSource>(
             this IEnumerable<TSource> source, Func<TSource, bool> predicate);
 
-        public static IEnumerable<TResult> Select<TSource, TResult>(
-            this IEnumerable<TSource> source, Func<TSource, TResult> selector);
+        // (IEnumerable<TSource>, int) -> IEnumerable<TSource>
+        public static IEnumerable<TSource> Skip<TSource>(
+            this IEnumerable<TSource> source, int count);
+
+        // (IEnumerable<TSource>, int) -> IEnumerable<TSource>
+        public static IEnumerable<TSource> Take<TSource>(
+            this IEnumerable<TSource> source, int count);
 
         // Other members...
     }
