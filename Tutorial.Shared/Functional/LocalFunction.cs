@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.Runtime.CompilerServices;
     using System.Runtime.InteropServices;
@@ -13,7 +12,7 @@
         {
             void LocalFunction() // Define local function.
             {
-                Trace.WriteLine(nameof(LocalFunction));
+                nameof(LocalFunction).WriteLine();
             }
             LocalFunction(); // Call local function.
         }
@@ -25,7 +24,7 @@
                 LocalFunction(); // Call local function.
                 void LocalFunction() // Define local function.
                 {
-                    Trace.WriteLine(nameof(LocalFunction));
+                    nameof(LocalFunction).WriteLine();
                 }
                 LocalFunction(); // Call local function.
                 return 0;
@@ -184,7 +183,7 @@
             internal void Add()
             {
                 int local = 2; // Inside the scope of method Add.
-                Trace.WriteLine(local + outer); // this.outer field.
+                (local + outer).WriteLine(); // this.outer field.
             }
         }
 
@@ -194,7 +193,7 @@
             void Add()
             {
                 int local = 2; // Inside the scope of function Add.
-                Trace.WriteLine(local + outer);
+                (local + outer).WriteLine();
             }
             Add(); // 3
         }
@@ -209,7 +208,7 @@
         private static void Add(ref Display0 display)
         {
             int local = 2;
-            Trace.WriteLine(local + display.Outer);
+            (local + display.Outer).WriteLine();
         }
 
         internal static void CompiledLocalFunctionClosure()
@@ -226,7 +225,7 @@
             void Add()
             {
                 int local = 2; // Inside the scope of function Add.
-                Trace.WriteLine(local + outer);
+                (local + outer).WriteLine();
             }
 
             Add(); // 3
@@ -250,7 +249,7 @@
             {
                 void LocalFunction()
                 {
-                    Trace.WriteLine(outer); // outer is 0, 1, 2.
+                    outer.WriteLine(); // outer is 0, 1, 2.
                 }
 
                 localFunctions.Add(LocalFunction);
@@ -270,7 +269,7 @@
                 // When outer changes, copyOfOuter does not change.
                 void LocalFunction()
                 {
-                    Trace.WriteLine(copyOfOuter);
+                    copyOfOuter.WriteLine();
                 }
 
                 localFunctions.Add(LocalFunction);
@@ -288,7 +287,7 @@
 
             internal void LocalFunction()
             {
-                Trace.WriteLine(this.CopyOfOuter);
+                this.CopyOfOuter.WriteLine();
             }
         }
 

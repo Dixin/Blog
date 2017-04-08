@@ -72,17 +72,17 @@
         internal static void CurryAction()
         {
             // (int, int) -> void
-            Action<int, int> traceAdd2 = (a, b) => Trace.WriteLine(a + b);
+            Action<int, int> traceAdd2 = (a, b) => (a + b).WriteLine();
             traceAdd2(1, 2);
             // int -> int -> void
-            Func<int, Action<int>> curriedTraceAdd2 = a => b => Trace.WriteLine(a + b);
+            Func<int, Action<int>> curriedTraceAdd2 = a => b => (a + b).WriteLine();
             curriedTraceAdd2(1)(2);
 
             // (int, int, int) -> void
-            Action<int, int, int> traceAdd3 = (a, b, c) => Trace.WriteLine(a + b + c);
+            Action<int, int, int> traceAdd3 = (a, b, c) => (a + b + c).WriteLine();
             traceAdd3(1, 2, 3);
             // int -> int -> int -> void
-            Func<int, Func<int, Action<int>>> curriedTraceAdd3 = a => b => c => Trace.WriteLine(a + b + c);
+            Func<int, Func<int, Action<int>>> curriedTraceAdd3 = a => b => c => (a + b + c).WriteLine();
             curriedTraceAdd3(1)(2)(3);
         }
 
@@ -127,7 +127,7 @@
             Func<int, int> add1 = add2.Partial(1);
             int add2Result = add1(2);
 
-            Action<int, int> traceAdd2 = (a, b) => Trace.WriteLine(a + b);
+            Action<int, int> traceAdd2 = (a, b) => (a + b).WriteLine();
             Action<int> traceAdd1 = traceAdd2.Partial(1);
             traceAdd1(2);
         }
@@ -141,7 +141,7 @@
             int add3Result = add3(1, 2, 3);
 
             // int -> int -> int -> void
-            Func<int, Func<int, Action<int>>> curriedTraceAdd3 = a => b => c => Trace.WriteLine(a + b + c);
+            Func<int, Func<int, Action<int>>> curriedTraceAdd3 = a => b => c => (a + b + c).WriteLine();
             // (int -> int -> int) -> void
             Action<int, int, int> traceAdd3 = curriedTraceAdd3.Uncurry();
             traceAdd3(1, 2, 3);

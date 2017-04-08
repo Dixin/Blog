@@ -1,9 +1,6 @@
 ﻿namespace Tutorial.Functional
 {
     using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Linq;
 
     internal partial class Data { }
 
@@ -45,7 +42,7 @@
             Action firstOrder1 = () => nameof(LambdaHigherOrder).WriteLine();
             firstOrder1(); // LambdaHigherOrder
 
-            // (() -> void) -> void.
+            // (() -> void) -> void
             // Input: function of type () -> void. Output: void.
             Action<Action> higherOrder1 = action => action();
             higherOrder1(firstOrder1); // firstOrder1
@@ -54,20 +51,20 @@
             Func<int> firstOrder2 = () => 1;
             firstOrder2().WriteLine(); // 1
 
-            // () -> (() -> int).
+            // () -> (() -> int)
             // Input: none. Output: function of type () -> int.
             Func<Func<int>> higherOrder2 = () => firstOrder2;
             Func<int> output2 = higherOrder2();
             output2().WriteLine(); // 1
 
-            // int -> (() -> int).
+            // int -> (() -> int)
             // Input: value of type int. Output: function of type () -> int.
             Func<int, Func<int>> higherOrder3 = int32 =>
                 (() => int32 + 1);
             Func<int> output3 = higherOrder3(1);
             output3().WriteLine(); // 2
 
-            // (() -> void, () -> int) -> (() -> bool).
+            // (() -> void, () -> int) -> (() -> bool)
             // Input: function of type () -> void, function of type () -> int. Output: function of type () -> bool.
             Func<Action, Func<int>, Func<bool>> higherOrder4 = (action, int32Factory) =>
             {
@@ -82,19 +79,19 @@
 
         internal static void AnonymousHigherOrder()
         {
-            // (() -> void) -> void.
+            // (() -> void) -> void
             new Action<Action>(action => action())(
                 () => nameof(AnonymousHigherOrder).WriteLine());
 
-            // () -> (() -> int).
+            // () -> (() -> int)
             Func<int> output2 = new Func<Func<int>>(() => (() => 1))();
             output2().WriteLine(); // 1
 
-            // int -> (() -> int).
+            // int -> (() -> int)
             Func<int> output3 = new Func<int, Func<int>>(int32 => (() => int32 + 1))(1);
             output3().WriteLine(); // 2
 
-            // (() -> int, () -> string) -> (() -> bool).
+            // (() -> int, () -> string) -> (() -> bool)
             Func<bool> output4 = new Func<Action, Func<int>, Func<bool>>((action, int32Factory) =>
             {
                 action();

@@ -1,6 +1,7 @@
 ﻿namespace Tutorial.Functional
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
     using System.Reflection;
@@ -402,6 +403,19 @@
         internal static void CallEnumerationExtensionMethod(DayOfWeek dayOfWeek)
         {
             bool result = dayOfWeek.IsWeekend();
+        }
+
+        internal static void TraceValueAndSequence(Uri value, IEnumerable<Uri> values)
+        {
+            value.WriteLine();
+            // Equivalent to: Trace.WriteLine(value);
+
+            values.WriteLines();
+            // Equivalent to: 
+            // foreach (Uri value in values)
+            // {
+            //    Trace.WriteLine(value);
+            // }
         }
     }
 

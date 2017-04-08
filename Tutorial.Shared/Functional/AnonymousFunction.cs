@@ -68,7 +68,7 @@
         {
             Func<int, int, int> add = (int32A, int32B) => int32A + int32B;
             Func<int, bool> isPositive = int32 => int32 > 0;
-            Action<int> traceLine = int32 => Trace.WriteLine(int32);
+            Action<int> traceLine = int32 => int32.WriteLine();
         }
 
         internal static void StatementLambda()
@@ -80,12 +80,12 @@
             };
             Func<int, bool> isPositive = int32 =>
             {
-                Trace.WriteLine(int32);
+                int32.WriteLine();
                 return int32 > 0;
             };
             Action<int> traceLine = int32 =>
             {
-                Trace.WriteLine(int32);
+                int32.WriteLine();
                 Trace.Flush();
             };
         }
@@ -95,7 +95,7 @@
             Func<int, int, int> add = new Func<int, int, int>((int32A, int32B) => int32A + int32B);
             Func<int, bool> isPositive = new Func<int, bool>(int32 =>
             {
-                Trace.WriteLine(int32);
+                int32.WriteLine();
                 return int32 > 0;
             });
         }
@@ -105,7 +105,7 @@
             Func<int, int, int> add = (Func<int, int, int>)((int32A, int32B) => int32A + int32B);
             Func<int, bool> isPositive = (Func<int, bool>)(int32 =>
             {
-                Trace.WriteLine(int32);
+                int32.WriteLine();
                 return int32 > 0;
             });
         }
@@ -164,7 +164,7 @@
         internal static void CallAnonymousFunction()
         {
             new Func<int, int, int>((int32A, int32B) => int32A + int32B)(1, 2);
-            new Action<int>(int32 => Trace.WriteLine(int32))(1);
+            new Action<int>(int32 => int32.WriteLine())(1);
 
             new Func<int, int, int>((int32A, int32B) =>
             {
@@ -173,12 +173,12 @@
             })(1, 2);
             new Func<int, bool>(int32 =>
             {
-                Trace.WriteLine(int32);
+                int32.WriteLine();
                 return int32 > 0;
             })(1);
             new Action<int>(int32 =>
             {
-                Trace.WriteLine(int32);
+                int32.WriteLine();
                 Trace.Flush();
             })(1);
         }
@@ -203,7 +203,7 @@
             new Action(() =>
             {
                 int local = 2; // Inside the scope of function add.
-                Trace.WriteLine(local + outer);
+                (local + outer).WriteLine();
             })(); // 3
         }
     }
@@ -218,7 +218,7 @@
             internal void Add()
             {
                 int local = 2;
-                Trace.WriteLine(local + this.Outer);
+                (local + this.Outer).WriteLine();
             }
         }
 
@@ -235,7 +235,7 @@
     {
         private int value;
 
-        static Data2() => Trace.WriteLine(Functions.GetCurrentName()); // Static constructor.
+        static Data2() => Functions.GetCurrentName().WriteLine(); // Static constructor.
 
         internal Data(int value) => this.value = value; // Constructor.
 

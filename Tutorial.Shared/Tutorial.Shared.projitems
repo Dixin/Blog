@@ -40,7 +40,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Functional\ExpressionTreeVisitor.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Functional\FluentApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Functional\FunctionType.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Functional\HigherOrder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Functional\HigherOrderFunction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Functional\Immutability.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Functional\LocalFunction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Functional\NamedFunction.cs" />
