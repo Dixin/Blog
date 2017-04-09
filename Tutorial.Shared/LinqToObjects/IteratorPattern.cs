@@ -107,10 +107,7 @@
     {
         private readonly SinglyLinkedListNode<T> head;
 
-        internal LinkedListSequence(SinglyLinkedListNode<T> head)
-        {
-            this.head = head;
-        }
+        internal LinkedListSequence(SinglyLinkedListNode<T> head) => this.head = head;
 
         public override GenericIterator<T> GetEnumerator() => new LinkedListIterator<T>(this.head);
     }
@@ -119,10 +116,8 @@
     {
         private SinglyLinkedListNode<T> node; // State.
 
-        internal LinkedListIterator(SinglyLinkedListNode<T> head)
-        {
+        internal LinkedListIterator(SinglyLinkedListNode<T> head) =>
             this.node = new SinglyLinkedListNode<T>(default(T), head);
-        }
 
         public override bool MoveNext()
         {

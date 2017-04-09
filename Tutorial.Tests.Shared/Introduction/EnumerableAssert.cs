@@ -10,15 +10,6 @@
 #if DEMO
     public static partial class EnumerableAssert
     {
-        public static void IsNullOrEmpty<T>
-            (IEnumerable<T> actual, string message = null, params object[] parameters)
-        {
-            using (IEnumerator<T> iterator = actual?.GetEnumerator())
-            {
-                Assert.IsTrue(iterator?.MoveNext() ?? false, message, parameters);
-            }
-        }
-
         public static void IsEmpty<T>(IEnumerable<T> actual, string message = null, params object[] parameters)
         {
             Assert.IsNotNull(actual, message, parameters);
@@ -34,6 +25,15 @@
             using (IEnumerator<T> iterator = actual.GetEnumerator())
             {
                 Assert.IsTrue(iterator.MoveNext(), message, parameters);
+            }
+        }
+    
+        public static void IsNullOrEmpty<T>(
+            IEnumerable<T> actual, string message = null, params object[] parameters)
+        {
+            using (IEnumerator<T> iterator = actual?.GetEnumerator())
+            {
+                Assert.IsFalse(iterator?.MoveNext() ?? false, message, parameters);
             }
         }
     }
@@ -171,8 +171,8 @@
             string message = null,
             params object[] parameters)
         {
-            Assert.IsNotNull(expected, $"Expected sequence is null. {message}", parameters);
-            Assert.IsNotNull(actual, $"Actual sequence is null. {message}", parameters);
+            Assert.IsNotNull(expected, message ?? $"Expected sequence is null.", parameters);
+            Assert.IsNotNull(actual, message ?? $"Actual sequence is null.", parameters);
 
             comparer = comparer ?? EqualityComparer<T>.Default;
             using (IEnumerator<T> expectedItorator = expected.GetEnumerator())
@@ -183,18 +183,18 @@
                 {
                     Assert.IsTrue(
                         actualIterator.MoveNext(),
-                        $"Expected sequence has more than {expectedIndex} value(s), but actual sequence has {expectedIndex} value(s). {message}",
+                        message ?? $"Expected sequence has more than {expectedIndex} value(s), actual sequence has {expectedIndex} value(s).",
                         parameters);
                     T expectedValue = expectedItorator.Current;
                     T actualValue = actualIterator.Current;
                     Assert.IsTrue(
                         comparer.Equals(expectedValue, actualValue),
-                        $"Expected and actual sequences' values are not equal at index {expectedIndex}. Expected value is {expectedValue}, but actual value is {actualValue}. {message}",
+                        message ?? $"Expected and actual sequences' values are not equal at index {expectedIndex}. Expected value is {expectedValue}, actual value is {actualValue}.",
                         parameters);
                 }
                 Assert.IsFalse(
                     actualIterator.MoveNext(),
-                    $"Expected sequence has {expectedIndex} value(s), but actual sequence has more than {expectedIndex} value(s). {message}",
+                    message ?? $"Expected sequence has {expectedIndex} value(s), actual sequence has more than {expectedIndex} value(s).",
                     parameters);
             }
         }
