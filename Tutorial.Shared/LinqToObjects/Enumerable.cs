@@ -262,9 +262,13 @@ namespace System.Linq
 
         public static long LongCount<TSource>(this IEnumerable<TSource> source, Func<TSource, bool> predicate);
 
+        public static int Max(this IEnumerable<int> source);
+
         public static int Min(this IEnumerable<int> source);
 
-        public static int Max(this IEnumerable<int> source);
+        public static TResult Max<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector);
+
+        public static TResult Min<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector);
 
         public static int Min<TSource>(this IEnumerable<TSource> source, Func<TSource, int> selector);
 
@@ -272,9 +276,9 @@ namespace System.Linq
 
         // int?, long, long?, double, double?, float, float?, decimal, decimal?.
 
-        public static TSource Min<TSource>(this IEnumerable<TSource> source);
-
         public static TSource Max<TSource>(this IEnumerable<TSource> source);
+
+        public static TSource Min<TSource>(this IEnumerable<TSource> source);
 
         public static int Sum(this IEnumerable<int> source);
 
@@ -311,6 +315,7 @@ namespace System.Collections.Generic
         IDictionary<TKey, TValue>, IDictionary, ICollection<KeyValuePair<TKey, TValue>>, ICollection, 
         IReadOnlyDictionary<TKey, TValue>, IReadOnlyCollection<KeyValuePair<TKey, TValue>>, 
         ISerializable, IDeserializationCallback
+        IDictionary<TKey, TValue>, IDictionary, IReadOnlyDictionary<TKey, TValue>, ISerializable, IDeserializationCallback
     {
     }
 }

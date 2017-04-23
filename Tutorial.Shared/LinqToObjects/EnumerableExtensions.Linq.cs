@@ -1520,6 +1520,9 @@
             }
         }
 
+        internal static double Average<TSource>(this IEnumerable<TSource> source, Func<TSource, int> selector) => 
+            source.Select(selector).Average();
+
         #endregion
 
         #region Quantifiers

@@ -52,7 +52,7 @@
             CompiledLet();
             SelectMany();
             FluentSelectMany();
-            CompiledSelectManyWithResultSelector();
+            SelectManyWithResultSelector();
             SelectManyWithResultSelector();
         }
 
@@ -270,7 +270,8 @@
             OrderByDescendingAndTakeWhile();
             AggregateWithAnonymousTypeSeed();
             Except2();
-            MinMaxGeneric();
+            MaxMinGeneric();
+            MaxMinGenericWithSelector();
             try
             {
                 SumAverage();
