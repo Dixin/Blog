@@ -15,7 +15,7 @@
             {
                 $"Select query is calling selector with {value}.".WriteLine();
                 TResult result = selector(value);
-                $"Select query evaluated and is yielding {result}.".WriteLine();
+                $"Select query is yielding {result}.".WriteLine();
                 yield return result;
             }
             "Select query ends.".WriteLine();
@@ -36,7 +36,7 @@
                 {
                     $"Select query is calling selector with {sourceIterator.Current}.".WriteLine(); // getCurrent.
                     TResult result = selector(sourceIterator.Current); // getCurrent.
-                    $"Select query evaluated and is yielding {result}.".WriteLine(); // getCurrent.
+                    $"Select query is yielding {result}.".WriteLine(); // getCurrent.
                     yield return result; // getCurrent.
                 }
             }
@@ -53,18 +53,18 @@
                 data: null, // IEnumerator<TSource> sourceIterator = null;
                 iteratorFactory: sourceIterator => new Iterator<TResult>(
                     start: () =>
-                        {
-                            "Select query starts.".WriteLine();
-                            sourceIterator = source.GetEnumerator();
-                        },
+                    {
+                        "Select query starts.".WriteLine();
+                        sourceIterator = source.GetEnumerator();
+                    },
                     moveNext: () => sourceIterator.MoveNext(),
                     getCurrent: () =>
-                        {
-                            $"Select query is calling selector with {sourceIterator.Current}.".WriteLine();
-                            TResult result = selector(sourceIterator.Current);
-                            $"Select query evaluated and is yielding {result}.".WriteLine();
-                            return result;
-                        },
+                    {
+                        $"Select query is calling selector with {sourceIterator.Current}.".WriteLine();
+                        TResult result = selector(sourceIterator.Current);
+                        $"Select query is yielding {result}.".WriteLine();
+                        return result;
+                    },
                     dispose: () => sourceIterator?.Dispose(),
                     end: () => "Select query ends.".WriteLine()));
 
@@ -77,7 +77,7 @@
             {
                 $"Select query is calling selector with {value}.".WriteLine();
                 TResult result = selector(value);
-                $"Select query evaluated and is adding {result}.".WriteLine();
+                $"Select query is storing {result}.".WriteLine();
                 resultSequence.Add(result);
             }
 
@@ -87,40 +87,39 @@
 
         internal static void ForEachSelect()
         {
-            IEnumerable<string> deferredQuery = Enumerable.Range(1, 5).SelectGenerator(int32 => new string('*', int32));
+            IEnumerable<string> deferredQuery = Enumerable.Range(1, 5)
+                .SelectGenerator(int32 => new string('*', int32));
             foreach (string result in deferredQuery) // Execute query.
             {
                 // Select query starts.
                 // Select query is calling selector with 1.
-                // Select query evaluated and is yielding *.
+                // Select query is yielding *.
                 // Select query is calling selector with 2.
-                // Select query evaluated and is yielding **.
+                // Select query is yielding **.
                 // Select query is calling selector with 3.
-                // Select query evaluated and is yielding ***.
+                // Select query is yielding ***.
                 // Select query is calling selector with 4.
-                // Select query evaluated and is yielding ****.
+                // Select query is yielding ****.
                 // Select query is calling selector with 5.
-                // Select query evaluated and is yielding *****.
+                // Select query is yielding *****.
                 // Select query ends.
             }
 
-            IEnumerable<string> immediateQuery = Enumerable.Range(1, 5).SelectList(int32 => new string('*', int32));
-                // Execute query.
+            IEnumerable<string> immediateQuery = Enumerable.Range(1, 5)
+                .SelectList(int32 => new string('*', int32)); // Execute query.
             // Select query starts.
             // Select query is calling selector with 1.
-            // Select query evaluated and is yielding *.
+            // Select query is storing *.
             // Select query is calling selector with 2.
-            // Select query evaluated and is yielding **.
+            // Select query is storing **.
             // Select query is calling selector with 3.
-            // Select query evaluated and is yielding ***.
+            // Select query is storing ***.
             // Select query is calling selector with 4.
-            // Select query evaluated and is yielding ****.
+            // Select query is storing ****.
             // Select query is calling selector with 5.
-            // Select query evaluated and is yielding *****.
+            // Select query is storing *****.
             // Select query ends.
-            foreach (string result in immediateQuery)
-            {
-            }
+            foreach (string result in immediateQuery) { }
         }
 
         internal static IEnumerable<double> AbsAndSqrtGenerator(double @double)
@@ -129,16 +128,18 @@
             yield return Math.Sqrt(@double);
         }
 
-        internal static IEnumerable<double> AbsAndSqrtArray(double @double) =>
-            new double[] {Math.Abs(@double), Math.Sqrt(@double)};
+        internal static IEnumerable<double> AbsAndSqrtArray(double @double) => new double[]
+        {
+            Math.Abs(@double),
+            Math.Sqrt(@double)
+        };
 
         internal static void Sequences(double @double)
         {
             IEnumerable<double> cold = AbsAndSqrtGenerator(@double); // Deferred execution.
             // Math.Abs and Math.Sqrt are not executed.
-            foreach (double result in cold)
-            {
-            } // Math.Abs and Math.Sqrt are executed.
+            foreach (double result in cold) { }
+            // Math.Abs and Math.Sqrt are executed.
 
             IEnumerable<double> hot = AbsAndSqrtArray(@double); // Immediate execution.
             // Math.Abs and Math.Sqrt are executed.
@@ -171,16 +172,16 @@
         }
 
         internal static IEnumerable<TSource> CompiledWhereGenerator<TSource>(
-                this IEnumerable<TSource> source, Func<TSource, bool> predicate) =>
-            new Generator<TSource, IEnumerator<TSource>>(
-                data: null, // IEnumerator<TSource> sourceIterator = null;
-                iteratorFactory: sourceIterator => new Iterator<TSource>(
-                    start: () =>
+            this IEnumerable<TSource> source, Func<TSource, bool> predicate) =>
+                new Generator<TSource, IEnumerator<TSource>>(
+                    data: null, // IEnumerator<TSource> sourceIterator = null;
+                    iteratorFactory: sourceIterator => new Iterator<TSource>(
+                        start: () =>
                         {
                             "Where query starts.".WriteLine();
                             sourceIterator = source.GetEnumerator();
                         },
-                    moveNext: () =>
+                        moveNext: () =>
                         {
                             while (sourceIterator.MoveNext())
                             {
@@ -192,18 +193,18 @@
                             }
                             return false;
                         },
-                    getCurrent: () =>
+                        getCurrent: () =>
                         {
                             $"Where query is yielding {sourceIterator.Current}.".WriteLine();
                             return sourceIterator.Current;
                         },
-                    dispose: () => sourceIterator?.Dispose(),
-                    end: () => "Where query ends.".WriteLine()));
+                        dispose: () => sourceIterator?.Dispose(),
+                        end: () => "Where query ends.".WriteLine()));
 
         internal static void ForEachWhereAndSelect()
         {
             IEnumerable<string> deferredQuery = Enumerable.Range(1, 5)
-                .WhereGenerator(int32 => int32 > 3) // Deferred execution.
+                .WhereGenerator(int32 => int32 > 2) // Deferred execution.
                 .SelectGenerator(int32 => new string('*', int32)); // Deferred execution.
             foreach (string result in deferredQuery)
             {
@@ -212,15 +213,17 @@
                 // Where query is calling predicate with 1.
                 // Where query is calling predicate with 2.
                 // Where query is calling predicate with 3.
+                // Where query is yielding 3.
                 // Select query is calling selector with 3.
+                // Select query is yielding ***.
                 // Where query is calling predicate with 4.
                 // Where query is yielding 4.
                 // Select query is calling selector with 4.
-                // Select query evaluated and is yielding ****.
+                // Select query is yielding ****.
                 // Where query is calling predicate with 5.
                 // Where query is yielding 5.
                 // Select query is calling selector with 5.
-                // Select query evaluated and is yielding *****.
+                // Select query is yielding *****.
                 // Where query ends.
                 // Select query ends.
             }
@@ -231,35 +234,31 @@
             "Reverse query starts.".WriteLine();
             TSource[] values = source.ToArray();
             $"Reverse query evaluated all {values.Length} value(s) in input sequence.".WriteLine();
-            for (int lastIndex = values.Length - 1; lastIndex >= 0; lastIndex--)
+            for (int index = values.Length - 1; index >= 0; index--)
             {
-                $"Reverse query is yielding index {lastIndex} of input sequence.".WriteLine();
-                yield return values[lastIndex];
+                $"Reverse query is yielding index {index} of input sequence.".WriteLine();
+                yield return values[index];
             }
             "Reverse query ends.".WriteLine();
         }
 
         internal static IEnumerable<TSource> CompiledReverseGenerator<TSource>(this IEnumerable<TSource> source) =>
-            new Generator<TSource, (TSource[], int)>(
-                data: default((TSource[], int)),
+            new Generator<TSource, (TSource[] Values, int Index)>(
+                data: default((TSource[], int)), // (TSource[] Values, int Index) data = default((TSource[], int));
                 iteratorFactory: data => new Iterator<TSource>(
                     start: () =>
                     {
                         "Reverse query starts.".WriteLine();
                         TSource[] values = source.ToArray();
                         $"Reverse query evaluated all {values.Length} value(s) in input sequence.".WriteLine();
-
                         data = (values, values.Length - 1);
                     },
-                    moveNext: () => data.Item2 >= 0,
+                    moveNext: () => data.Index >= 0,
                     getCurrent: () =>
                     {
-                        TSource[] values = data.Item1;
-                        int lastIndex = data.Item2;
-                        data = (values, lastIndex - 1);
-
-                        $"Reverse query is yielding index {lastIndex} of input sequence.".WriteLine();
-                        return values[lastIndex];
+                        data = (data.Values, data.Index - 1);
+                        $"Reverse query is yielding index {data.Index} of input sequence.".WriteLine();
+                        return data.Values[data.Index];
                     },
                     end: () => "Reverse query ends.".WriteLine()));
 
@@ -275,28 +274,27 @@
                     // Reverse query starts.
                     // Select query starts.
                     // Select query is calling selector with 1.
-                    // Select query evaluated and is yielding *.
+                    // Select query is yielding *.
                     // Select query is calling selector with 2.
-                    // Select query evaluated and is yielding **.
+                    // Select query is yielding **.
                     // Select query is calling selector with 3.
-                    // Select query evaluated and is yielding ***.
+                    // Select query is yielding ***.
                     // Select query is calling selector with 4.
-                    // Select query evaluated and is yielding ****.
+                    // Select query is yielding ****.
                     // Select query is calling selector with 5.
-                    // Select query evaluated and is yielding *****.
+                    // Select query is yielding *****.
                     // Select query ends.
                     // Reverse query evaluated all 5 value(s) in input sequence.
-                    // Reverse query is yielding index 4 of input sequence.
-                    reverseIterator.Current.WriteLine(); // *****
+                    // Reverse query is yielding index 4 of source sequence.
+                    reverseIterator.Current.WriteLine();
                     while (reverseIterator.MoveNext())
                     {
-                        // Reverse query is yielding index 3 of input sequence.
-                        // Reverse query is yielding index 2 of input sequence.
-                        // Reverse query is yielding index 1 of input sequence.
-                        // Reverse query is yielding index 0 of input sequence.
-                        reverseIterator.Current.WriteLine(); // 6 4 2 0
-                    }
-                    // Reverse query ends.
+                        // Reverse query is yielding index 3 of source sequence.
+                        // Reverse query is yielding index 2 of source sequence.
+                        // Reverse query is yielding index 1 of source sequence.
+                        // Reverse query is yielding index 0 of source sequence.
+                        reverseIterator.Current.WriteLine();
+                    } // Reverse query ends.
                 }
             }
         }

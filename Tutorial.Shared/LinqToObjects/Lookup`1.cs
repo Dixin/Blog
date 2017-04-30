@@ -10,15 +10,15 @@ namespace Tutorial.LinqToObjects
         private readonly Dictionary<int, Grouping<TKey, TElement>> groups =
             new Dictionary<int, Grouping<TKey, TElement>>();
 
-        private readonly IEqualityComparer<TKey> eqqualityComparer;
+        private readonly IEqualityComparer<TKey> equalityComparer;
 
         public Lookup(IEqualityComparer<TKey> eqqualityComparer = null) =>
-            this.eqqualityComparer = eqqualityComparer ?? EqualityComparer<TKey>.Default;
+            this.equalityComparer = eqqualityComparer ?? EqualityComparer<TKey>.Default;
 
         private int GetHashCode(TKey key) => key == null
             ? -1
-            : this.eqqualityComparer.GetHashCode(key) & int.MaxValue;
-        // int.MaxValue is 0b01111111_11111111_11111111_11111111. So the result of & is always > -1.
+            : this.equalityComparer.GetHashCode(key) & int.MaxValue;
+        // int.MaxValue is 0b01111111_11111111_11111111_11111111. So the hash code of non-null key is always > -1.
 
         public IEnumerator<IGrouping<TKey, TElement>> GetEnumerator() => this.groups.Values.GetEnumerator();
 
@@ -34,7 +34,7 @@ namespace Tutorial.LinqToObjects
                 : Array.Empty<TElement>();
     }
 
-    public partial class Lookup<TKey, TElement> : ILookup<TKey, TElement>
+    public partial class Lookup<TKey, TElement>
     {
         public Lookup<TKey, TElement> AddRange<TSource>(
             IEnumerable<TSource> source,

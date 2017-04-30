@@ -5,8 +5,26 @@
     using System.Collections.Generic;
     using System.Linq;
 
+#if DEMO
     internal static partial class EnumerableExtensions
     {
+        internal static TSource[] ToArray<TSource>(this IEnumerable<TSource> source)
+        {
+            TSource[] array = new TSource[0];
+            foreach (TSource value in source)
+            {
+                Array.Resize(ref array, array.Length + 1);
+                array[array.Length - 1] = value;
+            }
+            return array;
+        }
+    }
+#endif
+
+    internal static partial class EnumerableExtensions
+    {
+        #region Conversion
+
         internal static TSource[] ToArray<TSource>(this IEnumerable<TSource> source)
         {
             if (source is ICollection<TSource> genericCollection)
@@ -25,8 +43,8 @@
                 {
                     if (iterator.MoveNext())
                     {
-                        const int InitialLength = 4;
-                        const int MaxLength = 0x7FEFFFFF; // Array.MaxArrayLength.
+                        const int InitialLength = 4; // Initial array length.
+                        const int MaxLength = 0x7FEFFFFF; // Max array length: Array.MaxArrayLength.
                         TSource[] array = new TSource[InitialLength];
                         array[0] = iterator.Current;
                         int usedLength = 1;
@@ -35,7 +53,7 @@
                         {
                             if (usedLength == array.Length)
                             {
-                                int increaseToLength = usedLength * 2;
+                                int increaseToLength = usedLength * 2; // Array is full, double its length.
                                 if ((uint)increaseToLength > MaxLength)
                                 {
                                     increaseToLength = MaxLength <= usedLength ? usedLength + 1 : MaxLength;
@@ -44,18 +62,13 @@
                             }
                             array[usedLength++] = iterator.Current;
                         }
-                        Array.Resize(ref array, usedLength);
+                        Array.Resize(ref array, usedLength); // Consolidate array to its actual length.
                         return array;
                     }
                 }
             }
             return Array.Empty<TSource>();
         }
-    }
-
-    internal static partial class EnumerableExtensions
-    {
-        #region Conversion
 
         internal static List<TSource> ToList<TSource>(this IEnumerable<TSource> source) => new List<TSource>(source);
 
@@ -100,7 +113,7 @@
             source; // Deferred execution.
 
 #if DEMO
-        internal static IEnumerable<TResult> Cast<TResult>(this IEnumerable source)
+        internal static IEnumerable<TResult> Cast3<TResult>(this IEnumerable source)
         {
             foreach (object value in source)
             {
@@ -108,7 +121,7 @@
             }
         }
 
-        internal static IEnumerable<TResult> Cast<TResult>(this IEnumerable source)
+        internal static IEnumerable<TResult> Cast2<TResult>(this IEnumerable source)
         {
             if (source is IEnumerable<TResult> generic)
             {
@@ -148,7 +161,7 @@
 
         internal static IEnumerable<int> Range(int start, int count)
         {
-            if (count < 0 || (((long)start) + count - 1L) > int.MaxValue)
+            if (count < 0 || (long)start + count - 1L > int.MaxValue)
             {
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
@@ -226,6 +239,7 @@
             this IEnumerable<TSource> source,
             Func<TSource, bool> predicate) =>
                 new Generator<TSource, IEnumerator<TSource>>(
+                    data: null,
                     iteratorFactory: sourceIterator => new Iterator<TSource>(
                         start: () => sourceIterator = source.GetEnumerator(),
                         moveNext: () =>
@@ -288,6 +302,7 @@
             this IEnumerable<TSource> source, Func<TSource, TResult> selector)
         {
             return new Generator<TResult, IEnumerator<TSource>>(
+                data: null,
                 iteratorFactory: sourceIterator => new Iterator<TResult>(
                     start: () => sourceIterator = source.GetEnumerator(),
                     moveNext: () => sourceIterator.MoveNext(),
@@ -373,7 +388,8 @@
         internal static IEnumerable<IGrouping<TKey, TSource>> GroupByWithToLookup<TSource, TKey>(
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
-            IEqualityComparer<TKey> comparer = null) => source.ToLookup(keySelector, comparer);
+            IEqualityComparer<TKey> comparer = null) =>
+                source.ToLookup(keySelector, comparer);
 
         internal static IEnumerable<IGrouping<TKey, TSource>> GroupBy<TSource, TKey>(
             this IEnumerable<TSource> source,
@@ -687,7 +703,24 @@
 
         #endregion
 
-        #region Partioning
+        #region Partitioning
+
+#if DEMO
+        internal static IEnumerable<TSource> Skip<TSource>(this IEnumerable<TSource> source, int count)
+        {
+            foreach (TSource value in source)
+            {
+                if (count > 0)
+                {
+                    count--;
+                }
+                else
+                {
+                    yield return value;
+                }
+            }
+        }
+#endif
 
         internal static IEnumerable<TSource> Skip<TSource>(this IEnumerable<TSource> source, int count)
         {
@@ -695,7 +728,7 @@
             {
                 while (count > 0 && iterator.MoveNext())
                 {
-                    count--; // Comparing foreach loop, iterator.Current is never called.
+                    count--; // Comparing foreach loop, iterator.Current is not called.
                 }
                 if (count <= 0)
                 {
@@ -771,7 +804,6 @@
                 {
                     break;
                 }
-
                 yield return value; // Deferred execution.
             }
         }
@@ -806,12 +838,9 @@
             }
             else
             {
-                using (IEnumerator<TSource> iterator = source.GetEnumerator())
+                foreach (TSource value in source)
                 {
-                    if (iterator.MoveNext())
-                    {
-                        return iterator.Current;
-                    }
+                    return value;
                 }
             }
             throw new InvalidOperationException("Sequence contains no elements.");
@@ -840,12 +869,9 @@
             }
             else
             {
-                using (IEnumerator<TSource> iterator = source.GetEnumerator())
+                foreach (TSource value in source)
                 {
-                    if (iterator.MoveNext())
-                    {
-                        return iterator.Current;
-                    }
+                    return value;
                 }
             }
             return default(TSource);
@@ -1520,7 +1546,7 @@
             }
         }
 
-        internal static double Average<TSource>(this IEnumerable<TSource> source, Func<TSource, int> selector) => 
+        internal static double Average<TSource>(this IEnumerable<TSource> source, Func<TSource, int> selector) =>
             source.Select(selector).Average();
 
         #endregion

@@ -22,5 +22,12 @@ namespace Tutorial.Tests.LinqToObjects
                 Enumerable.Reverse(enumerable),
                 DeferredExecution.CompiledReverseGenerator(enumerable));
         }
+
+        [TestMethod]
+        public void QueryTest()
+        {
+            DeferredExecution.ForEachWhereAndSelect();
+            DeferredExecution.ForEachSelectAndReverse();
+        }
     }
 }

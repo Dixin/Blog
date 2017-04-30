@@ -140,29 +140,29 @@
     {
         internal class OuterClass
         {
-            const int outer = 1;
+            const int Outer = 1;
 
             class AccessOuter
             {
-                const int local = 2;
-                int sum = local + outer;
+                const int Local = 2;
+                int sum = Local + Outer;
             }
         }
 
         internal static void OuterFunction()
         {
-            const int outer = 1;
+            const int Outer = 1;
 
             void AccessOuter()
             {
-                const int local = 2;
-                int sum = local + outer;
+                const int Local = 2;
+                int sum = Local + Outer;
             }
 
             Function accessOuter = () =>
             {
-                const int local = 2;
-                int sum = local + outer;
+                const int Local = 2;
+                int sum = Local + Outer;
             };
         }
     }

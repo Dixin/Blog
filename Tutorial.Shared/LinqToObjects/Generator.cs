@@ -25,9 +25,7 @@
     {
         internal static void ForEachFromValue<TSource>(TSource value)
         {
-            foreach (TSource result in FromValue(value))
-            {
-            }
+            foreach (TSource result in FromValue(value)) { }
         }
 
         internal static void CompiledForEachFromValue<TSource>(TSource value)
@@ -44,11 +42,15 @@
 
             // Virtual control flow when iterating the returned sequence:
             // bool isValueIterated = false;
-            // while (!isValueIterated)
+            // try
             // {
-            //    isValueIterated = true;
-            //    TSource result = value;
+            //    while (!isValueIterated)
+            //    {
+            //        isValueIterated = true;
+            //        TSource result = value;
+            //    }
             // }
+            // finally { }
         }
 
         internal static IEnumerable<TSource> Repeat<TSource>(TSource value, int count) =>
@@ -71,20 +73,25 @@
 
             // Virtual control flow when iterating the returned sequence:
             // int index = 0;
-            // while (index++ < count)
+            // try
             // {
-            //    TSource result = value; 
+            //    while (index++ < count)
+            //    {
+            //        TSource result = value; 
+            //    }
             // }
+            // finally { }
         }
 
         internal static IEnumerable<TResult> Select<TSource, TResult>(
-                IEnumerable<TSource> source, Func<TSource, TResult> selector) =>
-            new Sequence<TResult, IEnumerator<TSource>>(
-                iteratorFactory: sourceIterator => new Iterator<TResult>(
-                    start: () => sourceIterator = source.GetEnumerator(),
-                    moveNext: () => sourceIterator.MoveNext(),
-                    getCurrent: () => selector(sourceIterator.Current),
-                    dispose: () => sourceIterator?.Dispose()));
+            IEnumerable<TSource> source, Func<TSource, TResult> selector) =>
+                new Sequence<TResult, IEnumerator<TSource>>(
+                    data: null, // IEnumerator<TSource> sourceIterator = null;
+                    iteratorFactory: sourceIterator => new Iterator<TResult>(
+                        start: () => sourceIterator = source.GetEnumerator(),
+                        moveNext: () => sourceIterator.MoveNext(),
+                        getCurrent: () => selector(sourceIterator.Current),
+                        dispose: () => sourceIterator?.Dispose()));
 
         internal static void CompiledForEachSelect<TSource, TResult>(
             IEnumerable<TSource> source, Func<TSource, TResult> selector)
@@ -118,6 +125,7 @@
         internal static IEnumerable<TSource> Where<TSource>(
             IEnumerable<TSource> source, Func<TSource, bool> predicate) =>
                 new Sequence<TSource, IEnumerator<TSource>>(
+                    data: null, // IEnumerator<TSource> sourceIterator = null;
                     iteratorFactory: sourceIterator => new Iterator<TSource>(
                         start: () => sourceIterator = source.GetEnumerator(),
                         moveNext: () =>
@@ -171,34 +179,50 @@
         {
             // Virtual control flow when iterating the returned sequence:
             // bool isValueIterated = false;
-            // while (!isValueIterated)
+            // try
             // {
-            //    isValueIterated = true;
-            //    TSource result = value;
+            //    while (!isValueIterated)
+            //    {
+            //        isValueIterated = true;
+            //        TSource result = value;
+            //    }
             // }
+            // finally { }
 
             bool isValueIterated = false;
-            while (!isValueIterated) // moveNext.
+            try
             {
-                isValueIterated = true; // moveNext.
-                yield return value; // getCurrent.
+                while (!isValueIterated) // moveNext.
+                {
+                    isValueIterated = true; // moveNext.
+                    yield return value; // getCurrent.
+                }
             }
+            finally { }
         }
 
         internal static IEnumerable<TSource> RepeatGenerator<TSource>(TSource value, int count)
         {
             // Virtual control flow when iterating the returned sequence:
             // int index = 0;
-            // while (index++ < count)
+            // try
             // {
-            //    TSource result = value; 
+            //    while (index++ < count)
+            //    {
+            //        TSource result = value; 
+            //    }
             // }
+            // finally { }
 
             int index = 0;
-            while (index++ < count) // moveNext.
+            try
             {
-                yield return value; // getCurrent.
+                while (index++ < count) // moveNext.
+                {
+                    yield return value; // getCurrent.
+                }
             }
+            finally { }
         }
 
         internal static IEnumerable<TResult> SelectGenerator<TSource, TResult>(
@@ -272,7 +296,6 @@
                 sourceIterator?.Dispose(); // dispose.
             }
         }
-
     }
 
     internal static partial class Generator

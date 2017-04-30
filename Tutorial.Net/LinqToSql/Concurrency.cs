@@ -39,9 +39,9 @@
             using (DbReaderWriter readerWriter2 = new DbReaderWriter(new AdventureWorks()))
             using (DbReaderWriter readerWriter3 = new DbReaderWriter(new AdventureWorks()))
             {
-                const int id = 1;
-                ProductCategory category1 = readerWriter1.Read<ProductCategory>(id);
-                ProductCategory category2 = readerWriter2.Read<ProductCategory>(id);
+                const int Id = 1;
+                ProductCategory category1 = readerWriter1.Read<ProductCategory>(Id);
+                ProductCategory category2 = readerWriter2.Read<ProductCategory>(Id);
                 readerWriter1.Write(() => category1.Name = nameof(readerWriter1));
                 try
                 {
@@ -52,7 +52,7 @@
                     Trace.WriteLine(exception); // Row not found or changed.
                 }
 
-                Trace.WriteLine(readerWriter3.Read<ProductCategory>(id).Name); // client1.
+                Trace.WriteLine(readerWriter3.Read<ProductCategory>(Id).Name); // client1.
             } // ROLLBACK TRANSACTION.
         }
     }
@@ -73,9 +73,9 @@
             using (DbReaderWriter readerWriter1 = new DbReaderWriter(new AdventureWorks()))
             using (DbReaderWriter readerWriter2 = new DbReaderWriter(new AdventureWorks()))
             {
-                const int id = 1;
-                ProductPhoto photo1 = readerWriter1.Read<ProductPhoto>(id);
-                ProductPhoto photo2 = readerWriter2.Read<ProductPhoto>(id);
+                const int Id = 1;
+                ProductPhoto photo1 = readerWriter1.Read<ProductPhoto>(Id);
+                ProductPhoto photo2 = readerWriter2.Read<ProductPhoto>(Id);
                 readerWriter1.Write(() =>
                 {
                     photo1.LargePhotoFileName = nameof(readerWriter1);
@@ -129,15 +129,15 @@
             using (DbReaderWriter readerWriter3 = new DbReaderWriter(new AdventureWorks()))
             using (DbReaderWriter readerWriter4 = new DbReaderWriter(new AdventureWorks()))
             {
-                const int id = 999;
-                Product product1 = readerWriter1.Read<Product>(id);
-                Product product2 = readerWriter2.Read<Product>(id);
+                const int Id = 999;
+                Product product1 = readerWriter1.Read<Product>(Id);
+                Product product2 = readerWriter2.Read<Product>(Id);
                 readerWriter1.Write(() => { product1.Name = nameof(readerWriter1); product1.ListPrice = 0; });
-                Product product4 = readerWriter4.Read<Product>(id);
+                Product product4 = readerWriter4.Read<Product>(Id);
                 Trace.WriteLine($"({product4.Name}, {product4.ListPrice}, {product4.ProductSubcategoryID})");
                 readerWriter2.Write(() => { product2.Name = nameof(readerWriter2); product2.ProductSubcategoryID = null; }, resolve);
 
-                Product product3 = readerWriter3.Read<Product>(id);
+                Product product3 = readerWriter3.Read<Product>(Id);
                 Trace.WriteLine($"({product3.Name}, {product3.ListPrice}, {product3.ProductSubcategoryID})");
             } // ROLLBACK TRANSACTION.
         }

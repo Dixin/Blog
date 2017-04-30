@@ -343,9 +343,9 @@ namespace Tutorial.LinqToObjects
             using (TfsTeamProjectCollection projectCollection = new TfsTeamProjectCollection(
                 new Uri("https://dixin.visualstudio.com/DefaultCollection"), credentials))
             {
-                const string wiql = "SELECT * FROM WorkItems WHERE [Work Item Type] = 'Bug' AND State != 'Closed'"; // WIQL does not support GROUP BY.
+                const string Wiql = "SELECT * FROM WorkItems WHERE [Work Item Type] = 'Bug' AND State != 'Closed'"; // WIQL does not support GROUP BY.
                 WorkItemStore workItemStore = (WorkItemStore)projectCollection.GetService(typeof(WorkItemStore));
-                WorkItemCollection workItems = workItemStore.Query(wiql);
+                WorkItemCollection workItems = workItemStore.Query(Wiql);
 
                 IEnumerable<IGrouping<string, WorkItem>> workItemGroups =
                     from WorkItem workItem in workItems // Cast.

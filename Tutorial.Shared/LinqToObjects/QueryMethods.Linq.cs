@@ -598,6 +598,15 @@
             concat.WriteLines(); // Execute query. 1 2 3 4 4 3 4 5 6
         }
 
+        internal static void AppendPrepend()
+        {
+            IEnumerable<int> prepend = Enumerable.Range(0, 5).Prepend(-1); // Define query.
+            prepend.WriteLines(); // Execute query. -1 0 1 2 3 4
+
+            IEnumerable<int> append = Enumerable.Range(0, 5).Append(-1); // Define query.
+            append.WriteLines(); // Execute query. 0 1 2 3 4 -1
+        }
+
         #endregion
 
         #region Set
@@ -763,9 +772,9 @@
                 new Uri("https://dixin.visualstudio.com/DefaultCollection"), credentials))
             {
                 // WorkItemCollection implements IEnumerable.
-                const string wiql = "SELECT * FROM WorkItems WHERE [Work Item Type] = 'Bug' AND State != 'Closed'"; // WIQL does not support GROUP BY.
+                const string Wiql = "SELECT * FROM WorkItems WHERE [Work Item Type] = 'Bug' AND State != 'Closed'"; // WIQL does not support GROUP BY.
                 WorkItemStore workItemStore = (WorkItemStore)projectCollection.GetService(typeof(WorkItemStore));
-                WorkItemCollection workItems = workItemStore.Query(wiql);
+                WorkItemCollection workItems = workItemStore.Query(Wiql);
 
                 IEnumerable<WorkItem> genericWorkItems = workItems.Cast<WorkItem>(); // Define query.
                 IEnumerable<IGrouping<string, WorkItem>> workItemGroups = genericWorkItems
@@ -1246,7 +1255,8 @@
         {
             double averageMemberCount = CoreLibrary.GetExportedTypes()
                 .Average(type => type.GetTypeInfo().GetMembers().Length)
-                .WriteLine(); // 22.0766378244747            double averageDeclaredMemberCount = CoreLibrary.GetExportedTypes()
+                .WriteLine(); // 22.0766378244747
+            double averageDeclaredMemberCount = CoreLibrary.GetExportedTypes()
                 .Average(type => type.GetDeclaredMembers().Length)
                 .WriteLine(); // 11.7527812113721
         }
