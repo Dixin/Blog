@@ -113,7 +113,7 @@
             source; // Deferred execution.
 
 #if DEMO
-        internal static IEnumerable<TResult> Cast3<TResult>(this IEnumerable source)
+        internal static IEnumerable<TResult> Cast<TResult>(this IEnumerable source)
         {
             foreach (object value in source)
             {
@@ -121,11 +121,11 @@
             }
         }
 
-        internal static IEnumerable<TResult> Cast2<TResult>(this IEnumerable source)
+        internal static IEnumerable<TResult> Cast<TResult>(this IEnumerable source)
         {
-            if (source is IEnumerable<TResult> generic)
+            if (source is IEnumerable<TResult> genericSource)
             {
-                return generic; // Cannot be compiled.
+                return genericSource; // Cannot be compiled.
             }
             foreach (object value in source)
             {

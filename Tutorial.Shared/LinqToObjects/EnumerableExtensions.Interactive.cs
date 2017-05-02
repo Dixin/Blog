@@ -13,7 +13,7 @@
         {
             foreach (TResult value in enumerableFactory())
             {
-                yield return value;
+                yield return value; // Deferred execution.
             }
         }
 
@@ -23,7 +23,7 @@
             {
                 while (iterator.MoveNext())
                 {
-                    yield return iterator.Current;
+                    yield return iterator.Current; // Deferred execution.
                 }
             }
         }
@@ -32,14 +32,14 @@
 
         internal static IEnumerable<TResult> Return<TResult>(TResult value)
         {
-            yield return value;
+            yield return value; // Deferred execution.
         }
 
         internal static IEnumerable<TResult> Repeat<TResult>(TResult value)
         {
             while (true)
             {
-                yield return value;
+                yield return value; // Deferred execution.
             }
         }
 
@@ -51,16 +51,15 @@
                 {
                     foreach (TSource value in source)
                     {
-                        yield return value;
+                        yield return value; // Deferred execution.
                     }
                 }
             }
-
             for (int i = 0; i < count; i++)
             {
                 foreach (TSource value in source)
                 {
-                    yield return value;
+                    yield return value; // Deferred execution.
                 }
             }
         }
@@ -71,19 +70,16 @@
 
         internal static IEnumerable<TSource> IgnoreElements<TSource>(this IEnumerable<TSource> source)
         {
-            foreach (TSource _ in source)
-            {
-            } // Eager evaluation.
-
-            yield break;
+            foreach (TSource value in source) { } // Eager evaluation.
+            yield break; // Deferred execution.
         }
 
         #endregion
 
         #region Mapping
 
-        internal static IEnumerable<TOther> SelectMany<TSource, TOther>
-            (this IEnumerable<TSource> source, IEnumerable<TOther> other) => source.SelectMany(_ => other);
+        internal static IEnumerable<TOther> SelectMany<TSource, TOther>(
+            this IEnumerable<TSource> source, IEnumerable<TOther> other) => source.SelectMany(value => other);
 
         internal static IEnumerable<TSource> Scan<TSource>(
             this IEnumerable<TSource> source, Func<TSource, TSource, TSource> func)
@@ -92,13 +88,12 @@
             {
                 if (!iterator.MoveNext())
                 {
-                    yield break;
+                    yield break; // Deferred execution.
                 }
-
                 TSource accumulate = iterator.Current;
                 while (iterator.MoveNext())
                 {
-                    yield return accumulate = func(accumulate, iterator.Current);
+                    yield return accumulate = func(accumulate, iterator.Current); // Deferred execution.
                 }
             }
         }
@@ -111,14 +106,14 @@
 
         #region Concatenation
 
-        internal static IEnumerable<TSource> Concat<TSource>
-            (this IEnumerable<IEnumerable<TSource>> sources) => sources.SelectMany(source => source);
+        internal static IEnumerable<TSource> Concat<TSource>(
+            this IEnumerable<IEnumerable<TSource>> sources) => sources.SelectMany(source => source);
 
-        internal static IEnumerable<TSource> Concat<TSource>
-            (params IEnumerable<TSource>[] sources) => sources.Concat();
+        internal static IEnumerable<TSource> Concat<TSource>(
+            params IEnumerable<TSource>[] sources) => sources.Concat();
 
-        internal static IEnumerable<TSource> StartWith<TSource>
-            (this IEnumerable<TSource> source, params TSource[] values) => values.Concat(source);
+        internal static IEnumerable<TSource> StartWith<TSource>(
+            this IEnumerable<TSource> source, params TSource[] values) => values.Concat(source);
 
         #endregion
 
@@ -128,49 +123,70 @@
             this IEnumerable<TSource> source, Func<TSource, TKey> keySelector, IEqualityComparer<TKey> comparer = null)
         {
             HashSet<TKey> hashSet = new HashSet<TKey>(comparer);
-            return source.Where(value => hashSet.Add(keySelector(value)));
+            foreach (TSource value in source)
+            {
+                if (hashSet.Add(keySelector(value)))
+                {
+                    yield return value; // Deferred execution.
+                }
+            }
         }
 
         #endregion
 
         #region Partitioning
 
-        internal static IEnumerable<TSource> TakeLast_<TSource>(this IEnumerable<TSource> source, int count)
+        internal static IEnumerable<TSource> TakeLast<TSource>(this IEnumerable<TSource> source, int count)
         {
-            if (count <= 0)
+            if (count < 0)
             {
-                yield break;
+                throw new ArgumentOutOfRangeException(nameof(count));
             }
 
-            Queue<TSource> lastValues = new Queue<TSource>(count);
-
-            foreach (TSource value in source)
+            IEnumerable<TSource> TakeLastGGenerator()
             {
-                if (lastValues.Count >= count)
+                if (count <= 0)
                 {
-                    lastValues.Dequeue();
+                    yield break; // Deferred execution.
                 }
+                Queue<TSource> lastValues = new Queue<TSource>(count);
+                foreach (TSource value in source)
+                {
+                    if (lastValues.Count >= count)
+                    {
+                        lastValues.Dequeue();
+                    }
 
-                lastValues.Enqueue(value);
-            } // Eager evaluation.
-
-            while (lastValues.Count > 0)
-            {
-                yield return lastValues.Dequeue();
+                    lastValues.Enqueue(value);
+                } // Eager evaluation.
+                while (lastValues.Count > 0)
+                {
+                    yield return lastValues.Dequeue(); // Deferred execution.
+                }
             }
+            return TakeLastGGenerator();
         }
 
-        internal static IEnumerable<TSource> SkipLast_<TSource>(this IEnumerable<TSource> source, int count)
+        internal static IEnumerable<TSource> SkipLast<TSource>(this IEnumerable<TSource> source, int count)
         {
-            Queue<TSource> lastValues = new Queue<TSource>();
-            foreach (TSource value in source)
+            if (count < 0)
             {
-                lastValues.Enqueue(value);
-                if (lastValues.Count > count) // Can be lazy, eager, or between.
+                throw new ArgumentOutOfRangeException(nameof(count));
+            }
+
+            IEnumerable<TSource> SkipLastGenerator()
+            {
+                Queue<TSource> lastValues = new Queue<TSource>();
+                foreach (TSource value in source)
                 {
-                    yield return lastValues.Dequeue();
+                    lastValues.Enqueue(value);
+                    if (lastValues.Count > count) // Can be lazy, eager, or between.
+                    {
+                        yield return lastValues.Dequeue(); // Deferred execution.
+                    }
                 }
             }
+            return SkipLastGenerator();
         }
 
         #endregion
@@ -181,9 +197,17 @@
         {
             foreach (TSource value in source)
             {
-                yield return value;
+                yield return value; // Deferred execution.
             }
         }
+
+        #endregion
+
+        #region Buffering
+
+        internal static IEnumerable<TResult> Share<TSource, TResult>(
+            this IEnumerable<TSource> source, Func<IEnumerable<TSource>, IEnumerable<TResult>> selector) => 
+                Create(() => selector(source.Share()).GetEnumerator());
 
         #endregion
 
@@ -199,6 +223,7 @@
         }
 
 #if DEMO
+        // Cannot be compiled.
         internal static IEnumerable<TSource> CatchWithYield<TSource, TException>(
             this IEnumerable<TSource> source, Func<TException, IEnumerable<TSource>> handler)
             where TException : Exception
@@ -207,14 +232,14 @@
             {
                 foreach (TSource value in source)
                 {
-                    yield return value;
+                    yield return value; // Deferred execution.
                 }
             }
             catch (TException exception)
             {
                 foreach (TSource value in handler(exception) ?? Empty<TSource>())
                 {
-                    yield return value;
+                    yield return value; // Deferred execution.
                 }
             }
         }
@@ -250,7 +275,7 @@
                 while (true)
                 {
                     TSource value;
-                    try // Only MoveNext and Current are in try-catch.
+                    try // Only MoveNext and Current are inside try-catch.
                     {
                         if (iterator.MoveNext())
                         {
@@ -266,11 +291,9 @@
                         firstException = exception;
                         break; // Stops while loop if TException is thrown.
                     }
-
-                    yield return value; // yield is out of try-catch.
+                    yield return value;  // Deferred execution, outside try-catch.
                 }
             }
-
             if (firstException != null)
             {
                 foreach (TSource value in handler(firstException) ?? Empty<TSource>())
@@ -281,6 +304,7 @@
         }
 
 #if DEMO
+        // Cannot be compiled.
         internal static IEnumerable<TSource> CatchWithYield<TSource>(this IEnumerable<IEnumerable<TSource>> sources)
         {
             Exception lastException = null;
@@ -291,9 +315,8 @@
                 {
                     foreach (TSource value in source)
                     {
-                        yield return value;
+                        yield return value; // Deferred execution.
                     }
-
                     break; // Stops if no exception from current sequence.
                 }
                 catch (Exception exception)
@@ -302,7 +325,6 @@
                     // Continue with next sequence if there is exception.
                 }
             }
-
             if (lastException != null)
             {
                 throw lastException;
@@ -332,7 +354,6 @@
 
                 break;
             }
-
             if (lastException != null)
             {
                 throw lastException;
@@ -350,7 +371,7 @@
                     {
                         lastException = null;
                         TSource value;
-                        try // Only MoveNext and Current are in try-catch.
+                        try // Only MoveNext and Current are inside try-catch.
                         {
                             if (iterator.MoveNext())
                             {
@@ -366,17 +387,14 @@
                             lastException = exception;
                             break; // Stops while loop if TException is thrown.
                         }
-
-                        yield return value;
+                        yield return value;  // Deferred execution, outside try-catch.
                     }
                 }
-
                 if (lastException == null)
                 {
                     break; // If no exception, stops evaluating next source; otherwise, continue.
                 }
             }
-
             if (lastException != null)
             {
                 throw lastException;
@@ -385,8 +403,8 @@
 
         internal static IEnumerable<TSource> Catch<TSource>(params IEnumerable<TSource>[] sources) => sources.Catch();
 
-        internal static IEnumerable<TSource> Catch<TSource>
-            (this IEnumerable<TSource> first, IEnumerable<TSource> second) =>
+        internal static IEnumerable<TSource> Catch<TSource>(
+            this IEnumerable<TSource> first, IEnumerable<TSource> second) =>
                 new IEnumerable<TSource>[] { first, second }.Catch();
 
         internal static IEnumerable<TSource> Finally<TSource>(this IEnumerable<TSource> source, Action finalAction)
@@ -395,7 +413,7 @@
             {
                 foreach (TSource value in source)
                 {
-                    yield return value;
+                    yield return value; // Deferred execution.
                 }
             }
             finally
@@ -404,10 +422,12 @@
             }
         }
 
-        internal static IEnumerable<TSource> Retry<TSource>
-            (this IEnumerable<TSource> source, int? retryCount = null) => Return(source).Repeat(retryCount).Catch();
+        internal static IEnumerable<TSource> Retry<TSource>(
+            this IEnumerable<TSource> source, int? retryCount = null) => 
+                Return(source).Repeat(retryCount).Catch();
 
 #if DEMO
+        // Cannot be compiled.
         internal static IEnumerable<TSource> OnErrorResumeNextWithYield<TSource>(
             this IEnumerable<IEnumerable<TSource>> sources)
         {
@@ -420,36 +440,43 @@
                         yield return value;
                     }
                 }
-                catch
-                {
-                }
+                catch { }
             }
         }
 #endif
 
-        internal static IEnumerable<TSource> OnErrorResumeNext<TSource>(
-            this IEnumerable<IEnumerable<TSource>> sources) => Create<TSource>(async yield =>
+        internal static IEnumerable<TSource> OnErrorResumeNext<TSource>(IEnumerable<IEnumerable<TSource>> sources)
         {
             foreach (IEnumerable<TSource> source in sources)
             {
-                try
+                using (IEnumerator<TSource> iterator = source.GetEnumerator())
                 {
-                    foreach (TSource value in source)
+                    while (true)
                     {
-                        await yield.Return(value); // yield return value.
+                        TSource value = default(TSource);
+                        try
+                        {
+                            if (!iterator.MoveNext())
+                            {
+                                break;
+                            }
+                            value = iterator.Current;
+                        }
+                        catch
+                        {
+                            break;
+                        }
+                        yield return value; // Deferred execution.
                     }
                 }
-                catch
-                {
-                }
             }
-        });
+        }
 
-        internal static IEnumerable<TSource> OnErrorResumeNext<TSource>
-            (params IEnumerable<TSource>[] sources) => sources.OnErrorResumeNext();
+        internal static IEnumerable<TSource> OnErrorResumeNext<TSource>(
+            params IEnumerable<TSource>[] sources) => sources.OnErrorResumeNext();
 
-        internal static IEnumerable<TSource> OnErrorResumeNext<TSource>
-            (this IEnumerable<TSource> first, IEnumerable<TSource> second) =>
+        internal static IEnumerable<TSource> OnErrorResumeNext<TSource>(
+            this IEnumerable<TSource> first, IEnumerable<TSource> second) =>
                 new IEnumerable<TSource>[] { first, second }.OnErrorResumeNext();
 
         #endregion
@@ -464,27 +491,22 @@
             {
                 foreach (TSource value in enumerableFactory(resource))
                 {
-                    yield return value;
+                    yield return value; // Deferred execution.
                 }
             }
         }
 
-        internal static IEnumerable<TResult> If<TResult>
-            (Func<bool> condition, IEnumerable<TResult> thenSource, IEnumerable<TResult> elseSource = null) =>
+        internal static IEnumerable<TResult> If<TResult>(
+            Func<bool> condition, IEnumerable<TResult> thenSource, IEnumerable<TResult> elseSource = null) =>
                 Defer(() => condition() ? thenSource : elseSource ?? Enumerable.Empty<TResult>());
 
         internal static IEnumerable<TResult> Case<TValue, TResult>(
             Func<TValue> selector,
             IDictionary<TValue, IEnumerable<TResult>> sources,
-            IEnumerable<TResult> defaultSource = null) => Defer(() =>
-        {
-            if (!sources.TryGetValue(selector(), out IEnumerable<TResult> result))
-            {
-                result = defaultSource ?? Enumerable.Empty<TResult>();
-            }
-
-            return result;
-        });
+            IEnumerable<TResult> defaultSource = null) => 
+                Defer(() => sources.TryGetValue(selector(), out IEnumerable<TResult> result)
+                    ? result
+                    : (defaultSource ?? Enumerable.Empty<TResult>()));
 
         internal static IEnumerable<TResult> While<TResult>(Func<bool> condition, IEnumerable<TResult> source)
         {
@@ -492,13 +514,13 @@
             {
                 foreach (TResult value in source)
                 {
-                    yield return value;
+                    yield return value; // Deferred execution.
                 }
             }
         }
 
-        internal static IEnumerable<TResult> DoWhile<TResult>
-            (this IEnumerable<TResult> source, Func<bool> condition) => source.Concat(While(condition, source));
+        internal static IEnumerable<TResult> DoWhile<TResult>(
+            this IEnumerable<TResult> source, Func<bool> condition) => source.Concat(While(condition, source));
 
         internal static IEnumerable<TResult> Generate<TState, TResult>(
             TState initialState,
@@ -508,12 +530,12 @@
         {
             for (TState state = initialState; condition(state); state = iterate(state))
             {
-                yield return resultSelector(state);
+                yield return resultSelector(state); // Deferred execution.
             }
         }
-
-        internal static IEnumerable<TResult> For<TSource, TResult>
-            (IEnumerable<TSource> source, Func<TSource, IEnumerable<TResult>> resultSelector) =>
+        
+        internal static IEnumerable<TResult> For<TSource, TResult>(
+            IEnumerable<TSource> source, Func<TSource, IEnumerable<TResult>> resultSelector) =>
                 source.SelectMany(resultSelector);
 
         #endregion
@@ -522,7 +544,7 @@
 
         internal static IEnumerable<TSource> Do<TSource>(
             this IEnumerable<TSource> source,
-            Action<TSource> onNext = null, Action<Exception> onError = null, Action onCompleted = null)
+            Action<TSource> onNext, Action<Exception> onError = null, Action onCompleted = null)
         {
             using (IEnumerator<TSource> iterator = source.GetEnumerator())
             {
@@ -535,7 +557,6 @@
                         {
                             break;
                         }
-
                         value = iterator.Current;
                     }
                     catch (Exception exception)
@@ -543,14 +564,15 @@
                         onError?.Invoke(exception);
                         throw;
                     }
-
-                    onNext?.Invoke(value);
-                    yield return value;
+                    onNext(value);
+                    yield return value; // Deferred execution.
                 }
-
                 onCompleted?.Invoke();
             }
         }
+
+        public static IEnumerable<TSource> Do<TSource>(this IEnumerable<TSource> source, IObserver<TSource> observer) =>
+            Do(source, observer.OnNext, observer.OnError, observer.OnCompleted);
 
         internal static void ForEach<TSource>(/* this */ IEnumerable<TSource> source, Action<TSource> onNext)
         {
@@ -579,3 +601,17 @@
         #endregion
     }
 }
+
+#if DEMO
+namespace System
+{
+    public interface IObserver<in T>
+    {
+        void OnCompleted();
+
+        void OnError(Exception error);
+
+        void OnNext(T value);
+    }
+}
+#endif
