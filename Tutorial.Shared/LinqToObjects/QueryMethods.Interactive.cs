@@ -549,8 +549,8 @@
                 int[] reader3 = source1.ToArray(); // Third full iteration: InvalidOperationException.
             }
 
-            IEnumerable<int> source3 = Enumerable.Range(0, 5);
-            source3
+            IEnumerable<int> source2 = Enumerable.Range(0, 5);
+            source2
                 .Memoize(
                     readerCount: 2,
                     selector: source => source // First full iteration.

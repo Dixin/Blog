@@ -7,7 +7,7 @@
 
     internal static partial class EnumerableExtensions
     {
-        internal static IEnumerable<TSource> Reverse<TSource>(this IEnumerable<TSource> source)
+        public static IEnumerable<TSource> Reverse<TSource>(this IEnumerable<TSource> source)
         {
             TSource[] array = ToArray(source); // Eager evaluation.
             for (int index = array.Length - 1; index >= 0; index--)
@@ -16,32 +16,32 @@
             }
         }
 
-        internal static IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(
+        public static IOrderedEnumerable<TSource> OrderBy<TSource, TKey>(
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             IComparer<TKey> comparer = null) =>
                 new OrderedSequence<TSource, TKey>(source, keySelector, comparer);
 
-        internal static IOrderedEnumerable<TSource> OrderByDescending<TSource, TKey>(
+        public static IOrderedEnumerable<TSource> OrderByDescending<TSource, TKey>(
             this IEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             IComparer<TKey> comparer = null) =>
                 new OrderedSequence<TSource, TKey>(source, keySelector, comparer, descending: true);
 
-        internal static IOrderedEnumerable<TSource> ThenBy<TSource, TKey>(
+        public static IOrderedEnumerable<TSource> ThenBy<TSource, TKey>(
             this IOrderedEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             IComparer<TKey> comparer = null) => 
                 source.CreateOrderedEnumerable(keySelector, comparer, descending: false);
 
-        internal static IOrderedEnumerable<TSource> ThenByDescending<TSource, TKey>(
+        public static IOrderedEnumerable<TSource> ThenByDescending<TSource, TKey>(
             this IOrderedEnumerable<TSource> source,
             Func<TSource, TKey> keySelector,
             IComparer<TKey> comparer = null) => 
                 source.CreateOrderedEnumerable(keySelector, comparer, descending: true);
     }
 
-    internal class OrderedSequence<TSource, TKey> : IOrderedEnumerable<TSource>
+    public class OrderedSequence<TSource, TKey> : IOrderedEnumerable<TSource>
     {
         private readonly IEnumerable<TSource> source;
 
