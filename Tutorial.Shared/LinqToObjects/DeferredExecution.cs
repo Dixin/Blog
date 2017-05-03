@@ -251,12 +251,15 @@
                         "Reverse query starts.".WriteLine();
                         TSource[] values = source.ToArray();
                         $"Reverse query evaluated all {values.Length} value(s) in input sequence.".WriteLine();
-                        data = (values, values.Length - 1);
+                        data = (values, values.Length);
                     },
-                    moveNext: () => data.Index >= 0,
-                    getCurrent: () =>
+                    moveNext: () =>
                     {
                         data = (data.Values, data.Index - 1);
+                        return data.Index >= 0;
+                    },
+                    getCurrent: () =>
+                    {
                         $"Reverse query is yielding index {data.Index} of input sequence.".WriteLine();
                         return data.Values[data.Index];
                     },

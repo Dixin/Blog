@@ -5,9 +5,7 @@
     using System.Collections.Generic;
     using System.Linq;
 
-    public static partial class EnumerableX
-    {
-    }
+    public static partial class EnumerableX { }
 
     public static partial class EnumerableX
     {
@@ -26,7 +24,7 @@
                 {
                     while (true)
                     {
-                        yield return valueFactory();
+                        yield return valueFactory(); // Deferred execution.
                     }
                 }
                 for (int index = 0; index < count; index++)
@@ -37,24 +35,22 @@
             return CreateGenerator();
         }
 
-        public static IEnumerable<int> RandomInt32(int min = int.MinValue, int max = int.MaxValue, Random random = null)
-        {
-            random = random ?? new Random();
-            return Create(() => random.Next(min, max));
-        }
+        public static IEnumerable<Guid> NewGuid(int? count) => Create(Guid.NewGuid, count);
 
-        public static IEnumerable<int> RandomInt32(int min, int max, int seed) =>
-            RandomInt32(min, max, new Random(seed));
+        public static IEnumerable<int> RandomInt32(
+            int min = int.MinValue, int max = int.MaxValue, int? seed = null, int? count = null) =>
+                EnumerableEx.Defer(() =>
+                {
+                    Random random = new Random(seed ?? Environment.TickCount);
+                    return Create(() => random.Next(min, max), count);
+                });
 
-        public static IEnumerable<double> RandomDouble(int? seed = null)
-        {
-            Random random = new Random(seed ?? Environment.TickCount);
-            return Create(random.NextDouble);
-        }
+        public static IEnumerable<double> RandomDouble(int? seed = null, int? count = null) =>
+            EnumerableEx.Defer(() => Create(new Random(seed ?? Environment.TickCount).NextDouble, count));
 
         public static IEnumerable<TResult> FromValue<TResult>(TResult value)
         {
-            yield return value;
+            yield return value; // Deferred execution.
         }
 
         public static IEnumerable<TResult> FromValues<TResult>(params TResult[] values) => values;
@@ -72,53 +68,51 @@
             {
                 if (iterator.MoveNext())
                 {
-                    yield return iterator.Current;
+                    yield return iterator.Current; // Deferred execution.
                     while (iterator.MoveNext())
                     {
-                        yield return separator;
-                        yield return iterator.Current;
+                        yield return separator; // Deferred execution.
+                        yield return iterator.Current; // Deferred execution.
                     }
                 }
             }
         }
 
         public static IEnumerable<TSource> Join<TSource>(
-            this IEnumerable<TSource> source, IEnumerable<TSource> separator)
+            this IEnumerable<TSource> source, IEnumerable<TSource> separators)
         {
-            separator = separator ?? Enumerable.Empty<TSource>();
             using (IEnumerator<TSource> iterator = source.GetEnumerator())
             {
                 if (iterator.MoveNext())
                 {
-                    yield return iterator.Current;
+                    yield return iterator.Current; // Deferred execution.
                     while (iterator.MoveNext())
                     {
-                        foreach (TSource value in separator)
+                        foreach (TSource separator in separators)
                         {
-                            yield return value;
+                            yield return separator; // Deferred execution.
                         }
-
-                        yield return iterator.Current;
+                        yield return iterator.Current; // Deferred execution.
                     }
                 }
             }
         }
 
         public static IEnumerable<TSource> Append<TSource>(
-            this IEnumerable<TSource> source, params TSource[] append) =>
-                source.Concat(append);
+            this IEnumerable<TSource> source, params TSource[] values) =>
+                source.Concat(values);
 
         public static IEnumerable<TSource> Prepend<TSource>(
-            this IEnumerable<TSource> source, params TSource[] prepend) =>
-                prepend.Concat(source);
+            this IEnumerable<TSource> source, params TSource[] values) =>
+                values.Concat(source);
 
         public static IEnumerable<TSource> AppendTo<TSource>(
-            this TSource append, IEnumerable<TSource> source) =>
-                source.Append(append);
+            this TSource value, IEnumerable<TSource> source) =>
+                source.Append(value);
 
         public static IEnumerable<TSource> PrependTo<TSource>(
-            this TSource prepend, IEnumerable<TSource> source) =>
-                source.Prepend(prepend);
+            this TSource value, IEnumerable<TSource> source) =>
+                source.Prepend(value);
 
         #endregion
 
@@ -284,9 +278,11 @@
 
         #region Quantifiers
 
-        public static bool IsNullOrEmpty<TSource>(this IEnumerable<TSource> source) => source == null || !source.Any();
+        public static bool IsNullOrEmpty<TSource>(this IEnumerable<TSource> source) => 
+            source == null || !source.Any();
 
-        public static bool IsNotNullOrEmpty<TSource>(this IEnumerable<TSource> source) => source != null && source.Any();
+        public static bool IsNotNullOrEmpty<TSource>(this IEnumerable<TSource> source) => 
+            source != null && source.Any();
 
         #endregion
 
@@ -317,24 +313,24 @@
             }
         }
 
-        public static void ForEach<TSource>(this IEnumerable<TSource> source)
-        {
-            using (IEnumerator<TSource> iterator = source.GetEnumerator())
-            {
-                while (iterator.MoveNext())
-                {
-                }
-            }
-        }
-
         public static void ForEach(this IEnumerable source)
         {
             IEnumerator iterator = source.GetEnumerator();
-            while (iterator.MoveNext())
-            {
-            }
+            while (iterator.MoveNext()) { }
         }
 
         #endregion
     }
 }
+
+#if DEMO
+namespace System
+{
+    using System.Collections.Generic;
+
+    public class String
+    {
+        public static string Join(string separator, IEnumerable<string> values);
+    }
+}
+#endif

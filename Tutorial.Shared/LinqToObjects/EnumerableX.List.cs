@@ -11,7 +11,7 @@
         {
             if (index < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(index), $"{nameof(index)} must be 0 or greater than 0.");
+                throw new ArgumentOutOfRangeException(nameof(index));
             }
 
             IEnumerable<TSource> InsertGenerator()
@@ -21,20 +21,20 @@
                 {
                     if (currentIndex == index)
                     {
-                        yield return value;
+                        yield return value; // Deferred execution.
                     }
-                    yield return sourceValue;
+                    yield return sourceValue; // Deferred execution.
                     currentIndex = checked(currentIndex + 1);
                 }
                 if (index == currentIndex)
                 {
-                    yield return value;
+                    yield return value; // Deferred execution.
                 }
                 else if (index > currentIndex)
                 {
                     throw new ArgumentOutOfRangeException(
                         nameof(index),
-                        $"Index {index} must be equal to or less than the count of sequance {currentIndex}.");
+                        $"{nameof(index)} must be within the bounds of {nameof(source)}.");
                 }
             }
             return InsertGenerator();
@@ -44,8 +44,9 @@
         {
             if (index < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(index), $"{nameof(index)} must be 0 or greater than 0.");
+                throw new ArgumentOutOfRangeException(nameof(index));
             }
+
             IEnumerable<TSource> RemoveAtGenerator()
             {
                 int currentIndex = 0;
@@ -53,15 +54,13 @@
                 {
                     if (currentIndex != index)
                     {
-                        yield return value;
+                        yield return value; // Deferred execution.
                     }
                     currentIndex = checked(currentIndex + 1);
                 }
                 if (index >= currentIndex)
                 {
-                    throw new ArgumentOutOfRangeException(
-                        nameof(index),
-                        $"index {index} must be equal to or less than the last index of source {currentIndex}.");
+                    throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
             return RemoveAtGenerator();
@@ -69,45 +68,45 @@
 
         public static IEnumerable<TSource> Remove<TSource>(
             this IEnumerable<TSource> source,
-            TSource remove,
+            TSource value,
             IEqualityComparer<TSource> comparer = null)
         {
             comparer = comparer ?? EqualityComparer<TSource>.Default;
             bool isRemoved = false;
-            foreach (TSource value in source)
+            foreach (TSource sourceValue in source)
             {
-                if (!isRemoved && comparer.Equals(value, remove))
+                if (!isRemoved && comparer.Equals(sourceValue, value))
                 {
                     isRemoved = true;
                 }
                 else
                 {
-                    yield return value;
+                    yield return sourceValue; // Deferred execution.
                 }
             }
         }
 
         public static IEnumerable<TSource> RemoveAll<TSource>(
             this IEnumerable<TSource> source,
-            TSource remove,
+            TSource value,
             IEqualityComparer<TSource> comparer = null)
         {
             comparer = comparer ?? EqualityComparer<TSource>.Default;
-            foreach (TSource value in source)
+            foreach (TSource sourceValue in source)
             {
-                if (!comparer.Equals(value, remove))
+                if (!comparer.Equals(sourceValue, value))
                 {
-                    yield return value;
+                    yield return sourceValue; // Deferred execution.
                 }
             }
         }
 
         public static int IndexOf<TSource>(
             this IEnumerable<TSource> source,
-            TSource search,
-            IEqualityComparer<TSource> comparer = null,
+            TSource value,
             int startIndex = 0,
-            int? count = null)
+            int? count = null,
+            IEqualityComparer<TSource> comparer = null)
         {
             comparer = comparer ?? EqualityComparer<TSource>.Default;
             source = source.Skip(startIndex);
@@ -116,9 +115,9 @@
                 source = source.Take(count.Value);
             }
             int index = checked(0 + startIndex);
-            foreach (TSource value in source)
+            foreach (TSource sourceValue in source)
             {
-                if (comparer.Equals(value, search))
+                if (comparer.Equals(sourceValue, value))
                 {
                     return index;
                 }
@@ -129,10 +128,10 @@
 
         public static int LastIndexOf<TSource>(
             this IEnumerable<TSource> source,
-            TSource search,
-            IEqualityComparer<TSource> comparer = null,
+            TSource value,
             int startIndex = 0,
-            int? count = null)
+            int? count = null,
+            IEqualityComparer<TSource> comparer = null)
         {
             comparer = comparer ?? EqualityComparer<TSource>.Default;
             source = source.Skip(startIndex);
@@ -142,9 +141,9 @@
             }
             int lastIndex = -1;
             int index = checked(0 + startIndex);
-            foreach (TSource value in source)
+            foreach (TSource sourceValue in source)
             {
-                if (comparer.Equals(value, search))
+                if (comparer.Equals(sourceValue, value))
                 {
                     lastIndex = index;
                 }

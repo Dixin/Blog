@@ -291,7 +291,7 @@
                         firstException = exception;
                         break; // Stops while loop if TException is thrown.
                     }
-                    yield return value;  // Deferred execution, outside try-catch.
+                    yield return value; // Deferred execution, outside try-catch.
                 }
             }
             if (firstException != null)

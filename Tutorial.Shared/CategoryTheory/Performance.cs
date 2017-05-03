@@ -131,13 +131,10 @@
                 .Select(_ => RandomArray(minValue, maxValue, minLength, maxLength))
                 .ToArray();
 
-        public static int[] RandomArray(int minValue, int maxValue, int minLength, int maxLength)
-        {
-            Random random = new Random();
-            return EnumerableX
-                .RandomInt32(minValue, maxValue, random).Take(random.Next(minLength, maxLength))
+        public static int[] RandomArray(int minValue, int maxValue, int minLength, int maxLength) => 
+            EnumerableX
+                .RandomInt32(minValue, maxValue).Take(new Random().Next(minLength, maxLength))
                 .ToArray();
-        }
     }
 
     internal class Person : IComparable<Person>

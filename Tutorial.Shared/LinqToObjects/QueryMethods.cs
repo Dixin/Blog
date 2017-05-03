@@ -5,15 +5,15 @@
     using System.IO;
 
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
-
     using Mono.Cecil;
 
     internal static partial class QueryMethods
     {
-        internal static void EmptyIfNull()
+        internal static void EmptyIfNull(IEnumerable<int> source1, IEnumerable<int> source2)
         {
-            Func<IEnumerable<int>, IEnumerable<int>> positive = source => source.EmptyIfNull().Where(int32 => int32 > 0);
-            int count = positive(null).Count(); // 0.
+            IEnumerable<int> positive = source1.EmptyIfNull()
+                .Union(source2.EmptyIfNull())
+                .Where(int32 => int32 > 0);
         }
 
         internal static IEnumerable<AssemblyDefinition> Libraries(string directory) => 

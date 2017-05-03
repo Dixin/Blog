@@ -43,16 +43,15 @@
         public void RetryTest()
         {
             int count = 0;
-            int[] retry = EnumerableX.Create(
-                () =>
+            int[] retry = EnumerableX.Create(() =>
+                {
+                    count++;
+                    if (count < 5)
                     {
-                        count++;
-                        if (count < 5)
-                        {
-                            throw new OperationCanceledException();
-                        }
-                        return count;
-                    })
+                        throw new OperationCanceledException();
+                    }
+                    return count;
+                })
                 .Take(2)
                 .Retry<int, OperationCanceledException>(5)
                 .ToArray();
@@ -163,8 +162,8 @@
             Assert.AreEqual(0, Enumerable.Range(0, 5).IndexOf(0));
             Assert.AreEqual(1, Enumerable.Range(0, 5).IndexOf(1));
             Assert.AreEqual(-1, Enumerable.Repeat("a", 5).IndexOf("A"));
-            Assert.AreEqual(0, Enumerable.Repeat("a", 5).IndexOf("A", StringComparer.OrdinalIgnoreCase));
-            Assert.AreEqual(2, Enumerable.Repeat("a", 5).IndexOf("A", StringComparer.OrdinalIgnoreCase, 2));
+            Assert.AreEqual(0, Enumerable.Repeat("a", 5).IndexOf("A", comparer: StringComparer.OrdinalIgnoreCase));
+            Assert.AreEqual(2, Enumerable.Repeat("a", 5).IndexOf("A", 2, comparer: StringComparer.OrdinalIgnoreCase));
         }
 
         [TestMethod]
@@ -177,7 +176,7 @@
             Assert.AreEqual(4, Enumerable.Repeat(0, 5).LastIndexOf(0));
             Assert.AreEqual(6, Enumerable.Repeat(0, 5).Concat(Enumerable.Range(0, 5)).LastIndexOf(1));
             Assert.AreEqual(-1, Enumerable.Repeat("a", 5).LastIndexOf("A"));
-            Assert.AreEqual(4, Enumerable.Repeat("a", 5).LastIndexOf("A", StringComparer.OrdinalIgnoreCase));
+            Assert.AreEqual(4, Enumerable.Repeat("a", 5).LastIndexOf("A", comparer: StringComparer.OrdinalIgnoreCase));
         }
 
         [TestMethod]

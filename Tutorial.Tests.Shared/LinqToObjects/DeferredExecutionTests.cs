@@ -3,14 +3,13 @@ namespace Tutorial.Tests.LinqToObjects
     using System.Linq;
 
     using Tutorial.LinqToObjects;
-
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
     public class DeferredExecutionTests
     {
         [TestMethod]
-        public void Reverse2Test()
+        public void ReverseTest()
         {
             int[] enumerable = new int[] { 0, 1, 2 };
             EnumerableAssert.AreSequentialEqual(
