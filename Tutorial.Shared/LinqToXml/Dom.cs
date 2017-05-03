@@ -15,7 +15,7 @@ namespace Tutorial.LinqToXml
             XmlDocument document = new XmlDocument(namespaceManager.NameTable);
 
             XmlElement rss = document.CreateElement("rss");
-            rss.SetAttribute("vewrsion", "2.0");
+            rss.SetAttribute("version", "2.0");
             XmlAttribute attribute = document.CreateAttribute(
                 "xmlns", NamespacePrefix, namespaceManager.LookupNamespace("xmlns"));
             attribute.Value = namespaceManager.LookupNamespace(NamespacePrefix);
