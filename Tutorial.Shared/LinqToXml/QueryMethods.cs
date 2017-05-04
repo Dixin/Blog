@@ -16,18 +16,16 @@
         {
             XElement element = new XElement("element");
             new XDocument(new XElement("grandparent", new XElement("parent", element)));
+
             element.Parent.Name.WriteLine(); // parent
-
-            IEnumerable<XName> ancestors = element
+            element
                 .Ancestors()
-                .Select(ancestor => ancestor.Name);
-            string.Join(" ", ancestors).WriteLine(); // parent grandparent
-
-            IEnumerable<XName> selfAndAncestors = element
+                .Select(ancestor => ancestor.Name)
+                .WriteLines(); // parent grandparent
+            element
                 .AncestorsAndSelf()
-                .Select(selfOrAncestor => selfOrAncestor.Name);
-            string.Join(" ", selfAndAncestors).WriteLine(); // element parent grandparent
-
+                .Select(selfOrAncestor => selfOrAncestor.Name)
+                .WriteLines(); // element parent grandparent
             object.ReferenceEquals(element.Ancestors().Last(), element.Document.Root).WriteLine(); // True.
         }
     }
@@ -39,14 +37,14 @@
             XDocument rss = LoadXDocument("https://weblogs.asp.net/dixin/rss");
             IEnumerable<string> categories = rss
                 .Root // <rss>.
-                .Element("channel") // <channel> under <rss>.
-                .Elements("item") // All <item>s under <channel>.
+                .Element("channel") // Single <channel> under <rss>.
+                .Elements("item") // All <item>s under single <channel>.
                 .Where(item => (bool)item
-                    .Element("guid") // <category> under each <item>
-                    .Attribute("isPermaLink")) // <category>'s isPermaLink attribute.
+                    .Element("guid") // Single <guid> under each <item>
+                    .Attribute("isPermaLink")) // isPermaLink attribute of <guid>.
                 .Elements("category") // All <category>s under all <item>s.
                 .GroupBy(
-                    keySelector: category => (string)category, // String value of <category>.
+                    keySelector: category => (string)category, // String value of each <category>.
                     elementSelector: category => category,
                     resultSelector: (key, group) => new { Name = key, Count = group.Count() },
                     comparer: StringComparer.OrdinalIgnoreCase)
@@ -98,7 +96,7 @@
             // Text: 3
         }
 
-        internal static void ResultObjects()
+        internal static void ResultReferences()
         {
             XDocument rss1 = LoadXDocument("https://weblogs.asp.net/dixin/rss");
             XElement[] items1 = rss1.Descendants("item").ToArray();
@@ -123,16 +121,16 @@
 
             XElement[] ancestors = element1.Ancestors().ToArray();
             XNode.CompareDocumentOrder(ancestors.First(), ancestors.Last()).WriteLine(); // 1
-            IEnumerable<XName> ancestorsInDocumentOrder = ancestors
+            ancestors
                 .InDocumentOrder()
-                .Select(ancestor => ancestor.Name);
-            string.Join(" ", ancestorsInDocumentOrder).WriteLine(); // grandparent parent
+                .Select(ancestor => ancestor.Name)
+                .WriteLines(); // grandparent parent
 
-            bool areSequentialEqual = element1
+            element1
                 .AncestorsAndSelf()
                 .Reverse()
-                .SequenceEqual(element1.AncestorsAndSelf().InDocumentOrder());
-            areSequentialEqual.WriteLine(); // True
+                .SequenceEqual(element1.AncestorsAndSelf().InDocumentOrder())
+                .WriteLine(); // True
         }
 
         internal static void CommonAncestor()
@@ -172,7 +170,7 @@
             rssNavigator.MoveToFirstChild().WriteLine(); // True
             rssNavigator.Name.WriteLine(); // rss
 
-            IEnumerable<string> categories = ((XPathNodeIterator)rssNavigator
+            ((XPathNodeIterator)rssNavigator
                 .Evaluate("/rss/channel/item[guid/@isPermaLink='true']/category"))
                 .Cast<XPathNavigator>()
                 .Select(categoryNavigator => categoryNavigator.UnderlyingObject)
@@ -184,15 +182,15 @@
                     StringComparer.OrdinalIgnoreCase)
                 .OrderByDescending(category => category.Count)
                 .Take(5)
-                .Select(category => $"[{category.Name}]:{category.Count}");
-            string.Join(" ", categories).WriteLine();
-            // [C#]:9 [LINQ]:6 [.NET]:5 [Functional Programming]:4 [LINQ via C#]:4
+                .Select(category => $"[{category.Name}]:{category.Count}")
+                .WriteLines();
+                // [C#]:9 [LINQ]:6 [.NET]:5 [Functional Programming]:4 [LINQ via C#]:4
         }
 
         internal static void XPathQuery()
         {
             XDocument rss = LoadXDocument("https://weblogs.asp.net/dixin/rss");
-            IEnumerable<string> categories = rss
+            rss
                 .XPathSelectElements("/rss/channel/item[guid/@isPermaLink='true']/category")
                 .GroupBy(
                     category => category.Value, // Current text node's value.
@@ -201,9 +199,9 @@
                     StringComparer.OrdinalIgnoreCase)
                 .OrderByDescending(category => category.Count)
                 .Take(5)
-                .Select(category => $"[{category.Name}]:{category.Count}");
-            string.Join(" ", categories).WriteLine();
-            // [C#]:9 [LINQ]:6 [.NET]:5 [Functional Programming]:4 [LINQ via C#]:4
+                .Select(category => $"[{category.Name}]:{category.Count}")
+                .WriteLines();
+                // [C#]:9 [LINQ]:6 [.NET]:5 [Functional Programming]:4 [LINQ via C#]:4
         }
 
         internal static void XPathQueryWithNamespace()
@@ -234,7 +232,7 @@
         internal static void XPathEvaluateSequence()
         {
             XDocument rss = LoadXDocument("https://weblogs.asp.net/dixin/rss");
-            IEnumerable<string> categories = ((IEnumerable<object>)rss
+            ((IEnumerable<object>)rss
                 .XPathEvaluate("/rss/channel/item[guid/@isPermaLink='true']/category/text()"))
                 .Cast<XText>()
                 .GroupBy(
@@ -244,22 +242,22 @@
                     StringComparer.OrdinalIgnoreCase)
                 .OrderByDescending(category => category.Count)
                 .Take(5)
-                .Select(category => $"[{category.Name}]:{category.Count}");
-            string.Join(" ", categories).WriteLine();
-            // [C#]:9 [LINQ]:6 [.NET]:5 [Functional Programming]:4 [LINQ via C#]:4
+                .Select(category => $"[{category.Name}]:{category.Count}")
+                .WriteLines();
+                // [C#]:9 [LINQ]:6 [.NET]:5 [Functional Programming]:4 [LINQ via C#]:4
         }
 
         internal static void XPathEvaluateSequenceWithNamespace()
         {
             XDocument rss = LoadXDocument("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2");
-            IEnumerable<XText> mediaTitles = ((IEnumerable<object>)rss
+            ((IEnumerable<object>)rss
                 .XPathEvaluate(
                     "/rss/channel/item[contains(media:category/text(), 'microsoft')]/media:title/text()",
                     rss.CreateNamespaceManager()))
-                .Cast<XText>();
-            mediaTitles.WriteLines(mediaTitle => mediaTitle.Value);
-            // Chinese President visits Microsoft
-            // Satya Nadella, CEO of Microsoft
+                .Cast<XText>()
+                .WriteLines(mediaTitle => mediaTitle.Value);
+                // Chinese President visits Microsoft
+                // Satya Nadella, CEO of Microsoft
         }
 
         internal static void GenerateXPath()
@@ -289,3 +287,52 @@
         }
     }
 }
+
+#if DEMO
+namespace System.Xml.Linq
+{
+    using System.Collections.Generic;
+
+    public abstract class XNode : XObject
+    {
+        public IEnumerable<XElement> Ancestors()
+        {
+            for (XElement parent = this.Parent; parent != null; parent = parent.Parent)
+            {
+                yield return parent;
+            }
+        }
+
+        // Other members.
+    }
+}
+
+namespace System.Xml.Linq
+{
+    using System.Collections.Generic;
+    using System.Linq;
+
+    public static partial class Extensions
+	{
+        public static IEnumerable<XElement> Ancestors<T>(this IEnumerable<T> source) where T : XNode =>
+            source
+                .Where(node => node != null)
+                .SelectMany(node => node.Ancestors())
+                .Where(ancestor => ancestor != null);
+            // Equivalent to:
+            // from node in source
+            // where node != null
+            // from ancestor in node.Ancestors()
+            // where ancestor != null
+            // select ancestor;
+
+        // Other members.
+    }
+
+    public static partial class Extensions
+	{
+        public static IEnumerable<T> InDocumentOrder<T>(this IEnumerable<T> source) where T : XNode =>
+            source.OrderBy(node => node, XNode.DocumentOrderComparer);
+    }
+}
+#endif

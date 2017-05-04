@@ -24,8 +24,8 @@
                     source is XContainer container
                         ? container
                             .DescendantNodes()
-                            .SelectMany(descendant => Enumerable
-                                .Repeat<XObject>(descendant, 1)
+                            .SelectMany(descendant => EnumerableEx
+                                .Return(descendant)
                                 .Concat(
                                     descendant is XElement descendantElement
                                         ? descendantElement.Attributes() // T is covariant in IEnumerable<T>.
@@ -36,23 +36,25 @@
     public static partial class XExtensions
     {
         public static IEnumerable<XObject> SelfAndDescendantObjects(this XObject source) =>
-            Enumerable
-                .Repeat(source, 1)
+            EnumerableEx
+                .Return(source)
                 .Concat(source.DescendantObjects());
 
         public static IEnumerable<XName> Names(this XContainer source) =>
             (source is XElement element
                 ? element.DescendantsAndSelf()
                 : source.Descendants())
-                    .SelectMany(descendantElement => Enumerable
-                        .Repeat(descendantElement.Name, 1)
+                    .SelectMany(descendantElement => EnumerableEx
+                        .Return(descendantElement.Name)
                         .Concat(descendantElement
                             .Attributes()
                             .Select(attribute => attribute.Name)))
                 .Distinct();
 
         public static IEnumerable<XAttribute> AllAttributes(this XContainer source) =>
-            (source is XElement element ? element.DescendantsAndSelf() : source.Descendants())
+            (source is XElement element 
+                ? element.DescendantsAndSelf() 
+                : source.Descendants())
                 .SelectMany(elementOrDescendant => elementOrDescendant.Attributes());
 
         public static IEnumerable<(string, XNamespace)> Namespaces(this XContainer source) =>
@@ -156,8 +158,8 @@
         public static IEnumerable<(XObject, string, IXmlSchemaInfo)> GetValidities(this XElement source, string parentXPath = null)
         {
             string xPath = source.XPath(parentXPath);
-            return Enumerable
-                .Repeat(((XObject)source, xPath, source.GetSchemaInfo()), 1)
+            return EnumerableEx
+                .Return(((XObject)source, xPath, source.GetSchemaInfo()))
                 .Concat(source
                     .Attributes()
                     .Select(attribute => ((XObject)attribute, attribute.XPath(xPath), attribute.GetSchemaInfo())))
