@@ -17,7 +17,7 @@
             QueryMethods.ParentAndAncestors();
             QueryMethods.ChildElements();
             QueryMethods.ChildrenAndDescendants();
-            QueryMethods.ResultObjects();
+            QueryMethods.ResultReferences();
         }
 
         [TestMethod]

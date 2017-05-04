@@ -51,7 +51,8 @@
         [TestMethod]
         public void StreamingTest()
         {
-            Modeling.StreamingElement();
+            Modeling.StreamingElementWithChildElements();
+            Modeling.StreamingElementWithChildElementModification();
         }
     }
 }
