@@ -112,13 +112,16 @@
             isPermaLink.WriteLine(); // True
         }
 
-        internal static void Node()
+        internal static void DeepEquals()
         {
-            XDocument document = XDocument.Parse("<element></element>");
-            XElement element1 = new XElement("element", null); // <element />
-            XElement element2 = new XElement("element", string.Empty); // <element></element>
-            XNode.DeepEquals(document.Root, element1).WriteLine(); // False
-            XNode.DeepEquals(document.Root, element2).WriteLine(); // True
+            XElement element1 = XElement.Parse("<parent><child></child></parent>");
+            XElement element2 = new XElement("parent", new XElement("child")); // <parent><child /></parent>
+            object.ReferenceEquals(element1, element2).WriteLine(); // False
+            XNode.DeepEquals(element1, element2).WriteLine(); // True
+
+            XElement element3 = new XElement("parent", new XElement("child", string.Empty)); // <parent><child></child></parent>
+            object.ReferenceEquals(element1, element2).WriteLine(); // False
+            XNode.DeepEquals(element1, element3).WriteLine(); // False
         }
 
         internal static XDocument LoadXDocument(string uri)

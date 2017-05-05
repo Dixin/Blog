@@ -394,7 +394,7 @@ namespace System.Linq
         public static IEnumerable<TSource> Concat<TSource>(
             this IEnumerable<TSource> first, IEnumerable<TSource> second);
 
-        // More query methods...
+        // Other members.
     }
 
     public static class ParallelEnumerable
@@ -408,7 +408,7 @@ namespace System.Linq
         public static ParallelQuery<TSource> Concat<TSource>(
             this ParallelQuery<TSource> first, ParallelQuery<TSource> second);
 
-        // More query methods...
+        // Other members.
     }
 }
 

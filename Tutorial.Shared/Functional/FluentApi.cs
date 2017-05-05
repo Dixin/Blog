@@ -177,7 +177,7 @@ namespace System.Linq
         public static IEnumerable<TSource> Concat<TSource>(
             this IEnumerable<TSource> first, IEnumerable<TSource> second);
 
-        // More query methods...
+        // Other members.
     }
 }
 

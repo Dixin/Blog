@@ -137,23 +137,23 @@
         {
             XElement parent = new XElement("parent");
             parent.Changing += (sender, e) => 
-                $"Begin {e.ObjectChange}: {sender} => {parent.ToString(SaveOptions.DisableFormatting)}".WriteLine();
+                $"Before {e.ObjectChange}: {sender} => {parent.ToString(SaveOptions.DisableFormatting)}".WriteLine();
             parent.Changed += (sender, e) => 
-                $"End {e.ObjectChange}: {sender} => {parent.ToString(SaveOptions.DisableFormatting)}".WriteLine();
+                $"After {e.ObjectChange}: {sender} => {parent.ToString(SaveOptions.DisableFormatting)}".WriteLine();
 
             parent.SetElementValue("child", string.Empty); // Add child element.
-            // Begin Add: <child></child> => <parent />
-            // End Add: <child></child> => <parent><child></child></parent>
+            // Before Add: <child></child> => <parent />
+            // After Add: <child></child> => <parent><child></child></parent>
 
             parent.SetElementValue("child", "value"); // Update child element.
-            // Begin Value: <child></child> => <parent><child></child></parent>
-            // End Value: <child /> => <parent><child /></parent>
-            // Begin Add: value => <parent><child /></parent>
-            // End Add: value => <parent><child>value</child></parent>
+            // Before Value: <child></child> => <parent><child></child></parent>
+            // After Value: <child /> => <parent><child /></parent>
+            // Before Add: value => <parent><child /></parent>
+            // After Add: value => <parent><child>value</child></parent>
 
             parent.SetElementValue("child", null); // Remove child element.
-            // Begin Remove: <child>value</child> => <parent><child>value</child></parent>
-            // End Remove: <child>value</child> => <parent />
+            // Before Remove: <child>value</child> => <parent><child>value</child></parent>
+            // After Remove: <child>value</child> => <parent />
         }
 
         internal static void Annotation()
@@ -163,17 +163,13 @@
 
             Uri annotation = element.Annotation<Uri>();
             annotation.WriteLine(); // https://microsoft.com
-
             element.WriteLine(); // <element />
 
-            element.Add(element); // element is cloned.
-            element.Annotations<Uri>().Count().WriteLine(); // 1
-            element.Elements().Single().Annotations<object>().Count().WriteLine(); // 0
+            XElement clone = new XElement(element); // element is cloned.
+            clone.Annotations<Uri>().Any().WriteLine(); // False
 
             element.RemoveAnnotations<Uri>();
-            element.Annotations<Uri>().Count().WriteLine(); // 0
-            Uri removed = element.Annotation<Uri>();
-            (removed == null).WriteLine(); // True
+            (element.Annotation<Uri>() == null).WriteLine(); // True
         }
 
 #if NETFX
@@ -198,11 +194,8 @@
                 {
                     $"{args.Severity}: ({sender.GetType().Name}) => {args.Message}".WriteLine();
                     // Error: (XElement) => The element 'channel' has invalid child element 'pubDate'. List of possible elements expected: 'item'.
-                    if (args.Exception != null)
-                    {
-                        args.Exception.WriteLine();
-                        // XmlSchemaValidationException: The element 'channel' has invalid child element 'pubDate'. List of possible elements expected: 'item'.
-                    }
+                    args.Exception?.WriteLine();
+                    // XmlSchemaValidationException: The element 'channel' has invalid child element 'pubDate'. List of possible elements expected: 'item'.
                 });
         }
 #endif
@@ -219,11 +212,11 @@
                 .Root
                 .DescendantsAndSelf()
                 .ForEach(element =>
-                    {
-                        $"{element.XPath()} - {element.GetSchemaInfo()?.Validity}".WriteLine();
-                        element.Attributes().WriteLines(attribute => 
-                            $"{attribute.XPath()} - {attribute.GetSchemaInfo()?.Validity.ToString() ?? "null"}");
-                    });
+                {
+                    $"{element.XPath()} - {element.GetSchemaInfo()?.Validity}".WriteLine();
+                    element.Attributes().WriteLines(attribute => 
+                        $"{attribute.XPath()} - {attribute.GetSchemaInfo()?.Validity.ToString() ?? "null"}");
+                });
             // /rss - Invalid
             // /rss/@version - Valid
             // /rss/@xmlns:media - null
@@ -291,12 +284,12 @@
                 .Elements("item")
                 .Take(5)
                 .Select(item =>
-                    {
-                        string link = (string)item.Element("link");
-                        string title = (string)item.Element("title");
-                        return new XElement("li", new XElement("a", new XAttribute("href", link), title));
-                        // Equivalent to: return XElement.Parse($"<li><a href='{link}'>{title}</a></li>");
-                    })
+                {
+                    string link = (string)item.Element("link");
+                    string title = (string)item.Element("title");
+                    return new XElement("li", new XElement("a", new XAttribute("href", link), title));
+                    // Equivalent to: return XElement.Parse($"<li><a href='{link}'>{title}</a></li>");
+                })
                 .Aggregate(new XElement("ul"), (ul, li) => { ul.Add(li); return ul; }, ul => new XDocument(ul));
             html.WriteLine();
         }

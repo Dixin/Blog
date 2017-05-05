@@ -27,7 +27,7 @@
             Modeling.Namespace();
             Modeling.Element();
             Modeling.Attribute();
-            Modeling.Node();
+            Modeling.DeepEquals();
         }
 
         [TestMethod]

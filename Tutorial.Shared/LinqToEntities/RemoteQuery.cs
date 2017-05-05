@@ -190,7 +190,7 @@ namespace System.Linq
         public static IEnumerable<TSource> Concat<TSource>(
             this IEnumerable<TSource> first, IEnumerable<TSource> second);
 
-        // More query methods...
+        // Other members.
     }
 
     public static class Queryable
@@ -204,7 +204,7 @@ namespace System.Linq
         public static IQueryable<TSource> Concat<TSource>(
             this IQueryable<TSource> source1, IEnumerable<TSource> source2);
 
-        // More query methods...
+        // Other members.
     }
 }
 

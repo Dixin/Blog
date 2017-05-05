@@ -170,9 +170,6 @@
 #endif
 
 #if NETFX
-        public static IEnumerable<(XObject, string, IXmlSchemaInfo)> GetValidities(this XDocument source) =>
-            source.Root.GetValidities();
-
         public static XDocument XslTransform(this XNode source, XNode xsl)
         {
             XDocument result = new XDocument();
