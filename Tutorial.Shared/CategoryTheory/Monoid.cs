@@ -120,9 +120,7 @@ namespace Microsoft.FSharp.Core
     [Serializable]
     public sealed class Unit : IComparable
     {
-        internal Unit()
-        {
-        }
+        internal Unit() { }
 
         public override int GetHashCode() => 0;
 

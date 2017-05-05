@@ -315,13 +315,11 @@ namespace System.Linq
 
 namespace System.Collections.Generic
 {
-    public class Dictionary<TKey, TValue> : IEnumerable<KeyValuePair<TKey, TValue>>, IEnumerable, 
-        IDictionary<TKey, TValue>, IDictionary, ICollection<KeyValuePair<TKey, TValue>>, ICollection, 
+    public class Dictionary<TKey, TValue> : IDictionary<TKey, TValue>, IDictionary, 
+        ICollection<KeyValuePair<TKey, TValue>>, ICollection, 
+        IEnumerable<KeyValuePair<TKey, TValue>>, IEnumerable, 
         IReadOnlyDictionary<TKey, TValue>, IReadOnlyCollection<KeyValuePair<TKey, TValue>>, 
-        ISerializable, IDeserializationCallback
-        IDictionary<TKey, TValue>, IDictionary, IReadOnlyDictionary<TKey, TValue>, ISerializable, IDeserializationCallback
-    {
-    }
+        ISerializable, IDeserializationCallback { }
 }
 
 namespace System.Linq

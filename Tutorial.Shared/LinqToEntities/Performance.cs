@@ -54,9 +54,7 @@
         private ObjectSet<Product> products;
 
         public LegacyAdventureWorks()
-            : base((EntityConnection)new AdventureWorks().ObjectContext().Connection)
-        {
-        }
+            : base((EntityConnection)new AdventureWorks().ObjectContext().Connection) { }
 
         public ObjectSet<Product> Products => this.products ?? (this.products = this.CreateObjectSet<Product>());
     }

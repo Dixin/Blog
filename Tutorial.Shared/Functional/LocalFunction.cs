@@ -35,15 +35,11 @@
     internal static partial class Functions
     {
 #if DEMO
-// Cannot be compiled.
+        // Cannot be compiled.
         internal static void LocalFunctionOverload()
         {
-            void LocalFunction()
-            {
-            }
-            void LocalFunction(int int32) // Cannot be the same name.
-            {
-            }
+            void LocalFunction() { }
+            void LocalFunction(int int32) { } // Cannot be the same name.
         }
 #endif
 

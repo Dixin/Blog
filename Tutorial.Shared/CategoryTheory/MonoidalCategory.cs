@@ -4,9 +4,7 @@
 
     using Microsoft.FSharp.Core;
 
-    public interface IMonoidalCategory<TObject, TMorphism> : ICategory<TObject, TMorphism>, IMonoid<TObject>
-    {
-    }
+    public interface IMonoidalCategory<TObject, TMorphism> : ICategory<TObject, TMorphism>, IMonoid<TObject> { }
 
     public partial class DotNetCategory : IMonoidalCategory<Type, Delegate>
     {

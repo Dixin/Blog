@@ -152,9 +152,7 @@ namespace System.Data.SqlClient
             return new SqlParameter(this);
         }
 
-        internal sealed class SqlParameterConverter : ExpandableObjectConverter
-        {
-        }
+        internal sealed class SqlParameterConverter : ExpandableObjectConverter { }
 
         // Other members.
     }
@@ -432,9 +430,7 @@ namespace Tutorial.Functional
         where T4 : IDisposable
         where T5 : struct, IComparable, IComparable<T5>
         where T6 : new()
-        where T7 : T2, T3, T4, IDisposable, new()
-    {
-    }
+        where T7 : T2, T3, T4, IDisposable, new() { }
 
     internal partial class Constraints<T1, T2, T3, T4, T5, T6, T7>
     {

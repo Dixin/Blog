@@ -546,8 +546,6 @@ namespace System.Data.Entity.Infrastructure
         public IEnumerable<DbEntityEntry> Entries { get; }
     }
 
-    public class DbUpdateConcurrencyException : DbUpdateException
-    {
-    }
+    public class DbUpdateConcurrencyException : DbUpdateException { }
 }
 #endif

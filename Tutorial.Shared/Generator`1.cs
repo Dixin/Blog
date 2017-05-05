@@ -89,9 +89,7 @@
         {
             if (this.State == IteratorState.Error || this.State == IteratorState.MoveNext)
             {
-                try
-                {
-                }
+                try { }
                 finally
                 {
                     // Unexecuted finally blocks are executed before the thread is aborted.
@@ -191,9 +189,7 @@
         {
             if (this.State == IteratorState.Error || this.State == IteratorState.MoveNext)
             {
-                try
-                {
-                }
+                try { }
                 finally
                 {
                     // Unexecuted finally blocks are executed before the thread is aborted.
@@ -350,9 +346,7 @@
         {
             if (this.state == IteratorState.Error || this.state == IteratorState.MoveNext)
             {
-                try
-                {
-                }
+                try { }
                 finally
                 {
                     // https://msdn.microsoft.com/en-us/library/ty8d3wta.aspx

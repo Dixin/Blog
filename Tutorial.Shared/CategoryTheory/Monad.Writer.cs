@@ -27,13 +27,9 @@
         private static readonly IMonoid<IEnumerable<TEntry>> ContentMonoid =
             new EnumerableConcatMonoid<TEntry>();
 
-        public Writer(Func<(IEnumerable<TEntry>, T)> writer) : base(writer, ContentMonoid)
-        {
-        }
+        public Writer(Func<(IEnumerable<TEntry>, T)> writer) : base(writer, ContentMonoid) { }
 
-        public Writer(T value) : base(() => (ContentMonoid.Unit(), value), ContentMonoid)
-        {
-        }
+        public Writer(T value) : base(() => (ContentMonoid.Unit(), value), ContentMonoid) { }
     }
 
     public static partial class WriterExtensions

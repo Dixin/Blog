@@ -128,9 +128,7 @@
     }
 
     [Table(Name = "Production.ProductProductPhoto")]
-    public partial class ProductProductPhoto
-    {
-    }
+    public partial class ProductProductPhoto { }
 
     public partial class Product
     {

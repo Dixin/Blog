@@ -29,9 +29,7 @@
 
     public partial class AggregateListNodeWrapper<T>
     {
-        private AggregateListNodeWrapper()
-        {
-        }
+        private AggregateListNodeWrapper() { }
 
         private class NullAggregateListNodeWrapper : AggregateListNodeWrapper<T>
         {

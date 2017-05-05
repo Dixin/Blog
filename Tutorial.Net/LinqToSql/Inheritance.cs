@@ -11,15 +11,9 @@
         public string Style { get; set; }
     }
 
-    public class WomenProduct : Product
-    {
-    }
+    public class WomenProduct : Product { }
 
-    public class MenProduct : Product
-    {
-    }
+    public class MenProduct : Product { }
 
-    public class UniversalProduct : Product
-    {
-    }
+    public class UniversalProduct : Product { }
 }

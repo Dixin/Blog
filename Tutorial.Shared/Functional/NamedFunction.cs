@@ -548,9 +548,7 @@ namespace System
 {
     using System.Collections;
 
-    internal interface ITuple
-    {
-    }
+    internal interface ITuple { }
 
     [Serializable]
     public class ValueTuple<T1, T2, T3, T4> : IStructuralEquatable, IStructuralComparable, IComparable, ITuple

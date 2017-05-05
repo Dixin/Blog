@@ -111,7 +111,7 @@
                 .GetPrimitiveTypes(DataSpace.CSpace)
                 .Single(type => type.ClrEquivalentType == typeof(string)));
             TypeUsage nameRowTypeUsage = TypeUsage.CreateDefaultTypeUsage(RowType.Create(
-                Enumerable.Repeat(EdmProperty.Create(nameof(Product.Name), stringTypeUsage), 1),
+                EnumerableEx.Return(EdmProperty.Create(nameof(Product.Name), stringTypeUsage)),
                 Enumerable.Empty<MetadataProperty>()));
             TypeUsage productTypeUsage = TypeUsage.CreateDefaultTypeUsage(metadata
                 .GetType(nameof(Product), "CodeFirstDatabaseSchema", DataSpace.SSpace));
@@ -217,7 +217,7 @@
                 .GetPrimitiveTypes(DataSpace.CSpace)
                 .Single(type => type.ClrEquivalentType == typeof(string)));
             TypeUsage nameRowTypeUsage = TypeUsage.CreateDefaultTypeUsage(RowType.Create(
-                Enumerable.Repeat(EdmProperty.Create(nameof(Product.Name), stringTypeUsage), 1),
+                EnumerableEx.Return(EdmProperty.Create(nameof(Product.Name), stringTypeUsage)),
                 Enumerable.Empty<MetadataProperty>()));
             TypeUsage productTypeUsage = TypeUsage.CreateDefaultTypeUsage(metadata
                 .GetType(nameof(Product), "CodeFirstDatabaseSchema", DataSpace.SSpace));
@@ -1132,9 +1132,7 @@ namespace System.Data.Entity.SqlServer.SqlGen
     using System.Collections.Generic;
     using System.Data.Entity.Core.Common.CommandTrees;
 
-    internal interface ISqlFragment
-    {
-    }
+    internal interface ISqlFragment { }
 
     internal class SqlGenerator : DbExpressionVisitor<ISqlFragment>
     {

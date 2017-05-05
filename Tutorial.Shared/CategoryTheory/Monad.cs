@@ -10,7 +10,7 @@
     using Microsoft.FSharp.Core;
 
 #if DEMO
-// Cannot be compiled.
+    // Cannot be compiled.
     public partial interface IMonad<TMonad<>> : IFunctor<TMonad<>> where TMonad<> : IMonad<TMonad<>>
     {
         // From IFunctor<TMonad<>>:
@@ -110,9 +110,7 @@
     }
     
     // Cannot be compiled.
-    public partial interface IMonad<TMonad<>> : IMonoidalFunctor<TMonad<>>, IApplicativeFunctor<TMonad<>>
-    {
-    }
+    public partial interface IMonad<TMonad<>> : IMonoidalFunctor<TMonad<>>, IApplicativeFunctor<TMonad<>> { }
 
     // Cannot be compiled.
     public static partial class MonadExtensions

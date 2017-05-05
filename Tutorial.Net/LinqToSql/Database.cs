@@ -7,8 +7,6 @@
     public partial class AdventureWorks : DataContext
     {
         public AdventureWorks()
-            : base(ConnectionStrings.AdventureWorks)
-        {
-        }
+            : base(ConnectionStrings.AdventureWorks) { }
     }
 }

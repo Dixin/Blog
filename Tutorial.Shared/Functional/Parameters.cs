@@ -161,9 +161,7 @@
             int sum4 = Sum(array);
         }
 
-        internal static void ParameterArray(bool required1, int required2, params string[] optional)
-        {
-        }
+        internal static void ParameterArray(bool required1, int required2, params string[] optional) { }
 
         internal static void PositionalAndNamed()
         {

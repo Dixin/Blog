@@ -26,17 +26,13 @@
 #endif
 
 #if EF
-    public partial class AdventureWorks : DbContext 
-    {
-    }
+    public partial class AdventureWorks : DbContext { }
 
     public partial class AdventureWorks
     {
         public AdventureWorks(DbConnection connection = null) : base(
             existingConnection: connection ?? new SqlConnection(ConnectionStrings.AdventureWorks),
-            contextOwnsConnection: connection == null)
-        {
-        }
+            contextOwnsConnection: connection == null) { }
     }
 
     public class RetryConfiguration : DbConfiguration
@@ -127,9 +123,7 @@
         public static ExecutionStrategy CreateExecutionStrategy(this Database database) => new ExecutionStrategy();
     }
 #else
-    public partial class AdventureWorks : DbContext
-    {
-    }
+    public partial class AdventureWorks : DbContext { }
 
     public partial class AdventureWorks
     {
@@ -137,9 +131,7 @@
             : base(new DbContextOptionsBuilder<AdventureWorks>().UseSqlServer(
                 connection: connection ?? new SqlConnection(ConnectionStrings.AdventureWorks),
                 sqlServerOptionsAction: options => options.EnableRetryOnFailure(
-                    maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null)).Options)
-        {
-        }
+                    maxRetryCount: 5, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null)).Options) { }
     }
 #endif
 
@@ -249,9 +241,7 @@ namespace System.Data.Entity.Infrastructure
     using System.Linq;
     using System.Linq.Expressions;
 
-    internal interface IInternalQueryAdapter
-    {
-    }
+    internal interface IInternalQueryAdapter { }
 
     public class DbQuery<TResult> : IOrderedQueryable<TResult>, IQueryable<TResult>,
         IOrderedQueryable, IQueryable, IEnumerable<TResult>, IEnumerable,
@@ -274,9 +264,7 @@ namespace System.Data.Entity
     using System.Data.Entity.Infrastructure;
     using System.Linq;
 
-    internal interface IInternalSetAdapter
-    {
-    }
+    internal interface IInternalSetAdapter { }
 
     public class DbSet<TEntity> : DbQuery<TEntity>, IDbSet<TEntity>, IQueryable<TEntity>, IQueryable,
         IEnumerable<TEntity>, IEnumerable, IInternalSetAdapter where TEntity : class
@@ -297,9 +285,7 @@ namespace System.Data.Entity
 {
     public class NullDatabaseInitializer<TContext> : IDatabaseInitializer<TContext> where TContext : DbContext
     {
-        public virtual void InitializeDatabase(TContext context)
-        {
-        }
+        public virtual void InitializeDatabase(TContext context) { }
     }
 }
 

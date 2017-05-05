@@ -161,17 +161,11 @@ namespace System.Linq
         IQueryProvider Provider { get; }
     }
 
-    public interface IOrderedQueryable : IQueryable, IEnumerable
-    {
-    }
+    public interface IOrderedQueryable : IQueryable, IEnumerable { }
 
-    public interface IQueryable<out T> : IEnumerable<T>, IEnumerable, IQueryable
-    {
-    }
+    public interface IQueryable<out T> : IEnumerable<T>, IEnumerable, IQueryable { }
 
-    public interface IOrderedQueryable<out T> : IQueryable<T>, IEnumerable<T>, IOrderedQueryable, IQueryable, IEnumerable
-    {
-    }
+    public interface IOrderedQueryable<out T> : IQueryable<T>, IEnumerable<T>, IOrderedQueryable, IQueryable, IEnumerable { }
 }
 
 namespace System.Linq

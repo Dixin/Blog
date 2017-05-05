@@ -138,9 +138,7 @@
 
     public class DynamicPartitioner<TSource> : StaticPartitioner<TSource>
     {
-        public DynamicPartitioner(IEnumerable<TSource> source) : base(source)
-        {
-        }
+        public DynamicPartitioner(IEnumerable<TSource> source) : base(source) { }
 
         public override bool SupportsDynamicPartitions => true;
 
@@ -213,18 +211,14 @@ namespace System.Collections.Concurrent
 
     public abstract class Partitioner<TSource>
     {
-        protected Partitioner()
-        {
-        }
+        protected Partitioner() { }
 
         public virtual bool SupportsDynamicPartitions => false;
 
         public abstract IList<IEnumerator<TSource>> GetPartitions(int partitionCount);
 
-        public virtual IEnumerable<TSource> GetDynamicPartitions()
-        {
+        public virtual IEnumerable<TSource> GetDynamicPartitions() =>
             throw new NotSupportedException("Dynamic partitions are not supported by this partitioner.");
-        }
     }
 }
 

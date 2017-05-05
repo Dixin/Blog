@@ -27,9 +27,7 @@
 
     public partial class NumeralWrapper
     {
-        private NumeralWrapper()
-        {
-        }
+        private NumeralWrapper() { }
 
         private class ZeroNumeralWrapper : NumeralWrapper
         {

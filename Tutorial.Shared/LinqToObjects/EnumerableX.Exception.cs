@@ -334,9 +334,7 @@
                     isTransient,
                     retryingHandler);
             }
-            catch (TException exception) when (@catch?.Invoke(exception) ?? true)
-            {
-            }
+            catch (TException exception) when (@catch?.Invoke(exception) ?? true) { }
 
             return results.Hide();
         }
