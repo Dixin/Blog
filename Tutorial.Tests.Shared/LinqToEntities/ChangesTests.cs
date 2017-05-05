@@ -1,20 +1,24 @@
 ﻿namespace Tutorial.Tests.LinqToEntities
 {
+#if NETFX
     using System;
     using System.Linq;
-#if NETFX
     using System.Data.Entity.Infrastructure;
-#endif
     using System.Diagnostics;
+
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using Tutorial.LinqToEntities;
+#else
+    using System;
+    using System.Linq;
+    using System.Diagnostics;
+
+    using Microsoft.EntityFrameworkCore;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     using Tutorial.LinqToEntities;
 
-#if !NETFX
-    using Microsoft.EntityFrameworkCore;
-#endif
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-#if !NETFX
     using static TransactionHelper;
 #endif
 

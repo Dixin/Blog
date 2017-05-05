@@ -423,17 +423,17 @@
         [CompilerGenerated]
         private sealed class Predicate
         {
-            public int minAge1; public int minAge2; public int maxAge1; public int maxAge2;
+            public int MinAge1; public int MinAge2; public int MaxAge1; public int MaxAge2;
 
-            public string minName1; public string maxName1; public string minName2; public string maxName2;
+            public string MinName1; public string MaxName1; public string MinName2; public string MaxName2;
 
             public bool WithLambda(Person person)
-                => ((person.Age >= this.minAge1 && person.Age <= this.maxAge1)
-                        || (person.Age >= this.minAge2 && person.Age <= this.maxAge2))
-                    && ((string.Compare(person.Name, this.minName1, StringComparison.OrdinalIgnoreCase) >= 0
-                            && string.Compare(person.Name, this.maxName1, StringComparison.OrdinalIgnoreCase) <= 0)
-                        || (string.Compare(person.Name, this.minName2, StringComparison.OrdinalIgnoreCase) >= 0
-                            && string.Compare(person.Name, this.maxName2, StringComparison.OrdinalIgnoreCase) <= 0));
+                => ((person.Age >= this.MinAge1 && person.Age <= this.MaxAge1)
+                        || (person.Age >= this.MinAge2 && person.Age <= this.MaxAge2))
+                    && ((string.Compare(person.Name, this.MinName1, StringComparison.OrdinalIgnoreCase) >= 0
+                            && string.Compare(person.Name, this.MaxName1, StringComparison.OrdinalIgnoreCase) <= 0)
+                        || (string.Compare(person.Name, this.MinName2, StringComparison.OrdinalIgnoreCase) >= 0
+                            && string.Compare(person.Name, this.MaxName2, StringComparison.OrdinalIgnoreCase) <= 0));
         }
 
         internal static Person[] CompiledWithLambda(
@@ -442,8 +442,8 @@
             string minName1, string maxName1, string minName2, string maxName2)
                 => source.Where(new Predicate
                     {
-                        minAge1 = minAge1, minAge2 = minAge2, maxAge1 = maxAge1, maxAge2 = maxAge2,
-                        minName1 = minName1, maxName1 = maxName1, minName2 = minName2, maxName2 = maxName2
+                        MinAge1 = minAge1, MinAge2 = minAge2, MaxAge1 = maxAge1, MaxAge2 = maxAge2,
+                        MinName1 = minName1, MaxName1 = maxName1, MinName2 = minName2, MaxName2 = maxName2
                     }.WithLambda).ToArray();
     }
 

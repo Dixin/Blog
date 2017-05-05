@@ -316,7 +316,14 @@
         public static void ForEach(this IEnumerable source)
         {
             IEnumerator iterator = source.GetEnumerator();
-            while (iterator.MoveNext()) { }
+            try
+            {
+                while (iterator.MoveNext()) { }
+            }
+            finally
+            {
+                (iterator as IDisposable)?.Dispose();
+            }
         }
 
         #endregion

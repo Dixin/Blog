@@ -4,7 +4,6 @@
     using System;
     using System.IO;
     using System.Linq;
-    using System.Net.Http;
     using System.Reflection;
     using System.Threading;
     using System.Xml.Linq;
@@ -12,7 +11,6 @@
     using Microsoft.ConcurrencyVisualizer.Instrumentation;
 
     using static Functions;
-    using static Tutorial.LinqToObjects.EnumerableX;
     using static Tutorial.LinqToXml.Modeling;
 
     using EnumerableX = Tutorial.LinqToObjects.EnumerableX;
@@ -21,13 +19,11 @@
     using System;
     using System.IO;
     using System.Linq;
-    using System.Net.Http;
     using System.Reflection;
     using System.Threading;
     using System.Xml.Linq;
 
     using static Functions;
-    using static Tutorial.LinqToObjects.EnumerableX;
     using static Tutorial.LinqToXml.Modeling;
 
     using EnumerableX = Tutorial.LinqToObjects.EnumerableX;

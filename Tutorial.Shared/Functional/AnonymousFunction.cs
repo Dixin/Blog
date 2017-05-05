@@ -58,9 +58,9 @@
         internal static void Lambda()
         {
             Func<int, bool> isPositive = (int int32) =>
-                {
-                    return int32 > 0;
-                };
+            {
+                return int32 > 0;
+            };
             bool result = isPositive(0);
         }
 
@@ -186,12 +186,12 @@
 
     internal class DisplayClass
     {
-        int outer = 0; // Outside the scope of method Add.
+        int outer = 1; // Outside the scope of method Add.
 
         internal int Add()
         {
-            int local = 1; // Inside the scope of method Add.
-            return local + this.outer; // 1.
+            int local = 2; // Inside the scope of method Add.
+            return local + this.outer; // 3.
         }
     }
 

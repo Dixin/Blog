@@ -3,7 +3,6 @@
     using Tutorial.Functional;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using System;
 
     [TestClass]
     public class FundamentalsTests

@@ -8,7 +8,7 @@
 
     public static partial class ParallelEnumerableX
     {
-        public static void ForAll<TSource>(this ParallelQuery<TSource> source) => source.ForAll(Value => { });
+        public static void ForAll<TSource>(this ParallelQuery<TSource> source) => source.ForAll(value => { });
     }
 
     public static partial class ParallelEnumerableX

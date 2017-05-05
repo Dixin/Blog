@@ -4,7 +4,6 @@ namespace Tutorial.Tests.LinqToEntities
     using System.Data.Entity;
     using System.Linq;
     using System.Threading.Tasks;
-    using System.Transactions;
 
     using Tutorial.LinqToEntities;
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
@@ -1473,8 +1472,6 @@ namespace Tutorial.Tests.LinqToEntities
     }
 #else
     using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
 
     using Tutorial.LinqToEntities;
 

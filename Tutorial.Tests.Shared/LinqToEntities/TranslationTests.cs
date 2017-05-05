@@ -1,11 +1,17 @@
 ﻿namespace Tutorial.Tests.LinqToEntities
 {
+#if NETFX
     using System;
     using System.Diagnostics;
 
     using Tutorial.LinqToEntities;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+#else
+    using Tutorial.LinqToEntities;
+
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+#endif
 
     [TestClass]
     public class TranslationTests

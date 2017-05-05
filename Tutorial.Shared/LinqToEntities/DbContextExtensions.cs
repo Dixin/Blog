@@ -1,10 +1,8 @@
 ﻿namespace Tutorial.LinqToEntities
 {
 #if EF
-    using System;
     using System.Collections.Generic;
     using System.Data.Common;
-    using System.Data.Entity;
     using System.Data.Entity.Core.EntityClient;
     using System.Data.Entity.Core.Mapping;
     using System.Data.Entity.Core.Metadata.Edm;

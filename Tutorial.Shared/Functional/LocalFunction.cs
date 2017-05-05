@@ -159,9 +159,7 @@
         {
             void LocalFunction()
             {
-                void LocalFunctionInLocalFunction()
-                {
-                }
+                void LocalFunctionInLocalFunction() { }
             }
         }
 
@@ -169,16 +167,14 @@
         {
             return () =>
             {
-                void LocalFunction()
-                {
-                }
+                void LocalFunction() { }
                 LocalFunction();
             };
         }
 
         internal class Display
         {
-            int outer = 1; // Otside the scope of method Add.
+            int outer = 1; // Outside the scope of method Add.
 
             internal void Add()
             {

@@ -1,7 +1,6 @@
 ﻿namespace Tutorial.Functional
 {
     using System;
-    using System.Diagnostics;
 
     internal static partial class Functions
     {

@@ -301,18 +301,18 @@
         }
 
         [CompilerGenerated]
-        private sealed class DisplayClass { public int minLength; }
+        private sealed class DisplayClass { public int MinLength; }
 
         internal static void CompiledReusedTranslationCache(AdventureWorks adventureWorks)
         {
-            DisplayClass displayClass = new DisplayClass() { minLength = 1 };
+            DisplayClass displayClass = new DisplayClass() { MinLength = 1 };
             IQueryable<Product> queryWithClosure1 = adventureWorks.Products
-                .Where(product => product.Name.Length >= displayClass.minLength);
+                .Where(product => product.Name.Length >= displayClass.MinLength);
             queryWithClosure1.Load();
 
-            displayClass.minLength = 10;
+            displayClass.MinLength = 10;
             IQueryable<Product> queryWithClosure2 = adventureWorks.Products
-                .Where(product => product.Name.Length >= displayClass.minLength);
+                .Where(product => product.Name.Length >= displayClass.MinLength);
             queryWithClosure2.Load();
         }
 

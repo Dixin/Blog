@@ -1,11 +1,19 @@
 ﻿namespace Tutorial.Functional
 {
+#if NETFX
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Reflection;
+#else
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
     using System.Reflection;
     using System.Runtime.CompilerServices;
+#endif
 
     internal static partial class Functions
     {
@@ -24,7 +32,7 @@
 
     internal partial class Data
     {
-        internal int value;
+        internal readonly int value;
 
         static Data()
         {

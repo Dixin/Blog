@@ -122,11 +122,11 @@
 
     internal static partial class Functions
     {
-        internal static Data field = new Data(0);
+        private static Data field = new Data(0);
 
-        internal static Function namedFunctionField = Function;
+        private static Function namedFunctionField = Function;
 
-        internal static Function anonymousFunctionField = () => { };
+        private static Function anonymousFunctionField = () => { };
     }
 
     internal static partial class Functions
