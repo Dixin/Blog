@@ -222,8 +222,8 @@
 
         public override bool SupportsDynamicPartitions => true;
 
-        public override IList<IEnumerator<KeyValuePair<long, TSource>>> GetOrderablePartitions
-            (int partitionCount) => Enumerable
+        public override IList<IEnumerator<KeyValuePair<long, TSource>>> GetOrderablePartitions(
+            int partitionCount) => Enumerable
                 .Range(0, partitionCount)
                 .Select(_ => this.buffer.GetEnumerator())
                 .ToArray();
@@ -280,19 +280,17 @@ namespace System.Collections.Concurrent
 
         public abstract IList<IEnumerator<KeyValuePair<long, TSource>>> GetOrderablePartitions(int partitionCount);
 
-        public virtual IEnumerable<KeyValuePair<long, TSource>> GetOrderableDynamicPartitions()
-        {
+        public virtual IEnumerable<KeyValuePair<long, TSource>> GetOrderableDynamicPartitions() =>
             throw new NotSupportedException("Dynamic partitions are not supported by this partitioner.");
-        }
 
-        public override IList<IEnumerator<TSource>> GetPartitions
-            (int partitionCount) => this.GetOrderablePartitions(partitionCount)
+        public override IList<IEnumerator<TSource>> GetPartitions(
+            int partitionCount) => this.GetOrderablePartitions(partitionCount)
                 .Select(partition => new EnumeratorDropIndices(partition))
                 .ToArray();
 
 
-        public override IEnumerable<TSource> GetDynamicPartitions
-            () => new EnumerableDropIndices(this.GetOrderableDynamicPartitions());
+        public override IEnumerable<TSource> GetDynamicPartitions() => 
+            new EnumerableDropIndices(this.GetOrderableDynamicPartitions());
 
         private class EnumerableDropIndices : IEnumerable<TSource>
         {

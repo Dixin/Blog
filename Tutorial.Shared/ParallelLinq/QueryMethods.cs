@@ -174,18 +174,22 @@ namespace Tutorial.ParallelLinq
 
         internal static void Cancel()
         {
-            CancellationTokenSource cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(1));
-            try
+            using (CancellationTokenSource cancellationTokenSource = new CancellationTokenSource(
+                delay: TimeSpan.FromSeconds(1)))
             {
-                ParallelEnumerable.Range(0, Environment.ProcessorCount * 10)
-                    .WithCancellation(cancellation.Token)
-                    .Select(value => Compute(value))
-                    .ForAll(value => value.WriteLine());
-            }
-            catch (OperationCanceledException exception)
-            {
-                exception.WriteLine();
-                // OperationCanceledException: The query has been canceled via the token supplied to WithCancellation.
+                CancellationToken cancellationToken = cancellationTokenSource.Token;
+                try
+                {
+                    ParallelEnumerable.Range(0, Environment.ProcessorCount * 10)
+                        .WithCancellation(cancellationToken)
+                        .Select(value => Compute(value))
+                        .ForAll(value => value.WriteLine());
+                }
+                catch (OperationCanceledException exception)
+                {
+                    exception.WriteLine();
+                    // OperationCanceledException: The query has been canceled via the token supplied to WithCancellation.
+                }
             }
         }
 
@@ -388,17 +392,17 @@ namespace Tutorial.ParallelLinq
                 .Range(0, Environment.ProcessorCount * 2)
                 .Aggregate(
                     seed: 0, // Seed for each partition.
-                    updateAccumulatorFunc: (partition, value) => partition + value * value,
-                    combineAccumulatorsFunc: (allPartitions, partition) => allPartitions + partition,
+                    updateAccumulatorFunc: (accumulation, value) => accumulation + value * value, // Source value accumulator for each partition's result.
+                    combineAccumulatorsFunc: (accumulation, partition) => accumulation + partition, // Partition result accumulator for final result.
                     resultSelector: result => result);
             parallelSumOfSquares1.WriteLine(); // 140
 
             int parallelSumOfSquares2 = ParallelEnumerable
                 .Range(0, Environment.ProcessorCount * 2)
                 .Aggregate(
-                    seedFactory: () => 0, // Seed for each partition.
-                    updateAccumulatorFunc: (partition, value) => partition + value * value,
-                    combineAccumulatorsFunc: (allPartitions, partition) => allPartitions + partition,
+                    seedFactory: () => 0, // Seed factory for each partition.
+                    updateAccumulatorFunc: (accumulation, value) => accumulation + value * value, // Source value accumulator for each partition's result.
+                    combineAccumulatorsFunc: (accumulation, partition) => accumulation + partition, // Partition result accumulator for final result.
                     resultSelector: result => result);
             parallelSumOfSquares2.WriteLine(); // 140
         }
