@@ -158,6 +158,7 @@
     <Content Include="$(MSBuildThisFileDirectory)LinqToXml\FlickrRss.media.xsd" />
     <Content Include="$(MSBuildThisFileDirectory)LinqToXml\FlickrRss.xml" />
     <Content Include="$(MSBuildThisFileDirectory)LinqToXml\FlickrRss.xsd" />
+    <Content Include="$(MSBuildThisFileDirectory)ParallelLinq\Partitioning.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)LinqToEntities\Changes.sql" />

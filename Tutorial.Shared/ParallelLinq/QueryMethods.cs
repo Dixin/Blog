@@ -2,6 +2,7 @@ namespace Tutorial.ParallelLinq
 {
 #if NETFX
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
@@ -15,6 +16,7 @@ namespace Tutorial.ParallelLinq
     using static Tutorial.LinqToObjects.EnumerableX;
 #else
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
     using System.Reflection;
@@ -28,17 +30,42 @@ namespace Tutorial.ParallelLinq
 
     internal static partial class QueryMethods
     {
+        internal static void Generation()
+        {
+            IEnumerable<double> sequentialQuery = Enumerable
+                .Repeat(0, 5) // Return IEnumerable<int>.
+                .Concat(Enumerable.Range(0, 5)) // Enumerable.Concat.
+                .Where(int32 => int32 > 0) // Enumerable.Where.
+                .Select(int32 => Math.Sqrt(int32)); //  Enumerable.Select.
+
+            ParallelQuery<double> parallelQuery = ParallelEnumerable
+                .Repeat(0, 5) // Return ParallelQuery<int>.
+                .Concat(ParallelEnumerable.Range(0, 5)) // ParallelEnumerable.Concat.
+                .Where(int32 => int32 > 0) // ParallelEnumerable.Where.
+                .Select(int32 => Math.Sqrt(int32)); // ParallelEnumerable.Select.
+        }
+
+        internal static void AsParallel(IEnumerable<int> source1, IEnumerable source2)
+        {
+            ParallelQuery<int> parallelQuery1 = source1 // IEnumerable<int>.
+                .AsParallel(); // Return ParallelQuery<int>.
+
+            ParallelQuery<int> parallelQuery2 = source2 // IEnumerable.
+                .AsParallel() // Return ParallelQuery.
+                .Cast<int>(); // ParallelEnumerable.Cast.
+        }
+
         private static readonly Assembly CoreLibrary = typeof(object).GetTypeInfo().Assembly;
 
-        internal static void SequentialParallel()
+        internal static void AsParallelAsSequential()
         {
-            IEnumerable<string> obsoleteTypes = CoreLibrary.GetExportedTypes() // Return IEnumerable<Type>.
+            IEnumerable<string> obsoleteTypeNames = CoreLibrary.GetExportedTypes() // Return IEnumerable<Type>.
                 .AsParallel() // Return ParallelQuery<Type>.
                 .Where(type => type.GetTypeInfo().GetCustomAttribute<ObsoleteAttribute>() != null) // ParallelEnumerable.Where.
                 .Select(type => type.FullName) // ParallelEnumerable.Select.
                 .AsSequential() // Return IEnumerable<Type>.
                 .OrderBy(name => name); // Enumerable.OrderBy.
-            obsoleteTypes.WriteLines();
+            obsoleteTypeNames.WriteLines();
         }
     }
 
@@ -46,14 +73,14 @@ namespace Tutorial.ParallelLinq
     {
         internal static void QueryExpression()
         {
-            IEnumerable<string> obsoleteTypes =
+            IEnumerable<string> obsoleteTypeNames =
                 from name in
                     (from type in CoreLibrary.GetExportedTypes().AsParallel()
                      where type.GetTypeInfo().GetCustomAttribute<ObsoleteAttribute>() != null
                      select type.FullName).AsSequential()
                 orderby name
                 select name;
-            obsoleteTypes.WriteLines();
+            obsoleteTypeNames.WriteLines();
         }
 
         internal static void ForEachForAll()
@@ -110,7 +137,7 @@ namespace Tutorial.ParallelLinq
                 .Range(0, Environment.ProcessorCount * 2)
                 .Visualize(value =>
                     {
-                        Enumerable.Range(0, 10_000_000).ForEach();
+                        Enumerable.Range(0, 10_000_000).ForEach(); // Workload.
                         value.WriteLine();
                     });
 
@@ -118,7 +145,7 @@ namespace Tutorial.ParallelLinq
                 .Range(0, Environment.ProcessorCount * 2)
                 .Visualize(value =>
                 {
-                    Enumerable.Range(0, 10_000_000).ForEach();
+                    Enumerable.Range(0, 10_000_000).ForEach(); // Workload.
                     value.WriteLine();
                 });
         }
@@ -197,7 +224,7 @@ namespace Tutorial.ParallelLinq
             }
         }
 
-        internal static void Except() => 
+        internal static void Except() =>
             ParallelEnumerable
                 .Range(0, Environment.ProcessorCount * 2)
                 .Visualize(ParallelEnumerable.Select, value => Compute(value))
@@ -385,6 +412,30 @@ namespace System.Linq
 
     public static class Enumerable
     {
+        public static IEnumerable<int> Range(int start, int count);
+
+        public static IEnumerable<TResult> Repeat<TResult>(TResult element, int count);
+
+        // Other members.
+    }
+
+    public static class ParallelEnumerable
+    {
+        public static ParallelQuery<int> Range(int start, int count);
+
+        public static ParallelQuery<TResult> Repeat<TResult>(TResult element, int count);
+
+        // Other members.
+    }
+}
+
+namespace System.Linq
+{
+    using System.Collections;
+    using System.Collections.Generic;
+
+    public static class Enumerable
+    {
         public static IEnumerable<TSource> Where<TSource>(
             this IEnumerable<TSource> source, Func<TSource, bool> predicate);
 
@@ -394,7 +445,7 @@ namespace System.Linq
         public static IEnumerable<TSource> Concat<TSource>(
             this IEnumerable<TSource> first, IEnumerable<TSource> second);
 
-        // Other members.
+        public static IEnumerable<TResult> Cast<TResult>(this IEnumerable source);
     }
 
     public static class ParallelEnumerable
@@ -408,7 +459,7 @@ namespace System.Linq
         public static ParallelQuery<TSource> Concat<TSource>(
             this ParallelQuery<TSource> first, ParallelQuery<TSource> second);
 
-        // Other members.
+        public static ParallelQuery<TResult> Cast<TResult>(this ParallelQuery source);
     }
 }
 
@@ -444,6 +495,19 @@ namespace System.Linq
 
         public static OrderedParallelQuery<TSource> ThenByDescending<TSource, TKey>(
             this OrderedParallelQuery<TSource> source, Func<TSource, TKey> keySelector);
+    }
+}
+
+namespace System.Linq
+{
+    using System.Collections;
+    using System.Collections.Generic;
+
+    public static class ParallelEnumerable
+    {
+        public static ParallelQuery AsParallel(this IEnumerable source);
+
+        public static ParallelQuery<TSource> AsParallel<TSource>(this IEnumerable<TSource> source);
     }
 }
 

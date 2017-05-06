@@ -71,24 +71,23 @@
             source.AsParallel()
                 .Visualize(
                     (parallelQuery, elementSelector) => parallelQuery.GroupBy(
-                        keySelector: data => data, // Key object's GetHashCode will be called.
+                        keySelector: data => data, // Key instance's GetHashCode will be called.
                         elementSelector: elementSelector),
                     data => Compute(data.Value)) // elementSelector.
                 .ForAll();
             // Equivalent to:
             // MarkerSeries markerSeries = Markers.CreateMarkerSeries("Parallel");
             // source.AsParallel()
-            //   .GroupBy(
-            //       keySelector: data => data,
-            //       elementSelector: data =>
-            //           {
-            //               using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, data.ToString()))
-            //               {
-            //                   Compute(data.Value);
-            //               }
-            //               return data;
-            //           })
-            //   .ForAll();
+            //    .GroupBy(
+            //        keySelector: data => data,
+            //        elementSelector: data =>
+            //        {
+            //            using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, data.ToString()))
+            //            {
+            //                return Compute(data.Value);
+            //            }
+            //        })
+            //    .ForAll();
         }
 
         internal static void HashInJoin()
@@ -100,8 +99,8 @@
                     (parallelQuery, resultSelector) => parallelQuery
                         .Join(
                             inner: innerSource.AsParallel(),
-                            outerKeySelector: data => data, // Key object's GetHashCode will be called.
-                            innerKeySelector: data => data, // Key object's GetHashCode will be called.
+                            outerKeySelector: data => data, // Key instance's GetHashCode will be called.
+                            innerKeySelector: data => data, // Key instance's GetHashCode will be called.
                             resultSelector: (outerData, innerData) => resultSelector(outerData)),
                     data => Compute(data.Value)) // resultSelector.
                 .ForAll();
@@ -126,7 +125,7 @@
         {
             if (partitionCount <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(partitionCount), $"{partitionCount} must be greater than 0.");
+                throw new ArgumentOutOfRangeException(nameof(partitionCount));
             }
 
             return Enumerable

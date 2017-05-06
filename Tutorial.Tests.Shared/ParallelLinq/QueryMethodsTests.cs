@@ -10,7 +10,8 @@
         [TestMethod]
         public void QueryTest()
         {
-            QueryMethods.SequentialParallel();
+            QueryMethods.Generation();
+            QueryMethods.AsParallelAsSequential();
             QueryMethods.QueryExpression();
             QueryMethods.ForEachForAll();
             QueryMethods.ForEachForAllTimeSpans();
