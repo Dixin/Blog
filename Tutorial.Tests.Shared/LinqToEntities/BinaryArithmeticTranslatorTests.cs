@@ -14,15 +14,15 @@
         [TestMethod]
         public void TranslateToSql()
         {
-            ExpressionTree.Translate();
+            ExpressionTree.Sql();
 
             InfixVisitor infixVisitor = new InfixVisitor();
             Expression<Func<double, double, double>> expression1 = (a, b) => a * a + b * b;
-            Assert.AreEqual(infixVisitor.VisitBody(expression1), "((@a * @a) + (@b * @b))");
+            Assert.AreEqual(infixVisitor.VisitBody(expression1), "SELECT ((@a * @a) + (@b * @b));");
 
             Expression<Func<double, double, double, double, double, double>> expression2 =
                 (a, b, c, d, e) => a + b - c * d / 2 + e * 3;
-            Assert.AreEqual(infixVisitor.VisitBody(expression2), "(((@a + @b) - ((@c * @d) / 2)) + (@e * 3))");
+            Assert.AreEqual(infixVisitor.VisitBody(expression2), "SELECT (((@a + @b) - ((@c * @d) / 2)) + (@e * 3));");
         }
 
         [TestMethod]

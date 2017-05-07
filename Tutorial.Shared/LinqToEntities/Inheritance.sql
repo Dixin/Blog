@@ -16,5 +16,5 @@
 
 	[ActualCost] money NOT NULL
 
-	/* Other columns. */)
+	/* Other columns. */);
 GO

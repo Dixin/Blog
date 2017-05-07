@@ -1,7 +1,6 @@
 ﻿namespace Tutorial.Tests.ParallelLinq
 {
     using System.Collections.Concurrent;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
 
@@ -21,9 +20,6 @@
                 value => threadIds.Add(Thread.CurrentThread.ManagedThreadId + Functions.ComputingWorkload()),
                 forcedDegreeOfParallelism);
             Assert.AreEqual(forcedDegreeOfParallelism, threadIds.Distinct().Count());
-
-            int[] x = Enumerable.Range(0, 1000).ToArray();
-            int[][] partitions = Partitioner.Create(x).GetPartitions(10).Select(partition => EnumerableEx.Create(() => partition).ToArray()).ToArray();
 
         }
     }

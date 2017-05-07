@@ -9,7 +9,7 @@
 
     internal abstract class BinaryArithmeticExpressionVisitor<TResult>
     {
-        internal TResult VisitBody(LambdaExpression expression) => this.VisitNode(expression.Body, expression);
+        internal virtual TResult VisitBody(LambdaExpression expression) => this.VisitNode(expression.Body, expression);
 
         protected TResult VisitNode(Expression node, LambdaExpression expression)
         {

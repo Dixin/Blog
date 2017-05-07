@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.Data.SqlClient;
-    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
@@ -15,59 +14,60 @@
 
     internal class InfixVisitor : BinaryArithmeticExpressionVisitor<string>
     {
-        protected override string VisitAdd
-            (BinaryExpression add, LambdaExpression expression) => this.VisitBinary(add, "+", expression);
+        internal override string VisitBody(LambdaExpression expression) => $"SELECT {base.VisitBody(expression)};";
 
-        protected override string VisitConstant
-            (ConstantExpression constant, LambdaExpression expression) => constant.Value.ToString();
+        protected override string VisitAdd(
+            BinaryExpression add, LambdaExpression expression) => this.VisitBinary(add, "+", expression);
 
-        protected override string VisitDivide
-            (BinaryExpression divide, LambdaExpression expression) => this.VisitBinary(divide, "/", expression);
+        protected override string VisitConstant(
+           ConstantExpression constant, LambdaExpression expression) => constant.Value.ToString();
 
-        protected override string VisitMultiply
-            (BinaryExpression multiply, LambdaExpression expression) => this.VisitBinary(multiply, "*", expression);
+        protected override string VisitDivide(
+            BinaryExpression divide, LambdaExpression expression) => this.VisitBinary(divide, "/", expression);
 
-        protected override string VisitParameter
-            (ParameterExpression parameter, LambdaExpression expression) => $"@{parameter.Name}";
+        protected override string VisitMultiply(
+            BinaryExpression multiply, LambdaExpression expression) => this.VisitBinary(multiply, "*", expression);
 
-        protected override string VisitSubtract
-            (BinaryExpression subtract, LambdaExpression expression) => this.VisitBinary(subtract, "-", expression);
+        protected override string VisitParameter(
+            ParameterExpression parameter, LambdaExpression expression) => $"@{parameter.Name}";
 
-        private string VisitBinary
-            (BinaryExpression binary, string @operator, LambdaExpression expression) =>
+        protected override string VisitSubtract(
+            BinaryExpression subtract, LambdaExpression expression) => this.VisitBinary(subtract, "-", expression);
+
+        private string VisitBinary(
+            BinaryExpression binary, string @operator, LambdaExpression expression) =>
                 $"({this.VisitNode(binary.Left, expression)} {@operator} {this.VisitNode(binary.Right, expression)})";
     }
 
     internal static partial class ExpressionTree
     {
-        internal static void Translate()
+        internal static void Sql()
         {
             InfixVisitor infixVisitor = new InfixVisitor();
             Expression<Func<double, double, double>> expression1 = (a, b) => a * a + b * b;
             string infixExpression1 = infixVisitor.VisitBody(expression1);
-            infixExpression1.WriteLine(); // ((@a * @a) + (@b * @b))
+            infixExpression1.WriteLine(); // SELECT ((@a * @a) + (@b * @b));
 
             Expression<Func<double, double, double, double, double, double>> expression2 =
                 (a, b, c, d, e) => a + b - c * d / 2 + e * 3;
             string infixExpression2 = infixVisitor.VisitBody(expression2);
-            infixExpression2.WriteLine(); // (((@a + @b) - ((@c * @d) / 2)) + (@e * 3))
+            infixExpression2.WriteLine(); // SELECT (((@a + @b) - ((@c * @d) / 2)) + (@e * 3));
         }
     }
 
     public static partial class BinaryArithmeticTranslator
     {
-        [SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
-        internal static double ExecuteSql(
+        internal static double ExecuteScalar(
             string connection,
-            string arithmeticExpression,
-            IEnumerable<KeyValuePair<string, double>> parameters)
+            string command,
+            IDictionary<string, double> parameters)
         {
             using (SqlConnection sqlConnection = new SqlConnection(connection))
-            using (SqlCommand command = new SqlCommand($"SELECT {arithmeticExpression}", sqlConnection))
+            using (SqlCommand sqlCommand = new SqlCommand(command, sqlConnection))
             {
                 sqlConnection.Open();
-                parameters.ForEach(parameter => command.Parameters.AddWithValue(parameter.Key, parameter.Value));
-                return (double)command.ExecuteScalar();
+                parameters.ForEach(parameter => sqlCommand.Parameters.AddWithValue(parameter.Key, parameter.Value));
+                return (double)sqlCommand.ExecuteScalar();
             }
         }
     }
@@ -88,7 +88,8 @@
             return dynamicMethod.CreateDelegate(typeof(TDelegate)) as TDelegate;
         }
 
-        private static void EmitIL<TDelegate>(ILGenerator ilGenerator, string infixExpression, Expression<TDelegate> expression, string connection)
+        private static void EmitIL<TDelegate>(
+            ILGenerator ilGenerator, string infixExpression, Expression<TDelegate> expression, string connection)
         {
             // Dictionary<string, double> dictionary = new Dictionary<string, double>();
             ilGenerator.DeclareLocal(typeof(Dictionary<string, double>));
@@ -117,7 +118,7 @@
             ilGenerator.Emit(
                 OpCodes.Call,
                 typeof(BinaryArithmeticTranslator).GetTypeInfo().GetMethod(
-                    nameof(ExecuteSql),
+                    nameof(ExecuteScalar),
                     BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.InvokeMethod));
 
             // Returns the result of ExecuteSql.
@@ -184,6 +185,8 @@ namespace System.Linq
         public static IEnumerable<TSource> Concat<TSource>(
             this IEnumerable<TSource> first, IEnumerable<TSource> second);
 
+        public static IEnumerable<TResult> Cast<TResult>(this IEnumerable source);
+
         // Other members.
     }
 
@@ -197,6 +200,8 @@ namespace System.Linq
 
         public static IQueryable<TSource> Concat<TSource>(
             this IQueryable<TSource> source1, IEnumerable<TSource> source2);
+
+        public static IQueryable<TResult> Cast<TResult>(this IQueryable source);
 
         // Other members.
     }

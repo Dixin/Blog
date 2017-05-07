@@ -22,8 +22,6 @@
         public string LastName { get; set; }
 
         public string JobTitle { get; set; }
-
-        // Other columns.
     }
 
     public partial class AdventureWorks
