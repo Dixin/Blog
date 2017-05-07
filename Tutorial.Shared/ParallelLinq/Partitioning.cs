@@ -25,7 +25,7 @@
         internal static void Range()
         {
             int[] array = Enumerable.Range(0, Environment.ProcessorCount * 4).ToArray();
-            array.AsParallel().Visualize(value => Compute(value), nameof(Range));
+            array.AsParallel().Visualize(value => ComputingWorkload(value), nameof(Range));
         }
     }
 
@@ -34,19 +34,19 @@
         internal static void Strip()
         {
             IEnumerable<int> source = Enumerable.Range(0, Environment.ProcessorCount * 4);
-            source.AsParallel().Visualize(ParallelEnumerable.Select, value => Compute(value)).ForAll();
+            source.AsParallel().Visualize(ParallelEnumerable.Select, value => ComputingWorkload(value)).ForAll();
         }
 
         internal static void StripLoadBalance()
         {
             IEnumerable<int> source = Enumerable.Range(0, Environment.ProcessorCount * 4);
-            source.AsParallel().Visualize(ParallelEnumerable.Select, value => Compute(value % 2)).ForAll();
+            source.AsParallel().Visualize(ParallelEnumerable.Select, value => ComputingWorkload(value % 2)).ForAll();
         }
 
         internal static void StripForArray()
         {
             int[] array = Enumerable.Range(0, Environment.ProcessorCount * 4).ToArray();
-            Partitioner.Create(array, loadBalance: true).AsParallel().Visualize(value => Compute(value), nameof(Strip));
+            Partitioner.Create(array, loadBalance: true).AsParallel().Visualize(value => ComputingWorkload(value), nameof(Strip));
         }
     }
 
@@ -73,7 +73,7 @@
                     (parallelQuery, elementSelector) => parallelQuery.GroupBy(
                         keySelector: data => data, // Key instance's GetHashCode will be called.
                         elementSelector: elementSelector),
-                    data => Compute(data.Value)) // elementSelector.
+                    data => ComputingWorkload(data.Value)) // elementSelector.
                 .ForAll();
             // Equivalent to:
             // MarkerSeries markerSeries = Markers.CreateMarkerSeries("Parallel");
@@ -102,7 +102,7 @@
                             outerKeySelector: data => data, // Key instance's GetHashCode will be called.
                             innerKeySelector: data => data, // Key instance's GetHashCode will be called.
                             resultSelector: (outerData, innerData) => resultSelector(outerData)),
-                    data => Compute(data.Value)) // resultSelector.
+                    data => ComputingWorkload(data.Value)) // resultSelector.
                 .ForAll();
         }
 
@@ -110,7 +110,7 @@
         {
             IEnumerable<int> source = Enumerable.Range(0, (1 + 2) * 3 * Environment.ProcessorCount + 3);
             Partitioner.Create(source, EnumerablePartitionerOptions.None).AsParallel()
-                .Visualize(ParallelEnumerable.Select, _ => Compute())
+                .Visualize(ParallelEnumerable.Select, _ => ComputingWorkload())
                 .ForAll();
         }
     }
@@ -150,14 +150,14 @@
         {
             IEnumerable<int> source = Enumerable.Range(0, Environment.ProcessorCount * 4);
             new StaticPartitioner<int>(source).AsParallel()
-                .Visualize(ParallelEnumerable.Select, value => Compute(value))
+                .Visualize(ParallelEnumerable.Select, value => ComputingWorkload(value))
                 .ForAll();
         }
 
         internal static void DynamicPartitioner()
         {
             IEnumerable<int> source = Enumerable.Range(0, Environment.ProcessorCount * 4);
-            Parallel.ForEach(new DynamicPartitioner<int>(source), value => Compute(value));
+            Parallel.ForEach(new DynamicPartitioner<int>(source), value => ComputingWorkload(value));
         }
 
         internal static void VisualizeDynamicPartitioner()
@@ -170,7 +170,7 @@
                 {
                     using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, value.ToString()))
                     {
-                        Compute(value);
+                        ComputingWorkload(value);
                     }
                 });
         }

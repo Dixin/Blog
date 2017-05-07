@@ -155,19 +155,19 @@ namespace Tutorial.ParallelLinq
         {
             Enumerable
                 .Range(0, 2)
-                .Visualize(Enumerable.Where, _ => Compute() >= 0, value => $"{nameof(Enumerable.Where)} {value}")
-                .Visualize(Enumerable.Select, _ => Compute(), value => $"{nameof(Enumerable.Select)} {value}")
+                .Visualize(Enumerable.Where, _ => ComputingWorkload() >= 0, value => $"{nameof(Enumerable.Where)} {value}")
+                .Visualize(Enumerable.Select, _ => ComputingWorkload(), value => $"{nameof(Enumerable.Select)} {value}")
                 .ForEach();
 
             ParallelEnumerable
                 .Range(0, Environment.ProcessorCount * 2)
                 .Visualize(
                     ParallelEnumerable.Where,
-                    _ => Compute() >= 0,
+                    _ => ComputingWorkload() >= 0,
                     value => $"{nameof(ParallelEnumerable.Where)} {value}")
                 .Visualize(
                     ParallelEnumerable.Select,
-                    _ => Compute(),
+                    _ => ComputingWorkload(),
                     value => $"{nameof(ParallelEnumerable.Select)} {value}")
                 .ForAll();
         }
@@ -182,7 +182,7 @@ namespace Tutorial.ParallelLinq
                 {
                     ParallelEnumerable.Range(0, Environment.ProcessorCount * 10)
                         .WithCancellation(cancellationToken)
-                        .Select(value => Compute(value))
+                        .Select(value => ComputingWorkload(value))
                         .ForAll(value => value.WriteLine());
                 }
                 catch (OperationCanceledException exception)
@@ -199,7 +199,7 @@ namespace Tutorial.ParallelLinq
             ParallelEnumerable
                 .Range(0, maxConcurrency)
                 .WithDegreeOfParallelism(maxConcurrency)
-                .Visualize(value => Compute());
+                .Visualize(value => ComputingWorkload());
         }
 
         public static void ExecutionMode()
@@ -231,9 +231,9 @@ namespace Tutorial.ParallelLinq
         internal static void Except() =>
             ParallelEnumerable
                 .Range(0, Environment.ProcessorCount * 2)
-                .Visualize(ParallelEnumerable.Select, value => Compute(value))
+                .Visualize(ParallelEnumerable.Select, value => ComputingWorkload(value))
                 .Except(ParallelEnumerable.Repeat(0, 1))
-                .Visualize(ParallelEnumerable.Select, value => Compute(value))
+                .Visualize(ParallelEnumerable.Select, value => ComputingWorkload(value))
                 .ForAll();
 
         internal static void MergeForSelect()
@@ -242,21 +242,21 @@ namespace Tutorial.ParallelLinq
             Stopwatch stopwatch = Stopwatch.StartNew();
             ParallelQuery<int> notBuffered = ParallelEnumerable.Range(0, count)
                 .WithMergeOptions(ParallelMergeOptions.NotBuffered)
-                .Select(value => value + Compute(0, 10_000_000));
+                .Select(value => value + ComputingWorkload(0, 10_000_000));
             notBuffered.ForEach(value => $"{value}:{stopwatch.ElapsedMilliseconds}".WriteLine());
             // 0:217 3:283 6:363 8:462 1:521 4:612 7:629 9:637 2:660 5:695
 
             stopwatch.Restart();
             ParallelQuery<int> autoBuffered = ParallelEnumerable.Range(0, count)
                 .WithMergeOptions(ParallelMergeOptions.AutoBuffered)
-                .Select(value => value + Compute(0, 10_000_000));
+                .Select(value => value + ComputingWorkload(0, 10_000_000));
             autoBuffered.ForEach(value => $"{value}:{stopwatch.ElapsedMilliseconds}".WriteLine());
             // 6:459 8:493 7:498 9:506 0:648 1:654 2:656 3:684 4:686 5:688
 
             stopwatch.Restart();
             ParallelQuery<int> fullyBuffered = ParallelEnumerable.Range(0, count)
                 .WithMergeOptions(ParallelMergeOptions.FullyBuffered)
-                .Select(value => value + Compute(0, 10_000_000));
+                .Select(value => value + ComputingWorkload(0, 10_000_000));
             fullyBuffered.ForEach(value => $"{value}:{stopwatch.ElapsedMilliseconds}".WriteLine());
             // 0:584 1:589 2:618 3:627 4:629 5:632 6:634 7:636 8:638 9:641
         }
@@ -268,7 +268,7 @@ namespace Tutorial.ParallelLinq
             Stopwatch stopwatch = Stopwatch.StartNew();
             ParallelQuery<int> notBuffered = ParallelEnumerable.Range(0, count)
                 .WithMergeOptions(ParallelMergeOptions.NotBuffered)
-                .TakeWhile(value => value + Compute(0, 100_000) >= 0);
+                .TakeWhile(value => value + ComputingWorkload(0, 100_000) >= 0);
             notBuffered.ForEach(value =>
                 {
                     if (value <= 5 || value >= count - 5)
@@ -281,7 +281,7 @@ namespace Tutorial.ParallelLinq
             stopwatch.Restart();
             ParallelQuery<int> fullyBuffered = ParallelEnumerable.Range(0, count)
                 .WithMergeOptions(ParallelMergeOptions.FullyBuffered)
-                .TakeWhile(value => value + Compute(0, 100_000) >= 0);
+                .TakeWhile(value => value + ComputingWorkload(0, 100_000) >= 0);
             fullyBuffered.ForEach(value =>
                 {
                     if (value <= 5 || value >= count - 5)
@@ -298,14 +298,14 @@ namespace Tutorial.ParallelLinq
             Stopwatch stopwatch = Stopwatch.StartNew();
             ParallelEnumerable.Range(0, count)
                 .WithMergeOptions(ParallelMergeOptions.NotBuffered)
-                .Select(value => Compute(value))
+                .Select(value => ComputingWorkload(value))
                 .WriteLines(value => $"{value}:{stopwatch.ElapsedMilliseconds}");
             // 0:132 2:273 1:315 4:460 3:579 6:611 5:890 7:1103
 
             stopwatch.Restart();
             ParallelEnumerable.Range(0, count)
                 .WithMergeOptions(ParallelMergeOptions.NotBuffered)
-                .Select(value => Compute(value))
+                .Select(value => ComputingWorkload(value))
                 .OrderBy(value => value) // Eager evaluation.
                 .WriteLines(value => $"{value}:{stopwatch.ElapsedMilliseconds}");
             // 0:998 1:999 2:999 3:1000 4:1000 5:1000 6:1001 7:1001
@@ -313,7 +313,7 @@ namespace Tutorial.ParallelLinq
             stopwatch.Restart();
             ParallelEnumerable.Range(0, count)
                 .WithMergeOptions(ParallelMergeOptions.FullyBuffered)
-                .Select(value => Compute(value))
+                .Select(value => ComputingWorkload(value))
                 .OrderBy(value => value) // Eager evaluation.
                 .WriteLines(value => $"{value}:{stopwatch.ElapsedMilliseconds}");
             // 0:984 1:985 2:985 3:986 4:987 5:987 6:988 7:989
@@ -362,7 +362,7 @@ namespace Tutorial.ParallelLinq
                 {
                     using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, $"{a}, {b} => {a - b}"))
                     {
-                        return a - b + Compute();
+                        return a - b + ComputingWorkload();
                     }
                 });
             }
@@ -374,7 +374,7 @@ namespace Tutorial.ParallelLinq
                 {
                     using (markerSeries.EnterSpan(Thread.CurrentThread.ManagedThreadId, $"{a}, {b} => {a - b}"))
                     {
-                        return a - b + Compute();
+                        return a - b + ComputingWorkload();
                     }
                 });
             }

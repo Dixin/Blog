@@ -23,14 +23,14 @@
             Enumerable
                 .Range(0, Environment.ProcessorCount * 2)
                 .AsParallel()
-                .Select(value => value + Compute())
+                .Select(value => value + ComputingWorkload())
                 .WriteLines(); // 3 1 2 0 4 5 6 7
 
             Enumerable
                 .Range(0, Environment.ProcessorCount * 2)
                 .AsParallel()
                 .AsOrdered()
-                .Select(value => value + Compute())
+                .Select(value => value + ComputingWorkload())
                 .WriteLines(); // 0 1 2 3 4 5 6 7
         }
 
@@ -82,43 +82,43 @@
             int count = Environment.ProcessorCount * 4;
             int[] source = Enumerable.Range(0, count).ToArray(); // 0 ... 15.
 
-            int elementAt = new StaticPartitioner<int>(source).AsParallel().Select(value => value + Compute())
+            int elementAt = new StaticPartitioner<int>(source).AsParallel().Select(value => value + ComputingWorkload())
                 .ElementAt(count / 2).WriteLine() // Expected: 8, 
                 .WriteLine(); // Actual: 2.
 
-            int first = new StaticPartitioner<int>(source).AsParallel().Select(value => value + Compute())
+            int first = new StaticPartitioner<int>(source).AsParallel().Select(value => value + ComputingWorkload())
                 .First() // Expected: 0.
                 .WriteLine(); // Actual: 3.
 
-            int last = new StaticPartitioner<int>(source).AsParallel().Select(value => value + Compute())
+            int last = new StaticPartitioner<int>(source).AsParallel().Select(value => value + ComputingWorkload())
                 .Last() // Expected: 15.
                 .WriteLine(); // Actual: 13.
 
-            new StaticPartitioner<int>(source).AsParallel().Select(value => value + Compute())
+            new StaticPartitioner<int>(source).AsParallel().Select(value => value + ComputingWorkload())
                 .Take(count / 2) // Expected: 0 ... 7.
                 .WriteLines(); // Actual: 3 2 5 7 10 11 14 15.
 
-            new StaticPartitioner<int>(source).AsParallel().Select(value => value + Compute())
+            new StaticPartitioner<int>(source).AsParallel().Select(value => value + ComputingWorkload())
                 .Skip(count / 2) // Expected: 8 ... 15.
                 .WriteLines(); // Actual: 3 0 7 5 11 10 15 14.
 
-            new StaticPartitioner<int>(source).AsParallel().Select(value => value + Compute())
+            new StaticPartitioner<int>(source).AsParallel().Select(value => value + ComputingWorkload())
                 .TakeWhile(value => value <= count / 2) // Expected: 0 ... 7.
                 .WriteLines(); // Actual: 3 5 8.
 
-            new StaticPartitioner<int>(source).AsParallel().Select(value => value + Compute())
+            new StaticPartitioner<int>(source).AsParallel().Select(value => value + ComputingWorkload())
                 .SkipWhile(value => value <= count / 2) // Expected: 9 ... 15.
                 .WriteLines(); // Actual: 1 3 2 13 5 7 6 11 9 10 15 12 14.
 
-            new StaticPartitioner<int>(source).AsParallel().Select(value => value + Compute())
+            new StaticPartitioner<int>(source).AsParallel().Select(value => value + ComputingWorkload())
                 .Reverse() // Expected: 15 ... 0.
                 .WriteLines(); // Actual: 12 8 4 2 13 9 5 1 14 10 6 0 15 11 7 3.
 
-            bool sequentialEqual = new StaticPartitioner<int>(source).AsParallel().Select(value => value + Compute())
+            bool sequentialEqual = new StaticPartitioner<int>(source).AsParallel().Select(value => value + ComputingWorkload())
                 .SequenceEqual(new StaticPartitioner<int>(source).AsParallel()); // Expected: True.
             sequentialEqual.WriteLine(); // Actual: False.
 
-            new StaticPartitioner<int>(source).AsParallel().Select(value => value + Compute())
+            new StaticPartitioner<int>(source).AsParallel().Select(value => value + ComputingWorkload())
                 .Zip(
                     second: new StaticPartitioner<int>(source).AsParallel(),
                     resultSelector: (a, b) => $"({a}, {b})") // Expected: (0, 0) ... (15, 15).
@@ -238,19 +238,19 @@
             int[] source = Enumerable.Range(0, Environment.ProcessorCount * 2).ToArray();
             new OrderableDynamicPartitioner<int>(source)
                 .AsParallel()
-                .Select(value => value + Compute())
+                .Select(value => value + ComputingWorkload())
                 .WriteLines(); // 1 0 5 3 4 6 2 7
 
             new OrderableDynamicPartitioner<int>(source)
                 .AsParallel()
                 .AsOrdered()
-                .Select(value => value + Compute())
+                .Select(value => value + ComputingWorkload())
                 .WriteLines(); // 0 ... 7
 
             new DynamicPartitioner<int>(source)
                 .AsParallel()
                 .AsOrdered()
-                .Select(value => value + Compute())
+                .Select(value => value + ComputingWorkload())
                 .WriteLines();
             // InvalidOperationException: AsOrdered may not be used with a partitioner that is not orderable.
         }

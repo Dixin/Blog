@@ -10,7 +10,8 @@
         [TestMethod]
         public void ComputingTest()
         {
-            Performance.RunOrderByTest();
+            Performance.OrderByTestForCount();
+            Performance.OrderByTestForKeySelector();
         }
 
         [TestMethod]
