@@ -187,7 +187,7 @@
                 //    DELETE FROM [Production].[ProductCategory]
                 //    WHERE [ProductCategoryID] = @p0;
                 //    SELECT @@ROWCOUNT;
-                //',N'@p0 int',@p0=1
+                // ',N'@p0 int',@p0=1
                 // ROLLBACK TRANSACTION
 
                 // DbUpdateException: An error occurred while updating the entries. See the inner exception for details.

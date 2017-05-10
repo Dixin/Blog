@@ -710,10 +710,6 @@
 
         internal static void WhereAndSelectWithCustomPredicate(AdventureWorks adventureWorks)
         {
-            //var q = adventureWorks.Products.Skip(1).Take(2);
-            //var compile = adventureWorks.Compile(q.Expression);
-            //var sql = adventureWorks.Generate(compile.Item1, compile.Item2);
-            //var r = adventureWorks.MaterializeEntity<Product>(sql, compile.Item2);
             IQueryable<Product> source = adventureWorks.Products;
             IQueryable<string> products = source
                 .Where(product => FilterName(product.Name))

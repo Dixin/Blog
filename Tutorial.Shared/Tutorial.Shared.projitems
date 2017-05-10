@@ -60,7 +60,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\Functions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\Inheritance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\Loading.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\Log.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\Tracing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\Performance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\QueryExpressions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\QueryMethods.cs" />
@@ -144,7 +144,7 @@
     <Content Include="$(MSBuildThisFileDirectory)Introduction\DotNet.txt" />
     <Content Include="$(MSBuildThisFileDirectory)LinqToEntities\AdventureWorks.Trim.sql" />
     <Content Include="$(MSBuildThisFileDirectory)LinqToEntities\Inheritance.sql" />
-    <Content Include="$(MSBuildThisFileDirectory)LinqToEntities\Log.sql" />
+    <Content Include="$(MSBuildThisFileDirectory)LinqToEntities\Tracing.sql" />
     <Content Include="$(MSBuildThisFileDirectory)LinqToEntities\Translation.txt" />
     <Content Include="$(MSBuildThisFileDirectory)Introduction\LinqToDocumentDB.json" />
     <Content Include="$(MSBuildThisFileDirectory)Introduction\LinqToDocumentDB.sql" />

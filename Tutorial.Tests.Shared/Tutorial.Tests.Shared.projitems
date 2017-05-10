@@ -39,7 +39,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\DatabaseTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\InfixVisitorTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\LoadingTests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\LogTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\TracingTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\PerformanceTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\QueryExpressionTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToEntities\QueryMethodsTests.cs" />

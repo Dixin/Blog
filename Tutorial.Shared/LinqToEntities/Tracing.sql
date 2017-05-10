@@ -16,7 +16,7 @@ ADD EVENT sqlserver.sql_batch_completed(
 ADD EVENT sqlserver.sql_statement_completed(
     ACTION(sqlserver.client_app_name, sqlserver.client_connection_id, sqlserver.client_hostname, sqlserver.client_pid, sqlserver.database_name, sqlserver.request_id, sqlserver.session_id, sqlserver.sql_text))
 ADD TARGET package0.ring_buffer(SET max_events_limit = (100)) -- Most recent 100 events.
-WITH (STARTUP_STATE = OFF)
+WITH (STARTUP_STATE = OFF);
 GO
 
 ALTER EVENT SESSION [Queries] ON DATABASE -- ON SERVER for SQL Server on-premise database.

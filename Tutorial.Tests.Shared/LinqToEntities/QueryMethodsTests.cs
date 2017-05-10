@@ -17,26 +17,6 @@
         }
 
         [TestMethod]
-        public void GenerationTest()
-        {
-            QueryMethods.DefaultIfEmpty(new AdventureWorks());
-#if NETFX
-            try
-            {
-                QueryMethods.DefaultIfEmptyEntity(new AdventureWorks(), new ProductCategory());
-                Assert.Fail();
-            }
-            catch (NotSupportedException exception)
-            {
-                Trace.WriteLine(exception);
-            }
-#else
-            QueryMethods.DefaultIfEmptyEntity(new AdventureWorks(), new ProductCategory());
-#endif
-            QueryMethods.DefaultIfEmptyPrimitive(new AdventureWorks());
-        }
-
-        [TestMethod]
         public void FilteringTest()
         {
             QueryMethods.Where(new AdventureWorks());
@@ -58,6 +38,27 @@
 #else
             QueryMethods.OfTypePrimitive(new AdventureWorks());
 #endif
+        }
+
+        [TestMethod]
+        public void GenerationTest()
+        {
+            QueryMethods.DefaultIfEmptyEntity(new AdventureWorks());
+            QueryMethods.DefaultIfEmptyPrimitive(new AdventureWorks());
+#if NETFX
+            try
+            {
+                QueryMethods.DefaultIfEmptyWithDefaultEntity(new AdventureWorks());
+                Assert.Fail();
+            }
+            catch (NotSupportedException exception)
+            {
+                Trace.WriteLine(exception);
+            }
+#else
+            QueryMethods.DefaultIfEmptyWithDefaultEntity(new AdventureWorks());
+#endif
+            QueryMethods.DefaultIfEmptyWithDefaultPrimitive(new AdventureWorks());
         }
 
         [TestMethod]
@@ -172,13 +173,13 @@
         [TestMethod]
         public void SetTest()
         {
-            //QueryMethods.DistinctEntity(new AdventureWorks());
-            //QueryMethods.DistinctPrimitive(new AdventureWorks());
-            //QueryMethods.DistinctEntityWithGroupBy(new AdventureWorks());
-            //QueryMethods.DistinctWithGroupBy(new AdventureWorks());
-            //QueryMethods.DistinctMultipleKeys(new AdventureWorks());
-            //QueryMethods.DistinctMultipleKeysWithGroupBy(new AdventureWorks());
-            //QueryMethods.DistinctWithGroupByAndFirstOrDefault(new AdventureWorks());
+            QueryMethods.DistinctEntity(new AdventureWorks());
+            QueryMethods.DistinctPrimitive(new AdventureWorks());
+            QueryMethods.DistinctEntityWithGroupBy(new AdventureWorks());
+            QueryMethods.DistinctWithGroupBy(new AdventureWorks());
+            QueryMethods.DistinctMultipleKeys(new AdventureWorks());
+            QueryMethods.DistinctMultipleKeysWithGroupBy(new AdventureWorks());
+            QueryMethods.DistinctWithGroupByAndFirstOrDefault(new AdventureWorks());
             QueryMethods.UnionEntity(new AdventureWorks());
             QueryMethods.UnionPrimitive(new AdventureWorks());
             QueryMethods.IntersectEntity(new AdventureWorks());
@@ -266,32 +267,32 @@
         [TestMethod]
         public void ConversionTest()
         {
-//#if NETFX
-//            QueryMethods.CastPrimitive(new AdventureWorks());
-//#else
-//            try
-//            {
-//                QueryMethods.CastPrimitive(new AdventureWorks());
-//                Assert.Fail();
-//            }
-//            catch (InvalidOperationException exception)
-//            {
-//                Trace.WriteLine(exception);
-//            }
-//#endif
-//#if NETFX
-//            try
-//            {
-//                QueryMethods.CastEntity(new AdventureWorks());
-//                Assert.Fail();
-//            }
-//            catch (NotSupportedException exception)
-//            {
-//                Trace.WriteLine(exception);
-//            }
-//#else
-//            QueryMethods.CastEntity(new AdventureWorks());
-//#endif
+#if NETFX
+            QueryMethods.CastPrimitive(new AdventureWorks());
+#else
+            try
+            {
+                QueryMethods.CastPrimitive(new AdventureWorks());
+                Assert.Fail();
+            }
+            catch (InvalidOperationException exception)
+            {
+                Trace.WriteLine(exception);
+            }
+#endif
+#if NETFX
+            try
+            {
+                QueryMethods.CastEntity(new AdventureWorks());
+                Assert.Fail();
+            }
+            catch (NotSupportedException exception)
+            {
+                Trace.WriteLine(exception);
+            }
+#else
+            QueryMethods.CastEntity(new AdventureWorks());
+#endif
             QueryMethods.AsEnumerableAsQueryable(new AdventureWorks());
             QueryMethods.SelectLocalEntity(new AdventureWorks());
         }

@@ -1,15 +1,13 @@
 ﻿namespace Tutorial.LinqToEntities
 {
 #if EF
-    using System;
-    using System.Data.Common;
     using System.Diagnostics;
     using System.Data.Entity.Infrastructure.Interception;
     using System.Linq;
 
     using static Tutorial.LinqToObjects.EnumerableX;
 
-    internal static partial class Log
+    internal static partial class Tracing
     {
         internal static void DbQueryToString()
         {
@@ -26,7 +24,7 @@
         }
     }
 
-    internal static partial class Log
+    internal static partial class Tracing
     {
         internal static void DatabaseLog()
         {
@@ -47,60 +45,12 @@
         }
     }
 
-    public class DbCommandInterceptor : IDbCommandInterceptor
+    internal static partial class Tracing
     {
-        private readonly Action<string> logger;
-
-        internal DbCommandInterceptor(Action<string> logger)
+        internal static void Interceptor()
         {
-            this.logger = logger;
-        }
-
-        public void NonQueryExecuting(DbCommand command, DbCommandInterceptionContext<int> interceptionContext) =>
-            this.Log(nameof(this.NonQueryExecuting), interceptionContext, command);
-
-        public void NonQueryExecuted(DbCommand command, DbCommandInterceptionContext<int> interceptionContext) =>
-            this.Log(nameof(this.NonQueryExecuting), interceptionContext);
-
-        public void ReaderExecuting(DbCommand command, DbCommandInterceptionContext<DbDataReader> interceptionContext) =>
-            this.Log(nameof(this.ReaderExecuting), interceptionContext, command);
-
-        public void ReaderExecuted(DbCommand command, DbCommandInterceptionContext<DbDataReader> interceptionContext) =>
-            this.Log(nameof(this.ReaderExecuted), interceptionContext);
-
-        public void ScalarExecuting(DbCommand command, DbCommandInterceptionContext<object> interceptionContext) =>
-            this.Log(nameof(this.ScalarExecuting), interceptionContext, command);
-
-        public void ScalarExecuted(DbCommand command, DbCommandInterceptionContext<object> interceptionContext) =>
-            this.Log(nameof(this.ScalarExecuted), interceptionContext);
-
-        private void Log<TResult>(
-            string @event, DbCommandInterceptionContext<TResult> interceptionContext, DbCommand command = null)
-        {
-            Exception exception = interceptionContext.Exception;
-            if (exception != null)
-            {
-                this.logger($"{@event}: {exception}");
-            }
-            if (command == null)
-            {
-                this.logger(@event);
-            }
-            else
-            {
-                this.logger($@"{@event}: {command.CommandText}{string.Concat(command.Parameters
-                    .Cast<DbParameter>()
-                    .Select(parameter => $", {parameter.ParameterName}={parameter.Value}"))}");
-            }
-        }
-    }
-
-    internal static partial class Log
-    {
-        internal static void DbCommandInterceptor()
-        {
-            IDbCommandInterceptor dbCommandTrace = new DatabaseLogFormatter(writeAction: log => Trace.WriteLine(log));
-            DbInterception.Add(dbCommandTrace);
+            DatabaseLogFormatter interceptor = new DatabaseLogFormatter(writeAction: log => Trace.WriteLine(log));
+            DbInterception.Add(interceptor);
             using (AdventureWorks adventureWorks = new AdventureWorks())
             {
                 IQueryable<ProductCategory> source = adventureWorks.ProductCategories; // Define query.
@@ -114,7 +64,7 @@
             // -- Executing at 1/11/2017 11:51:06 PM -08:00
             // -- Completed in 10 ms with result: SqlDataReader
             // Closed connection at 1/11/2017 11:51:06 PM -08:00
-            DbInterception.Remove(dbCommandTrace);
+            DbInterception.Remove(interceptor);
         }
     }
 #else
@@ -171,7 +121,7 @@
     }
 #endif
 
-    internal static partial class Log
+    internal static partial class Tracing
     {
         internal static void TraceLogger()
         {

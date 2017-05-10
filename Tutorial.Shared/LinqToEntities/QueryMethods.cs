@@ -6,65 +6,13 @@
 
     internal static partial class QueryMethods
     {
-        #region Generation
-
-        internal static void DefaultIfEmpty(AdventureWorks adventureWorks)
-        {
-            IQueryable<ProductCategory> source = adventureWorks.ProductCategories.Where(p => p.ProductCategoryID < 0);
-            IQueryable<ProductCategory> categories = source.DefaultIfEmpty(); // Define query.
-            categories.WriteLines(category => category?.Name); // Execute query.
-            // SELECT [t].[ProductCategoryID], [t].[Name]
-            // FROM (
-            //    SELECT NULL AS [empty]
-            // ) AS [empty]
-            // LEFT JOIN (
-            //    SELECT [p].[ProductCategoryID], [p].[Name]
-            //    FROM [Production].[ProductCategory] AS [p]
-            // ) AS [t] ON 1 = 1
-        }
-
-        internal static void DefaultIfEmptyEntity(AdventureWorks adventureWorks, ProductCategory @default)
-        {
-            IQueryable<ProductCategory> source = adventureWorks.ProductCategories;
-            IQueryable<ProductCategory> categories = source.DefaultIfEmpty(@default); // Define query.
-            categories.WriteLines(category => category?.Name); // Execute query.
-#if EF
-            // NotSupportedException: Unable to create a constant value of type 'ProductCategory'. Only primitive types or enumeration types are supported in this context.
-#else
-            // SELECT [p].[ProductCategoryID], [p].[Name]
-            // FROM [Production].[ProductCategory] AS [p]
-#endif
-        }
-
-        internal static void DefaultIfEmptyPrimitive(AdventureWorks adventureWorks)
-        {
-            IQueryable<ProductCategory> source = adventureWorks.ProductCategories;
-            IQueryable<int> categories = source
-                .Select(category => category.ProductCategoryID)
-                .DefaultIfEmpty(-1); // Define query.
-            categories.WriteLines(); // Execute query.
-#if EF
-            // SELECT 
-            //    CASE WHEN ([Project1].[C1] IS NULL) THEN -1 ELSE [Project1].[ProductCategoryID] END AS [C1]
-            //    FROM   ( SELECT 1 AS X ) AS [SingleRowTable1]
-            //    LEFT OUTER JOIN  (SELECT 
-            //        [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
-            //        cast(1 as tinyint) AS [C1]
-            //        FROM [Production].[ProductCategory] AS [Extent1] ) AS [Project1] ON 1 = 1
-#else
-            // SELECT [category].[ProductCategoryID]
-            // FROM [Production].[ProductCategory] AS [category]
-#endif
-        }
-
-        #endregion
-
         #region Filtering
 
         internal static void Where(AdventureWorks adventureWorks)
         {
             IQueryable<ProductCategory> source = adventureWorks.ProductCategories;
-            IQueryable<ProductCategory> categories = source.Where(category => category.ProductCategoryID > 0); // Define query.
+            IQueryable<ProductCategory> categories = source
+                .Where(category => category.ProductCategoryID > 0); // Define query.
             categories.WriteLines(category => category.Name); // Execute query.
             // SELECT [category].[ProductCategoryID], [category].[Name]
             // FROM [Production].[ProductCategory] AS [category]
@@ -74,7 +22,8 @@
         internal static void WhereWithOr(AdventureWorks adventureWorks)
         {
             IQueryable<ProductCategory> source = adventureWorks.ProductCategories;
-            IQueryable<ProductCategory> categories = source.Where(category =>
+            IQueryable<ProductCategory> categories = source
+                .Where(category => 
                 category.ProductCategoryID <= 1 || category.ProductCategoryID >= 4); // Define query.
             categories.WriteLines(category => category.Name); // Execute query.
             // SELECT [category].[ProductCategoryID], [category].[Name]
@@ -128,7 +77,7 @@
         internal static void OfTypePrimitive(AdventureWorks adventureWorks)
         {
             IQueryable<Product> source = adventureWorks.Products;
-            IQueryable<int> products = source.Select(p => p.ProductSubcategoryID).OfType<int>(); // Define query.
+            IQueryable<int> products = source.Select(product => product.ProductSubcategoryID).OfType<int>(); // Define query.
             products.ToArray().Length.WriteLine(); // Execute query.
 #if EF
             // NotSupportedException: 'System.Int32' is not a valid metadata type for type filtering operations. Type filtering is only valid on entity types and complex types.
@@ -197,6 +146,113 @@
 
         #endregion
 
+        #region Generation
+
+        internal static void DefaultIfEmptyEntity(AdventureWorks adventureWorks)
+        {
+            IQueryable<ProductCategory> source = adventureWorks.ProductCategories;
+            IQueryable<ProductCategory> categories = source
+                .Where(category => category.ProductCategoryID < 0)
+                .DefaultIfEmpty(); // Define query.
+            categories.ForEach( // Execute query.
+                category => (category == null).WriteLine()); // True
+#if EF
+            // SELECT 
+            //    [Project1].[ProductCategoryID] AS [ProductCategoryID], 
+            //    [Project1].[Name] AS [Name]
+            //    FROM   ( SELECT 1 AS X ) AS [SingleRowTable1]
+            //    LEFT OUTER JOIN  (SELECT 
+            //        [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
+            //        [Extent1].[Name] AS [Name]
+            //        FROM [Production].[ProductCategory] AS [Extent1]
+            //        WHERE [Extent1].[ProductCategoryID] < 0 ) AS [Project1] ON 1 = 1
+#else
+            // SELECT [t].[ProductCategoryID], [t].[Name]
+            // FROM (
+            //    SELECT NULL AS [empty]
+            // ) AS [empty]
+            // LEFT JOIN (
+            //    SELECT [category].[ProductCategoryID], [category].[Name]
+            //    FROM [Production].[ProductCategory] AS [category]
+            //    WHERE [category].[ProductCategoryID] < 0
+            // ) AS [t] ON 1 = 1
+#endif
+        }
+
+        internal static void DefaultIfEmptyPrimitive(AdventureWorks adventureWorks)
+        {
+            IQueryable<ProductCategory> source = adventureWorks.ProductCategories;
+            IQueryable<int> categories = source
+                .Where(category => category.ProductCategoryID < 0)
+                .Select(category => category.ProductCategoryID)
+                .DefaultIfEmpty(); // Define query.
+            categories.WriteLines(); // Execute query.
+#if EF
+            // SELECT 
+            //    CASE WHEN ([Project1].[C1] IS NULL) THEN 0 ELSE [Project1].[ProductCategoryID] END AS [C1]
+            //    FROM   ( SELECT 1 AS X ) AS [SingleRowTable1]
+            //    LEFT OUTER JOIN  (SELECT 
+            //        [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
+            //        cast(1 as tinyint) AS [C1]
+            //        FROM [Production].[ProductCategory] AS [Extent1]
+            //        WHERE [Extent1].[ProductCategoryID] < 0 ) AS [Project1] ON 1 = 1
+#else
+            // SELECT [t].[ProductCategoryID]
+            // FROM (
+            //    SELECT NULL AS [empty]
+            // ) AS [empty]
+            // LEFT JOIN (
+            //    SELECT [category].[ProductCategoryID]
+            //    FROM [Production].[ProductCategory] AS [category]
+            //    WHERE [category].[ProductCategoryID] < 0
+            // ) AS [t] ON 1 = 1
+#endif
+        }
+
+        internal static void DefaultIfEmptyWithDefaultEntity(AdventureWorks adventureWorks)
+        {
+            ProductCategory @default = new ProductCategory() { Name = nameof(ProductCategory) };
+            IQueryable<ProductCategory> source = adventureWorks.ProductCategories;
+            IQueryable<ProductCategory> categories = source
+                .Where(category => category.ProductCategoryID < 0)
+                .DefaultIfEmpty(@default); ; // Define query.
+            categories.WriteLines( // Execute query.
+                category => category?.Name); // ProductCategory
+#if EF
+            // NotSupportedException: Unable to create a constant value of type 'ProductCategory'. Only primitive types or enumeration types are supported in this context.
+#else
+            // SELECT [category].[ProductCategoryID], [category].[Name]
+            // FROM [Production].[ProductCategory] AS [category]
+            // WHERE [category].[ProductCategoryID] < 0
+            #endif
+        }
+
+        internal static void DefaultIfEmptyWithDefaultPrimitive(AdventureWorks adventureWorks)
+        {
+            IQueryable<ProductCategory> source = adventureWorks.ProductCategories;
+            IQueryable<int> categories = source
+                .Where(category => category.ProductCategoryID < 0)
+                .Select(category => category.ProductCategoryID)
+                .DefaultIfEmpty(-1); // Define query.
+            categories.WriteLines(); // Execute query.
+#if EF
+            // SELECT 
+            //    CASE WHEN ([Project1].[C1] IS NULL) THEN -1 ELSE [Project1].[ProductCategoryID] END AS [C1]
+            //    FROM   ( SELECT 1 AS X ) AS [SingleRowTable1]
+            //    LEFT OUTER JOIN  (SELECT 
+            //        [Extent1].[ProductCategoryID] AS [ProductCategoryID], 
+            //        cast(1 as tinyint) AS [C1]
+            //        FROM [Production].[ProductCategory] AS [Extent1]
+            //        WHERE [Extent1].[ProductCategoryID] < 0 ) AS [Project1] ON 1 = 1
+#else
+            // SELECT [category].[ProductCategoryID]
+            // FROM [Production].[ProductCategory] AS [category]
+            // WHERE [category].[ProductCategoryID] < 0
+            #endif
+        }
+
+        #endregion
+
         #region Grouping
 
         internal static void GroupBy(AdventureWorks adventureWorks)
@@ -237,7 +293,7 @@
                 resultSelector: (key, group) => new { CategoryID = key, SubcategoryCount = group.Count() }); // Define query.
             groups.WriteLines(); // Execute query.
 #if EF
-            //SELECT 
+            // SELECT 
             //    [GroupBy1].[K1] AS [ProductCategoryID], 
             //    [GroupBy1].[A1] AS [C1]
             //    FROM ( SELECT 
@@ -272,7 +328,7 @@
                 .SelectMany(group => group); // Define query.
             distinct.WriteLines(subcategory => subcategory.Name); // Execute query.
 #if EF
-            //SELECT 
+            // SELECT 
             //    [Extent2].[ProductSubcategoryID] AS [ProductSubcategoryID], 
             //    [Extent2].[Name] AS [Name], 
             //    [Extent2].[ProductCategoryID] AS [ProductCategoryID]
@@ -300,7 +356,7 @@
                 }); // Define query.
             groups.WriteLines(); // Execute query.
 #if EF
-            //SELECT 
+            // SELECT 
             //    1 AS [C1], 
             //    [GroupBy1].[K2] AS [ProductSubcategoryID], 
             //    [GroupBy1].[K1] AS [ListPrice], 
@@ -332,12 +388,12 @@
                 outerKeySelector: category => category.ProductCategoryID,
                 innerKeySelector: subcategory => subcategory.ProductCategoryID,
                 resultSelector: (category, subcategory) =>
-                    new { Subcategory = category.Name, Product = subcategory.Name }); // Define query.
+                    new { Category = category.Name, Subcategory = subcategory.Name }); // Define query.
             // var categorySubcategories =
             //    from category in outer
             //    join subcategory in inner
             //    on category.ProductCategoryID equals subcategory.ProductCategoryID
-            //    select new { Category = category.Name, Subategory = subcategory.Name };
+            //    select new { Category = category.Name, Subcategory = subcategory.Name };
             categorySubcategories.WriteLines(); // Execute query.
             // SELECT [category].[Name], [subcategory].[Name]
             // FROM [Production].[ProductCategory] AS [category]
@@ -403,13 +459,13 @@
             //   from subcategory in (from subcategory in inner
             //                        where category.ProductCategoryID == subcategory.ProductCategoryID
             //                        select subcategory)
-            //   select new { Category = category.Name, Subategory = subcategory.Name };
+            //   select new { Category = category.Name, Subcategory = subcategory.Name };
             // Or equivalently:
             // var categorySubcategories =
             //    from category in outer
             //    from subcategory in inner
             //    where category.ProductCategoryID == subcategory.ProductCategoryID
-            //    select new { Category = category.Name, Subategory = subcategory.Name };
+            //    select new { Category = category.Name, Subcategory = subcategory.Name };
             categorySubcategories.WriteLines(); // Execute query.
 #if EF
             // SELECT 
@@ -1282,7 +1338,7 @@
             IQueryable<Product> except = first.Except(second); // Define query.
             except.WriteLines(); // Execute query.
 #if EF
-            //SELECT 
+            // SELECT 
             //    [Except1].[ProductID] AS [C1], 
             //    [Except1].[Name] AS [C2], 
             //    [Except1].[ListPrice] AS [C3]
@@ -1292,7 +1348,7 @@
             //        [Extent1].[ListPrice] AS [ListPrice], 
             //        [Extent1].[ProductSubcategoryID] AS [ProductSubcategoryID]
             //        FROM [Production].[Product] AS [Extent1]
-            ////        WHERE [Extent1].[ListPrice] > cast(100 as decimal(18))
+            //        WHERE [Extent1].[ListPrice] > cast(100 as decimal(18))
             //    EXCEPT
             //        SELECT 
             //        [Extent2].[ProductID] AS [ProductID], 
@@ -1609,23 +1665,23 @@
         internal static void AsEnumerableAsQueryable(AdventureWorks adventureWorks)
         {
             IQueryable<Product> source = adventureWorks.Products;
-            var query1 = source // DbSet<T>.
-                .Select(product => new { Name = product.Name, ListPrice = product.ListPrice }) // Return EntityQueryable<T>/DbQuery<T>.
-                .AsEnumerable() // Do nothing, directly return the input EntityQueryable<T> instance.
-                .Where(product => product.ListPrice > 0) // LINQ to Objects query Enumerable.Where, returns a generator wrapping the input EntityQueryable<T> instance.
-                .AsQueryable() // Return an EnumerableQuery<T> instance wrapping the input generator.
-                .OrderBy(product => product.Name); // Return an EnumerableQuery<T> instance.
-            query1.WriteLines();
+            var remoteAndLocal = source // DbSet<T>.
+                .Select(product => new { Name = product.Name, ListPrice = product.ListPrice }) // Return EntityQueryable<T>.
+                .AsEnumerable() // Do nothing. Directly return the EntityQueryable<T> source.
+                .Where(product => product.ListPrice > 0) // Enumerable.Where. Return a generator wrapping the EntityQueryable<T> source.
+                .AsQueryable() // Return an EnumerableQuery<T> instance wrapping the source generator.
+                .OrderBy(product => product.Name); // Queryable.OrderBy. Return EnumerableQuery<T>.
+            remoteAndLocal.WriteLines();
             // SELECT [product].[Name], [product].[ListPrice]
             // FROM [Production].[Product] AS [product]
 
-            var query2 = source // DbSet<T> instance.
-                .Select(product => new { Name = product.Name, ListPrice = product.ListPrice }) // Return EntityQueryable<T>/DbQuery<T> instance.
-                .AsEnumerable() // Do nothing, directly return the input EntityQueryable<T>/DbQuery<T> instance.
-                .AsQueryable() // Do nothing, directly return the input EntityQueryable<T>/DbQuery<T> instance.
-                .Where(product => product.ListPrice > 0) // Still LINQ to Entities. Return EntityQueryable<T>/DbQuery<T> instance.
-                .OrderBy(product => product.Name); // Still LINQ to Entities. Return EntityQueryable<T>/DbQuery<T> instance.
-            query2.WriteLines();
+            var remote = source // DbSet<T>.
+                .Select(product => new { Name = product.Name, ListPrice = product.ListPrice }) // Return EntityQueryable<T>.
+                .AsEnumerable() // Do nothing. Directly return the EntityQueryable<T> source.
+                .AsQueryable() // Do nothing. Directly return the EntityQueryable<T> source.
+                .Where(product => product.ListPrice > 0) // Still LINQ to Entities. Return EntityQueryable<T>.
+                .OrderBy(product => product.Name); // Still LINQ to Entities. Return EntityQueryable<T>.
+            remote.WriteLines();
             // SELECT [product].[Name], [product].[ListPrice]
             // FROM [Production].[Product] AS [product]
             // WHERE [product].[ListPrice] > 0.0
@@ -1636,13 +1692,13 @@
         {
             IQueryable<Product> source = adventureWorks.Products;
             IEnumerable<Product> products = source
-                .Where(product => product.ListPrice > 1_000) // Return IQueryable<Product>. LINQ to Entities.
-                .AsEnumerable() // Return IEnumerable<Product>. LINQ to Objects from here.
+                .Where(product => product.ListPrice > 1_000) // LINQ to Entities.
+                .AsEnumerable() // Do nothing.
                 .Select(product => new Product()
                 {
                     ProductID = product.ProductID,
                     Name = product.Name
-                }); // Define query, IEnumerable<Product> instrad of IQueryable<Product>.
+                }); // LINQ to Objects: Enumerable.Select>. Return a generator.
             products.WriteLines(product => $"{product.ProductID}: {product.Name}"); // Execute query.
             // SELECT [product].[ProductID], [product].[ListPrice], [product].[Name], [product].[ProductSubcategoryID]
             // FROM [Production].[Product] AS [product]
@@ -1873,13 +1929,13 @@
         {
             IQueryable<Product> source = adventureWorks.Products;
             bool allNot = source.All(product => product.ProductSubcategoryID != null).WriteLine(); // Execute query.
-            //SELECT CASE
+            // SELECT CASE
             //    WHEN NOT EXISTS (
             //        SELECT 1
             //        FROM [Production].[Product] AS [product]
             //        WHERE [product].[ProductSubcategoryID] IS NULL)
             //    THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT)
-            //END
+            // END
         }
 
         internal static void NotAny(AdventureWorks adventureWorks)

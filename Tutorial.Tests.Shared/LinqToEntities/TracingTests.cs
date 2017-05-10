@@ -5,17 +5,17 @@
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]
-    public class LogTests
+    public class TracingTests
     {
         [TestMethod]
-        public void LogTest()
+        public void TracingTest()
         {
 #if NETFX
-            Log.DbQueryToString();
-            Log.DatabaseLog();
-            Log.DbCommandInterceptor();
+            Tracing.DbQueryToString();
+            Tracing.DatabaseLog();
+            Tracing.Interceptor();
 #else
-            Log.TraceLogger();
+            Tracing.TraceLogger();
 #endif
         }
     }
