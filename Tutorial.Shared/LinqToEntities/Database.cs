@@ -10,7 +10,7 @@
     using System.Data.SqlClient;
     using System.Threading;
     using System.Threading.Tasks;
-    
+
     using ModelBuilder = System.Data.Entity.DbModelBuilder;
     using DatabaseFacade = System.Data.Entity.Database;
     using ChangeTracker = System.Data.Entity.Infrastructure.DbChangeTracker;
@@ -32,7 +32,8 @@
     {
         public AdventureWorks(DbConnection connection = null) : base(
             existingConnection: connection ?? new SqlConnection(ConnectionStrings.AdventureWorks),
-            contextOwnsConnection: connection == null) { }
+            contextOwnsConnection: connection == null)
+        { }
     }
 
     public class RetryConfiguration : DbConfiguration
@@ -61,55 +62,30 @@
 
     public partial class ExecutionStrategy : IDbExecutionStrategy
     {
-        private IDbExecutionStrategy stratagy = Create();
+        private readonly IDbExecutionStrategy strategy = Create();
 
-        public bool RetriesOnFailure => this.stratagy.RetriesOnFailure;
+        public bool RetriesOnFailure => this.strategy.RetriesOnFailure;
 
-        public void Execute(Action operation)
+        public void Execute(Action operation) =>
+            ExecuteOperation(() => { this.strategy.Execute(operation); return (object)null; });
+
+        public TResult Execute<TResult>(Func<TResult> operation) =>
+            ExecuteOperation(() => this.strategy.Execute(operation));
+
+        public Task ExecuteAsync(
+            Func<Task> operation, CancellationToken cancellationToken = default(CancellationToken)) =>
+                ExecuteOperation(() => this.strategy.ExecuteAsync(operation, cancellationToken));
+
+        public Task<TResult> ExecuteAsync<TResult>(
+            Func<Task<TResult>> operation, CancellationToken cancellationToken = default(CancellationToken)) =>
+                ExecuteOperation(() => this.strategy.ExecuteAsync(operation, cancellationToken));
+
+        private static T ExecuteOperation<T>(Func<T> resultFactory)
         {
             DisableExecutionStrategy = true;
             try
             {
-                this.stratagy.Execute(operation);
-            }
-            finally
-            {
-                DisableExecutionStrategy = false;
-            }
-        }
-
-        public TResult Execute<TResult>(Func<TResult> operation)
-        {
-            DisableExecutionStrategy = true;
-            try
-            {
-                return this.stratagy.Execute(operation);
-            }
-            finally
-            {
-                DisableExecutionStrategy = false;
-            }
-        }
-
-        public Task ExecuteAsync(Func<Task> operation, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            DisableExecutionStrategy = true;
-            try
-            {
-                return this.stratagy.ExecuteAsync(operation, cancellationToken);
-            }
-            finally
-            {
-                DisableExecutionStrategy = false;
-            }
-        }
-
-        public Task<TResult> ExecuteAsync<TResult>(Func<Task<TResult>> operation, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            DisableExecutionStrategy = true;
-            try
-            {
-                return this.stratagy.ExecuteAsync(operation, cancellationToken);
+                return resultFactory();
             }
             finally
             {
@@ -120,7 +96,8 @@
 
     public static class DatabaseExtensions
     {
-        public static ExecutionStrategy CreateExecutionStrategy(this Database database) => new ExecutionStrategy();
+        public static ExecutionStrategy CreateExecutionStrategy(this DatabaseFacade database) => 
+            new ExecutionStrategy();
     }
 #else
     public partial class AdventureWorks : DbContext { }

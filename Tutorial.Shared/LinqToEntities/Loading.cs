@@ -92,33 +92,34 @@
                 .Where(product => product.Name.Length > 100)
                 .Take(3);
             "Iterator - Create from LINQ to Entities query.".WriteLine();
-            using (IEnumerator<Product> iterator = categories.GetEntityIterator(adventureWorks))
+            using (IEnumerator<Product> iterator = categories.GetEntityIterator(adventureWorks)) // Compile query.
             {
                 int index = 0;
                 while (new Func<bool>(() =>
                     {
-                        $"|_Iterator - [{++index}] Move next.".WriteLine();
-                        return iterator.MoveNext(); // Translate and execute query.
+                        bool moveNext = iterator.MoveNext();
+                        $"|_Iterator - [{index++}] {nameof(IEnumerator<Product>.MoveNext)}: {moveNext}.".WriteLine();
+                        return moveNext; // Generate SQL when first time called.
                     })())
                 {
                     Product product = iterator.Current;
-                    $"| |_Iterator - [{index}] Get current: {product.Name}.".WriteLine();
+                    $"| |_Iterator - [{index}] {nameof(IEnumerator<Product>.Current)}: {product.Name}.".WriteLine();
                 }
             }
             // Iterator - Create from LINQ to Entities query.
             // | |_Compile LINQ expression tree to database expression tree.
-            // |_Iterator - [1] Move next.
+            // |_Iterator - [0] MoveNext: True.
             // | |_Generate SQL from database expression tree.
             // | |_Execute generated SQL.
             // | |_Materialize data row to Product entity.
-            // | |_Iterator - [1] Get current: ML Crankset.
-            // |_Iterator - [2] Move next.
+            // | |_Iterator - [0] Current: ML Crankset.
+            // |_Iterator - [1] MoveNext: True.
             // | |_Materialize data row to Product entity.
-            // | |_Iterator - [2] Get current: HL Crankset.
-            // |_Iterator - [3] Move next.
+            // | |_Iterator - [1] Current: HL Crankset.
+            // |_Iterator - [2] MoveNext: True.
             // | |_Materialize data row to Product entity.
-            // | |_Iterator - [3] Get current: Touring-2000 Blue, 60.
-            // |_Iterator - [4] Move next.
+            // | |_Iterator - [2] Current: Touring-2000 Blue, 60.
+            // |_Iterator - [3] MoveNext: False.
             //   |_End.
         }
     }

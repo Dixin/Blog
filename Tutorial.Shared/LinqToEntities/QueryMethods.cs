@@ -23,7 +23,7 @@
         {
             IQueryable<ProductCategory> source = adventureWorks.ProductCategories;
             IQueryable<ProductCategory> categories = source
-                .Where(category => 
+                .Where(category =>
                 category.ProductCategoryID <= 1 || category.ProductCategoryID >= 4); // Define query.
             categories.WriteLines(category => category.Name); // Execute query.
             // SELECT [category].[ProductCategoryID], [category].[Name]
@@ -224,7 +224,7 @@
             // SELECT [category].[ProductCategoryID], [category].[Name]
             // FROM [Production].[ProductCategory] AS [category]
             // WHERE [category].[ProductCategoryID] < 0
-            #endif
+#endif
         }
 
         internal static void DefaultIfEmptyWithDefaultPrimitive(AdventureWorks adventureWorks)
@@ -248,7 +248,7 @@
             // SELECT [category].[ProductCategoryID]
             // FROM [Production].[ProductCategory] AS [category]
             // WHERE [category].[ProductCategoryID] < 0
-            #endif
+#endif
         }
 
         #endregion
@@ -635,7 +635,7 @@
                         .DefaultIfEmpty(), // INNER JOIN if DefaultIfEmpty is missing.
                     resultSelector: (category, subcategory) =>
                         new { Category = category.Category, Subcategory = subcategory }); // Define query.
-            // var categories =
+            // var categorySubcategories =
             //    from category in outer
             //    join subcategory in inner
             //    on category.ProductCategoryID equals subcategory.ProductCategoryID into subcategories
@@ -665,7 +665,7 @@
                         .DefaultIfEmpty(), // INNER JOIN if DefaultIfEmpty is missing.
                     resultSelector: (category, subcategory) =>
                         new { Category = category.Category.Name, Subcategory = subcategory.Name }); // Define query.
-            // var categories =
+            // var categorySubcategories =
             //    from category in outer
             //    select new
             //    {
@@ -1431,34 +1431,44 @@
         internal static void Skip(AdventureWorks adventureWorks)
         {
             IQueryable<Product> source = adventureWorks.Products;
-            IQueryable<Product> names = source
+            IQueryable<string> names = source
+                .Select(product => product.Name)
                 .Skip(10); // Define query.
             names.WriteLines(); // Execute query.
 #if EF
             // NotSupportedException: The method 'Skip' is only supported for sorted input in LINQ to Entities. The method 'OrderBy' must be called before the method 'Skip'.
 #else
-            // exec sp_executesql N'SELECT [t].[Name]
-            // FROM (
-            //    SELECT [p0].*
-            //    FROM [Production].[Product] AS [p0]
-            //    ORDER BY (SELECT 1)
-            //    OFFSET @__p_0 ROWS
-            // ) AS [t]',N'@__p_0 int',@__p_0=10
+            // exec sp_executesql N'SELECT [product].[Name]
+            // FROM [Production].[Product] AS [product]
+            // ORDER BY (SELECT 1)
+            // OFFSET @__p_0 ROWS',N'@__p_0 int',@__p_0=10
 #endif
         }
 
         internal static void OrderByAndSkip(AdventureWorks adventureWorks)
         {
             IQueryable<Product> source = adventureWorks.Products;
-            IQueryable<string> products = source
+            IQueryable<string> names = source
+                .Select(product => product.Name)
                 .OrderBy(product => 1)
-                .Skip(10)
-                .Select(product => product.Name); // Define query.
-            products.WriteLines(); // Execute query.
+                .Skip(10); // Define query.
+            names.WriteLines(); // Execute query.
+#if EF
+            // SELECT 
+            //    [Project1].[Name] AS [Name]
+            //    FROM ( SELECT 
+            //        1 AS [C1], 
+            //        [Extent1].[Name] AS [Name]
+            //        FROM [Production].[Product] AS [Extent1]
+            //    )  AS [Project1]
+            //    ORDER BY [Project1].[C1] ASC
+            //    OFFSET 10 ROWS 
+#else
             // exec sp_executesql N'SELECT [product].[Name]
             // FROM [Production].[Product] AS [product]
             // ORDER BY [product].[Name]
             // OFFSET @__p_0 ROWS',N'@__p_0 int',@__p_0=10
+#endif
         }
 
         internal static void Take(AdventureWorks adventureWorks)
@@ -1900,10 +1910,22 @@
             // END
         }
 
-        internal static void All(AdventureWorks adventureWorks)
+        internal static void Any(AdventureWorks adventureWorks)
         {
             IQueryable<Product> source = adventureWorks.Products;
-            bool all = source.Any(product => product.ListPrice > 10).WriteLine(); // Execute query.
+            bool any = source.Any().WriteLine(); // Execute query.
+            // SELECT CASE
+            //    WHEN EXISTS (
+            //        SELECT 1
+            //        FROM [Production].[Product] AS [p])
+            //    THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT)
+            // END
+        }
+
+        internal static void AnyWithPredicate(AdventureWorks adventureWorks)
+        {
+            IQueryable<Product> source = adventureWorks.Products;
+            bool any = source.Any(product => product.ListPrice > 10).WriteLine(); // Execute query.
             // SELECT CASE
             //    WHEN EXISTS (
             //        SELECT 1
@@ -1913,14 +1935,15 @@
             // END
         }
 
-        internal static void Any(AdventureWorks adventureWorks)
+        internal static void AllWithPredicate(AdventureWorks adventureWorks)
         {
             IQueryable<Product> source = adventureWorks.Products;
-            bool anyUniversal = source.Any().WriteLine(); // Execute query.
+            bool all = source.All(product => product.ListPrice > 10).WriteLine(); // Execute query.
             // SELECT CASE
-            //    WHEN EXISTS (
+            //    WHEN NOT EXISTS (
             //        SELECT 1
-            //        FROM [Production].[Product] AS [p])
+            //        FROM [Production].[Product] AS [product]
+            //        WHERE [product].[ListPrice] <= 10.0)
             //    THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT)
             // END
         }

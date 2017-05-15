@@ -55,15 +55,15 @@ namespace Tutorial.LinqToEntities
 
         internal static void EntityChanges(AdventureWorks adventureWorks)
         {
-            Product toCreate = new Product() { Name = nameof(toCreate), ListPrice = 1 };
-            adventureWorks.Products.Add(toCreate); // Create entity.
-            Product read = adventureWorks.Products.Single(product => product.ProductID == 999); // Read entity.
-            IQueryable<Product> toUpdate = adventureWorks.Products
+            Product create = new Product() { Name = nameof(create), ListPrice = 1 };
+            adventureWorks.Products.Add(create); // Create locally.
+            Product read = adventureWorks.Products.Single(product => product.ProductID == 999); // Read from remote to local.
+            IQueryable<Product> update = adventureWorks.Products
                 .Where(product => product.Name.Contains("HL"));
-            toUpdate.ForEach(product => product.ListPrice += 100); // Update entities.
-            IQueryable<Product> toDelete = adventureWorks.Products
+            update.ForEach(product => product.ListPrice += 100); // Update locally.
+            IQueryable<Product> delete = adventureWorks.Products
                 .Where(product => product.Name.Contains("ML"));
-            adventureWorks.Products.RemoveRange(toDelete); // Track entity deletion.
+            adventureWorks.Products.RemoveRange(delete); // Delete locally.
 
             adventureWorks.ChangeTracker.HasChanges().WriteLine(); // True
             adventureWorks.ChangeTracker.Entries<Product>().ForEach(tracking =>
@@ -74,11 +74,11 @@ namespace Tutorial.LinqToEntities
                     case EntityState.Added:
                     case EntityState.Deleted:
                     case EntityState.Unchanged:
-                        $"{tracking.State}: ({changed.ProductID}, {changed.Name}, {changed.ListPrice})".WriteLine();
+                        $"{tracking.State}: {(changed.ProductID, changed.Name, changed.ListPrice)}".WriteLine();
                         break;
                     case EntityState.Modified:
                         Product original = (Product)tracking.OriginalValues.ToObject();
-                        $"{tracking.State}: ({original.ProductID}, {original.Name}, {original.ListPrice}) => ({changed.ProductID}, {changed.Name}, {changed.ListPrice})"
+                        $"{tracking.State}: {(original.ProductID, original.Name, original.ListPrice)} => {(changed.ProductID, changed.Name, changed.ListPrice)}"
                             .WriteLine();
                         break;
                 }
@@ -123,7 +123,7 @@ namespace Tutorial.LinqToEntities
             {
                 Product original = (Product)tracking.OriginalValues.ToObject();
                 Product changed = tracking.Entity;
-                $"{tracking.State}: ({original.ProductID}, {original.Name}, {original.ProductSubcategoryID}) => ({changed.ProductID}, {changed.Name}, {changed.ProductSubcategoryID})".WriteLine();
+                $"{tracking.State}: {(original.ProductID, original.Name, original.ProductSubcategoryID)} => {(changed.ProductID, changed.Name, changed.ProductSubcategoryID)}".WriteLine();
             });
             // Modified: (950, ML Crankset, 8) => (950, ML Crankset, )
             // Modified: (951, HL Crankset, 8) => (951, HL Crankset, )

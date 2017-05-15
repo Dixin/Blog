@@ -365,7 +365,8 @@
         public void QuantifiersTest()
         {
             QueryMethods.Any(new AdventureWorks());
-            QueryMethods.All(new AdventureWorks());
+            QueryMethods.AnyWithPredicate(new AdventureWorks());
+            QueryMethods.AllWithPredicate(new AdventureWorks());
             QueryMethods.ContainsPrimitive(new AdventureWorks());
 #if NETFX
             try

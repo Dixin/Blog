@@ -474,7 +474,7 @@
         {
             if (retryCount <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(retryCount), $"{retryCount} must be greater than 0.");
+                throw new ArgumentOutOfRangeException(nameof(retryCount));
             }
 
             for (int retry = 1; retry < retryCount; retry++)
@@ -509,7 +509,7 @@
         {
             if (retryCount <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(retryCount), $"{retryCount} must be greater than 0.");
+                throw new ArgumentOutOfRangeException(nameof(retryCount));
             }
 
             return await context.SaveChangesAsync(

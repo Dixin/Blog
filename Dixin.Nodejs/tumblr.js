@@ -116,10 +116,10 @@ const path = require("path"),
         return Q.all(downloads);
     },
 
-    getFileName = (post, url, index) => {
+    getFileName = (post, url, index, count) => {
         const summary = post.summary ? common.removeReservedCharactersFromFileName(post.summary).trim() : "",
             extension = url.split(".").pop();
-        return `${post.blog_name} ${post.id} ${index || 0} ${summary ? ` ${summary.substring(0, 30)}` : ""}.${extension}`;
+        return `${post.blog_name} ${post.id} ${index || 0} ${summary ? ` ${summary.substring(0, count || 180)}` : ""}.${extension}`;
     },
 
     unlikePost = options => {

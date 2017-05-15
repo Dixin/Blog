@@ -40,9 +40,9 @@ CREATE TABLE [Production].[Product](
 
     [ProductSubcategoryID] int NULL
         CONSTRAINT [FK_Product_ProductSubcategory_ProductSubcategoryID] FOREIGN KEY
-        REFERENCES [Production].[ProductSubcategory] ([ProductSubcategoryID]);
+        REFERENCES [Production].[ProductSubcategory] ([ProductSubcategoryID])
     
-    /* Other columns. */)
+    /* Other columns. */);
 GO
 
 ALTER TABLE [Production].[Product] ADD [RowVersion] rowversion NOT NULL;
@@ -55,9 +55,9 @@ CREATE TABLE [Production].[ProductPhoto](
     [LargePhotoFileName] nvarchar(50) NULL,
     
     [ModifiedDate] datetime NOT NULL 
-        CONSTRAINT [DF_ProductPhoto_ModifiedDate] DEFAULT (GETDATE());
+        CONSTRAINT [DF_ProductPhoto_ModifiedDate] DEFAULT (GETDATE())
 
-    /* Other columns. */)
+    /* Other columns. */);
 GO
 
 CREATE TABLE [Production].[ProductProductPhoto](
@@ -69,9 +69,9 @@ CREATE TABLE [Production].[ProductProductPhoto](
         CONSTRAINT [FK_ProductProductPhoto_ProductPhoto_ProductPhotoID] FOREIGN KEY
         REFERENCES [Production].[ProductPhoto] ([ProductPhotoID]),
 
-    CONSTRAINT [PK_ProductProductPhoto_ProductID_ProductPhotoID] PRIMARY KEY NONCLUSTERED ([ProductID], [ProductPhotoID]);
+    CONSTRAINT [PK_ProductProductPhoto_ProductID_ProductPhotoID] PRIMARY KEY NONCLUSTERED ([ProductID], [ProductPhotoID])
     
-    /* Other columns. */)
+    /* Other columns. */);
 GO
 
 CREATE TABLE [Person].[Person](

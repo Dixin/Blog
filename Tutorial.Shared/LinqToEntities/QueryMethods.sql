@@ -1166,14 +1166,58 @@ SELECT
     )) THEN cast(1 as bit) ELSE cast(0 as bit) END AS [C1]
     FROM  ( SELECT 1 AS X ) AS [SingleRowTable1]
 
--- AnyWithPredicate
-exec sp_executesql N'SELECT CASE
-    WHEN @__p_0 IN (
-        SELECT [product].[ListPrice]
-        FROM [Production].[Product] AS [product]
-    )
+-- Any
+SELECT CASE
+    WHEN EXISTS (
+        SELECT 1
+        FROM [Production].[Product] AS [p])
     THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT)
-END',N'@__p_0 decimal(3,0)',@__p_0=100
+END
+
+SELECT 
+    CASE WHEN ( EXISTS (SELECT 
+        1 AS [C1]
+        FROM [Production].[Product] AS [Extent1]
+    )) THEN cast(1 as bit) ELSE cast(0 as bit) END AS [C1]
+    FROM  ( SELECT 1 AS X ) AS [SingleRowTable1]
+
+-- AnyWithPredicate
+SELECT CASE
+    WHEN EXISTS (
+        SELECT 1
+        FROM [Production].[Product] AS [product]
+        WHERE [product].[ListPrice] > 10.0)
+    THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT)
+END
+
+SELECT 
+    CASE WHEN ( EXISTS (SELECT 
+        1 AS [C1]
+        FROM [Production].[Product] AS [Extent1]
+        WHERE [Extent1].[ListPrice] > cast(10 as decimal(18))
+    )) THEN cast(1 as bit) ELSE cast(0 as bit) END AS [C1]
+    FROM  ( SELECT 1 AS X ) AS [SingleRowTable1]
+
+-- AllWithPredicate
+SELECT CASE
+    WHEN NOT EXISTS (
+        SELECT 1
+        FROM [Production].[Product] AS [product]
+        WHERE [product].[ListPrice] <= 10.0)
+    THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT)
+END
+
+SELECT 
+    CASE WHEN ( NOT EXISTS (SELECT 
+        1 AS [C1]
+        FROM [Production].[Product] AS [Extent1]
+        WHERE ( NOT ([Extent1].[ListPrice] > cast(10 as decimal(18)))) OR (
+			CASE 
+				WHEN ([Extent1].[ListPrice] > cast(10 as decimal(18))) THEN cast(1 as bit) 
+				WHEN ( NOT ([Extent1].[ListPrice] > cast(10 as decimal(18)))) THEN cast(0 as bit) 
+			END IS NULL)
+    )) THEN cast(1 as bit) ELSE cast(0 as bit) END AS [C1]
+    FROM  ( SELECT 1 AS X ) AS [SingleRowTable1]
 
 SELECT 
     CASE WHEN ( EXISTS (SELECT 

@@ -210,7 +210,7 @@ namespace Tutorial.LinqToEntities
                 .HasMany(product => product.ProductPhotos)
                 .WithMany(photo => photo.Products)
                 .Map(mapping => mapping
-                    .ToTable("ProductProductPhoto", Production)
+                    .ToTable(nameof(ProductProductPhoto), Production)
                     .MapLeftKey(nameof(Product.ProductID))
                     .MapRightKey(nameof(ProductPhoto.ProductPhotoID)));
         }

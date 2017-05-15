@@ -346,7 +346,7 @@
         {
             if (retryCount < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(retryCount), $"{retryCount} must be 0 or greater than 0.");
+                throw new ArgumentOutOfRangeException(nameof(retryCount));
             }
 
             int count = 0;
@@ -409,7 +409,7 @@
         {
             if (retryCount < 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(retryCount), $"{retryCount} must be 0 or greater than 0.");
+                throw new ArgumentOutOfRangeException(nameof(retryCount));
             }
 
             return source.Retry<TSource, Exception>(retryCount, @catch);

@@ -27,7 +27,7 @@ namespace Tutorial.LinqToEntities
         {
             adventureWorks.Database.CreateExecutionStrategy().Execute(() =>
             {
-                // Single retry operation, which can have custom transaction.
+                // Single retry operation, which can have custom transactions.
             });
         }
     }
@@ -63,12 +63,12 @@ namespace Tutorial.LinqToEntities
         public static readonly string CurrentIsolationLevelSql = $@"
             SELECT
                 CASE transaction_isolation_level
-                    WHEN 0 THEN N'{nameof(IsolationLevel.Unspecified)}'
-                    WHEN 1 THEN N'{nameof(IsolationLevel.ReadUncommitted)}'
-                    WHEN 2 THEN N'{nameof(IsolationLevel.ReadCommitted)}'
-                    WHEN 3 THEN N'{nameof(IsolationLevel.RepeatableRead)}'
-                    WHEN 4 THEN N'{nameof(IsolationLevel.Serializable)}'
-                    WHEN 5 THEN N'{nameof(IsolationLevel.Snapshot)}'
+                    WHEN 0 THEN N'{IsolationLevel.Unspecified}'
+                    WHEN 1 THEN N'{IsolationLevel.ReadUncommitted}'
+                    WHEN 2 THEN N'{IsolationLevel.ReadCommitted}'
+                    WHEN 3 THEN N'{IsolationLevel.RepeatableRead}'
+                    WHEN 4 THEN N'{IsolationLevel.Serializable}'
+                    WHEN 5 THEN N'{IsolationLevel.Snapshot}'
                 END
             FROM sys.dm_exec_sessions
             WHERE session_id = @@SPID";
@@ -128,7 +128,7 @@ namespace Tutorial.LinqToEntities
             using (DbConnection connection = new SqlConnection(ConnectionStrings.AdventureWorks))
             {
                 connection.Open();
-                using (DbTransaction transaction = connection.BeginTransaction(IsolationLevel.Serializable))
+                using (DbTransaction transaction = connection.BeginTransaction(IsolationLevel.RepeatableRead))
                 {
                     try
                     {
@@ -137,7 +137,7 @@ namespace Tutorial.LinqToEntities
                             adventureWorks.Database.CreateExecutionStrategy().Execute(() =>
                             {
                                 adventureWorks.Database.UseTransaction(transaction);
-                                adventureWorks.CurrentIsolationLevel().WriteLine(); // Serializable
+                                adventureWorks.CurrentIsolationLevel().WriteLine(); // RepeatableRead
 
                                 ProductCategory category = new ProductCategory() { Name = nameof(ProductCategory) };
                                 adventureWorks.ProductCategories.Add(category);
@@ -174,7 +174,7 @@ namespace Tutorial.LinqToEntities
                     scopeOption: TransactionScopeOption.Required,
                     transactionOptions: new TransactionOptions()
                     {
-                        IsolationLevel = System.Transactions.IsolationLevel.RepeatableRead
+                        IsolationLevel = System.Transactions.IsolationLevel.Serializable
                     }))
                 {
                     using (DbConnection connection = new SqlConnection(ConnectionStrings.AdventureWorks))
@@ -198,7 +198,7 @@ namespace Tutorial.LinqToEntities
 
                     using (AdventureWorks adventureWorks = new AdventureWorks())
                     {
-                        adventureWorks.CurrentIsolationLevel().WriteLine(); // RepeatableRead
+                        adventureWorks.CurrentIsolationLevel().WriteLine(); // Serializable
                     }
 
                     using (DbConnection connection = new SqlConnection(ConnectionStrings.AdventureWorks))

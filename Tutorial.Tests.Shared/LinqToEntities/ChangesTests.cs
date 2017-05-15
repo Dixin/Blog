@@ -26,7 +26,7 @@
     public class ChangesTests
     {
         [TestMethod]
-        public void TracingTest()
+        public void TrackingTest()
         {
             Tracking.EntitiesFromSameDbContext(new AdventureWorks());
             Tracking.ObjectsFromSameDbContext(new AdventureWorks());

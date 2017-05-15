@@ -2,17 +2,20 @@
 {
 #if NETFX
     using System.Data.Entity.Infrastructure;
-#endif
     using System.Diagnostics;
 
     using Tutorial.LinqToEntities;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+#else
+    using System.Diagnostics;
 
-#if !NETFX
     using Microsoft.EntityFrameworkCore;
-#endif
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+    using Tutorial.LinqToEntities;
+
     using static TransactionHelper;
+#endif
 
     [TestClass]
     public class ConcurrencyTests
