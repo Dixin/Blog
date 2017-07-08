@@ -119,7 +119,7 @@ const path = require("path"),
     getFileName = (post, url, index, count) => {
         const summary = post.summary ? common.removeReservedCharactersFromFileName(post.summary).trim() : "",
             extension = url.split(".").pop();
-        return `${post.blog_name} ${post.id} ${index || 0} ${summary ? ` ${summary.substring(0, count || 180)}` : ""}.${extension}`;
+        return `${post.blog_name} ${post.id} ${index || 0} ${summary ? ` ${summary.substring(0, count || 150)}` : ""}.${extension}`;
     },
 
     unlikePost = options => {

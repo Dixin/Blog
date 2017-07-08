@@ -84,8 +84,17 @@
                                 using (WebClient sectionClient = new WebClient())
                                 {
                                     sectionClient.Encoding = Encoding.UTF8;
-                                    CQ sectionPage = await sectionClient.DownloadStringTaskAsync(sectionUrl);
-
+                                    CQ sectionPage;
+                                    try
+                                    {
+                                        sectionPage = await sectionClient.DownloadStringTaskAsync(sectionUrl);
+                                    }
+                                    catch (Exception exception)
+                                    {
+                                        Trace.WriteLine($"Failed to download {sectionUrl}");
+                                        Trace.WriteLine(exception);
+                                        throw;
+                                    }
                                     CQ sectionArticle = sectionPage["article.blog-post"];
                                     sectionArticle.Children("header").Remove();
                                     Enumerable

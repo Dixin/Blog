@@ -133,6 +133,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="$(MSBuildThisFileDirectory)Blog.htm" />
+    <Content Include="$(MSBuildThisFileDirectory)BlogOriginal.htm" />
     <Content Include="$(MSBuildThisFileDirectory)Functional\AnonymousFunction.js" />
     <Content Include="$(MSBuildThisFileDirectory)Functional\Composition.hs" />
     <Content Include="$(MSBuildThisFileDirectory)Functional\Data.il" />
