@@ -22,7 +22,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)CategoryTheory\Monad.Reader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CategoryTheory\Monad.SelectMany.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CategoryTheory\Monad.State.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CategoryTheory\Monad.Try.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CategoryTheory\Monad.Exception.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CategoryTheory\Monad.Writer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CategoryTheory\Monoid.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CategoryTheory\MonoidalCategory.cs" />
