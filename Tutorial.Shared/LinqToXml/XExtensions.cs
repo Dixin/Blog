@@ -5,11 +5,8 @@
     using System.Linq;
     using System.Xml;
     using System.Xml.Linq;
-
-#if NETFX
     using System.Xml.Schema;
     using System.Xml.Xsl;
-#endif
 
     public static partial class XExtensions
     {
@@ -131,7 +128,6 @@
         public static string XPath(this XAttribute source, string parentXPath = null) =>
             CombineXPath(parentXPath ?? source.Parent?.XPath(), $"@{source.Name.XPath(source.Parent)}");
 
-#if NETFX
         public static XmlSchemaSet InferSchema(this XNode source)
         {
             XmlSchemaInference schemaInference = new XmlSchemaInference();
@@ -140,9 +136,7 @@
                 return schemaInference.InferSchema(reader);
             }
         }
-#endif
 
-#if NETFX
         public static XDocument ToXDocument(this XmlSchema source)
         {
             XDocument document = new XDocument();
@@ -152,9 +146,7 @@
             }
             return document;
         }
-#endif
 
-#if NETFX
         public static IEnumerable<(XObject, string, IXmlSchemaInfo)> GetValidities(this XElement source, string parentXPath = null)
         {
             string xPath = source.XPath(parentXPath);
@@ -167,9 +159,7 @@
                     .Elements()
                     .SelectMany(child => child.GetValidities(xPath)));
         }
-#endif
 
-#if NETFX
         public static XDocument XslTransform(this XNode source, XNode xsl)
         {
             XDocument result = new XDocument();
@@ -183,6 +173,5 @@
                 return result;
             }
         }
-#endif
     }
 }

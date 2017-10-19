@@ -1,21 +1,11 @@
 ﻿namespace Tutorial.LinqToXml
 {
-#if NETFX
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Xml;
     using System.Xml.Linq;
-#else
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Net;
-    using System.Xml;
-    using System.Xml.Linq;
-#endif
 
     internal static partial class Modeling
     {
@@ -123,66 +113,26 @@
             XNode.DeepEquals(element1, element3).WriteLine(); // False
         }
 
-        internal static XDocument LoadXDocument(string uri)
-        {
-#if NETFX
-            return XDocument.Load(uri);
-#else
-            WebRequest request = WebRequest.Create(uri);
-            using (WebResponse response = request.EndGetResponse(request.BeginGetResponse(null, null)))
-            using (Stream downloadStream = response.GetResponseStream())
-            {
-                return XDocument.Load(downloadStream);
-            }
-#endif
-        }
-
-        internal static XElement LoadXElement(string uri)
-        {
-#if NETFX
-            return XElement.Load(uri);
-#else
-            WebRequest request = WebRequest.Create(uri);
-            using (WebResponse response = request.EndGetResponse(request.BeginGetResponse(null, null)))
-            using (Stream downloadStream = response.GetResponseStream())
-            {
-                return XElement.Load(downloadStream);
-            }
-#endif
-        }
-
-        internal static XmlReader CreateReader(string uri)
-        {
-#if NETFX
-            return XmlReader.Create(uri);
-#else
-            WebRequest request = WebRequest.Create(uri);
-            WebResponse response = request.EndGetResponse(request.BeginGetResponse(null, null));
-            Stream downloadStream = response.GetResponseStream();
-            return XmlReader.Create(downloadStream);
-#endif
-        }
-
         internal static void Read()
         {
-            using (XmlReader reader = CreateReader("https://weblogs.asp.net/dixin/rss"))
+            using (XmlReader reader = XmlReader.Create("https://weblogs.asp.net/dixin/rss"))
             {
                 reader.MoveToContent();
                 XNode node = XNode.ReadFrom(reader);
             }
 
             XElement element1 = XElement.Parse("<html><head></head><body></body></html>");
-            XElement element2 = LoadXElement("https://weblogs.asp.net/dixin/rss");
+            XElement element2 = XElement.Load("https://weblogs.asp.net/dixin/rss");
 
             XDocument document1 = XDocument.Parse("<html><head></head><body></body></html>");
-            XDocument document2 = LoadXDocument("https://microsoft.com"); // Succeed.
-            XDocument document3 = LoadXDocument("https://asp.net"); // Fail.
+            XDocument document2 = XDocument.Load("https://microsoft.com"); // Succeed.
+            XDocument document3 = XDocument.Load("https://asp.net"); // Fail.
             // System.Xml.XmlException: The 'ul' start tag on line 68 position 116 does not match the end tag of 'div'. Line 154, position 109.
         }
 
         internal static IEnumerable<XElement> RssItems(string rssUri)
         {
-            using (XmlReader reader = CreateReader(rssUri))
+            using (XmlReader reader = XmlReader.Create(rssUri))
             {
                 reader.MoveToContent();
                 while (reader.Read())
@@ -197,7 +147,7 @@
 
         internal static void Write()
         {
-            XDocument document1 = LoadXDocument("https://weblogs.asp.net/dixin/rss");
+            XDocument document1 = XDocument.Load("https://weblogs.asp.net/dixin/rss");
             using (FileStream stream = File.OpenWrite(Path.GetTempFileName()))
             {
                 document1.Save(stream);

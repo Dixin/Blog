@@ -23,7 +23,6 @@
             Manipulation.Annotation();
         }
 
-#if NETFX
         [TestMethod]
         public void TransformTest()
         {
@@ -38,6 +37,5 @@
             Manipulation.Validate();
             Manipulation.GetSchemaInfo();
         }
-#endif
     }
 }

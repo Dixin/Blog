@@ -117,7 +117,7 @@
         private SinglyLinkedListNode<T> node; // State.
 
         internal LinkedListIterator(SinglyLinkedListNode<T> head) =>
-            this.node = new SinglyLinkedListNode<T>(default(T), head);
+            this.node = new SinglyLinkedListNode<T>(default, head);
 
         public override bool MoveNext()
         {

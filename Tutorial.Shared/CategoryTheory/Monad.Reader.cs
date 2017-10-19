@@ -36,13 +36,13 @@
     public static partial class ReaderExtensions
     {
         private static Reader<IConfiguration, FileInfo> DownloadHtml(Uri uri) =>
-            configuration => default(FileInfo);
+            configuration => default;
 
         private static Reader<IConfiguration, FileInfo> ConverToWord(FileInfo htmlDocument, FileInfo template) =>
-            configuration => default(FileInfo);
+            configuration => default;
 
         private static Reader<IConfiguration, Unit> UploadToOneDrive(FileInfo file) =>
-            configuration => default(Unit);
+            configuration => default;
 
         internal static void Workflow(IConfiguration configuration, Uri uri, FileInfo template)
         {

@@ -60,7 +60,7 @@
     public static partial class ChurchAggregateListNodeWrapper
     {
         // Value = node => ignore => node(value => _ => value)(ignore)
-        public static T Value<T>(this AggregateListNodeWrapper<T> node, T ignore = default(T)) =>
+        public static T Value<T>(this AggregateListNodeWrapper<T> node, T ignore = default) =>
             node.Invoke<T>(_ => value => value)(ignore);
 
         // https://books.google.com/books?id=1Sm6BQAAQBAJ&pg=PA172&lpg=PA172&dq=church+list+fold+haskell&source=bl&ots=gJccvSeeWw&sig=Zsqfb94JjyF0lWt1veJEfREhHsg&hl=en&sa=X&ei=S07HVMy7EIzjoAT1tID4BQ&ved=0CEYQ6AEwBzgK#v=onepage&q=church%20list%20fold%20haskell&f=false

@@ -7,7 +7,6 @@
     using System.Xml.Linq;
     using System.Xml.XPath;
 
-    using static Modeling;
     using static Tutorial.LinqToObjects.EnumerableX;
 
     internal static partial class QueryMethods
@@ -34,7 +33,7 @@
     {
         internal static void ChildElements()
         {
-            XDocument rss = LoadXDocument("https://weblogs.asp.net/dixin/rss");
+            XDocument rss = XDocument.Load("https://weblogs.asp.net/dixin/rss");
             IEnumerable<string> categories = rss
                 .Root // <rss>.
                 .Element("channel") // Single <channel> under <rss>.
@@ -98,13 +97,13 @@
 
         internal static void ResultReferences()
         {
-            XDocument rss1 = LoadXDocument("https://weblogs.asp.net/dixin/rss");
+            XDocument rss1 = XDocument.Load("https://weblogs.asp.net/dixin/rss");
             XElement[] items1 = rss1.Descendants("item").ToArray();
             XElement[] items2 = rss1.Element("rss").Element("channel").Elements("item").ToArray();
             object.ReferenceEquals(items1.First(), items2.First()).WriteLine(); // True
             items1.SequenceEqual(items2).WriteLine(); // True
 
-            XDocument rss2 = LoadXDocument("https://weblogs.asp.net/dixin/rss");
+            XDocument rss2 = XDocument.Load("https://weblogs.asp.net/dixin/rss");
             XElement[] items3 = rss2.Root.Descendants("item").ToArray();
             object.ReferenceEquals(items1.First(), items3.First()).WriteLine(); // False
             items1.SequenceEqual(items3).WriteLine(); // False
@@ -164,7 +163,7 @@
 
         internal static void XPathNavigator()
         {
-            XDocument rss = LoadXDocument("https://weblogs.asp.net/dixin/rss");
+            XDocument rss = XDocument.Load("https://weblogs.asp.net/dixin/rss");
             XPathNavigator rssNavigator = rss.CreateNavigator();
             rssNavigator.NodeType.WriteLine(); // Root
             rssNavigator.MoveToFirstChild().WriteLine(); // True
@@ -189,7 +188,7 @@
 
         internal static void XPathQuery()
         {
-            XDocument rss = LoadXDocument("https://weblogs.asp.net/dixin/rss");
+            XDocument rss = XDocument.Load("https://weblogs.asp.net/dixin/rss");
             rss
                 .XPathSelectElements("/rss/channel/item[guid/@isPermaLink='true']/category")
                 .GroupBy(
@@ -206,7 +205,7 @@
 
         internal static void XPathQueryWithNamespace()
         {
-            XDocument rss = LoadXDocument("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2");
+            XDocument rss = XDocument.Load("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2");
             XmlNamespaceManager namespaceManager = rss.CreateNamespaceManager();
             IEnumerable<XElement> query1 = rss.XPathSelectElements("/rss/channel/item/media:category", namespaceManager);
             query1.Count().WriteLine(); // 20
@@ -217,7 +216,7 @@
 
         internal static void XPathEvaluateValue()
         {
-            XDocument rss = LoadXDocument("https://weblogs.asp.net/dixin/rss");
+            XDocument rss = XDocument.Load("https://weblogs.asp.net/dixin/rss");
             double average1 = (double)rss.XPathEvaluate("count(/rss/channel/item/category) div count(/rss/channel/item)");
             average1.WriteLine(); // 4.65
 
@@ -231,7 +230,7 @@
 
         internal static void XPathEvaluateSequence()
         {
-            XDocument rss = LoadXDocument("https://weblogs.asp.net/dixin/rss");
+            XDocument rss = XDocument.Load("https://weblogs.asp.net/dixin/rss");
             ((IEnumerable<object>)rss
                 .XPathEvaluate("/rss/channel/item[guid/@isPermaLink='true']/category/text()"))
                 .Cast<XText>()
@@ -249,7 +248,7 @@
 
         internal static void XPathEvaluateSequenceWithNamespace()
         {
-            XDocument rss = LoadXDocument("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2");
+            XDocument rss = XDocument.Load("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2");
             ((IEnumerable<object>)rss
                 .XPathEvaluate(
                     "/rss/channel/item[contains(media:category/text(), 'microsoft')]/media:title/text()",
@@ -262,7 +261,7 @@
 
         internal static void GenerateXPath()
         {
-            XDocument aspNetRss = LoadXDocument("https://weblogs.asp.net/dixin/rss");
+            XDocument aspNetRss = XDocument.Load("https://weblogs.asp.net/dixin/rss");
             XElement element1 = aspNetRss
                 .Root
                 .Element("channel")
@@ -272,7 +271,7 @@
             XElement element2 = aspNetRss.XPathSelectElement(element1.XPath());
             object.ReferenceEquals(element1, element2).WriteLine(); // True
 
-            XDocument flickrRss = LoadXDocument("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2");
+            XDocument flickrRss = XDocument.Load("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2");
             XAttribute attribute1 = flickrRss
                 .Root
                 .Descendants("author") // <author flickr:profile="https://www.flickr.com/people/dixin/">...</author>.

@@ -58,7 +58,7 @@
 
         // Unit: Unit -> TMonad<Unit>
         public static TMonad<Unit> Unit<TMonad<>>(
-            Unit unit = default(Unit)) where TMonad<> : IMonad<TMonad<>> => unit.Wrap();
+            Unit unit = default) where TMonad<> : IMonad<TMonad<>> => unit.Wrap();
     }
 
     // Cannot be compiled.
@@ -88,7 +88,7 @@
                 // source1.Select(value1 => source2.Select(value2 => (value1, value2))).Multiply();
 
         // Unit: Unit -> TMonad<Unit>
-        public static TMonad<Unit> Unit<TMonad<>>(Unit unit = default(Unit)) where TMonad<> : IMonad<TMonad<>> => 
+        public static TMonad<Unit> Unit<TMonad<>>(Unit unit = default) where TMonad<> : IMonad<TMonad<>> => 
             TMonad<Unit>.Unit<Unit>(unit);
     }
 
@@ -232,7 +232,7 @@
                 //    .Multiply();
 
         // Unit: Unit -> IEnumerable<Unit>
-        public static IEnumerable<Unit> Unit(Unit unit = default(Unit)) => Unit<Unit>(unit);
+        public static IEnumerable<Unit> Unit(Unit unit = default) => Unit<Unit>(unit);
     }
 
     public static partial class EnumerableExtensions // IEnumerable<T> : IApplicativeFunctor<IEnumerable<>>
@@ -262,7 +262,7 @@
                 // source1.SelectMany(value1 => source2, (value1, value2) => (value1, value2));
 
         // Unit: Unit -> IEnumerable<Unit>
-        public static IEnumerable<Unit> Unit(Unit unit = default(Unit)) => unit.Enumerable();
+        public static IEnumerable<Unit> Unit(Unit unit = default) => unit.Enumerable();
     }
 
     public static partial class EnumerableExtensions // IEnumerable<T> : IApplicativeFunctor<IEnumerable<>>
@@ -531,7 +531,7 @@
                             return (true, resultSelector(source.Value, result.Value));
                         }
                     }
-                    return (false, default(TResult));
+                    return (false, default);
                 });
     }
 
@@ -542,9 +542,9 @@
             string input;
             Optional<string> query =
                 from filePath in new Optional<string>(() => string.IsNullOrWhiteSpace(input = Console.ReadLine())
-                    ? (false, default(string)) : (true, input))
+                    ? (false, default) : (true, input))
                 from encodingName in new Optional<string>(() => string.IsNullOrWhiteSpace(input = Console.ReadLine())
-                    ? (false, default(string)) : (true, input))
+                    ? (false, default) : (true, input))
                 from encoding in new Optional<Encoding>(() =>
                     {
                         try
@@ -553,11 +553,11 @@
                         }
                         catch (ArgumentException)
                         {
-                            return (false, default(Encoding));
+                            return (false, default);
                         }
                     })
                 from fileContent in new Optional<string>(() => File.Exists(filePath)
-                    ? (true, File.ReadAllText(filePath, encoding)) : (false, default(string)))
+                    ? (true, File.ReadAllText(filePath, encoding)) : (false, default))
                 select fileContent; // Define query.
             if (query.HasValue) // Execute query.
             {
@@ -721,7 +721,7 @@
             Func<Unit, TSelector, TResult> resultSelector)
         {
             await source;
-            return resultSelector(default(Unit), await selector(default(Unit)));
+            return resultSelector(default, await selector(default));
         }
 
         // SelectMany: (Task<TSource>, TSource -> Task, (TSource, Unit) -> TResult) -> Task<TResult>
@@ -731,7 +731,7 @@
             Func<TSource, Unit, TResult> resultSelector)
         {
             await selector(await source);
-            return resultSelector(await source, default(Unit));
+            return resultSelector(await source, default);
         }
 
         // Select: (Unit -> TResult) -> (Task -> Task<TResult>)

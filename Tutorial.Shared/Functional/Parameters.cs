@@ -57,10 +57,10 @@
     {
         internal static void Default()
         {
-            Point defaultReference = default(Point);
+            Point defaultReference = default;
             Trace.WriteLine(defaultReference is null); // True
 
-            ValuePoint defaultValue = default(ValuePoint);
+            ValuePoint defaultValue = default;
             Trace.WriteLine(defaultValue.X); // 0
             Trace.WriteLine(defaultValue.Y); // 0
         }
@@ -185,9 +185,9 @@
             PassByValue(value: GetInt32(), reference: GetUri()); // Call GetInt32 then GetUri.
         }
 
-        internal static Uri GetUri() { return default(Uri); }
+        internal static Uri GetUri() { return default; }
 
-        internal static int GetInt32() { return default(int); }
+        internal static int GetInt32() { return default; }
 
         internal static void CompiledNamedArgument()
         {
@@ -207,7 +207,7 @@
             bool required1, char required2,
             int optional1 = int.MaxValue, string optional2 = "Default value.",
             Uri optional3 = null, Guid optional4 = new Guid(),
-            Uri optional5 = default(Uri), Guid optional6 = default(Guid)) { }
+            Uri optional5 = default, Guid optional6 = default) { }
 
         internal static void CallOptional()
         {

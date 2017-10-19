@@ -81,7 +81,7 @@
                 new Func<T1, T2, (T1, T2)>(ValueTuple.Create).Curry().Wrap().Apply(source1).Apply(source2);
 
         // Unit: Unit -> TApplicativeFunctor<Unit>
-        public static TApplicativeFunctor<Unit> Unit<TApplicativeFunctor<>>(Unit unit = default(Unit))
+        public static TApplicativeFunctor<Unit> Unit<TApplicativeFunctor<>>(Unit unit = default)
             where TApplicativeFunctor<> : IApplicativeFunctor<TApplicativeFunctor<>> => unit.Wrap();
     }
 #endif
@@ -106,7 +106,7 @@
         }
 
         // Unit: Unit -> IEnumerable<Unit>
-        public static IEnumerable<Unit> Unit(Unit unit = default(Unit))
+        public static IEnumerable<Unit> Unit(Unit unit = default)
         {
             yield return unit;
         }
@@ -202,7 +202,7 @@
                 new Func<T1, T2, (T1, T2)>(ValueTuple.Create).Curry().Enumerable().Apply(source1).Apply(source2);
 
         // Unit: Unit -> IEnumerable<Unit>
-        public static IEnumerable<Unit> Unit(Unit unit = default(Unit)) => unit.Enumerable();
+        public static IEnumerable<Unit> Unit(Unit unit = default) => unit.Enumerable();
     }
 #endif
 
@@ -280,7 +280,7 @@
             new Lazy<(T1, T2)>(() => (source1.Value, source2.Value));
 
         // Unit: Unit -> Lazy<Unit>
-        public static Lazy<Unit> Unit(Unit unit = default(Unit)) => new Lazy<Unit>(() => unit);
+        public static Lazy<Unit> Unit(Unit unit = default) => new Lazy<Unit>(() => unit);
     }
 
     public static partial class LazyExtensions // Lazy<T> : IApplicativeFunctor<Lazy<>>
@@ -306,7 +306,7 @@
             () => (source1(), source2());
 
         // Unit: Unit -> Func<Unit>
-        public static Func<Unit> Unit(Unit unit = default(Unit)) => () => unit;
+        public static Func<Unit> Unit(Unit unit = default) => () => unit;
     }
 
     public static partial class FuncExtensions // Func<T> : IApplicativeFunctor<Func<>>
@@ -332,7 +332,7 @@
             value => (source1(value), source2(value));
 
         // Unit: Unit -> Func<T, Unit>
-        public static Func<T, Unit> Unit<T>(Unit unit = default(Unit)) => _ => unit;
+        public static Func<T, Unit> Unit<T>(Unit unit = default) => _ => unit;
     }
 
     public static partial class FuncExtensions // Func<T, TResult> : IApplicativeFunctor<Func<T,>>
@@ -357,10 +357,10 @@
         public static Optional<(T1, T2)> Multiply<T1, T2>(this Optional<T1> source1, Optional<T2> source2) =>
             new Optional<(T1, T2)>(() => source1.HasValue && source2.HasValue
                 ? (true, (source1.Value, source2.Value))
-                : (false, (default(T1), default(T2))));
+                : (false, (default, default)));
 
         // Unit: Unit -> Optional<Unit>
-        public static Optional<Unit> Unit(Unit unit = default(Unit)) =>
+        public static Optional<Unit> Unit(Unit unit = default) =>
             new Optional<Unit>(() => (true, unit));
     }
 
@@ -387,7 +387,7 @@
             new ValueTuple<(T1, T2)>((source1.Item1, source2.Item1)); // Immediate execution.
 
         // Unit: Unit -> ValueTuple<Unit>
-        public static ValueTuple<Unit> Unit(Unit unit = default(Unit)) => new ValueTuple<Unit>(unit);
+        public static ValueTuple<Unit> Unit(Unit unit = default) => new ValueTuple<Unit>(unit);
     }
 
     public static partial class ValueTupleExtensions // ValueTuple<T> : IApplicativeFunctor<ValueTuple<>>
@@ -413,7 +413,7 @@
             (source1.Item1, (source1.Item2, source2.Item2)); // Immediate execution.
 
         // Unit: Unit -> ValueTuple<Unit>
-        public static (T, Unit) Unit<T>(Unit unit = default(Unit)) => (default(T), unit);
+        public static (T, Unit) Unit<T>(Unit unit = default) => (default, unit);
     }
 
     public static partial class ValueTupleExtensions // ValueTuple<T, TResult> : IApplicativeFunctor<ValueTuple<T,>>
@@ -489,7 +489,7 @@
             ((await source1), (await source2)); // Immediate execution, impure.
 
         // Unit: Unit -> Task<Unit>
-        public static Task<Unit> Unit(Unit unit = default(Unit)) => System.Threading.Tasks.Task.FromResult(unit);
+        public static Task<Unit> Unit(Unit unit = default) => System.Threading.Tasks.Task.FromResult(unit);
     }
 
     public static partial class TaskExtensions // Task<T> : IApplicativeFunctor<Task<>>

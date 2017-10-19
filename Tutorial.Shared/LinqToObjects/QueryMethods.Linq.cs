@@ -27,10 +27,13 @@
     using System.Collections.Immutable;
     using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
+    using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Resources;
 
     using Tutorial.Functional;
+    using Tutorial.Resources;
 #endif
 
     internal class Person
@@ -784,7 +787,6 @@
         }
 #endif
 
-#if NETFX
         internal static void CastMoreNonGeneric()
         {
             // ResourceSet implements IEnumerable.
@@ -800,7 +802,6 @@
                 IEnumerable<DictionaryEntry> entries2 = resourceReader.Cast<DictionaryEntry>();
             }
         }
-#endif
 
         internal static void CastGenericIEnumerable()
         {

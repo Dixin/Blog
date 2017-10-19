@@ -66,7 +66,7 @@
                     case IteratorState.MoveNext:
                         if (this.moveNext?.Invoke() ?? false)
                         {
-                            this.Current = this.getCurrent != null ? this.getCurrent() : default(T);
+                            this.Current = this.getCurrent != null ? this.getCurrent() : default;
                             return true; // IteratorState: MoveNext => MoveNext.
                         }
                         this.State = IteratorState.End; // IteratorState: MoveNext => End.
@@ -134,7 +134,7 @@
                 dispose?.Invoke();
                 if (resetCurrent)
                 {
-                    this.Current = default(T);
+                    this.Current = default;
                 }
             };
             this.end = end;
@@ -166,7 +166,7 @@
                     case IteratorState.MoveNext:
                         if (this.moveNext?.Invoke() ?? false)
                         {
-                            this.Current = this.getCurrent != null ? this.getCurrent() : default(T);
+                            this.Current = this.getCurrent != null ? this.getCurrent() : default;
                             return true; // IteratorState: MoveNext => MoveNext.
                         }
                         this.State = IteratorState.End; // IteratorState: MoveNext => End.
@@ -283,7 +283,7 @@
         private TData data;
 
         public Generator(
-            TData data = default(TData),
+            TData data = default,
             Func<TData, TData> start = null,
             Func<TData, (bool, TData)> moveNext = null,
             Func<TData, T> getCurrent = null,
@@ -293,7 +293,7 @@
             this.data = data;
             this.start = start ?? (currentData => currentData);
             this.moveNext = moveNext ?? (currentData => (false, currentData));
-            this.getCurrent = getCurrent ?? (currentData => default(T));
+            this.getCurrent = getCurrent ?? (currentData => default);
             this.dispose = dispose ?? (currentData => { });
             this.end = end ?? (currentData => { });
         }
@@ -388,7 +388,7 @@
     public static class Generator
     {
         public static Generator<T, TData> Create<T, TData>(
-            TData data = default(TData),
+            TData data = default,
             Func<TData, TData> start = null,
             Func<TData, (bool, TData)> moveNext = null,
             Func<TData, T> getCurrent = null,

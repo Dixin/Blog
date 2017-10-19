@@ -14,8 +14,8 @@
 	.param [4] = "Default value." // optional2 = "Default value."
 	.param [5] = nullref // optional3 = null
 	.param [6] = nullref // optional4 = new Guid()
-	.param [7] = nullref // optional5 = default(Uri)
-	.param [8] = nullref // optional6 = default(Guid)
+	.param [7] = nullref // optional5 = default
+	.param [8] = nullref // optional6 = default
 
 	.maxstack 8
 

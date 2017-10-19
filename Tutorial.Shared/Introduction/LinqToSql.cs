@@ -1,15 +1,13 @@
+#if NETFX
 namespace Tutorial.Introduction
 {
-#if NETFX
     using System.Diagnostics;
     using System.Linq;
 
     using Tutorial.LinqToSql;
-#endif
 
     internal static partial class Linq
     {
-#if NETFX
         internal static void LinqToSql()
         {
             using (AdventureWorks adventureWorks = new AdventureWorks())
@@ -30,6 +28,6 @@ namespace Tutorial.Introduction
                 }
             }
         }
-#endif
     }
 }
+#endif

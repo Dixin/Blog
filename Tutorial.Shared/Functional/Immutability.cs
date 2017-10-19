@@ -239,7 +239,7 @@
         internal static ValueTuple<string, decimal> Method(ValueTuple<string, decimal> values)
         {
             ValueTuple<string, decimal> variable1;
-            ValueTuple<string, decimal> variable2 = default(ValueTuple<string, decimal>);
+            ValueTuple<string, decimal> variable2 = default;
             IEnumerable<ValueTuple<string, decimal>> variable3;
             return values;
         }
@@ -248,7 +248,7 @@
         internal static var Method(var values) // Cannot be compiled.
         {
             var variable1; // Cannot be compiled.
-            var variable2 = default(var); // Cannot be compiled.
+            var variable2 = default; // Cannot be compiled.
             IEnumerable<var> variable3; // Cannot be compiled.
             return values;
         }
@@ -268,8 +268,8 @@
         internal static (string, decimal) MethodReturnMultipleValues()
         // internal static ValueTuple<string, decimal> MethodReturnMultipleValues()
         {
-            string returnValue1 = default(string);
-            int returnValue2 = default(int);
+            string returnValue1 = default;
+            int returnValue2 = default;
 
             (string, decimal) Function() => (returnValue1, returnValue2);
             // ValueTuple<string, decimal> Function() => new ValueTuple<string, decimal>(returnValue1, returnValue2);

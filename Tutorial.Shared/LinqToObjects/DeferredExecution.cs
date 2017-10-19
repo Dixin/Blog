@@ -244,7 +244,7 @@
 
         internal static IEnumerable<TSource> CompiledReverseGenerator<TSource>(this IEnumerable<TSource> source) =>
             new Generator<TSource, (TSource[] Values, int Index)>(
-                data: default((TSource[], int)), // (TSource[] Values, int Index) data = default((TSource[], int));
+                data: default, // (TSource[] Values, int Index) data = default;
                 iteratorFactory: data => new Iterator<TSource>(
                     start: () =>
                     {

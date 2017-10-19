@@ -195,11 +195,7 @@ namespace Tutorial.Tests.LinqToXml
             Assert.AreEqual("/element/text()", element7.Elements().Single().Nodes().OfType<XText>().Single().XPath());
             Assert.AreEqual(
                 (element7.XPathEvaluate(element7.Elements().Single().Nodes().OfType<XText>().Single().XPath()) as IEnumerable<object>)
-#if NETFX
                     .Single(),
-#else
-                    .First(), // Or: Distinct().Single(),
-#endif
                 element7.Elements().Single().Nodes().OfType<XText>().Single());
             document.Add(element7);
             Assert.AreEqual("/root/element/text()", element7.Elements().Single().Nodes().OfType<XText>().Single().XPath());
@@ -208,20 +204,12 @@ namespace Tutorial.Tests.LinqToXml
             Assert.AreEqual("/text()[1]", (element8.FirstNode as XText).XPath());
             Assert.AreEqual(
                 (element8.XPathEvaluate((element8.FirstNode as XText).XPath()) as IEnumerable<object>)
-#if NETFX
                     .Single(),
-#else
-                    .First(), // Or: Distinct().Single(),
-#endif
                 element8.FirstNode);
             Assert.AreEqual("/text()[2]", (element8.LastNode as XText).XPath());
             Assert.AreEqual(
                 (element8.XPathEvaluate((element8.LastNode as XText).XPath()) as IEnumerable<object>)
-#if NETFX
                     .Single(),
-#else
-                    .First(),
-#endif
                 element8.LastNode);
         }
     }

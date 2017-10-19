@@ -71,11 +71,11 @@
 
         internal static void Action() { }
 
-        internal static T Func<T>() => default(T);
+        internal static T Func<T>() => default;
 
-        internal static Task ActionAsync() => default(Task);
+        internal static Task ActionAsync() => default;
 
-        internal static Task<T> FuncAsync<T>(T value) => default(Task<T>);
+        internal static Task<T> FuncAsync<T>(T value) => default;
 
         internal static void ReadWrite(string readPath, string writePath)
         {

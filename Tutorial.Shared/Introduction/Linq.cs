@@ -84,27 +84,23 @@
             query.ForAll(result => Trace.WriteLine(result)); // Execute query.
         }
 
-        internal static async Task LinqToXml()
+        internal static void LinqToXml()
         {
-            using (HttpClient httpClient = new HttpClient())
-            using (Stream downloadStream = await httpClient.GetStreamAsync("https://weblogs.asp.net/dixin/rss"))
+            XDocument feed = XDocument.Load("https://weblogs.asp.net/dixin/rss");
+            IEnumerable<XElement> source = feed.Descendants("item"); // Get source.
+            IEnumerable<string> query =
+                from item in source
+                where (bool)item.Element("guid").Attribute("isPermaLink")
+                orderby (DateTime)item.Element("pubDate")
+                select (string)item.Element("title"); // Define query.
+            // Equivalent to:
+            // IEnumerable<string> query = source
+            //    .Where(item => (bool)item.Element("guid").Attribute("isPermaLink"))
+            //    .OrderBy(item => (DateTime)item.Element("pubDate"))
+            //    .Select(item => (string)item.Element("title"));
+            foreach (string result in query) // Execute query.
             {
-                XDocument feed = XDocument.Load(downloadStream);
-                IEnumerable<XElement> source = feed.Descendants("item"); // Get source.
-                IEnumerable<string> query =
-                    from item in source
-                    where (bool)item.Element("guid").Attribute("isPermaLink")
-                    orderby (DateTime)item.Element("pubDate")
-                    select (string)item.Element("title"); // Define query.
-                // Equivalent to:
-                // IEnumerable<string> query = source
-                //    .Where(item => (bool)item.Element("guid").Attribute("isPermaLink"))
-                //    .OrderBy(item => (DateTime)item.Element("pubDate"))
-                //    .Select(item => (string)item.Element("title"));
-                foreach (string result in query) // Execute query.
-                {
-                    Trace.WriteLine(result);
-                }
+                Trace.WriteLine(result);
             }
         }
 

@@ -26,7 +26,7 @@
     {
         internal static void CompiledSelectInt32()
         {
-            int mapped1 = Int32Extensions.Select(default(int), zero => zero); // 0
+            int mapped1 = Int32Extensions.Select(default, zero => zero); // 0
             double mapped2 = Int32Extensions.Select(1 + 2, three => Math.Sqrt(three + 1)); // 2
         }
     }

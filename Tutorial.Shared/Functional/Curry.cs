@@ -45,10 +45,10 @@
         {
             // (T1, T2, T3, ... TN) -> TResult
             Func<T1, T2, T3, /* T4, ... */ TN, TResult> function =
-                (value1, value2, value3, /* ... */ valueN) => default(TResult);
+                (value1, value2, value3, /* ... */ valueN) => default;
             // T1 -> T2 -> T3 -> ... TN -> TResult
             Func<T1, Func<T2, Func<T3, /* Func<T4, ... */ Func<TN, TResult> /* ... */>>> curriedFunction =
-                value1 => value2 => value3 => /* value4 => ... */ valueN => default(TResult);
+                value1 => value2 => value3 => /* value4 => ... */ valueN => default;
         }
 
         internal static void CallCurry()
@@ -116,8 +116,8 @@
         internal static void OperatorAssociativity<T1, T2, T3, TN, TResult>()
         {
             Func<T1, Func<T2, Func<T3, /* Func<T4, ... */ Func<TN, TResult> /* ... */>>> curriedFunction =
-                value1 => (value2 => (value3 => /* (value4 => ... */ valueN => default(TResult) /* )... */));
-            curriedFunction = value1 => value2 => value3 => /* value4 => ... */ valueN => default(TResult);
+                value1 => (value2 => (value3 => /* (value4 => ... */ valueN => default /* )... */));
+            curriedFunction = value1 => value2 => value3 => /* value4 => ... */ valueN => default;
         }
 
         internal static void PartialApplication()

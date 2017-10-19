@@ -50,7 +50,7 @@
 
         // SetState: TState -> State<TState, Unit>
         public static State<TState, Unit> SetState<TState>(TState newState) =>
-            oldState => (default(Unit), newState); // Output new state.
+            oldState => (default, newState); // Output new state.
     }
 
     public static partial class StateExtensions
@@ -69,7 +69,7 @@
                 from state1 in GetState<string>() // GetState<int>(): State<string, string> = initialState => (initialState, initialState).
                 from value2 in source2 // source2: State<string, bool>3 = initialState => (true, newState).
                 from state2 in GetState<string>() // GetState<int>(): State<string, string> = newState => (newState, newState).
-                from unit in SetState(resetState) // SetState(resetState): State<string, Unit> = newState => (default(Unit), resetState).
+                from unit in SetState(resetState) // SetState(resetState): State<string, Unit> = newState => (default, resetState).
                 from state3 in GetState<string>() // GetState(): State<string, string> = resetState => (resetState, resetState).
                 from value3 in source3 // source3: State<string, char> = resetState => (@, resetState).
                 select new string[] { state1, state2, state3 }; // Define query.
@@ -141,7 +141,7 @@
             oldStack =>
             {
                 IEnumerable<T> newStack = oldStack.Concat(value.Enumerable());
-                return (default(Unit), newStack); // Output new state.
+                return (default, newStack); // Output new state.
             };
 
         internal static void Stack()

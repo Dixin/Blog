@@ -11,7 +11,6 @@
     using Microsoft.ConcurrencyVisualizer.Instrumentation;
 
     using static Functions;
-    using static Tutorial.LinqToXml.Modeling;
 
     using EnumerableX = Tutorial.LinqToObjects.EnumerableX;
     using Stopwatch = System.Diagnostics.Stopwatch;
@@ -24,7 +23,6 @@
     using System.Xml.Linq;
 
     using static Functions;
-    using static Tutorial.LinqToXml.Modeling;
 
     using EnumerableX = Tutorial.LinqToObjects.EnumerableX;
     using Stopwatch = System.Diagnostics.Stopwatch;
@@ -110,7 +108,7 @@
         internal static void RunDownloadSmallFilesTest()
         {
             string[] thumbnails = 
-                LoadXDocument("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2")
+                XDocument.Load("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2")
                 .Descendants((XNamespace)"http://search.yahoo.com/mrss/" + "thumbnail")
                 .Attributes("url")
                 .Select(uri => (string)uri)
@@ -121,7 +119,7 @@
         internal static void RunDownloadLargeFilesTest()
         {
             string[] contents = 
-                LoadXDocument("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2")
+                XDocument.Load("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2")
                 .Descendants((XNamespace)"http://search.yahoo.com/mrss/" + "content")
                 .Attributes("url")
                 .Select(uri => (string)uri)

@@ -1,19 +1,16 @@
 ﻿namespace Tutorial.Tests.LinqToEntities
 {
+#if NETFX
+    using System;
+    using System.Transactions;
+
+    using Tutorial.LinqToEntities;
+#else
     using System;
     using System.Data.Common;
-#if NETFX
-    using System.Data.Entity.Infrastructure;
-#endif
     using System.Data.SqlClient;
-#if NETFX
-    using System.Transactions;
-#endif
 
-    using Tutorial;
     using Tutorial.LinqToEntities;
-
-#if !NETFX
     using Microsoft.EntityFrameworkCore;
 #endif
 

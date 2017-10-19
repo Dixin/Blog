@@ -105,7 +105,7 @@
             continuation =>
             {
                 action();
-                return continuation(default(Unit));
+                return continuation(default);
             };
 
         internal static void Workflow<TContinuation>(Func<string, TContinuation> continuation)

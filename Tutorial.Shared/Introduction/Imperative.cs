@@ -122,7 +122,7 @@
     {
         internal FileInfo Download(Uri uri)
         {
-            return default(FileInfo);
+            return default;
         }
     }
 
@@ -137,7 +137,7 @@
 
         internal FileInfo ToWord(FileInfo htmlDocument)
         {
-            return default(FileInfo);
+            return default;
         }
     }
 

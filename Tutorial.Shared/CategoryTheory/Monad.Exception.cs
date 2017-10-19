@@ -17,7 +17,7 @@
                 }
                 catch (Exception exception)
                 {
-                    return (default(T), exception);
+                    return (default, exception);
                 }
             });
 
@@ -51,12 +51,12 @@
                 {
                     if (source.HasException)
                     {
-                        return (default(TResult), source.Exception);
+                        return (default, source.Exception);
                     }
                     Try<TSelector> result = selector(source.Value);
                     if (result.HasException)
                     {
-                        return (default(TResult), result.Exception);
+                        return (default, result.Exception);
                     }
                     return (resultSelector(source.Value, result.Value), (Exception)null);
                 });
@@ -72,7 +72,7 @@
 
     public static partial class TryExtensions
     {
-        public static Try<T> Throw<T>(this Exception exception) => new Try<T>(() => (default(T), exception));
+        public static Try<T> Throw<T>(this Exception exception) => new Try<T>(() => (default, exception));
     }
 
     public static partial class TryExtensions
@@ -84,7 +84,7 @@
             new Try<Unit>(() =>
             {
                 action();
-                return (default(Unit), (Exception)null);
+                return (default, (Exception)null);
             });
 
         public static Try<T> Catch<T, TException>(
@@ -97,7 +97,7 @@
                     {
                         source = handler(exception);
                     }
-                    return source.HasException ? (default(T), source.Exception) : (source.Value, (Exception)null);
+                    return source.HasException ? (default, source.Exception) : (source.Value, (Exception)null);
                 });
 
         public static Try<T> Catch<T>(
@@ -134,18 +134,17 @@
         internal static string Factorial(string value)
         {
             Func<string, int?> stringToNullableInt32 = @string =>
-                string.IsNullOrEmpty(@string) ? default(int?) : Convert.ToInt32(@string);
-            Try<int> query = from nullableInt32 in Try(() => 
-                                string.IsNullOrEmpty(value) ? default(int?) : Convert.ToInt32(value)) // Try<int32?>
+                string.IsNullOrEmpty(@string) ? default : Convert.ToInt32(@string);
+            Try<int> query = from nullableInt32 in Try(() => stringToNullableInt32(value)) // Try<int32?>
                              from result in TryStrictFactorial(nullableInt32) // Try<int>.
                              from unit in Try(() => result.WriteLine()) // Try<Unit>.
                              select result; // Define query.
             return query
                 .Catch(exception => // Catch all and rethrow.
-                    {
-                        exception.WriteLine();
-                        return Throw<int>(exception);
-                    })
+                {
+                    exception.WriteLine();
+                    return Throw<int>(exception);
+                })
                 .Catch<int, ArgumentNullException>(exception => 1) // When argument is null, factorial is 1.
                 .Catch<int, ArgumentOutOfRangeException>(
                     when: exception => object.Equals(exception.ActualValue, 0),

@@ -118,7 +118,7 @@ namespace System
             Contract.Ensures(Contract.Result<int>() >= 0);
             Contract.Ensures((value - Contract.Result<int>()) <= 0);
 
-            return default(int);
+            return default;
         }
     }
 }

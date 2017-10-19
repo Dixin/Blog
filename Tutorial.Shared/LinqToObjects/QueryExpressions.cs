@@ -20,9 +20,13 @@ namespace Tutorial.LinqToObjects
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.Globalization;
+    using System.IO;
     using System.Linq;
     using System.Reflection;
+    using System.Resources;
 
+    using Tutorial.Resources;
     using Tutorial.Functional;
 #endif
 
@@ -355,7 +359,6 @@ namespace Tutorial.LinqToObjects
         }
 #endif
 
-#if NETFX
         internal static void CastMoreNonGeneric()
         {
             // ResourceSet implements IEnumerable.
@@ -375,7 +378,6 @@ namespace Tutorial.LinqToObjects
                     select entry;
             }
         }
-#endif
 
         internal static void CastGenericIEnumerable()
         {

@@ -166,6 +166,9 @@ namespace Tutorial.LinqToEntities
         }
 
 #if EF
+        // https://github.com/dotnet/corefx/issues/22484
+        // SqlClient transaction support was added recently in 6de0d94
+        // It will be included in the 2.1.0 release.
         internal static void TransactionScope()
         {
             new ExecutionStrategy().Execute(() =>

@@ -1,19 +1,10 @@
 ﻿namespace Tutorial.LinqToXml
 {
-#if NETFX
     using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Xml.Linq;
     using System.Xml.Schema;
-#else
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Xml.Linq;
-#endif
-
-    using static Modeling;
 
     internal static class Manipulation
     {
@@ -25,7 +16,7 @@
             XText sourceText = new XText("text");
             XText clonedText = new XText(sourceText);
 
-            XDocument sourceDocument = LoadXDocument("https://weblogs.asp.net/dixin/rss");
+            XDocument sourceDocument = XDocument.Load("https://weblogs.asp.net/dixin/rss");
             XDocument clonedDocument = new XDocument(sourceDocument);
             object.ReferenceEquals(sourceDocument, clonedDocument).WriteLine(); // False
             object.Equals(sourceDocument, clonedDocument).WriteLine(); // False
@@ -172,22 +163,19 @@
             (element.Annotation<Uri>() == null).WriteLine(); // True
         }
 
-#if NETFX
         internal static void InferSchemas()
         {
-            XDocument aspNetRss = LoadXDocument("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2");
+            XDocument aspNetRss = XDocument.Load("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2");
             XmlSchemaSet schemaSet = aspNetRss.InferSchema();
             schemaSet.Schemas().Cast<XmlSchema>().WriteLines(schema => schema.ToXDocument().ToString());
         }
-#endif
 
-#if NETFX
         internal static void Validate()
         {
-            XDocument aspNetRss = LoadXDocument("https://weblogs.asp.net/dixin/rss");
+            XDocument aspNetRss = XDocument.Load("https://weblogs.asp.net/dixin/rss");
             XmlSchemaSet schemaSet = aspNetRss.InferSchema();
 
-            XDocument flickrRss = LoadXDocument("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2");
+            XDocument flickrRss = XDocument.Load("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2");
             flickrRss.Validate(
                 schemaSet,
                 (sender, args) =>
@@ -198,15 +186,13 @@
                     // XmlSchemaValidationException: The element 'channel' has invalid child element 'pubDate'. List of possible elements expected: 'item'.
                 });
         }
-#endif
 
-#if NETFX
         internal static void GetSchemaInfo()
         {
-            XDocument aspNetRss = LoadXDocument("https://weblogs.asp.net/dixin/rss");
+            XDocument aspNetRss = XDocument.Load("https://weblogs.asp.net/dixin/rss");
             XmlSchemaSet schemaSet = aspNetRss.InferSchema();
 
-            XDocument flickrRss = LoadXDocument("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2");
+            XDocument flickrRss = XDocument.Load("https://www.flickr.com/services/feeds/photos_public.gne?id=64715861@N07&format=rss2");
             flickrRss.Validate(schemaSet, (sender, args) => { }, addSchemaInfo: true);
             flickrRss
                 .Root
@@ -231,12 +217,10 @@
             // /rss/channel/lastBuildDate - NotKnown
             // ...
         }
-#endif
 
-#if NETFX
         internal static void XslTransform()
         {
-            XDocument rss = LoadXDocument("https://weblogs.asp.net/dixin/rss");
+            XDocument rss = XDocument.Load("https://weblogs.asp.net/dixin/rss");
             XDocument xsl = XDocument.Parse(@"
                 <xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
                     <xsl:template match='/rss/channel'>
@@ -272,12 +256,10 @@
             //  </li>
             // </ul>
         }
-#endif
 
-#if NETFX
         internal static void Transform()
         {
-            XDocument rss = LoadXDocument("https://weblogs.asp.net/dixin/rss");
+            XDocument rss = XDocument.Load("https://weblogs.asp.net/dixin/rss");
             XDocument html = rss
                 .Element("rss")
                 .Element("channel")
@@ -293,6 +275,5 @@
                 .Aggregate(new XElement("ul"), (ul, li) => { ul.Add(li); return ul; }, ul => new XDocument(ul));
             html.WriteLine();
         }
-#endif
     }
 }

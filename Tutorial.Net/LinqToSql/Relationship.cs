@@ -26,7 +26,7 @@
     {
         private int? productCategoryId;
 
-        private EntityRef<ProductCategory> productCategory = default(EntityRef<ProductCategory>);
+        private EntityRef<ProductCategory> productCategory = default;
 
         [Column(DbType = "int NOT NULL", Storage = nameof(productCategoryId), UpdateCheck = UpdateCheck.Never)]
         public int? ProductCategoryID // Foreign key must be null.
@@ -68,7 +68,7 @@
                 //    }
                 //    else
                 //    {
-                //        this.productCategoryId = default(int?);
+                //        this.productCategoryId = default;
                 //    }
                 // }
             }
@@ -98,7 +98,7 @@
     {
         private int? productSubcategoryId;
 
-        private EntityRef<ProductSubcategory> productSubcategory = default(EntityRef<ProductSubcategory>);
+        private EntityRef<ProductSubcategory> productSubcategory = default;
 
         [Column(DbType = "int", Storage = nameof(productSubcategoryId))]
         public int? ProductSubcategoryID
@@ -173,7 +173,7 @@
     {
         private int? productId;
 
-        private EntityRef<Product> product = default(EntityRef<Product>);
+        private EntityRef<Product> product = default;
 
         [Column(DbType = "int", Storage = nameof(productId), IsPrimaryKey = true)]
         public int? ProductID
@@ -206,7 +206,7 @@
     {
         private int? productPhotoId;
 
-        private EntityRef<ProductPhoto> productPhoto = default(EntityRef<ProductPhoto>);
+        private EntityRef<ProductPhoto> productPhoto = default;
 
         [Column(DbType = "int", Storage = nameof(productPhotoId), IsPrimaryKey = true)]
         public int? ProductPhotoID

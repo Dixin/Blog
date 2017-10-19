@@ -69,9 +69,9 @@
 #if DEMO
     public class VoidMonoid : IMonoid<void>
     {
-        public void Multiply(void value1, void value2) => default(void);
+        public void Multiply(void value1, void value2) => default;
 
-        public void Unit() => default(void);
+        public void Unit() => default;
     }
 #endif
 

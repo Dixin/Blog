@@ -45,16 +45,14 @@ MethodCallExpression (NodeType = Call, Type = IQueryable<string>)
 
 SelectExpression (NodeType = Extension, Type = string)
 |_Porjection
-| |_AliasExpression (NodeType = Extension, Type = string)
-|   |_Expression
-|       |_ColumnExpression (NodeType = Extension, Type = string)
-|       |_Name = "Name"
-|       |_Property = Product.Name
-|       |_Table
-|           |_TableExpression (NodeType = Extension, Type = object)
-|           |_Schema = "Production"
-|           |_Name = "Product"
-|           |_Alias = "product"
+| |_ColumnExpression (NodeType = Extension, Type = string)
+|   |_Name = "Name"
+|   |_Property = Product.Name
+|   |_Table
+|     |_TableExpression (NodeType = Extension, Type = object)
+|     |_Schema = "Production"
+|     |_Name = "Product"
+|     |_Alias = "product"
 |_Tables
 | |_TableExpression (NodeType = Extension, Type = object)
 |   |_Schema = "Production"
@@ -63,11 +61,11 @@ SelectExpression (NodeType = Extension, Type = string)
 |_Predicate
   |_BinaryExpression (NodeType = GreaterThan, Type = bool)
   |_left
-  | |_SqlFunctionExpression (NodeType = Extension, Type = int)
-  |   |_FunctionName = "LEN"
-  |   |_Arguments
-  |     |_AliasExpression (NodeType = Extension, Type = string)
-  |       |_Expression
+  | |_ExplicitCastExpression (NodeType = Extension, Type = int)
+  |   |_Operand
+  |     |_SqlFunctionExpression (NodeType = Extension, Type = int)
+  |       |_FunctionName = "LEN"
+  |       |_Arguments
   |         |_ColumnExpression (NodeType = Extension, Type = string)
   |           |_Name = "Name"
   |           |_Property = Product.Name
@@ -86,16 +84,14 @@ SelectExpression (NodeType = Extension, Type = string)
 | |_ConstantExpression (NodeType = Constant, Type = int)
 |   |_Value = 1
 |_Porjection
-| |_AliasExpression (NodeType = Extension, Type = string)
-|   |_Expression
-|       |_ColumnExpression (NodeType = Extension, Type = string)
-|       |_Name = "Name"
-|       |_Property = Product.Name
-|       |_Table
-|         |_TableExpression (NodeType = Extension, Type = object)
-|         |_Schema = "Production"
-|         |_Name = "Product"
-|         |_Alias = "product"
+|   |_ColumnExpression (NodeType = Extension, Type = string)
+|   |_Name = "Name"
+|   |_Property = Product.Name
+|   |_Table
+|     |_TableExpression (NodeType = Extension, Type = object)
+|     |_Schema = "Production"
+|     |_Name = "Product"
+|     |_Alias = "product"
 |_Tables
   |_TableExpression (NodeType = Extension, Type = object)
     |_Schema = "Production"

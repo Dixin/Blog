@@ -195,7 +195,7 @@
         }
 
         public static IEnumerable<TSource> DefaultIfEmpty<TSource>(
-            this IEnumerable<TSource> source, TSource defaultValue = default(TSource))
+            this IEnumerable<TSource> source, TSource defaultValue = default)
         {
             using (IEnumerator<TSource> iterator = source.GetEnumerator())
             {
@@ -874,7 +874,7 @@
                     return value;
                 }
             }
-            return default(TSource);
+            return default;
         }
 
         public static TSource FirstOrDefault<TSource>(
@@ -887,7 +887,7 @@
                     return value;
                 }
             }
-            return default(TSource);
+            return default;
         }
 
         public static TSource Last<TSource>(this IEnumerable<TSource> source)
@@ -987,7 +987,7 @@
                 }
             }
 
-            return default(TSource);
+            return default;
         }
 
         public static TSource LastOrDefault<TSource>(
@@ -1004,10 +1004,10 @@
                     }
                 }
 
-                return default(TSource);
+                return default;
             }
 
-            TSource last = default(TSource);
+            TSource last = default;
             foreach (TSource value in source)
             {
                 if (predicate(value))
@@ -1066,7 +1066,7 @@
                     }
                 }
             }
-            return default(TSource);
+            return default;
         }
 
         public static TSource Single<TSource>(this IEnumerable<TSource> source)
@@ -1134,7 +1134,7 @@
                 switch (list.Count)
                 {
                     case 0:
-                        return default(TSource);
+                        return default;
                     case 1:
                         return list[0];
                 }
@@ -1153,7 +1153,7 @@
                     }
                     else
                     {
-                        return default(TSource);
+                        return default;
                     }
                 }
             }
@@ -1183,7 +1183,7 @@
                     }
                 }
             }
-            return default(TSource);
+            return default;
         }
 
         #endregion
@@ -1339,7 +1339,7 @@
         public static TResult Min<TSource, TResult>(this IEnumerable<TSource> source, Func<TSource, TResult> selector)
         {
             Comparer<TResult> comparer = Comparer<TResult>.Default;
-            TResult min = default(TResult);
+            TResult min = default;
             if (min == null)
             {
                 using (IEnumerator<TSource> iterator = source.GetEnumerator())

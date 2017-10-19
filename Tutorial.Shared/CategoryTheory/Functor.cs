@@ -138,7 +138,7 @@
 #if DEMO
         public static Lazy<TResult> Select<TSource, TResult>(
             this Lazy<TSource> source, Func<TSource, TResult> selector) =>
-                new Lazy<TResult>(() => default(TResult));
+                new Lazy<TResult>(() => default);
 #endif
     }
 
@@ -255,7 +255,7 @@
 
             Optional<int> optionalInt32 = new Optional<int>(() => (true, int32));
             Optional<Func<int, string>> optionalFunction = new Optional<Func<int, string>>(() => true, function));
-            Optional<string> optionalString = new Optional<string>(); // Equivalent to: new Optional<string>(() => false, default(string)));
+            Optional<string> optionalString = new Optional<string>(); // Equivalent to: new Optional<string>(() => false, default);
         }
 #endif
     }
@@ -271,7 +271,7 @@
         public static Optional<TResult> Select<TSource, TResult>(
             this Optional<TSource> source, Func<TSource, TResult> selector) =>
                 new Optional<TResult>(() => source.HasValue
-                    ? (true, selector(source.Value)) : (false, default(TResult)));
+                    ? (true, selector(source.Value)) : (false, default));
 
         internal static void Map()
         {
@@ -311,7 +311,7 @@
         // LINQ Select: (Nullable<TSource>, TSource -> TResult) -> Nullable<TResult>
         public static TResult? Select<TSource, TResult>(
             this TSource? source, Func<TSource, TResult> selector) where TSource : struct where TResult : struct =>
-                source.HasValue ? selector(source.Value) : default(TResult?); // Immediate execution.
+                source.HasValue ? selector(source.Value) : default; // Immediate execution.
 
         internal static void Map()
         {

@@ -73,11 +73,11 @@
             ExecuteOperation(() => this.strategy.Execute(operation));
 
         public Task ExecuteAsync(
-            Func<Task> operation, CancellationToken cancellationToken = default(CancellationToken)) =>
+            Func<Task> operation, CancellationToken cancellationToken = default) =>
                 ExecuteOperation(() => this.strategy.ExecuteAsync(operation, cancellationToken));
 
         public Task<TResult> ExecuteAsync<TResult>(
-            Func<Task<TResult>> operation, CancellationToken cancellationToken = default(CancellationToken)) =>
+            Func<Task<TResult>> operation, CancellationToken cancellationToken = default) =>
                 ExecuteOperation(() => this.strategy.ExecuteAsync(operation, cancellationToken));
 
         private static T ExecuteOperation<T>(Func<T> resultFactory)

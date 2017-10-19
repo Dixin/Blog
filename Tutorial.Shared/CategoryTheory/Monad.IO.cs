@@ -67,7 +67,7 @@
             () =>
             {
                 action();
-                return default(Unit);
+                return default;
             };
     }
 

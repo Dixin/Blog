@@ -453,7 +453,7 @@
                 {
                     while (true)
                     {
-                        TSource value = default(TSource);
+                        TSource value = default;
                         try
                         {
                             if (!iterator.MoveNext())

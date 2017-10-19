@@ -13,7 +13,7 @@
 
         internal static void CallFirstOrder()
         {
-            Data input = default(Data);
+            Data input = default;
             Data output = FirstOrder(input);
         }
     }
@@ -30,7 +30,7 @@
 
         internal static void CallHigherOrder()
         {
-            Function input = default(Function);
+            Function input = default;
             Function output = NamedHigherOrder(input);
         }
     }

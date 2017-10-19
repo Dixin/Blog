@@ -34,7 +34,7 @@ namespace Tutorial.Tests.LinqToObjects
             Assert.Equal(q.Contains("X"), q.Contains("X"));
         }
 
-        public static IEnumerable<object> Int_TestData()
+        public static IEnumerable<object[]> Int_TestData()
         {
             yield return new object[] { new int[0], 6, false };
             yield return new object[] { new int[] { 8, 10, 3, 0, -8 }, 6, false };
@@ -57,7 +57,7 @@ namespace Tutorial.Tests.LinqToObjects
             Assert.Equal(expected, source.Contains(value, null));
         }
 
-        public static IEnumerable<object> String_TestData()
+        public static IEnumerable<object[]> String_TestData()
         {
             yield return new object[] { new string[] { null }, StringComparer.Ordinal, null, true };
             yield return new object[] { new string[] { "Bob", "Robert", "Tim" }, null, "trboeR", false };
@@ -77,7 +77,7 @@ namespace Tutorial.Tests.LinqToObjects
             Assert.Equal(expected, source.Contains(value, comparer));
         }
 
-        public static IEnumerable<object> NullableInt_TestData()
+        public static IEnumerable<object[]> NullableInt_TestData()
         {
             yield return new object[] { new int?[] { 8, 0, 10, 3, 0, -8, 0 }, null, false };
             yield return new object[] { new int?[] { 8, 0, 10, null, 3, 0, -8, 0 }, null, true };
