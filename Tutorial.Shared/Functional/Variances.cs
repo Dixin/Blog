@@ -356,11 +356,11 @@
     {
         internal static void TypesWithVariance()
         {
-            Assembly coreLibrary = typeof(object).GetTypeInfo().Assembly;
+            Assembly coreLibrary = typeof(object).Assembly;
             coreLibrary.GetExportedTypes()
-                .Where(type => type.GetTypeInfo().GetGenericArguments().Any(typeArgument =>
+                .Where(type => type.GetGenericArguments().Any(typeArgument =>
                 {
-                    GenericParameterAttributes attributes = typeArgument.GetTypeInfo().GenericParameterAttributes;
+                    GenericParameterAttributes attributes = typeArgument.GenericParameterAttributes;
                     return attributes.HasFlag(GenericParameterAttributes.Covariant)
                         || attributes.HasFlag(GenericParameterAttributes.Contravariant);
                 }))

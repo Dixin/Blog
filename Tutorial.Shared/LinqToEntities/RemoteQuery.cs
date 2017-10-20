@@ -83,7 +83,7 @@
                 string.Empty,
                 expression.ReturnType,
                 expression.Parameters.Select(parameter => parameter.Type).ToArray(),
-                typeof(BinaryArithmeticTranslator).GetTypeInfo().Module);
+                typeof(BinaryArithmeticTranslator).Module);
             EmitIL(dynamicMethod.GetILGenerator(), InfixVisitor.VisitBody(expression), expression, connection);
             return dynamicMethod.CreateDelegate(typeof(TDelegate)) as TDelegate;
         }
@@ -95,7 +95,7 @@
             ilGenerator.DeclareLocal(typeof(Dictionary<string, double>));
             ilGenerator.Emit(
                 OpCodes.Newobj,
-                typeof(Dictionary<string, double>).GetTypeInfo().GetConstructor(Array.Empty<Type>()));
+                typeof(Dictionary<string, double>).GetConstructor(Array.Empty<Type>()));
             ilGenerator.Emit(OpCodes.Stloc_0);
 
             for (int index = 0; index < expression.Parameters.Count; index++)
@@ -106,7 +106,7 @@
                 ilGenerator.Emit(OpCodes.Ldarg_S, index);
                 ilGenerator.Emit(
                     OpCodes.Callvirt,
-                    typeof(Dictionary<string, double>).GetTypeInfo().GetMethod(
+                    typeof(Dictionary<string, double>).GetMethod(
                         nameof(Dictionary<string, double>.Add),
                         BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod));
             }
@@ -117,7 +117,7 @@
             ilGenerator.Emit(OpCodes.Ldloc_0);
             ilGenerator.Emit(
                 OpCodes.Call,
-                typeof(BinaryArithmeticTranslator).GetTypeInfo().GetMethod(
+                typeof(BinaryArithmeticTranslator).GetMethod(
                     nameof(ExecuteScalar),
                     BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.InvokeMethod));
 

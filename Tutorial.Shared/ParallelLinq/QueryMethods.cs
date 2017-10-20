@@ -55,13 +55,13 @@ namespace Tutorial.ParallelLinq
                 .Cast<int>(); // ParallelEnumerable.Cast.
         }
 
-        private static readonly Assembly CoreLibrary = typeof(object).GetTypeInfo().Assembly;
+        private static readonly Assembly CoreLibrary = typeof(object).Assembly;
 
         internal static void AsParallelAsSequential()
         {
             IEnumerable<string> obsoleteTypeNames = CoreLibrary.GetExportedTypes() // Return IEnumerable<Type>.
                 .AsParallel() // Return ParallelQuery<Type>.
-                .Where(type => type.GetTypeInfo().GetCustomAttribute<ObsoleteAttribute>() != null) // ParallelEnumerable.Where.
+                .Where(type => type.GetCustomAttribute<ObsoleteAttribute>() != null) // ParallelEnumerable.Where.
                 .Select(type => type.FullName) // ParallelEnumerable.Select.
                 .AsSequential() // Return IEnumerable<Type>.
                 .OrderBy(name => name); // Enumerable.OrderBy.
@@ -76,7 +76,7 @@ namespace Tutorial.ParallelLinq
             IEnumerable<string> obsoleteTypeNames =
                 from name in
                     (from type in CoreLibrary.GetExportedTypes().AsParallel()
-                     where type.GetTypeInfo().GetCustomAttribute<ObsoleteAttribute>() != null
+                     where type.GetCustomAttribute<ObsoleteAttribute>() != null
                      select type.FullName).AsSequential()
                 orderby name
                 select name;

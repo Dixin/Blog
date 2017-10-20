@@ -18,22 +18,22 @@ namespace Tutorial.ParallelLinq
 
     public static partial class ParallelEnumerableX
     {
-        private static readonly PropertyInfo QuerySettingsProperty = typeof(ParallelQuery).GetTypeInfo().GetProperty(
+        private static readonly PropertyInfo QuerySettingsProperty = typeof(ParallelQuery).GetProperty(
             "SpecifiedQuerySettings", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
 
-        private static readonly Type QuerySettingsType = typeof(ParallelQuery).GetTypeInfo().Assembly.GetType(
+        private static readonly Type QuerySettingsType = typeof(ParallelQuery).Assembly.GetType(
             "System.Linq.Parallel.QuerySettings");
 
-        private static readonly PropertyInfo TaskSchedulerProperty = QuerySettingsType.GetTypeInfo().GetProperty(
+        private static readonly PropertyInfo TaskSchedulerProperty = QuerySettingsType.GetProperty(
             "TaskScheduler", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
 
-        private static readonly PropertyInfo DegreeOfParallelismProperty = QuerySettingsType.GetTypeInfo().GetProperty(
+        private static readonly PropertyInfo DegreeOfParallelismProperty = QuerySettingsType.GetProperty(
             "DegreeOfParallelism", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
 
-        private static readonly PropertyInfo ExecutionModeProperty = QuerySettingsType.GetTypeInfo().GetProperty(
+        private static readonly PropertyInfo ExecutionModeProperty = QuerySettingsType.GetProperty(
             "ExecutionMode", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
 
-        private static readonly PropertyInfo MergeOptionsProperty = QuerySettingsType.GetTypeInfo().GetProperty(
+        private static readonly PropertyInfo MergeOptionsProperty = QuerySettingsType.GetProperty(
             "MergeOptions", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty);
 
         public static QuerySettings SpecifiedQuerySettings(this ParallelQuery source)

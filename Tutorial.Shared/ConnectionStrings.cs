@@ -4,11 +4,9 @@
     using System.Configuration;
     using System.Data.SqlClient;
     using System.IO;
-    using System.Reflection;
 #else
     using System.Data.SqlClient;
     using System.IO;
-    using System.Reflection;
 
     using Microsoft.Extensions.Configuration;
 #endif
@@ -30,7 +28,7 @@
             {
                 return connectionString;
             }
-            string directory = Path.GetDirectoryName(typeof(ConnectionStrings).GetTypeInfo().Assembly.Location);
+            string directory = Path.GetDirectoryName(typeof(ConnectionStrings).Assembly.Location);
             builder.AttachDBFilename = Path.GetFullPath(Path.Combine(directory, builder.AttachDBFilename));
             return builder.ConnectionString;
         }

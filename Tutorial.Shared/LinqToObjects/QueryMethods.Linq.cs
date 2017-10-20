@@ -147,12 +147,12 @@
 
         #region Filtering
 
-        private static readonly Assembly CoreLibrary = typeof(object).GetTypeInfo().Assembly;
+        private static readonly Assembly CoreLibrary = typeof(object).Assembly;
 
         internal static void Where()
         {
             IEnumerable<Type> source = CoreLibrary.GetExportedTypes();
-            IEnumerable<Type> primitives = source.Where(type => type.GetTypeInfo().IsPrimitive); // Define query.
+            IEnumerable<Type> primitives = source.Where(type => type.IsPrimitive); // Define query.
             primitives.WriteLines(); // Execute query. System.Boolean System.Byte System.Char System.Double ...
         }
 
@@ -208,7 +208,7 @@
         }
 
         internal static MemberInfo[] GetDeclaredMembers(this Type type) =>
-            type.GetTypeInfo().GetMembers(
+            type.GetMembers(
                 BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly);
 
         internal static bool IsObsolete(this MemberInfo member) =>
@@ -1219,7 +1219,7 @@
 
         internal static void Except2()
         {
-            IEnumerable<MemberInfo> inheritedMembers = typeof(Convert).GetTypeInfo().GetMembers()
+            IEnumerable<MemberInfo> inheritedMembers = typeof(Convert).GetMembers()
                 .Except(typeof(Convert).GetDeclaredMembers()); // Define query.
             inheritedMembers.WriteLines(); // Execute query.
             // System.String ToString()
@@ -1255,7 +1255,7 @@
         internal static void AverageWithSelector()
         {
             double averageMemberCount = CoreLibrary.GetExportedTypes()
-                .Average(type => type.GetTypeInfo().GetMembers().Length)
+                .Average(type => type.GetMembers().Length)
                 .WriteLine(); // 22.0766378244747
             double averageDeclaredMemberCount = CoreLibrary.GetExportedTypes()
                 .Average(type => type.GetDeclaredMembers().Length)

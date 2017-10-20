@@ -58,7 +58,7 @@
             Expression<Func<int, bool>> isPositiveExpression = Expression.Lambda<Func<int, bool>>(
                 body: Expression.Block( // ... => {
                     // Console.WriteLine(int32);
-                    Expression.Call(new Action<int>(Console.WriteLine).GetMethodInfo(), parameterExpression),
+                    Expression.Call(new Action<int>(Console.WriteLine).Method, parameterExpression),
                     // return int32 > 0;
                     Expression.GreaterThan(parameterExpression, Expression.Constant(0, typeof(int)))), // }
                 parameters: parameterExpression); // int32 => ...

@@ -4,7 +4,6 @@
     using System;
     using System.IO;
     using System.Linq;
-    using System.Reflection;
     using System.Threading;
     using System.Xml.Linq;
 
@@ -18,7 +17,6 @@
     using System;
     using System.IO;
     using System.Linq;
-    using System.Reflection;
     using System.Threading;
     using System.Xml.Linq;
 
@@ -129,7 +127,7 @@
 
         internal static void ReadFiles()
         {
-            string coreLibraryPath = typeof(object).GetTypeInfo().Assembly.Location;
+            string coreLibraryPath = typeof(object).Assembly.Location;
             string coreLibraryDirectory = Path.GetDirectoryName(coreLibraryPath);
             string[] files = Directory.GetFiles(coreLibraryDirectory);
 

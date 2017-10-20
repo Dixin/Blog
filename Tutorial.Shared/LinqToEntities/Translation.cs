@@ -42,8 +42,8 @@
                 $"[{nameof(AdventureWorks)}].[{nameof(AdventureWorks.Products)}]",
                 ((IObjectContextAdapter)adventureWorks).ObjectContext,
                 MergeOption.AppendOnly);
-            MethodInfo mergeAsMethod = typeof(ObjectQuery<Product>)
-                .GetTypeInfo().GetDeclaredMethods("MergeAs").Single();
+            MethodInfo mergeAsMethod = typeof(ObjectQuery<Product>).GetTypeInfo()
+                .GetDeclaredMethods("MergeAs").Single();
             MethodCallExpression sourceMergeAsCallExpression = Expression.Call(
                 instance: Expression.Constant(objectQuery),
                 method: mergeAsMethod,
@@ -638,7 +638,7 @@
                 .Create(async: false);
             RelationalQueryModelVisitor queryModelVisitor = (RelationalQueryModelVisitor)compilationContext
                 .CreateQueryModelVisitor();
-            queryModelVisitor.GetType().GetTypeInfo()
+            queryModelVisitor.GetType()
                 .GetMethod(nameof(RelationalQueryModelVisitor.CreateQueryExecutor))
                 .MakeGenericMethod(resultType)
                 .Invoke(queryModelVisitor, new object[] { queryModel });
@@ -652,7 +652,7 @@
     {
         public partial class ApiCompilationFilter : EvaluatableExpressionFilterBase
         {
-            private static readonly PropertyInfo dateTimeUtcNow = typeof(DateTime).GetTypeInfo()
+            private static readonly PropertyInfo dateTimeUtcNow = typeof(DateTime)
                 .GetProperty(nameof(DateTime.UtcNow));
 
             public override bool IsEvaluatableMember(MemberExpression memberExpression) =>

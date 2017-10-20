@@ -137,7 +137,7 @@
             object object1 = new object();
             Func<object, bool> func1 = object1.Equals; // new Func<object, bool>(object1.Equals);
             Trace.WriteLine(ReferenceEquals(func1.Target, object1)); // True
-            MethodInfo method2 = func1.GetMethodInfo();
+            MethodInfo method2 = func1.Method;
             Trace.WriteLine($"{method2.DeclaringType}: {method2}"); // System.Object: Boolean Equals(System.Object)
 
             object object2 = new object();
@@ -401,23 +401,19 @@ namespace System
 
 namespace System
 {
+    using System.Reflection;
+
     public abstract class Delegate
     {
         public object Target { get; }
+
+        public MethodInfo Method { get; }
 
         public static bool operator ==(Delegate d1, Delegate d2);
 
         public static bool operator !=(Delegate d1, Delegate d2);
 
         // Other members.
-    }
-}
-
-namespace System.Reflection
-{
-    public static class RuntimeReflectionExtensions
-    {
-        public static MethodInfo GetMethodInfo(this Delegate del);
     }
 }
 

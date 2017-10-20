@@ -204,7 +204,7 @@
                 name: string.Empty,
                 returnType: expression.ReturnType,
                 parameterTypes: expression.Parameters.Select(parameter => parameter.Type).ToArray(),
-                m: typeof(BinaryArithmeticCompiler).GetTypeInfo().Module);
+                m: typeof(BinaryArithmeticCompiler).Module);
             EmitIL(dynamicFunction.GetILGenerator(), new PostfixVisitor().VisitBody(expression));
             return (TDelegate)(object)dynamicFunction.CreateDelegate(typeof(TDelegate));
         }

@@ -4,7 +4,6 @@
     using System.Collections;
     using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
-    using System.Reflection;
 
     internal abstract class Sequence
     {
@@ -199,7 +198,7 @@
         {
             Type nonGenericEnumerable = typeof(IEnumerable);
             Type genericEnumerable = typeof(IEnumerable<>);
-            IEnumerable<Type> nonGenericSequences = typeof(object).GetTypeInfo().Assembly // Core library.
+            IEnumerable<Type> nonGenericSequences = typeof(object).Assembly // Core library.
                 .GetExportedTypes()
                 .Where(type =>
                 {
@@ -207,10 +206,10 @@
                     {
                         return false;
                     }
-                    Type[] interfaces = type.GetTypeInfo().GetInterfaces();
+                    Type[] interfaces = type.GetInterfaces();
                     return interfaces.Any(@interface => @interface == nonGenericEnumerable)
                         && !interfaces.Any(@interface =>
-                            @interface.GetTypeInfo().IsGenericType
+                            @interface.IsGenericType
                             && @interface.GetGenericTypeDefinition() == genericEnumerable);
                 })
                 .OrderBy(type => type.FullName); // Define query.

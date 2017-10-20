@@ -32,13 +32,13 @@ namespace Tutorial.LinqToObjects
 
     internal static class QueryExpressions
     {
-        private static readonly Assembly CoreLibrary = typeof(object).GetTypeInfo().Assembly;
+        private static readonly Assembly CoreLibrary = typeof(object).Assembly;
 
         internal static void Where()
         {
             IEnumerable<Type> source = CoreLibrary.GetExportedTypes();
             IEnumerable<Type> primitives = from type in source
-                                           where type.GetTypeInfo().IsPrimitive
+                                           where type.IsPrimitive
                                            select type;
         }
 
