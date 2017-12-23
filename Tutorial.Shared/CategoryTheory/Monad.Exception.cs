@@ -4,7 +4,7 @@
 
     using Microsoft.FSharp.Core;
 
-    public struct Try<T>
+    public readonly struct Try<T>
     {
         private readonly Lazy<(T, Exception)> factory;
 

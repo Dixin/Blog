@@ -268,6 +268,67 @@ namespace Tutorial.Functional
     using System.Diagnostics;
     using System.Runtime.CompilerServices;
 
+    internal class Point
+    {
+        private readonly int x;
+
+        private readonly int y;
+
+        internal Point(int x, int y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+
+        internal int X { get { return this.x; } }
+
+        internal int Y { get { return this.y; } }
+    }
+
+    internal readonly struct ValuePoint
+    {
+        private readonly int x;
+
+        private readonly int y;
+
+        internal ValuePoint(int x, int y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+
+        internal int X { get { return this.x; } }
+
+        internal int Y { get { return this.y; } }
+    }
+
+    internal static partial class Fundamentals
+    {
+        internal static void ValueTypeReferenceType()
+        {
+            Point reference1 = new Point(1, 2);
+            Point reference2 = reference1;
+            Trace.WriteLine(object.ReferenceEquals(reference1, reference2)); // True
+
+            ValuePoint value1 = new ValuePoint(3, 4);
+            ValuePoint value2 = value1;
+            Trace.WriteLine(object.ReferenceEquals(value1, value2)); // False
+        }
+    }
+
+    internal static partial class Fundamentals
+    {
+        internal static void Default()
+        {
+            Point defaultReference = default;
+            Trace.WriteLine(defaultReference is null); // True
+
+            ValuePoint defaultValue = default;
+            Trace.WriteLine(defaultValue.X); // 0
+            Trace.WriteLine(defaultValue.Y); // 0
+        }
+    }
+
     internal static partial class Fundamentals
     {
         internal static void Dispose(string connectionString)

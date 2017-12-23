@@ -2,7 +2,7 @@
 {
     using System;
 
-    public struct Optional<T>
+    public readonly struct Optional<T>
     {
         private readonly Lazy<(bool, T)> factory;
 

@@ -169,28 +169,30 @@
         }
     }
 
-    internal struct ValuePerson : IComparable<ValuePerson>
+    internal readonly struct ValuePerson : IComparable<ValuePerson>
     {
         private static readonly string LongString =
             Enumerable.Range(0, 10_000).Select(_ => Guid.NewGuid().ToString()).Aggregate(string.Concat);
 
-        internal string Name { get; private set; }
+        internal ValuePerson(string name, int age, string description)
+        {
+            this.Name = name;
+            this.Age = age;
+            this.Description = description;
+        }
 
-        internal int Age { get; private set; }
+        internal string Name { get; }
 
-        internal string Description { get; private set; }
+        internal int Age { get; }
+
+        internal string Description { get; }
 
         internal static IEnumerable<ValuePerson> Random(int count)
         {
             Random random = new Random();
             for (int i = 0; i < count; i++)
             {
-                yield return new ValuePerson()
-                {
-                    Name = Guid.NewGuid().ToString(),
-                    Age = random.Next(0, 100),
-                    Description = LongString
-                };
+                yield return new ValuePerson(name: Guid.NewGuid().ToString(), age: random.Next(0, 100),description:LongString);
             }
         }
 

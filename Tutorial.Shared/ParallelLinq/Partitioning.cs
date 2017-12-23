@@ -50,7 +50,7 @@
         }
     }
 
-    internal struct Data
+    internal readonly struct Data
     {
         internal Data(int value) => this.Value = value;
 
