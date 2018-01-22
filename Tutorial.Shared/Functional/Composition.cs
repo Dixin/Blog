@@ -177,7 +177,7 @@ namespace System.Linq
         public static IEnumerable<TSource> Take<TSource>(
             this IEnumerable<TSource> source, int count);
 
-        // Other members...
+        // Other members.
     }
 }
 
@@ -221,7 +221,7 @@ namespace System.Linq
         public static ParallelQuery<TResult> Select<TSource, TResult>(
             this ParallelQuery<TSource> source, Func<TSource, TResult> selector);
 
-        // Other members...
+        // Other members.
     }
 
     public static class Queryable
@@ -235,7 +235,7 @@ namespace System.Linq
         public static IQueryable<TResult> Select<TSource, TResult>(
             this IQueryable<TSource> source, Func<TSource, TResult> selector);
 
-        // Other members...
+        // Other members.
     }
 }
 #endif

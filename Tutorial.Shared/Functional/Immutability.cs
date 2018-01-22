@@ -2,6 +2,8 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Collections.Immutable;
+    using System.Collections.ObjectModel;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
@@ -10,11 +12,28 @@
 
     internal static partial class Immutability
     {
+        internal static void Const()
+        {
+            const int immutable1 = 1;
+            const int immutable2 = immutable1 + 10;
+            const string immutable3 = "https://weblogs.asp.net/dixin";
+            const object immutale4 = null;
+            const Uri immutable5 = null;
+#if DEMO
+            const Uri immutable6 = new Uri(immutable2); // Cannot be compiled.
+#endif
+
+            double variable = Math.Abs(immutable2); // Compiled to Math.Abs(11)
+        }
+    }
+
+    internal static partial class Immutability
+    {
         internal static void ForEach(IEnumerable<int> source)
         {
             foreach (int immutable in source)
             {
-                // Cannot assign to immutable.
+                // Cannot reassign to immutable.
             }
         }
 
@@ -22,13 +41,61 @@
         {
             using (IDisposable immutable = disposableFactory())
             {
-                // Cannot assign to immutable.
+                // Cannot reassign to immutable.
             }
+        }
+    }
+
+    internal partial class Device
+    {
+        internal void InstanceMethod()
+        {
+            // Cannot reassign to this.
         }
     }
 
     internal static partial class Immutability
     {
+        internal static void ParameterAndReturn<T>(Span<T> span)
+        {
+            ref readonly T Last(in Span<T> immutableParameter)
+            {
+                // Cannot reassign to immutableParameter.
+                int length = immutableParameter.Length;
+                if (length > 0)
+                {
+                    return ref immutableParameter[length - 1];
+                }
+                throw new ArgumentException("Span is empty.", nameof(immutableParameter));
+            }
+
+            ref readonly T immutableReturn = ref Last(in span);
+            // Cannot reassign to immutableReturn.
+        }
+
+        internal static void ReadOnlyReference()
+        {
+            int value = 1;
+            int copyOfValue = value; // Assign by copy.
+            copyOfValue = 10; // After the assignment, value does not change.
+            ref int mutaleRefOfValue = ref value; // Assign by reference.
+            mutaleRefOfValue = 10; // After the reassignment, value changes too.
+            ref readonly int immutableRefOfValue = ref value; // Assign by readonly reference.
+#if DEMO
+            immutableRefOfValue = 0; // Cannot be compiled. Cannot reassign to immutableRefToValue.
+#endif
+
+            Uri reference = new Uri("https://weblogs.asp.net/dixin");
+            Uri copyOfReference = reference; // Assign by copy.
+            copyOfReference = new Uri("https://flickr.com/dixin"); // After the assignment, reference does not change.
+            ref Uri mutableRefOfReference = ref reference; // Assign by reference.
+            mutableRefOfReference = new Uri("https://flickr.com/dixin"); // After the reassignment, reference changes too.
+            ref readonly Uri immutableRefOfReference = ref reference; // Assign by readonly reference.
+#if DEMO
+            immutableRefOfReference = null; // Cannot be compiled. Cannot reassign to immutableRefToValue.
+#endif
+        }
+
         internal static void QueryExpression(IEnumerable<int> source1, IEnumerable<int> source2)
         {
             IEnumerable<IGrouping<int, int>> query =
@@ -61,6 +128,13 @@
         }
     }
 
+    internal partial class ImmutableDevice
+    {
+        private readonly string name;
+
+        private readonly decimal price;
+    }
+
     internal partial class MutableDevice
     {
         internal string Name { get; set; }
@@ -86,9 +160,12 @@
         internal static void State()
         {
             MutableDevice mutableDevice = new MutableDevice() { Name = "Microsoft Band 2", Price = 249.99M };
-            mutableDevice.Price = 174.99M; // Change state.
+            // Price drops.
+            mutableDevice.Price -= 50M;
 
             ImmutableDevice immutableDevice = new ImmutableDevice(name: "Surface Book", price: 1349.00M);
+            // Price drops.
+            immutableDevice = new ImmutableDevice(name: immutableDevice.Name, price: immutableDevice.Price - 50M);
         }
     }
 
@@ -100,6 +177,75 @@
     internal partial class ImmutableDevice
     {
         internal ImmutableDevice Discount() => new ImmutableDevice(name: this.Name, price: this.Price * 0.9M);
+    }
+
+    internal partial struct Complex
+    {
+        internal Complex(double real, double imaginary)
+        {
+            this.Real = real;
+            this.Imaginary = imaginary;
+        }
+
+        internal double Real { get; }
+
+        internal double Imaginary { get; }
+    }
+
+    internal partial struct Complex
+    {
+        internal Complex(Complex value) => this = value; // Can reassign to this.
+
+        internal Complex Value
+        {
+            get => this;
+            set => this = value; // Can reassign to this.
+        }
+
+        internal Complex ReplaceBy(Complex value) => this = value; // Can reassign to this.
+
+        internal Complex Mutate(double real, double imaginary) =>
+            this = new Complex(real, imaginary); // Can reassign to this.
+    }
+
+    internal static partial class Immutability
+    {
+        internal static void Structure()
+        {
+            Complex complex1 = new Complex(1, 1);
+            Complex complex2 = new Complex(2, 2);
+            complex1.Real.WriteLine(); // 1
+            complex1.ReplaceBy(complex2);
+            complex1.Real.WriteLine(); // 2
+        }
+    }
+
+    internal readonly partial struct ImmutableComplex
+    {
+        internal ImmutableComplex(double real, double imaginary)
+        {
+            this.Real = real;
+            this.Imaginary = imaginary;
+        }
+
+        internal ImmutableComplex(in ImmutableComplex value) =>
+            this = value; // Can reassign to this only in constructor.
+
+        internal double Real { get; }
+
+        internal double Imaginary { get; }
+
+        internal void InstanceMethod(in ImmutableComplex value)
+        {
+            // Cannot reassign to this.
+        }
+    }
+
+    internal readonly partial struct ImmutableComplex
+    {
+        private static readonly ImmutableComplex zero = new ImmutableComplex(0.0, 0.0);
+
+        public static ref readonly ImmutableComplex Zero => ref zero;
     }
 
     internal static partial class Immutability
@@ -362,6 +508,66 @@
             price.WriteLine(); // 2999
         }
 
+        internal static void TupleAssignment(int value1, int value2)
+        {
+            (value1, value2) = (1, 2);
+            // Compiled to:
+            // value1 = 1; value2 = 2;
+
+            (value1, value2) = (value2, value1);
+            // Compiled to:
+            // int temp1 = value1; int temp2 = value2;
+            // value1 = temp2; value2 = temp1;
+        }
+
+        internal static int Fibonacci(int n)
+        {
+            (int a, int b) = (0, 1);
+            for (int i = 0; i < n; i++)
+            {
+                (a, b) = (b, a + b);
+            }
+            return a;
+        }
+
+        internal class ImmutableDevice
+        {
+            internal ImmutableDevice(string name, decimal price) =>
+                (this.Name, this.Price) = (name, price);
+
+            internal string Name { get; }
+
+            internal decimal Price { get; }
+        }
+
+        internal static void ImmutableCollection()
+        {
+            ImmutableList<int> immutableList1 = ImmutableList.Create(1, 2, 3);
+            ImmutableList<int> immutableList2 = immutableList1.Add(4); // Create a new collection.
+            object.ReferenceEquals(immutableList1, immutableList2).WriteLine(); // False
+        }
+
+        internal static void ReadOnlyCollection()
+        {
+            List<int> mutableList = new List<int>() { 1, 2, 3 };
+            ImmutableList<int> immutableList = ImmutableList.CreateRange(mutableList);
+            ReadOnlyCollection<int> readOnlyCollection = new ReadOnlyCollection<int>(mutableList);
+            // ReadOnlyCollection<int> wraps a mutable source, just has no methods like Add, Remove, etc.
+
+            mutableList.Add(4);
+            immutableList.Count.WriteLine(); // 3
+            readOnlyCollection.Count.WriteLine(); // 4
+        }
+
+        internal static void Closure()
+        {
+            int value = 1;
+            Action writeValue = () => value.WriteLine();
+            writeValue(); // 1
+            value = 2;
+            writeValue(); // 2
+        }
+
         internal static void Performance()
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
@@ -378,6 +584,24 @@
 }
 
 #if DEMO
+namespace System
+{
+    using System.Runtime.Serialization;
+
+    public struct DateTime : IComparable, IComparable<DateTime>, IConvertible, IEquatable<DateTime>, IFormattable, ISerializable
+    {
+        private const int DaysPerYear = 365;
+        // Compiled to:
+        // .field private static literal int32 DaysPerYear = 365
+
+        private const int DaysPer4Years = DaysPerYear * 4 + 1;
+        // Compiled to:
+        // .field private static literal int32 DaysPer4Years = 1461
+
+        // Other members.
+    }
+}
+
 namespace System
 {
     using System.Collections;

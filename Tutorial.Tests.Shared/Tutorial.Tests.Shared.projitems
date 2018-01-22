@@ -24,6 +24,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Functional\BinaryArithmeticCompilerTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Functional\FunctionTypeTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Functional\FundamentalsTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Functional\ImmutabilityTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Functional\ParametersTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introduction\ContactTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Functional\GenericTests.cs" />

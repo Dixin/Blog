@@ -14,4 +14,8 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Tutorial.Core\Tutorial.Core.csproj" />
+  </ItemGroup>
+
 </Project>
