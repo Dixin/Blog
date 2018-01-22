@@ -3,9 +3,10 @@
     using System.Linq;
 
     using Dixin.Common;
-    using Dixin.Linq.Tests;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using Tutorial.Tests.LinqToObjects;
 
     [TestClass]
     public class Int32ExtensionsTests

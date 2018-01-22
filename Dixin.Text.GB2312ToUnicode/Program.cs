@@ -5,16 +5,13 @@
     using System.Linq;
     using System.Text;
 
-    using Dixin.Linq;
+    using Dixin.Common;
 
     internal class Program
     {
         private static void Main(string[] args)
         {
-            if (args.IsNullOrEmpty())
-            {
-                throw new ArgumentException("Path is not provided.", nameof(args));
-            }
+            args.NotNullOrEmpty();
 
             string path = args.First();
             if (Directory.Exists(path))

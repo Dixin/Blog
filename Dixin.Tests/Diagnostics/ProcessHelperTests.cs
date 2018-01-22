@@ -6,10 +6,11 @@
 
     using Dixin.Common;
     using Dixin.Diagnostics;
-    using Dixin.Linq.Tests;
     using Dixin.Management;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using Tutorial.Tests.LinqToObjects;
 
     [TestClass]
     public class ProcessHelperTests

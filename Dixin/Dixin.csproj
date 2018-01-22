@@ -410,7 +410,7 @@
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="..\Tutorial.Shared\ActionFunc.Forward.cs">
-      <Link>Diagnostics\Tracing\ActionFunc.Forward.cs</Link>
+      <Link>Externals\ActionFunc.Forward.cs</Link>
     </Compile>
     <Compile Include="Common\ExceptionFilter.cs" />
     <Compile Include="Common\Int32Extensions.cs" />

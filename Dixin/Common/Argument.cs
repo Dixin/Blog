@@ -1,7 +1,9 @@
 ﻿namespace Dixin.Common
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics.Contracts;
+    using System.Linq;
     using System.Reflection;
 
     public static class Argument
@@ -51,6 +53,21 @@
             if (string.IsNullOrEmpty(value))
             {
                 throw new ArgumentNullException(name);
+            }
+
+            Contract.EndContractBlock();
+        }
+
+        public static void NotNullOrEmpty<T>([ValidatedNotNull]this IEnumerable<T> value, string name = null)
+        {
+            if (value == null)
+            {
+                throw new ArgumentNullException(name);
+            }
+
+            if (!value.Any())
+            {
+                throw new ArgumentOutOfRangeException(name);
             }
 
             Contract.EndContractBlock();

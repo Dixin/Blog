@@ -333,43 +333,22 @@
     <Compile Include="..\Tools\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Common\Int32ExtensionsTests.cs" />
-    <Compile Include="Linq\CategoryTheory\CategoryTests.cs" />
-    <Compile Include="Linq\CategoryTheory\LinqHelper.cs" />
-    <Compile Include="Linq\Connection.cs" />
-    <Compile Include="Linq\CSharp\LocalFunctionsTests.cs" />
-    <Compile Include="Linq\EntityFramework\ConcurrencyTests.cs" />
-    <Compile Include="Linq\EntityFramework\LazinessTests.cs" />
-    <Compile Include="Linq\EntityFramework\SaveChangesTests.cs" />
-    <Compile Include="Linq\EntityFramework\TransactionTests.cs" />
-    <Compile Include="Linq\EntityFramework\TranslationTests.cs" />
-    <Compile Include="Linq\CSharp\ContactTests.cs" />
-    <Compile Include="Linq\CSharp\ImperativeTests.cs" />
-    <Compile Include="Linq\CSharp\VariancesTests.cs" />
-    <Compile Include="Linq\EntityFramework\PerformanceTests.cs" />
-    <Compile Include="Linq\CSharp\GenericTests.cs" />
-    <Compile Include="Linq\Lambda\ChurchAggregateListTests.cs" />
-    <Compile Include="Linq\Lambda\ChurchNestedListTests.cs" />
-    <Compile Include="Linq\Lambda\ChurchNumeralTests.cs" />
-    <Compile Include="Linq\Lambda\CombinatorTests.FixedPoint.cs" />
-    <Compile Include="Linq\LinqToObjects\LinkedListSequenceTests.cs" />
-    <Compile Include="Linq\LinqToSql\ConcurrencyTests.cs" />
-    <Compile Include="Linq\LinqToSql\PerformanceTests.cs" />
-    <Compile Include="Linq\LinqToSql\LazinessTests.cs" />
-    <Compile Include="Linq\LinqToSql\TransactionTests.cs" />
-    <Compile Include="Linq\LinqToSql\TranslationTests.cs" />
-    <Compile Include="Linq\LinqToXml\DomTests.cs" />
-    <Compile Include="Linq\LinqToXml\ManipulationTests.cs" />
-    <Compile Include="Linq\LinqToXml\QueryMethodsTests.cs" />
-    <Compile Include="Linq\LinqToXml\ModelingTests.cs" />
-    <Compile Include="Linq\XExtensionsTests.cs" />
-    <Compile Include="Linq\XExtensionsTests.XPath.cs">
-      <DependentUpon>XExtensionsTests.cs</DependentUpon>
+    <Compile Include="..\Tutorial.Net\LinqToSql\Database.cs">
+      <Link>Externals\Database.cs</Link>
     </Compile>
-    <Compile Include="Linq\Parallel\QueryMethods.OrderingTests.cs" />
-    <Compile Include="Linq\Parallel\PartitioningTests.cs" />
-    <Compile Include="Linq\Parallel\PerformanceTests.cs" />
-    <Compile Include="Linq\Parallel\QueryMethodsTests.cs" />
+    <Compile Include="..\Tutorial.Net\LinqToSql\Tables.cs">
+      <Link>Externals\Tables.cs</Link>
+    </Compile>
+    <Compile Include="..\Tutorial.Shared\ConnectionStrings.cs">
+      <Link>Externals\ConnectionStrings.cs</Link>
+    </Compile>
+    <Compile Include="..\Tutorial.Shared\LinqToObjects\EnumerableX.cs">
+      <Link>Externals\EnumerableX.cs</Link>
+    </Compile>
+    <Compile Include="..\Tutorial.Tests.Shared\Introduction\EnumerableAssert.cs">
+      <Link>Externals\EnumerableAssert.cs</Link>
+    </Compile>
+    <Compile Include="Common\Int32ExtensionsTests.cs" />
     <Compile Include="Runtime\Serialization\SerializerTests.cs" />
     <Compile Include="Windows\ClipboardHelperTests.cs" />
     <Compile Include="Diagnostics\ProcessHelperTests.cs" />
@@ -379,41 +358,6 @@
     <Compile Include="Dynamic\ITest.cs" />
     <Compile Include="Dynamic\StaticTest.cs" />
     <Compile Include="Dynamic\StructTest.cs" />
-    <Compile Include="Linq\CategoryTheory\ApplicativeTests.cs" />
-    <Compile Include="Linq\CategoryTheory\BifunctorTests.cs" />
-    <Compile Include="Linq\CategoryTheory\PerformanceTests.cs" />
-    <Compile Include="Linq\CategoryTheory\EnumerableExtensionsTests.cs" />
-    <Compile Include="Linq\CategoryTheory\FunctorTests.cs" />
-    <Compile Include="Linq\CategoryTheory\MonadTests.cs" />
-    <Compile Include="Linq\CategoryTheory\MonoidTests.cs" />
-    <Compile Include="Linq\CategoryTheory\NaturalTransformationsTests.cs" />
-    <Compile Include="Linq\Lambda\CombinatorTests.Iota.cs" />
-    <Compile Include="Linq\Lambda\CombinatorsTests.Ski.cs" />
-    <Compile Include="Linq\EnumerableXTests.cs" />
-    <Compile Include="Linq\Functional\FunctionalQueryMethodsTests.cs" />
-    <Compile Include="Linq\CSharp\BinaryArithmeticCompilerTests.cs" />
-    <Compile Include="Linq\CSharp\PrefixVisitorTests.cs" />
-    <Compile Include="Linq\Lambda\ChurchBooleanTests.cs" />
-    <Compile Include="Linq\Lambda\ChurchListTests.cs" />
-    <Compile Include="Linq\Lambda\ChurchPredicateTests.cs" />
-    <Compile Include="Linq\Lambda\ChurchSignedNumeralTests.cs" />
-    <Compile Include="Linq\Lambda\ChurchTupleTests.cs" />
-    <Compile Include="Linq\Lambda\ChurchAggregateListWrapperTests.cs" />
-    <Compile Include="Linq\Lambda\ChurchNumeralWrapperTests.cs" />
-    <Compile Include="Linq\EntityFramework\ChangesTests.cs" />
-    <Compile Include="Linq\EntityFramework\DatabaseTests.cs" />
-    <Compile Include="Linq\EntityFramework\LogTests.cs" />
-    <Compile Include="Linq\EntityFramework\QueryMethodsTests.cs" />
-    <Compile Include="Linq\LinqToSql\ChangesTests.cs" />
-    <Compile Include="Linq\LinqToObjects\DeferredExecutionTests.cs" />
-    <Compile Include="Linq\LinqToObjects\EnumerableQueryMethodsTests.cs" />
-    <Compile Include="Linq\LinqToObjects\IteratorPatternTests.cs" />
-    <Compile Include="Linq\LinqToObjects\QueryMethodsTests.cs" />
-    <Compile Include="Linq\LinqToSql\FunctionsTests.cs" />
-    <Compile Include="Linq\LinqToSql\LogTests.cs" />
-    <Compile Include="Linq\LinqToSql\QueryMethodsTests.cs" />
-    <Compile Include="Linq\EntityFramework\BinaryArithmeticTranslatorTests.cs" />
-    <Compile Include="Linq\EntityFramework\InfixVisitorTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -422,7 +366,6 @@
     </Compile>
     <Compile Include="Reflection\TypeExtensionsTests.cs" />
     <Compile Include="TestAssembly.cs" />
-    <Compile Include="TransientFaultHandling\RetryTests.cs" />
     <Compile Include="Web\Routing\RouteTests.cs" />
   </ItemGroup>
   <ItemGroup>

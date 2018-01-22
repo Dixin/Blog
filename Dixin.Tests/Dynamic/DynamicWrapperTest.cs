@@ -13,10 +13,11 @@ namespace Dixin.Tests.Dynamic
     using System.Linq;
 
     using Dixin.Dynamic;
-    using Dixin.Linq.LinqToSql;
 
     using Microsoft.CSharp.RuntimeBinder;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+    using Tutorial.LinqToSql;
 
     [TestClass]
     public class DynamicWrapperTest
