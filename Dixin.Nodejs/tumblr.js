@@ -113,6 +113,19 @@ const path = require("path"),
                 type: "video"
             }));
         }
+        if (post.body) {
+            const $ = cheerio.load(post.body);
+            $("img").each((index, image) => {
+                const url = image.attribs.src,
+                    file = path.join(directory, getFileName(post, url, index));
+                downloads.push(common.download(url, file).thenResolve({
+                    post: post,
+                    url: url,
+                    file: file,
+                    type: "photo"
+                }));
+            });
+        }
         return Q.all(downloads);
     },
 

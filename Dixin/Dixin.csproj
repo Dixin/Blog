@@ -409,159 +409,24 @@
     <Compile Include="..\Tools\CommonAssemblyInfo.cs">
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="..\Tutorial.Shared\ActionFunc.Forward.cs">
+      <Link>Diagnostics\Tracing\ActionFunc.Forward.cs</Link>
+    </Compile>
     <Compile Include="Common\ExceptionFilter.cs" />
     <Compile Include="Common\Int32Extensions.cs" />
-    <Compile Include="Linq\ActionFunc.Compose.cs" />
-    <Compile Include="Linq\CategoryTheory\Monad.cs" />
-    <Compile Include="Linq\CategoryTheory\Monad.Try.cs" />
-    <Compile Include="Linq\CategoryTheory\Optional`1.cs" />
-    <Compile Include="Linq\CSharp\AsyncFunction.cs" />
-    <Compile Include="Linq\CSharp\Composition.cs" />
-    <Compile Include="Linq\CSharp\Curry.cs" />
-    <Compile Include="Linq\CSharp\FluentApi.cs" />
-    <Compile Include="Linq\CSharp\Immutability.cs" />
-    <Compile Include="Linq\CSharp\PatternMatching.cs" />
-    <Compile Include="Linq\CSharp\Purity.cs" />
-    <Compile Include="Linq\Lambda\ChurchAggregateList.Generic.cs" />
-    <Compile Include="Linq\Lambda\ChurchNumeral.Generic.cs" />
-    <Compile Include="Linq\Lambda\Expressions.cs" />
-    <Compile Include="Linq\Lambda\Functions.cs" />
-    <Compile Include="Linq\Lambda\SkiCompiler.cs" />
-    <Compile Include="Linq\LinqToObjects\Generator.cs" />
-    <Compile Include="Linq\Parallel\Functions.cs" />
-    <Compile Include="Linq\Parallel\ParallelEnumerableX.cs" />
-    <Compile Include="Linq\Parallel\ParallelQueryExtensions.cs" />
-    <Compile Include="Linq\Parallel\Partitioning.cs" />
-    <Compile Include="Linq\Parallel\Performance.cs" />
-    <Compile Include="Linq\Parallel\QueryMethods.cs" />
-    <Compile Include="Linq\Parallel\Visualizer.cs" />
-    <Compile Include="Linq\Parallel\QueryMethods.Ordering.cs" />
-    <Compile Include="Linq\Resources\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Linq\TraceExtensions.cs" />
-    <Compile Include="Linq\CSharp\AnonymousFunction.cs" />
-    <Compile Include="Linq\CSharp\FunctionType.cs" />
-    <Compile Include="Linq\CSharp\NamedFunction.cs" />
-    <Compile Include="Linq\EntityFramework\AdventureWorks.Views.cs" />
-    <Compile Include="Linq\EntityFramework\Concurrency.cs" />
-    <Compile Include="Linq\EntityFramework\FullWithViews\FullAdventureWorksWithViews.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>FullAdventureWorksWithViews.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Linq\EntityFramework\FullWithViews\FullAdventureWorksWithViews.Views.cs" />
-    <Compile Include="Linq\EntityFramework\Full\FullAdventureWorks.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>FullAdventureWorks.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Linq\EntityFramework\QueryExpressions.cs" />
-    <Compile Include="Linq\EntityFramework\Tracking.cs" />
-    <Compile Include="Linq\EntityFramework\Transactions.cs" />
-    <Compile Include="Linq\EntityFramework\Views.cs" />
-    <Compile Include="Linq\EntityFramework\EntityDataModel\AdventureWorks.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>AdventureWorks.edmx</DependentUpon>
-    </Compile>
-    <Content Include="Linq\CSharp\AnonymousFunction.js" />
-    <Content Include="Linq\CSharp\Func.il" />
-    <Content Include="Linq\EntityFramework\Concurrency.sql" />
-    <Content Include="Linq\EntityFramework\FullWithViews\FullAdventureWorksWithViews.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>FullAdventureWorksWithViews.cs</LastGenOutput>
-    </Content>
-    <Content Include="Linq\EntityFramework\Full\FullAdventureWorks.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>FullAdventureWorks.cs</LastGenOutput>
-    </Content>
-    <Compile Include="Linq\CSharp\ExpressionTreeVisitor.cs" />
-    <Compile Include="Linq\Introduction\Functional.cs" />
-    <Compile Include="Linq\CSharp\Syntax.cs" />
-    <Compile Include="Linq\Introduction\Functions.cs" />
-    <Compile Include="Linq\Introduction\LinqToDataSets.cs" />
-    <Compile Include="Linq\Introduction\LinqToDocumentDB.cs" />
-    <Compile Include="Linq\Introduction\LinqToJson.cs" />
-    <Compile Include="Linq\Introduction\LinqToSql.cs" />
-    <Compile Include="Linq\Introduction\ParallelLinq.cs" />
-    <Compile Include="Linq\Generator.cs" />
-    <Compile Include="Linq\LinqToSql\Concurrency.cs" />
-    <Compile Include="Linq\LinqToSql\Tracking.cs" />
-    <Compile Include="Linq\LinqToSql\Transactions.cs" />
-    <Compile Include="Linq\LinqToSql\Views.cs" />
-    <Compile Include="Linq\LinqToXml\Dom.cs" />
-    <Compile Include="Linq\LinqToXml\Manipulation.cs" />
-    <Compile Include="Linq\LinqToXml\QueryMethods.cs" />
-    <Compile Include="Linq\XExtensions.cs" />
-    <Compile Include="Linq\CSharp\LocalFunction.cs" />
     <Compile Include="Runtime\Serialization\Serializer.cs" />
     <Compile Include="Diagnostics\Tracing\Event.cs" />
-    <Compile Include="Linq\LinqToXml\Modeling.cs" />
     <Compile Include="Common\AppDomainData.cs" />
     <Compile Include="Common\AppDomain`1.cs" />
     <Compile Include="Common\Argument.cs" />
     <Compile Include="Common\ExceptionExtensions.cs" />
     <Compile Include="Common\ValidatedNotNullAttribute.cs" />
     <Compile Include="Data\Services\WcfWebSocketService.cs" />
-    <Compile Include="Linq\ConnectionStrings.cs" />
-    <Compile Include="Linq\EntityFramework\Association.cs" />
-    <Compile Include="Linq\EntityFramework\Changes.cs" />
-    <Compile Include="Linq\EntityFramework\Database.cs" />
-    <Compile Include="Linq\EntityFramework\Laziness.cs" />
-    <Compile Include="Linq\EntityFramework\Inheritance.cs" />
-    <Compile Include="Linq\EntityFramework\Log.cs" />
-    <Compile Include="Linq\EntityFramework\Performance.cs" />
-    <Compile Include="Linq\EntityFramework\Functions.cs" />
-    <Compile Include="Linq\EntityFramework\Translation.cs" />
-    <Compile Include="Linq\EntityFramework\Tables.cs" />
-    <Compile Include="Linq\EntityFramework\DbContextExtensions.cs" />
-    <Compile Include="Linq\LinqToSql\Changes.cs" />
-    <Compile Include="Linq\LinqToSql\Laziness.cs" />
-    <Compile Include="Linq\LinqToSql\Performance.cs" />
-    <Compile Include="Linq\LinqToSql\Translation.cs" />
-    <Compile Include="Linq\LinqToSql\Associations.cs" />
-    <Compile Include="Linq\LinqToSql\Inheritance.cs" />
-    <Compile Include="Linq\LinqToSql\Database.cs" />
-    <Compile Include="Linq\LinqToSql\Functions.cs" />
-    <Compile Include="Linq\LinqToSql\Log.cs" />
-    <Compile Include="Linq\LinqToSql\Tables.cs" />
-    <Compile Include="Linq\EntityFramework\RemoteQuery.cs" />
     <Compile Include="IO\CustomTextWriter.cs" />
-    <Compile Include="Linq\LinqToSql\QueryMethods.cs" />
     <Compile Include="Reflection\ReflectionHelper.cs" />
-    <Compile Include="Linq\LinqToSql\TableHelper.cs" />
     <Compile Include="Management\Win32Process.cs" />
     <Compile Include="IO\Music.cs" />
     <Compile Include="IO\Video.cs" />
-    <Content Include="Linq\EntityFramework\Database.sql" />
-    <Content Include="Linq\EntityFramework\Translation.txt" />
-    <Content Include="Linq\EntityFramework\Views.sql" />
-    <Content Include="Linq\Blog.htm" />
-    <Content Include="Linq\EntityFramework\Performance.sql" />
-    <Content Include="Linq\EntityFramework\Laziness.sql" />
-    <Content Include="Linq\EntityFramework\Functions.sql" />
-    <Content Include="Linq\EntityFramework\Changes.sql" />
-    <Content Include="Linq\EntityFramework\QueryMethods.sql" />
-    <Content Include="Linq\EntityFramework\Mapping.sql" />
-    <Content Include="Linq\EntityFramework\Tables.sql" />
-    <Content Include="Linq\CSharp\LambdaExpression.txt" />
-    <Content Include="Linq\Introduction\LinqToDocumentDB.sql" />
-    <Content Include="Linq\Introduction\LinqToXml.xml" />
-    <Content Include="Linq\Lambda\HTMLPage1.html" />
-    <Content Include="Linq\LinqToSql\Performance.sql" />
-    <Content Include="Linq\LinqToSql\Laziness.sql" />
-    <Content Include="Linq\LinqToSql\Functions.sql" />
-    <Content Include="Linq\LinqToSql\Changes.sql" />
-    <Content Include="Linq\LinqToSql\Translation.sql" />
-    <Content Include="Linq\LinqToSql\QueryMethods.sql" />
-    <Content Include="Linq\EntityFramework\RemoteQuery.sql" />
-    <Content Include="Linq\LinqToSql\Mapping.sql" />
-    <Content Include="Linq\LinqToXml\FlickrRss.xml" />
-    <Content Include="Linq\LinqToXml\AspNetRss.xml" />
-    <Content Include="Linq\Text.txt" />
     <Content Include="Sql\AdventureWorks.Delete.sql" />
     <Content Include="Sql\AdventureWorks.sql" />
     <Content Include="Sql\Database.sql" />
@@ -572,78 +437,12 @@
     <Compile Include="Sql\ConcatWith.cs" />
     <Compile Include="Threading\SingleInstance.cs" />
     <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="Linq\CategoryTheory\UIElementExtensions.cs" />
-    <Compile Include="Linq\LinqToObjects\QueryMethods.cs" />
     <Compile Include="Runtime\InteropServices\NativeMethods.cs" />
     <Compile Include="Threading\CpuUsage.cs" />
     <Compile Include="Threading\Tasks\Await.cs" />
     <Compile Include="Threading\Tasks\Context.cs" />
     <Compile Include="Threading\Tasks\TaskCompletionSource.cs" />
     <Compile Include="Threading\ThreadHelper.cs" />
-    <Compile Include="TransientFaultHandling\ExceptionDetection.cs" />
-    <Compile Include="TransientFaultHandling\Retry.cs" />
-    <Compile Include="Linq\CategoryTheory\Bifunctor.cs" />
-    <Compile Include="Linq\CategoryTheory\Category.cs" />
-    <Compile Include="Linq\CategoryTheory\Functions.cs" />
-    <Compile Include="Linq\CategoryTheory\Functor.cs" />
-    <Compile Include="Linq\CategoryTheory\Monad.Cps.cs" />
-    <Compile Include="Linq\CategoryTheory\Monad.IO.cs" />
-    <Compile Include="Linq\CategoryTheory\Monad.Reader.cs" />
-    <Compile Include="Linq\CategoryTheory\Monad.SelectMany.cs" />
-    <Compile Include="Linq\CategoryTheory\Monad.State.cs" />
-    <Compile Include="Linq\CategoryTheory\Monoid.cs" />
-    <Compile Include="Linq\CategoryTheory\MonoidalCategory.cs" />
-    <Compile Include="Linq\CategoryTheory\MonoidalFunctor.cs" />
-    <Compile Include="Linq\CategoryTheory\NaturalTransformation.cs" />
-    <Compile Include="Linq\CategoryTheory\Performance.cs" />
-    <Compile Include="Linq\Lambda\Combinators.Bckw.cs" />
-    <Compile Include="Linq\Functional\Concat`1.cs" />
-    <Compile Include="Linq\Functional\Sequence`1.cs" />
-    <Compile Include="Linq\Functional\EnumerableExtensions.Linq.cs" />
-    <Compile Include="Linq\Functional\Lookup`1.cs" />
-    <Compile Include="Linq\CSharp\Variance.cs" />
-    <Compile Include="Linq\CSharp\HigherOrder.cs" />
-    <Compile Include="Linq\LinqToObjects\DeferredExecution.cs" />
-    <Compile Include="Linq\EnumerableX.List.cs" />
-    <Compile Include="Linq\LinqToObjects\Enumerable.cs" />
-    <Compile Include="Linq\EnumerableX.Compare.cs" />
-    <Compile Include="Linq\EnumerableX.Exception.cs" />
-    <Compile Include="Linq\EnumerableX.cs" />
-    <Compile Include="Linq\LinqToObjects\EnumerableExtensions.Interactive.cs" />
-    <Compile Include="Linq\Introduction\Imperative.cs" />
-    <Compile Include="Linq\LinqToObjects\HashSet`1.cs" />
-    <Compile Include="Linq\LinqToObjects\IteratorPattern.cs" />
-    <Compile Include="Linq\CSharp\ExpressionTree.cs" />
-    <Compile Include="Linq\Introduction\LinqToObjects.cs" />
-    <Compile Include="Linq\Introduction\LinqToEntities.cs" />
-    <Compile Include="Linq\Introduction\LinqToTwitter.cs" />
-    <Compile Include="Linq\Introduction\LinqToXml.cs" />
-    <Compile Include="Linq\Introduction\Declarative.cs" />
-    <Compile Include="Linq\CSharp\QueryExpression.cs" />
-    <Compile Include="Linq\CSharp\QueryExpressionPattern.cs" />
-    <Compile Include="Linq\LinqToObjects\QueryExpressions.cs" />
-    <Compile Include="Linq\Lambda\ChurchBoolean.cs" />
-    <Compile Include="Linq\Lambda\ChurchBoolean.Generic.cs" />
-    <Compile Include="Linq\Lambda\ChurchEncoding.cs" />
-    <Compile Include="Linq\Lambda\ChurchList.cs" />
-    <Compile Include="Linq\Lambda\ChurchNestedList.cs" />
-    <Compile Include="Linq\Lambda\ChurchAggregateList.cs" />
-    <Compile Include="Linq\Lambda\ChurchNumeral.cs" />
-    <Compile Include="Linq\Lambda\ChurchTuple.cs" />
-    <Compile Include="Linq\Lambda\ChurchSignedNumeral.cs" />
-    <Compile Include="Linq\Lambda\Combinators.Iota.cs" />
-    <Compile Include="Linq\Lambda\Combinators.Omega.cs" />
-    <Compile Include="Linq\Lambda\Combinators.Ski.cs" />
-    <Compile Include="Linq\Lambda\Combinators.FixedPoint.cs" />
-    <Compile Include="Linq\Lambda\Equivalence.cs" />
-    <Compile Include="Linq\ActionFunc.Curry.cs" />
-    <Compile Include="Linq\ActionFunc.Forward.cs" />
-    <Compile Include="Linq\Functional\EnumerableExtensions.cs" />
-    <Compile Include="Linq\LinqToObjects\EnumerableExtensions.Linq.cs" />
-    <Compile Include="Linq\LinqToObjects\EnumerableExtensions.Order.cs" />
-    <Compile Include="Linq\LinqToObjects\Lookup`1.cs" />
-    <Compile Include="Linq\LinqToObjects\QueryMethods.Linq.cs" />
-    <Compile Include="Linq\LinqToObjects\QueryMethods.Interactive.cs" />
     <Compile Include="Reflection\FieldInfoExtensions.cs" />
     <Compile Include="Common\StringExtensions.cs" />
     <Compile Include="Reflection\TypeExtensions.cs" />
@@ -656,7 +455,6 @@
     <Compile Include="IO\Compression\SevenZip.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Security\Cryptography\X509CertificateHelper.cs" />
-    <Compile Include="Linq\Tests\EnumerableAssert.cs" />
     <Compile Include="Text\EncodingHelper.cs" />
     <Compile Include="Threading\SpinLockSlim.cs" />
     <Compile Include="Web\Mvc\HtmlHelperExtensions.cs" />
@@ -665,49 +463,10 @@
     <Compile Include="Xml\Linq\XDocumentHelper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Linq\CategoryTheory\Monad.Writer.cs" />
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
     <None Include="Common\ExceptionFIlter.il" />
-    <EntityDeploy Include="Linq\EntityFramework\EntityDataModel\AdventureWorks.edmx">
-      <Generator>EntityModelCodeGenerator</Generator>
-      <LastGenOutput>AdventureWorks.Designer.cs</LastGenOutput>
-    </EntityDeploy>
-    <Content Include="Linq\CSharp\Composition.hs" />
-    <Content Include="Linq\CSharp\Data.il" />
-    <Content Include="Linq\CSharp\HigherOrder.hs" />
-    <None Include="Linq\EntityFramework\EntityDataModel\AdventureWorks.edmx.diagram">
-      <DependentUpon>AdventureWorks.edmx</DependentUpon>
-    </None>
-    <None Include="Linq\EntityFramework\FullWithViews\EF.Reverse.POCO.Core.ttinclude" />
-    <None Include="Linq\EntityFramework\FullWithViews\EF.Reverse.POCO.ttinclude" />
-    <None Include="Linq\EntityFramework\Full\EF.Reverse.POCO.Core.ttinclude" />
-    <None Include="Linq\EntityFramework\Full\EF.Reverse.POCO.ttinclude" />
-    <Content Include="Linq\Introduction\LinqToDocumentDB.json" />
-    <Content Include="Linq\Introduction\LinqToJson.json" />
-    <Compile Include="Linq\EntityFramework\QueryMethods.cs" />
-    <None Include="Linq\Lambda\SkiCompiler.hs" />
-    <Content Include="Linq\LinqToXml\AspNetRss.xsd">
-      <SubType>
-      </SubType>
-    </Content>
-    <Content Include="Linq\LinqToXml\FlickrRss.dc.xsd">
-      <SubType>
-      </SubType>
-    </Content>
-    <Content Include="Linq\LinqToXml\FlickrRss.flickr.xsd">
-      <SubType>
-      </SubType>
-    </Content>
-    <Content Include="Linq\LinqToXml\FlickrRss.media.xsd">
-      <SubType>
-      </SubType>
-    </Content>
-    <Content Include="Linq\LinqToXml\FlickrRss.xsd">
-      <SubType>
-      </SubType>
-    </Content>
     <None Include="Management\Automation\VirtualHardDisk.ps1" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
@@ -723,15 +482,8 @@
       <Link>Properties\CodeAnalysisDictionary.xml</Link>
       <SubType>Designer</SubType>
     </CodeAnalysisDictionary>
-    <Content Include="Linq\Lambda\Lambda.txt" />
     <Content Include="Sql\instnwnd.sql" />
     <Content Include="Web\Blog.htm" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Linq\Resources\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.14\tools\Microsoft.Bcl.Build.targets')" />

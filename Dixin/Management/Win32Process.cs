@@ -5,7 +5,7 @@
     using System.Management;
 
     using Dixin.Common;
-    using Dixin.Linq;
+    using Tutorial;
 
     // https://msdn.microsoft.com/en-us/library/windows/desktop/aa394372.aspx
     public partial class Win32Process

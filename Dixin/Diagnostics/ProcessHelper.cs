@@ -7,8 +7,8 @@ namespace Dixin.Diagnostics
     using System.Management;
 
     using Dixin.Common;
-    using Dixin.Linq;
     using Dixin.Management;
+    using Tutorial;
 
     public static partial class ProcessHelper
     {

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.9
+VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dixin", "Dixin\Dixin.csproj", "{348FDE06-D850-4118-8796-E2AEE8DF6376}"
 EndProject
@@ -35,8 +35,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dixin.Sql", "Dixin.Sql\Dixin.Sql.csproj", "{3B8554BA-8A06-460B-9FE6-CF8303476027}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{4569910E-06BB-405F-B3FB-6742FB822234}"
 	ProjectSection(SolutionItems) = preProject
 		Data\AdventureWorks_Data.mdf = Data\AdventureWorks_Data.mdf
@@ -46,6 +44,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dixin.Console", "Dixin.Console\Dixin.Console.csproj", "{E331D518-EAC8-4A5E-9273-E420CC01C9E3}"
 EndProject
 Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Dixin.Nodejs", "Dixin.Nodejs\Dixin.Nodejs.njsproj", "{B89B3A79-1A9D-4F59-B313-F9F5A7156405}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dixin.Sql", "Dixin.Sql\Dixin.Sql.csproj", "{3B8554BA-8A06-460B-9FE6-CF8303476027}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -117,18 +117,6 @@ Global
 		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Release|x64.Build.0 = Release|Any CPU
 		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Release|x86.ActiveCfg = Release|Any CPU
 		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Release|x86.Build.0 = Release|Any CPU
-		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Debug|x64.Build.0 = Debug|Any CPU
-		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Debug|x86.Build.0 = Debug|Any CPU
-		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Release|x64.ActiveCfg = Release|Any CPU
-		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Release|x64.Build.0 = Release|Any CPU
-		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Release|x86.ActiveCfg = Release|Any CPU
-		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Release|x86.Build.0 = Release|Any CPU
 		{E331D518-EAC8-4A5E-9273-E420CC01C9E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E331D518-EAC8-4A5E-9273-E420CC01C9E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E331D518-EAC8-4A5E-9273-E420CC01C9E3}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -153,11 +141,24 @@ Global
 		{B89B3A79-1A9D-4F59-B313-F9F5A7156405}.Release|x64.Build.0 = Release|Any CPU
 		{B89B3A79-1A9D-4F59-B313-F9F5A7156405}.Release|x86.ActiveCfg = Release|Any CPU
 		{B89B3A79-1A9D-4F59-B313-F9F5A7156405}.Release|x86.Build.0 = Release|Any CPU
+		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Debug|x64.Build.0 = Debug|Any CPU
+		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Debug|x86.Build.0 = Debug|Any CPU
+		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Release|x64.ActiveCfg = Release|Any CPU
+		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Release|x64.Build.0 = Release|Any CPU
+		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Release|x86.ActiveCfg = Release|Any CPU
+		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3970DD61-4F33-45E3-8BBD-B43AAF9C07F9}
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8
 	EndGlobalSection
 EndGlobal
