@@ -7,6 +7,7 @@
     using System.Linq;
     using System.Net;
     using System.Text;
+    using System.Text.RegularExpressions;
     using System.Threading.Tasks;
 
     using CsQuery;
@@ -14,16 +15,15 @@
 
     using Dixin.IO;
 
-    using Microsoft.FSharp.Linq.RuntimeHelpers;
     using Microsoft.Office.Interop.Word;
 
     using Task = System.Threading.Tasks.Task;
 
     using static System.FormattableString;
 
-    internal partial class Html
+    internal partial class AllHtml
     {
-        internal Html(string title, IEnumerable<IGrouping<string, Tuple<string, string>>> chapters)
+        internal AllHtml(string title, IEnumerable<(string, List<(string Title, CQ Content)>)> chapters)
         {
             this.Title = title;
             this.Chapters = chapters;
@@ -31,17 +31,41 @@
 
         internal string Title { get; }
 
-        internal IEnumerable<IGrouping<string, Tuple<string, string>>> Chapters { get; }
+        internal IEnumerable<(string Title, List<(string Title, CQ Content)> Sections)> Chapters { get; }
+    }
+
+    internal partial class ChapterHtml
+    {
+        internal ChapterHtml(string title, IEnumerable<(string Title, CQ Content)> sections)
+        {
+            this.Title = title;
+            this.Sections = sections;
+        }
+
+        internal string Title { get; }
+
+        public IEnumerable<(string Title, CQ Content)> Sections { get; }
+    }
+
+    internal partial class SectionHtml
+    {
+        internal SectionHtml(string title, CQ content)
+        {
+            this.Title = title;
+            this.Content = content;
+        }
+
+        internal string Title { get; }
+
+        public CQ Content { get; }
     }
 
     internal static class Program
     {
-        private static void Main(string[] arguments)
-        {
-            BuildDocumentsAsync(arguments.FirstOrDefault()).Wait();
-        }
+        private static async Task Main(string[] arguments) => 
+            await BuildDocumentsAsync(arguments.FirstOrDefault());
 
-        private static async Task BuildDocumentsAsync(string outputDirectory, string oneDriveDirectory = @"Share\Book")
+        private static async Task BuildDocumentsAsync(string outputDirectory, string oneDriveDirectory = @"Works\Book\Apress")
         {
             if (string.IsNullOrWhiteSpace(outputDirectory))
             {
@@ -50,88 +74,185 @@
                     : Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
             }
 
-            Trace.WriteLine(Invariant($"Output directory {outputDirectory}."));
-            Html html = await DownloadHtmlAsync();
+            string htmlOutputDirectory = Path.Combine(outputDirectory, "Html");
+            Trace.WriteLine(Invariant($"HTML output directory {outputDirectory}."));
+            AllHtml html = await DownloadHtmlAsync();
+            await html.Chapters.ForEachAsync(async (chapter, chapterIndex) =>
+            {
+                ChapterHtml partHtml = new ChapterHtml(chapter.Title, chapter.Sections);
+                await SaveAsync(partHtml.TransformText(), Path.Combine(htmlOutputDirectory, $"{chapterIndex + 1}. {chapter.Title.Replace("/", "-").Replace(":", " -")}.html"));
+                await chapter.Sections
+                    .Select(section => new SectionHtml(section.Title, section.Content))
+                    .ForEachAsync(async (section, sectionIndex) =>
+                    {
+                        // Format and download img.
+                        await section.Content.Find("img")
+                            .ForEachAsync(async image =>
+                            {
+                                string uri = image.GetAttribute("src");
+                                string localPath = Path.Combine("images", string.Join("-", uri.Split('/').Reverse().Take(2).Reverse()));
+                                image.SetAttribute("src", localPath);
+                                using (WebClient webClient = new WebClient())
+                                {
+                                    Trace.WriteLine($"Downloading image {uri} to {localPath}.");
+                                    await webClient.DownloadFileTaskAsync(uri, Path.Combine(htmlOutputDirectory, localPath));
+                                }
+                            });
+                        await SaveAsync(
+                            section.TransformText(),
+                            Path.Combine(htmlOutputDirectory, $"{chapterIndex + 1}.{sectionIndex + 1}. {section.Title.Replace("/", "-").Replace(":", " -")}.html"));
+                    });
+            });
             await SaveDocumentsAsync(html, Path.Combine(outputDirectory, Invariant($"{html.Title}.doc")), Path.Combine(outputDirectory, Invariant($"{html.Title}.pdf")));
         }
 
-        private static async Task<Html> DownloadHtmlAsync(
+        private static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> action) => await Task.WhenAll(source.Select(action));
+
+        private static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, int, Task> action) => await Task.WhenAll(source.Select(action));
+
+        private static async Task SaveAsync(string text, string htmlFile)
+        {
+            Trace.WriteLine(Invariant($"Saving HTML as {htmlFile}, {text.Length}."));
+            try
+            {
+                using (StreamWriter writer = new StreamWriter(new FileStream(
+                    path: htmlFile, mode: FileMode.Create, access: FileAccess.Write,
+                    share: FileShare.Read, bufferSize: 4096, useAsync: true)))
+                {
+                    await writer.WriteAsync(text);
+                }
+            }
+            catch (Exception exception)
+            {
+                Trace.WriteLine(htmlFile);
+                Trace.WriteLine(exception);
+                throw;
+            }
+        }
+
+        private static async Task<AllHtml> DownloadHtmlAsync(
             string indexUrl = @"http://weblogs.asp.net/dixin/linq-via-csharp")
         {
+            Regex allowedTag = new Regex("^(p|h[1-9]|pre|blockquote|table|img|ul|ol)$", RegexOptions.IgnoreCase);
+            Regex allowedParagraphTag = new Regex("^(a|sub|sup|img)$", RegexOptions.IgnoreCase);
+            Regex allowedSpanParentTag = new Regex("^(pre|span)$", RegexOptions.IgnoreCase);
+
             using (WebClient indexClient = new WebClient())
             {
                 indexClient.Encoding = Encoding.UTF8;
                 Trace.WriteLine(Invariant($"Downloading {indexUrl}."));
-                CQ indexPage = await indexClient.DownloadStringTaskAsync(indexUrl);
+                CQ indexPageCq = await indexClient.DownloadStringTaskAsync(indexUrl);
 
-                CQ article = indexPage["article.blog-post"];
-                IGrouping<string, Tuple<string, string>>[] chapters = await Task.WhenAll(article
+                CQ indexContentCq = indexPageCq["article.blog-post"];
+                (string Title, List<(string Title, CQ Content)> Sections)[] chapters = await Task.WhenAll(indexContentCq
                     .Children("ol")
                     .Children("li")
-                    .Select(chapter => chapter.Cq())
+                    .Select(part => part.Cq())
                     .AsParallel()
                     .AsOrdered()
-                    .Select(async chapter =>
+                    .Select(async categoryCq =>
                     {
-                        Tuple<string, string>[] sections = await Task.WhenAll(chapter.Find("h2")
-                            .Select(section => section.Cq().Find("a:last"))
+                        (string Title, CQ Content)[] articles = await Task.WhenAll(categoryCq.Find("h2")
+                            .Select(articleLink => articleLink.Cq().Find("a:last"))
                             .AsParallel()
                             .AsOrdered()
-                            .Select(async section =>
+                            .Select(async articleLinkCq =>
                             {
-                                string sectionUrl = section.Attr<string>("href");
-                                Trace.WriteLine(Invariant($"Downloading {sectionUrl}."));
-                                using (WebClient sectionClient = new WebClient())
+                                string articleUri = articleLinkCq.Attr<string>("href");
+                                string articleTitle = articleLinkCq.Text().Trim();
+
+                                Trace.WriteLine(Invariant($"Downloading [{articleTitle}] {articleUri}."));
+                                using (WebClient articleClient = new WebClient())
                                 {
-                                    sectionClient.Encoding = Encoding.UTF8;
-                                    CQ sectionPage;
+                                    articleClient.Encoding = Encoding.UTF8;
+                                    CQ articleCq;
                                     try
                                     {
-                                        sectionPage = await sectionClient.DownloadStringTaskAsync(sectionUrl);
+                                        articleCq = await articleClient.DownloadStringTaskAsync(articleUri);
                                     }
                                     catch (Exception exception)
                                     {
-                                        Trace.WriteLine($"Failed to download {sectionUrl}");
+                                        Trace.WriteLine($"Failed to download {articleUri}");
                                         Trace.WriteLine(exception);
                                         throw;
                                     }
-                                    CQ sectionArticle = sectionPage["article.blog-post"];
-                                    sectionArticle.Children("header").Remove();
+                                    CQ articleContentCq = articleCq["article.blog-post"];
+                                    articleContentCq.Children("header").Remove();
+                                    // Format h1 - h7 to h3 - h9.
                                     Enumerable
                                         .Range(1, 7)
                                         .Reverse()
-                                        .ForEach(i => sectionArticle
+                                        .ForEach(i => articleContentCq
                                             .Find(Invariant($"h{i}")).Contents().Unwrap()
                                             .Wrap(Invariant($"<h{i + 2}/>"))
                                             .Parent()
                                             .Find("a").Contents().Unwrap());
-                                    sectionArticle.Find("p")
+                                    // Format p.
+                                    articleContentCq.Find("p")
                                         .Select(paragraph => paragraph.Cq())
-                                        .ForEach(paragraph =>
+                                        .ForEach(paragraphCq =>
                                         {
-                                            string paragraphText = paragraph.Text().Trim();
-                                            if ((paragraph.Children().Length == 0
-                                                && string.IsNullOrWhiteSpace(paragraphText))
-                                                || paragraphText.StartsWith("[LinQ via C#", StringComparison.OrdinalIgnoreCase))
+                                            string paragraphText = paragraphCq.Text().Trim();
+                                            paragraphCq.Children()
+                                                .Where(child => !allowedParagraphTag.IsMatch(child.NodeName))
+                                                .Select(child => child.Cq())
+                                                .ForEach(childCq =>
+                                                {
+                                                    Trace.WriteLine($"[{articleTitle}] [Paragraph has child elements {childCq[0].NodeName}]: {paragraphCq.Html()}");
+                                                    childCq.ReplaceWith(childCq.Text());
+                                                });
+
+                                            CQ imageCq = paragraphCq.Find("img");
+                                            if (imageCq.Any())
                                             {
-                                                paragraph.Remove();
+                                                paragraphCq.Children().ReplaceWith(imageCq);
+                                            }
+                                            else
+                                            {
+                                                paragraphCq.Text(paragraphText);
+                                                if (string.IsNullOrWhiteSpace(paragraphText)
+                                                    || paragraphText.StartsWith("[LinQ via C#",
+                                                        StringComparison.OrdinalIgnoreCase))
+                                                {
+                                                    paragraphCq.Remove();
+                                                }
                                             }
                                         });
-                                    return Tuple.Create(section.Text().Trim(), sectionArticle.Html());
+                                    articleContentCq.Find("img").RemoveAttr("style").RemoveAttr("width").RemoveAttr("height").RemoveAttr("border");
+                                    articleContentCq.Find("table").RemoveAttr("style").RemoveAttr("width").RemoveAttr("height").RemoveAttr("border").RemoveAttr("cellspacing").RemoveAttr("cellpadding");
+                                    articleContentCq.Find("td").RemoveAttr("style").RemoveAttr("width").RemoveAttr("height").RemoveAttr("border").RemoveAttr("valign");
+                                    // Cleanup direct child elements.
+                                    articleContentCq.Children()
+                                        .Where(child => !allowedTag.IsMatch(child.NodeName))
+                                        .ForEach(child =>
+                                        {
+                                            Trace.WriteLine($"[{articleTitle}] [{child.NodeName} is not allowed]: {child.OuterHTML}");
+                                            child.Cq().Remove();
+                                        });
+                                    // Cleanup span.
+                                    articleContentCq.Find("span")
+                                        .Select(span => (Span: span, Parent: span.ParentNode))
+                                        .Where(spanAndParent => !allowedSpanParentTag.IsMatch(spanAndParent.Parent.NodeName))
+                                        .ForEach(spanAndParent =>
+                                        {
+                                            Trace.WriteLine($"[{articleTitle}] [{spanAndParent.Span.NodeName} is not allowed]: {spanAndParent.Parent.OuterHTML}");
+                                            spanAndParent.Span.Cq().ReplaceWith(spanAndParent.Span.InnerText);
+                                        });
+                                    // Cleanup strong b u i
+                                    articleContentCq.Find("strong, b, u, i").ForEach(element => element.Cq().ReplaceWith(element.InnerText));
+                                    return (Title: articleTitle, Content: articleContentCq);
                                 }
                             }));
-                        return new Grouping<string, Tuple<string, string>>(
-                            chapter.Find("h1").Text().Trim(),
-                            sections);
+                        return (categoryCq.Find("h1").Text().Trim(), articles.ToList());
                     }));
 
-                return new Html(
-                    indexPage["title"].Text().Replace("Dixin's Blog -", string.Empty).Trim(),
+                return new AllHtml(
+                    indexPageCq["title"].Text().Replace("Dixin's Blog -", string.Empty).Trim(),
                     chapters);
             }
         }
 
-        private static async Task SaveDocumentsAsync(Html html, string outputDocument, string exportDocument)
+        private static async Task SaveDocumentsAsync(AllHtml html, string outputDocument, string exportDocument)
         {
             string tempHtmlFile = Path.ChangeExtension(Path.GetTempFileName(), "htm");
             string htmlContent = html.TransformText();
@@ -143,15 +264,15 @@
                 await writer.WriteAsync(htmlContent);
             }
 
-            string template = Path.Combine(PathHelper.ExecutingDirectory(), "Book.dot");
-            ConvertDocument(
-                tempHtmlFile, WdOpenFormat.wdOpenFormatWebPages,
-                outputDocument, WdSaveFormat.wdFormatDocument,
-                exportDocument, WdExportFormat.wdExportFormatPDF,
-                document => FormatDocument(document, html, template));
+            //string template = Path.Combine(PathHelper.ExecutingDirectory(), "Book.dot");
+            //ConvertDocument(
+            //    tempHtmlFile, WdOpenFormat.wdOpenFormatWebPages,
+            //    outputDocument, WdSaveFormat.wdFormatDocument,
+            //    exportDocument, WdExportFormat.wdExportFormatPDF,
+            //    document => FormatDocument(document, html, template));
         }
 
-        private static void FormatDocument(Document document, Html html, string template, string author = "Dixin Yan")
+        private static void FormatDocument(Document document, AllHtml html, string template, string author = "Dixin Yan")
         {
             document.InlineShapes
                 .Cast<InlineShape>()
