@@ -435,6 +435,7 @@
     <Compile Include="Reflection\AssemblyExtensions.cs" />
     <Compile Include="Sql\Concat.cs" />
     <Compile Include="Sql\ConcatWith.cs" />
+    <Compile Include="Sql\Warehouses.cs" />
     <Compile Include="Threading\SingleInstance.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Runtime\InteropServices\NativeMethods.cs" />

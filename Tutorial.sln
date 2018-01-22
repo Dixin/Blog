@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.4
+VisualStudioVersion = 15.0.27130.2010
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Tutorial.Shared", "Tutorial.Shared\Tutorial.Shared.shproj", "{CAC237A8-C000-4521-A31D-D9A7C68639A4}"
 EndProject
@@ -21,11 +21,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tutorial.Tests.External.Cor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tutorial.Tests.External.Net", "Tutorial.Tests.External.Net\Tutorial.Tests.External.Net.csproj", "{3438A461-2E10-4A5E-9C90-38EC8FAC09C1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tutorial.Console.Core", "Tutorial.Console.Core\Tutorial.Console.Core.csproj", "{1B3B7D50-CEF1-4582-AFF0-C9506CB680B1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tutorial.Console.Core", "Tutorial.Console.Core\Tutorial.Console.Core.csproj", "{1B3B7D50-CEF1-4582-AFF0-C9506CB680B1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tutorial.Console.Net", "Tutorial.Console.Net\Tutorial.Console.Net.csproj", "{7357CF43-1F2C-4DCC-AA49-FF5F0F3735A5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tutorial.Core", "Tutorial.Core\Tutorial.Core.csproj", "{88C3D245-C19E-4374-98C4-63EB2B39F7C8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tutorial.Core", "Tutorial.Core\Tutorial.Core.csproj", "{88C3D245-C19E-4374-98C4-63EB2B39F7C8}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Tutorial.Core.FSharp", "Tutorial.Core.FSharp\Tutorial.Core.FSharp.fsproj", "{F2F3C344-47B8-4E61-B5CF-3B63B3DB37F1}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -197,8 +199,27 @@ Global
 		{88C3D245-C19E-4374-98C4-63EB2B39F7C8}.Release|x64.Build.0 = Release|Any CPU
 		{88C3D245-C19E-4374-98C4-63EB2B39F7C8}.Release|x86.ActiveCfg = Release|Any CPU
 		{88C3D245-C19E-4374-98C4-63EB2B39F7C8}.Release|x86.Build.0 = Release|Any CPU
+		{F2F3C344-47B8-4E61-B5CF-3B63B3DB37F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2F3C344-47B8-4E61-B5CF-3B63B3DB37F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2F3C344-47B8-4E61-B5CF-3B63B3DB37F1}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{F2F3C344-47B8-4E61-B5CF-3B63B3DB37F1}.Debug|ARM.Build.0 = Debug|Any CPU
+		{F2F3C344-47B8-4E61-B5CF-3B63B3DB37F1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F2F3C344-47B8-4E61-B5CF-3B63B3DB37F1}.Debug|x64.Build.0 = Debug|Any CPU
+		{F2F3C344-47B8-4E61-B5CF-3B63B3DB37F1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F2F3C344-47B8-4E61-B5CF-3B63B3DB37F1}.Debug|x86.Build.0 = Debug|Any CPU
+		{F2F3C344-47B8-4E61-B5CF-3B63B3DB37F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2F3C344-47B8-4E61-B5CF-3B63B3DB37F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2F3C344-47B8-4E61-B5CF-3B63B3DB37F1}.Release|ARM.ActiveCfg = Release|Any CPU
+		{F2F3C344-47B8-4E61-B5CF-3B63B3DB37F1}.Release|ARM.Build.0 = Release|Any CPU
+		{F2F3C344-47B8-4E61-B5CF-3B63B3DB37F1}.Release|x64.ActiveCfg = Release|Any CPU
+		{F2F3C344-47B8-4E61-B5CF-3B63B3DB37F1}.Release|x64.Build.0 = Release|Any CPU
+		{F2F3C344-47B8-4E61-B5CF-3B63B3DB37F1}.Release|x86.ActiveCfg = Release|Any CPU
+		{F2F3C344-47B8-4E61-B5CF-3B63B3DB37F1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C2733201-A9C0-49C0-8998-D6D6005108CE}
 	EndGlobalSection
 EndGlobal
