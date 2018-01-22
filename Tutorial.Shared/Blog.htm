@@ -47,7 +47,7 @@
     <li><a href="#contents">Table of Contents</a></li>
 </ul>
 <h1 id="keywords">Keywords</h1>
-<p>.NET Core, .NET Framework, C# 7.0, Functional Programming, Lambda Calculus, Category Theory, LINQ, LINQ to Objects, LINQto XML, Parallel LINQ, LINQ to Entities, Entity Framework Core, Entity Framework.</p>
+<p>.NET Core, .NET Framework, C# 7.x, Functional Programming, Lambda Calculus, Category Theory, LINQ, LINQ to Objects, LINQto XML, Parallel LINQ, LINQ to Entities, Entity Framework Core, Entity Framework.</p>
 <h1 id="abstract">Abstract</h1>
 <p>This is a latest, in-depth, cross-platform tutorial on functional programming and LINQ programming via C# 7.0 language. It discusses real world development to underlying mathematics theories. It covers both .NET Framework (for Windows development) and .NET Core (for Linux, Mac, and Windows development).</p><p>C# is an open source, cross-platform language from Microsoft, and LINQ is the built-in functional data query capabilities of the language, working with API sets provided by .NET libraries. This entire tutorial is based on the latest language and frameworks. It covers C#’s functional features and functional programming aspects, and the detailed usage and internal mechanisms of mainstream LINQ technologies for different data domains, including LINQ to Objects, Parallel LINQ, LINQ to XML, and LINQ to Entities. It also demystifies the underlying quintessential theories of functional programming and LINQ, including Lambda Calculus and Category Theory.</p>
 <h1 id="acclaim">Acclaim</h1>
@@ -76,7 +76,7 @@
         <strong><br>Carol Hu<br>Microsoft Senior Software Engineer</strong>
     <li>
         “I like the way the author presented the detailed knowledge with a lot of examples. As a data scientist with statistics background in a number of industries, I can pick up C# programming and LINQ quickly when I followed the book. The book was concise and easy to read. It was a pleasant experience for me to spend my time emerging myself in the book in the sunshine weekday afternoon.”
-        <strong><br>Xue Liu<br>Microsoft Data Scientist</strong>
+        <strong><br>Xue Liu<br>Microsoft Senior Data Scientist</strong>
     <li>
         “Great book! It takes a hands-on approach to LINQ and functional programming in an easy to understand format. I would highly recommend this book to developers looking to develop expertise in C#, functional programming, and LINQ.”
         <strong><br>Himanshu Lal<br>Microsoft Principal Software Engineering Manager</strong>
@@ -195,1154 +195,1153 @@
 <h1 id="contents">Table of Contents</h1>
 <p>All code examples are available on <a href="https://github.com/Dixin/CodeSnippets/tree/master/" target="_blank">GitHub</a>.</p>
 <ol>
+<li>
+<h1><a href="https://weblogs.asp.net/dixin/Tags/Introducing%20LINQ" target="_blank">LINQ and functional paradigm</a></h1>
+<ol>
     <li>
-        <h1>LINQ and Functional Paradigm</h1>
-        <ol>
-            <li>
-                <h2>Getting Started</h2>
-                <ul>
-                    <li>.NET Framework, C# and LINQ
-                    <li>Functional programming
-                    <li>This tutorial
-                    <li>Code examples
-                    <li>Author
-                    <li>Tools</li>
-                </ul>
-            <li>
-                <h2>What is LINQ</h2>
-                <ul>
-                    <li>
-                        One language for different data domains
-                        <ul>
-                            <li>LINQ to Objects
-                            <li>Parallel LINQ
-                            <li>LINQ to XML
-                            <li>LINQ to DataSets
-                            <li>LINQ to Entities
-                            <li>LINQ to SQL
-                            <li>LINQ to NoSQL (LINQ to DocumentDB)
-                            <li>LINQ to JSON
-                            <li>LINQ to Twitter</li>
-                        </ul>
-                    <li>Productivity
-                    <li>Local query vs. remote query</li>
-                </ul>
-            <li>
-                <h2>What is Functional Programming</h2>
-                <ul>
-                    <li>Programming paradigms
-                    <li>Imperative programming vs. declarative programming
-                    <li>Object-oriented programming vs. functional programming</li>
-                </ul>
-            </li>
-        </ol>
+    <h2><a href="https://weblogs.asp.net/dixin/linq-via-csharp-introduction" target="_blank">Getting started</a></h2>
+    <ul>
+        <li>.NET Framework, C# and LINQ
+        <li>Functional programming
+        <li>This tutorial
+        <li>Code examples
+        <li>Author
+        <li>Tools</li>
+    </ul>
     <li>
-        <h1>Functional C#</h1>
-        <ol>
-            <li>
-                <h2>Fundamentals</h2>
-                <ul>
-                    <li>
-                        Types and members
-                        <ul>
-                            <li>Built-in types
-                            <li>Reference type vs. value type</li>
-                        </ul>
-                    <li>Static class
-                    <li>Partial type
-                    <li>Interface implementation
-                    <li>
-                        Generic type
-                        <ul>
-                            <li>Type parameter constraints</li>
-                        </ul>
-                    <li>Nullable value type
-                    <li>IDisposable and using statement
-                    <li>Auto property
-                    <li>Property initializer
-                    <li>Object initializer
-                    <li>Collection initializer
-                    <li>Index initializer
-                    <li>Null coalescing operator
-                    <li>Null conditional operator
-                    <li>String interpolation
-                    <li>nameof expression</li>
-                </ul>
-            <li>
-                <h2>Function Type and Delegate</h2>
-                <ul>
-                    <li>
-                        Delegate type
-                        <ul>
-                            <li>Function type
-                            <li>Generic delegate type
-                            <li>Unified built-in delegate types</li>
-                        </ul>
-                    <li>
-                        Delegate instance
-                        <ul>
-                            <li>Function
-                            <li>Delegate class and delegate object
-                            <li>Function group</li>
-                        </ul>
-                    <li>Index initializer</li>
-                </ul>
-            <li>
-                <h2>Function Parameter and Return Value</h2>
-                <ul>
-                    <li>Pass by value vs. pass by reference
-                    <li>Output parameter and out variable
-                    <li>Parameter array
-                    <li>Positional argument vs. named argument
-                    <li>Required parameter vs. optional parameter
-                    <li>Caller information parameter
-                    <li>Return by value vs. return by reference</li>
-                </ul>
-            <li>
-                <h2>Named Function and Static, Instance, Extension Method</h2>
-                <ul>
-                    <li>Function member and function member name
-                    <li>Method overload and ad hoc polymorphism
-                    <li>
-                        Generic method and parametric polymorphism
-                        <ul>
-                            <li>Type argument inference</li>
-                        </ul>
-                    <li>Static vs. instance method
-                    <li>Extension method
-                    <li>Partial method
-                    <li>using static directive</li>
-                </ul>
-            <li>
-                <h2>Local Function and Closure</h2>
-                <ul>
-                    <li>Local function
-                    <li>
-                        Closure
-                        <ul>
-                            <li>Outer variable
-                            <li>Implicit reference</li>
-                        </ul>
-                    </li>
-                </ul>
-            <li>
-                <h2>Anonymous Function and Lambda Expression</h2>
-                <ul>
-                    <li>Anonymous method
-                    <li>Lambda expression
-                    <li>Call anonymous function
-                    <li>Closure
-                    <li>Expression bodied function member</li>
-                </ul>
-            <li>
-                <h2>Expression Tree: Function as Data</h2>
-                <ul>
-                    <li>
-                        Lambda expression as expression tree
-                        <ul>
-                            <li>Code as data
-                            <li>.NET expressions</li>
-                        </ul>
-                    <li>
-                        Compile expression tree at runtime
-                        <ul>
-                            <li>Traverse expression tree
-                            <li>Expression tree to CIL at runtime
-                            <li>Expression tree to executable function at runtime</li>
-                        </ul>
-                    <li>Expression tree and LINQ remote query</li>
-                </ul>
-            <li>
-                <h2>Higher-order Function, Currying and First Class Function</h2>
-                <ul>
-                    <li>First order and higher-order function
-                    <li>Curry function
-                    <li>=&gt; associativity
-                    <li>Partial apply function
-                    <li>Uncurry function
-                    <li>First-class function</li>
-                </ul>
-            <li>
-                <h2>Function Composition and Chaining</h2>
-                <ul>
-                    <li>Forward and backward composition
-                    <li>Forward pipe
-                    <li>
-                        Fluent chaining
-                        <ul>
-                            <li>Fluent extension methods</li>
-                        </ul>
-                    <li>LINQ query method composition</li>
-                </ul>
-            <li>
-                <h2>Query Expression</h2>
-                <ul>
-                    <li>Syntax and compilation
-                    <li>Query expression pattern
-                    <li>LINQ query expression
-                    <li>Query expression vs. query method</li>
-                </ul>
-            <li>
-                <h2>Covariance and Contravariance</h2>
-                <ul>
-                    <li>Non-generic function type
-                    <li>Generic function type
-                    <li>Generic interface
-                    <li>Generic higher-order function type
-                    <li>Array
-                    <li>Variances in .NET and LINQ</li>
-                </ul>
-            <li>
-                <h2>Immutability, Anonymous type, and Tuple</h2>
-                <ul>
-                    <li>Immutable value
-                    <li>Immutable data structure
-                    <li>
-                        Immutable anonymous type
-                        <ul>
-                            <li>Anonymous type and type parameter inference
-                            <li>Local variable type inference</li>
-                        </ul>
-                    <li>
-                        Tuple
-                        <ul>
-                            <li>Construction and element name
-                            <li>Deconstruction</li>
-                        </ul>
-                    </li>
-                </ul>
-            <li>
-                <h2>Pure Function</h2>
-                <ul>
-                    <li>Referential transparency and side effect free
-                    <li>PureAttribute and code contracts
-                    <li>Purity in .NET</li>
-                </ul>
-            <li>
-                <h2>Asynchronous Function</h2>
-                <ul>
-                    <li>Task, Task&lt;TResult&gt; and asynchrony
-                    <li>Named async function
-                    <li>Awaitable-awaiter pattern
-                    <li>Async state machine
-                    <li>
-                        Generalized async return type and async method builder
-                        <ul>
-                            <li>ValueTask&lt;TResult&gt; and performance</li>
-                        </ul>
-                    <li>Runtime context capture
-                    <li>Anonymous async function</li>
-                </ul>
-            <li>
-                <h2>Pattern matching</h2>
-                <ul>
-                    <li>Is expression
-                    <li>Switch statement</li>
-                </ul>
-            </li>
-        </ol>
-    <li>
-        <h1>LINQ to Objects</h1>
-        <ol>
-            <li>
-                <h2>Local Sequential Query</h2>
-                <ul>
-                    <li>Iteration pattern and foreach statement
-                    <li>
-                        IEnumerable&lt;T&gt; and IEnumerator&lt;T&gt;
-                        <ul>
-                            <li>EnumerableAssert utility
-                            <li>foreach loop vs. for loop
-                            <li>Non-generic sequence vs. generic sequence</li>
-                        </ul>
-                    <li>LINQ to Objects queryable types</li>
-                </ul>
-            <li>
-                <h2>Query Methods (Operators) and Query Expressions</h2>
-                <ul>
-                    <li>
-                        Return a new IEnumerable&lt;T&gt; sequence
-                        <ul>
-                            <li>Generation: Empty , Range, Repeat, DefaultIfEmpty
-                            <li>Filtering (restriction): Where, OfType, where
-                            <li>Mapping (projection): Select, SelectMany, from, let, select
-                            <li>Grouping: GroupBy, group, by, into
-                            <li>
-                                Join
-                                <ul>
-                                    <li>Inner join: Join, SelectMany, join, on, equals
-                                    <li>Outer join: GroupJoin, join, into, on, equals
-                                    <li>Cross join: SelectMany, Join, from select, join, on, equals</li>
-                                </ul>
-                            <li>Concatenation: Concat
-                            <li>Set: Distinct, Union, Intersect, Except
-                            <li>Convolution: Zip
-                            <li>Partitioning: Take, Skip, TakeWhile, SkipWhile
-                            <li>Ordering: OrderBy, ThenBy, OrderByDescending, ThenByDescending, Reverse, orderby, ascending, descending, into
-                            <li>Conversion: Cast, AsEnumerable</li>
-                        </ul>
-                    <li>
-                        Return a new collection
-                        <ul>
-                            <li>Conversion: ToArray, ToList, ToDictionary, ToLookup</li>
-                        </ul>
-                    <li>
-                        Return a single value
-                        <ul>
-                            <li>Element: First, FirstOrDefault, Last, LastOrDefault, ElementAt, ElementAtOrDefault, Single, SingleOrDefault
-                            <li>Aggregation: Aggregate, Count, LongCount, Min, Max, Sum, Average
-                            <li>Quantifier: All, Any, Contains
-                            <li>Equality: SequenceEqual</li>
-                        </ul>
-                    <li>Queries in other languages</li>
-                </ul>
-            <li>
-                <h2>Generator</h2>
-                <ul>
-                    <li>Implement iterator pattern
-                    <li>Generate sequence and iterator
-                    <li>Yield statement and generator
-                    <li>Iterator and generator in other languages</li>
-                </ul>
-            <li>
-                <h2>Deferred Execution, Lazy Evaluation and Eager Evaluation</h2>
-                <ul>
-                    <li>
-                        Deferred execution vs. immediate execution
-                        <ul>
-                            <li>Cold IEnumerable&lt;T&gt; vs. hot IEnumerable&lt;T&gt;</li>
-                        </ul>
-                    <li>Lazy evaluation vs. eager evaluation</li>
-                </ul>
-            <li>
-                <h2>Query Methods Implementation</h2>
-                <ul>
-                    <li>Argument check and deferred execution
-                    <li>
-                        Return a new collection
-                        <ul>
-                            <li>Conversion: ToArray, ToList, ToDictionary, ToLookup</li>
-                        </ul>
-                    <li>
-                        Return a new IEnumerable&lt;T&gt; sequence
-                        <ul>
-                            <li>Conversion: Cast, AsEnumerable
-                            <li>Generation: Empty , Range, Repeat, DefaultIfEmpty
-                            <li>Filtering (restriction): Where, OfType
-                            <li>Mapping (projection): Select, SelectMany
-                            <li>Grouping: GroupBy
-                            <li>Join: SelectMany, Join, GroupJoin
-                            <li>Concatenation: Concat
-                            <li>Set: Distinct, Union, Intersect, Except
-                            <li>Convolution: Zip
-                            <li>Partitioning: Take, Skip, TakeWhile, SkipWhile
-                            <li>Ordering: OrderBy, ThenBy, OrderByDescending, ThenByDescending, Reverse</li>
-                        </ul>
-                    <li>
-                        Return a single value
-                        <ul>
-                            <li>Element: First, FirstOrDefault, Last, LastOrDefault, ElementAt, ElementAtOrDefault, Single, SingleOrDefault
-                            <li>Aggregation: Aggregate, Count, LongCount, Min, Max, Sum, Average
-                            <li>Quantifier: All, Any, Contains
-                            <li>Equality: SequenceEqual</li>
-                        </ul>
-                    </li>
-                </ul>
-            <li>
-                <h2>Interactive Extensions (Ix)</h2>
-                <ul>
-                    <li>
-                        Returns a new IEnumerable&lt;T&gt; sequence
-                        <ul>
-                            <li>Generation: Defer, Create, Return, Repeat
-                            <li>Filtering: IgnoreElements, DistinctUntilChanged
-                            <li>Mapping: SelectMany, Scan, Expand
-                            <li>Concatenation: Concat, StartWith
-                            <li>Set: Distinct
-                            <li>Partitioning: TakeLast, SkipLast
-                            <li>Conversion: Hide
-                            <li>Buffering: Buffer, Share, Publish, Memoize
-                            <li>Exception: Throw, Catch, Finally, OnErrorResumeNext, Retry
-                            <li>Imperative: If, Case, Using, While, DoWhile, Generate, For
-                            <li>Iteration: Do</li>
-                        </ul>
-                    <li>
-                        Returns void
-                        <ul>
-                            <li>Iteration: ForEach</li>
-                        </ul>
-                    <li>
-                        Returns a single value
-                        <ul>
-                            <li>Aggregation: Min, Max, MinBy, MaxBy
-                            <li>Quantifiers: isEmpty</li>
-                        </ul>
-                    </li>
-                </ul>
-            <li>
-                <h2>Custom Query Methods</h2>
-                <ul>
-                    <li>
-                        Returns a new IEnumerable&lt;T&gt; sequence (deferred execution)
-                        <ul>
-                            <li>Generation: Create, RandomInt32, RandomDouble, FromValue, FromValues, EmptyIfNull
-                            <li>Filtering: Timeout
-                            <li>Concatenation: Join, Append, Prepend, AppendTo, PrependTo
-                            <li>Partitioning: Subsequence
-                            <li>Exception: Catch, Retry
-                            <li>Comparison: OrderBy, OrderByDescending, ThenBy, ThenByDescending, GroupBy, Join, GroupJoin, Distinct, Union, Intersect, Except
-                            <li>List: Insert, Remove, RemoveAll, RemoveAt</li>
-                        </ul>
-                    <li>
-                        Returns a new collection
-                        <ul>
-                            <li>Comparison: ToDictionary, ToLookup</li>
-                        </ul>
-                    <li>
-                        Returns a single value
-                        <ul>
-                            <li>List: IndexOf, LastIndexOf
-                            <li>Aggregation: PercentileExclusive, PercentileInclusive, Percentile
-                            <li>Quantifiers: IsNullOrEmpty, IsNotNullOrEmpty
-                            <li>Comparison: Contains, SequenceEqual</li>
-                        </ul>
-                    <li>
-                        Returns void
-                        <ul>
-                            <li>Iteration: ForEach</li>
-                        </ul>
-                    </li>
-                </ul>
-            </li>
-        </ol>
-    <li>
-        <h1>LINQ to XML</h1>
-        <ol>
-            <li>
-                <h2>Modeling XML</h2>
-                <ul>
-                    <li>Imperative vs. declarative paradigm
-                    <li>Types, conversions and operators
-                    <li>Read and deserialize XML
-                    <li>Serialize and write XML
-                    <li>Deferred construction</li>
-                </ul>
-            <li>
-                <h2>Query Methods (Operators)</h2>
-                <ul>
-                    <li>Navigation
-                    <li>Ordering
-                    <li>Comparison
-                    <li>More useful queries
-                    <li>XPath
-                    <li>Generate XPath expression</li>
-                </ul>
-            <li>
-                <h2>Manipulating XML</h2>
-                <ul>
-                    <li>Clone
-                    <li>Add, replace, delete, update, and events
-                    <li>Annotation
-                    <li>Validate with XSD
-                    <li>Transform</li>
-                </ul>
-            </li>
-        </ol>
-    <li>
-        <h1>Parallel LINQ</h1>
-        <ol>
-            <li>
-                <h2>Local Parallel Query and Visualization</h2>
-                <ul>
-                    <li>Parallel LINQ classes and methods
-                    <li>Parallel query vs. sequential query
-                    <li>Execute parallel query
-                    <li>
-                        Visualize parallel query execution
-                        <ul>
-                            <li>Install and configure Concurrency Visualizer
-                            <li>Visualize sequential and parallel LINQ queries
-                            <li>Visualize chaining query methods</li>
-                        </ul>
-                    </li>
-                </ul>
-            <li>
-                <h2>Partitioning</h2>
-                <ul>
-                    <li>
-                        Partitioning algorithms and load balancing
-                        <ul>
-                            <li>Range partitioning
-                            <li>Stripped partitioning
-                            <li>Hash partitioning
-                            <li>Chunk partitioning</li>
-                        </ul>
-                    <li>
-                        Implement custom partitioner
-                        <ul>
-                            <li>Static partitioner
-                            <li>Dynamic partitioner</li>
-                        </ul>
-                    </li>
-                </ul>
-            <li>
-                <h2>Query Methods (Operators)</h2>
-                <ul>
-                    <li>
-                        Query settings
-                        <ul>
-                            <li>Cancellation
-                            <li>Degree of parallelism
-                            <li>Execution mode
-                            <li>Merge the values</li>
-                        </ul>
-                    <li>
-                        Ordering
-                        <ul>
-                            <li>Control the order
-                            <li>Order and correctness
-                            <li>Orderable partitioner</li>
-                        </ul>
-                    <li>
-                        Aggregation
-                        <ul>
-                            <li>Commutativity, associativity and correctness
-                            <li>Partition and merge</li>
-                        </ul>
-                    </li>
-                </ul>
-            <li>
-                <h2>Performance</h2>
-                <ul>
-                    <li>Sequential vs. parallel
-                    <li>CPU bound vs. IO bound
-                    <li>Summary</li>
-                </ul>
-            </li>
-        </ol>
-    <li>
-        <h1>Entity Framework/Core and LINQ to Entities</h1>
-        <ol>
-            <li>
-                <h2>Remote Query</h2>
-                <ul>
-                    <li>Entity Framework and Entity Framework Core
-                    <li>SQL database
-                    <li>Remote query vs. local query
-                    <li>Function vs. expression tree</li>
-                </ul>
-            <li>
-                <h2>Modeling Database: Object-Relational Mapping</h2>
-                <ul>
-                    <li>Data types
-                    <li>
-                        Database
-                        <ul>
-                            <li>Connection resiliency and execution strategy</li>
-                        </ul>
-                    <li>Tables</li>
-                    <li>
-                        Relationships
-                        <ul>
-                            <li>One-to-one
-                            <li>One-to-many
-                            <li>Many-to-many</li>
-                        </ul>
-                    <li>Inheritance
-                    <li>Views
-                    <li>Stored procedures and functions</li>
-                </ul>
-            <li>
-                <h2>Logging and Tracing Queries</h2>
-                <ul>
-                    <li>Application side logging
-                    <li>Database side tracing with Extended Events</li>
-                </ul>
-            <li>
-                <h2>Query Methods (Operators)</h2>
-                <ul>
-                    <li>
-                        Return a new IQueryable&lt;T&gt; source
-                        <ul>
-                            <li>Generation: DefaultIfEmpty
-                            <li>Filtering (restriction): Where, OfType
-                            <li>Mapping (projection): Select
-                            <li>Grouping: GroupBy
-                            <li>
-                                Join
-                                <ul>
-                                    <li>Inner join: Join, SelectMany, GroupJoin, Select
-                                    <li>Outer join: GroupJoin, Select, SelectMany
-                                    <li>Cross join and self join: SelectMany, Join</li>
-                                </ul>
-                            <li>Concatenation: Concat
-                            <li>Set: Distinct, Union, Intersect, Except
-                            <li>Partitioning: Take, Skip
-                            <li>Ordering: OrderBy, ThenBy, OrderByDescending, ThenByDescending
-                            <li>Conversion: Cast, AsQueryable</li>
-                        </ul>
-                    <li>
-                        Return a single value
-                        <ul>
-                            <li>Element: First, FirstOrDefault, Single, SingleOrDefault
-                            <li>Aggregation: Count, LongCount, Min, Max, Sum, Average
-                            <li>Quantifier: All, Any, Contains</li>
-                        </ul>
-                    </li>
-                </ul>
-            <li>
-                <h2>Query Translation Implementation</h2>
-                <ul>
-                    <li>
-                        Code to LINQ expression tree
-                        <ul>
-                            <li>IQueryable&lt;T&gt; and IQueryProvider
-                            <li>Queryable methods
-                            <li>Build LINQ to Entities abstract syntax tree</li>
-                        </ul>
-                    <li>
-                        .NET expression tree to database expression tree
-                        <ul>
-                            <li>Database query abstract syntax tree
-                            <li>Compile LINQ expressions to database expressions
-                            <li>Compile LINQ query method calls
-                            <li>Compile .NET API calls
-                            <li>Remote API call vs. local API call
-                            <li>Compile database function call</li>
-                        </ul>
-                    <li>
-                        Database expression tree to SQL
-                        <ul>
-                            <li>SQL generator and SQL command
-                            <li>Generate SQL from database expression tree</li>
-                        </ul>
-                    </li>
-                </ul>
-            <li>
-                <h2>Query Data Loading</h2>
-                <ul>
-                    <li>
-                        Deferred execution
-                        <ul>
-                            <li>Iterator pattern
-                            <li>Lazy evaluation vs. eager evaluation</li>
-                        </ul>
-                    <li>Explicit loading
-                    <li>Eager loading
-                    <li>
-                        Lazy loading
-                        <ul>
-                            <li>The N + 1 problem
-                            <li>Disable lazy loading</li>
-                        </ul>
-                    </li>
-                </ul>
-            <li>
-                <h2>Data Changes and Transactions</h2>
-                <ul>
-                    <li>Repository pattern and unit of work pattern
-                    <li>
-                        Track entities and changes
-                        <ul>
-                            <li>Track entities
-                            <li>Track entity changes and property changes
-                            <li>Track relationship changes
-                            <li>Enable and disable tracking</li>
-                        </ul>
-                    <li>
-                        Change data
-                        <ul>
-                            <li>Create
-                            <li>Update
-                            <li>Delete</li>
-                        </ul>
-                    <li>
-                        Transaction
-                        <ul>
-                            <li>Transaction with connection resiliency and execution strategy
-                            <li>EF/Core transaction
-                            <li>ADO.NET transaction
-                            <li>Transaction scope</li>
-                        </ul>
-                    </li>
-                </ul>
-            <li>
-                <h2>Optimistic Concurrency</h2>
-                <ul>
-                    <li>Detect concurrent conflicts
-                    <li>
-                        Resolve concurrent conflicts
-                        <ul>
-                            <li>Retain database values (database wins)
-                            <li>Overwrite database values (client wins)
-                            <li>Merge with database values</li>
-                        </ul>
-                    <li>Save changes with concurrent conflict handling</li>
-                </ul>
-            <li>
-                <h2>Performance</h2>
-                <ul>
-                    <li>
-                        Initialization
-                        <ul>
-                            <li>Provider initialization
-                            <li>Database initialization
-                            <li>Mapping views initialization</li>
-                        </ul>
-                    <li>
-                        Cache
-                        <ul>
-                            <li>Entity cache
-                            <li>LINQ query translation cache
-                            <li>SQL query plan cache</li>
-                        </ul>
-                    <li>
-                        Asynchrony
-                        <ul>
-                            <li>Asynchronous data queries and data changes
-                            <li>Transactions and connection resiliency with asynchronous operations
-                            <li>Asynchronous concurrent conflicts</li>
-                        </ul>
-                    </li>
-                </ul>
-            </li>
-        </ol>
-        <!--
+    <h2><a href="https://weblogs.asp.net/dixin/introducing-linq-2-what-is-linq" target="_blank">What is LINQ</a></h2>
+    <ul>
         <li>
-        <h1>LINQ to SQL</h1>
-        <ol>
-        <li>
-        <h2>Object-Relational Mapping</h2>
+        One language for different data domains
         <ul>
-            <li>Create C# models from SQL schema
-            <li>Implement the mapping
-            <li>Customize the mapping
-            <li>
-            Work with model
-            <ul>
-                <li>Partial class
-                <li>Partial method
-                <li>INotifyPropertyChanging and INotifyPropertyChanged interfaces</li>
-            </ul>
-            <li>Create SQL schema from C# models</li>
+            <li>LINQ to Objects
+            <li>Parallel LINQ
+            <li>LINQ to XML
+            <li>LINQ to DataSets
+            <li>LINQ to Entities
+            <li>LINQ to SQL
+            <li>LINQ to NoSQL (LINQ to DocumentDB)
+            <li>LINQ to JSON
+            <li>LINQ to Twitter</li>
         </ul>
-        <li>
-        <h2>IQueryable&lt;T&gt;</h2>
+        <li>Productivity
+        <li>Local query vs. remote query</li>
+    </ul>
+    <li>
+        <h2><a href="https://weblogs.asp.net/dixin/introducing-linq-3-waht-is-functional-programming" target="_blank">What is functional programming</a></h2>
         <ul>
-            <li>IQueryable and IQueryable&lt;T&gt;
-            <li>IQueryable and IQueryable&lt;T&gt; extensions
-            <li>Table&lt;T&gt;
-            <li>IEnumerable&lt;T&gt; extensions vs. IQueryable&lt;T&gt; extensions</li>
+            <li>Programming paradigms
+            <li>Imperative programming vs. declarative programming
+            <li>Object-oriented programming vs. functional programming</li>
         </ul>
-        <li>
-        <h2>Expression Tree</h2>
+    </li>
+</ol>
+<li>
+<h1><a href="https://weblogs.asp.net/dixin/Tags/Functional%20C%23" target="_blank">Functional programming via C#</a></h1>
+<ol>
+<li>
+<h2><a href="https://weblogs.asp.net/dixin/functional-csharp-fundamentals" target="_blank">C# language fundamentals</a></h2>
+<ul>
+    <li>
+    Types and members
+    <ul>
+        <li>Built-in types
+        <li>Reference type vs. value type</li>
+    </ul>
+    <li>Static class
+    <li>Partial type
+    <li>Interface implementation
+    <li>
+    Generic type
+    <ul>
+        <li>Type parameter constraints</li>
+    </ul>
+    <li>Nullable value type
+    <li>IDisposable and using statement
+    <li>Auto property
+    <li>Property initializer
+    <li>Object initializer
+    <li>Collection initializer
+    <li>Index initializer
+    <li>Null coalescing operator
+    <li>Null conditional operator
+    <li>String interpolation
+    <li>nameof expression</li>
+</ul>
+<li>
+<h2><a href="https://weblogs.asp.net/dixin/functional-csharp-function-type-and-delegate" target="_blank">Function type and delegate</a></h2>
+<ul>
+    <li>
+    Delegate type
+    <ul>
+        <li>Function type
+        <li>Generic delegate type
+        <li>Unified built-in delegate types</li>
+    </ul>
+    <li>
+    Delegate instance
+    <ul>
+        <li>Function
+        <li>Delegate class and delegate object
+        <li>Function group</li>
+    </ul>
+    <li>Index initializer</li>
+</ul>
+<li>
+<h2><a href="https://weblogs.asp.net/dixin/functional-csharp-function-parameter-and-return-value" target="_blank">Function parameter and return value</a></h2>
+<ul>
+    <li>Pass by value vs. pass by reference
+    <li>Output parameter and out variable
+    <li>Parameter array
+    <li>Positional argument vs. named argument
+    <li>Required parameter vs. optional parameter
+    <li>Caller information parameter
+    <li>Return by value vs. return by reference</li>
+</ul>
+<li>
+<h2><a href="https://weblogs.asp.net/dixin/functional-csharp-named-function-and-static-instance-extension-method" target="_blank">Named Function: Static, instance, extension method</a></h2>
+<ul>
+    <li>Function member and function member name
+    <li>Method overload and ad hoc polymorphism
+    <li>
+    Generic method and parametric polymorphism
+    <ul>
+        <li>Type argument inference</li>
+    </ul>
+    <li>Static vs. instance method
+    <li>Extension method
+    <li>Partial method
+    <li>using static directive</li>
+</ul>
+<li>
+<h2><a href="https://weblogs.asp.net/dixin/functional-csharp-local-function-and-closure" target="_blank">Local function and closure</a></h2>
+<ul>
+    <li>Local function
+    <li>
+        Closure
         <ul>
-            <li>Anonymous method vs. expression tree
-            <li>Expression tree for LINQ to SQL
-            <li>Translate expression tree to SQL
-            <li>Expression tree types
-            <li>Expression tree for DLR
-            <li>Visualize expression tree while debugging</li>
+            <li>Outer variable
+            <li>Implicit reference</li>
         </ul>
-        <li>
-        <h2>Data Retrieving Via Query Methods</h2>
+    </li>
+</ul>
+<li>
+<h2><a href="https://weblogs.asp.net/dixin/functional-csharp-anonymous-function-and-lambda-expression" target="_blank">Anonymous function and lambda expression</a></h2>
+<ul>
+    <li>Anonymous method
+    <li>Lambda expression
+    <li>Call anonymous function
+    <li>Closure
+    <li>Expression bodied function member</li>
+</ul>
+<li>
+<h2><a href="https://weblogs.asp.net/dixin/functional-csharp-function-as-data-and-expression-tree" target="_blank">Expression tree: Function as data</a></h2>
+<ul>
+    <li>
+    Lambda expression as expression tree
+    <ul>
+        <li>Code as data
+        <li>.NET expressions</li>
+    </ul>
+    <li>
+    Compile expression tree at runtime
+    <ul>
+        <li>Traverse expression tree
+        <li>Expression tree to CIL at runtime
+        <li>Expression tree to executable function at runtime</li>
+    </ul>
+    <li>Expression tree and LINQ remote query</li>
+</ul>
+<li>
+<h2><a href="https://weblogs.asp.net/dixin/functional-csharp-higher-order-function-currying-and-first-class-function" target="_blank">Higher-order function, currying and first class function</a></h2>
+<ul>
+    <li>First order and higher-order function
+    <li>Curry function
+    <li>=&gt; associativity
+    <li>Partial apply function
+    <li>Uncurry function
+    <li>First-class function</li>
+</ul>
+<li>
+<h2><a href="https://weblogs.asp.net/dixin/functional-csharp-function-composition-and-method-chaining" target="_blank">Function composition and chaining</a></h2>
+<ul>
+    <li>Forward and backward composition
+    <li>Forward pipe
+    <li>
+    Fluent chaining
+    <ul>
+        <li>Fluent extension methods</li>
+    </ul>
+    <li>LINQ query method composition</li>
+</ul>
+<li>
+<h2><a href="https://weblogs.asp.net/dixin/functional-csharp-query-expression" target="_blank">Query Expression</a></h2>
+<ul>
+    <li>Syntax and compilation
+    <li>Query expression pattern
+    <li>LINQ query expression
+    <li>Query expression vs. query method</li>
+</ul>
+<li>
+<h2><a href="https://weblogs.asp.net/dixin/functional-csharp-covariance-and-contravariance" target="_blank">Covariance and Contravariance</a></h2>
+<ul>
+    <li>Non-generic function type
+    <li>Generic function type
+    <li>Generic interface
+    <li>Generic higher-order function type
+    <li>Array
+    <li>Variances in .NET and LINQ</li>
+</ul>
+<li>
+<h2><a href="https://weblogs.asp.net/dixin/functional-csharp-immutability-anonymous-type-and-tuple" target="_blank">Immutability, anonymous type and tuple</a></h2>
+<ul>
+    <li>Immutable value
+    <li>Immutable data structure
+    <li>
+    Immutable anonymous type
+    <ul>
+        <li>Anonymous type and type parameter inference
+        <li>Local variable type inference</li>
+    </ul>
+    <li>
+        Tuple
         <ul>
-            <li>Supported and Unsupported query methods
-            <li>
-            Restriction
-            <ul>
-                <li>WHERE
-                <li>AND / OR
-                <li>LIKE
-                <li>IN
-                <li>IS / NOT / NULL</li>
-            </ul>
-            <li>
-            Projection
-            <ul>
-                <li>SELECT
-                <li>Explicitly construct entity
-                <li>CASE</li>
-            </ul>
-            <li>
-            Ordering
-            <ul>
-                <li>ORDER BY / ASC / DESC</li>
-            </ul>
+            <li>Construction and element name
+            <li>Deconstruction</li>
+        </ul>
+    </li>
+</ul>
+<li>
+<h2><a href="https://weblogs.asp.net/dixin/functional-csharp-pure-function" target="_blank">Pure function</a></h2>
+<ul>
+    <li>Referential transparency and side effect free
+    <li>PureAttribute and code contracts
+    <li>Purity in .NET</li>
+</ul>
+<li>
+<h2><a href="https://weblogs.asp.net/dixin/functional-csharp-asynchronous-function" target="_blank">Asynchronous function</a></h2>
+<ul>
+    <li>Task, Task&lt;TResult&gt; and asynchrony
+    <li>Named async function
+    <li>Awaitable-awaiter pattern
+    <li>Async state machine
+    <li>
+    Generalized async return type and async method builder
+    <ul>
+        <li>ValueTask&lt;TResult&gt; and performance</li>
+    </ul>
+    <li>Runtime context capture
+    <li>Anonymous async function</li>
+</ul>
+<li>
+    <h2><a href="https://weblogs.asp.net/dixin/functional-csharp-pattern-matching" target="_blank">Pattern matching</a></h2>
+    <ul>
+        <li>Is expression
+        <li>Switch statement</li>
+    </ul>
+</li>
+</ol>
+<li>
+<h1><a href="https://weblogs.asp.net/dixin/Tags/LINQ%20to%20Objects" target="_blank">LINQ to Objects: Querying objects in memory</a></h1>
+<ol>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/linq-to-objects-local-sequential-query" target="_blank">Sequential LINQ query</a></h2>
+    <ul>
+        <li>Iteration pattern and foreach statement
+        <li>
+        IEnumerable&lt;T&gt; and IEnumerator&lt;T&gt;
+        <ul>
+            <li>EnumerableAssert utility
+            <li>foreach loop vs. for loop
+            <li>Non-generic sequence vs. generic sequence</li>
+        </ul>
+        <li>LINQ to Objects queryable types</li>
+    </ul>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/linq-to-objects-query-methods-operators-and-query-expressions" target="_blank">LINQ to Objects standard queries and query expressions</a></h2>
+    <ul>
+        <li>
+        Return a new IEnumerable&lt;T&gt; sequence
+        <ul>
+            <li>Generation: Empty , Range, Repeat, DefaultIfEmpty
+            <li>Filtering (restriction): Where, OfType, where
+            <li>Mapping (projection): Select, SelectMany, from, let, select
+            <li>Grouping: GroupBy, group, by, into
             <li>
             Join
             <ul>
-                <li>Natural join
-                <li>INNER JOIN
-                <li>
-                OUTER JOIN
-                <ul>
-                    <li>Association</li>
-                </ul>
-                <li>CROSS JOIN
-                <li>Self JOIN</li>
+                <li>Inner join: Join, SelectMany, join, on, equals
+                <li>Outer join: GroupJoin, join, into, on, equals
+                <li>Cross join: SelectMany, Join, from select, join, on, equals</li>
             </ul>
-            <li>
-            Grouping and aggregation
-            <ul>
-                <li>GROUP BY / aggregate functions
-                <li>HAVING</li>
-            </ul>
-            <li>
-            Set
-            <ul>
-                <li>DISTINCT
-                <li>UNION
-                <li>EXISTS
-                <li>NOT EXISTS</li>
-            </ul>
-            <li>
-            Partitioning
-            <ul>
-                <li>TOP
-                <li>ROW_NUMBER()
-                <li>BETWEEN … AND</li>
-            </ul>
-            <li>
-            Concatenation
-            <ul>
-                <li>UNION ALL</li>
-            </ul>
-            <li>
-            Qualifiers
-            <ul>
-                <li>CASE / EXISTS</li>
-            </ul>
-            <li>Other query methods</li>
+            <li>Concatenation: Concat
+            <li>Set: Distinct, Union, Intersect, Except
+            <li>Convolution: Zip
+            <li>Partitioning: Take, Skip, TakeWhile, SkipWhile
+            <li>Ordering: OrderBy, ThenBy, OrderByDescending, ThenByDescending, Reverse, orderby, ascending, descending, into
+            <li>Conversion: Cast, AsEnumerable</li>
         </ul>
         <li>
-        <h2>Remote And Local Method Call</h2>
+        Return a new collection
         <ul>
-            <li>Remote method call
-            <li>Local method call
-            <li>Remote method recognition</li>
+            <li>Conversion: ToArray, ToList, ToDictionary, ToLookup</li>
         </ul>
         <li>
-        <h2>Working With Deferred Execution</h2>
+        Return a single value
         <ul>
-            <li>Deferred execution and DataContext
-            <li>
-                Deferred execution and eager loading
-                <ul>
-                    <li>DataLoadOptions.LoadWith()
-                    <li>DataLoadOptions.AssociateWith()
-                    <li>DataContext.DeferredLoadingEnabled</li>
-                </ul>
-            </li>
+            <li>Element: First, FirstOrDefault, Last, LastOrDefault, ElementAt, ElementAtOrDefault, Single, SingleOrDefault
+            <li>Aggregation: Aggregate, Count, LongCount, Min, Max, Sum, Average
+            <li>Quantifier: All, Any, Contains
+            <li>Equality: SequenceEqual</li>
         </ul>
+        <li>Queries in other languages</li>
+    </ul>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/linq-to-objects-generator" target="_blank">Generator</a></h2>
+    <ul>
+        <li>Implement iterator pattern
+        <li>Generate sequence and iterator
+        <li>Yield statement and generator
+        <li>Iterator and generator in other languages</li>
+    </ul>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/linq-to-objects-deferred-execution-lazy-evaluation-and-eager-evaluation" target="_blank">Deferred execution, lazy evaluation and eager Evaluation</a></h2>
+    <ul>
         <li>
-        <h2>Data Changing</h2>
+        Deferred execution vs. immediate execution
         <ul>
-            <li>
-            Object Identity
-            <ul>
-                <li>Identity of entity objects
-                <li>Identity and DataContext
-                <li>Identity of projected objects (non-entity objects)</li>
-            </ul>
-            <li>
-            Track changes
-            <ul>
-                <li>State change
-                <li>Association change
-                <li>Change set</li>
-            </ul>
-            <li>
-            Submit changes
-            <ul>
-                <li>
-                INSERT
-                <ul>
-                    <li>Work with IDENTITY column</li>
-                </ul>
-                <li>UPDATE
-                <li>DELETE</li>
-            </ul>
-            <li>Read-only DataContext</li>
+            <li>Cold IEnumerable&lt;T&gt; vs. hot IEnumerable&lt;T&gt;</li>
         </ul>
+        <li>Lazy evaluation vs. eager evaluation</li>
+    </ul>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/linq-to-objects-query-methods-implementation" target="_blank">LINQ to Objects internals: Standard queries implementation</a></h2>
+    <ul>
+        <li>Argument check and deferred execution
         <li>
-        <h2>Transaction</h2>
+        Return a new collection
         <ul>
-            <li>Implementing transaction (BEGIN / COMMIT / ROLLBACK)
-            <li>Default transaction
-            <li>Custom transactions</li>
+            <li>Conversion: ToArray, ToList, ToDictionary, ToLookup</li>
         </ul>
         <li>
-        <h2>Concurrent conflict</h2>
+        Return a new IEnumerable&lt;T&gt; sequence
         <ul>
-            <li>Conflicts in concurrent data access
-            <li>
-            Optimistic concurrency control
-            <ul>
-                <li>Update check
-                <li>Time stamp</li>
-            </ul>
-            <li>
-            Handle ChangeConflictException
-            <ul>
-                <li>Merge changes to resolve conflict</li>
-            </ul>
-            <li>More about concurrency</li>
+            <li>Conversion: Cast, AsEnumerable
+            <li>Generation: Empty , Range, Repeat, DefaultIfEmpty
+            <li>Filtering (restriction): Where, OfType
+            <li>Mapping (projection): Select, SelectMany
+            <li>Grouping: GroupBy
+            <li>Join: SelectMany, Join, GroupJoin
+            <li>Concatenation: Concat
+            <li>Set: Distinct, Union, Intersect, Except
+            <li>Convolution: Zip
+            <li>Partitioning: Take, Skip, TakeWhile, SkipWhile
+            <li>Ordering: OrderBy, ThenBy, OrderByDescending, ThenByDescending, Reverse</li>
         </ul>
         <li>
-        <h2>Implementing LINQ to SQL Provider</h2>
-        <ul>
-            <li>
-            The provider model
+            Return a single value
             <ul>
-                <li>Implement IQueryable&lt;T&gt; and IOrderedQueryable&lt;T&gt;
-                <li>Implement IQueryProvider</li>
-            </ul>
-            <li>
-            Query method internals
-            <ul>
-                <li>Deferred execution methods
-                <li>Eager execution methods</li>
-            </ul>
-            <li>
-            Work together
-            <ul>
-                <li>Query a collection of items (deferred execution)
-                <li>Query a single item (eager execution)
-                <li>Aggregate (eager execution)
-                <li>SQL translating and executing</li>
-            </ul>
-            <li>
-                LINQ Providers
-                <ul>
-                    <li>Built-in IQueryable LINQ Providers
-                    <li>LINQ to Everything
-                    <li>LINQ to Objects provider</li>
-                </ul>
-            </li>
-        </ul>
-        <li>
-            <h2>Performance</h2>
-            <ul>
-                <li>O/R mapping overhead
-                <li>
-                Data retrieving overhead
-                <ul>
-                    <li>Compiled query
-                    <li>Static SQL / stored procedures without translating</li>
-                </ul>
-                <li>
-                Data changing overhead
-                <ul>
-                    <li>Bulk deleting / updating</li>
-                </ul>
-                <li>
-                    Query plan overhead
-                    <ul>
-                        <li>.NET 3.5
-                        <li>.NET 4.0</li>
-                    </ul>
-                </li>
+                <li>Element: First, FirstOrDefault, Last, LastOrDefault, ElementAt, ElementAtOrDefault, Single, SingleOrDefault
+                <li>Aggregation: Aggregate, Count, LongCount, Min, Max, Sum, Average
+                <li>Quantifier: All, Any, Contains
+                <li>Equality: SequenceEqual</li>
             </ul>
         </li>
-        </ol>-->
+    </ul>
     <li>
-        <h1>Lambda Calculus via C#</h1>
-        <ol>
+    <h2><a href="https://weblogs.asp.net/dixin/linq-to-objects-interactive-extensions-ix" target="_blank">Microsoft Interactive Extensions (Ix): More powerful queries</a></h2>
+    <ul>
+        <li>
+        Returns a new IEnumerable&lt;T&gt; sequence
+        <ul>
+            <li>Generation: Defer, Create, Return, Repeat
+            <li>Filtering: IgnoreElements, DistinctUntilChanged
+            <li>Mapping: SelectMany, Scan, Expand
+            <li>Concatenation: Concat, StartWith
+            <li>Set: Distinct
+            <li>Partitioning: TakeLast, SkipLast
+            <li>Conversion: Hide
+            <li>Buffering: Buffer, Share, Publish, Memoize
+            <li>Exception: Throw, Catch, Finally, OnErrorResumeNext, Retry
+            <li>Imperative: If, Case, Using, While, DoWhile, Generate, For
+            <li>Iteration: Do</li>
+        </ul>
+        <li>
+        Returns void
+        <ul>
+            <li>Iteration: ForEach</li>
+        </ul>
+        <li>
+            Returns a single value
+            <ul>
+                <li>Aggregation: Min, Max, MinBy, MaxBy
+                <li>Quantifiers: isEmpty</li>
+            </ul>
+        </li>
+    </ul>
+    <li>
+        <h2><a href="https://weblogs.asp.net/dixin/linq-to-objects-custom-query-methods" target="_blank">Building custom queries</a></h2>
+        <ul>
             <li>
-                <h2>Fundamentals</h2>
-                <ul>
-                    <li>
-                        Expression
-                        <ul>
-                            <li>Bound variable vs. free variable</li>
-                        </ul>
-                    <li>
-                        Reductions
-                        <ul>
-                            <li>α-conversion (alpha-conversion)
-                            <li>β-reduction (beta-reduction)
-                            <li>η-conversion (eta-conversion)</li>
-                            <li>Normal order
-                            <li>Applicative order</li>
-                        </ul>
-                    <li>
-                        Function composition
-                        <ul>
-                            <li>Associativity
-                            <li>Unit</li>
-                        </ul>
-                    </li>
-                </ul>
+            Returns a new IEnumerable&lt;T&gt; sequence (deferred execution)
+            <ul>
+                <li>Generation: Create, RandomInt32, RandomDouble, FromValue, FromValues, EmptyIfNull
+                <li>Filtering: Timeout
+                <li>Concatenation: Join, Append, Prepend, AppendTo, PrependTo
+                <li>Partitioning: Subsequence
+                <li>Exception: Catch, Retry
+                <li>Comparison: OrderBy, OrderByDescending, ThenBy, ThenByDescending, GroupBy, Join, GroupJoin, Distinct, Union, Intersect, Except
+                <li>List: Insert, Remove, RemoveAll, RemoveAt</li>
+            </ul>
             <li>
-                <h2>Boolean and Logic</h2>
-                <ul>
-                    <li>Church encoding
-                    <li>Church Boolean
-                    <li>Logical operators
-                    <li>Conversion between Church Boolean and System.Boolean
-                    <li>If</li>
-                </ul>
+            Returns a new collection
+            <ul>
+                <li>Comparison: ToDictionary, ToLookup</li>
+            </ul>
             <li>
-                <h2>Numeral, Arithmetic and Predicate</h2>
-                <ul>
-                    <li>Church numerals
-                    <li>Increase and decrease
-                    <li>Arithmetic operators
-                    <li>
-                        Predicate and relational operators
-                        <ul>
-                            <li>Attempt of recursion</li>
-                        </ul>
-                    <li>Conversion between Church numeral and System.UInt32</li>
-                </ul>
+            Returns a single value
+            <ul>
+                <li>List: IndexOf, LastIndexOf
+                <li>Aggregation: PercentileExclusive, PercentileInclusive, Percentile
+                <li>Quantifiers: IsNullOrEmpty, IsNotNullOrEmpty
+                <li>Comparison: Contains, SequenceEqual</li>
+            </ul>
             <li>
-                <h2>Tuple and Signed Numeral</h2>
+                Returns void
                 <ul>
-                    <li>
-                        Church pair (2-tuple)
-                        <ul>
-                            <li>Tuple operators</li>
-                        </ul>
-                    <li>N-tuple
-                    <li>
-                        Signed numeral
-                        <ul>
-                            <li>Arithmetic operators</li>
-                        </ul>
-                    </li>
-                </ul>
-            <li>
-                <h2>List</h2>
-                <ul>
-                    <li>
-                        Tuple as list node
-                        <ul>
-                            <li>List operators</li>
-                        </ul>
-                    <li>
-                        Aggregation function as list node
-                        <ul>
-                            <li>List operators</li>
-                        </ul>
-                    <li>Model everything</li>
-                </ul>
-            <li>
-                <h2>Combinatory Logic</h2>
-                <ul>
-                    <li>Combinator
-                    <li>
-                        SKI combinator calculus
-                        <ul>
-                            <li>SKI compiler: compile lambda calculus expression to SKI calculus combinator</li>
-                        </ul>
-                    <li>Iota combinator calculus</li>
-                </ul>
-            <li>
-                <h2>Fixed Point Combinator And Recursion</h2>
-                <ul>
-                    <li>Normal order fixed point combinator (Y combinator) and recursion
-                    <li>Applicative order fixed point combinator (Z combinator) and recursion</li>
-                </ul>
-            <li>
-                <h2>Undecidability of equivalence</h2>
-                <ul>
-                    <li>Halting problem
-                    <li>Equivalence problem</li>
+                    <li>Iteration: ForEach</li>
                 </ul>
             </li>
-        </ol>
-    <li>
-        <h1>Category Theory via C#</h1>
-        <ol>
-            <li>
-                <h2>Fundamentals</h2>
-                <ul>
-                    <li>Category and category laws
-                    <li>DotNet category</li>
-                </ul>
-            <li>
-                <h2>Monoid</h2>
-                <ul>
-                    <li>Monoid and monoid laws
-                    <li>Monoid as category</li>
-                </ul>
-            <li>
-                <h2>Functor and LINQ to Functors</h2>
-                <ul>
-                    <li>
-                        Functor and functor laws
-                        <ul>
-                            <li>Endofunctor
-                            <li>Type constructor and higher-kinded type</li>
-                        </ul>
-                    <li>
-                        LINQ to Functors
-                        <ul>
-                            <li>Built-in IEnumerable&lt;&gt; functor
-                            <li>Functor pattern of LINQ</li>
-                        </ul>
-                    <li>More LINQ to Functors</li>
-                </ul>
-            <li>
-                <h2>Natural Transformation</h2>
-                <ul>
-                    <li>Natural transformation and naturality
-                    <li>
-                        Functor Category
-                        <ul>
-                            <li>Endofunctor category</li>
-                        </ul>
-                    </li>
-                </ul>
-            <li>
-                <h2>Bifunctor</h2>
-                <ul>
-                    <li>Bifunctor
-                    <li>Monoidal category</li>
-                </ul>
-            <li>
-                <h2>Monoidal Functor and Applicative Functor</h2>
-                <ul>
-                    <li>
-                        Monoidal functor
-                        <ul>
-                            <li>IEnumeable&lt;&gt; monoidal functor</li>
-                        </ul>
-                    <li>
-                        Applicative functor
-                        <ul>
-                            <li>IEnumeable&lt;&gt; applicative functor</li>
-                        </ul>
-                    <li>Monoidal functor vs. applicative functor
-                    <li>More Monoidal functors and applicative functors</li>
-                </ul>
-            <li>
-                <h2>Monad and LINQ to Monads</h2>
-                <ul>
-                    <li>Monad
-                    <li>
-                        LINQ to Monads and monad laws
-                        <ul>
-                            <li>Built-in IEnumerable&lt;&gt; monad
-                            <li>Monad laws and Kleisli composition
-                            <li>Kleisli category
-                            <li>Monad pattern of LINQ</li>
-                        </ul>
-                    <li>Monad vs. monoidal/applicative functor
-                    <li>More LINQ to Monads</li>
-                </ul>
-            <li>
-                <h2>More LINQ to Monads</h2>
-                <ul>
-                    <li>IO monad
-                    <li>State monad
-                    <li>Try monad
-                    <li>Reader monad
-                    <li>Writer monad
-                    <li>Continuation monad</li>
-                </ul>
-            </li>
-        </ol>
+        </ul>
     </li>
+</ol>
+<li>
+<h1><a href="https://weblogs.asp.net/dixin/Tags/LINQ%20to%20XML" target="_blank">LINQ to XML: Querying XML</a></h1>
+<ol>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/linq-to-xml-1-modeling-xml" target="_blank">Modeling XML</a></h2>
+    <ul>
+        <li>Imperative vs. declarative paradigm
+        <li>Types, conversions and operators
+        <li>Read and deserialize XML
+        <li>Serialize and write XML
+        <li>Deferred construction</li>
+    </ul>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/linq-to-xml-2-query-methods" target="_blank">LINQ to XML standard queries</a></h2>
+    <ul>
+        <li>Navigation
+        <li>Ordering
+        <li>Comparison
+        <li>More useful queries
+        <li>XPath
+        <li>Generate XPath expression</li>
+    </ul>
+    <li>
+        <h2><a href="https://weblogs.asp.net/dixin/linq-to-xml-3-manipulating-xml" target="_blank">Manipulating XML</a></h2>
+        <ul>
+            <li>Clone
+            <li>Add, replace, delete, update, and events
+            <li>Annotation
+            <li>Validate with XSD
+            <li>Transform</li>
+        </ul>
+    </li>
+</ol>
+<li>
+<h1><a href="https://weblogs.asp.net/dixin/Tags/Parallel%20LINQ" target="_blank">Parallel LINQ: Querying objects in paralle</a></h1>
+<ol>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/parallel-linq-1-local-parallel-query-and-visualization" target="_blank">Parallel LINQ query and visualization</a></h2>
+    <ul>
+        <li>Parallel LINQ classes and methods
+        <li>Parallel query vs. sequential query
+        <li>Execute parallel query
+        <li>
+            Visualize parallel query execution
+            <ul>
+                <li>Install and configure Concurrency Visualizer
+                <li>Visualize sequential and parallel LINQ queries
+                <li>Visualize chaining query methods</li>
+            </ul>
+        </li>
+    </ul>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/parallel-linq-2-partitioning" target="_blank">Parallel LINQ internals: data partitioning</a></h2>
+    <ul>
+        <li>
+        Partitioning algorithms and load balancing
+        <ul>
+            <li>Range partitioning
+            <li>Stripped partitioning
+            <li>Hash partitioning
+            <li>Chunk partitioning</li>
+        </ul>
+        <li>
+            Implement custom partitioner
+            <ul>
+                <li>Static partitioner
+                <li>Dynamic partitioner</li>
+            </ul>
+        </li>
+    </ul>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/parallel-linq-3-query-methods" target="_blank">Parallel LINQ standard queries</a></h2>
+    <ul>
+        <li>
+        Query settings
+        <ul>
+            <li>Cancellation
+            <li>Degree of parallelism
+            <li>Execution mode
+            <li>Merge the values</li>
+        </ul>
+        <li>
+        Ordering
+        <ul>
+            <li>Control the order
+            <li>Order and correctness
+            <li>Orderable partitioner</li>
+        </ul>
+        <li>
+            Aggregation
+            <ul>
+                <li>Commutativity, associativity and correctness
+                <li>Partition and merge</li>
+            </ul>
+        </li>
+    </ul>
+    <li>
+        <h2><a href="https://weblogs.asp.net/dixin/parallel-linq-4-performance" target="_blank">Parallel query performance</a></h2>
+        <ul>
+            <li>Sequential vs. parallel
+            <li>CPU bound vs. IO bound
+            <li>Summary</li>
+        </ul>
+    </li>
+</ol>
+<li>
+<h1><a href="https://weblogs.asp.net/dixin/Tags/Entity%20Framework" target="_blank">Entity Framework/Core and LINQ to Entities: Querying relational data</a></h1>
+<ol>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/entity-framework-core-and-linq-to-entities-1-remote-query" target="_blank">Remote LINQ query</a></h2>
+    <ul>
+        <li>Entity Framework and Entity Framework Core
+        <li>SQL database
+        <li>Remote query vs. local query
+        <li>Function vs. expression tree</li>
+    </ul>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/entity-framework-core-and-linq-to-entities-2-modeling-database-object-relational-mapping" target="_blank">Modeling Database: Object-Relational Mapping</a></h2>
+    <ul>
+        <li>Data types
+        <li>
+        Database
+        <ul>
+            <li>Connection resiliency and execution strategy</li>
+        </ul>
+        <li>Tables</li>
+        <li>
+        Relationships
+        <ul>
+            <li>One-to-one
+            <li>One-to-many
+            <li>Many-to-many</li>
+        </ul>
+        <li>Inheritance
+        <li>Views
+        <li>Stored procedures and functions</li>
+    </ul>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/entity-framework-core-and-linq-to-entities-3-logging-and-tracing-queries" target="_blank">Logging and tracing LINQ to Entities queries</a></h2>
+    <ul>
+        <li>Application side logging
+        <li>Database side tracing with Extended Events</li>
+    </ul>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/entity-framework-core-and-linq-to-entities-4-query-methods" target="_blank">LINQ to Entities standard queries</a></h2>
+    <ul>
+        <li>
+        Return a new IQueryable&lt;T&gt; source
+        <ul>
+            <li>Generation: DefaultIfEmpty
+            <li>Filtering (restriction): Where, OfType
+            <li>Mapping (projection): Select
+            <li>Grouping: GroupBy
+            <li>
+            Join
+            <ul>
+                <li>Inner join: Join, SelectMany, GroupJoin, Select
+                <li>Outer join: GroupJoin, Select, SelectMany
+                <li>Cross join and self join: SelectMany, Join</li>
+            </ul>
+            <li>Concatenation: Concat
+            <li>Set: Distinct, Union, Intersect, Except
+            <li>Partitioning: Take, Skip
+            <li>Ordering: OrderBy, ThenBy, OrderByDescending, ThenByDescending
+            <li>Conversion: Cast, AsQueryable</li>
+        </ul>
+        <li>
+            Return a single value
+            <ul>
+                <li>Element: First, FirstOrDefault, Single, SingleOrDefault
+                <li>Aggregation: Count, LongCount, Min, Max, Sum, Average
+                <li>Quantifier: All, Any, Contains</li>
+            </ul>
+        </li>
+    </ul>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/entity-framework-core-and-linq-to-entities-5-query-translation-implementation" target="_blank">LINQ to Entities internals: Query translation implementation</a></h2>
+    <ul>
+        <li>
+        Code to LINQ expression tree
+        <ul>
+            <li>IQueryable&lt;T&gt; and IQueryProvider
+            <li>Queryable methods
+            <li>Build LINQ to Entities abstract syntax tree</li>
+        </ul>
+        <li>
+        .NET expression tree to database expression tree
+        <ul>
+            <li>Database query abstract syntax tree
+            <li>Compile LINQ expressions to database expressions
+            <li>Compile LINQ query method calls
+            <li>Compile .NET API calls
+            <li>Remote API call vs. local API call
+            <li>Compile database function call</li>
+        </ul>
+        <li>
+            Database expression tree to SQL
+            <ul>
+                <li>SQL generator and SQL command
+                <li>Generate SQL from database expression tree</li>
+            </ul>
+        </li>
+    </ul>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/entity-framework-core-and-linq-to-entities-6-query-data-loading" target="_blank">Loading query data</a></h2>
+    <ul>
+        <li>
+        Deferred execution
+        <ul>
+            <li>Iterator pattern
+            <li>Lazy evaluation vs. eager evaluation</li>
+        </ul>
+        <li>Explicit loading
+        <li>Eager loading
+        <li>
+            Lazy loading
+            <ul>
+                <li>The N + 1 problem
+                <li>Disable lazy loading</li>
+            </ul>
+        </li>
+    </ul>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/entity-framework-core-and-linq-to-entities-7-data-changes-and-transactions" target="_blank">Manipulating relational data: Data change and transaction</a></h2>
+    <ul>
+        <li>Repository pattern and unit of work pattern
+        <li>
+        Track entities and changes
+        <ul>
+            <li>Track entities
+            <li>Track entity changes and property changes
+            <li>Track relationship changes
+            <li>Enable and disable tracking</li>
+        </ul>
+        <li>
+        Change data
+        <ul>
+            <li>Create
+            <li>Update
+            <li>Delete</li>
+        </ul>
+        <li>
+            Transaction
+            <ul>
+                <li>Transaction with connection resiliency and execution strategy
+                <li>EF/Core transaction
+                <li>ADO.NET transaction
+                <li>Transaction scope</li>
+            </ul>
+        </li>
+    </ul>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/entity-framework-core-and-linq-to-entities-8-optimistic-concurrency" target="_blank">Resolving optimistic concurrency</a></h2>
+    <ul>
+        <li>Detect concurrent conflicts
+        <li>
+        Resolve concurrent conflicts
+        <ul>
+            <li>Retain database values (database wins)
+            <li>Overwrite database values (client wins)
+            <li>Merge with database values</li>
+        </ul>
+        <li>Save changes with concurrent conflict handling</li>
+    </ul>
+    <li>
+        <h2><a href="https://weblogs.asp.net/dixin/entity-framework-core-and-linq-to-entities-9-performance" target="_blank">Performance</a></h2>
+        <ul>
+            <li>
+            Initialization
+            <ul>
+                <li>Provider initialization
+                <li>Database initialization
+                <li>Mapping views initialization</li>
+            </ul>
+            <li>
+            Cache
+            <ul>
+                <li>Entity cache
+                <li>LINQ query translation cache
+                <li>SQL query plan cache</li>
+            </ul>
+            <li>
+                Asynchrony
+                <ul>
+                    <li>Asynchronous data queries and data changes
+                    <li>Transactions and connection resiliency with asynchronous operations
+                    <li>Asynchronous concurrent conflicts</li>
+                </ul>
+            </li>
+        </ul>
+    </li>
+</ol>
+<!--<li>
+<h1>LINQ to SQL</h1>
+<ol>
+<li>
+<h2><a href="https://weblogs.asp.net/dixin/archive/2010/03/29/understanding-linq-to-sql-1-object-relational-mapping.aspx" target="_blank">Object-Relational Mapping</a></h2>
+<ul>
+    <li>Create C# models from SQL schema
+    <li>Implement the mapping
+    <li>Customize the mapping
+    <li>
+    Work with model
+    <ul>
+        <li>Partial class
+        <li>Partial method
+        <li>INotifyPropertyChanging and INotifyPropertyChanged interfaces</li>
+    </ul>
+    <li>Create SQL schema from C# models</li>
+</ul>
+<li>
+<h2><a href="https://weblogs.asp.net/dixin/archive/2010/03/30/understanding-linq-to-sql-2-iqueryable-lt-t-gt.aspx" target="_blank">IQueryable&lt;T&gt;</a></h2>
+<ul>
+    <li>IQueryable and IQueryable&lt;T&gt;
+    <li>IQueryable and IQueryable&lt;T&gt; extensions
+    <li>Table&lt;T&gt;
+    <li>IEnumerable&lt;T&gt; extensions vs. IQueryable&lt;T&gt; extensions</li>
+</ul>
+<li>
+<h2><a href="https://weblogs.asp.net/dixin/archive/2010/04/06/understanding-linq-to-sql-3-expression-tree.aspx" target="_blank">Expression Tree</a></h2>
+<ul>
+    <li>Anonymous method vs. expression tree
+    <li>Expression tree for LINQ to SQL
+    <li>Translate expression tree to SQL
+    <li>Expression tree types
+    <li>Expression tree for DLR
+    <li>Visualize expression tree while debugging</li>
+</ul>
+<li>
+<h2><a href="https://weblogs.asp.net/dixin/archive/2010/04/15/understanding-linq-to-sql-4-data-retrieving-via-query-methods.aspx" target="_blank">Data Retrieving Via Query Methods</a></h2>
+<ul>
+    <li>Supported and Unsupported query methods
+    <li>
+    Restriction
+    <ul>
+        <li>WHERE
+        <li>AND / OR
+        <li>LIKE
+        <li>IN
+        <li>IS / NOT / NULL</li>
+    </ul>
+    <li>
+    Projection
+    <ul>
+        <li>SELECT
+        <li>Explicitly construct entity
+        <li>CASE</li>
+    </ul>
+    <li>
+    Ordering
+    <ul>
+        <li>ORDER BY / ASC / DESC</li>
+    </ul>
+    <li>
+    Join
+    <ul>
+        <li>Natural join
+        <li>INNER JOIN
+        <li>
+        OUTER JOIN
+        <ul>
+            <li>Association</li>
+        </ul>
+        <li>CROSS JOIN
+        <li>Self JOIN</li>
+    </ul>
+    <li>
+    Grouping and aggregation
+    <ul>
+        <li>GROUP BY / aggregate functions
+        <li>HAVING</li>
+    </ul>
+    <li>
+    Set
+    <ul>
+        <li>DISTINCT
+        <li>UNION
+        <li>EXISTS
+        <li>NOT EXISTS</li>
+    </ul>
+    <li>
+    Partitioning
+    <ul>
+        <li>TOP
+        <li>ROW_NUMBER()
+        <li>BETWEEN … AND</li>
+    </ul>
+    <li>
+    Concatenation
+    <ul>
+        <li>UNION ALL</li>
+    </ul>
+    <li>
+    Qualifiers
+    <ul>
+        <li>CASE / EXISTS</li>
+    </ul>
+    <li>Other query methods</li>
+</ul>
+<li>
+<h2><a href="https://weblogs.asp.net/dixin/archive/2010/04/19/understanding-linq-to-sql-5-remote-and-local-method-call.aspx" target="_blank">Remote And Local Method Call</a></h2>
+<ul>
+    <li>Remote method call
+    <li>Local method call
+    <li>Remote method recognition</li>
+</ul>
+<li>
+<h2><a href="https://weblogs.asp.net/dixin/archive/2010/04/19/understanding-linq-to-sql-6-working-with-deferred-execution.aspx" target="_blank">Working With Deferred Execution</a></h2>
+<ul>
+    <li>Deferred execution and DataContext
+    <li>
+        Deferred execution and eager loading
+        <ul>
+            <li>DataLoadOptions.LoadWith()
+            <li>DataLoadOptions.AssociateWith()
+            <li>DataContext.DeferredLoadingEnabled</li>
+        </ul>
+    </li>
+</ul>
+<li>
+<h2><a href="https://weblogs.asp.net/dixin/archive/2010/04/20/understanding-linq-to-sql-7-data-changing.aspx" target="_blank">Data Changing</a></h2>
+<ul>
+    <li>
+    Object Identity
+    <ul>
+        <li>Identity of entity objects
+        <li>Identity and DataContext
+        <li>Identity of projected objects (non-entity objects)</li>
+    </ul>
+    <li>
+    Track changes
+    <ul>
+        <li>State change
+        <li>Association change
+        <li>Change set</li>
+    </ul>
+    <li>
+    Submit changes
+    <ul>
+        <li>
+        INSERT
+        <ul>
+            <li>Work with IDENTITY column</li>
+        </ul>
+        <li>UPDATE
+        <li>DELETE</li>
+    </ul>
+    <li>Read-only DataContext</li>
+</ul>
+<li>
+<h2><a href="https://weblogs.asp.net/dixin/archive/2010/04/22/understanding-linq-to-sql-8-transaction.aspx" target="_blank" mce_href="/dixin/archive/2010/04/22/understanding-linq-to-sql-8-transaction.aspx">Transaction</a></h2>
+<ul>
+    <li>Implementing transaction (BEGIN / COMMIT / ROLLBACK)
+    <li>Default transaction
+    <li>Custom transactions</li>
+</ul>
+<li>
+<h2><a href="https://weblogs.asp.net/dixin/archive/2010/04/26/understanding-linq-to-sql-9-concurrent-conflict.aspx" target="_blank" mce_href="/dixin/archive/2010/04/26/understanding-linq-to-sql-9-concurrent-conflict.aspx">Concurrent conflict</a></h2>
+<ul>
+    <li>Conflicts in concurrent data access
+    <li>
+    Optimistic concurrency control
+    <ul>
+        <li>Update check
+        <li>Time stamp</li>
+    </ul>
+    <li>
+    Handle ChangeConflictException
+    <ul>
+        <li>Merge changes to resolve conflict</li>
+    </ul>
+    <li>More about concurrency</li>
+</ul>
+<li>
+<h2><a href="https://weblogs.asp.net/dixin/archive/2010/05/12/understanding-linq-to-sql-10-implementing-linq-to-sql-provider.aspx" target="_blank" mce_href="/dixin/archive/2010/05/12/understanding-linq-to-sql-10-implementing-linq-to-sql-provider.aspx">Implementing LINQ to SQL Provider</a></h2>
+<ul>
+    <li>
+    The provider model
+    <ul>
+        <li>Implement IQueryable&lt;T&gt; and IOrderedQueryable&lt;T&gt;
+        <li>Implement IQueryProvider</li>
+    </ul>
+    <li>
+    Query method internals
+    <ul>
+        <li>Deferred execution methods
+        <li>Eager execution methods</li>
+    </ul>
+    <li>
+    Work together
+    <ul>
+        <li>Query a collection of items (deferred execution)
+        <li>Query a single item (eager execution)
+        <li>Aggregate (eager execution)
+        <li>SQL translating and executing</li>
+    </ul>
+    <li>
+        LINQ Providers
+        <ul>
+            <li>Built-in IQueryable LINQ Providers
+            <li>LINQ to Everything
+            <li>LINQ to Objects provider</li>
+        </ul>
+    </li>
+</ul>
+<li>
+    <h2><a href="https://weblogs.asp.net/dixin/archive/2011/01/31/understanding-linq-to-sql-11-performance.aspx" target="_blank" mce_href="/dixin/archive/2011/01/31/understanding-linq-to-sql-11-performance.aspx">Performance</a></h2>
+    <ul>
+        <li>O/R mapping overhead
+        <li>
+        Data retrieving overhead
+        <ul>
+            <li>Compiled query
+            <li>Static SQL / stored procedures without translating</li>
+        </ul>
+        <li>
+        Data changing overhead
+        <ul>
+            <li>Bulk deleting / updating</li>
+        </ul>
+        <li>
+            Query plan overhead
+            <ul>
+                <li>.NET 3.5
+                <li>.NET 4.0</li>
+            </ul>
+        </li>
+    </ul>
+</li>
+</ol>-->
+<li>
+<h1><a href="https://weblogs.asp.net/dixin/Tags/Lambda%20Calculus" target="_blank">Lambda Calculus via C#: The fundation of all functional programming</a></h1>
+<ol>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/lambda-calculus-via-c-1-fundamentals" target="_blank">Fundamentals</a></h2>
+    <ul>
+        <li>
+        Expression
+        <ul>
+            <li>Bound variable vs. free variable</li>
+        </ul>
+        <li>
+        Reductions
+        <ul>
+            <li>α-conversion (alpha-conversion)
+            <li>β-reduction (beta-reduction)
+            <li>η-conversion (eta-conversion)</li>
+            <li>Normal order
+            <li>Applicative order</li>
+        </ul>
+        <li>
+            Function composition
+            <ul>
+                <li>Associativity
+                <li>Unit</li>
+            </ul>
+        </li>
+    </ul>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/lambda-calculus-via-c-2-boolean-and-logic" target="_blank">Church encoding: Function as boolean and logic</a></h2>
+    <ul>
+        <li>Church encoding
+        <li>Church Boolean
+        <li>Logical operators
+        <li>Conversion between Church Boolean and System.Boolean
+        <li>If</li>
+    </ul>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/lambda-calculus-via-csharp-3-numeral-arithmetic-and-predicate" target="_blank">Church encoding: Function as numeral, arithmetic and predicate</a></h2>
+    <ul>
+        <li>Church numerals
+        <li>Increase and decrease
+        <li>Arithmetic operators
+        <li>
+        Predicate and relational operators
+        <ul>
+            <li>Attempt of recursion</li>
+        </ul>
+        <li>Conversion between Church numeral and System.UInt32</li>
+    </ul>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/lambda-calculus-via-csharp-4-tuple-and-signed-numeral" target="_blank">Church encoding: Function as uple and signed numeral</a></h2>
+    <ul>
+        <li>
+        Church pair (2-tuple)
+        <ul>
+            <li>Tuple operators</li>
+        </ul>
+        <li>N-tuple
+        <li>
+            Signed numeral
+            <ul>
+                <li>Arithmetic operators</li>
+            </ul>
+        </li>
+    </ul>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/lambda-calculus-via-csharp-5-list" target="_blank">Church encoding: Function as list</a></h2>
+    <ul>
+        <li>
+        Tuple as list node
+        <ul>
+            <li>List operators</li>
+        </ul>
+        <li>
+        Aggregation function as list node
+        <ul>
+            <li>List operators</li>
+        </ul>
+        <li>Model everything</li>
+    </ul>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/lambda-calculus-via-csharp-6-combinatory-logic" target="_blank">Combinatory logic</a></h2>
+    <ul>
+        <li>Combinator
+        <li>
+        SKI combinator calculus
+        <ul>
+            <li>SKI compiler: compile lambda calculus expression to SKI calculus combinator</li>
+        </ul>
+        <li>Iota combinator calculus</li>
+    </ul>
+    <li>
+    <h2><a href="https://weblogs.asp.net/dixin/lambda-calculus-via-csharp-7-fixed-point-combinator-and-recursion" target="_blank">Fixed point combinator and recursion</a></h2>
+    <ul>
+        <li>Normal order fixed point combinator (Y combinator) and recursion
+        <li>Applicative order fixed point combinator (Z combinator) and recursion</li>
+    </ul>
+    <li>
+        <h2>Undecidability of equivalence</h2>
+        <ul>
+            <li>Halting problem
+            <li>Equivalence problem</li>
+        </ul>
+    </li>
+</ol>
+<li>
+    <h1><a href="https://weblogs.asp.net/dixin/Tags/Category%20Theory" target="_blank">Category Theory via C#: The essentials and design of LINQ</a></h1>
+    <ol>
+        <li>
+        <h2><a href="https://weblogs.asp.net/dixin/category-theory-via-csharp-1-fundamentals" target="_blank">Fundamentals: Category and morphism</a></h2>
+        <ul>
+            <li>Category and category laws
+            <li>DotNet category</li>
+        </ul>
+        <li>
+        <h2><a href="https://weblogs.asp.net/dixin/category-theory-via-csharp-2-monoid" target="_blank">Monoid</a></h2>
+        <ul>
+            <li>Monoid and monoid laws
+            <li>Monoid as category</li>
+        </ul>
+        <li>
+        <h2><a href="https://weblogs.asp.net/dixin/category-theory-via-csharp-3-functor-and-linq-to-functors" target="_blank">Functor and LINQ to Functors</a></h2>
+        <ul>
+            <li>
+            Functor and functor laws
+            <ul>
+                <li>Endofunctor
+                <li>Type constructor and higher-kinded type</li>
+            </ul>
+            <li>
+            LINQ to Functors
+            <ul>
+                <li>Built-in IEnumerable&lt;&gt; functor
+                <li>Functor pattern of LINQ</li>
+            </ul>
+            <li>More LINQ to Functors</li>
+        </ul>
+        <li>
+        <h2><a href="https://weblogs.asp.net/dixin/category-theory-via-csharp-4-natural-transformation" target="_blank">Natural Transformation</a></h2>
+        <ul>
+            <li>Natural transformation and naturality
+            <li>
+                Functor Category
+                <ul>
+                    <li>Endofunctor category</li>
+                </ul>
+            </li>
+        </ul>
+        <li>
+        <h2><a href="https://weblogs.asp.net/dixin/category-theory-via-csharp-5-bifunctor" target="_blank">Bifunctor</a></h2>
+        <ul>
+            <li>Bifunctor
+            <li>Monoidal category</li>
+        </ul>
+        <li>
+        <h2><a href="https://weblogs.asp.net/dixin/category-theory-via-csharp-6-monoidal-functor-and-applicative-functor" target="_blank">Monoidal functor and applicative functor</a></h2>
+        <ul>
+            <li>
+            Monoidal functor
+            <ul>
+                <li>IEnumeable&lt;&gt; monoidal functor</li>
+            </ul>
+            <li>
+            Applicative functor
+            <ul>
+                <li>IEnumeable&lt;&gt; applicative functor</li>
+            </ul>
+            <li>Monoidal functor vs. applicative functor
+            <li>More Monoidal functors and applicative functors</li>
+        </ul>
+        <li>
+        <h2><a href="https://weblogs.asp.net/dixin/category-theory-via-csharp-7-monad-and-linq-to-monads" target="_blank">Monad and LINQ to Monads</a></h2>
+        <ul>
+            <li>Monad
+            <li>
+            LINQ to Monads and monad laws
+            <ul>
+                <li>Built-in IEnumerable&lt;&gt; monad
+                <li>Monad laws and Kleisli composition
+                <li>Kleisli category
+                <li>Monad pattern of LINQ</li>
+            </ul>
+            <li>Monad vs. monoidal/applicative functor
+            <li>More LINQ to Monads</li>
+        </ul>
+        <li>
+            <h2><a href="https://weblogs.asp.net/dixin/category-theory-via-csharp-8-more-linq-to-monads" target="_blank">Advanced LINQ to Monads</a></h2>
+            <ul>
+                <li>IO monad
+                <li>State monad
+                <li>Try monad
+                <li>Reader monad
+                <li>Writer monad
+                <li>Continuation monad</li>
+            </ul>
+        </li>
+    </ol>
+</li>
 </ol>
