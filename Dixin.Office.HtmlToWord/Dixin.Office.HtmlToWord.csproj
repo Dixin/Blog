@@ -101,7 +101,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Css\style.css" />
+    <Content Include="Css\style.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
@@ -123,7 +125,9 @@
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>ChapterHtml.cs</LastGenOutput>
     </Content>
-    <Content Include="Css\github-markdown.css" />
+    <Content Include="Css\github-markdown.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="SectionHtml.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>SectionHtml.cs</LastGenOutput>
