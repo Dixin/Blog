@@ -1,7 +1,0 @@
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <PropertyGroup>
-        <DefineConstants Condition="$([System.Version]::Parse('$(TargetFrameworkVersion.Substring(1))').CompareTo($([System.Version]::Parse('4.6')))) &gt;= 0">$(DefineConstants);NET46</DefineConstants>
-        <DefineConstants Condition="$([System.Version]::Parse('$(TargetFrameworkVersion.Substring(1))').CompareTo($([System.Version]::Parse('4.5')))) &gt;= 0">$(DefineConstants);NET45</DefineConstants>
-        <DefineConstants Condition="$([System.Version]::Parse('$(TargetFrameworkVersion.Substring(1))').CompareTo($([System.Version]::Parse('4.0')))) &gt;= 0">$(DefineConstants);NET40</DefineConstants>
-    </PropertyGroup>
-</Project>

@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="Code Analysis Rules" Description="This rule set contains all rules. Running this rule set may result in a large number of warnings being reported. Use this rule set to get a comprehensive picture of all issues in your code. This can help you decide which of the more focused rule sets are most appropriate to run for your projects." ToolsVersion="14.0">
+  <Localization ResourceAssembly="Microsoft.VisualStudio.CodeAnalysis.RuleSets.Strings.dll" ResourceBaseName="Microsoft.VisualStudio.CodeAnalysis.RuleSets.Strings.Localized">
+    <Name Resource="AllRules_Name" />
+    <Description Resource="AllRules_Description" />
+  </Localization>
+  <IncludeAll Action="Warning" />
+  <Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
+    <Rule Id="CA1000" Action="None" />
+    <Rule Id="CA1002" Action="None" />
+    <Rule Id="CA1004" Action="None" />
+    <Rule Id="CA1005" Action="None" />
+    <Rule Id="CA1006" Action="None" />
+    <Rule Id="CA1011" Action="None" />
+    <Rule Id="CA1020" Action="None" />
+    <Rule Id="CA1026" Action="None" />
+    <Rule Id="CA1041" Action="None" />
+    <Rule Id="CA1062" Action="None" />
+    <Rule Id="CA1303" Action="None" />
+    <Rule Id="CA1305" Action="None" />
+    <Rule Id="CA1500" Action="None" />
+    <Rule Id="CA1502" Action="None" />
+    <Rule Id="CA1506" Action="None" />
+    <Rule Id="CA1704" Action="None" />
+    <Rule Id="CA1707" Action="None" />
+    <Rule Id="CA1709" Action="None" />
+    <Rule Id="CA1710" Action="None" />
+    <Rule Id="CA1711" Action="Warning" />
+    <Rule Id="CA1716" Action="None" />
+    <Rule Id="CA1719" Action="None" />
+    <Rule Id="CA1720" Action="None" />
+    <Rule Id="CA1725" Action="None" />
+    <Rule Id="CA1800" Action="None" />
+    <Rule Id="CA1801" Action="None" />
+    <Rule Id="CA1804" Action="None" />
+    <Rule Id="CA2000" Action="None" />
+    <Rule Id="CA2204" Action="None" />
+    <Rule Id="CA2211" Action="None" />
+    <Rule Id="CA2225" Action="None" />
+    <Rule Id="CA2227" Action="None" />
+  </Rules>
+</RuleSet>
