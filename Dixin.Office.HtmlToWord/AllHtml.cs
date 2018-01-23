@@ -25,8 +25,7 @@ namespace Dixin.Office.HtmlToWord
         /// </summary>
         public virtual string TransformText()
         {
-            this.Write("\"\r\n");
-            this.Write("\"\r\n<html>\r\n    <head>\r\n        <title>");
+            this.Write("<html>\r\n    <head>\r\n        <title>");
             this.Write(this.ToStringHelper.ToStringWithCulture(this.Title));
             this.Write(@"</title>
         <style type=""text/css"">
@@ -77,13 +76,13 @@ foreach ((string Title, List<(string Title, CQ Content)> Sections) chapter in th
             this.Write("        <h2>");
             this.Write(this.ToStringHelper.ToStringWithCulture(section.Title));
             this.Write("</h2>\r\n        ");
-            this.Write(this.ToStringHelper.ToStringWithCulture(section.Content));
+            this.Write(this.ToStringHelper.ToStringWithCulture(section.Content.Html()));
             this.Write("\r\n");
 
     }
 }
 
-            this.Write("    </body>\r\n</html>");
+            this.Write("    </body>\r\n</html>\r\n");
             return this.GenerationEnvironment.ToString();
         }
     }

@@ -101,13 +101,14 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Css\style.css" />
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
     <CodeAnalysisDictionary Include="..\Tools\CodeAnalysisDictionary.xml">
       <Link>Properties\CodeAnalysisDictionary.xml</Link>
     </CodeAnalysisDictionary>
-    <Content Include="Book.dot">
+    <Content Include="Word\Book.dot">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="packages.config">
@@ -122,6 +123,7 @@
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>ChapterHtml.cs</LastGenOutput>
     </Content>
+    <Content Include="Css\github-markdown.css" />
     <Content Include="SectionHtml.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>SectionHtml.cs</LastGenOutput>

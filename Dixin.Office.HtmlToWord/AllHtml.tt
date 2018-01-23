@@ -1,7 +1,7 @@
 ﻿<#@ template language="C#" debug="true" visibility="internal" linePragmas="false" #>
 <#@ import namespace="System.Linq" #>
-<#@ import namespace="System.Collections.Generic" #>"
-<#@ import namespace="CsQuery" #>"
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="CsQuery" #>
 <html>
     <head>
         <title><#= this.Title #></title>
@@ -48,7 +48,7 @@ foreach ((string Title, List<(string Title, CQ Content)> Sections) chapter in th
     {
 #>
         <h2><#= section.Title #></h2>
-        <#= section.Content #>
+        <#= section.Content.Html() #>
 <#
     }
 }

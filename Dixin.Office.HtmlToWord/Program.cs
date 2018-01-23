@@ -103,7 +103,7 @@
                             Path.Combine(htmlOutputDirectory, $"{chapterIndex + 1}.{sectionIndex + 1}. {section.Title.Replace("/", "-").Replace(":", " -")}.html"));
                     });
             });
-            await SaveDocumentsAsync(html, Path.Combine(outputDirectory, Invariant($"{html.Title}.doc")), Path.Combine(outputDirectory, Invariant($"{html.Title}.pdf")));
+            await SaveDocumentsAsync(htmlOutputDirectory, html, Path.Combine(outputDirectory, Invariant($"{html.Title}.doc")), Path.Combine(outputDirectory, Invariant($"{html.Title}.pdf")));
         }
 
         private static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> action) => await Task.WhenAll(source.Select(action));
@@ -252,9 +252,9 @@
             }
         }
 
-        private static async Task SaveDocumentsAsync(AllHtml html, string outputDocument, string exportDocument)
+        private static async Task SaveDocumentsAsync(string directory, AllHtml html, string outputDocument, string exportDocument)
         {
-            string tempHtmlFile = Path.ChangeExtension(Path.GetTempFileName(), "htm");
+            string tempHtmlFile = Path.Combine(directory, "All.htm");
             string htmlContent = html.TransformText();
             Trace.WriteLine(Invariant($"Saving HTML as {tempHtmlFile}, {htmlContent.Length}."));
             using (StreamWriter writer = new StreamWriter(new FileStream(
@@ -264,12 +264,12 @@
                 await writer.WriteAsync(htmlContent);
             }
 
-            //string template = Path.Combine(PathHelper.ExecutingDirectory(), "Book.dot");
-            //ConvertDocument(
-            //    tempHtmlFile, WdOpenFormat.wdOpenFormatWebPages,
-            //    outputDocument, WdSaveFormat.wdFormatDocument,
-            //    exportDocument, WdExportFormat.wdExportFormatPDF,
-            //    document => FormatDocument(document, html, template));
+            string template = Path.Combine(PathHelper.ExecutingDirectory(), "Word", "Book.dot");
+            ConvertDocument(
+                tempHtmlFile, WdOpenFormat.wdOpenFormatWebPages,
+                outputDocument, WdSaveFormat.wdFormatDocument,
+                exportDocument, WdExportFormat.wdExportFormatPDF,
+                document => FormatDocument(document, html, template));
         }
 
         private static void FormatDocument(Document document, AllHtml html, string template, string author = "Dixin Yan")
