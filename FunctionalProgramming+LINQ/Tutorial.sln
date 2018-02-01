@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2010
+VisualStudioVersion = 15.0.27130.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Tutorial.Shared", "Tutorial.Shared\Tutorial.Shared.shproj", "{CAC237A8-C000-4521-A31D-D9A7C68639A4}"
 EndProject
@@ -27,7 +27,24 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tutorial.Console.Net", "Tut
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tutorial.Core", "Tutorial.Core\Tutorial.Core.csproj", "{88C3D245-C19E-4374-98C4-63EB2B39F7C8}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Tutorial.Core.FSharp", "Tutorial.Core.FSharp\Tutorial.Core.FSharp.fsproj", "{F2F3C344-47B8-4E61-B5CF-3B63B3DB37F1}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Tutorial.Core.FSharp", "Tutorial.Core.FSharp\Tutorial.Core.FSharp.fsproj", "{F2F3C344-47B8-4E61-B5CF-3B63B3DB37F1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{BCEE8A82-7FE2-485B-B64D-9777616C2FF4}"
+	ProjectSection(SolutionItems) = preProject
+		Data\AdventureWorks.bacpac = Data\AdventureWorks.bacpac
+		Data\AdventureWorks_Data.mdf = Data\AdventureWorks_Data.mdf
+		Data\AdventureWorks_Log.ldf = Data\AdventureWorks_Log.ldf
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{DAD4D2A7-0D82-4659-A2BE-D2502FD9081A}"
+	ProjectSection(SolutionItems) = preProject
+		Tools\CodeAnalysis.ruleset = Tools\CodeAnalysis.ruleset
+		Tools\CodeAnalysisDictionary.xml = Tools\CodeAnalysisDictionary.xml
+		Tools\CommonAssemblyInfo.cs = Tools\CommonAssemblyInfo.cs
+		Tools\CommonAssemblyInfo.fs = Tools\CommonAssemblyInfo.fs
+		Tools\Key.snk = Tools\Key.snk
+		Tools\VS2017.gitconfig = Tools\VS2017.gitconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution

@@ -13,4 +13,8 @@
     <ProjectReference Include="..\Tutorial.Core\Tutorial.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="4.3.3" />
+  </ItemGroup>
+
 </Project>

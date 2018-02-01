@@ -12,10 +12,8 @@
     {
         private readonly Func<Exception, bool> isTransient;
 
-        public ExceptionDetection(Func<Exception, bool> isTransient = null)
-        {
+        public ExceptionDetection(Func<Exception, bool> isTransient = null) => 
             this.isTransient = isTransient ?? (_ => true);
-        }
 
         public bool IsTransient(Exception exception) => this.isTransient(exception);
     }

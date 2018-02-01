@@ -104,8 +104,8 @@
         IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
 
         // Only called by ThenBy/ThenByDescending.
-        public IOrderedEnumerable<TSource> CreateOrderedEnumerable<TNextKey>
-            (Func<TSource, TNextKey> nextKeySelector, IComparer<TNextKey> nextComparer, bool nextDescending) =>
+        public IOrderedEnumerable<TSource> CreateOrderedEnumerable<TNextKey>(
+            Func<TSource, TNextKey> nextKeySelector, IComparer<TNextKey> nextComparer, bool nextDescending) =>
                 new OrderedSequence<TSource, TNextKey>(
                     this.source, nextKeySelector, nextComparer, nextDescending, this.GetComparison);
 
