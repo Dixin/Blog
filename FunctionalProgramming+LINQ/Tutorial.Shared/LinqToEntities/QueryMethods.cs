@@ -767,7 +767,9 @@
             //    FROM  [Production].[ProductCategory] AS [Extent1]
             //    LEFT OUTER JOIN [Production].[ProductSubcategory] AS [Extent2] ON [Extent1].[ProductCategoryID] = [Extent2].[ProductCategoryID]
 #else
-            // ArgumentOutOfRangeException: Index was out of range. Must be non-negative and less than the size of the collection.
+            // SELECT [category].[Name] AS [Category], [category.ProductSubcategories].[Name] AS [Subcategory]
+            // FROM [Production].[ProductCategory] AS [category]
+            // LEFT JOIN [Production].[ProductSubcategory] AS [category.ProductSubcategories] ON [category].[ProductCategoryID] = [category.ProductSubcategories].[ProductCategoryID]
 #endif
         }
 
@@ -792,7 +794,9 @@
             //    FROM  [Production].[ProductCategory] AS [Extent1]
             //    LEFT OUTER JOIN [Production].[ProductSubcategory] AS [Extent2] ON [Extent1].[ProductCategoryID] = [Extent2].[ProductCategoryID]
 #else
-            // ArgumentOutOfRangeException: Index was out of range. Must be non-negative and less than the size of the collection.
+            // SELECT [category].[Name] AS [Category], [category.ProductSubcategories].[Name] AS [Subcategory]
+            // FROM [Production].[ProductCategory] AS [category]
+            // LEFT JOIN [Production].[ProductSubcategory] AS [category.ProductSubcategories] ON [category].[ProductCategoryID] = [category.ProductSubcategories].[ProductCategoryID]
 #endif
         }
 
@@ -1892,6 +1896,8 @@
             // SELECT [product].[ProductID], [product].[ListPrice], [product].[Name], [product].[ProductSubcategoryID]
             // FROM [Production].[Product] AS [product]
             // WHERE [product].[ProductSubcategoryID] = 7
+            //.ArgumentException: Expression of type 'Tutorial.LinqToEntities.Product' cannot be used for parameter of type 'Microsoft.EntityFrameworkCore.Storage.ValueBuffer' of method 'Boolean Contains[ValueBuffer](System.Collections.Generic.IEnumerable`1[Microsoft.EntityFrameworkCore.Storage.ValueBuffer], Microsoft.EntityFrameworkCore.Storage.ValueBuffer)' Parameter name: arg1
+
 #endif
         }
 
