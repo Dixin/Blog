@@ -240,11 +240,13 @@
             Assert.AreEqual(cps1.Invoke(), cps2.Invoke());
         }
 
+#if !ANDROID && !__IOS__
         [TestMethod]
+#endif
         public void HotTaskTest()
         {
             bool isExecuted1 = false;
-            Task<string> hotTask = Task.Run(() => "a");
+            Task<string> hotTask = Task.Run(() => "a"); // ANDROID and IOS: hotTask.Status is WaitingToRun.
             Func<string, string> append = x => { isExecuted1 = true; return x + "b"; };
 
             Task<string> query1 = from x in hotTask select append(x);
@@ -260,7 +262,9 @@
             Assert.AreEqual(query2.Result, query3.Result);
         }
 
+#if !ANDROID && !__IOS__
         [TestMethod]
+#endif
         public void ColdTaskTest()
         {
             bool isExecuted2 = false;

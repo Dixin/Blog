@@ -76,6 +76,7 @@
     {
         private static readonly InfixVisitor InfixVisitor = new InfixVisitor();
 
+#if !__IOS__
         public static TDelegate Sql<TDelegate>(
             this Expression<TDelegate> expression, string connection) where TDelegate : class
         {
@@ -85,8 +86,9 @@
                 expression.Parameters.Select(parameter => parameter.Type).ToArray(),
                 typeof(BinaryArithmeticTranslator).Module);
             EmitIL(dynamicMethod.GetILGenerator(), InfixVisitor.VisitBody(expression), expression, connection);
-            return dynamicMethod.CreateDelegate(typeof(TDelegate)) as TDelegate;
+            return (TDelegate)(object)dynamicMethod.CreateDelegate(typeof(TDelegate));
         }
+#endif
 
         private static void EmitIL<TDelegate>(
             ILGenerator ilGenerator, string infixExpression, Expression<TDelegate> expression, string connection)
@@ -133,15 +135,19 @@
             Expression<Func<double, double, double>> expression1 = (a, b) => a * a + b * b;
             Func<double, double, double> local1 = expression1.Compile();
             local1(1, 2).WriteLine(); // 5
+#if !__IOS__
             Func<double, double, double> remote1 = expression1.Sql(ConnectionStrings.AdventureWorks);
             remote1(1, 2).WriteLine(); // 5
+#endif
 
             Expression<Func<double, double, double, double, double, double>> expression2 =
                 (a, b, c, d, e) => a + b - c * d / 2 + e * 3;
             Func<double, double, double, double, double, double> local2 = expression2.Compile();
             local2(1, 2, 3, 4, 5).WriteLine(); // 12
+#if !__IOS__
             Func<double, double, double, double, double, double> remote2 = expression2.Sql(ConnectionStrings.AdventureWorks);
             remote2(1, 2, 3, 4, 5).WriteLine(); // 12
+#endif
         }
     }
 }

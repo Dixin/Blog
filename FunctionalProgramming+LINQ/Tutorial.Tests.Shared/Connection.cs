@@ -8,7 +8,7 @@
     public class ConnectionTests
     {
         [TestMethod]
-        public void ConnectionStringsTest()
+        public void LoadConnectionStringsTest()
         {
             string connectionString = ConnectionStrings.AdventureWorks;
             Assert.IsFalse(string.IsNullOrWhiteSpace(connectionString));
@@ -19,6 +19,17 @@
             if (!string.IsNullOrWhiteSpace(builder.AttachDBFilename))
             {
                 Assert.IsFalse(builder.AttachDBFilename.Contains(".."));
+            }
+        }
+
+        [TestMethod]
+        public void OpenConnectionStringsTest()
+        {
+            string connectionString = ConnectionStrings.AdventureWorks;
+            using (SqlConnection connection = new SqlConnection(connectionString))
+            {
+                connection.Open();
+                Assert.IsFalse(string.IsNullOrWhiteSpace(connection.ServerVersion));
             }
         }
     }

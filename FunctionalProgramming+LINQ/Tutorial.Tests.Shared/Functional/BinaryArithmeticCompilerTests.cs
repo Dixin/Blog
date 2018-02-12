@@ -17,8 +17,10 @@
                 (a, b, c, d, e) => a + b - c * d / 2 + e * 3;
 
             Func<double, double, double, double, double, double> expected = expression.Compile();
+#if !__IOS__
             Func<double, double, double, double, double, double> actual = BinaryArithmeticCompiler.Compile(expression);
             Assert.AreEqual(expected(1, 2, 3, 4, 5), actual(1, 2, 3, 4, 5));
+#endif
         }
     }
 }

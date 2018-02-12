@@ -70,8 +70,21 @@
             selfAndReferences = selfAndReferences ?? new HashSet<Assembly>();
             if (selfAndReferences.Add(self))
             {
-                self.GetReferencedAssemblies().ForEach(reference => 
-                    SelfAndReferences(Assembly.Load(reference), selfAndReferences));
+                self.GetReferencedAssemblies()
+#if !WINDOWS_UWP
+                    .ForEach(reference =>
+                        SelfAndReferences(Assembly.Load(reference), selfAndReferences));
+#else
+                    .ForEach(reference =>
+                    {
+                        try
+                        {
+                            // UWP throws FileLoadException for Windows, Windows.Foundation.UniversalApiContract, Windows.Foundation.FoundationContract: Could not load file or assembly 'Windows, Version=255.255.255.255, Culture=neutral, PublicKeyToken=null, ContentType=WindowsRuntime'. Operation is not supported. (Exception from HRESULT: 0x80131515)
+                            SelfAndReferences(Assembly.Load(reference), selfAndReferences)
+                        }
+                        catch (FileLoadException) { }
+                    });
+#endif
                 return selfAndReferences;
             }
             return Enumerable.Empty<Assembly>(); // Circular or duplicate reference.

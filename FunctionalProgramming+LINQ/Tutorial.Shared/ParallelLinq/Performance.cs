@@ -68,7 +68,7 @@
                 count: Environment.ProcessorCount, run: 100_000);
             // Sequential:37   Parallel:2218
             OrderByTest(
-                keySelector: value => value + ComputingWorkload(iteration: 10_100), 
+                keySelector: value => value + ComputingWorkload(iteration: 10_000), 
                 count: Environment.ProcessorCount, run: 1_000);
             // Sequential:115  Parallel:125
             OrderByTest(
@@ -127,12 +127,14 @@
 
         internal static void ReadFiles()
         {
-            string coreLibraryPath = typeof(object).Assembly.Location;
+            string coreLibraryPath = typeof(object).Assembly.Location; // ANDROID returns "mscorlib.dll".
+#if !ANDROID
             string coreLibraryDirectory = Path.GetDirectoryName(coreLibraryPath);
             string[] files = Directory.GetFiles(coreLibraryDirectory);
 
             files.Visualize(file => File.ReadAllBytes(file));
             files.AsParallel().Visualize(file => File.ReadAllBytes(file));
+#endif
         }
     }
 }

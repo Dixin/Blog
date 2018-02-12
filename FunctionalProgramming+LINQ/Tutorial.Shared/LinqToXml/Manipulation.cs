@@ -236,6 +236,7 @@
                     </ul>
                     </xsl:template>
                 </xsl:stylesheet>");
+#if !WINDOWS_UWP
             XDocument html = rss.XslTransform(xsl);
             html.WriteLine();
             // <ul>
@@ -255,6 +256,7 @@
             //    <a href="https://weblogs.asp.net:443/dixin/query-operating-system-processes-in-c">Query Operating System Processes in C#</a>
             //  </li>
             // </ul>
+#endif
         }
 
         internal static void Transform()

@@ -26,7 +26,7 @@
 
         public static TDbConnection Connection<TDbConnection>(this IObjectContextAdapter context)
             where TDbConnection : DbConnection =>
-                ((EntityConnection)context.ObjectContext().Connection)?.StoreConnection as TDbConnection;
+                (TDbConnection)((EntityConnection)context.ObjectContext().Connection)?.StoreConnection;
     }
 
     public static partial class DbContextExtensions

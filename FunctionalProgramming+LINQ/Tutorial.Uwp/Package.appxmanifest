@@ -7,11 +7,11 @@
   IgnorableNamespaces="uap mp">
 
   <Identity
-    Name="4ce49215-aed2-46a9-be5e-dee8bc3466b8"
+    Name="3dfce4aa-4064-4f0d-9e6c-ff5d1d82b59e"
     Publisher="CN=dixin"
     Version="1.0.0.0" />
 
-  <mp:PhoneIdentity PhoneProductId="4ce49215-aed2-46a9-be5e-dee8bc3466b8" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
+  <mp:PhoneIdentity PhoneProductId="3dfce4aa-4064-4f0d-9e6c-ff5d1d82b59e" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>Tutorial.Uwp</DisplayName>

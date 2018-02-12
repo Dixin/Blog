@@ -255,7 +255,9 @@
             Assert.AreEqual(left.Item1, right.Item1);
         }
 
+#if !ANDROID && !__IOS__
         [TestMethod]
+#endif
         public void HotTaskTest()
         {
             Task<string> a = Task.Run(() => "a");
@@ -285,7 +287,9 @@
             Assert.AreEqual(left.Result, right.Result);
         }
 
+#if !ANDROID && !__IOS__
         [TestMethod]
+#endif
         public void ColdTaskTest()
         {
             bool isExecuted1 = false;

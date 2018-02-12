@@ -196,6 +196,7 @@
         }
     }
 
+#if !__IOS__
     internal static class BinaryArithmeticCompiler
     {
         internal static TDelegate Compile<TDelegate>(Expression<TDelegate> expression)
@@ -249,4 +250,5 @@
             double result = function(1, 2, 3, 4, 5); // 12
         }
     }
+#endif
 }

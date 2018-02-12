@@ -242,21 +242,21 @@ namespace Tutorial.ParallelLinq
             Stopwatch stopwatch = Stopwatch.StartNew();
             ParallelQuery<int> notBuffered = ParallelEnumerable.Range(0, count)
                 .WithMergeOptions(ParallelMergeOptions.NotBuffered)
-                .Select(value => value + ComputingWorkload(0, 10_000_000));
+                .Select(value => value + ComputingWorkload());
             notBuffered.ForEach(value => $"{value}:{stopwatch.ElapsedMilliseconds}".WriteLine());
             // 0:217 3:283 6:363 8:462 1:521 4:612 7:629 9:637 2:660 5:695
 
             stopwatch.Restart();
             ParallelQuery<int> autoBuffered = ParallelEnumerable.Range(0, count)
                 .WithMergeOptions(ParallelMergeOptions.AutoBuffered)
-                .Select(value => value + ComputingWorkload(0, 10_000_000));
+                .Select(value => value + ComputingWorkload());
             autoBuffered.ForEach(value => $"{value}:{stopwatch.ElapsedMilliseconds}".WriteLine());
             // 6:459 8:493 7:498 9:506 0:648 1:654 2:656 3:684 4:686 5:688
 
             stopwatch.Restart();
             ParallelQuery<int> fullyBuffered = ParallelEnumerable.Range(0, count)
                 .WithMergeOptions(ParallelMergeOptions.FullyBuffered)
-                .Select(value => value + ComputingWorkload(0, 10_000_000));
+                .Select(value => value + ComputingWorkload());
             fullyBuffered.ForEach(value => $"{value}:{stopwatch.ElapsedMilliseconds}".WriteLine());
             // 0:584 1:589 2:618 3:627 4:629 5:632 6:634 7:636 8:638 9:641
         }

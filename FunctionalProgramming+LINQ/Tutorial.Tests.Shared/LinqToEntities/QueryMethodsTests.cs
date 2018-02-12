@@ -107,32 +107,8 @@
             QueryMethods.LeftOuterJoinWithGroupJoinAndSelectMany(new AdventureWorks());
             QueryMethods.LeftOuterJoinWithSelect(new AdventureWorks());
             QueryMethods.LeftOuterJoinWithSelectMany(new AdventureWorks());
-#if NETFX
             QueryMethods.LeftOuterJoinWithSelectAndRelationship(new AdventureWorks());
-#else
-            try
-            {
-                QueryMethods.LeftOuterJoinWithSelectAndRelationship(new AdventureWorks());
-                Assert.Fail();
-            }
-            catch (ArgumentOutOfRangeException exception)
-            {
-                Trace.WriteLine(exception);
-            }
-#endif
-#if NETFX
             QueryMethods.LeftOuterJoinWithSelectManyAndRelationship(new AdventureWorks());
-#else
-            try
-            {
-                QueryMethods.LeftOuterJoinWithSelectManyAndRelationship(new AdventureWorks());
-                Assert.Fail();
-            }
-            catch (ArgumentOutOfRangeException exception)
-            {
-                Trace.WriteLine(exception);
-            }
-#endif
             QueryMethods.CrossJoinWithSelectMany(new AdventureWorks());
             QueryMethods.CrossJoinWithJoin(new AdventureWorks());
             QueryMethods.SelfJoin(new AdventureWorks());
@@ -379,7 +355,15 @@
                 Trace.WriteLine(exception);
             }
 #else
-            QueryMethods.ContainsEntity(new AdventureWorks());
+            try
+            {
+                QueryMethods.ContainsEntity(new AdventureWorks());
+                Assert.Fail();
+            }
+            catch (ArgumentException exception)
+            {
+                Trace.WriteLine(exception);
+            }
 #endif
             QueryMethods.AllNot(new AdventureWorks());
             QueryMethods.NotAny(new AdventureWorks());

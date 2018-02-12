@@ -16,6 +16,11 @@
         internal static string AdventureWorks { get; } =
 #if NETFX
             ConfigurationManager.ConnectionStrings[nameof(AdventureWorks)].ConnectionString.FormatFilePath();
+#elif WINDOWS_UWP
+            ((string)Windows.Storage.ApplicationData.Current.LocalSettings.Values[nameof(AdventureWorks)]).FormatFilePath();
+#elif ANDROID || __IOS__
+            // ANDROID and IOS do not support encryption.
+            @"Server=tcp:dixin.database.windows.net,1433;Initial Catalog=AdventureWorks;User ID=dixinyan;Password=...;MultipleActiveResultSets=False;Connection Timeout=30;";
 #else
             new ConfigurationBuilder().AddJsonFile("app.json").Build()
                 .GetConnectionString(nameof(AdventureWorks)).FormatFilePath();

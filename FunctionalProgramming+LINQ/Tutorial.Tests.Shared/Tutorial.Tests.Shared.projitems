@@ -72,6 +72,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)LinqToXml\ManipulationTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToXml\ModelingTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LinqToXml\QueryMethodsTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)MSTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParallelLinq\ParallelEnumerableXTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParallelLinq\PartitioningTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ParallelLinq\PerformanceTests.cs" />

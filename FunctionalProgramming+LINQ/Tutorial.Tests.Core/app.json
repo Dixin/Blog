@@ -1,6 +1,6 @@
 ﻿{
   "ConnectionStrings": {
-     // "AdventureWorks": "Server=tcp:dixin.database.windows.net,1433;Initial Catalog=AdventureWorks;Persist Security Info=False;User ID=dixinyan;Password=***;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
+     // "AdventureWorks": "Server=tcp:dixin.database.windows.net,1433;Initial Catalog=AdventureWorks;Persist Security Info=False;User ID=dixinyan;Password=...;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"
      "AdventureWorks": "Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=..\\..\\..\\..\\Data\\AdventureWorks_Data.mdf;Integrated Security=True;Connect Timeout=30"
   }
 }

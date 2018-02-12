@@ -263,14 +263,14 @@ namespace Tutorial.ParallelLinq
                 },
                 resultSelector);
         }
-    }
 
-    internal static class Program
-    {
-        private static void Main()
+        internal static void TraceToFile()
         {
-            using (FileStream stream = File.OpenWrite(Path.Combine(Path.GetTempPath(), "Trace.txt")))
-            using (TextWriterTraceListener traceListener = new TextWriterTraceListener(stream))
+            // Trace to file:
+            string file = Path.Combine(Path.GetTempPath(), "Trace.txt");
+            using (TextWriterTraceListener traceListener = new TextWriterTraceListener(file))
+            // Or trace to console:
+            // using (TextWriterTraceListener traceListener = new TextWriterTraceListener(Console.Out))
             {
                 Trace.Listeners.Add(traceListener);
                 QueryMethods.ForEachForAllTimeSpans();
