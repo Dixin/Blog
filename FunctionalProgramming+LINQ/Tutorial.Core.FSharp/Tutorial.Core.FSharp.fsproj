@@ -2,9 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <Authors />
+    <Company>Dixin Yan</Company>
+    <Product>Tutorial</Product>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Tools\CommonAssemblyInfo.fs" Link="Properties\CommonAssemblyInfo.fs" />
     <Compile Include="Functional\Functions.fs" />
     <Compile Include="LinqToObjects\QueryExpressions.fs" />
   </ItemGroup>

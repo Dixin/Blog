@@ -3,15 +3,21 @@ using System.Reflection;
 using System.Resources;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyDescription("Code snippets for https://weblogs.asp.net/dixin.")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
 
-[assembly: AssemblyCompany("Dixin Yan")]
+[assembly: AssemblyDescription("Code examples for https://weblogs.asp.net/dixin/linq-via-csharp.")]
 [assembly: AssemblyCopyright("Dixin Yan https://weblogs.asp.net/dixin")]
 
-[assembly: ComVisible(false)]
+#if !NETSTANDARD2_0 && !NETCOREAPP2_0
+[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyCompany("Dixin Yan")]
+[assembly: AssemblyProduct("Tutorial")]
+#endif
 
 [assembly: CLSCompliant(false)]
-
 [assembly: NeutralResourcesLanguage("en-US")]
+
+#if NETFX || WINDOWS_UWP
+[assembly: ComVisible(false)]
+#endif
+

@@ -2,7 +2,10 @@
 
   <PropertyGroup>    
     <TargetFramework>netcoreapp2.0</TargetFramework>    
-    <RootNamespace>Tutorial.Tests</RootNamespace>
+    <RootNamespace>Tutorial.Tests</RootNamespace>    
+    <Authors />    
+    <Company>Dixin Yan</Company>    
+    <Product>Tutorial</Product>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -12,6 +15,10 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Tools\CommonAssemblyInfo.cs" Link="Properties\CommonAssemblyInfo.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
@@ -25,6 +32,10 @@
 
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
 
   <Import Project="..\Tutorial.Tests.External.Shared\Tutorial.Tests.External.Shared.projitems" Label="Shared" />
