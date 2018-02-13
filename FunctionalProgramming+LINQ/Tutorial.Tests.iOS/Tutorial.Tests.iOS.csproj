@@ -48,6 +48,7 @@
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
     <CodesignKey>iPhone Developer</CodesignKey>
     <MtouchDebug>true</MtouchDebug>
+    <MtouchI18n>west</MtouchI18n>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
     <DebugType>none</DebugType>
@@ -59,6 +60,9 @@
     <MtouchArch>$iossupportedarchitecture$</MtouchArch>
     <ConsolePause>false</ConsolePause>
     <CodesignKey>iPhone Developer</CodesignKey>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
+    <AppExtensionDebugBundleId />
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Tools\CommonAssemblyInfo.cs">
