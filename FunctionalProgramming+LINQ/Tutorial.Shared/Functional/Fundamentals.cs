@@ -211,51 +211,6 @@ namespace System
         // Other members.
     }
 }
-
-namespace System
-{
-    public partial struct Nullable<T> where T : struct
-    {
-        public T GetValueOrDefault()
-        {
-            return this.value;
-        }
-
-        public T GetValueOrDefault(T defaultValue)
-        {
-            return this.hasValue ? this.value : defaultValue;
-        }
-
-        public override bool Equals(object other)
-        {
-            if (!this.hasValue)
-            {
-                return other == null;
-            }
-            return other != null && this.value.Equals(other);
-        }
-
-        public override int GetHashCode()
-        {
-            return this.hasValue ? this.value.GetHashCode() : 0;
-        }
-
-        public override string ToString()
-        {
-            return this.hasValue ? this.value.ToString() : string.Empty;
-        }
-
-        public static implicit operator Nullable<T>(T value)
-        {
-            return new Nullable<T>(value);
-        }
-
-        public static explicit operator T(Nullable<T> value)
-        {
-            return value.Value;
-        }
-    }
-}
 #endif
 
 namespace Tutorial.Functional
@@ -266,40 +221,45 @@ namespace Tutorial.Functional
     using System.Data.Common;
     using System.Data.SqlClient;
     using System.Diagnostics;
+    using System.Net;
     using System.Runtime.CompilerServices;
 
-    internal class Point
+
+    internal static partial class Fundamentals
     {
-        private readonly int x;
-
-        private readonly int y;
-
-        internal Point(int x, int y)
+        internal partial class Point
         {
-            this.x = x;
-            this.y = y;
+            private readonly int x;
+
+            private readonly int y;
+
+            internal Point(int x, int y)
+            {
+                this.x = x;
+                this.y = y;
+            }
+
+            internal int X { get { return this.x; } }
+
+            internal int Y { get { return this.y; } }
         }
 
-        internal int X { get { return this.x; } }
-
-        internal int Y { get { return this.y; } }
-    }
-
-    internal readonly struct ValuePoint
-    {
-        private readonly int x;
-
-        private readonly int y;
-
-        internal ValuePoint(int x, int y)
+        internal partial struct ValuePoint
         {
-            this.x = x;
-            this.y = y;
+            private readonly int x;
+
+            private readonly int y;
+
+            internal ValuePoint(int x, int y)
+            {
+                this.x = x;
+                this.y = y;
+            }
+
+            internal int X { get { return this.x; } }
+
+            internal int Y { get { return this.y; } }
         }
-
-        internal int X { get { return this.x; } }
-
-        internal int Y { get { return this.y; } }
     }
 
     internal static partial class Fundamentals
@@ -313,19 +273,59 @@ namespace Tutorial.Functional
             ValuePoint value1 = new ValuePoint(3, 4);
             ValuePoint value2 = value1;
             Trace.WriteLine(object.ReferenceEquals(value1, value2)); // False
+
+            Point[] referenceArray = new Point[] { new Point(5, 6) };
+            ValuePoint[] valueArray = new ValuePoint[] { new ValuePoint(7, 8) };
         }
+    }
+
+    internal static partial class Fundamentals
+    {
+        internal ref struct OnStackOnly { }
+
+#if DEMO
+        internal static void Allocation()
+        {
+            OnStackOnly valueOnStack = new OnStackOnly();
+            OnStackOnly[] arrayOnHeap = new OnStackOnly[10]; // Cannot be compiled.
+        }
+
+        internal class OnHeapOnly
+        {
+            private OnStackOnly fieldOnHeap; // Cannot be compiled.
+        }
+
+        internal struct OnStackOrHeap
+        {
+            private OnStackOnly fieldOnStackOrHeap; // Cannot be compiled.
+        }
+#endif
     }
 
     internal static partial class Fundamentals
     {
         internal static void Default()
         {
-            Point defaultReference = default;
+            Point defaultReference = default(Point);
             Trace.WriteLine(defaultReference is null); // True
 
-            ValuePoint defaultValue = default;
+            ValuePoint defaultValue = default(ValuePoint);
             Trace.WriteLine(defaultValue.X); // 0
             Trace.WriteLine(defaultValue.Y); // 0
+        }
+
+        internal static void CompiledDefault()
+        {
+            Point defaultReference = null;
+
+            ValuePoint defaultValue = new ValuePoint();
+        }
+
+        internal static void DefaultLiteralExpression()
+        {
+            Point defaultReference = default;
+
+            ValuePoint defaultValue = default;
         }
     }
 
@@ -338,7 +338,7 @@ namespace Tutorial.Functional
             {
                 connection.Open();
                 Trace.WriteLine(connection.ServerVersion);
-                // Use connection object.
+                // Work with connection.
             }
             finally
             {
@@ -358,7 +358,7 @@ namespace Tutorial.Functional
             {
                 connection.Open();
                 Trace.WriteLine(connection.ServerVersion);
-                // Use connection object.
+                // Work with connection.
             }
         }
     }
@@ -370,7 +370,7 @@ namespace Tutorial.Functional
         void Explicit();
     }
 
-    internal class Implementations : IInterface
+    internal class Implementation : IInterface
     {
         public void Implicit() { }
 
@@ -381,7 +381,7 @@ namespace Tutorial.Functional
     {
         internal static void InterfaceMembers()
         {
-            Implementations @object = new Implementations();
+            Implementation @object = new Implementation();
             @object.Implicit(); // @object.Explicit(); cannot be compiled.
 
             IInterface @interface = @object;
@@ -491,7 +491,8 @@ namespace Tutorial.Functional
         where T4 : IDisposable
         where T5 : struct, IComparable, IComparable<T5>
         where T6 : new()
-        where T7 : T2, T3, T4, IDisposable, new() { }
+        where T7 : T2, T3, T4, IDisposable, new()
+    { }
 
     internal partial class Constraints<T1, T2, T3, T4, T5, T6, T7>
     {
@@ -499,7 +500,7 @@ namespace Tutorial.Functional
         {
             using (connection) // DbConnection implements IDisposable.
             {
-                DbCommand command = connection.CreateCommand(); // DbConnection has CreateCommand method.
+                connection.Open(); // DbConnection has Open method.
             }
         }
     }
@@ -508,16 +509,16 @@ namespace Tutorial.Functional
     {
         internal static void CloseType()
         {
-            Constraints<bool, object, DbConnection, IDbConnection, int, Exception, SqlConnection> value = null;
+            Constraints<bool, object, DbConnection, IDbConnection, int, Exception, SqlConnection> closed = default;
         }
 
         internal static void Nullable()
         {
-            int? nullable1 = null;
-            int? nullable2 = int.MaxValue;
-            if (nullable2 != null)
+            int? nullable = null;
+            nullable = 1;
+            if (nullable != null)
             {
-                int value = nullable2.Value;
+                int value = (int)nullable;
             }
         }
 
@@ -545,9 +546,9 @@ namespace Tutorial.Functional
 
     internal partial class Device
     {
-        public override string ToString()
+        public string FormattedName
         {
-            return this.Name;
+            get { return this.name.ToUpper(); }
         }
     }
 
@@ -672,7 +673,7 @@ namespace Tutorial.Functional
             DeviceCollection devices = new DeviceCollection { device1, device2 };
         }
 
-        internal static void AddToCollections(Device device1, Device device2)
+        internal static void CompiledCollectionInitializer(Device device1, Device device2)
         {
             DeviceCollection devices = new DeviceCollection();
             devices.Add(device1);
@@ -689,10 +690,10 @@ namespace Tutorial.Functional
     {
         internal static void IndexInitializer(Device device1, Device device2)
         {
-            DeviceDictionary devices = new DeviceDictionary { [0] = device1, [1] = device2 };
+            DeviceDictionary devices = new DeviceDictionary { [10] = device1, [11] = device2 };
         }
 
-        internal static void SetIndexer(Device device1, Device device2)
+        internal static void CompiledIndexInitializer(Device device1, Device device2)
         {
             DeviceDictionary devices = new DeviceDictionary();
             devices[0] = device1;
@@ -702,72 +703,168 @@ namespace Tutorial.Functional
 
     internal static partial class Fundamentals
     {
-        internal static void DefaultValueForNull(Uri nullable)
+        internal partial class Point
         {
-            Uri uri;
-            if ((object)nullable != null)
-            {
-                uri = nullable;
-            }
-            else
-            {
-                uri = new Uri("https://weblogs.asp.net/dixin"); // Default value for null.
-            }
-            // uri is not null.
+            internal static Point Default { get; } = new Point(0, 0);
         }
 
-        internal static void NullCoalescing(Uri nullable)
+        internal partial struct ValuePoint
         {
-            Uri uri = nullable ?? new Uri("https://weblogs.asp.net/dixin");
-            // uri is not null.
+            internal static ValuePoint Default { get; } = new ValuePoint(0, 0);
         }
 
-        internal static void MemberAccess(Uri nullableValue)
+        internal static void DefaultValueForNull(Point reference, ValuePoint? nullableValue)
         {
-            string result;
-            if ((object)nullableValue != null)
+            Point point = reference != null ? reference : Point.Default;
+            ValuePoint valuePoint = nullableValue != null ? (ValuePoint)nullableValue : ValuePoint.Default;
+        }
+
+        internal static void DefaultValueForNullWithNullCoalescing(Point reference, ValuePoint? nullableValue)
+        {
+            Point point = reference ?? Point.Default;
+            ValuePoint valuePoint = nullableValue ?? ValuePoint.Default;
+        }
+
+        internal static void NullCheck(Category category, Device[] devices)
+        {
+            string categoryText = null;
+            if (category != null)
             {
-                result = nullableValue.ToString();
+                categoryText = category.ToString();
             }
-            else
+            string firstDeviceName;
+            if (devices != null)
             {
-                result = null;
-            }
-        }
-
-        internal static void NullConditional(Uri nullableValue)
-        {
-            string result = nullableValue?.ToString();
-        }
-
-        internal static void ArgumentCheck(Uri uri)
-        {
-            if (uri == null)
-            {
-                throw new ArgumentNullException("uri");
+                Device first = devices[0];
+                if (first != null)
+                {
+                    firstDeviceName = first.Name;
+                }
             }
         }
 
-        internal static void NameOf(Uri uri)
+        internal static void NullCheckWithNullConditional(Category category, Device[] devices)
         {
-            if (uri == null)
+            string categoryText = category?.ToString();
+            string firstDeviceName = devices?[0]?.Name;
+        }
+
+        internal partial class Subcategory
+        {
+            internal Subcategory(string name, Category category)
             {
-                throw new ArgumentNullException(nameof(uri));
+                this.Name = !string.IsNullOrWhiteSpace(name) ? name : throw new ArgumentNullException("name");
+                this.Category = category ?? throw new ArgumentNullException("category");
+            }
+
+            internal Category Category { get; }
+
+            internal string Name { get; }
+        }
+
+        internal static void ArgumentCheck(int count)
+        {
+            if (count < 0)
+            {
+                throw new ArgumentOutOfRangeException("count");
             }
         }
 
-        internal static int AddWithLog(int value1, int value2)
+        internal static void NameOf(int count)
         {
-            int sum = value1 + value2;
-            Trace.WriteLine(string.Format("{0}: {1} + {2} => {3}", DateTime.Now.ToString("o"), value1, value2, sum));
-            return sum;
+            if (count < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(count));
+            }
         }
 
-        internal static int StringInterpolation(int value1, int value2)
+        internal static void Log(Device device)
         {
-            int sum = value1 + value2;
-            Trace.WriteLine($"{DateTime.Now.ToString("o")}: {value1} + {value2} => {sum}");
-            return sum;
+            string message = string.Format("{0}: {1}, {2}", DateTime.Now.ToString("o"), device.Name, device.Price);
+            Trace.WriteLine(message);
+        }
+
+        internal static void LogWithStringInterpolation(Device device)
+        {
+            string message = string.Format($"{DateTime.Now.ToString("o")}: {device.Name}, {device.Price}");
+            Trace.WriteLine(message);
+        }
+
+        internal static void Rethrow(WebClient webClient)
+        {
+            try
+            {
+                string html = webClient.DownloadString("http://weblogs.asp.net/dixin");
+            }
+            catch (WebException exception)
+            {
+                if ((exception.Response as HttpWebResponse)?.StatusCode == HttpStatusCode.BadRequest)
+                {
+                    // Handle exception.
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
+
+        internal static void ExceptionFilter(WebClient webClient)
+        {
+            try
+            {
+                string html = webClient.DownloadString("http://weblogs.asp.net/dixin");
+            }
+            catch (WebException exception) when ((exception.Response as HttpWebResponse)?.StatusCode == HttpStatusCode.BadRequest)
+            {
+                // Handle exception.
+            }
+        }
+
+        internal static void DigitSeparator()
+        {
+            int value1 = 10_000_000;
+            double value2 = 0.123_456_789;
+
+            int value3 = 0b_0001_0000;
+            int value4 = 0b_0000_1000;
         }
     }
 }
+
+#if DEMO
+namespace System
+{
+    public struct Nullable<T> where T : struct
+    {
+        private bool hasValue;
+
+        internal T value;
+
+        public Nullable(T value)
+        {
+            this.value = value;
+            this.hasValue = true;
+        }
+
+        public bool HasValue
+        {
+            get { return this.hasValue; }
+        }
+
+        public T Value
+        {
+            get
+            {
+                if (!this.hasValue)
+                {
+                    throw new InvalidOperationException("Nullable object    must have a value.");
+                }
+                return this.value;
+            }
+        }
+
+        // Other members.
+    }
+}
+#endif
