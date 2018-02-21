@@ -378,6 +378,15 @@
             downloader.add_Completed(SaveContent);
             downloader.Start("https://weblogs.asp.net/dixin");
         }
+
+        internal class DownloaderWithEventAccessor
+        {
+            internal event EventHandler<DownloadEventArgs> Completed
+            {
+                add { this.Completed += value; }
+                remove { this.Completed -= value; }
+            }
+        }
     }
 }
 

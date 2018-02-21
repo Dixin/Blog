@@ -748,20 +748,23 @@ namespace Tutorial.Functional
             string categoryText = category?.ToString();
             string firstDeviceName = devices?[0]?.Name;
         }
+    }
 
-        internal partial class Subcategory
+    internal partial class Subcategory
+    {
+        internal Subcategory(string name, Category category)
         {
-            internal Subcategory(string name, Category category)
-            {
-                this.Name = !string.IsNullOrWhiteSpace(name) ? name : throw new ArgumentNullException("name");
-                this.Category = category ?? throw new ArgumentNullException("category");
-            }
-
-            internal Category Category { get; }
-
-            internal string Name { get; }
+            this.Name = !string.IsNullOrWhiteSpace(name) ? name : throw new ArgumentNullException("name");
+            this.Category = category ?? throw new ArgumentNullException("category");
         }
 
+        internal Category Category { get; }
+
+        internal string Name { get; }
+    }
+
+    internal static partial class Fundamentals
+    {
         internal static void ArgumentCheck(int count)
         {
             if (count < 0)
@@ -826,8 +829,8 @@ namespace Tutorial.Functional
             int value1 = 10_000_000;
             double value2 = 0.123_456_789;
 
-            int value3 = 0b_0001_0000;
-            int value4 = 0b_0000_1000;
+            int value3 = 0b0001_0000; // Binary.
+            int value4 = 0b_0000_1000; // Binary.
         }
     }
 }

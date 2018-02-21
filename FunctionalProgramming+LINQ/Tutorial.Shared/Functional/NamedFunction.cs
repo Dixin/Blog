@@ -8,7 +8,7 @@
 
     internal partial class Data
     {
-        internal readonly int value;
+        private readonly int value;
 
         static Data()
         {
@@ -30,42 +30,24 @@
     internal partial class Data
     {
         public static Data operator +(Data data1, Data data2)
+        // Compiled to: public static Data op_Addition(Data data1, Data data2)
         {
             Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Addition
             return new Data(data1.value + data2.value);
         }
 
-        public static explicit operator int(Data value) // op_Explicit
+        public static explicit operator int(Data value)
+        // Compiled to: public static int op_Explicit(Data data)
         {
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name);
+            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Explicit
             return value.value;
         }
 
-        public static implicit operator Data(int value) // op_Implicit
-        {
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name);
-            return new Data(value);
-        }
-    }
-
-    internal partial class CompiledData
-    {
-        public static Data op_Addition(Data data1, Data data2)
-        {
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Addition
-            return new Data(data1.value + data2.value);
-        }
-
-        public static int op_Explicit(Data data)
-        {
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Explicit
-            return data.value;
-        }
-
-        public static Data op_Implicit(int data)
+        public static implicit operator Data(int value)
+        // Compiled to: public static Data op_Implicit(int data)
         {
             Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Implicit
-            return new Data(data);
+            return new Data(value);
         }
     }
 
@@ -73,9 +55,9 @@
     {
         internal static void Operators(Data data1, Data data2)
         {
-            Data result = data1 + data2; // Compiled to Data.op_Addition(data1, data2).
-            int int32 = (int)data1; // Compiled to Data.op_Explicit(data1).
-            Data data = 1; // Compiled to Data.op_Implicit(1).
+            Data result = data1 + data2; // Compiled to: Data.op_Addition(data1, data2)
+            int int32 = (int)data1; // Compiled to: Data.op_Explicit(data1)
+            Data data = 1; // Compiled to: Data.op_Implicit(1)
         }
     }
 
@@ -85,12 +67,12 @@
 
         internal string Description
         {
-            get
+            get // Compiled to: internal string get_Description()
             {
                 Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // get_Description
                 return this.description;
             }
-            set
+            set // Compiled to: internal void set_Description(string value)
             {
                 Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // set_Description
                 this.description = value;
@@ -98,100 +80,67 @@
         }
     }
 
-#if DEMO
-    internal partial class CompiledDevice
-    {
-        private string description;
-
-        internal string Description
-        {
-            get { return this.get_Description(); }
-            set { this.set_Description(value); }
-        }
-
-        internal string get_Description() // Body of Description's getter.
-        {
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // get_Description
-            return this.description;
-        }
-
-        internal void set_Description(string value) // Body of Description's setter.
-        {
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // set_Description
-            this.description = value;
-        }
-    }
-#endif
-
     internal static partial class Functions
     {
         internal static void Property(Device device)
         {
-            string description = device.Description; // Compiled to device.get_Description().
-            device.Description = string.Empty; // Compiled to device.set_Description(string.Empty).
+            string description = device.Description; // Compiled to: device.get_Description()
+            device.Description = string.Empty; // Compiled to: device.set_Description(string.Empty)
         }
-    }
 
-    internal partial class Category
-    {
-        private readonly Uri[] links;
-
-        internal Category(Uri[] links)
+        internal partial class Category
         {
-            this.links = links;
+            private readonly Subcategory[] subcategories;
+
+            internal Category(Subcategory[] subcategories)
+            {
+                this.subcategories = subcategories;
+            }
+
+            internal Subcategory this[int index]
+            {
+                get // Compiled to: internal Uri get_Item(int index)
+                {
+                    Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // get_Item
+                    return this.subcategories[index];
+                }
+                set // Compiled to: internal Uri set_Item(int index, Subcategory subcategory)
+                {
+                    Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // set_Item
+                    this.subcategories[index] = value;
+                }
+            }
         }
 
-        internal Uri this[int index]
+        internal static void Indexer(Category category)
         {
-            get
-            {
-                Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // get_Item
-                return this.links[index];
-            }
-            set
-            {
-                Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // set_Item
-                this.links[index] = value;
-            }
+            Subcategory subcategory = category[0]; // Compiled to: category.get_Item(0)
+            category[0] = subcategory; // Compiled to: category.set_Item(0, subcategory)
         }
-    }
 
 #if DEMO
-    internal partial class CompiledCategory
-    {
-        private readonly Uri[] links;
-
-        internal Category(Uri[] links)
+        internal class Downloader
         {
-            this.links = links;
+            internal event EventHandler<DownloadEventArgs> Completed
+            {
+                add // Compiled to: internal void add_Completed(EventHandler<DownloadEventArgs> value)
+                {
+                    Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // add_Completed
+                    this.Completed += value;
+                }
+                remove // Compiled to: internal void remove_Completed(EventHandler<DownloadEventArgs> value)
+                {
+                    Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // remove_Completed
+                    this.Completed -= value;
+                }
+            }
         }
-
-        internal Uri this[int index]
-        {
-            get { return this.get_Item(index); }
-            set { this.set_Item(index, value); }
-        }
-
-        internal Uri get_Item(int index) // Body of indexer's getter.
-        {
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // get_Item
-            return this.links[index];
-        }
-
-        internal Uri set_Item(int index, Uri value) // Body of indexer's setter.
-        {
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // set_Item
-            this.links[index] = value;
-        }
-    }
 #endif
 
-    internal static partial class Functions
-    {
-        internal static void Indexer(Category category, Uri newLink)
+        internal static void EventAccessor(Downloader downloader)
         {
-            Uri link = category[0]; // Compiled to device.get_Item(0).
-            category[0] = newLink; // Compiled to device.set_Item(0, uri).
+            downloader.Completed += TraceContent; // Compiled to: downloader.add_Completed(TraceContent)
+            downloader.Completed -= SaveContent; // Compiled to: downloader.remove_Completed(SaveContent)
         }
     }
 
@@ -234,7 +183,7 @@
             return stack;
         }
 
-        internal static void ArgumentTypeInference(string value1, string value2)
+        internal static void TypeArgumentInference(string value1, string value2)
         {
             Swap<string>(ref value1, ref value2);
             Swap(ref value1, ref value2);
@@ -279,12 +228,12 @@
 
     internal partial class Data
     {
-        internal long InstanceAdd(int value1, long value2)
+        internal int InstanceAdd(int value1, int value2)
         {
             return this.value + value1 + value2;
         }
 
-        internal static long StaticAdd(Data @this, int value1, long value2)
+        internal static int StaticAdd(Data @this, int value1, int value2)
         {
             return @this.value + value1 + value2;
         }
@@ -292,28 +241,28 @@
 
     internal partial class Data
     {
-        internal long CompiledInstanceAdd(int value1, long value2)
+        internal int CompiledInstanceAdd(int value1, int value2)
         {
             Data arg1 = this;
             int arg2 = value1;
-            long arg3 = value2;
+            int arg3 = value2;
             return this.value + value1 + value2;
         }
 
-        internal static long CompiledStaticAdd(Data @this, int value1, long value2)
+        internal static int CompiledStaticAdd(Data @this, int value1, int value2)
         {
             Data arg1 = @this;
             int arg2 = value1;
-            long arg3 = value2;
+            int arg3 = value2;
             return @this.value + value1 + value2;
         }
     }
 
     internal static partial class DataExtensions
     {
-        internal static long ExtensionAdd(this Data @this, int value1, long value2)
+        internal static int ExtensionAdd(this Data @this, int value1, int value2)
         {
-            return @this.value + value1 + value2;
+            return @this.Value + value1 + value2;
         }
     }
 
@@ -321,7 +270,7 @@
     {
         internal static void CallExtensionMethod(Data data)
         {
-            long result = data.ExtensionAdd(1, 2L);
+            int result = data.ExtensionAdd(1, 2);
         }
     }
 
@@ -329,7 +278,7 @@
     internal static partial class DataExtensions
     {
         [Extension]
-        internal static long CompiledExtensionAdd(Data @this, int value1, long value2)
+        internal static int CompiledExtensionAdd(Data @this, int value1, int value2)
         {
             return @this.value + value1 + value2;
         }
@@ -340,7 +289,7 @@
     {
         internal static void CompiledCallExtensionMethod(Data data)
         {
-            long result = DataExtensions.ExtensionAdd(data, 1, 2L);
+            int result = DataExtensions.ExtensionAdd(data, 1, 2);
         }
     }
 

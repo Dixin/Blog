@@ -39,7 +39,7 @@
         internal static void LocalFunctionOverload()
         {
             void LocalFunction() { }
-            void LocalFunction(int int32) { } // Cannot be the same name.
+            void LocalFunction(int int32) { } // Cannot be compiled.
         }
 #endif
 
