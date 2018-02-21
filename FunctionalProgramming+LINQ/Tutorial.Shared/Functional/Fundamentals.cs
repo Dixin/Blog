@@ -735,10 +735,10 @@ namespace Tutorial.Functional
             string firstDeviceName;
             if (devices != null)
             {
-                Device first = devices[0];
-                if (first != null)
+                Device firstDevice = devices[0];
+                if (firstDevice != null)
                 {
-                    firstDeviceName = first.Name;
+                    firstDeviceName = firstDevice.Name;
                 }
             }
         }

@@ -70,10 +70,11 @@
         }
 #endif
 
-        internal static void Output(out Uri reference, out int value)
+        internal static bool Output(out Uri reference, out int value)
         {
             reference = new Uri("https://flickr.com/dixin");
             value = 10;
+            return false;
         }
 
         internal static void CallOutput()
@@ -90,6 +91,12 @@
             Output(out Uri reference, out int value);
             reference.WriteLine(); // https://flickr.com/dixin
             value.WriteLine(); // 10
+        }
+
+        internal static void Discard()
+        {
+            bool result = Output(out _, out _);
+            _ = Output(out _, out _);
         }
 
         internal static int Sum(params int[] values)

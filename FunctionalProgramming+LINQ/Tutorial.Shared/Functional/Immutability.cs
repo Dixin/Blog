@@ -501,11 +501,18 @@
             Device GetDevice() => new Device() { Name = "Surface studio", Description = "All-in-one PC.", Price = 2999M };
             var (name, description, price) = GetDevice();
             // Compiled to:
-            // string name; string description; decimal prive;
+            // string name; string description; decimal price;
             // surfaceStudio.Deconstruct(out name, out description, out price);
             name.WriteLine(); // Surface studio
             description.WriteLine(); // All-in-one PC.
             price.WriteLine(); // 2999
+        }
+
+        internal static void Discard()
+        {
+            Device GetDevice() => new Device() { Name = "Surface studio", Description = "All-in-one PC.", Price = 2999M };
+            var (_, _, price1) = GetDevice();
+            (_, _, decimal price2) = GetDevice();
         }
 
         internal static void TupleAssignment(int value1, int value2)
