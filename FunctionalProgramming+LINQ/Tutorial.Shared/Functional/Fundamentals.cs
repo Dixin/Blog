@@ -1,6 +1,28 @@
 ﻿#if DEMO
 namespace System
 {
+    public class Object
+    {
+        public Object();
+
+        public static bool Equals(Object objA, Object objB);
+
+        public static bool ReferenceEquals(Object objA, Object objB);
+
+        public virtual bool Equals(Object obj);
+
+        public virtual int GetHashCode();
+
+        public Type GetType();
+
+        public virtual string ToString();
+
+        // Other members.
+    }
+}
+
+namespace System
+{
     using System.Runtime.InteropServices;
     using System.Runtime.Serialization;
 

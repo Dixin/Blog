@@ -6,18 +6,14 @@
     {
         internal static void IsConstantValue(object @object)
         {
-            if (@object is int.MinValue)
-            {
-                @object.WriteLine();
-            }
-            if (@object is null)
-            {
-                @object.WriteLine();
-            }
-            if (@object is DayOfWeek.Monday)
-            {
-                @object.WriteLine();
-            }
+            // Type test:
+            bool test1 = @object is string;
+            // Constant value test:
+            bool test5 = @object is null; // Compiled to: @object == null
+            bool test6 = @object is default; // Compiled to: @object == mull
+            bool test2 = @object is int.MinValue; // Compiled to: object.Equals(int.MinValue, @object)
+            bool test3 = @object is DayOfWeek.Monday; // Compiled to: object.Equals(DayOfWeek.Monday, @object)
+            bool test4 = @object is "test"; // Compiled to: object.Equals("test", @object)
         }
     }
 
@@ -43,7 +39,7 @@
         {
             if (@object is Uri uri)
             {
-                uri.AbsoluteUri.WriteLine();
+                uri.AbsolutePath.WriteLine();
             }
         }
 
@@ -52,7 +48,7 @@
             Uri uri = @object as Uri;
             if (uri != null)
             {
-                uri.AbsoluteUri.WriteLine();
+                uri.AbsolutePath.WriteLine();
             }
         }
 
@@ -80,6 +76,13 @@
             {
                 timeSpan.TotalMilliseconds.WriteLine();
             }
+        }
+
+        internal static void OpenType<T1, T2>(object @object, T1 open1)
+        {
+            if (@object is T1 open) { }
+            if (open1 is Uri uri) { }
+            if (open1 is T2 open2) { }
         }
 
         internal static void CompiledIsWithCondition(object @object)
@@ -136,11 +139,11 @@
                 case string @string when DateTime.TryParse(@string, out DateTime dateTime):
                     return dateTime;
                 // Match reference type with condition.
-                case int[] date when date.Length == 3 && date[0] >= 0 && date[1] >= 0 && date[2] >= 0:
+                case int[] date when date.Length == 3 && date[0] > 0 && date[1] > 0 && date[2] > 0:
                     return new DateTime(year: date[0], month: date[1], day: date[2]);
                 // Match reference type.
                 case IConvertible convertible:
-                    return convertible.ToDateTime(null);
+                    return convertible.ToDateTime(provider: null);
                 case var _: // default:
                     throw new ArgumentOutOfRangeException(nameof(@object));
             }
@@ -205,11 +208,16 @@
 #if DEMO
 namespace System
 {
+    using System.Runtime.CompilerServices;
+
     [Serializable]
     public class Object
     {
         public static bool Equals(object objA, object objB) =>
             objA == objB || (objA != null && objB != null && objA.Equals(objB));
+
+        public virtual bool Equals(object obj) =>
+            RuntimeHelpers.Equals(this, obj);
 
         // Other members.
     }

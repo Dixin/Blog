@@ -21,6 +21,11 @@
             this.value = value;
         }
 
+        ~Data() // Compiled to: protected virtual void Finalize()
+        {
+            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // Finalize
+        }
+
         internal int Value
         {
             get { return this.value; }
@@ -43,6 +48,13 @@
             return value.value;
         }
 
+        public static explicit operator string(Data value)
+        // Compiled to: public static string op_Explicit(Data data)
+        {
+            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // op_Explicit
+            return value.value.ToString();
+        }
+
         public static implicit operator Data(int value)
         // Compiled to: public static Data op_Implicit(int data)
         {
@@ -57,6 +69,7 @@
         {
             Data result = data1 + data2; // Compiled to: Data.op_Addition(data1, data2)
             int int32 = (int)data1; // Compiled to: Data.op_Explicit(data1)
+            string @string = (string)data1; // Compiled to: Data.op_Explicit(data1)
             Data data = 1; // Compiled to: Data.op_Implicit(1)
         }
     }
@@ -146,22 +159,34 @@
 
     internal partial class Functions
     {
-        internal static void TraceString(Uri uri, FileInfo file, Assembly assembly)
+        internal static void TraceString(Uri uri, FileInfo file, int int32)
         {
-            Trace.WriteLine(uri == null ? string.Empty : uri.ToString());
-            Trace.WriteLine(file == null ? string.Empty : file.ToString());
-            Trace.WriteLine(assembly == null ? string.Empty : assembly.ToString());
+            Trace.WriteLine(uri?.ToString());
+            Trace.WriteLine(file?.ToString());
+            Trace.WriteLine(int32.ToString());
         }
     }
 
     internal partial class Functions
     {
-        internal static void TraceObject(Uri uri, FileInfo file, Assembly assembly)
+        internal static void TraceObject(Uri uri, FileInfo file, int int32)
         {
             Trace.WriteLine(uri);
             Trace.WriteLine(file);
-            Trace.WriteLine(assembly);
+            Trace.WriteLine(int32);
         }
+
+#if DEMO
+        internal static string FromInt64(long value)
+        {
+            return value.ToString();
+        }
+
+        internal static DateTime FromInt64(long value)
+        {
+            return new DateTime(value);
+        }
+#endif
 
         internal static void SwapInt32(ref int value1, ref int value2)
         {
@@ -378,16 +403,20 @@
 
 namespace Tutorial.Functional
 {
+    using System.Collections.Generic;
+
     using static System.DayOfWeek;
     using static System.Math;
     using static System.Diagnostics.Trace;
+    using static System.Linq.Enumerable;
 
     internal static partial class Functions
     {
-        internal static void UsingStatic()
+        internal static void UsingStatic(int value, int[] array)
         {
-            int result = Max(1, 2); // Compiled to Math.Max(1, 2).
-            WriteLine(Monday); // Compiled to Trace.WriteLine(DayOfWeek.Monday).
+            int abs = Abs(value); // Compiled to: Math.Abs(value)
+            WriteLine(Monday); // Compiled to: Trace.WriteLine(DayOfWeek.Monday)
+            List<int> list2 = array.ToList(); // Compiled to: Enumerable.ToList(array)
         }
     }
 }
@@ -509,6 +538,30 @@ namespace System.Linq
 
         public static IEnumerable<TResult> Select<TSource, TResult>(
             this IEnumerable<TSource> source, Func<TSource, TResult> selector);
+    }
+}
+
+namespace System
+{
+    public static class Convert
+    {
+        public static string ToString(bool value);
+
+        public static string ToString(int value);
+
+        public static string ToString(long value);
+
+        public static string ToString(decimal value);
+
+        public static string ToString(DateTime value);
+
+        public static string ToString(object value);
+
+        public static string ToString(int value, IFormatProvider provider);
+
+        public static string ToString(int value, int toBase);
+
+        // More overloads and other members.
     }
 }
 #endif
