@@ -190,16 +190,12 @@
 
         internal static void SwapInt32(ref int value1, ref int value2)
         {
-            int copyOfValue1 = value1;
-            value1 = value2;
-            value2 = copyOfValue1;
+            (value1, value2) = (value2, value1);
         }
 
         internal static void Swap<T>(ref T value1, ref T value2)
         {
-            T copyOfValue1 = value1;
-            value1 = value2;
-            value2 = copyOfValue1;
+            (value1, value2) = (value2, value1);
         }
 
         internal static IStack<T> PushValue<T>(IStack<T> stack) where T : new()

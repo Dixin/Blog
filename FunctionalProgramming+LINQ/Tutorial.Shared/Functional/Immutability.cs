@@ -283,11 +283,10 @@
                 source.Where(device => device.Price > 0);
         }
 
-        internal static void AnonymousTypeProperty(Uri uri)
+        internal static void PropertyInference(Uri uri, int value)
         {
-            int variable = 1;
-            var anonymous1 = new { variable, uri.Host };
-            var anonymous2 = new { variable = variable, Host = uri.Host };
+            var anonymous1 = new { value, uri.Host };
+            var anonymous2 = new { value = value, Host = uri.Host };
         }
     }
 
@@ -463,6 +462,12 @@
             var tuple6 = function(("HoloLens", 3000M));
             tuple5.Name.WriteLine(); // Return value element names are available through var.
             tuple5.Price.WriteLine();
+        }
+
+        internal static void ElementInference(Uri uri, int value)
+        {
+            var tuple1 = (value, uri.Host);
+            var tuple2 = (value: value, Host: uri.Host);
         }
 
         internal static void DeconstructTuple()
