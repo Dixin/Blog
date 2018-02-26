@@ -571,19 +571,21 @@
         internal static async Task AsyncAnonymous(string readPath, string writePath)
         {
             Task<Task<string>> task1 = new Task<Task<string>>(async () => await ReadAsync(readPath));
+            task1.Start(); // Cold task needs to be started.
             string contents = await task1.Unwrap(); // Equivalent to: string contents = await await task1;
 
             Task<Task> task2 = new Task<Task>(async () => await WriteAsync(writePath, null));
+            task2.Start(); // Cold task needs to be started.
             await task2.Unwrap(); // Equivalent to: await await task2;
         }
 
         internal static async Task RunAsync(string readPath, string writePath)
         {
             Task<string> task1 = Task.Run(async () => await ReadAsync(readPath)); // Automatically unwrapped.
-            string contents = await task1;
+            string contents = await task1; // Task.Run returns hot task..
 
             Task task2 = Task.Run(async () => await WriteAsync(writePath, contents)); // Automatically unwrapped.
-            await task2;
+            await task2; // Task.Run returns hot task.
         }
 
         internal static async FuncAwaitable<T> ReturnFuncAwaitable<T>(T value)

@@ -10,26 +10,38 @@
     {
         private readonly int value;
 
-        static Data()
+        static Data() // Static constructor.
         {
             Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // .cctor
         }
 
-        internal Data(int value)
+        internal Data(int value) // Constructor.
         {
             Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // .ctor
             this.value = value;
-        }
-
-        ~Data() // Compiled to: protected virtual void Finalize()
-        {
-            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // Finalize
         }
 
         internal int Value
         {
             get { return this.value; }
         }
+
+        ~Data() // Finalizer.
+        {
+            Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // Finalize
+        }
+        // Compiled to:
+        // protected override void Finalize()
+        // {
+        //    try
+        //    {
+        //        Trace.WriteLine(MethodBase.GetCurrentMethod().Name);
+        //    }
+        //    finally
+        //    {
+        //        base.Finalize();
+        //    }
+        // }
     }
 
     internal partial class Data
@@ -139,12 +151,10 @@
                 add // Compiled to: internal void add_Completed(EventHandler<DownloadEventArgs> value)
                 {
                     Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // add_Completed
-                    this.Completed += value;
                 }
                 remove // Compiled to: internal void remove_Completed(EventHandler<DownloadEventArgs> value)
                 {
                     Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // remove_Completed
-                    this.Completed -= value;
                 }
             }
         }
@@ -264,18 +274,18 @@
     {
         internal int CompiledInstanceAdd(int value1, int value2)
         {
-            Data arg1 = this;
-            int arg2 = value1;
-            int arg3 = value2;
-            return this.value + value1 + value2;
+            Data arg0 = this;
+            int arg1 = value1;
+            int arg2 = value2;
+            return arg0.value + arg1 + arg2;
         }
 
         internal static int CompiledStaticAdd(Data @this, int value1, int value2)
         {
-            Data arg1 = @this;
-            int arg2 = value1;
-            int arg3 = value2;
-            return @this.value + value1 + value2;
+            Data arg0 = @this;
+            int arg1 = value1;
+            int arg2 = value2;
+            return arg0.value + arg1 + arg2;
         }
     }
 

@@ -3,10 +3,10 @@
 {
     .method assembly hidebysig instance int32 InstanceAdd (
         int32 value1,
-        int64 value2) cil managed 
+        int32 value2) cil managed 
     {
 		.maxstack  2
-		.locals init ([0] int32 V_0)
+		.locals init ([0] int32 V_0) // Local int variable V_0.
 		IL_0000:  nop // Do nothing.
 		IL_0001:  ldarg.0 // Load first argument this.
 		IL_0002:  ldfld int32 Data::'value' // Load field this.value.
@@ -23,10 +23,10 @@
     .method assembly hidebysig static int32 StaticAdd (
         class Data this,
         int32 value1,
-        int64 value2) cil managed 
+        int32 value2) cil managed 
     {
 		.maxstack  2
-		.locals init ([0] int32 V_0)
+		.locals init ([0] int32 V_0) // Local int variable V_0.
 		IL_0000:  nop // Do nothing.
 		IL_0001:  ldarg.0 // Load first argument this.
 		IL_0002:  ldfld int32 Data::'value' // Load field this.value.

@@ -235,9 +235,11 @@
     {
         private int value;
 
-        static Data2() => Functions.GetCurrentName().WriteLine(); // Static constructor.
+        static Data() => MethodBase.GetCurrentMethod().Name.WriteLine(); // Static constructor.
 
         internal Data(int value) => this.value = value; // Constructor.
+
+        ~Data() => Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // Finalizer.
 
         internal bool Equals(Data other) => this.value == other.value; // Instance method.
 
@@ -263,6 +265,12 @@
         {
             get => throw new NotImplementedException(); // Indexer getter.
             set => throw new NotImplementedException(); // Indexer setter.
+        }
+
+        internal event EventHandler Created
+        {
+            add => Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // Event accessor.
+            remove => Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // Event accessor.
         }
 
         internal int GetValue()
