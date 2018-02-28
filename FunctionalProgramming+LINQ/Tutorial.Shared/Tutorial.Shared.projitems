@@ -79,7 +79,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Introduction\Functional.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introduction\Functions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introduction\Imperative.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Introduction\LinqToDocumentDB.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Introduction\LinqToNoSql.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introduction\LinqToObjects.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Introduction\LinqToSql.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)LambdaCalculus\ChurchAggregateList.cs" />
@@ -147,8 +147,8 @@
     <Content Include="$(MSBuildThisFileDirectory)LinqToEntities\Inheritance.sql" />
     <Content Include="$(MSBuildThisFileDirectory)LinqToEntities\Tracing.sql" />
     <Content Include="$(MSBuildThisFileDirectory)LinqToEntities\Translation.txt" />
-    <Content Include="$(MSBuildThisFileDirectory)Introduction\LinqToDocumentDB.json" />
-    <Content Include="$(MSBuildThisFileDirectory)Introduction\LinqToDocumentDB.sql" />
+    <Content Include="$(MSBuildThisFileDirectory)Introduction\LinqToNoSql.json" />
+    <Content Include="$(MSBuildThisFileDirectory)Introduction\LinqToNoSql.sql" />
     <Content Include="$(MSBuildThisFileDirectory)Introduction\LinqToJson.json" />
     <Content Include="$(MSBuildThisFileDirectory)Introduction\LinqToXml.xml" />
     <Content Include="$(MSBuildThisFileDirectory)LambdaCalculus\Lambda.txt" />

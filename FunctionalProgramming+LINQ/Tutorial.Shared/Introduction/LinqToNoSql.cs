@@ -40,7 +40,7 @@ namespace Tutorial.Introduction
 
     internal static partial class Linq
     {
-        internal static void LinqToDocumentDB(string key)
+        internal static void LinqToNoSql(string key)
         {
             using (DocumentClient client = new DocumentClient(
                 new Uri("https://dixin.documents.azure.com:443/"), key))
