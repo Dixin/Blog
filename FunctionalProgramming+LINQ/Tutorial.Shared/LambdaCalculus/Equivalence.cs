@@ -12,12 +12,9 @@
 
     internal static class Halting<T, TResult>
     {
-        // IsHalting = f => x => True or False
+        // IsHalting = f => x => True if f halts with x; otherwise, False
         internal static readonly Func<Func<T, TResult>, Func<T, Boolean>>
-            IsHalting = f => x =>
-                {
-                    throw new NotImplementedException($"{nameof(True)} if {nameof(f)} halts with {nameof(x)}; otherwise, {nameof(False)}.");
-                };
+            IsHalting = f => x => throw new NotImplementedException();
 
         // IsNotHalting = f => If(IsHalting(f)(f))(_ => Sequence(Ω)(False))(_ => True)
         internal static readonly Func<SelfApplicableFunc<TResult>, Boolean>
@@ -29,12 +26,9 @@
 
     internal static class Equivalence<T, TResult>
     {
-        // IsEquivalent = f1 => f2 => True or False
+        // IsEquivalent = f1 => f2 => True if f1 and f2 are equivalent; otherwise, False
         internal static readonly Func<Func<T, TResult>, Func<Func<T, TResult>, Boolean>>
-            IsEquivalent = f1 => f2 =>
-                {
-                    throw new NotImplementedException($"{nameof(True)} if {nameof(f1)} and {nameof(f2)} are equivalent; otherwise, {nameof(False)}.");
-                };
+            IsEquivalent = f1 => f2 => throw new NotImplementedException();
 
         // IsHalting = f => x => IsEquivalent(_ => Sequence(f(x))(True))(_ => True)
         internal static readonly Func<Func<T, TResult>, Func<T, Boolean>>
