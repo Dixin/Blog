@@ -321,44 +321,8 @@
         // Other members.
     }
 
-    internal class Generic<T>
-    {
-        internal Generic(T input) { } // T cannot be inferred.
-    }
-
-    internal class Generic // Not Generic<T>.
-    {
-        internal static Generic<T> Create<T>(T input) => new Generic<T>(input); // T can be inferred.
-    }
-
     internal static partial class Immutability
     {
-#if DEMO
-        internal static void GenericConstructor()
-        {
-            var generic = new Generic(new { Name = "Surface Book", Price = 1349.00M });
-        }
-#endif
-
-        internal static Generic<IEnumerable<IGrouping<int, string>>> GenericConstructor(
-            IEnumerable<IGrouping<int, string>> input)
-        {
-            return new Generic<IEnumerable<IGrouping<int, string>>>(input);
-            // Cannot be compiled:
-            // return new Generic(input);
-        }
-
-        internal static Generic<IEnumerable<IGrouping<int, string>>> GenericCreate(
-            IEnumerable<IGrouping<int, string>> input)
-        {
-            return Generic.Create(input);
-        }
-
-        internal static void GenericWithAnonymousType()
-        {
-            var generic = Generic.Create(new { Name = "Surface Book", Price = 1349.00M });
-        }
-
         internal static void LocalVariable(IEnumerable<int> source, string path)
         {
             var a = default(int); // int.

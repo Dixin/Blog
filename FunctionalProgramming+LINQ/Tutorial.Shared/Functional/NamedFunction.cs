@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
+    using System.Linq;
     using System.Reflection;
 
     internal partial class Data
@@ -42,6 +43,133 @@
         //        base.Finalize();
         //    }
         // }
+    }
+
+    internal partial class Data
+    {
+        internal int InstanceAdd(int value1, int value2)
+        {
+            return this.value + value1 + value2;
+        }
+
+        internal static int StaticAdd(Data @this, int value1, int value2)
+        {
+            return @this.value + value1 + value2;
+        }
+    }
+
+    internal partial class Data
+    {
+        internal int CompiledInstanceAdd(int value1, int value2)
+        {
+            Data arg0 = this;
+            int arg1 = value1;
+            int arg2 = value2;
+            return arg0.value + arg1 + arg2;
+        }
+
+        internal static int CompiledStaticAdd(Data @this, int value1, int value2)
+        {
+            Data arg0 = @this;
+            int arg1 = value1;
+            int arg2 = value2;
+            return arg0.value + arg1 + arg2;
+        }
+    }
+
+    internal static partial class DataExtensions
+    {
+        internal static int ExtensionAdd(this Data @this, int value1, int value2)
+        {
+            return @this.Value + value1 + value2;
+        }
+    }
+
+    internal static partial class Functions
+    {
+        internal static void CallExtensionMethod(Data data)
+        {
+            int result = data.ExtensionAdd(1, 2);
+        }
+    }
+
+#if DEMO
+    internal static partial class DataExtensions
+    {
+        [Extension]
+        internal static int CompiledExtensionAdd(Data @this, int value1, int value2)
+        {
+            return @this.value + value1 + value2;
+        }
+    }
+#endif
+
+    internal static partial class Functions
+    {
+        internal static void CompiledCallExtensionMethod(Data data)
+        {
+            int result = DataExtensions.ExtensionAdd(data, 1, 2);
+        }
+    }
+
+    internal partial class Data : IEquatable<Data>
+    {
+        public override bool Equals(object obj)
+        {
+            return obj is Data && this.Equals((Data)obj);
+        }
+
+        public bool Equals(Data other) // Member of IEquatable<T>.
+        {
+            return this.value == other.value;
+        }
+    }
+
+    internal static partial class DataExtensions
+    {
+        internal static bool Equals(Data @this, Data other)
+        {
+            return @this.Value == other.Value;
+        }
+    }
+
+    internal static partial class Functions
+    {
+        internal static void CallMethods(Data data1, Data data2)
+        {
+            bool result1 = data1.Equals(string.Empty); // object.Equals.
+            bool result2 = data1.Equals(data2); // Data.Equals.
+            bool result3 = DataExtensions.Equals(data1, data2); // DataExtensions.Equals.
+        }
+    }
+
+    internal static class DayOfWeekExtensions
+    {
+        internal static bool IsWeekend(this DayOfWeek dayOfWeek)
+        {
+            return dayOfWeek == DayOfWeek.Sunday || dayOfWeek == DayOfWeek.Saturday;
+        }
+    }
+
+    internal static partial class Functions
+    {
+        internal static void CallEnumerationExtensionMethod(DayOfWeek dayOfWeek)
+        {
+            bool result = dayOfWeek.IsWeekend();
+        }
+
+        internal static void TraceValueAndSequence(Uri value, IEnumerable<Uri> values)
+        {
+            value.WriteLine();
+            // Equivalent to: Trace.WriteLine(value);
+
+            values.WriteLines();
+            // Equivalent to: 
+            // foreach (Uri value in values)
+            // {
+            //    Trace.WriteLine(value);
+            // }
+        }
     }
 
     internal partial class Data
@@ -167,8 +295,31 @@
         }
     }
 
+    internal partial class Data
+    {
+        internal event EventHandler Saved
+        {
+            add // Compiled to: internal void add_Saved(EventHandler value)
+            {
+                Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // add_Saved
+            }
+            remove // Compiled to: internal void remove_Saved(EventHandler value)
+            {
+                Trace.WriteLine(MethodBase.GetCurrentMethod().Name); // remove_Saved
+            }
+        }
+    }
+
     internal partial class Functions
     {
+        internal static void DataSaved(object sender, EventArgs args) { }
+
+        internal static void EventAccessor(Data data)
+        {
+            data.Saved += DataSaved; // Compiled to: data.add_Saved(DataSaved)
+            data.Saved -= DataSaved; // Compiled to: data.remove_Saved(DataSaved)
+        }
+
         internal static void TraceString(Uri uri, FileInfo file, int int32)
         {
             Trace.WriteLine(uri?.ToString());
@@ -246,140 +397,48 @@
             Generic1(file);
         }
 
-        internal static void TupleConstructor()
+        internal class Generic<T>
         {
-            Trace.WriteLine(new ValueTuple<bool, int, decimal, string>(true, int.MaxValue, decimal.MaxValue, string.Empty));
+            internal Generic(T input) { } // T cannot be inferred.
         }
 
-        internal static void TupleCreate()
+        internal static Generic<IEnumerable<IGrouping<int, string>>> GenericConstructor(
+            IEnumerable<IGrouping<int, string>> input)
         {
-            Trace.WriteLine(ValueTuple.Create(true, int.MaxValue, decimal.MaxValue, string.Empty));
+            return new Generic<IEnumerable<IGrouping<int, string>>>(input);
+            // Cannot be compiled:
+            // return new Generic(input);
+        }
+
+        internal class Generic // Not Generic<T>.
+        {
+            internal static Generic<T> Create<T>(T input) => new Generic<T>(input); // T can be inferred.
+        }
+
+        internal static Generic<IEnumerable<IGrouping<int, string>>> GenericCreate(
+            IEnumerable<IGrouping<int, string>> input)
+        {
+            return Generic.Create(input);
         }
     }
+}
 
-    internal partial class Data
-    {
-        internal int InstanceAdd(int value1, int value2)
-        {
-            return this.value + value1 + value2;
-        }
+namespace Tutorial.Functional
+{
+    using System.Collections.Generic;
 
-        internal static int StaticAdd(Data @this, int value1, int value2)
-        {
-            return @this.value + value1 + value2;
-        }
-    }
-
-    internal partial class Data
-    {
-        internal int CompiledInstanceAdd(int value1, int value2)
-        {
-            Data arg0 = this;
-            int arg1 = value1;
-            int arg2 = value2;
-            return arg0.value + arg1 + arg2;
-        }
-
-        internal static int CompiledStaticAdd(Data @this, int value1, int value2)
-        {
-            Data arg0 = @this;
-            int arg1 = value1;
-            int arg2 = value2;
-            return arg0.value + arg1 + arg2;
-        }
-    }
-
-    internal static partial class DataExtensions
-    {
-        internal static int ExtensionAdd(this Data @this, int value1, int value2)
-        {
-            return @this.Value + value1 + value2;
-        }
-    }
+    using static System.DayOfWeek;
+    using static System.Math;
+    using static System.Diagnostics.Trace;
+    using static System.Linq.Enumerable;
 
     internal static partial class Functions
     {
-        internal static void CallExtensionMethod(Data data)
+        internal static void UsingStatic(int value, int[] array)
         {
-            int result = data.ExtensionAdd(1, 2);
-        }
-    }
-
-#if DEMO
-    internal static partial class DataExtensions
-    {
-        [Extension]
-        internal static int CompiledExtensionAdd(Data @this, int value1, int value2)
-        {
-            return @this.value + value1 + value2;
-        }
-    }
-#endif
-
-    internal static partial class Functions
-    {
-        internal static void CompiledCallExtensionMethod(Data data)
-        {
-            int result = DataExtensions.ExtensionAdd(data, 1, 2);
-        }
-    }
-
-    internal partial class Data : IEquatable<Data>
-    {
-        public override bool Equals(object obj)
-        {
-            return obj is Data && this.Equals((Data)obj);
-        }
-
-        public bool Equals(Data other) // Member of IEquatable<T>.
-        {
-            return this.value == other.value;
-        }
-    }
-
-    internal static partial class DataExtensions
-    {
-        internal static bool Equals(Data @this, Data other)
-        {
-            return @this.Value == other.Value;
-        }
-    }
-
-    internal static partial class Functions
-    {
-        internal static void CallMethods(Data data1, Data data2)
-        {
-            bool result1 = data1.Equals(string.Empty); // object.Equals.
-            bool result2 = data1.Equals(data2); // Data.Equals.
-            bool result3 = DataExtensions.Equals(data1, data2); // DataExtensions.Equals.
-        }
-    }
-
-    internal static class DayOfWeekExtensions
-    {
-        internal static bool IsWeekend(this DayOfWeek dayOfWeek)
-        {
-            return dayOfWeek == DayOfWeek.Sunday || dayOfWeek == DayOfWeek.Saturday;
-        }
-    }
-    internal static partial class Functions
-    {
-        internal static void CallEnumerationExtensionMethod(DayOfWeek dayOfWeek)
-        {
-            bool result = dayOfWeek.IsWeekend();
-        }
-
-        internal static void TraceValueAndSequence(Uri value, IEnumerable<Uri> values)
-        {
-            value.WriteLine();
-            // Equivalent to: Trace.WriteLine(value);
-
-            values.WriteLines();
-            // Equivalent to: 
-            // foreach (Uri value in values)
-            // {
-            //    Trace.WriteLine(value);
-            // }
+            int abs = Abs(value); // Compiled to: Math.Abs(value)
+            WriteLine(Monday); // Compiled to: Trace.WriteLine(DayOfWeek.Monday)
+            List<int> list2 = array.ToList(); // Compiled to: Enumerable.ToList(array)
         }
     }
 
@@ -405,26 +464,6 @@
         }
     }
 #endif
-}
-
-namespace Tutorial.Functional
-{
-    using System.Collections.Generic;
-
-    using static System.DayOfWeek;
-    using static System.Math;
-    using static System.Diagnostics.Trace;
-    using static System.Linq.Enumerable;
-
-    internal static partial class Functions
-    {
-        internal static void UsingStatic(int value, int[] array)
-        {
-            int abs = Abs(value); // Compiled to: Math.Abs(value)
-            WriteLine(Monday); // Compiled to: Trace.WriteLine(DayOfWeek.Monday)
-            List<int> list2 = array.ToList(); // Compiled to: Enumerable.ToList(array)
-        }
-    }
 }
 
 #if DEMO
@@ -491,7 +530,6 @@ namespace System.Data
 {
     using System.Reflection;
 
-    [DefaultMember("Item")]
     public class DataRow
     {
         public object this[DataColumn column] { get; set; }
@@ -568,6 +606,30 @@ namespace System
         public static string ToString(int value, int toBase);
 
         // More overloads and other members.
+    }
+}
+
+namespace System.IO
+{
+    public abstract class Stream : MarshalByRefObject, IDisposable
+    {
+        public virtual void WriteByte(byte value);
+
+        // Other members.
+    }
+
+    public class FileStream : Stream
+    {
+        public override void WriteByte(byte value);
+
+        // Other members.
+    }
+
+    public class MemoryStream : Stream
+    {
+        public override void WriteByte(byte value);
+
+        // Other members.
     }
 }
 #endif
