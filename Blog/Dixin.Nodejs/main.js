@@ -1,16 +1,17 @@
-﻿"use strict";
+﻿const tumblr = require("./tumblr");
 
-const tumblr = require("./tumblr");
-
-tumblr.downloadAllAndUnlike({
-    // Register an application in tumblr: https://www.tumblr.com/oauth/apps.
-    appConsumerKey: "UIH25zu5hM4i0Mf24qngIwJFvMXH1PehEyJCfhmgAfdTIhbVTj",
-    appSecretKey: "jMD4THr9EUfJNkAOvyrNOhNqYJim0fMFakYzNaToG7nAj5ZiQb",
-    cookie: "",
-    offset: 0,
-    limit: 50,
-    directory: "D:\\Dixin\\Downloads\\Tumblr",
-    after: 0,
-    debug: true,
-    fiddler: false
-});
+(async () => {
+    try {
+        const client = await tumblr.getClientAsync({
+            // Register an application in tumblr: https://www.tumblr.com/oauth/apps.
+            consumerKey: "j6l07pCFuT9aOTWbFncXFi3qgxY2fL8VGyYLfbRIaYzd1WjxjI",
+            consumerSecret: "ZFJvpPphkvBrXVc30Tbvy3x5DbIi30n8LqztcRmUUUacYfwQSb"
+        });
+        await client.downloadLikesAndUnlikeAsync({
+            directory: "D:\\User\\Downloads\\Tumblr",
+            delay: 1000
+        });
+    } catch (error) {
+        console.log(error);
+    } 
+})();

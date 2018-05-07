@@ -1,6 +1,4 @@
-﻿"use strict";
-
-const url = require("url"),
+﻿const url = require("url"),
     http = require("http"),
 
     env = process.env,
@@ -47,10 +45,10 @@ const url = require("url"),
     get = (options, callback) => http.get(setProxy(options), callback);
 
 module.exports = {
-    proxy: proxy,
-    proxyRequests: proxyRequests,
-    unproxyRequests: unproxyRequests,
-    setProxy: setProxy,
-    request: request,
-    get: get
+    proxy,
+    proxyRequests,
+    unproxyRequests,
+    setProxy,
+    request,
+    get
 };
