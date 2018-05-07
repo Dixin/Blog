@@ -1,0 +1,1902 @@
+﻿[
+  {
+    "id": "956",
+    "Name": "Finer Sales and Service",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "#500-75 O'Connor Street",
+      "Location": {
+        "City": "Ottawa",
+        "StateProvinceName": "Ontario"
+      },
+      "PostalCode": "K4B 1S2",
+      "CountryRegionName": "Canada"
+    },
+    "_rid": "QoZhANxLSQABAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQABAAAAAAAAAA==/",
+    "_etag": "\"0800cea1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "482",
+    "Name": "Favorite Toy Distributor",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "1, place de la République",
+      "Location": {
+        "City": "Paris",
+        "StateProvinceName": "Seine (Paris)"
+      },
+      "PostalCode": "75017",
+      "CountryRegionName": "France"
+    },
+    "_rid": "QoZhANxLSQACAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQACAAAAAAAAAA==/",
+    "_etag": "\"0800cfa1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1490",
+    "Name": "Engineered Bike Systems",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "123 Camelia Avenue",
+      "Location": {
+        "City": "Oxnard",
+        "StateProvinceName": "California"
+      },
+      "PostalCode": "93030",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQADAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQADAAAAAAAAAA==/",
+    "_etag": "\"0800d0a1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1262",
+    "Name": "Roadway Bicycle Supply",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "121, rue de Varenne",
+      "Location": {
+        "City": "Courbevoie",
+        "StateProvinceName": "Hauts de Seine"
+      },
+      "PostalCode": "92400",
+      "CountryRegionName": "France"
+    },
+    "_rid": "QoZhANxLSQAEAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAEAAAAAAAAAA==/",
+    "_etag": "\"0800d1a1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1424",
+    "Name": "Closeout Boutique",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "1050 Oak Street",
+      "Location": {
+        "City": "Seattle",
+        "StateProvinceName": "Washington"
+      },
+      "PostalCode": "98104",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAFAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAFAAAAAAAAAA==/",
+    "_etag": "\"0800d2a1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "704",
+    "Name": "Only Bikes and Accessories",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "123 Union Square South",
+      "Location": {
+        "City": "New York",
+        "StateProvinceName": "New York"
+      },
+      "PostalCode": "10007",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAGAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAGAAAAAAAAAA==/",
+    "_etag": "\"0800d3a1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1958",
+    "Name": "Ultimate Bicycle Company",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "12, rue Lafayette",
+      "Location": {
+        "City": "Morangis",
+        "StateProvinceName": "Essonne"
+      },
+      "PostalCode": "91420",
+      "CountryRegionName": "France"
+    },
+    "_rid": "QoZhANxLSQAHAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAHAAAAAAAAAA==/",
+    "_etag": "\"0800d4a1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1480",
+    "Name": "Orange Bicycle Company",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "123 W. Lake Ave.",
+      "Location": {
+        "City": "Peoria",
+        "StateProvinceName": "Illinois"
+      },
+      "PostalCode": "61606",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAIAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAIAAAAAAAAAA==/",
+    "_etag": "\"0800d5a1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "642",
+    "Name": "Advanced Bike Components",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "12345 Sterling Avenue",
+      "Location": {
+        "City": "Irving",
+        "StateProvinceName": "Texas"
+      },
+      "PostalCode": "75061",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAJAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAJAAAAAAAAAA==/",
+    "_etag": "\"0800d6a1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1186",
+    "Name": "Basic Bike Company",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "15 East Main",
+      "Location": {
+        "City": "Port Orchard",
+        "StateProvinceName": "Washington"
+      },
+      "PostalCode": "98366",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAKAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAKAAAAAAAAAA==/",
+    "_etag": "\"0800d7a1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1104",
+    "Name": "Outdoor Toy Store",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "18, rue de l´Esplanade",
+      "Location": {
+        "City": "Aujan Mournede",
+        "StateProvinceName": "Gers"
+      },
+      "PostalCode": "32300",
+      "CountryRegionName": "France"
+    },
+    "_rid": "QoZhANxLSQALAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQALAAAAAAAAAA==/",
+    "_etag": "\"0800d8a1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "618",
+    "Name": "Petroleum Products Distributors",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "20225 Lansing Ave",
+      "Location": {
+        "City": "Montreal",
+        "StateProvinceName": "Quebec"
+      },
+      "PostalCode": "H1Y 2H7",
+      "CountryRegionName": "Canada"
+    },
+    "_rid": "QoZhANxLSQAMAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAMAAAAAAAAAA==/",
+    "_etag": "\"0800d9a1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "502",
+    "Name": "Eighty Toy Stores",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2025 Greenwood Ct",
+      "Location": {
+        "City": "Mcdonough",
+        "StateProvinceName": "Georgia"
+      },
+      "PostalCode": "30253",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQANAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQANAAAAAAAAAA==/",
+    "_etag": "\"0800daa1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1826",
+    "Name": "Executive Discount Store",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "20500 S.W. 2512th Ave",
+      "Location": {
+        "City": "Miami",
+        "StateProvinceName": "Florida"
+      },
+      "PostalCode": "33127",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAOAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAOAAAAAAAAAA==/",
+    "_etag": "\"0800dba1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1396",
+    "Name": "Racing Tours",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "21, avenue de la Gare",
+      "Location": {
+        "City": "Sèvres",
+        "StateProvinceName": "Hauts de Seine"
+      },
+      "PostalCode": "92310",
+      "CountryRegionName": "France"
+    },
+    "_rid": "QoZhANxLSQAPAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAPAAAAAAAAAA==/",
+    "_etag": "\"0800dca1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1142",
+    "Name": "Major Amusement Company",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2111, rue de Linois",
+      "Location": {
+        "City": "Orly",
+        "StateProvinceName": "Val de Marne"
+      },
+      "PostalCode": "94310",
+      "CountryRegionName": "France"
+    },
+    "_rid": "QoZhANxLSQAQAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAQAAAAAAAAAA==/",
+    "_etag": "\"0800dda1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "942",
+    "Name": "Wheels Inc.",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "21105, rue de Varenne",
+      "Location": {
+        "City": "Paris",
+        "StateProvinceName": "Seine (Paris)"
+      },
+      "PostalCode": "75013",
+      "CountryRegionName": "France"
+    },
+    "_rid": "QoZhANxLSQARAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQARAAAAAAAAAA==/",
+    "_etag": "\"0800dea1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "866",
+    "Name": "Brand New Bikes",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "215, avenue Reille",
+      "Location": {
+        "City": "Les Ulis",
+        "StateProvinceName": "Essonne"
+      },
+      "PostalCode": "91940",
+      "CountryRegionName": "France"
+    },
+    "_rid": "QoZhANxLSQASAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQASAAAAAAAAAA==/",
+    "_etag": "\"0800dfa1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1154",
+    "Name": "Instant Cycle Store",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "21801, rue Léo Delibes",
+      "Location": {
+        "City": "Colombes",
+        "StateProvinceName": "Hauts de Seine"
+      },
+      "PostalCode": "92700",
+      "CountryRegionName": "France"
+    },
+    "_rid": "QoZhANxLSQATAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQATAAAAAAAAAA==/",
+    "_etag": "\"0800e0a1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1894",
+    "Name": "The Bike Outlet",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "22, rue du Départ",
+      "Location": {
+        "City": "Pantin",
+        "StateProvinceName": "Seine Saint Denis"
+      },
+      "PostalCode": "93500",
+      "CountryRegionName": "France"
+    },
+    "_rid": "QoZhANxLSQAUAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAUAAAAAAAAAA==/",
+    "_etag": "\"0800e1a1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "854",
+    "Name": "First Center",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "22, rue Lafayette",
+      "Location": {
+        "City": "Pantin",
+        "StateProvinceName": "Seine Saint Denis"
+      },
+      "PostalCode": "93500",
+      "CountryRegionName": "France"
+    },
+    "_rid": "QoZhANxLSQAVAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAVAAAAAAAAAA==/",
+    "_etag": "\"0800e2a1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "780",
+    "Name": "Finer Riding Supplies",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "#9900 2700 Production Way",
+      "Location": {
+        "City": "Burnaby",
+        "StateProvinceName": "British Columbia"
+      },
+      "PostalCode": "V5A 4X1",
+      "CountryRegionName": "Canada"
+    },
+    "_rid": "QoZhANxLSQAWAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAWAAAAAAAAAA==/",
+    "_etag": "\"0800e3a1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "530",
+    "Name": "Outdoor Distributors",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "225 Hyde Rd",
+      "Location": {
+        "City": "Farmington",
+        "StateProvinceName": "Connecticut"
+      },
+      "PostalCode": "06032",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAXAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAXAAAAAAAAAA==/",
+    "_etag": "\"0800e4a1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "822",
+    "Name": "Racing Bike Outlet",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "225 South 314th Street",
+      "Location": {
+        "City": "Federal Way",
+        "StateProvinceName": "Washington"
+      },
+      "PostalCode": "98003",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAYAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAYAAAAAAAAAA==/",
+    "_etag": "\"0800e5a1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "934",
+    "Name": "A Bike Store",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2251 Elliot Avenue",
+      "Location": {
+        "City": "Seattle",
+        "StateProvinceName": "Washington"
+      },
+      "PostalCode": "98104",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAZAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAZAAAAAAAAAA==/",
+    "_etag": "\"0800e6a1-0000-0000-0000-579b0aac0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1354",
+    "Name": "Ideal Components",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2-252 Beauchamp Road",
+      "Location": {
+        "City": "Cloverdale",
+        "StateProvinceName": "South Australia"
+      },
+      "PostalCode": "6105",
+      "CountryRegionName": "Australia"
+    },
+    "_rid": "QoZhANxLSQAaAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAaAAAAAAAAAA==/",
+    "_etag": "\"0800e7a1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1936",
+    "Name": "Active Transport Inc.",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "225200 Miles Ave.",
+      "Location": {
+        "City": "North Randall",
+        "StateProvinceName": "Ohio"
+      },
+      "PostalCode": "44128",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAbAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAbAAAAAAAAAA==/",
+    "_etag": "\"0800e8a1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "676",
+    "Name": "Inexpensive Parts Shop",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2253 Miller Street",
+      "Location": {
+        "City": "North Sydney",
+        "StateProvinceName": "New South Wales"
+      },
+      "PostalCode": "2055",
+      "CountryRegionName": "Australia"
+    },
+    "_rid": "QoZhANxLSQAcAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAcAAAAAAAAAA==/",
+    "_etag": "\"0800e9a1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "350",
+    "Name": "Twin Cycles",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2253-217 Palmer Street",
+      "Location": {
+        "City": "Darlinghurst",
+        "StateProvinceName": "New South Wales"
+      },
+      "PostalCode": "2010",
+      "CountryRegionName": "Australia"
+    },
+    "_rid": "QoZhANxLSQAdAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAdAAAAAAAAAA==/",
+    "_etag": "\"0800eaa1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1804",
+    "Name": "Cycle Clearance",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2255 254th Avenue Se",
+      "Location": {
+        "City": "Albany",
+        "StateProvinceName": "Oregon"
+      },
+      "PostalCode": "97321",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAeAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAeAAAAAAAAAA==/",
+    "_etag": "\"0800eba1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "556",
+    "Name": "Mechanical Products Ltd.",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "22555 Paseo De Las Americas",
+      "Location": {
+        "City": "San Diego",
+        "StateProvinceName": "California"
+      },
+      "PostalCode": "92102",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAfAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAfAAAAAAAAAA==/",
+    "_etag": "\"0800eca1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1888",
+    "Name": "Vintage Sport Boutique",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "22571 South 2500 East",
+      "Location": {
+        "City": "Idaho Falls",
+        "StateProvinceName": "Idaho"
+      },
+      "PostalCode": "83402",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAgAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAgAAAAAAAAAA==/",
+    "_etag": "\"0800eda1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "622",
+    "Name": "Bikes and Motorbikes",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "22580 Free Street",
+      "Location": {
+        "City": "Toronto",
+        "StateProvinceName": "Ontario"
+      },
+      "PostalCode": "M4B 1V7",
+      "CountryRegionName": "Canada"
+    },
+    "_rid": "QoZhANxLSQAhAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAhAAAAAAAAAA==/",
+    "_etag": "\"0800eea1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "336",
+    "Name": "Imported and Domestic Cycles",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "22589 West Craig Road",
+      "Location": {
+        "City": "North Las Vegas",
+        "StateProvinceName": "Nevada"
+      },
+      "PostalCode": "89030",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAiAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAiAAAAAAAAAA==/",
+    "_etag": "\"0800efa1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "662",
+    "Name": "Fitness Toy Store",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "220 Mercy Drive",
+      "Location": {
+        "City": "Garland",
+        "StateProvinceName": "Texas"
+      },
+      "PostalCode": "75040",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAjAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAjAAAAAAAAAA==/",
+    "_etag": "\"0800f0a1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "914",
+    "Name": "Social Activities Club",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "23025 S.W. Military Rd.",
+      "Location": {
+        "City": "San Antonio",
+        "StateProvinceName": "Texas"
+      },
+      "PostalCode": "78204",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAkAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAkAAAAAAAAAA==/",
+    "_etag": "\"0800f1a1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "372",
+    "Name": "The Gear Store",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2345 North Freeway",
+      "Location": {
+        "City": "Houston",
+        "StateProvinceName": "Texas"
+      },
+      "PostalCode": "77003",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAlAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAlAAAAAAAAAA==/",
+    "_etag": "\"0800f2a1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "514",
+    "Name": "Widget Bicycle Specialists",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "23456 Calumet St",
+      "Location": {
+        "City": "Clearwater",
+        "StateProvinceName": "Florida"
+      },
+      "PostalCode": "33755",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAmAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAmAAAAAAAAAA==/",
+    "_etag": "\"0800f3a1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1150",
+    "Name": "Certified Bicycle Supply",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2345 West Spencer Road",
+      "Location": {
+        "City": "Lynnwood",
+        "StateProvinceName": "Washington"
+      },
+      "PostalCode": "98036",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAnAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAnAAAAAAAAAA==/",
+    "_etag": "\"0800f4a1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "624",
+    "Name": "Budget Toy Store",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "25 Epping Road",
+      "Location": {
+        "City": "Lavender Bay",
+        "StateProvinceName": "New South Wales"
+      },
+      "PostalCode": "2060",
+      "CountryRegionName": "Australia"
+    },
+    "_rid": "QoZhANxLSQAoAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAoAAAAAAAAAA==/",
+    "_etag": "\"0800f5a1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1238",
+    "Name": "Consolidated Messenger",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "25 Danger Street West",
+      "Location": {
+        "City": "Toronto",
+        "StateProvinceName": "Ontario"
+      },
+      "PostalCode": "M4B 1V5",
+      "CountryRegionName": "Canada"
+    },
+    "_rid": "QoZhANxLSQApAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQApAAAAAAAAAA==/",
+    "_etag": "\"0800f6a1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "412",
+    "Name": "Gasless Cycle Shop",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "25 First Canadian Place",
+      "Location": {
+        "City": "Toronto",
+        "StateProvinceName": "Ontario"
+      },
+      "PostalCode": "M4B 1V5",
+      "CountryRegionName": "Canada"
+    },
+    "_rid": "QoZhANxLSQAqAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAqAAAAAAAAAA==/",
+    "_etag": "\"0800f7a1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1382",
+    "Name": "Shipping Specialists",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "25 Hartfield Road, Wimbledon",
+      "Location": {
+        "City": "London",
+        "StateProvinceName": "England"
+      },
+      "PostalCode": "SW19 3RU",
+      "CountryRegionName": "United Kingdom"
+    },
+    "_rid": "QoZhANxLSQArAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQArAAAAAAAAAA==/",
+    "_etag": "\"0800f8a1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "684",
+    "Name": "This Area Sporting Goods",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "25 N State St",
+      "Location": {
+        "City": "Chicago",
+        "StateProvinceName": "Illinois"
+      },
+      "PostalCode": "60610",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAsAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAsAAAAAAAAAA==/",
+    "_etag": "\"0800f9a1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "740",
+    "Name": "Touring Services",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "25 Myrtle Beach",
+      "Location": {
+        "City": "Myrtle Beach",
+        "StateProvinceName": "South Carolina"
+      },
+      "PostalCode": "29577",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAtAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAtAAAAAAAAAA==/",
+    "_etag": "\"0800faa1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "974",
+    "Name": "Leather and Vinyl Manufacturing",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "250 E. County Line Rd.",
+      "Location": {
+        "City": "Indianapolis",
+        "StateProvinceName": "Indiana"
+      },
+      "PostalCode": "46204",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAuAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAuAAAAAAAAAA==/",
+    "_etag": "\"0800fba1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1454",
+    "Name": "Recommended Bicycles",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "250 Kingsbridge Garden Circle",
+      "Location": {
+        "City": "Mississauga",
+        "StateProvinceName": "Ontario"
+      },
+      "PostalCode": "L5B 3V4",
+      "CountryRegionName": "Canada"
+    },
+    "_rid": "QoZhANxLSQAvAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAvAAAAAAAAAA==/",
+    "_etag": "\"0800fca1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1874",
+    "Name": "Eighth Bike Store",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2500 N Serene Blvd",
+      "Location": {
+        "City": "El Segundo",
+        "StateProvinceName": "California"
+      },
+      "PostalCode": "90245",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAwAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAwAAAAAAAAAA==/",
+    "_etag": "\"0800fda1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1012",
+    "Name": "Stylish Department Stores",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "1 Corporate Center Drive",
+      "Location": {
+        "City": "Miami",
+        "StateProvinceName": "Florida"
+      },
+      "PostalCode": "33127",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAxAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAxAAAAAAAAAA==/",
+    "_etag": "\"0800fea1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1418",
+    "Name": "Health Spa, Limited",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2500 University Avenue",
+      "Location": {
+        "City": "Toronto",
+        "StateProvinceName": "Ontario"
+      },
+      "PostalCode": "M4B 1V5",
+      "CountryRegionName": "Canada"
+    },
+    "_rid": "QoZhANxLSQAyAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAyAAAAAAAAAA==/",
+    "_etag": "\"0800ffa1-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "506",
+    "Name": "Third Bike Store",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2500 North Stemmons Freeway",
+      "Location": {
+        "City": "Dallas",
+        "StateProvinceName": "Texas"
+      },
+      "PostalCode": "75201",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQAzAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQAzAAAAAAAAAA==/",
+    "_etag": "\"080000a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "428",
+    "Name": "Finer Cycle Shop",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2500-622 5th Ave Sw",
+      "Location": {
+        "City": "Calgary",
+        "StateProvinceName": "Alberta"
+      },
+      "PostalCode": "T2P 2G8",
+      "CountryRegionName": "Canada"
+    },
+    "_rid": "QoZhANxLSQA0AAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQA0AAAAAAAAAA==/",
+    "_etag": "\"080001a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1002",
+    "Name": "Distant Inn",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "25001 Montague Expressway",
+      "Location": {
+        "City": "Milpitas",
+        "StateProvinceName": "California"
+      },
+      "PostalCode": "95035",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQA1AAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQA1AAAAAAAAAA==/",
+    "_etag": "\"080002a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "540",
+    "Name": "Metro Bike Works",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "250000 Eight Mile Road",
+      "Location": {
+        "City": "Detroit",
+        "StateProvinceName": "Michigan"
+      },
+      "PostalCode": "48226",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQA2AAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQA2AAAAAAAAAA==/",
+    "_etag": "\"080003a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1274",
+    "Name": "Self-Contained Cycle Parts Company",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "12, rue des Grands Champs",
+      "Location": {
+        "City": "Verrieres Le Buisson",
+        "StateProvinceName": "Essonne"
+      },
+      "PostalCode": "91370",
+      "CountryRegionName": "France"
+    },
+    "_rid": "QoZhANxLSQA3AAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQA3AAAAAAAAAA==/",
+    "_etag": "\"080004a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1338",
+    "Name": "Sports Sales and Rental",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "100 Fifth Drive",
+      "Location": {
+        "City": "Millington",
+        "StateProvinceName": "Tennessee"
+      },
+      "PostalCode": "38054",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQA4AAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQA4AAAAAAAAAA==/",
+    "_etag": "\"080005a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "574",
+    "Name": "Fifth Bike Store",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2502 Evergreen Ste E",
+      "Location": {
+        "City": "Everett",
+        "StateProvinceName": "Washington"
+      },
+      "PostalCode": "98201",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQA5AAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQA5AAAAAAAAAA==/",
+    "_etag": "\"080006a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "384",
+    "Name": "Seaside Bike Works",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2501 Miller Street",
+      "Location": {
+        "City": "North Sydney",
+        "StateProvinceName": "New South Wales"
+      },
+      "PostalCode": "2055",
+      "CountryRegionName": "Australia"
+    },
+    "_rid": "QoZhANxLSQA6AAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQA6AAAAAAAAAA==/",
+    "_etag": "\"080007a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1130",
+    "Name": "Efficient Cycling",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "250333 Southport Road, S.W.",
+      "Location": {
+        "City": "Calgary",
+        "StateProvinceName": "Alberta"
+      },
+      "PostalCode": "T2P 2G8",
+      "CountryRegionName": "Canada"
+    },
+    "_rid": "QoZhANxLSQA7AAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQA7AAAAAAAAAA==/",
+    "_etag": "\"080008a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "494",
+    "Name": "Travel Systems",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2505 Gateway Drive",
+      "Location": {
+        "City": "North Sioux City",
+        "StateProvinceName": "South Dakota"
+      },
+      "PostalCode": "57049",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQA8AAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQA8AAAAAAAAAA==/",
+    "_etag": "\"080009a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1168",
+    "Name": "Optimal Bikes",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "25050 S. Columbia Ave",
+      "Location": {
+        "City": "Campbellsville",
+        "StateProvinceName": "Kentucky"
+      },
+      "PostalCode": "42718",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQA9AAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQA9AAAAAAAAAA==/",
+    "_etag": "\"08000aa2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "612",
+    "Name": "Metro Cycle Shop",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2507 Pacific Ave S",
+      "Location": {
+        "City": "Tacoma",
+        "StateProvinceName": "Washington"
+      },
+      "PostalCode": "98403",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQA+AAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQA+AAAAAAAAAA==/",
+    "_etag": "\"08000ba2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "806",
+    "Name": "Certified Sports Supply",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "250551 Shellbridge Way",
+      "Location": {
+        "City": "Richmond",
+        "StateProvinceName": "British Columbia"
+      },
+      "PostalCode": "V6B 3P7",
+      "CountryRegionName": "Canada"
+    },
+    "_rid": "QoZhANxLSQA-AAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQA-AAAAAAAAAA==/",
+    "_etag": "\"08000ca2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1110",
+    "Name": "Local Sales and Rental",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "1200 First Ave.",
+      "Location": {
+        "City": "Joliet",
+        "StateProvinceName": "Illinois"
+      },
+      "PostalCode": "60433",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQBAAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBAAAAAAAAAAA==/",
+    "_etag": "\"08000da2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "542",
+    "Name": "Best o' Bikes",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "250880 Baur Blvd",
+      "Location": {
+        "City": "Saint Louis",
+        "StateProvinceName": "Missouri"
+      },
+      "PostalCode": "63103",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQBBAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBBAAAAAAAAAA==/",
+    "_etag": "\"08000ea2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1068",
+    "Name": "Superior Hardware Distributors",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "250775 SW Hillsdale Hwy",
+      "Location": {
+        "City": "Beaverton",
+        "StateProvinceName": "Oregon"
+      },
+      "PostalCode": "97005",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQBCAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBCAAAAAAAAAA==/",
+    "_etag": "\"08000fa2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1294",
+    "Name": "Go-cart and Bike Specialists",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2509 W. Frankford",
+      "Location": {
+        "City": "Carrollton",
+        "StateProvinceName": "Texas"
+      },
+      "PostalCode": "75006",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQBDAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBDAAAAAAAAAA==/",
+    "_etag": "\"080010a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1228",
+    "Name": "District Mall",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "25095 W. Florissant",
+      "Location": {
+        "City": "Ferguson",
+        "StateProvinceName": "Missouri"
+      },
+      "PostalCode": "63135",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQBEAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBEAAAAAAAAAA==/",
+    "_etag": "\"080011a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "562",
+    "Name": "Custom Accessories Company",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "251 Indell Lane",
+      "Location": {
+        "City": "Brampton",
+        "StateProvinceName": "Ontario"
+      },
+      "PostalCode": "L6W 2T7",
+      "CountryRegionName": "Canada"
+    },
+    "_rid": "QoZhANxLSQBFAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBFAAAAAAAAAA==/",
+    "_etag": "\"080012a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1892",
+    "Name": "West Side Mart",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "251 The Metro Center",
+      "Location": {
+        "City": "Wokingham",
+        "StateProvinceName": "England"
+      },
+      "PostalCode": "RG41 1QW",
+      "CountryRegionName": "United Kingdom"
+    },
+    "_rid": "QoZhANxLSQBGAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBGAAAAAAAAAA==/",
+    "_etag": "\"080013a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1876",
+    "Name": "Demand Distributors",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "25102 Springwater",
+      "Location": {
+        "City": "Wenatchee",
+        "StateProvinceName": "Washington"
+      },
+      "PostalCode": "98801",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQBHAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBHAAAAAAAAAA==/",
+    "_etag": "\"080014a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1144",
+    "Name": "Retail Discount Store",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2510 Crew Court",
+      "Location": {
+        "City": "Montreal",
+        "StateProvinceName": "Quebec"
+      },
+      "PostalCode": "H1Y 2H8",
+      "CountryRegionName": "Canada"
+    },
+    "_rid": "QoZhANxLSQBIAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBIAAAAAAAAAA==/",
+    "_etag": "\"080015a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "648",
+    "Name": "Corner Bicycle Supply",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2511 Baker Road",
+      "Location": {
+        "City": "Toronto",
+        "StateProvinceName": "Ontario"
+      },
+      "PostalCode": "M4B 1V7",
+      "CountryRegionName": "Canada"
+    },
+    "_rid": "QoZhANxLSQBJAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBJAAAAAAAAAA==/",
+    "_etag": "\"080016a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1470",
+    "Name": "All Cycle Shop",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "25111 228th St Sw",
+      "Location": {
+        "City": "Bothell",
+        "StateProvinceName": "Washington"
+      },
+      "PostalCode": "98011",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQBKAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBKAAAAAAAAAA==/",
+    "_etag": "\"080017a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1298",
+    "Name": "Racing Partners",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2512-410th Avenue S.W.",
+      "Location": {
+        "City": "Calgary",
+        "StateProvinceName": "Alberta"
+      },
+      "PostalCode": "T2P 2G8",
+      "CountryRegionName": "Canada"
+    },
+    "_rid": "QoZhANxLSQBLAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBLAAAAAAAAAA==/",
+    "_etag": "\"080018a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1288",
+    "Name": "Gear-Shift Bikes Limited",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2512-4th Ave Sw",
+      "Location": {
+        "City": "Calgary",
+        "StateProvinceName": "Alberta"
+      },
+      "PostalCode": "T2P 2G8",
+      "CountryRegionName": "Canada"
+    },
+    "_rid": "QoZhANxLSQBMAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBMAAAAAAAAAA==/",
+    "_etag": "\"080019a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1808",
+    "Name": "Transport Bikes",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "25130 South State Street",
+      "Location": {
+        "City": "Sandy",
+        "StateProvinceName": "Utah"
+      },
+      "PostalCode": "84070",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQBNAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBNAAAAAAAAAA==/",
+    "_etag": "\"08001aa2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1296",
+    "Name": "Trailblazing Sports",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "251340 E. South St.",
+      "Location": {
+        "City": "Cerritos",
+        "StateProvinceName": "California"
+      },
+      "PostalCode": "90703",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQBOAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBOAAAAAAAAAA==/",
+    "_etag": "\"08001ba2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "526",
+    "Name": "Futuristic Bikes",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "25136 Jefferson Blvd.",
+      "Location": {
+        "City": "Culver City",
+        "StateProvinceName": "California"
+      },
+      "PostalCode": "90232",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQBPAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBPAAAAAAAAAA==/",
+    "_etag": "\"08001ca2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1840",
+    "Name": "Top Sports Supply",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "251420a 170th Street",
+      "Location": {
+        "City": "Edmonton",
+        "StateProvinceName": "Alberta"
+      },
+      "PostalCode": "T5",
+      "CountryRegionName": "Canada"
+    },
+    "_rid": "QoZhANxLSQBQAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBQAAAAAAAAAA==/",
+    "_etag": "\"08001da2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1244",
+    "Name": "Finish and Sealant Products",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "25150 El Camino Real",
+      "Location": {
+        "City": "San Bruno",
+        "StateProvinceName": "California"
+      },
+      "PostalCode": "94066",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQBRAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBRAAAAAAAAAA==/",
+    "_etag": "\"08001ea2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1358",
+    "Name": "Leading Sales & Repair",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "25149 Howard Dr",
+      "Location": {
+        "City": "West Chicago",
+        "StateProvinceName": "Illinois"
+      },
+      "PostalCode": "60185",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQBSAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBSAAAAAAAAAA==/",
+    "_etag": "\"08001fa2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1972",
+    "Name": "Mercantile Outlet",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2520 Flanders Road",
+      "Location": {
+        "City": "Toronto",
+        "StateProvinceName": "Ontario"
+      },
+      "PostalCode": "M4B 1V4",
+      "CountryRegionName": "Canada"
+    },
+    "_rid": "QoZhANxLSQBTAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBTAAAAAAAAAA==/",
+    "_etag": "\"080020a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1856",
+    "Name": "Grown-up Bike Store",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "25192 Princeton Rd.",
+      "Location": {
+        "City": "Springdale",
+        "StateProvinceName": "Ohio"
+      },
+      "PostalCode": "45246",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQBUAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBUAAAAAAAAAA==/",
+    "_etag": "\"080021a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1252",
+    "Name": "Up-To-Date Sports",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2521 McPherson Street",
+      "Location": {
+        "City": "Markham",
+        "StateProvinceName": "Ontario"
+      },
+      "PostalCode": "L3S 3K2",
+      "CountryRegionName": "Canada"
+    },
+    "_rid": "QoZhANxLSQBVAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBVAAAAAAAAAA==/",
+    "_etag": "\"080022a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "706",
+    "Name": "Rental Gallery",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2520b Underwood Street",
+      "Location": {
+        "City": "Lavender Bay",
+        "StateProvinceName": "New South Wales"
+      },
+      "PostalCode": "2060",
+      "CountryRegionName": "Australia"
+    },
+    "_rid": "QoZhANxLSQBWAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBWAAAAAAAAAA==/",
+    "_etag": "\"080023a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "500",
+    "Name": "Toy Manufacturing Inc",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "252345 8810th Avenue",
+      "Location": {
+        "City": "Surrey",
+        "StateProvinceName": "British Columbia"
+      },
+      "PostalCode": "V3T 4W3",
+      "CountryRegionName": "Canada"
+    },
+    "_rid": "QoZhANxLSQBXAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBXAAAAAAAAAA==/",
+    "_etag": "\"080024a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "848",
+    "Name": "Satin Finish Company",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "25220 Airline Road",
+      "Location": {
+        "City": "Corpus Christi",
+        "StateProvinceName": "Texas"
+      },
+      "PostalCode": "78404",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQBYAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBYAAAAAAAAAA==/",
+    "_etag": "\"080025a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1000",
+    "Name": "Games and Sport Supply Company",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2525 Electrics Blvd.",
+      "Location": {
+        "City": "Huntsville",
+        "StateProvinceName": "Alabama"
+      },
+      "PostalCode": "35801",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQBZAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBZAAAAAAAAAA==/",
+    "_etag": "\"080026a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "596",
+    "Name": "Metro Metals Co.",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2524 Barlby Road",
+      "Location": {
+        "City": "London",
+        "StateProvinceName": "England"
+      },
+      "PostalCode": "W10 6BL",
+      "CountryRegionName": "United Kingdom"
+    },
+    "_rid": "QoZhANxLSQBaAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBaAAAAAAAAAA==/",
+    "_etag": "\"080027a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "720",
+    "Name": "Machines & Cycles Store",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "25245 Rue Sherbrooke Ouest",
+      "Location": {
+        "City": "Montreal",
+        "StateProvinceName": "Quebec"
+      },
+      "PostalCode": "H1Y 2H5",
+      "CountryRegionName": "Canada"
+    },
+    "_rid": "QoZhANxLSQBbAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBbAAAAAAAAAA==/",
+    "_etag": "\"080028a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "584",
+    "Name": "Curbside Universe",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "25264 E. 260th",
+      "Location": {
+        "City": "Euclid",
+        "StateProvinceName": "Ohio"
+      },
+      "PostalCode": "44119",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQBcAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBcAAAAAAAAAA==/",
+    "_etag": "\"080029a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1082",
+    "Name": "First Cycle Store",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "25250 N 90th St",
+      "Location": {
+        "City": "Scottsdale",
+        "StateProvinceName": "Arizona"
+      },
+      "PostalCode": "85257",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQBdAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBdAAAAAAAAAA==/",
+    "_etag": "\"08002aa2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1268",
+    "Name": "Out-of-the-Way Hotels",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "25269 N. Wood Dale Rd",
+      "Location": {
+        "City": "Wood Dale",
+        "StateProvinceName": "Illinois"
+      },
+      "PostalCode": "60191",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQBeAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBeAAAAAAAAAA==/",
+    "_etag": "\"08002ba2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778601
+  },
+  {
+    "id": "1246",
+    "Name": "Finer Parts Shop",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2526a Tri-Lake Blvd Ne",
+      "Location": {
+        "City": "Kirkland",
+        "StateProvinceName": "Washington"
+      },
+      "PostalCode": "98033",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQBfAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBfAAAAAAAAAA==/",
+    "_etag": "\"08002ca2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778602
+  },
+  {
+    "id": "714",
+    "Name": "Discount Bicycle Specialists",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "25269 Wood Dale Rd.",
+      "Location": {
+        "City": "Wood Dale",
+        "StateProvinceName": "Illinois"
+      },
+      "PostalCode": "60191",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQBgAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBgAAAAAAAAAA==/",
+    "_etag": "\"08002da2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778602
+  },
+  {
+    "id": "1482",
+    "Name": "Riding Associates",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "2528 Meridian E",
+      "Location": {
+        "City": "Puyallup",
+        "StateProvinceName": "Washington"
+      },
+      "PostalCode": "98371",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQBhAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBhAAAAAAAAAA==/",
+    "_etag": "\"08002ea2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778602
+  },
+  {
+    "id": "1282",
+    "Name": "Kickstands and Accessories Company",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "25300 Biddle Road",
+      "Location": {
+        "City": "Medford",
+        "StateProvinceName": "Oregon"
+      },
+      "PostalCode": "97504",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQBiAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBiAAAAAAAAAA==/",
+    "_etag": "\"08002fa2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778602
+  },
+  {
+    "id": "632",
+    "Name": "Sports Commodities",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "253950 N.E. 178th Place",
+      "Location": {
+        "City": "Woodinville",
+        "StateProvinceName": "Washington"
+      },
+      "PostalCode": "98072",
+      "CountryRegionName": "United States"
+    },
+    "_rid": "QoZhANxLSQBjAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBjAAAAAAAAAA==/",
+    "_etag": "\"080030a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778602
+  },
+  {
+    "id": "346",
+    "Name": "Designated Distributors",
+    "Address": {
+      "AddressType": "Main Office",
+      "AddressLine1": "254 Colonnade Road",
+      "Location": {
+        "City": "Nepean",
+        "StateProvinceName": "Ontario"
+      },
+      "PostalCode": "K2J 2W5",
+      "CountryRegionName": "Canada"
+    },
+    "_rid": "QoZhANxLSQBkAAAAAAAAAA==",
+    "_self": "dbs/QoZhAA==/colls/QoZhANxLSQA=/docs/QoZhANxLSQBkAAAAAAAAAA==/",
+    "_etag": "\"080031a2-0000-0000-0000-579b0aad0000\"",
+    "_attachments": "attachments/",
+    "_ts": 1469778602
+  }
+]

@@ -10,10 +10,15 @@
             bool test1 = @object is string;
             // Constant value test:
             bool test5 = @object is null; // Compiled to: @object == null
-            bool test6 = @object is default; // Compiled to: @object == mull
             bool test2 = @object is int.MinValue; // Compiled to: object.Equals(int.MinValue, @object)
             bool test3 = @object is DayOfWeek.Monday; // Compiled to: object.Equals(DayOfWeek.Monday, @object)
             bool test4 = @object is "test"; // Compiled to: object.Equals("test", @object)
+
+#if DEMO
+            // https://github.com/dotnet/roslyn/issues/25450
+            // https://github.com/dotnet/roslyn/issues/23499
+            bool test6 = @object is default; // Compiled to: @object == mull
+#endif
         }
     }
 
