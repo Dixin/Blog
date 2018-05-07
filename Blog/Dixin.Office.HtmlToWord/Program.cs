@@ -62,7 +62,7 @@
 
     internal static class Program
     {
-        private static async Task Main(string[] arguments) => 
+        private static async Task Main(string[] arguments) =>
             await BuildDocumentsAsync(arguments.FirstOrDefault());
 
         private static async Task BuildDocumentsAsync(string outputDirectory, string oneDriveDirectory = @"Works\Book\Apress")
@@ -133,10 +133,6 @@
         private static async Task<AllHtml> DownloadHtmlAsync(
             string indexUrl = @"http://weblogs.asp.net/dixin/linq-via-csharp")
         {
-            Regex allowedTag = new Regex("^(p|h[1-9]|pre|blockquote|table|img|ul|ol)$", RegexOptions.IgnoreCase);
-            Regex allowedParagraphTag = new Regex("^(a|sub|sup|img)$", RegexOptions.IgnoreCase);
-            Regex allowedSpanParentTag = new Regex("^(pre|span)$", RegexOptions.IgnoreCase);
-
             using (WebClient indexClient = new WebClient())
             {
                 indexClient.Encoding = Encoding.UTF8;
@@ -178,69 +174,8 @@
                                     }
                                     CQ articleContentCq = articleCq["article.blog-post"];
                                     articleContentCq.Children("header").Remove();
-                                    // Format h1 - h7 to h3 - h9.
-                                    Enumerable
-                                        .Range(1, 7)
-                                        .Reverse()
-                                        .ForEach(i => articleContentCq
-                                            .Find(Invariant($"h{i}")).Contents().Unwrap()
-                                            .Wrap(Invariant($"<h{i + 2}/>"))
-                                            .Parent()
-                                            .Find("a").Contents().Unwrap());
-                                    // Format p.
-                                    articleContentCq.Find("p")
-                                        .Select(paragraph => paragraph.Cq())
-                                        .ForEach(paragraphCq =>
-                                        {
-                                            string paragraphText = paragraphCq.Text().Trim();
-                                            paragraphCq.Children()
-                                                .Where(child => !allowedParagraphTag.IsMatch(child.NodeName))
-                                                .Select(child => child.Cq())
-                                                .ForEach(childCq =>
-                                                {
-                                                    Trace.WriteLine($"[{articleTitle}] [Paragraph has child elements {childCq[0].NodeName}]: {paragraphCq.Html()}");
-                                                    childCq.ReplaceWith(childCq.Text());
-                                                });
 
-                                            CQ imageCq = paragraphCq.Find("img");
-                                            if (imageCq.Any())
-                                            {
-                                                paragraphCq.Children().ReplaceWith(imageCq);
-                                            }
-                                            else
-                                            {
-                                                paragraphCq.Text(paragraphText);
-                                                if (string.IsNullOrWhiteSpace(paragraphText)
-                                                    || paragraphText.StartsWith("[LinQ via C#",
-                                                        StringComparison.OrdinalIgnoreCase))
-                                                {
-                                                    paragraphCq.Remove();
-                                                }
-                                            }
-                                        });
-                                    articleContentCq.Find("img").RemoveAttr("style").RemoveAttr("width").RemoveAttr("height").RemoveAttr("border");
-                                    articleContentCq.Find("table").RemoveAttr("style").RemoveAttr("width").RemoveAttr("height").RemoveAttr("border").RemoveAttr("cellspacing").RemoveAttr("cellpadding");
-                                    articleContentCq.Find("td").RemoveAttr("style").RemoveAttr("width").RemoveAttr("height").RemoveAttr("border").RemoveAttr("valign");
-                                    // Cleanup direct child elements.
-                                    articleContentCq.Children()
-                                        .Where(child => !allowedTag.IsMatch(child.NodeName))
-                                        .ForEach(child =>
-                                        {
-                                            Trace.WriteLine($"[{articleTitle}] [{child.NodeName} is not allowed]: {child.OuterHTML}");
-                                            child.Cq().Remove();
-                                        });
-                                    // Cleanup span.
-                                    articleContentCq.Find("span")
-                                        .Select(span => (Span: span, Parent: span.ParentNode))
-                                        .Where(spanAndParent => !allowedSpanParentTag.IsMatch(spanAndParent.Parent.NodeName))
-                                        .ForEach(spanAndParent =>
-                                        {
-                                            Trace.WriteLine($"[{articleTitle}] [{spanAndParent.Span.NodeName} is not allowed]: {spanAndParent.Parent.OuterHTML}");
-                                            spanAndParent.Span.Cq().ReplaceWith(spanAndParent.Span.InnerText);
-                                        });
-                                    // Cleanup strong b u i
-                                    articleContentCq.Find("strong, b, u, i").ForEach(element => element.Cq().ReplaceWith(element.InnerText));
-                                    return (Title: articleTitle, Content: articleContentCq);
+                                    return (Title: articleTitle, Content: FormatArticleContent(articleTitle, articleContentCq));
                                 }
                             }));
                         return (categoryCq.Find("h1").Text().Trim(), articles.ToList());
@@ -250,6 +185,81 @@
                     indexPageCq["title"].Text().Replace("Dixin's Blog -", string.Empty).Trim(),
                     chapters);
             }
+        }
+
+        private static readonly Regex allowedTag = new Regex("^(p|h[1-9]|pre|blockquote|table|img|ul|ol)$", RegexOptions.IgnoreCase);
+
+        private static readonly Regex allowedParagraphTag = new Regex("^(a|sub|sup|img)$", RegexOptions.IgnoreCase);
+
+        private static readonly Regex allowedSpanParentTag = new Regex("^(pre|span)$", RegexOptions.IgnoreCase);
+
+        private static CQ FormatArticleContent(string articleTitle, CQ articleContentCq)
+        {
+            // Format h1 - h7 to h3 - h9.
+            Enumerable
+                .Range(1, 7)
+                .Reverse()
+                .ForEach(i => articleContentCq
+                    .Find(Invariant($"h{i}")).Contents().Unwrap()
+                    .Wrap(Invariant($"<h{i + 2}/>"))
+                    .Parent()
+                    .Find("a").Contents().Unwrap());
+            // Format p.
+            articleContentCq.Find("p")
+                .Select(paragraph => paragraph.Cq())
+                .ForEach(paragraphCq =>
+                {
+                    string paragraphText = paragraphCq.Text().Trim();
+                    paragraphCq.Children()
+                        .Where(child => !allowedParagraphTag.IsMatch(child.NodeName))
+                        .Select(child => child.Cq())
+                        .ForEach(childCq =>
+                        {
+                            Trace.WriteLine($"[{articleTitle}] [Paragraph has child elements {childCq[0].NodeName}]: {paragraphCq.Html()}");
+                            childCq.ReplaceWith(childCq.Text());
+                        });
+
+                    CQ imageCq = paragraphCq.Find("img");
+                    if (imageCq.Any())
+                    {
+                        paragraphCq.Children().ReplaceWith(imageCq);
+                    }
+                    else
+                    {
+                        paragraphCq.Text(paragraphText);
+                        if (string.IsNullOrWhiteSpace(paragraphText)
+                            || paragraphText.StartsWith("[LinQ via C#", StringComparison.OrdinalIgnoreCase))
+                        {
+                            paragraphCq.Remove();
+                        }
+                    }
+                });
+            articleContentCq.Find("img").RemoveAttr("style").RemoveAttr("width").RemoveAttr("height").RemoveAttr("border").RemoveAttr("class");
+            articleContentCq.Find("table").RemoveAttr("style").RemoveAttr("width").RemoveAttr("height").RemoveAttr("border").RemoveAttr("cellspacing").RemoveAttr("cellpadding").RemoveAttr("class");
+            articleContentCq.Find("tr").RemoveProp("class");
+            articleContentCq.Find("td").RemoveAttr("style").RemoveAttr("width").RemoveAttr("height").RemoveAttr("border").RemoveAttr("valign").RemoveAttr("class");
+            articleContentCq.Find("pre").RemoveClass("code").AddClass("csharp");
+            // Cleanup direct child elements.
+            articleContentCq.Children()
+                .Where(child => !allowedTag.IsMatch(child.NodeName))
+                .ForEach(child =>
+                {
+                    Trace.WriteLine($"[{articleTitle}] [{child.NodeName} is not allowed]: {child.OuterHTML}");
+                    child.Cq().Remove();
+                });
+            // Cleanup span.
+            articleContentCq.Find("span")
+                .Select(span => (Span: span, Parent: span.ParentNode))
+                .Where(spanAndParent => !allowedSpanParentTag.IsMatch(spanAndParent.Parent.NodeName))
+                .ForEach(spanAndParent =>
+                {
+                    Trace.WriteLine($"[{articleTitle}] [{spanAndParent.Span.NodeName} is not allowed]: {spanAndParent.Parent.OuterHTML}");
+                    spanAndParent.Span.Cq().ReplaceWith(spanAndParent.Span.InnerText);
+                });
+            // Cleanup strong b u i
+            articleContentCq.Find("strong, b, u, i").ForEach(element => element.Cq().ReplaceWith(element.InnerText));
+
+            return articleContentCq;
         }
 
         private static async Task SaveDocumentsAsync(string directory, AllHtml html, string outputDocument, string exportDocument)
