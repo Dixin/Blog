@@ -1,4 +1,5 @@
 version: 1.0.0.{build}
+image: Visual Studio 2017
 configuration:
 - Debug
 - Release
@@ -11,21 +12,23 @@ assembly_info:
   assembly_informational_version: '{version}'
 environment:
   EnableNuGetPackageRestore: true
-services: mssql2014
+services: mssql2017
 before_build:
 - cmd: nuget restore -verbosity detailed
 build:
+  project: ./Blog/CodeSnippets.sln
+  parallel: true
   verbosity: detailed
 before_test:
 - ps: >-
-    $server = "(local)\SQL2014"
+    $server = "(local)\SQL2017"
 
     $database = "AdventureWorks"
 
 
     # Replace the db connection with the local instance.
 
-    $configPath = "$($env:appveyor_build_folder)\Dixin.Tests\bin\$($env:CONFIGURATION)\Dixin.Tests.dll.config"
+    $configPath = "$($env:appveyor_build_folder)\Blog\Dixin.Tests\bin\$($env:CONFIGURATION)\Dixin.Tests.dll.config"
 
     $config = (gc $configPath) -as [xml]
 
@@ -36,7 +39,7 @@ before_test:
 
     # Attach mdf to local instance.
 
-    $databaseDirectory = "$($env:appveyor_build_folder)\Data"
+    $databaseDirectory = "$($env:appveyor_build_folder)\Blog\Data"
 
     $mdfPath = join-path $databaseDirectory "AdventureWorks_Data.mdf"
 
