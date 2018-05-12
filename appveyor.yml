@@ -14,7 +14,7 @@ environment:
   EnableNuGetPackageRestore: true
 services: mssql2017
 before_build:
-- cmd: nuget restore -verbosity detailed
+- cmd: nuget restore ./Blog/CodeSnippets.sln -verbosity detailed
 build:
   project: ./Blog/CodeSnippets.sln
   parallel: true
