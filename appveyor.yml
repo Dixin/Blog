@@ -32,7 +32,7 @@ before_test:
 
     $config = (gc $configPath) -as [xml]
 
-    $config.SelectSingleNode('//connectionStrings/add[@name="Dixin.Tests.Properties.Settings.AdventureWorksConnectionString"]').connectionString = "Server=$server; Database=$database; Trusted_connection=true"
+    $config.SelectSingleNode('//connectionStrings/add[@name="AdventureWorks"]').connectionString = "Server=$server; Database=$database; Trusted_connection=true"
 
     $config.Save($configPath)
 
