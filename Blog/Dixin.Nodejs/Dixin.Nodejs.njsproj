@@ -31,7 +31,7 @@
     <Compile Include="common.js" />
     <Compile Include="fiddler.js" />
     <Compile Include="main.js" />
-    <Compile Include="tumblr.js" />
+    <Compile Include="tumblr-batch.js" />
     <Content Include="JSLintNet.json" />
     <Content Include="package.json" />
     <Content Include="README.md" />

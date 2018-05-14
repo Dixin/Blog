@@ -11,6 +11,8 @@
             directory: "D:\\User\\Downloads\\Tumblr",
             delay: 1000
         });
+        const following = await client.getAllFollowingAsync();
+        console.log(following.blogs);
     } catch (error) {
         console.log(error);
     } 
