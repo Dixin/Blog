@@ -1,47 +1,48 @@
 ﻿const http = require("http"),
     https = require("https"),
     fs = require("fs"),
-    url = require("url"),
+    urlModule = require("url"),
 
-    getHttpModule = options => {
-        if (typeof options === "string") { // options can be URL string.
-            options = url.parse(options);
+    getHttpModule = parsedUrl => parsedUrl.protocol && parsedUrl.protocol.toLowerCase().endsWith("s:") ? https : http,
+
+    downloadFileAsync = (url, path) => new Promise((resolve, reject) => {
+        if (typeof url === "string") {
+            url = urlModule.parse(url);
         }
-        return options.protocol && options.protocol.toLowerCase() === "https:" ? https : http;
-    },
-
-    downloadFileAsync = (options, path) => new Promise((resolve, reject) => {
         const file = fs.createWriteStream(path, {
             flags: "w"
         }),
-            httpModule = getHttpModule(options);
-        console.log(`Downloading ${url.format(options)} to ${path}.`);
-        httpModule.request(options, response => {
+            httpModule = getHttpModule(url);
+        console.log(`Downloading ${urlModule.format(url)} to ${path}.`);
+        httpModule.request(url, response => {
             response.pipe(file);
             file.on("finish", () => {
-                console.log(`Downloaded ${url.format(options)} to ${path}.`);
+                console.log(`Downloaded ${urlModule.format(url)} to ${path}.`);
                 return file.close(resolve);
             });
         }).on("error", error => {
             fs.unlink(path);
-            console.log(`Failed to download ${url.format(options)} to ${path}.`);
+            console.log(`Failed to download ${urlModule.format(url)} to ${path}.`);
             reject(error);
         }).end();
     }),
 
-    downloadStringAsync = options => new Promise((resolve, reject) => {
-        const httpModule = getHttpModule(options);
-        console.log(`Downloading ${url.format(options)} as string.`);
-        httpModule.request(options, response => {
+    downloadStringAsync = url => new Promise((resolve, reject) => {
+        if (typeof url === "string") {
+            url = urlModule.parse(url);
+        }
+        const httpModule = getHttpModule(url);
+        console.log(`Downloading ${urlModule.format(url)} as string.`);
+        httpModule.request(url, response => {
             const strings = [];
             response.setEncoding("utf8");
             response.on("data", string => strings.push(string));
             response.on("end", () => {
-                console.log(`Downloaded ${url.format(options)} as string.`);
+                console.log(`Downloaded ${urlModule.format(url)} as string.`);
                 return resolve(strings.join());
             });
         }).on("error", error => {
-            console.log(`Failed to download ${url.format(options)} as string.`);
+            console.log(`Failed to download ${urlModule.format(url)} as string.`);
             return reject(error);
         }).end();
     }),
@@ -61,7 +62,7 @@
     });
 
 module.exports = {
-    downloadAsync: downloadFileAsync,
+    downloadFileAsync,
     downloadStringAsync,
     removeReservedCharactersFromFileName,
     existsAsync

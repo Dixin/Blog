@@ -6,7 +6,7 @@
     cheerio = require("cheerio"),
     oAuth = require("oauth"),
     tumblr = require("tumblr.js"),
-    common = require("./common"),
+    io = require("./io"),
     opn = require("opn"),
     Promise = require("bluebird"),
 
@@ -14,7 +14,7 @@
 
     getClientAsync = options => new Promise((resolve, reject) => {
         if (options.accessToken && options.acessTokenSecret) {
-            buildClient(options, resolve, reject);
+            buildBatchClient(options, resolve, reject);
             return;
         }
         const callbackUrl = "http://127.0.0.1:34946/tumblr",
@@ -45,7 +45,7 @@
                                 console.log(`Requested OAuth access token ${accessToken}, secrete ${acessTokenSecret}.`);
                                 options.accessToken = accessToken;
                                 options.acessTokenSecret = acessTokenSecret;
-                                buildClient(options, resolve, reject).then(data => response.end(`Auth is done for ${data.user.name}.`));
+                                buildBatchClient(options, resolve, reject).then(data => response.end(`Auth is done for ${data.user.name}.`));
                             }
                         });
                     } else {
@@ -63,7 +63,7 @@
         });
     }),
 
-    buildClient = (options, resolve, reject) => {
+    buildBatchClient = (options, resolve, reject) => {
         const client = Promise.promisifyAll(new tumblr.Client({
             consumer_key: options.consumerKey,
             consumer_secret: options.consumerSecret,
@@ -81,6 +81,7 @@
             client.downloadAllLikesAndUnlikeAsync = downloadAllLikesAndUnlikeAsync;
             client.getAllFollowingAsync = getAllFollowingAsync;
             client.followAllAsync = followAllAsync;
+            client.defaultDelay = 1000;
             console.log(`Auth is done for ${data.user.name}.`);
             resolve(client);
             return data;
@@ -88,12 +89,11 @@
     },
 
     downloadAllLikesAndUnlikeAsync = async function (options) {
-        const delay = options.delay || 1000;
+        const delay = options.delay || this.defaultDelay;
         for (let likes = await this.userLikesAsync(); likes.liked_posts.length > 0; likes = await this.userLikesAsync()) {
             for (const post of likes.liked_posts) {
-                await setTimeoutAsync(delay); // Tumblr has a request rate limit
+                await setTimeoutAsync(delay); // Tumblr has a request rate limit.
                 await downloadPostMediaAsync(post, options.directory);
-                await setTimeoutAsync(delay);
                 await this.unlikePostAsync(post.id, post.reblog_key);
             }
             await setTimeoutAsync(delay);
@@ -101,7 +101,7 @@
     },
 
     getFileName = (post, url, index = 0, count = 150) => {
-        const summary = post.summary ? common.removeReservedCharactersFromFileName(post.summary).trim() : "",
+        const summary = post.summary ? io.removeReservedCharactersFromFileName(post.summary).trim() : "",
             extension = url.split(".").pop();
         return `${post.blog_name} ${post.id} ${index} ${summary ? ` ${summary.substring(0, count)}` : ""}.${extension}`;
     },
@@ -112,13 +112,13 @@
             for (const [index, photo] of post.photos.entries()) {
                 const url = photo.original_size.url,
                     file = path.join(directory, getFileName(post, url, index));
-                await common.downloadAsync(url, file);
+                await io.downloadFileAsync(url, file);
             }
         }
         if (post.video_url) { // Post has videos.
             const url = post.video_url,
                 file = path.join(directory, getFileName(post, url));
-            await common.downloadAsync(url, file);
+            await io.downloadFileAsync(url, file);
         }
         if (post.body) { // Post has HTML.
             const $ = cheerio.load(post.body),
@@ -127,14 +127,14 @@
                 const image = $images[index],
                     url = image.attribs.src,
                     file = path.join(directory, getFileName(post, url, index));
-                await common.downloadAsync(url, file);
+                await io.downloadFileAsync(url, file);
             }
         }
     },
 
     getAllFollowingAsync = async function (options) {
         options = options || {};
-        const delay = options.delay || 1000,
+        const delay = options.delay || this.defaultDelay,
             offset = options.offset || 20;
         let index = 0,
             blogs = [];
@@ -149,14 +149,13 @@
 
     followAllAsync = async function (options) {
         options = options || {};
-        const delay = options.delay || 1000,
+        const delay = options.delay || this.defaultDelay,
             blogs = options.blogs || [];
         for (const [index, blog] of blogs.entries()) {
-            console.log(`Following ${index} ${blog.name} ${blog.url}.`);
             try {
-                this.followBlogAsync({ url: blog.name }).then(() => console.log(`Followed ${index} ${blog.name} ${blog.url}.`), console.log);
-                //await this.followBlogAsync({ url: blog.name });
-                //await setTimeoutAsync(delay);
+                await this.followBlogAsync({ url: blog.name });
+                console.log(`Followed ${index} ${blog.name} ${blog.url}.`);
+                await setTimeoutAsync(delay);
             } catch (error) {
                 console.log(error);
             }

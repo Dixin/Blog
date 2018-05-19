@@ -1,4 +1,4 @@
-﻿const tumblr = require("./tumblr");
+﻿const tumblr = require("./tumblr-batch");
 
 (async () => {
     try {
@@ -7,7 +7,7 @@
             consumerKey: "j6l07pCFuT9aOTWbFncXFi3qgxY2fL8VGyYLfbRIaYzd1WjxjI",
             consumerSecret: "ZFJvpPphkvBrXVc30Tbvy3x5DbIi30n8LqztcRmUUUacYfwQSb"
         });
-        await client.downloadLikesAndUnlikeAsync({
+        await client.downloadAllLikesAndUnlikeAsync({
             directory: "D:\\User\\Downloads\\Tumblr",
             delay: 1000
         });

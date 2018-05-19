@@ -28,8 +28,8 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="common.js" />
     <Compile Include="fiddler.js" />
+    <Compile Include="io.js" />
     <Compile Include="main.js" />
     <Compile Include="tumblr-batch.js" />
     <Content Include="JSLintNet.json" />
