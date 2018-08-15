@@ -78,10 +78,13 @@
             client.acessTokenSecret = options.acessTokenSecret;
             client.consumerKey = options.consumerKey;
             client.consumerSecret = options.consumerSecret;
+            client.cookie = options.cookie;
+
             client.downloadAllLikesAndUnlikeAsync = downloadAllLikesAndUnlikeAsync;
             client.getAllFollowingAsync = getAllFollowingAsync;
             client.followAllAsync = followAllAsync;
-            client.defaultDelay = 1000;
+            client.defaultDelay = 100;
+            client.downloadAllLikesFromHtmlAndUnlikeAsync = downloadAllLikesFromHtmlAndUnlikeAsync;
             console.log(`Auth is done for ${data.user.name}.`);
             resolve(client);
             return data;
@@ -160,6 +163,63 @@
                 console.log(error);
             }
             await setTimeoutAsync(delay);
+        }
+    },
+
+    getLikedPostsFromHtmlAsync = async function (options) {
+        const likedPosts = [],
+            headers = {
+                "accept": 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                "accept-language": "en-US,en;q=0.8,zh-CN;q=0.6,zh-TW;q=0.4",
+                "cache-control": "max-age=0",
+                "cookie": options.cookie,
+                "dnt": "1",
+                "upgrade-insecure-requests": "1"
+            },
+            delay = options.delay || this.defaultDelay;
+        let likesPath = "/likes";
+        while (true) {
+            const requestOptions = Object.assign({ headers }, url.parse(`https://www.tumblr.com${likesPath}`));
+            let html;
+            try {
+                html = await io.downloadStringAsync(requestOptions);
+            } catch (error) {
+                console.log(`Failed to download likes from HtML: ${error}`);
+                break;
+            }
+            const $ = cheerio.load(html),
+                $nextPage = $("#next_page_link");
+            $("ol li div.post").each((index, element) => {
+                const $element = $(element);
+                likedPosts.push({
+                    tumblelog: $element.data("tumblelog"),
+                    id: $element.data("id")
+                });
+            });
+            if ($nextPage.length <= 0) {
+                break;
+            }
+            likesPath = $nextPage.prop("href");
+            await setTimeoutAsync(delay);
+        }
+        return likedPosts;
+    },
+
+    downloadAllLikesFromHtmlAndUnlikeAsync = async function (options) {
+        options.cookie = this.cookie;
+        const likedPosts = await getLikedPostsFromHtmlAsync(options);
+        console.log(`Posts from HTML: ${likedPosts.length}`);
+
+        for (const likedPost of likedPosts) {
+            try {
+                const data = await this.blogPostsAsync(likedPost.tumblelog + ".tumblr.com", null, { id: likedPost.id }),
+                    post = data.posts[0];
+                await downloadPostMediaAsync(post, options.directory);
+                await this.unlikePostAsync(post.id, post.reblog_key);
+                console.log(`Downloaded and unliked post ${likedPost.blog}.tumblr.com/posts/${likedPost.post}`);
+            } catch (error) {
+                console.error(error);
+            }
         }
     };
 
