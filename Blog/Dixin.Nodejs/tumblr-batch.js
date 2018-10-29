@@ -74,30 +74,37 @@
             reject(new Error("Failed to promisify client."));
         }
         return client.userInfoAsync().then(data => {
-            client.accessToken = options.accessToken;
-            client.acessTokenSecret = options.acessTokenSecret;
-            client.consumerKey = options.consumerKey;
-            client.consumerSecret = options.consumerSecret;
-            client.cookie = options.cookie;
-
-            client.downloadAllLikesAndUnlikeAsync = downloadAllLikesAndUnlikeAsync;
-            client.getAllFollowingAsync = getAllFollowingAsync;
-            client.followAllAsync = followAllAsync;
-            client.defaultDelay = 100;
-            client.downloadAllLikesFromHtmlAndUnlikeAsync = downloadAllLikesFromHtmlAndUnlikeAsync;
+            Object.assign(client, {
+                getLikedPosts,
+                downloadAllLikesAndUnlikeAsync,
+                getAllFollowingAsync,
+                followAllAsync,
+                defaultDelay: 100,
+                downloadAllLikesFromHtmlAndUnlikeAsync
+            }, options);
             console.log(`Auth is done for ${data.user.name}.`);
             resolve(client);
             return data;
         }, reject);
     },
 
+    getLikedPosts = async function (errorIds) {
+        return (await this.userLikesAsync()).liked_posts.filter(value => errorIds.every(errorId => value.id !== errorId));
+    },
+
     downloadAllLikesAndUnlikeAsync = async function (options) {
-        const delay = options.delay || this.defaultDelay;
-        for (let likes = await this.userLikesAsync(); likes.liked_posts.length > 0; likes = await this.userLikesAsync()) {
-            for (const post of likes.liked_posts) {
+        const delay = options.delay || this.defaultDelay,
+            errorIds = [];
+        for (let posts = await this.getLikedPosts(errorIds); posts.length > 0; posts = await this.getLikedPosts(errorIds)) {
+            for (const post of posts) {
                 await setTimeoutAsync(delay); // Tumblr has a request rate limit.
-                await downloadPostMediaAsync(post, options.directory);
-                await this.unlikePostAsync(post.id, post.reblog_key);
+                try {
+                    await downloadPostMediaAsync(post, options.directory);
+                    await this.unlikePostAsync(post.id, post.reblog_key);
+                } catch (error) {
+                    console.log(error);
+                    errorIds.push(post.id);
+                }
             }
             await setTimeoutAsync(delay);
         }
