@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dixin", "Dixin\Dixin.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dixin.Tests", "Dixin.Tests\Dixin.Tests.csproj", "{29C7FDF4-4DE5-4033-9127-E489676274C5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dixin.Text.GB2312ToUnicode", "Dixin.Text.GB2312ToUnicode\Dixin.Text.GB2312ToUnicode.csproj", "{DC703A22-7FEB-4B3C-99EC-01EA4C4420F4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dixin.Text.GB2312ToUtf8", "Dixin.Text.GB2312ToUnicode\Dixin.Text.GB2312ToUtf8.csproj", "{DC703A22-7FEB-4B3C-99EC-01EA4C4420F4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dixin.Office.HtmlToWord", "Dixin.Office.HtmlToWord\Dixin.Office.HtmlToWord.csproj", "{AF52B5E6-48BB-4900-A111-479CEBD2E134}"
 EndProject
@@ -141,7 +141,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {3970DD61-4F33-45E3-8BBD-B43AAF9C07F9}
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;iseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8
+		SolutionGuid = {3970DD61-4F33-45E3-8BBD-B43AAF9C07F9}
 	EndGlobalSection
 EndGlobal
