@@ -5,28 +5,32 @@
     using System.Linq;
     using System.Text;
 
-    using Dixin.Common;
-
     internal class Program
     {
         private static void Main(string[] args)
         {
-            args.NotNullOrEmpty();
-
             string path = args.First();
             if (Directory.Exists(path))
             {
-                Directory.EnumerateFiles(path, "*.txt")
+                Directory.EnumerateFiles(path, args.Length >= 2 ? args[1] : "*.txt")
                     .ToList()
-                    .ForEach(file => EncodingHelper.Convert(
-                        Encoding.GetEncoding("gb2312"), Encoding.Unicode, file));
+                    .ForEach(file => Convert(Encoding.GetEncoding("gb2312"), Encoding.UTF8, file));
             }
             else if (File.Exists(path))
             {
-                EncodingHelper.Convert(Encoding.GetEncoding("gb2312"), Encoding.Unicode, path);
+                Convert(Encoding.GetEncoding("gb2312"), Encoding.UTF8, path);
             }
+            else
+            {
+                throw new ArgumentException("Provided path does not exist.", nameof(args));
+            }
+        }
 
-            throw new ArgumentException("Provided path does not exist.", nameof(args));
+        public static void Convert(Encoding from, Encoding to, string fromPath, string toPath = null)
+        {
+            byte[] fromBytes = File.ReadAllBytes(fromPath);
+            byte[] toBytes = Encoding.Convert(from, to, fromBytes);
+            File.WriteAllBytes(toPath ?? fromPath, toBytes);
         }
     }
 }
