@@ -45,6 +45,19 @@ namespace System.Linq
                     CachedReflectionInfo.ElementsIn_TSource_2(typeof(TSource)),
                     source.Expression, Expression.Constant(range)));
         }
+
+        public static IQueryable<TSource> Slice<TSource>(this IQueryable<TSource> source, Range range)
+        {
+            if (source == null)
+                // throw Error.ArgumentNull(nameof(source));
+                throw new ArgumentNullException(nameof(source));
+
+            return source.Provider.CreateQuery<TSource>(
+                Expression.Call(
+                    null,
+                    CachedReflectionInfo.Slice_TSource_2(typeof(TSource)),
+                    source.Expression, Expression.Constant(range)));
+        }
     }
 
     internal static class CachedReflectionInfo
@@ -68,6 +81,13 @@ namespace System.Linq
         public static MethodInfo ElementsIn_TSource_2(Type TSource) =>
              (s_ElementsIn_TSource_2 ??
              (s_ElementsIn_TSource_2 = new Func<IQueryable<object>, Range, IQueryable<object>>(QueryableExtensions.ElementsIn).GetMethodInfo().GetGenericMethodDefinition()))
+              .MakeGenericMethod(TSource);
+
+        private static MethodInfo s_Slice_TSource_2;
+
+        public static MethodInfo Slice_TSource_2(Type TSource) =>
+             (s_Slice_TSource_2 ??
+             (s_Slice_TSource_2 = new Func<IQueryable<object>, Range, IQueryable<object>>(QueryableExtensions.ElementsIn).GetMethodInfo().GetGenericMethodDefinition()))
               .MakeGenericMethod(TSource);
     }
 }
