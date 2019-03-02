@@ -52,7 +52,7 @@ namespace System.Linq
 
             // ThrowHelper.ThrowArgumentOutOfRangeException(ExceptionArgument.index);
             throw new ArgumentOutOfRangeException(nameof(index));
-            return default!;
+            // return default!;
         }
 
         public static TSource ElementAtOrDefault<TSource>(this IEnumerable<TSource> source, Index index)
