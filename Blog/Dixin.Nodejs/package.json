@@ -2,7 +2,7 @@
   "name": "dixin.nodejs",
   "version": "1.0.0",
   "description": "Dixin.Nodejs",
-  "main": "main.js",
+  "main": "index.mjs",
   "author": {
     "name": "Dixin"
   },
@@ -11,6 +11,7 @@
     "cheerio": "^0.22.0",
     "oauth": "^0.9.15",
     "opn": "^5.4.0",
-    "tumblr.js": "^1.1.1"
+    "tumblr.js": "^1.1.1",
+    "twit": "^2.2.11"
   }
 }

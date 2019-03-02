@@ -11,7 +11,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>b89b3a79-1a9d-4f59-b313-f9f5a7156405</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>main.js</StartupFile>
+    <StartupFile>index.mjs</StartupFile>
     <StartWebBrowser>False</StartWebBrowser>
     <SearchPath>
     </SearchPath>
@@ -30,8 +30,9 @@
   <ItemGroup>
     <Compile Include="fiddler.js" />
     <Compile Include="io.js" />
-    <Compile Include="main.js" />
+    <Compile Include="index.mjs" />
     <Compile Include="tumblr-batch.js" />
+    <Compile Include="twitter-batch.js" />
     <Content Include="JSLintNet.json" />
     <Content Include="package.json" />
     <Content Include="README.md" />

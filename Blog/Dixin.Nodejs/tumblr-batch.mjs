@@ -1,16 +1,16 @@
-﻿const path = require("path"),
-    url = require("url"),
-    util = require("util"),
-    http = require("http"),
-    queryString = require("querystring"),
-    cheerio = require("cheerio"),
-    oAuth = require("oauth"),
-    tumblr = require("tumblr.js"),
-    io = require("./io"),
-    opn = require("opn"),
-    Promise = require("bluebird"),
+﻿import path from "path";
+import url from "url";
+import util from "util";
+import http from "http";
+import queryString from "querystring";
+import cheerio from "cheerio";
+import oAuth from "oauth";
+import tumblr from "tumblr.js";
+import io from "./io";
+import opn from "opn";
+import Promise from "bluebird";
 
-    setTimeoutAsync = util.promisify(setTimeout),
+const setTimeoutAsync = util.promisify(setTimeout),
 
     getClientAsync = options => new Promise((resolve, reject) => {
         if (options.accessToken && options.acessTokenSecret) {
@@ -80,7 +80,8 @@
                 getAllFollowingAsync,
                 followAllAsync,
                 defaultDelay: 100,
-                downloadAllLikesFromHtmlAndUnlikeAsync
+                downloadAllLikesFromHtmlAndUnlikeAsync,
+                getLikedPostsFromHtmlAsync
             }, options);
             console.log(`Auth is done for ${data.user.name}.`);
             resolve(client);
@@ -88,14 +89,14 @@
         }, reject);
     },
 
-    getLikedPosts = async function (errorIds) {
-        return (await this.userLikesAsync()).liked_posts.filter(value => errorIds.every(errorId => value.id !== errorId));
+    getLikedPosts = async function (errors) {
+        return (await this.userLikesAsync()).liked_posts.filter(value => !(value.id in errors));
     },
 
     downloadAllLikesAndUnlikeAsync = async function (options) {
         const delay = options.delay || this.defaultDelay,
-            errorIds = [];
-        for (let posts = await this.getLikedPosts(errorIds); posts.length > 0; posts = await this.getLikedPosts(errorIds)) {
+            errors = {};
+        for (let posts = await this.getLikedPosts(errors); posts.length > 0; posts = await this.getLikedPosts(errors)) {
             for (const post of posts) {
                 await setTimeoutAsync(delay); // Tumblr has a request rate limit.
                 try {
@@ -103,7 +104,7 @@
                     await this.unlikePostAsync(post.id, post.reblog_key);
                 } catch (error) {
                     console.log(error);
-                    errorIds.push(post.id);
+                    errors[post.id] = null;
                 }
             }
             await setTimeoutAsync(delay);
@@ -214,7 +215,7 @@
 
     downloadAllLikesFromHtmlAndUnlikeAsync = async function (options) {
         options.cookie = this.cookie;
-        const likedPosts = await getLikedPostsFromHtmlAsync(options);
+        const likedPosts = await this.getLikedPostsFromHtmlAsync(options);
         console.log(`Posts from HTML: ${likedPosts.length}`);
 
         for (const likedPost of likedPosts) {
@@ -230,6 +231,6 @@
         }
     };
 
-module.exports = {
+export default {
     getClientAsync
 };

@@ -1,9 +1,9 @@
-﻿const http = require("http"),
-    https = require("https"),
-    fs = require("fs"),
-    urlModule = require("url"),
+﻿import http from "http";
+import https from "https";
+import fs from "fs";
+import urlModule from "url";
 
-    getHttpModule = parsedUrl => parsedUrl.protocol && parsedUrl.protocol.toLowerCase().endsWith("s:") ? https : http,
+const getHttpModule = parsedUrl => parsedUrl.protocol && parsedUrl.protocol.toLowerCase().endsWith("s:") ? https : http,
 
     downloadFileAsync = (url, path) => new Promise((resolve, reject) => {
         if (typeof url === "string") {
@@ -61,7 +61,7 @@
         });
     });
 
-module.exports = {
+export default {
     downloadFileAsync,
     downloadStringAsync,
     removeReservedCharactersFromFileName,
