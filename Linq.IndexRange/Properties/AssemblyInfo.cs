@@ -1,0 +1,8 @@
+﻿using System;
+using System.Runtime.CompilerServices;
+using System.Security;
+
+[assembly: CLSCompliant(true)]
+[assembly: SecurityTransparent]
+
+[assembly:InternalsVisibleTo("Linq.IndexRange.Tests,PublicKey=0024000004800000940000000602000000240000525341310004000001000100a76dfa6b71ce486ec3d6c7d1d0f7830b54cb83b2c066daef7c0bb04568bb1cf36c2cb8c34f6ec51dd64454f44cd70513aa57350ef125ccf25fa4ae2cf064df1bbe93fa3c0df4a6438b5dffd5ef55daefdb740b99cb121cca42f262dd5cb20061cdc77139b068d358601c6c9502e9cd4d477b64bfa1a6cf92c709b2da5549c095")]
