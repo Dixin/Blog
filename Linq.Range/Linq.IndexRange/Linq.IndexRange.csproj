@@ -5,6 +5,7 @@
     <LangVersion>8.0</LangVersion>
     <!-- <NullableReferenceTypes>true</NullableReferenceTypes> -->
     <NullableContextOptions>enable</NullableContextOptions>
+    <AssemblyOriginatorKeyFile>../Tools/Key.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
 </Project>

@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <LangVersion>8.0</LangVersion>
     <IsPackable>false</IsPackable>
+    <AssemblyOriginatorKeyFile>../Tools/Key.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Linq.Range\Linq.Range.csproj" />
+    <ProjectReference Include="..\Linq.IndexRange\Linq.IndexRange.csproj" />
   </ItemGroup>
 
 </Project>
