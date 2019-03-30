@@ -1,0 +1,58 @@
+﻿Expression<Func<int, bool>> (NodeType = Lambda, Type = Func<int, bool>)
+|_Parameters
+| |_ParameterExpression (NodeType = Parameter, Type = int)
+|   |_Name = "int32"
+|_Body
+  |_BinaryExpression (NodeType = GreaterThan, Type = bool)
+    |_Left
+    | |_ParameterExpression (NodeType = Parameter, Type = int)
+    |   |_Name = "int32"
+    |_Right
+      |_ConstantExpression (NodeType = Constant, Type = int)
+        |_Value = 0
+
+Expression<Func<double, double, double, double, double, double>> (NodeType = Lambda, Type = Func<double, double, double, double, double, double>)
+|_Parameters
+| |_ParameterExpression (NodeType = Parameter, Type = double)
+| | |_Name = "a"
+| |_ParameterExpression (NodeType = Parameter, Type = double)
+| | |_Name = "b"
+| |_ParameterExpression (NodeType = Parameter, Type = double)
+| | |_Name = "c"
+| |_ParameterExpression (NodeType = Parameter, Type = double)
+| | |_Name = "d"
+| |_ParameterExpression (NodeType = Parameter, Type = double)
+|   |_Name = "e"
+|_Body
+  |_BinaryExpression (NodeType = Add, Type = double)
+    |_Left
+    | |_BinaryExpression (NodeType = Subtract, Type = double)
+    |   |_Left
+    |   | |_BinaryExpression (NodeType = Add, Type = double)
+    |   |   |_Left
+    |   |   | |_ParameterExpression (NodeType = Parameter, Type = double)
+    |   |   |   |_Name = "a"
+    |   |   |_Right
+    |   |     |_ParameterExpression (NodeType = Parameter, Type = double)
+    |   |       |_Name = "b"
+    |   |_Right
+    |     |_BinaryExpression (NodeType = Divide, Type = double)
+    |       |_Left
+    |       | |_BinaryExpression (NodeType = Multiply, Type = double)
+    |       |   |_Left
+    |       |   | |_ParameterExpression (NodeType = Parameter, Type = double)
+    |       |   |   |_Name = "c"
+    |       |   |_right
+    |       |     |_ParameterExpression (NodeType = Parameter, Type = double)
+    |       |       |_Name = "d"
+    |       |_Right
+    |         |_ConstantExpression (NodeType = Constant, Type = int)
+    |           |_Value = 2
+    |_Right
+      |_BinaryExpression (NodeType = Multiply, Type = double)
+        |_Left
+        | |_ParameterExpression (NodeType = Parameter, Type = double)
+        |   |_Name = "e"
+        |_Right
+          |_ConstantExpression (NodeType = Constant, Type = int)
+            |_Value = 3

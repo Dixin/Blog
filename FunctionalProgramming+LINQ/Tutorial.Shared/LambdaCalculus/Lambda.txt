@@ -1,0 +1,988 @@
+﻿  (λx.λy.y) ((λa.λb.a) (λv.v))
+= λy.λy
+
+  (λx.λy.y) ((λa.λb.a) (λv.v))
+= (λx.λy.y) (λb.λv.v)
+= λy.λy
+
+(f2 ∘ f1) x := f2 (f1 x)
+
+  ((f3 ∘ f2) ∘ f1) (x)
+= (f3 ∘ f2) (f1 (x))
+= f3 (f2 (f1 (x)))
+
+  f3 ∘ (f2 ∘ f1)
+= f3 ∘ (f2 (f1 (x)))
+= f3 (f2 (f1 (x)))
+
+Id := λx.x
+
+f ∘ Id = f
+Id ∘ f = f
+
+  (f ∘ Id) x
+= f (Id x)
+= f x
+
+  (Id ∘ f) x
+= Id (f x)
+= f x
+
+True := λt.λf.t (x)
+
+False := λt.λf.f
+
+And :=  λa.λb.a b (λt.λf.f)
+
+  And True b
+= (λa.λb.a b False) True b
+= (λb.True b False) b
+= True b False
+= b
+
+  And False b
+= (λa.λb.a b False) False b
+= (λb.False b False) b
+= False b False
+= False
+
+And := λa.λb.a b False
+Or := λa.λb.a True b
+Not := λa.a False True
+Xor := λa.λb.a (Not b) b
+
+  Or True b
+= (λa.λb.a True b) True b
+= (λb.True True b) b
+= True True b
+= True
+ 
+  Or False b
+= (λa.λb.a True b) False b
+= (λb.False True b) b
+= False True b
+= b
+ 
+  Not True
+= (λa.a False True) True
+= True False True
+= False
+ 
+  Not False
+= (λa.a False True) False
+= False False True
+= True
+ 
+  Xor True b
+= (λa.λb.a (Not b) b) True b
+= (λb.True (Not b) b) b
+= True (Not b) b
+= Not b
+ 
+  Xor False b
+= (λa.λb.a (Not b) b) True b
+= (λb.False (Not b) b) b
+= False (Not b) b
+= b
+
+If := λb.λt.λf.b t f
+
+If := λb.λt.λf.b t f Id
+
+0 := λfx.x                  = λf.λx.x
+1 := λfx.f x                = λf.λx.f x
+2 := λfx.f (f x)            = λf.λx.f (f x)
+3 := λfx.f (f (f x))        = λf.λx.f (f (f x))
+...
+N := λfx.f (f ... (f x)...) = λf.λx.f (f ... (f x)...)
+
+0 f x = x
+1 f x = f x
+2 f x = f (f x)
+3 f x = f (f (f x))
+...
+N f x = (f ... (f x)...)
+
+  f (f x) 
+= (f ∘ f) x
+
+0 := λfx.x                  = λf.λx.x                   = λf.λx.f0 x
+1 := λfx.f x                = λf.λx.f x                 = λf.λx.f1 x
+2 := λfx.f (f x)            = λf.λx.(f ∘ f) x           = λf.λx.f2 x
+3 := λfx.f (f (f x))        = λf.λx.(f ∘ f ∘ f) x       = λf.λx.f3 x
+...
+N := λfx.f (f ... (f x)...) = λf.λx.(f ∘ f ∘ ... ∘ f) x = λf.λx.fN x
+
+0 f x = f0 x
+1 f x = f0 x
+2 f x = f0 x
+3 f x = f0 x
+...
+N f x = f0 x
+
+0 := λf.λx.x
+1 := λf.λx.f (0 f x)
+2 := λf.λx.f (1 f x)
+3 := λf.λx.f (2 f x)
+...
+
+0 f x = x
+1 f x = f x
+2 f x = f (f x)
+...
+
+Increase := λn.λf.λx.f (n f x)
+Increase := λn.λf.f ∘ (n f)
+
+  Decrease 0
+= λf.λx.0 (λg.λh.h (g f)) (λu.x) (λv.v)
+= λf.λx.(λg.λh.h (g f))0 (λu.x) (λv.v)
+= λf.λx.(λu.x) (λv.v)
+= λf.λx.x
+= λf.λx.f0 x
+
+  1 (λg.λh.h (g f)) (λu.x)
+= (λg.λh.h (g f))1 (λu.x)
+= (λg.λh.h (g f)) (λu.x)
+= λh.h ((λu.x) f)
+= λh.h x
+= λh.h (f0 x) 
+
+  2 (λg.λh.h (g f)) (λu.x)
+= (λg.λh.h (g f))2 (λu.x)
+= (λg.λh.h (g f)) (λg.λh.h (g f))1 (λu.x)
+= (λg.λh.h (g f)) (λh.h (f0 x))
+= λh.h (λh.h (f0 x) f)
+= λh.h (f (f0 x))
+= λh.h (f1 x)
+
+  3 (λg.λh.h (g f)) (λu.x)
+= (λg.λh.h (g f))3 (λu.x)
+= (λg.λh.h (g f)) (λg.λh.h (g f))2 (λu.x)
+= (λg.λh.h (g f)) (λh.h (f1 x))
+= λh.h ((λh.h (f1 x)) f)
+= λh.h (f (f1 x))
+= λh.h (f2 x)
+
+...
+
+  n (λg.λh.h (g f)) (λu.x)
+= λh.h (fn - 1 x)
+
+  Decrease n
+= λf.λx.n (λg.λh.h (g f)) (λu.x) (λv.v)
+= λf.λx.(λh.h (fn - 1 x)) (λv.v)
+= λf.λx.(λv.v) (fn - 1 x)
+= λf.λx.fn - 1 x
+
+Add := λa.λb.λf.λx.a f (b f x)
+Add := λa.λb.λf.fa ∘ fb = λa.λb.λf.(a f) ∘ (b f)
+Add := λa.λb.a Increase b
+
+Add := λa.λb.a (λn.Increase n) b
+
+Decrease = λn.λf.λx.n (λg.λh.h (g f)) (λu.x) (λu.u)
+
+Subtract := λa.λb.b Decrease a
+Multiply := λa.λb.b (Add a) 0
+Power := λa.λb.b (Multiply a) 1
+
+IsZero := λn.n (λx.False) True
+
+IsEqualTo := λa.λb.And (IsLessThanOrEqualTo a b) (IsGreaterThanOrEqualTo a b)
+
+IsLessThanOrEqualTo := λa.λb.IsZero (Subtract a b)
+IsGreaterThanOrEqualTo := λa.λb.IsZero (Subtract b a)
+
+IsGreaterThan := λa.λb.Not (IsLessThanOrEqualTo a b)
+IsLessThan := λa.λb.Not (IsGreaterThanOrEqualTo a b)
+IsNotEqualTo := λa.λb.Not (IsEqualTo a b)
+
+a / b := if a >= b then 1 + (a – b) / b else 0
+DivideByResursion = λa.λb.If (IsGreaterThanOrEqualTo a b) (λx.Add One (DivideByResursion (Subtract a b) b)) (λx.Zero)
+
+IsZero := λn.n (λx.False) True
+
+CreateTuple := λx.λy.λf.f x y
+Tuple := CreateTuple x y
+       = (λx.λy.λf.f x y) x y
+       = λf.f x y
+
+λx.λy.x
+λx.λy.y
+
+  Tuple (λx.λy.x)
+= (λf.f x y) (λx.λy.x)
+= (λx.λy.x) x y
+= x
+
+  Tuple (λx.λy.y)
+= (λf.f x y) (λx.λy.y)
+= (λx.λy.y) x y
+= y
+
+Item1 := λt.t (λx.λy.x)
+Item2 := λt.t (λx.λy.y)
+
+  Item1 (CreateTuple x y)
+= (λt.t (λx.λy.x)) (CreateTuple x y)
+= (λt.t (λx.λy.x)) (λf.f x y)
+= (λf.f x y) (λx.λy.x)
+= (λx.λy.x) x y
+= x
+
+Item1 := λt.t True
+Item2 := λt.t False
+
+Swap = λt.CreateTuple (Item2 t)(Item1 t)
+
+Shift = λf.λt.CreateTuple (Item2 t) (f (Item2 t))
+
+  n Increase 0
+= n
+
+  Shift Increase (0, 0)
+= (0, Increase 0)
+= (0, 1)
+
+  Shift Increase (0, 1)
+= (1, Increase 1)
+= (1, 2)
+
+  Shift Increase (1, 2)
+= (2, Increase 2)
+= (2, 3)
+
+...
+
+  (Shift Increase) (0, 0)                                       = (Shift Increase)1 (0, 0) = 1 (Shift Increase) (0, 0) 
+= (0, 1)
+
+  (Shift Increase) (0, 1)
+= (Shift Increase) ((Shift Increase) (0, 0))
+= (Shift Increase) ∘ (Shift Increase) (0, 0)                    = (Shift Increase)2 (0, 0) = 2 (Shift Increase) (0, 0) 
+= (1, 2)
+
+  (Shift Increase) (1, 2)
+= (Shift Increase) ((Shift Increase) ∘ (Shift Increase) (0, 0))
+= (Shift Increase) ∘ (Shift Increase) ∘ (Shift Increase) (0, 0) = (Shift Increase)3 (0, 0) = 3 (Shift Increase) (0, 0) 
+= (2, 3)
+
+...
+
+  n (Shift Increase) (0, 0)
+= (n - 1, n)
+
+  Item1 (n (Shift Increase) (0, 0))
+= Item1 (n - 1, n)
+= n - 1
+
+Decrease = λn.Item1 (n (Shift Increase) (CreateTuple 0 0))
+
+Create3Tuple = λx.λy.λz.CreateTuple x (CreateTuple y z)
+
+3TupleItem1 = λt.Item1 t
+3TupleItem2 = λt.Item1 (Item2 t)
+3TupleItem3 = λt.Item2 (Item2 t)
+
+
+SignedNumeral := Tuple
+
+ 1 := (1, 0) = (2, 1) = (3, 2) = (4, 3) = ...
+ 0 := (0, 0) = (1, 1) = (2, 2) = (3, 3) = ...
+-2 := (0, 2) = (1, 3) = (2, 4) = (3, 5) = ...
+
+Sign = n => CreateTuple n 0
+
+Format = λs.If (sp >=  sn) (λx.(sp - sn, 0)) (λx.(0, sn - sp))
+
+Add = λa.λb.Format (CreateTuple (Add ap bp) (Add an bn))
+
+Subtract = λa.λb.Format (CreateTuple (Add ap bn) (Add an bp))
+
+Multiply = λa.λb.Format (CreateTuple (Add (Multiply ap bp) (Multiply an bn)) (Add (Multiply ap bn) (Multiply an bp)))
+
+DivideByIgnoreZero = λa.λb.If (IsZero b) (λx.0) (λx.DivideBy a b)
+DivideBy = λa.λb.Format (CreateTuple (Add (DivideByIgnoreZero ap bp) + (DivideByIgnoreZero an bn)) (Add (DivideByIgnoreZero ap bn) (DivideByIgnoreZero an bp))))
+
+CreateListNode := CreateTuple = λv.λn.λf.f v n
+ListNode := Tuple = λf.f v n
+
+Value := Item1 = λl.l (λv.λn.v)
+Next := Item2 = λl.l (λv.λn.n)
+
+Null := False
+IsNull := λl.l (λv.λn.λx.False) True
+
+Index = λl.λi.i Next l
+
+CreateListNode := λv.λn.λf.f v n
+ListNode := λf.f v n
+ListNodeValue := λl.l (λv.λn.v)
+ListNodeNext := λl.l (λv.λn.n)
+
+ListNodeNext := λl.l (λv.λn.n)
+
+ListNodeNext := λl.If (IsListNodeNull l) λx.l λx.(Item2 l)
+ListNodeOfIndex = λl.λi.i ListNodeNext l
+NullListNode := λf.λx.x
+IsListNodeNull := λl.l (λv.λn.λx.False) True
+
+  IsListNodeNull NullListNode
+= (λl.l (λv.λn.λx.False) True) (λf.λx.x)
+= (λf.λx.x) (λv.λn.λx.False) True
+= (λx.x) True
+= True
+
+  IsListNodeNull (CreateListNode 0 NullListNode)
+= IsListNodeNull (λf.f 0 NullListNode)
+= (λl.l (λv.λn.λx.False) True) (λf.f 0 NullListNode)
+= (λf.f 0 NullListNode) (λv.λn.λx.False) True
+= (λv.λn.λx.False) 0 NullListNode True
+= (λn.λx.False) NullListNode True
+= (λx.False) True
+= False
+
+NullListNode := False
+
+CreateListNode2 = λv.λn.CreateTuple False (CreateTuple v n)
+ListNode2Value = λl.Item1 (Item2 l)
+ListNode2Next = λl.If (IsListNode2Null l) (λx.l) (λx.(Item2 (Item2 l)))
+
+Null = λf.True
+IsListNode2Null = λl.(Item1 l)
+ListNode2OfIndex = λl.λi.i ListNode2Next l
+
+ListNode3Value = λl.λx.l (λv.λy.v) x
+ListNode3Next = λl.Item2  ((l (λv.λt.CreateTuple (CreateListNode3 v (Item1 t)) (Item1 t)) (CreateTuple NullListNode3 NullListNode3)))
+
+CreateListNode = λv.λn.λx.λf.f (n x f) v
+ListNode = λx.λf.f (n x f) v
+
+Null = λx.λf.x
+IsNull = λl.l True (λx.λv.False)
+
+  CreateListNode 0 Null
+= (λv.λn.λx.λf.f (n x f) v) 0 (λx.λf.x)
+= (λn.λx.λf.f (n x f) 0) (λx.λf.x)
+= λx.λf.f ((λx.λf.x) x f) 0
+= λx.λf.f x 0
+
+  CreateListNode 1 (CreateListNode 0 Null)
+= CreateListNode 1 (λx.λf.f x 0)
+= (λv.λn.λx.λf.f (n x f) v) 1 (λx.λf.f x 0)
+= (λn.λx.λf.f (n x f) 1) (λx.λf.f x 0)
+= λx.λf.f ((λx.λf.f x 0) x f) 1
+= λx.λf.f (f x 0) 1
+
+  CreateListNode 2 (CreateListNode 1 (CreateListNode 0 Null))
+= CreateListNode 2 (λx.λf.f (f x 0) 1)
+= (λv.λn.λx.λf.f (n x f) v) 2 (λx.λf.f (f x 0) 1)
+= (λn.λx.λf.f (n x f) 2) (λx.λf.f (f x 0) 1)
+= λx.λf.f (λx.λf.f (f x 0) 1) x f) 2
+= λx.λf.f (f (f x 0) 1) 2
+
+  IsNull Null
+= (λl.l True (λx.λv.False)) (λx.λf.x)
+= (λx.λf.x) True (λx.λv.False)
+= (λf.True) (λx.λv.False)
+= True
+
+  IsNull (CreateListNode 2 Null)
+= IsNull (λx.λf.f x 2)
+= (λl.l True (λx.λv.False)) (λx.λf.f x 2)
+= (λx.λf.f x 2) True (λx.λv.False)
+= (λf.f True 2) (λx.λv.False)
+= (λx.λv.False) True 2
+= False
+
+Value = λl.l Id (λx.λv.v)
+
+  Value (CreateListNode v n)
+= Value (λx.λf.f (n x f) v)
+= (λl.l Id (λx.λv.v)) (λx.λf.f (n x f) v)
+= (λx.λf.f (n x f) v) Id (λx.λv.v)
+= (λf.f (n Id f) v) (λx.λv.v)
+= (λx.λv.v) (n Id f) v
+= (λv.v) v
+= v
+
+Next = λl.λx.λf.l (λf.x) (λx.λv.λg.g (x f) v) (λx.λv.v)
+
+  (CreateListNode v n) (Null, Null) (λt.λv.Shift (CreateListNode v) t)
+= (λx.λf.f (n x f) v) (Null, Null) (λt.λv.Shift (CreateListNode v) t)
+= (λf.f (n (Null, Null) f) v) (λt.λv.Shift (CreateListNode v) t)
+= (λt.λv.Shift (CreateListNode v) t) (n (Null, Null) (λt.λv.Shift (CreateListNode v)) t) v
+= (λv.Shift (CreateListNode v) (n (Null, Null) (λt.λv.Shift (CreateListNode v)) t)) v
+= Shift (CreateListNode v) (n (Null, Null) (λt.λv.Shift (CreateListNode v)) t)
+
+  ListNode0 (Null, Null) (λt.λv.Shift (CreateListNode v) t)
+= (CreateListNode 0 Null) (Null, Null) (λt.λv.Shift (CreateListNode v) t)
+= Shift (CreateListNode 0) (Null (Null, Null) (λt.λv.Shift (CreateListNode v)) t)
+= Shift (CreateListNode 0) ((λx.λf.λx) (Null, Null) (λt.λv.Shift (CreateListNode v)) t)
+= Shift (CreateListNode 0) (Null, Null)
+= (Null, CreateListNode 0 Null)
+= (Null, ListNode0)
+
+  ListNode1 (Null, Null) (λt.λv.Shift (CreateListNode v) t)
+= (CreateListNode 1 (CreateListNode 0 Null)) (Null, Null) (λt.λv.Shift (CreateListNode v) t)
+= Shift (CreateListNode 1) ((CreateListNode 0 Null) (Null, Null) (λt.λv.Shift (CreateListNode v)) t)
+= Shift (CreateListNode 1) (Null, Create ListNode 0 Null)
+= (CreateListNode 0 Null, (CreateListNode 1 (CreateListNode 0 Null))
+= (ListNode0, ListNode1)
+
+  ListNode2 (Null, Null) (λt.λv.Shift (CreateListNode v) t)
+= (CreateListNode 2 (CreateListNode 1 (CreateListNode 0 Null))) (Null, Null) (λt.λv.Shift (CreateListNode v) t)
+= Shift (CreateListNode 2) ((CreateListNode 1 (CreateListNode 0 Null)) (Null, Null) (λt.λv.Shift (CreateListNode v)) t)
+= Shift (CreateListNode 2) (CreateListNode 0 Null, (CreateListNode 1 (CreateListNode 0 Null))
+= ((CreateListNode 1 (CreateListNode 0 Null), CreateListNode 2 (CreateListNode 1 (CreateListNode 0 Null)))
+= (ListNode1, ListNode2)
+
+...
+
+  ListNoden (Null, Null) (λt.λv.Shift (CreateListNode v) t)
+= (ListNoden - 1, ListNoden)
+
+  (CreateListNode v n) (Null, Null) (λt.λv.Shift (CreateListNode v) t)
+= (n, CreateListNode v n)
+
+Next = λl.Item2 (l (CreateTuple Null Null) (λt.λv.Shift (CreateListNode v) t))
+
+NodeAt = λl.λi.i Next l
+
+B := λx.λy.λz.x (y z)
+C := λx.λy.λz.x z y
+K := λx.λy.   x
+W := λx.λy.   x y y
+
+S := λx.λy.λz.x z (y z)
+K := λx.λy.   x
+I := λx.      x
+
+Ω := ω ω = (λf.f f) (λf.f f)
+
+  (λf.f f) (λf.f f)
+= (λf.f f) (λf.f f)
+= (λf.f f) (λf.f f)
+= ...
+
+  True t f
+= (λt.λf.t) t f
+= t
+
+  False t f
+= (λt.λf.f) t f
+= f
+
+  True t f
+= K t f
+= t
+
+  False t f
+= S K t f
+= K f (t f) 
+= f
+
+  Compose f1 f2 x
+= S (K S) K f1 f2 x
+= (K S) f1 (K f1) f2 x
+= S (K f1) f2 x
+= (K f1) x (f2 x)
+= f1 (f2 x)
+
+  0 f x
+= K I f x
+= I x
+= x
+
+  1 f x
+= I f x
+= f x
+
+  2 f x
+= S Compose I f x
+= Compose f (I f) x
+= Compose f f x
+= f (f x)
+
+  3 f x
+= S Compose (S Compose I) f x
+= Compose f (S Compose I f) x
+= Compose f (Compose f f) x
+= f (f (f x))
+
+...
+
+  I x
+= S K K x
+= K x (K x)
+= x
+
+  I x
+= S K S x
+= K x (S x)
+= x
+
+======
+
+I2 = S K K
+I3 = S K S
+
+(f2 ∘ f1) x := f2 (f1 x)
+
+  S (K f1) f2 x
+  (K f1) x (f2 x)
+  f1 (f2 x)
+
+  S (K S) K f1 f2 x
+= (K S) f1 (K f1) f2 x
+= S (K f1) f2 x
+= (K f1) x (f2 x)
+= f1 (f2 x)
+
+Compose := S (K S) K
+
+  K t f
+= t
+
+  S K t f
+= K f (t f) 
+= f
+
+True := K
+False := S K
+
+  S K K x
+= K x (K x)
+= x
+
+  S K S x
+= K x (S x)
+= x
+
+0 := λf.λx.x
+1 := λf.λx.f x
+2 := λf.λx.f (f x)
+3 := λf.λx.f (f (f x))
+
+  K I f x
+= I x
+= x
+
+  I f x
+= f x
+
+  S Compose I f x
+= Compose f (I f) x
+= Compose f f x
+= f (f x)
+
+  S Compose (S Compose I) f x
+= Compose f (S Compose I f) x
+= Compose f (Compose f f) x
+= f (f (f x))
+
+0 := K I                     = K I
+1 := I                       = I
+2 := S Compose I             = S (S (K S) K) I
+3 := S Compose (S Compose I) = S (S (K S) K) (S (S (K S) K) I)
+...
+
+ω := λx.x x
+Ω := ω ω
+
+  ω ω
+= (λx.x x) (λx.x x)
+= (λx.x x) (λx.x x)
+...
+
+ω := S I I
+Ω := S I I (SII)
+
+  S I I x
+= I x (I x) 
+= x x
+
+Ω := S I I (S I I)
+
+  S I I (S I I)
+= I (S I I) (I (S I I)) 
+= I (S I I) (S I I) 
+= S I I (S I I)
+...
+
+Expression<Func<T, T>> (NodeType = Lambda, Type = Func<T, T>)
+|_Parameters
+| |_ParameterExpression (NodeType = Parameter, Type = T)
+|   |_Name = "value"
+|_Body
+  |_ParameterExpression (NodeType = Parameter, Type = T)
+    |_Name = "value"
+
+ApplicationExpression (NodeType = Invoke, Type = object)
+|_Function
+| |_ApplicationExpression (NodeType = Invoke, Type = object)
+|   |_Function
+|   | |_ApplicationExpression (NodeType = Invoke, Type = object)
+|   |   |_Function
+|   |   | |_CombinatorExpression (NodeType = Constant, Type = object)
+|   |   |   |_Name = "S"
+|   |   |_Variable
+|   |     |_CombinatorExpression (NodeType = Constant, Type = object)
+|   |       |_Name = "I"
+|   |_Variable
+|     |_CombinatorExpression (NodeType = Constant, Type = object)
+|       |_Name = "I"
+|_Variable
+  |_ApplicationExpression (NodeType = Invoke, Type = object)
+    |_Function
+    | |_ApplicationExpression (NodeType = Invoke, Type = object)
+    |   |_Function
+    |   | |_CombinatorExpression (NodeType = Constant, Type = object)
+    |   |   |_Name = "S"
+    |   |_Variable
+    |     |_CombinatorExpression (NodeType = Constant, Type = object)
+    |       |_Name = "I"
+    |_Variable
+      |_CombinatorExpression (NodeType = Constant, Type = object)
+        |_Name = "I"
+
+  CreateTuple x y
+= S (S (K S) (S (K K) (S (K S) (S (K (S I)) (S (K K) I))))) (K (S (K K) I)) x y
+= S (K S) (S (K K) (S (K S) (S (K (S I)) (S (K K) I)))) x (K (S (K K) I) x) y
+= K S x (S (K K) (S (K S) (S (K (S I)) (S (K K) I))) x) (K (S (K K) I) x) y
+= S (S (K K) (S (K S) (S (K (S I)) (S (K K) I))) x) (K (S (K K) I) x) y
+= S (K K) (S (K S) (S (K (S I)) (S (K K) I))) x y (K (S (K K) I) x y)
+= K K x (S (K S) (S (K (S I)) (S (K K) I)) x) y (K (S (K K) I) x y)
+= K (S (K S) (S (K (S I)) (S (K K) I)) x) y (K (S (K K) I) x y)
+= S (K S) (S (K (S I)) (S (K K) I)) x (K (S (K K) I) x y)
+= K S x (S (K (S I)) (S (K K) I) x) (K (S (K K) I) x y)
+= S (S (K (S I)) (S (K K) I) x) (K (S (K K) I) x y)
+= S (K (S I) x (S (K K) I x)) (K (S (K K) I) x y)
+= S (S I (S (K K) I x)) (K (S (K K) I) x y)
+= S (S I ((K K) x (I x))) (K (S (K K) I) x y)
+= S (S I (K (I x))) (K (S (K K) I) x y)
+= S (S I (K x)) (K (S (K K) I) x y)
+= S (S I (K x)) (S (K K) I y)
+= S (S I (K x)) (K K y (I y))
+= S (S I (K x)) (K (I y))
+= S (S I (K x)) (K y)
+
+  Item1 (CreateTuple x y)
+= (CreateTuple x y) True
+= S (S I (K x)) (K y) True
+= S (S I (K x)) (K y) K
+= S I (K x) K (K y K)
+= I K (K x K) (K y K)
+= K (K x K) (K y K)
+= K x K
+= x
+
+  Item2 (CreateTuple x y)
+= (CreateTuple x y) False
+= S (S I (K x)) (K y) False
+= S (S I (K x)) (K y) (S K)
+= S I (K x) (S K) (K y (S K))
+= I (S K) (K x (S K)) (K y (S K))
+= S K (K x (S K)) (K y (S K))
+= K y (K x (S K) y)
+= y
+
+And := λa.λb.a b False = λa.λb.a b (λt.λf.f)
+
+  And True True
+= S (S (K S) (S (S (K S) (S (K K) I)) (K I))) (K (K (K I))) True True
+= S (S (K S) (S (S (K S) (S (K K) I)) (K I))) (K (K (K I))) K K
+= S (K S) (S (S (K S) (S (K K) I)) (K I)) K (K (K (K I)) K) K
+= K S K (S (S (K S) (S (K K) I)) (K I) K) (K (K (K I)) K) K
+= S (S (S (K S) (S (K K) I)) (K I) K) (K (K (K I)) K) K
+= S (S (K S) (S (K K) I)) (K I) K K (K (K (K I)) K K)
+= S (K S) (S (K K) I) K (K I K) K (K (K (K I)) K K)
+= K S K (S (K K) I K) (K I K) K (K (K (K I)) K K)
+= S (S (K K) I K) (K I K) K (K (K (K I)) K K)
+= S (K K) I K K (K I K K) (K (K (K I)) K K)
+= K K K (I K) K (K I K K) (K (K (K I)) K K)
+= K (I K) K (K I K K) (K (K (K I)) K K)
+= I K (K I K K) (K (K (K I)) K K)
+= K (K I K K) (K (K (K I)) K K)
+= K I K K
+= I K
+= K
+= True
+
+  And True False
+= S (S (K S) (S (S (K S) (S (K K) I)) (K I))) (K (K (K I))) True False
+= S (S (K S) (S (S (K S) (S (K K) I)) (K I))) (K (K (K I))) K (S K)
+= (S (K S)) (S (S (K S) (S (K K) I)) (K I)) K (K (K (K I)) K) (S K)
+= K S K (S (S (K S) (S (K K) I)) (K I) K) (K (K (K I)) K) (S K)
+= S (S (S (K S) (S (K K) I)) (K I) K) (K (K (K I)) K) (S K)
+= S (S (K S) (S (K K) I)) (K I) K (S K) (K (K (K I)) K (S K))
+= S (K S) (S (K K) I) K (K I K) (S K) (K (K (K I)) K (S K))
+= K S K (S (K K) I K) (K I K) (S K) (K (K (K I)) K (S K))
+= S (S (K K) I K) (K I K) (S K) (K (K (K I)) K (S K))
+= S (K K) I K (S K) (K I K (S K)) (K (K (K I)) K (S K))
+= K K K (I K) (S K) (K I K (S K)) (K (K (K I)) K (S K))
+= K (I K) (S K) (K I K (S K)) (K (K (K I)) K (S K))
+= I K (K I K (S K)) (K (K (K I)) K (S K))
+= K (K I K (S K)) (K (K (K I)) K (S K))
+= K I K (S K)
+= I (S K)
+= S K
+= False
+
+...
+
+ι := λf.f S K = λf.f (λx.λy.λz.x z (y z)) (λx.λy.x)
+
+  I x
+= ι ι x
+= (λf.f S K) (λf.f S K) x
+= (λf.f S K) S K x
+= (S S K) K x
+= S K (K K) x
+= K x ((K K) x)
+= x
+
+
+S := ι (ι (ι (ι ι)))
+K := ι (ι (ι ι))
+I := ι ι
+
+  p
+= f p
+= f (f p)
+= f (f (f p))
+= ...
+= f (f (f ... (f p) ...))
+
+  (Y f)
+= f (Y f)
+= f (f (Y f))
+= f (f (f (Y f)))
+= ...
+= f (f (f ... (f (Y f)) ...))
+
+Y := λf.(λg.f (g g)) (λx.f (g g))
+
+  Y f
+= (λf.(λg.f (g g)) (λg.f (g g))) f
+= (λg.f (g g)) (λg.f (g g))
+= f ((λg.f (g g)) (λg.f (g g)))
+= f (Y f)
+
+Y := S (K (S I I)) (S (S (K S) K) (K (S I I)))
+
+Y = S S K (S (K (S S (S (S S K)))) K
+
+Factorial := λn.If (n == 0) (λx.1) (λx.n * (Factorial (n - 1)))
+
+λn.If (n == 0) (λx.1) (λx.n * (? (n - 1)))
+
+λf.λn.If (n == 0) (λx.1) (λx.n * (f (n - 1)))
+
+FactorialHelper := λf.λn.If (n == 0) (λx.1) (λx.n * (f (n - 1)))
+Factorial := Y FactorialHelper
+
+  Factorial
+= Y FactorialHelper
+= (λf.(λg.f (g g)) (λg.f (g g))) FactorialHelper
+= (λf.(λg.f (g g)) (λg.f (g g))) (λf.λn.If (n == 0) (λx.1) (λx.n * (f (n - 1))))
+
+  Factorial 3
+= Y FactorialHelper 3
+= FactorialHelper (Y FactorialHelper) 3
+
+  FactorialHelper (Y FactorialHelper) 3
+= FactorialHelper (FactorialHelper (Y FactorialHelper)) 3
+= FactorialHelper (FactorialHelper (FactorialHelper (Y FactorialHelper))) 3
+= ...
+
+  FactorialHelper (Y FactorialHelper) 3
+= (λf.λn.If (n == 0) (λx.1) (λx.n * (f (n - 1)))) (Y FactorialHelper) 3
+= (λn.If (n == 0) (λx.1) (λx.n * (Y FactorialHelper (n - 1)))) 3
+= If (3 == 0) (λx.1) (λx.3 * (Y FactorialHelper (3 - 1)))
+= If (False) (λx.1) (λx.3 * (Y FactorialHelper (3 - 1))
+= 3 * (Y FactorialHelper (3 - 1))
+= 3 * (FactorialHelper (Y FactorialHelper) (3 - 1))
+= 3 * ((λf.λn.If (n == 0) (λx.1) (λx.n * (f (n - 1)))) (Y FactorialHelper) (3 - 1))
+= 3 * ((λn.If (n == 0) (λx.1) (λx.n * (Y FactorialHelper (n - 1)))) (3 - 1))
+= 3 * (If ((3 - 1) == 0) (λx.1) (λx.(3 - 1) * (Y FactorialHelper ((3 - 1) - 1))))
+= 3 * ((3 - 1) * (Y FactorialHelper ((3 - 1) - 1)))
+= 3 * (2 * (Y FactorialHelper ((3 - 1) - 1)))
+= 3 * (2 * (FactorialHelper (Y FactorialHelper) ((3 - 1) - 1)))
+= 3 * (2 * ((λf.λn.If (n == 0) (λx.1) (λx.n * (f (n - 1)))) (Y FactorialHelper) ((3 - 1) - 1)))
+= 3 * (2 * ((λn.If (n == 0) (λx.1) (λx.n * (Y FactorialHelper (n - 1)))) ((3 - 1) - 1)))
+= 3 * (2 * (If (((3 - 1) - 1) == 0) (λx.1) (λx.((3 - 1) - 1) * (Y FactorialHelper (((3 - 1) - 1) - 1)))))
+= 3 * (2 * (((3 - 1) - 1) * (Y FactorialHelper (((3 - 1) - 1) - 1))))
+= 3 * (2 * (1 * (Y FactorialHelper (((3 - 1) - 1) - 1))))
+= 3 * (2 * (1 * (FactorialHelper (Y FactorialHelper) (((3 - 1) - 1) - 1))))
+= 3 * (2 * (1 * ((f.λn.If (n == 0) (λx.1) (λx.n * (f (n - 1)))) (Y FactorialHelper) (((3 - 1) - 1) - 1))))
+= 3 * (2 * (1 * ((n.If (n == 0) (λx.1) (λx.n * (Y FactorialHelper (n - 1)))) (((3 - 1) - 1) - 1))))
+= 3 * (2 * (1 * (If ((((3 - 1) - 1) - 1) == 0) (λx.1) (λx.(((3 - 1) - 1) - 1) * (Y FactorialHelper ((((3 - 1) - 1) - 1) - 1))))))
+= 3 * (2 * (1 * 1))
+
+Z := λf.(λg.λx.f (g g) x) (λg.λx.f (g g) x)
+
+  Z f
+= (λf.(λg.λx.f (g g) x) (λg.λx.f (g g) x)) f
+= (λg.λx.f (g g) x) (λg.λx.f (g g) x)
+= λx.f ((λg.λx.f (g g) x) (λg.λx.f (g g) x)) x
+= λx.f (Z f) x
+
+  Factorial 3
+= Z FactorialHelper 3
+= (λx.FactorialHelper (Z FactorialHelper) x) 3
+= FactorialHelper (Z FactorialHelper) 3
+= FactorialHelper (λx.FactorialHelper (Z FactorialHelper) x) 3
+= (λf.λn.If (n == 0) (λx.1) (λx.n * (f (n - 1)))) (λx.FactorialHelper (Z FactorialHelper) x) 3
+= (λn.If (n == 0) (λx.1) (λx.n * ((λx.FactorialHelper (Z FactorialHelper) x) (n - 1)))) 3
+= If (3 == 0) (λx.1) (λx.3 * ((λx.FactorialHelper (Z FactorialHelper) x) (3 - 1)))
+= If (False) (λx.1) (λx.3 * ((λx.FactorialHelper (Z FactorialHelper) x) (3 - 1)))
+= 3 * ((λx.FactorialHelper (Z FactorialHelper) x) (3 - 1))
+= 3 * ((λx.FactorialHelper (Z FactorialHelper) x) 2)
+= 3 * (FactorialHelper (Z FactorialHelper) 2)
+= 3 * (FactorialHelper (λx.FactorialHelper (Z FactorialHelper) x) 2)
+= 3 * ((λf.λn.If (n == 0) (λx.1) (λx.n * (f (n - 1)))) (λx.FactorialHelper (Z FactorialHelper) x) 2)
+= 3 * ((λn.If (n == 0) (λx.1) (λx.n * ((λx.FactorialHelper (Z FactorialHelper) x) (n - 1)))) 2)
+= 3 * (If (2 == 0) (λx.1) (λx.2 * ((λx.FactorialHelper (Z FactorialHelper) x) (2 - 1))))
+= 3 * (If (False) (λx.1) (λx.2 * ((λx.FactorialHelper (Z FactorialHelper) x) (2 - 1))))
+= 3 * (2 * ((λx.FactorialHelper (Z FactorialHelper) x) (2 - 1)))
+= 3 * (2 * ((λx.FactorialHelper (Z FactorialHelper) x) 1))
+= 3 * (2 * (FactorialHelper (Z FactorialHelper) 1))
+= 3 * (2 * (FactorialHelper (λx.FactorialHelper (Z FactorialHelper) x) 1))
+= 3 * (2 * ((λf.λn.If (n == 0) (λx.1) (λx.n * (f (n - 1)))) (λx.FactorialHelper (Z FactorialHelper) x) 1))
+= 3 * (2 * ((λn.If (n == 0) (λx.1) (λx.n * ((λx.FactorialHelper (Z FactorialHelper) x) (n - 1)))) 1))
+= 3 * (2 * (If (1 == 0) (λx.1) (λx.1 * ((λx.FactorialHelper (Z FactorialHelper) x) (1 - 1)))))
+= 3 * (2 * (If (False) (λx.1) (λx.1 * ((λx.FactorialHelper (Z FactorialHelper) x) (1 - 1)))))
+= 3 * (2 * (1 * ((λx.FactorialHelper (Z FactorialHelper) x) (1 - 1))))
+= 3 * (2 * (1 * ((λx.FactorialHelper (Z FactorialHelper) x) 0)))
+= 3 * (2 * (1 * (FactorialHelper (Z FactorialHelper) 0)))
+= 3 * (2 * (1 * (FactorialHelper (λx.FactorialHelper (Z FactorialHelper) x) 0)))
+= 3 * (2 * (1 * ((λf.λn.If (n == 0) (λx.1) (λx.n * (f (n - 1)))) (λx.FactorialHelper (Z FactorialHelper) x) 0)))
+= 3 * (2 * (1 * ((λn.If (n == 0) (λx.1) (λx.n * ((λx.FactorialHelper (Z FactorialHelper) x) (n - 1)))) 0)))
+= 3 * (2 * (1 * (If (0 == 0) (λx.1) (λx.Multiply 0 ((λx.FactorialHelper (Z FactorialHelper) x) (n - 1))))))
+= 3 * (2 * (1 * (If (True) (λx.1) (λx.Multiply 0 ((λx.FactorialHelper (Z FactorialHelper) x) (n - 1))))))
+= 3 * (2 * (1 * 1))
+
+Fibonacci := λn.If (n > 1) (λx.(Fibonacci (n - 1)) + (Fibonacci (n - 2))) (λx.n)
+
+λn.If (n > 1) (λx.(? (n - 1)) + (? (n - 2))) (λx.n)
+
+FibonacciHelper := λf.λn.If (n > 1) (λx.(f (n - 1)) + (f (n - 2))) (λx.n)
+Fibonacci := Z FibonacciHelper
+
+  Fibonacci
+= Z FibonacciHelper
+= (λf.(λg.λx.f (g g) x) (λg.λx.f (g g) x)) FibonacciHelper
+= (λf.(λg.λx.f (g g) x) (λg.λx.f (g g) x)) (λf.λn.If (n > 1) (λx.(f (n - 1)) + (f (n - 2))) (λx.n))
+
+DivideBy := λa.λb.If (a >= b) (λx.1 + (DivideBy (a - b) b)) (λx.0)
+
+DivideByHelper := λf.λa.λb.If (a >= b) (λx.1 + (f (a - b) b)) (λx.0)
+DivideBy := Z DivideByHelper
+
+  DivideBy
+= Z DivideByHelper
+= (λf.(λg.λx.f (g g) x) (λg.λx.f (g g) x)) DivideByHelper
+= (λf.(λg.λx.f (g g) x) (λg.λx.f (g g) x)) (λf.λa.λb.If (a >= b) (λx.1 + (f (a - b) b)) (λx.0))
+
+  Y f
+= (λf.(λg.λx.f (g g) x) (λg.λx.f (g g) x)) f
+= (λg.λx.f (g g) x) (λg.λx.f (g g) x)
+= λx.f ((λg.λx.f (g g) x) (λg.λx.f (g g) x)) x
+= λx.f (Y f) x
+
+(Y Not) (Y Not)
+(λx.Not (Y Not) x) (Y Not)
+Not (Y Not) (Y Not)
+Not (λx.Not (Y Not) x) (Y Not)
+(a.a False True) (λx.Not (Y Not) x) (Y Not)
+((λx.Not (Y Not) x) False True) (Y Not)
+((Not (Y Not) False) True) (Y Not)
+
+f1 := λx.Add x 1
+f2 := λy.Add y 1
+
+Sequence := λa.λb.b
+Sequence (Add 1 2) (Add 3 4)
+
+  Sequence Ω x
+≡ Sequence (ω ω) x
+≡ Sequence ((λx.x x) (λx.x x)) x
+≡ Sequence ((λx.x x) (λx.x x)) x
+≡ ...
+
+IsHalting := λf.λx.If (...f halts on x...) (λx.True) (λx.False)
+
+IsNotHalting := λf.If (IsHalting f f) (λx.Sequence Ω False) (λx.True)
+
+  IsNotHalting f
+= If (IsHalting f f) (λx.Sequence Ω False) (λx.True))
+= If (False) (λx.Sequence Ω False) (λx.True))
+= True
+
+  IsNotHalting f
+= If (IsHalting f f) (λx.Sequence Ω False) (λx.True))
+= If (True) (λx.Sequence Ω False) (λx.True))
+= Sequence Ω False
+= Sequence (ω ω) False
+= Sequence ((λx.x x) (λx.x x)) False
+= Sequence ((λx.x x) (λx.x x)) False
+= ...
+
+Sequence := False
+
+  IsHalting IsNotHalting IsNotHalting
+= True
+
+  IsNotHalting IsNotHalting
+= If (IsHalting IsNotHalting IsNotHalting) (λx.Sequence Ω False) (λx.True)
+= If (True) (λx.Sequence Ω False) (λx.True)
+= Sequence Ω False
+= Sequence (ω ω) False
+= Sequence ((λx.x x) (λx.x x)) False
+= Sequence ((λx.x x) (λx.x x)) False
+= ...
+
+  IsHalting IsNotHalting IsNotHalting
+= False
+
+  IsNotHalting IsNotHalting
+= If (IsHalting IsNotHalting IsNotHalting) (λx.Sequence Ω False) (λx.True)
+= If (False) (λx.Sequence Ω False) (λx.True)
+= True
+
+GetTrue1 : = λf.λx.Sequence (f x) True
+GetTrue2 : = λf.λx.True
+
+  GetTrue1 f x
+= λy.Sequence (f x) True
+
+  GetTrue2 f x
+= λy.True
+
+AreEquivalent := λa.λb.If (...a and b are equivalent...) (λx.True) (λx.False)
+
+IsHalting := λf.λx.AreEquivalent (GetTrue1 f x) (GetTrue2 f x)
+           = λf.λx.AreEquivalent (λy.Sequence (f x) True) (λy.True)
+
+IsHalting := λf.λx.If (IsEquivalent (λy.Sequence (f y) True) (λy.If (IsEqual y x) (λz.True) (λz.Sequence (f y) True)) (λx.True) (λx.False)
+           = λf.λx.If (IsEquivalent (Sequence (f x) True) (True)) (λx.True) (λx.False)
+
+DivideByIgnoreZero = λa.λb.If (IsZero b) (λx.0) (λx._DivideBy a b)
+
+0 := ι = λf.f S K
+1 := S(K(S))(K = Compose
+
+S := ι (ι (ι (ι ι)))
+K := ι (ι (ι ι))
+ι := ι ι
+
+  ι ι x
+= (λf.f S K) (λf.f S K) x
+= (λf.f S K) S K x
+= (S S K) K x
+= S K (K K) x
+= K x ((K K) x)
+= x
+= ι x

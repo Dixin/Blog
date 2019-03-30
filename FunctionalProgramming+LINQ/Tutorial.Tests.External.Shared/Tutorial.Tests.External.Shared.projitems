@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>ddb90975-45f0-4214-8e73-66b854b8781f</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Tutorial.Tests.External.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ActiveIssueAttribute.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\AggregateTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\AllTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\AnyTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\AppendPrependTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\AsEnumerableTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\AverageTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\CastTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\ConcatTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\ConsistencyTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\ContainsTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\CountTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\DefaultIfEmptyTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\DistinctTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\ElementAtOrDefaultTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\ElementAtTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\EmptyEnumerable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\EmptyPartitionTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\EnumerableDebugViewTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\EnumerableTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\ExceptTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\FirstOrDefaultTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\FirstTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\GroupByTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\GroupJoinTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\IntersectTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\JoinTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\LastOrDefaultTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\LastTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\LongCountTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\MaxTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\MinTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\OfTypeTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\OrderByDescendingTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\OrderByTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\OrderedSubsetting.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\RangeTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\RepeatTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\ReverseTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\SelectManyTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\SelectTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\SequenceEqualTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\ShortCircuitingTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\Shuffler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\SingleOrDefaultTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\SingleTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\SkipTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\SkipWhileTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\SumTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\TakeTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\TakeWhileTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\ThenByDescendingTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\ThenByTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\ToArrayTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\ToDictionaryTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\ToListTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\ToLookupTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\UnionTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\WhereTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LinqToObjects\ZipTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestPlatforms.cs" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,63 @@
+version: 1.0.0.{build}
+image: Visual Studio 2017
+configuration:
+- Debug
+- Release
+platform: Any CPU
+assembly_info:
+  patch: true
+  file: '**\AssemblyInfo.*'
+  assembly_version: '{version}'
+  assembly_file_version: '{version}'
+  assembly_informational_version: '{version}'
+environment:
+  EnableNuGetPackageRestore: true
+services: mssql2017
+before_build:
+- cmd: nuget restore ./Blog/CodeSnippets.sln -verbosity detailed
+build:
+  project: ./Blog/CodeSnippets.sln
+  parallel: true
+  verbosity: detailed
+before_test:
+- ps: >-
+    $server = "(local)\SQL2017"
+
+    $database = "AdventureWorks"
+
+
+    # Replace the db connection with the local instance.
+
+    $configPath = "$($env:appveyor_build_folder)\Blog\Dixin.Tests\bin\$($env:CONFIGURATION)\Dixin.Tests.dll.config"
+
+    $config = (gc $configPath) -as [xml]
+
+    $config.SelectSingleNode('//connectionStrings/add[@name="AdventureWorks"]').connectionString = "Server=$server; Database=$database; Trusted_connection=true"
+
+    $config.Save($configPath)
+
+
+    # Attach mdf to local instance.
+
+    $databaseDirectory = "$($env:appveyor_build_folder)\Blog\Data"
+
+    $mdfPath = join-path $databaseDirectory "AdventureWorks_Data.mdf"
+
+    $ldfPath = join-path $databaseDirectory "AdventureWorks_Log.ldf"
+
+    sqlcmd -S "$server" -Q "Use [master]; CREATE DATABASE [$database] ON (FILENAME = '$mdfPath'),(FILENAME = '$ldfPath') FOR ATTACH"
+
+    sqlcmd -S "$server" -Q "Use [$database]; EXEC sys.sp_configure @configname = N'clr enabled', @configvalue = 1;"
+
+    sqlcmd -S "$server" -Q "Use [$database]; RECONFIGURE;"
+
+
+    Start-Service MSDTC
+notifications:
+- provider: Email
+  to:
+  - dixinyan@live.com
+  subject: AppVeyar CodeSnippets
+  on_build_success: true
+  on_build_failure: true
+  on_build_status_changed: true

@@ -1,0 +1,57 @@
+﻿<#@ template language="C#" debug="true" visibility="internal" linePragmas="false" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="CsQuery" #>
+<html>
+    <head>
+        <title><#= this.Title #></title>
+        <style type="text/css">
+            table {
+                border-collapse: collapse;
+            }
+
+            table, th, td {
+                border: 1px solid black;
+            }
+
+            pre.code {
+                background: #f5f5f5;
+				padding: 3px;
+            }
+
+            blockquote {
+                border: 1px solid #AAAAAA;
+				margin: 0px;
+                background: none;
+                padding-top: 5px;
+                padding-bottom: 5px;
+            }
+			
+			blockquote p, blockquote ul, blockquote ol {
+				margin-left: 3px;
+				margin-righ: 3px;
+			}
+			
+			blockquote ul, blockquote ol {
+				padding-left: 40px;
+			}
+        </style>
+    </head>
+    <body>
+<# 
+foreach ((string Title, List<(string Title, CQ Content)> Sections) chapter in this.Chapters)
+{
+#>
+        <h1><#= chapter.Title #></h1>
+<#
+    foreach ((string Title, CQ Content) section in chapter.Sections)
+    {
+#>
+        <h2><#= section.Title #></h2>
+        <#= section.Content.Html() #>
+<#
+    }
+}
+#>
+    </body>
+</html>
