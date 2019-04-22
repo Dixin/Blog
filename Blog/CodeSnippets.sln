@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2026
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28729.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dixin", "Dixin\Dixin.csproj", "{348FDE06-D850-4118-8796-E2AEE8DF6376}"
 EndProject
@@ -41,6 +41,8 @@ EndProject
 Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Dixin.Nodejs", "Dixin.Nodejs\Dixin.Nodejs.njsproj", "{B89B3A79-1A9D-4F59-B313-F9F5A7156405}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dixin.Sql", "Dixin.Sql\Dixin.Sql.csproj", "{3B8554BA-8A06-460B-9FE6-CF8303476027}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dixin.Text.Encode", "Dixin.Text.Encoding\Dixin.Text.Encode.csproj", "{AF3B4A3E-6FA9-4E84-88F7-C28C2C1A6682}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -136,12 +138,24 @@ Global
 		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Release|x64.Build.0 = Release|Any CPU
 		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Release|x86.ActiveCfg = Release|Any CPU
 		{3B8554BA-8A06-460B-9FE6-CF8303476027}.Release|x86.Build.0 = Release|Any CPU
+		{AF3B4A3E-6FA9-4E84-88F7-C28C2C1A6682}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF3B4A3E-6FA9-4E84-88F7-C28C2C1A6682}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF3B4A3E-6FA9-4E84-88F7-C28C2C1A6682}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AF3B4A3E-6FA9-4E84-88F7-C28C2C1A6682}.Debug|x64.Build.0 = Debug|Any CPU
+		{AF3B4A3E-6FA9-4E84-88F7-C28C2C1A6682}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AF3B4A3E-6FA9-4E84-88F7-C28C2C1A6682}.Debug|x86.Build.0 = Debug|Any CPU
+		{AF3B4A3E-6FA9-4E84-88F7-C28C2C1A6682}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF3B4A3E-6FA9-4E84-88F7-C28C2C1A6682}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF3B4A3E-6FA9-4E84-88F7-C28C2C1A6682}.Release|x64.ActiveCfg = Release|Any CPU
+		{AF3B4A3E-6FA9-4E84-88F7-C28C2C1A6682}.Release|x64.Build.0 = Release|Any CPU
+		{AF3B4A3E-6FA9-4E84-88F7-C28C2C1A6682}.Release|x86.ActiveCfg = Release|Any CPU
+		{AF3B4A3E-6FA9-4E84-88F7-C28C2C1A6682}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;iseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8
 		SolutionGuid = {3970DD61-4F33-45E3-8BBD-B43AAF9C07F9}
+		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;iseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8
 	EndGlobalSection
 EndGlobal
