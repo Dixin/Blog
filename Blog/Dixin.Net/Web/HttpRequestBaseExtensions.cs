@@ -9,10 +9,9 @@
 
 namespace Dixin.Web
 {
+    using System;
     using System.Text.RegularExpressions;
     using System.Web;
-
-    using Dixin.Common;
 
     public static class HttpRequestBaseExtensions
     {
@@ -20,7 +19,7 @@ namespace Dixin.Web
 
         // http://detectmobilebrowsers.com/
         private static readonly Regex Browser = new Regex(
-                @"(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(Browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino", 
+                @"(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(Browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino",
                 RegexOptions.IgnoreCase | RegexOptions.Multiline);
 
         private static readonly Regex Version = new Regex(
@@ -33,10 +32,13 @@ namespace Dixin.Web
 
         public static bool IsMobile(this HttpRequestBase request)
         {
-            request.NotNull(nameof(request));
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
 
             string userAgent = request.ServerVariables["HTTP_USER_AGENT"];
-            return Browser.IsMatch(userAgent) || Version.IsMatch(userAgent.Left(4));
+            return Browser.IsMatch(userAgent) || Version.IsMatch(userAgent.Substring(0, Math.Min(4, userAgent.Length)));
         }
 
         #endregion

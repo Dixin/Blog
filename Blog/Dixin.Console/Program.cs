@@ -1,14 +1,13 @@
-﻿namespace Dixin.Console
+﻿namespace Dixin
 {
     using System;
     using System.Diagnostics;
     using System.IO;
-
     using Dixin.Common;
 
     internal static class Program
     {
-        private static void Main()
+        private static void Main(string[] args)
         {
             AppDomainData.DataDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\Data");
             using (TextWriterTraceListener traceListener = new TextWriterTraceListener(Path.Combine(Path.GetTempPath(), "Trace.txt")))

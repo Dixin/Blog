@@ -8,13 +8,10 @@
     {
         private AppDomain appDomain;
 
-        internal AppDomain(AppDomainSetup setup = null, params object[] args)
+        internal AppDomain(params object[] args)
         {
             Type type = typeof(TMarshalByRefObject);
-            this.appDomain = AppDomain.CreateDomain(
-                $"{nameof(AppDomain<TMarshalByRefObject>)} {Guid.NewGuid()}",
-                null,
-                setup ?? AppDomain.CurrentDomain.SetupInformation);
+            this.appDomain = AppDomain.CreateDomain($"{nameof(AppDomain<TMarshalByRefObject>)} {Guid.NewGuid()}");
             this.MarshalByRefObject = (TMarshalByRefObject)this.appDomain.CreateInstanceAndUnwrap(
                 type.Assembly.FullName, type.FullName, false, default(BindingFlags), null, args, null, null);
         }
@@ -23,8 +20,7 @@
 
         public void Dispose()
         {
-            IDisposable disposable = this.MarshalByRefObject as IDisposable;
-            if (disposable != null)
+            if (this.MarshalByRefObject is IDisposable disposable)
             {
                 disposable.Dispose();
                 this.MarshalByRefObject = null;

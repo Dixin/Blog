@@ -4,9 +4,6 @@
     using System.Diagnostics;
     using System.Management;
 
-    using Dixin.Common;
-    using Tutorial;
-
     // https://msdn.microsoft.com/en-us/library/windows/desktop/aa394372.aspx
     public partial class Win32Process
     {
@@ -111,13 +108,16 @@
     {
         public Win32Process(ManagementObject process)
         {
-            process.NotNull(nameof(process));
+            if (process == null)
+            {
+                throw new ArgumentNullException(nameof(process));
+            }
 
             this.Caption = process[nameof(this.Caption)] as string;
             this.CommandLine = process[nameof(this.CommandLine)] as string;
             this.CreationClassName = process[nameof(this.CreationClassName)] as string;
-            this.CreationDate =
-                (process[nameof(this.CreationDate)] as string)?.Forward(ManagementDateTimeConverter.ToDateTime);
+            this.CreationDate = process[nameof(this.CreationDate)] is string creationDate && !string.IsNullOrWhiteSpace(creationDate)
+                ? ManagementDateTimeConverter.ToDateTime(creationDate) : default;
             this.CSCreationClassName = process[nameof(this.CSCreationClassName)] as string;
             this.CSName = process[nameof(this.CSName)] as string;
             this.Description = process[nameof(this.Description)] as string;
@@ -125,8 +125,8 @@
             this.ExecutionState = (ushort?)process[nameof(this.ExecutionState)];
             this.Handle = process[nameof(this.Handle)] as string;
             this.HandleCount = (uint?)process[nameof(this.HandleCount)];
-            this.InstallDate =
-                (process[nameof(this.InstallDate)] as string)?.Forward(ManagementDateTimeConverter.ToDateTime);
+            this.InstallDate = process[nameof(this.InstallDate)] is string initialDate && !string.IsNullOrWhiteSpace(initialDate)
+                ? ManagementDateTimeConverter.ToDateTime(initialDate) : default;
             this.KernelModeTime = (ulong?)process[nameof(this.KernelModeTime)];
             this.MaximumWorkingSetSize = (uint?)process[nameof(this.MaximumWorkingSetSize)];
             this.MinimumWorkingSetSize = (uint?)process[nameof(this.MinimumWorkingSetSize)];
@@ -152,8 +152,8 @@
             this.ReadTransferCount = (ulong?)process[nameof(this.ReadTransferCount)];
             this.SessionId = (uint?)process[nameof(this.SessionId)];
             this.Status = process[nameof(this.Status)] as string;
-            this.TerminationDate =
-                (process[nameof(this.TerminationDate)] as string)?.Forward(ManagementDateTimeConverter.ToDateTime);
+            this.TerminationDate = process[nameof(this.TerminationDate)] is string terminationDate && !string.IsNullOrWhiteSpace(terminationDate)
+                ? ManagementDateTimeConverter.ToDateTime(terminationDate) : default;
             this.ThreadCount = (uint?)process[nameof(this.ThreadCount)];
             this.UserModeTime = (ulong?)process[nameof(this.UserModeTime)];
             this.VirtualSize = (ulong?)process[nameof(this.VirtualSize)];

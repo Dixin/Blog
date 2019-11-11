@@ -2,7 +2,7 @@
 {
     using System;
     using System.Diagnostics;
-    using System.Runtime.Serialization.Formatters.Soap;
+    using System.Runtime.Serialization.Formatters.Binary;
 
     using Dixin.Runtime.Serialization;
 
@@ -25,7 +25,7 @@
                 exceptionToSerialize = exception;
             }
 
-            Serializer serializer = new Serializer(new SoapFormatter());
+            Serializer serializer = new Serializer(new BinaryFormatter());
             string base64 = serializer.Serialize(exceptionToSerialize);
             Trace.WriteLine(base64);
             Assert.IsFalse(string.IsNullOrWhiteSpace(base64));

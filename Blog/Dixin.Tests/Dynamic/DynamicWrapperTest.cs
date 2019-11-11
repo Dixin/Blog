@@ -9,21 +9,16 @@
 
 namespace Dixin.Tests.Dynamic
 {
-    using System.Collections.Generic;
-    using System.Linq;
-
     using Dixin.Dynamic;
 
     using Microsoft.CSharp.RuntimeBinder;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-    using Tutorial.LinqToSql;
-
     [TestClass]
     public class DynamicWrapperTest
     {
         [TestMethod]
-        public void StaticMemebrTest()
+        public void StaticMemberTest()
         {
             Assert.AreEqual(0, StaticTest.Value);
             dynamic wrapper = new DynamicWrapper<StaticTest>();
@@ -51,19 +46,6 @@ namespace Dixin.Tests.Dynamic
         {
             Assert.AreEqual(0, new DerivedTest().ToDynamic().array[6, 6]);
             Assert.AreEqual(0, new DerivedTest().ToDynamic().array.ToStatic()[6, 6]);
-        }
-
-        [TestMethod]
-        public void GetInvokeMemberConvertFromTypeTest()
-        {
-            using (AdventureWorks adventureWorks = new AdventureWorks())
-            {
-                IQueryable<Product> query =
-                    adventureWorks.Products.Where(product => product.ProductID > 0).OrderBy(p => p.Name).Take(2);
-                IEnumerable<Product> results =
-                    adventureWorks.ToDynamic().Provider.Execute(query.Expression).ReturnValue;
-                Assert.IsTrue(results.Any());
-            }
         }
 
         [TestMethod]
