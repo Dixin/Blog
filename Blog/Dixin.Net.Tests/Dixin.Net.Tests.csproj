@@ -72,6 +72,7 @@
     </Compile>
     <Compile Include="Dynamic\DynamicWrapperTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TestAssembly.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Dixin.Net\Dixin.Net.csproj">
