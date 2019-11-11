@@ -12,7 +12,7 @@
             string path = args.First();
             if (Directory.Exists(path))
             {
-                Directory.EnumerateFiles(path, args.Length >= 2 ? args[1] : "*.txt")
+                Directory.EnumerateFiles(path, args.Length >= 2 ? args[1] : "*.txt", SearchOption.AllDirectories)
                     .ToList()
                     .ForEach(file => Convert(Encoding.GetEncoding("gb2312"), Encoding.UTF8, file));
             }

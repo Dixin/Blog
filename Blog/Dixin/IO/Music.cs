@@ -14,6 +14,90 @@
     {
         private const string Separator = ".";
 
+        // const string text = @"
+        // The Dark Knight @1:03
+        // Mission Impossible 2 (With Lisa Gerrard) @9:30
+        // Rush (With Marie Spaemann) @19:38
+        // Kung Fu Panda (With Pedro Eustache) @26:13
+        // The Da Vinci Code (With Valentina Naforniță/Rusanda Panfili) @29:26
+        // Sherlock Holmes (With Aleksey Igudesman) @49:55
+        // The Holiday @59:34
+        // Hannibal (With Marie Spaemann) @1:07:12
+        // The Lion King @1:14:23
+        // Gladiator (With Lisa Gerrard) @1:23:31
+        // Hans Zimmer Receives Max Steiner Award from Sandra Tomek & Peter Hanke @1:28:10
+        // Inception @1:32:58
+        // Hans Plays Guitar Inception @1:35:01
+        // Pirates of the Caribbean @1:39:24";
+        internal static void Segment(string video, string text)
+        {
+            (string start, string name)[] tracks = text
+                .Split(Environment.NewLine.ToCharArray(), StringSplitOptions.RemoveEmptyEntries)
+                .Select(line => (start: line.Split("@".ToCharArray()).Last().Trim(), name: line.Split("@".ToCharArray()).First().Trim()))
+                .ToArray();
+            IEnumerable<string> arguments = tracks
+                .Select((track, index) => 
+                    $@" -i ""{video}"" -c:a libmp3lame -ar 48000 -b:a 320k -ss {track.start} {(index == tracks.Length - 1 ? string.Empty : $"-to {tracks[index + 1].start}")} ""{Path.GetDirectoryName(video)}\{index + 1}. {track.name}.mp3""");
+            arguments.ForEach(argument =>
+            {
+                using (Process ffmpeg = new Process())
+                {
+                    // Redirect the output stream of the child process.
+                    ffmpeg.StartInfo.UseShellExecute = false;
+                    ffmpeg.StartInfo.RedirectStandardOutput = true;
+                    ffmpeg.StartInfo.FileName = "ffmpeg";
+                    ffmpeg.StartInfo.Arguments = argument;
+                    ffmpeg.StartInfo.RedirectStandardError = true;
+                    ffmpeg.OutputDataReceived += (sender, e) => Console.WriteLine(e.Data);
+                    ffmpeg.ErrorDataReceived += (sender, e) => Console.WriteLine(e.Data);
+                    ffmpeg.Start();
+                    ffmpeg.BeginErrorReadLine();
+                    ffmpeg.BeginOutputReadLine();
+                    ffmpeg.WaitForExit();
+                }
+            });
+        }
+
+        internal static void RenameAlbum(string directory)
+        {
+            Directory
+                .EnumerateDirectories(directory, "*", SearchOption.TopDirectoryOnly)
+                .ForEach(album =>
+                {
+                    string song = Directory.EnumerateFiles(album, "*.mp3").First();
+                    string[] info = Path.GetFileNameWithoutExtension(song).Split(Separator.ToCharArray());
+                    string genre = info[0];
+                    string year = info[1];
+                    string albumName = info[2];
+                    string artist = info[4];
+                    try
+                    {
+                        Directory.Move(album, Path.Combine(Path.GetDirectoryName(album), $"{genre}.{artist}.{year}.{albumName}"));
+                    }
+                    catch (Exception exception)
+                    {
+                        Console.WriteLine(album + " " + exception);
+                    }
+                });
+        }
+
+        internal static void RemoveInfix(string directory)
+        {
+            Directory
+                .EnumerateFiles(directory, "*", SearchOption.AllDirectories)
+                .ForEach(file =>
+                {
+                    try
+                    {
+                        File.Move(file, file.Replace(".m4v.mp4", ".mp4").Replace(".m4a.mp3", $".mp3"));
+                    }
+                    catch (Exception exception)
+                    {
+                        Console.WriteLine(file + " " + exception);
+                    }
+                });
+        }
+
         private static readonly Dictionary<string, string> Translation = new Dictionary<string, string>()
         {
             ["Alternative-Rock"] = "另类摇滚",
@@ -52,7 +136,7 @@
             ["Moby"] = "魔比",
             ["Linkin Park"] = "林肯公园",
             ["Bon Jovi"] = "邦乔维",
-            ["Vangelis"] ="范吉利斯",
+            ["Vangelis"] = "范吉利斯",
             ["Hans Zimmer"] = "汉斯季默",
             ["Chin Tsai"] = "蔡琴",
             ["Kwongwing Chan"] = "陈光荣",

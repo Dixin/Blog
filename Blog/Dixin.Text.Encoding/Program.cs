@@ -9,7 +9,7 @@
     {
         private static async Task Main(string[] args)
         {
-            if (args.Length != 4)
+            if (args.Length != 5)
             {
                 throw new ArgumentException(nameof(args));
             }
@@ -23,7 +23,7 @@
 
             if (Directory.Exists(path))
             {
-                foreach (string file in Directory.EnumerateFiles(path, searchPattern))
+                foreach (string file in Directory.EnumerateFiles(path, searchPattern, "all".Equals(args[4], StringComparison.OrdinalIgnoreCase) ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly))
                 {
                     await CopyAsync(file, file + ".bak");
                     await ConvertAsync(fromEncoding, toEncoding, file);
