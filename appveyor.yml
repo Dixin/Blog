@@ -13,8 +13,6 @@ assembly_info:
 environment:
   EnableNuGetPackageRestore: true
 services: mssql2017
-before_build:
-- cmd: nuget restore ./Source/Blog/Blog.sln -verbosity detailed
 build:
   project: ./Source/Blog/Blog.sln
   parallel: true
