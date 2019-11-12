@@ -1,6 +1,7 @@
 ﻿namespace Dixin.Tests.Dynamic
 {
     using System.Collections.Generic;
+    using System.Configuration;
     using System.Data.Linq;
     using System.Data.Linq.Mapping;
     using System.Linq;
@@ -29,7 +30,7 @@
     public class AdventureWorks : DataContext
     {
         public AdventureWorks()
-            : base(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\AdventureWorks_Data.mdf;Integrated Security=True;Connect Timeout=30") { }
+            : base(ConfigurationManager.ConnectionStrings[nameof(AdventureWorks)].ConnectionString) { }
 
         public Table<Product> Products => this.GetTable<Product>();
     }
