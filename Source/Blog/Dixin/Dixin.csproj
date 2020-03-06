@@ -6,10 +6,12 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="EnterpriseLibrary.TransientFaultHandling.Core" Version="2.0.0" />
         <PackageReference Include="FSharp.Core" Version="4.7.0" />
-        <PackageReference Include="System.Data.SqlClient" Version="4.7.0" />
+        <PackageReference Include="System.Data.SqlClient" Version="4.8.1" />
         <PackageReference Include="System.Interactive" Version="4.0.0" />
-        <PackageReference Include="Xabe.FFmpeg" Version="3.5.0" />
+        <PackageReference Include="Ude.NetStandard" Version="1.2.0" />
+        <PackageReference Include="Xabe.FFmpeg" Version="3.5.2" />
     </ItemGroup>
 
 </Project>
