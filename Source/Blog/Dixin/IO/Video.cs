@@ -9,6 +9,7 @@
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using System.Xml.Linq;
+
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
     using Newtonsoft.Json;
     using Xabe.FFmpeg;
@@ -24,6 +25,8 @@
         private static readonly string[] AllVideoSearchPattern = UncommonVideoSearchPatterns.Union(CommonVideoSearchPatterns).ToArray();
 
         private static readonly string[] TextSearchPatterns = { "*.srt", "*.ass", "*.ssa", "*.txt" };
+
+        private static readonly string[] TextSubtitleSearchPatterns = { "*.srt", "*.ass", "*.ssa", "*.txt" };
 
         private static readonly string[] SubtitleExtensions = { ".srt", ".ass", ".ssa", ".idx", ".sub", ".sup" };
 
@@ -70,27 +73,6 @@
                 });
         }
 
-        private static IList<(string Charset, float? Confidence, string File)> GetEncodings(string directory, Action<string> log = null)
-        {
-            log ??= TraceLog;
-            return TextSearchPatterns
-                .SelectMany(searchPattern => Directory.EnumerateFiles(directory, searchPattern, SearchOption.AllDirectories))
-                .Select(file =>
-                    {
-                        using FileStream fileStream = File.OpenRead(file);
-                        Ude.CharsetDetector detector = new Ude.CharsetDetector();
-                        detector.Feed(fileStream);
-                        detector.DataEnd();
-                        return detector.Charset != null ? (detector.Charset, (float?)detector.Confidence, file) : ((string)null, (float?)null, file);
-                    })
-                .OrderBy(result => result.Item1)
-                .ThenByDescending(result => result.Item2)
-                .Do(result => log(result.Item1 == null
-                    ? $"Detection failed, file: {result.Item3}"
-                    : $"Charset: {result.Item1}, confidence: {result.Item2}, file {result.Item3}"))
-                .ToList();
-        }
-
         private static void Convert(Encoding from, Encoding to, string fromPath, string toPath = null, byte[] bom = null)
         {
             byte[] fromBytes = File.ReadAllBytes(fromPath);
@@ -102,11 +84,43 @@
             File.WriteAllBytes(toPath ?? fromPath, toBytes);
         }
 
+        internal static (string Charset, float? Confidence, string File)[] GetSubtitles(string directory)
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            return TextSearchPatterns
+                .SelectMany(searchPattern => Directory.EnumerateFiles(directory, searchPattern, SearchOption.AllDirectories))
+                .Select(file =>
+                {
+                    using FileStream fileStream = File.OpenRead(file);
+                    Ude.CharsetDetector detector = new Ude.CharsetDetector();
+                    detector.Feed(fileStream);
+                    detector.DataEnd();
+                    return detector.Charset != null ? (detector.Charset, Confidence: (float?)detector.Confidence, File: file) : (Charset: (string)null, Confidence: (float?)null, File: file);
+                })
+                .OrderBy(result => result.Charset)
+                .ThenByDescending(result => result.Confidence)
+                .ToArray();
+        }
+
+        internal static void DeleteSubtitle(string directory, bool isDryRun = false, Action<string> log = null, params string[] encodings)
+        {
+            log ??= TraceLog;
+            GetSubtitles(directory)
+                .Where(result => encodings.Any(encoding => string.Equals(encoding, result.Charset, StringComparison.OrdinalIgnoreCase)))
+                .ForEach(result =>
+                {
+                    if (!isDryRun)
+                    {
+                        File.Delete(result.File);
+                    }
+                    log($"Charset: {result.Charset}, confidence: {result.Confidence}, file {result.File}");
+                });
+        }
+
         internal static void ConvertToUtf8(string directory, bool backup = false, Action<string> log = null)
         {
             log ??= TraceLog;
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            GetEncodings(directory)
+            GetSubtitles(directory)
                 .Where(result =>
                 {
                     if (result.Charset?.ToUpperInvariant() != "UTF-8")
@@ -118,7 +132,6 @@
                     int read = stream.Read(head, 0, head.Length);
                     return !(read == Bom.Length && Bom.SequenceEqual(head));
                 })
-                .Do(result => log($"{result.Confidence} {result.Charset} {result.File}"))
                 .ForEach(result =>
                 {
                     try
@@ -131,6 +144,9 @@
                                 break;
                             case "GB18030":
                                 encoding = Encoding.GetEncoding("gb18030");
+                                break;
+                            case "WINDOWS-1251":
+                                encoding = Encoding.GetEncoding(1251);
                                 break;
                             case "WINDOWS-1252":
                                 encoding = Encoding.GetEncoding(1252);
@@ -158,7 +174,8 @@
                         {
                             BackupFile(result.Item3);
                         }
-                        Convert(encoding, Utf8Encoding, result.Item3, null, Bom);
+                        Convert(encoding, Utf8Encoding, result.File, null, Bom);
+                        log($"Charset: {result.Charset}, confidence: {result.Confidence}, file {result.File}");
                     }
                     catch (Exception exception)
                     {
@@ -311,7 +328,7 @@
             return null;
         }
 
-        internal static void PrintVideosWithError(string directory, bool isNoAudioAllowed = false, string searchPattern = null, SearchOption searchOption = SearchOption.TopDirectoryOnly, Action<string> log = null)
+        internal static void PrintVideoError(string directory, bool isNoAudioAllowed = false, string searchPattern = null, SearchOption searchOption = SearchOption.TopDirectoryOnly, Action<string> log = null)
         {
             PrintVideosWithError(string.IsNullOrWhiteSpace(searchPattern) ? GetVideos(directory) : Directory.EnumerateFiles(directory, searchPattern, searchOption), isNoAudioAllowed, log);
         }
@@ -348,11 +365,13 @@
                 });
         }
 
+        private static readonly string MovieDirectory = @"^[^\.]+\.([0-9]{4})\..+\[([0-9]\.[0-9]|\-)\](\[[0-9]{3,4}p\](\[3D\])?)?$";
+
         internal static void PrintDirectoryError(string directory, int level = 2, Action<string> log = null)
         {
             log ??= TraceLog;
             GetDirectories(directory, level)
-                .Where(d => !Regex.IsMatch(Path.GetFileName(d), @"^[^\.]+\.[0-9]{4}\..+\[([0-9]\.[0-9]|\-)\](\[[0-9]{3,4}p\](\[3D\])?)?$"))
+                .Where(d => !Regex.IsMatch(Path.GetFileName(d), MovieDirectory))
                 .ForEach(d => log(d));
         }
 
@@ -475,13 +494,13 @@
                         .EnumerateFiles(mediaDirectory, $"*{match}*", SearchOption.AllDirectories)
                         .ForEach(file =>
                         {
-                            Trace.WriteLine(file);
+                            log(file);
                             string newFile = rename(file, title).Trim();
                             if (!isDryRun)
                             {
                                 File.Move(file, newFile);
                             }
-                            Trace.WriteLine(newFile);
+                            log(newFile);
                         });
                 });
         }
@@ -517,7 +536,7 @@
                 {
                     List<string> files = Directory
                         .GetFiles(movie)
-                        .Where(file => file.EndsWith(".mkv", StringComparison.OrdinalIgnoreCase) || file.EndsWith(".iso", StringComparison.OrdinalIgnoreCase) || file.EndsWith(".mp4", StringComparison.OrdinalIgnoreCase) || file.EndsWith(".avi", StringComparison.OrdinalIgnoreCase))
+                        .Where(file => CommonVideoExtensions.Any(extension => file.EndsWith(extension, StringComparison.OrdinalIgnoreCase)))
                         .ToList();
                     if (files.All(file => !file.Contains("1080p")))
                     {
@@ -531,21 +550,18 @@
             GetDirectories(directory, level)
                 .ForEach(movie =>
                 {
-                    if (Directory.GetFiles(movie).Count(file => ".mp4".Equals(Path.GetExtension(file), StringComparison.OrdinalIgnoreCase)
-                        || ".avi".Equals(Path.GetExtension(file), StringComparison.OrdinalIgnoreCase)
-                        || ".mkv".Equals(Path.GetExtension(file), StringComparison.OrdinalIgnoreCase)
-                        || ".iso".Equals(Path.GetExtension(file), StringComparison.OrdinalIgnoreCase)) > 1)
+                    if (Directory.GetFiles(movie).Count(file => CommonVideoExtensions.Any(extension => file.EndsWith(extension, StringComparison.OrdinalIgnoreCase))) > 1)
                     {
-                        Trace.WriteLine(movie);
+                        log(movie);
                     }
                 });
         }
 
-        internal static void PrintDirectoriesWithMissingVideo(string directory, int level = 2)
+        internal static void PrintDirectoriesWithMissingVideo(string directory, int level = 2, Action<string> log = null)
         {
             GetDirectories(directory, level)
             .Where(m => !Directory.EnumerateFiles(m, "*.mp4", SearchOption.TopDirectoryOnly).Any() && !Directory.EnumerateFiles(m, "*.avi", SearchOption.TopDirectoryOnly).Any())
-            .ForEach(m => Trace.WriteLine(m));
+            .ForEach(log);
         }
 
         internal static void RenameVideosWithDefinition(string[] files, bool isDryRun = false, Action<string> log = null)
@@ -588,7 +604,7 @@
                 });
         }
 
-        internal static void MoveSubtitleToParentDirectory(string directory, bool isDryRun = false)
+        internal static void MoveSubtitleToParentDirectory(string directory, bool isDryRun = false, Action<string> log = null)
         {
             Directory.GetFiles(directory, "*.srt", SearchOption.AllDirectories)
                 .ForEach(subtitle =>
@@ -608,43 +624,43 @@
                             _ => "." + language
                         };
                         string newSubtitle = Path.Combine(parent, Path.GetFileNameWithoutExtension(mainVideo) + suffix + ".srt");
-                        Trace.WriteLine(subtitle);
+                        log(subtitle);
                         if (!isDryRun)
                         {
                             File.Move(subtitle, newSubtitle);
                         }
-                        Trace.WriteLine(newSubtitle);
+                        log(newSubtitle);
                     }
                 });
         }
 
         private static readonly Regex[] PreferredVersions = new string[] { @"[\. ]YIFY(\+HI)?$", @"[\. ]YIFY[\. ]", @"\[YTS\.", @"\-RARBG(\.[1-9]Audio)?$", @"\-VXT(\.[1-9]Audio)?$", @"\.GAZ$" }.Select(version => new Regex(version)).ToArray();
 
-        internal static void PrintVideosNonPreferred(string directory, int level = 2)
+        internal static void PrintVideosNonPreferred(string directory, int level = 2, Action<string> log = null)
         {
             GetDirectories(directory, level)
                 .ForEach(movie => Directory
                     .GetFiles(movie, "*.mp4", SearchOption.TopDirectoryOnly)
                     .Where(file => !PreferredVersions.Any(version => version.IsMatch(Path.GetFileNameWithoutExtension(file))))
-                    .ForEach(file => Trace.WriteLine(file)));
+                    .ForEach(log));
         }
 
-        internal static void PrintMoviesWithNoSubtitle(string directory, int level = 2)
+        internal static void PrintMoviesWithNoSubtitle(string directory, int level = 2, Action<string> log = null)
         {
             GetDirectories(directory, level)
                 .Where(movie => Directory.GetFiles(movie).All(video => SubtitleExtensions.All(extension => !video.EndsWith(extension, StringComparison.OrdinalIgnoreCase))))
-                .ForEach(movie => Trace.WriteLine(movie));
+                .ForEach(log);
         }
 
-        internal static void PrintMoviesWithNoSubtitle(string directory, int level = 2, params string[] languages)
+        internal static void PrintMoviesWithNoSubtitle(string directory, int level = 2, Action<string> log = null, params string[] languages)
         {
             string[] searchPatterns = languages.SelectMany(language => SubtitleExtensions.Select(extension => $"*{language}*{extension}")).ToArray();
             GetDirectories(directory, level)
                 .Where(movie => searchPatterns.All(searchPattern => !Directory.EnumerateFiles(movie, searchPattern, SearchOption.TopDirectoryOnly).Any()))
-                .ForEach(movie => Trace.WriteLine(movie));
+                .ForEach(log);
         }
 
-        internal static void RenameDirectoriesWithMetadata(string directory, int level = 2, bool isDryRun = false)
+        internal static void RenameDirectoriesWithMetadata(string directory, int level = 2, bool isDryRun = false, Action<string> log = null)
         {
             GetDirectories(directory, level)
                 .ToArray()
@@ -675,28 +691,28 @@
                     string newDirectory = Path.Combine(Path.GetDirectoryName(movie), newMovie);
                     if (isDryRun)
                     {
-                        Trace.WriteLine(newDirectory);
+                        log(newDirectory);
                     }
                     else
                     {
                         if (!string.Equals(movie, newDirectory))
                         {
-                            Trace.WriteLine(movie);
+                            log(movie);
                             Directory.Move(movie, newDirectory);
-                            Trace.WriteLine(newDirectory);
+                            log(newDirectory);
                         }
                     }
                 });
         }
 
-        internal static void CopyNfo(string directory)
+        internal static void CopyMetadata(string directory)
         {
             Directory
                 .GetFiles(directory, "*.nfo", SearchOption.AllDirectories)
                 .ForEach(nfo => File.Copy(nfo, Path.Combine(Path.GetDirectoryName(nfo), Path.GetFileNameWithoutExtension(nfo) + ".eng" + Path.GetExtension(nfo))));
         }
 
-        internal static void RestoreNfo(string directory)
+        internal static void RestoreMetadata(string directory)
         {
             Directory
                 .GetFiles(directory, "*.nfo", SearchOption.AllDirectories)
@@ -707,48 +723,173 @@
 
         private static readonly string[] IndependentNfos = { "tvshow.nfo", "season.nfo" };
 
-        internal static void PrintMetadataWithoutMedia(string directory)
+        internal static void PrintMetadataWithoutMedia(string directory, Action<string> log = null)
         {
             Directory.EnumerateFiles(directory, "*.nfo", SearchOption.AllDirectories)
                 .Where(nfo => IndependentNfos.All(independent => !string.Equals(independent, Path.GetFileName(nfo), StringComparison.OrdinalIgnoreCase)))
                 .Where(nfo => CommonVideoExtensions.Select(extension => Path.Combine(Path.GetDirectoryName(nfo), Path.GetFileNameWithoutExtension(nfo) + extension)).All(video => !File.Exists(video)))
-                .ForEach(nfo => Trace.WriteLine(nfo));
+                .ForEach(log);
         }
 
-        internal static void PrintMetadataByGroup(string directory, int level = 2, string field = "genre")
+        internal static void PrintMetadataByGroup(string directory, int level = 2, string field = "genre", Action<string> log = null)
         {
             GetDirectories(directory, level)
                 .Select(movie => (movie, nfo: XDocument.Load(Directory.GetFiles(movie, "*.nfo", SearchOption.TopDirectoryOnly).First())))
                 .Select(movie => (movie.movie, field: movie.nfo.Root?.Element(field)?.Value))
                 .OrderBy(movie => movie.field)
-                .ForEach(movie => Trace.WriteLine($"{movie.field}: {Path.GetFileName(movie.movie)}"));
+                .ForEach(movie => log($"{movie.field}: {Path.GetFileName(movie.movie)}"));
         }
 
-        internal static void PrintMetadataByDuplication(string directory, int level = 2, string field = "imdbid")
+        internal static void PrintMetadataByDuplication(string directory, int level = 2, string field = "imdbid", Action<string> log = null)
         {
             Directory.GetFiles(directory, "*.nfo", SearchOption.AllDirectories)
                 .Select(nfo => (nfo, field: XDocument.Load(nfo).Root?.Element(field)?.Value))
                 .GroupBy(movie => movie.field)
                 .Where(group => group.Count() > 1)
-                .ForEach(group => group.ForEach(movie => Trace.WriteLine($"{movie.field} - {movie.nfo}")));
+                .ForEach(group => group.ForEach(movie => log($"{movie.field} - {movie.nfo}")));
         }
 
         internal static void MoveMovies(string destination, string directory, int level = 2, string field = "genre", string value = null, bool isDryRun = false)
         {
+            MoveMovies(
+                (movie, metadata) => Path.Combine(destination, Path.GetFileName(movie)),
+                directory,
+                level,
+                (movie, metadata) => string.Equals(value, metadata.Root?.Element(field)?.Value, StringComparison.OrdinalIgnoreCase),
+                isDryRun);
+        }
+
+        internal static void MoveMovies(Func<string, XDocument, string> rename, string directory, int level = 2, Func<string, XDocument, bool> predicate = null, bool isDryRun = false, Action<string> log = null)
+        {
             GetDirectories(directory, level)
                 .ToArray()
-                .Select(movie => (movie, nfo: XDocument.Load(Directory.GetFiles(movie, "*.nfo", SearchOption.TopDirectoryOnly).First())))
-                .Where(movie => string.Equals(value, movie.nfo.Root?.Element(field)?.Value, StringComparison.OrdinalIgnoreCase))
+                .Select(movie => (Directory: movie, Metadata: XDocument.Load(Directory.GetFiles(movie, "*.nfo", SearchOption.TopDirectoryOnly).First())))
+                .Where(movie => predicate?.Invoke(movie.Directory, movie.Metadata) ?? true)
                 .ForEach(movie =>
                 {
-                    string newMovie = Path.Combine(destination, Path.GetFileName(movie.movie));
-                    Trace.WriteLine(movie.movie);
+                    string newMovie = rename(movie.Directory, movie.Metadata);
+                    log(movie.Directory);
                     if (!isDryRun)
                     {
-                        Directory.Move(movie.movie, newMovie);
+                        Directory.Move(movie.Directory, newMovie);
                     }
-                    Trace.WriteLine(newMovie);
+                    log(newMovie);
                 });
+        }
+
+        internal static void DeleteDuplication(string directory, int level = 2, bool isDryRun = false, Action<string> log = null)
+        {
+            log ??= TraceLog;
+            GetDirectories(directory, level)
+                .ForEach(movie => Directory
+                    .GetFiles(movie, "*", SearchOption.TopDirectoryOnly)
+                    .Select(file => (file, new FileInfo(file).Length))
+                    .GroupBy(file => file.Length)
+                    .Where(group => group.Count() > 1)
+                    .ForEach(group => group
+                        .OrderByDescending(file => file.file)
+                        .Skip(1)
+                        .ForEach(file =>
+                        {
+                            if (!isDryRun)
+                            {
+                                File.Delete(file.file);
+                            }
+                            log(file.file);
+                        })));
+        }
+
+        private static readonly string[] CommonChinese = { "的", "是" };
+
+        private static readonly string[] CommonEnglish = { " of ", " is " };
+
+        internal static void RenameSubtitlesByLanguage(string directory, bool isDryRun = false, Action<string> log = null)
+        {
+            log ??= TraceLog;
+            TextSubtitleSearchPatterns
+                .SelectMany(pattern => Directory.GetFiles(directory, pattern, SearchOption.AllDirectories))
+                .ToArray()
+                .ForEach(file =>
+                {
+                    string content = File.ReadAllText(file);
+                    List<string> languages = new List<string>();
+                    if (CommonChinese.All(chinese => content.Contains(chinese)))
+                    {
+                        languages.Add("chs");
+                    }
+                    if (CommonEnglish.All(english => content.IndexOf(english, StringComparison.OrdinalIgnoreCase) >= 0))
+                    {
+                        languages.Add("eng");
+                    }
+                    if (languages.Any())
+                    {
+                        if (Path.GetFileNameWithoutExtension(file).EndsWith(string.Join('&', languages)) || Path.GetFileNameWithoutExtension(file).EndsWith(string.Join('&', languages.AsEnumerable().Reverse())))
+                        {
+                            return;
+                        }
+                        string newFile = Path.Combine(Path.GetDirectoryName(file), $"{Path.GetFileNameWithoutExtension(file)}.{string.Join('&', languages)}{Path.GetExtension(file)}");
+                        log(file);
+                        if (!isDryRun)
+                        {
+                            File.Move(file, newFile);
+                        }
+                        log(newFile);
+                    }
+                    else
+                    {
+                        log($"!Unkown: {file}");
+                    }
+                });
+        }
+
+        internal static void PrintYears(string directory, int level = 2, Action<string> log = null)
+        {
+            log ??= TraceLog;
+            GetDirectories(directory, level)
+                .ToArray()
+                .ForEach(movie =>
+                {
+                    XDocument metadata = XDocument.Load(Directory.GetFiles(movie, "*.nfo", SearchOption.TopDirectoryOnly).First());
+                    string movieDirectory = Path.GetFileName(movie);
+                    if (movieDirectory.StartsWith("0."))
+                    {
+                        movieDirectory = movieDirectory.Substring("0.".Length);
+                    }
+                    Match match = Regex.Match(movieDirectory, MovieDirectory);
+                    Debug.Assert(match.Success);
+                    string directoryYear = match.Groups[1].Value;
+                    string metadataYear = metadata.Root?.Element("year")?.Value;
+                    string videoName = null;
+                    if (!(directoryYear == metadataYear
+                        && CommonVideoSearchPatterns
+                            .SelectMany(pattern => Directory.GetFiles(movie, pattern, SearchOption.TopDirectoryOnly))
+                            .All(video => (videoName = Path.GetFileName(video)).Contains(directoryYear))))
+                    {
+                        log($"Direcoty: {directoryYear}, Metadata {metadataYear}, Video: {videoName}, {movie}");
+                    }
+                });
+        }
+
+        internal static void PrintDirectoriesWithNonLatinOriginalTitle(string directory, int level = 2, Action<string> log = null)
+        {
+            log ??= TraceLog;
+            GetDirectories(directory, level)
+                .Where(movie => movie.Contains("="))
+                .Where(movie => !Regex.IsMatch(movie.Split("=")[1], "^[a-z]{1}.", RegexOptions.IgnoreCase))
+                .ForEach(log);
+        }
+
+        internal static void PrintDirectoriesWithDuplicatePictures(string directory, int level = 2, Action<string> log = null)
+        {
+            log ??= TraceLog;
+            GetDirectories(directory, level)
+                .Where(movie =>
+                {
+                    string[] files = Directory.GetFiles(movie, "*", SearchOption.TopDirectoryOnly).Select(Path.GetFileName).ToArray();
+                    return files.Contains("poster.jpg", StringComparer.OrdinalIgnoreCase)
+                        && files.Any(file => file.EndsWith("-poster.jpg", StringComparison.OrdinalIgnoreCase));
+                })
+                .ForEach(log);
         }
     }
 }
