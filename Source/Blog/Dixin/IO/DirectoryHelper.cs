@@ -6,8 +6,6 @@ namespace Dixin.IO
 
     using Dixin.Common;
 
-    using Microsoft.VisualBasic.FileIO;
-
     public static class DirectoryHelper
     {
         public static void Delete(string directory)
@@ -25,7 +23,7 @@ namespace Dixin.IO
             directory.NotNull(nameof(directory));
             newName.NotNullOrWhiteSpace(nameof(newName));
 
-            FileSystem.RenameDirectory(directory.FullName, newName);
+            Directory.Move(directory.FullName, newName);
         }
 
         public static bool TryRename(this DirectoryInfo directory, string newName)
@@ -37,7 +35,7 @@ namespace Dixin.IO
             {
                 try
                 {
-                    FileSystem.RenameDirectory(directory.FullName, newName);
+                    Directory.Move(directory.FullName, newName);
                 }
                 catch (Exception exception) when (exception.IsNotCritical())
                 {
@@ -49,12 +47,16 @@ namespace Dixin.IO
             return false;
         }
 
-        public static void Rename(string directory, string newName)
+        public static void Move(string source, string destination, bool overwrite)
         {
-            directory.NotNullOrWhiteSpace(nameof(directory));
-            newName.NotNullOrWhiteSpace(nameof(newName));
+            source.NotNullOrWhiteSpace();
+            destination.NotNullOrWhiteSpace();
 
-            new DirectoryInfo(directory).Rename(newName);
+            if (overwrite && Directory.Exists(destination))
+            {
+                Directory.Delete(destination);
+            }
+            Directory.Move(source, destination);
         }
 
         public static void Empty(DirectoryInfo directory)

@@ -49,7 +49,7 @@
                         log(file);
                         if (!isDryRun)
                         {
-                            File.Move(file, newFile, overwrite);
+                            FileHelper.Move(file, newFile, overwrite);
                         }
                         log(newFile);
                     }
@@ -475,7 +475,7 @@
                         {
                             string language = Path.GetFileNameWithoutExtension(subtitle).Split(".").Last();
                             string newSubtitle = $"{Path.GetFileNameWithoutExtension(video)}.{language}{Path.GetExtension(subtitle)}";
-                            File.Move(subtitle, Path.Combine(Path.GetDirectoryName(video), newSubtitle), true);
+                            FileHelper.Move(subtitle, Path.Combine(Path.GetDirectoryName(video), newSubtitle), true);
                         });
                 });
         }
@@ -598,7 +598,7 @@
                     {
                         if (File.Exists(result.File))
                         {
-                            File.Move(result.File, newFile, true);
+                            FileHelper.Move(result.File, newFile, true);
                         }
                     }
                 });
@@ -718,7 +718,7 @@
                 .GetFiles(directory, "*.nfo", SearchOption.AllDirectories)
                 .Where(nfo => nfo.EndsWith(".eng.nfo"))
                 .Do(nfo => Debug.Assert(File.Exists(nfo.Replace(".eng.nfo", ".nfo"))))
-                .ForEach(nfo => File.Move(nfo, Path.Combine(Path.GetDirectoryName(nfo), Path.GetFileNameWithoutExtension(nfo).Replace(".eng", string.Empty) + Path.GetExtension(nfo)), true));
+                .ForEach(nfo => FileHelper.Move(nfo, Path.Combine(Path.GetDirectoryName(nfo), Path.GetFileNameWithoutExtension(nfo).Replace(".eng", string.Empty) + Path.GetExtension(nfo)), true));
         }
 
         private static readonly string[] IndependentNfos = { "tvshow.nfo", "season.nfo" };

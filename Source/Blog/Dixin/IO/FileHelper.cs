@@ -40,5 +40,17 @@ namespace Dixin.IO
 
             file.MoveTo(newName);
         }
+
+        public static void Move(string source, string destination, bool overwrite)
+        {
+            source.NotNullOrWhiteSpace();
+            destination.NotNullOrWhiteSpace();
+
+            if (overwrite && File.Exists(destination))
+            {
+                File.Delete(destination);
+            }
+            File.Move(source, destination);
+        }
     }
 }

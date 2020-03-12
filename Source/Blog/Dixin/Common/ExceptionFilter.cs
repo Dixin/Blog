@@ -18,6 +18,7 @@
             int localVariable3 = 3;
             int localVariable4 = 4;
             int localVariable5 = 5;
+            Trace.WriteLine(localVariable1 + localVariable2 + localVariable3 + localVariable4 + localVariable5);
             throw new OperationCanceledException(nameof(ExceptionFilter));
         }
 

@@ -258,7 +258,7 @@
 
             fromDirectory
                 .EnumerateFiles()
-                .Where(song => IsMusicFile(song.Extension) && IsNotFormated(song.Name))
+                .Where(song => IsMusicFile(song.Extension) && IsNotFormatted(song.Name))
                 .ForEach(song =>
                     {
                         Trace.WriteLine(song.Name);
@@ -305,7 +305,7 @@
                 .EnumerateDirectories()
                 .SelectMany(artist => artist.EnumerateDirectories())
                 .SelectMany(album => album.EnumerateFiles())
-                .Where(song => IsMusicFile(song.Extension) && IsNotFormated(song.Name))
+                .Where(song => IsMusicFile(song.Extension) && IsNotFormatted(song.Name))
                 .ForEach(song =>
                     {
                         Trace.WriteLine(song.Name);
@@ -371,12 +371,12 @@
                     }
                 }
             }
-            FileSystem.Rename(songOrAlbum, Path.Combine(Path.GetDirectoryName(songOrAlbum), string.Join(Separator, names)));
+            FileSystemHelper.Move(songOrAlbum, Path.Combine(Path.GetDirectoryName(songOrAlbum), string.Join(Separator, names)));
         });
 
         private static bool IsMusicFile(string extension) => Extensions.Contains(extension);
 
-        private static bool IsNotFormated(string fileName)
+        private static bool IsNotFormatted(string fileName)
         {
             string[] names = fileName.Split(Separator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
             return names.Length != 7
