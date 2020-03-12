@@ -76,9 +76,9 @@
     <Compile Include="TestAssembly.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Dixin.Net\Dixin.Net.csproj">
+    <ProjectReference Include="..\Dixin.Net\Examples.Net.csproj">
       <Project>{fc70fcb4-e0cb-4b16-918d-2e937795938b}</Project>
-      <Name>Dixin.Net</Name>
+      <Name>Examples.Net</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
