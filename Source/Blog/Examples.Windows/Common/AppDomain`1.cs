@@ -13,7 +13,7 @@
             Type type = typeof(TMarshalByRefObject);
             this.appDomain = AppDomain.CreateDomain($"{nameof(AppDomain<TMarshalByRefObject>)} {Guid.NewGuid()}");
             this.MarshalByRefObject = (TMarshalByRefObject)this.appDomain.CreateInstanceAndUnwrap(
-                type.Assembly.FullName, type.FullName, false, default(BindingFlags), null, args, null, null);
+                type.Assembly.FullName, type.FullName, false, default, null, args, null, null);
         }
 
         internal TMarshalByRefObject MarshalByRefObject { get; private set; }
