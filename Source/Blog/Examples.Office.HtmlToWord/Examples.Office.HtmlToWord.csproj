@@ -62,16 +62,16 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Dixin\Common\Argument.cs">
+    <Compile Include="..\Examples\Common\Argument.cs">
       <Link>Argument.cs</Link>
     </Compile>
-    <Compile Include="..\Dixin\Common\ExceptionExtensions.cs">
+    <Compile Include="..\Examples\Common\ExceptionExtensions.cs">
       <Link>ExceptionExtensions.cs</Link>
     </Compile>
-    <Compile Include="..\Dixin\Common\ValidatedNotNullAttribute.cs">
+    <Compile Include="..\Examples\Common\ValidatedNotNullAttribute.cs">
       <Link>ValidatedNotNullAttribute.cs</Link>
     </Compile>
-    <Compile Include="..\Dixin\IO\PathHelper.cs">
+    <Compile Include="..\Examples\IO\PathHelper.cs">
       <Link>PathHelper.cs</Link>
     </Compile>
     <Compile Include="..\Tools\CommonAssemblyInfo.cs">

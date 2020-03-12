@@ -38,10 +38,10 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Dixin\Sql\Concat.cs">
+    <Compile Include="..\Examples\Sql\Concat.cs">
       <Link>Concat.cs</Link>
     </Compile>
-    <Compile Include="..\Dixin\Sql\ConcatWith.cs">
+    <Compile Include="..\Examples\Sql\ConcatWith.cs">
       <Link>ConcatWith.cs</Link>
     </Compile>
     <Compile Include="..\Tools\CommonAssemblyInfo.cs">

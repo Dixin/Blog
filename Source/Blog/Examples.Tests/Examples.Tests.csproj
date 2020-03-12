@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Dixin\Examples.csproj" />
+    <ProjectReference Include="..\Examples\Examples.csproj" />
     <ProjectReference Include="..\Examples.Windows\Examples.Windows.csproj" />
   </ItemGroup>
 

@@ -53,22 +53,22 @@
     <Reference Include="System.Data.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\Dixin\Common\Argument.cs">
+    <Compile Include="..\Examples\Common\Argument.cs">
       <Link>Dynamic\Argument.cs</Link>
     </Compile>
-    <Compile Include="..\Dixin\Common\ValidatedNotNullAttribute.cs">
+    <Compile Include="..\Examples\Common\ValidatedNotNullAttribute.cs">
       <Link>Dynamic\ValidatedNotNullAttribute.cs</Link>
     </Compile>
-    <Compile Include="..\Dixin\Dynamic\DynamicWrapperExtensions.cs">
+    <Compile Include="..\Examples\Dynamic\DynamicWrapperExtensions.cs">
       <Link>Dynamic\DynamicWrapperExtensions.cs</Link>
     </Compile>
-    <Compile Include="..\Dixin\Dynamic\DynamicWrapper`1.cs">
+    <Compile Include="..\Examples\Dynamic\DynamicWrapper`1.cs">
       <Link>Dynamic\DynamicWrapper`1.cs</Link>
     </Compile>
-    <Compile Include="..\Dixin\Reflection\FieldInfoExtensions.cs">
+    <Compile Include="..\Examples\Reflection\FieldInfoExtensions.cs">
       <Link>Dynamic\FieldInfoExtensions.cs</Link>
     </Compile>
-    <Compile Include="..\Dixin\Reflection\TypeExtensions.cs">
+    <Compile Include="..\Examples\Reflection\TypeExtensions.cs">
       <Link>Dynamic\TypeExtensions.cs</Link>
     </Compile>
     <Compile Include="Dynamic\DynamicWrapperTest.cs" />
@@ -76,7 +76,7 @@
     <Compile Include="TestAssembly.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Dixin.Net\Examples.Net.csproj">
+    <ProjectReference Include="..\Examples.Net\Examples.Net.csproj">
       <Project>{fc70fcb4-e0cb-4b16-918d-2e937795938b}</Project>
       <Name>Examples.Net</Name>
     </ProjectReference>

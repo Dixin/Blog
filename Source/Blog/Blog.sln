@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28729.10
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Examples", "Dixin\Examples.csproj", "{348FDE06-D850-4118-8796-E2AEE8DF6376}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Examples", "Examples\Examples.csproj", "{348FDE06-D850-4118-8796-E2AEE8DF6376}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Examples.Office.HtmlToWord", "Dixin.Office.HtmlToWord\Examples.Office.HtmlToWord.csproj", "{AF52B5E6-48BB-4900-A111-479CEBD2E134}"
 EndProject
@@ -30,19 +30,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{4569910E-0
 		Data\AdventureWorks_Log.ldf = Data\AdventureWorks_Log.ldf
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Examples.Console", "Dixin.Console\Examples.Console.csproj", "{E331D518-EAC8-4A5E-9273-E420CC01C9E3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Examples.Console", "Examples.Console\Examples.Console.csproj", "{E331D518-EAC8-4A5E-9273-E420CC01C9E3}"
 EndProject
-Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Examples.Nodejs", "Dixin.Nodejs\Examples.Nodejs.njsproj", "{B89B3A79-1A9D-4F59-B313-F9F5A7156405}"
+Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Examples.Nodejs", "Examples.Nodejs\Examples.Nodejs.njsproj", "{B89B3A79-1A9D-4F59-B313-F9F5A7156405}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Examples.Sql", "Dixin.Sql\Examples.Sql.csproj", "{3B8554BA-8A06-460B-9FE6-CF8303476027}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Examples.Sql", "Examples.Sql\Examples.Sql.csproj", "{3B8554BA-8A06-460B-9FE6-CF8303476027}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Examples.Net", "Dixin.Net\Examples.Net.csproj", "{FC70FCB4-E0CB-4B16-918D-2E937795938B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Examples.Net", "Examples.Net\Examples.Net.csproj", "{FC70FCB4-E0CB-4B16-918D-2E937795938B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Examples.Tests", "Dixin.Tests\Examples.Tests.csproj", "{480FDA72-701E-42D8-A3B1-24230D5960F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Examples.Tests", "Examples.Tests\Examples.Tests.csproj", "{480FDA72-701E-42D8-A3B1-24230D5960F9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Examples.Net.Tests", "Dixin.Net.Tests\Examples.Net.Tests.csproj", "{BCFA77AE-18EB-48CE-9B6A-B6883176A8B0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Examples.Net.Tests", "Examples.Net.Tests\Examples.Net.Tests.csproj", "{BCFA77AE-18EB-48CE-9B6A-B6883176A8B0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Examples.Text.ToUtf8", "Dixin.Text.ToUtf8\Examples.Text.ToUtf8.csproj", "{9AAF51EF-B38B-4883-81ED-A0946789DB83}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Examples.Text.ToUtf8", "Examples.Text.ToUtf8\Examples.Text.ToUtf8.csproj", "{9AAF51EF-B38B-4883-81ED-A0946789DB83}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Examples.Windows", "Examples.Windows\Examples.Windows.csproj", "{41019023-4C5E-4C49-BEDD-0E2C4C594EA6}"
 EndProject
