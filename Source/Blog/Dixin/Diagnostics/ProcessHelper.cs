@@ -1,9 +1,9 @@
-namespace Dixin.Diagnostics
+namespace Examples.Diagnostics
 {
     using System;
     using System.Diagnostics;
 
-    using Dixin.Common;
+    using Examples.Common;
 
     public static partial class ProcessHelper
     {

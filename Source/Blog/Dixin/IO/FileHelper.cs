@@ -1,9 +1,9 @@
-namespace Dixin.IO
+namespace Examples.IO
 {
     using System.IO;
     using System.Text;
 
-    using Dixin.Common;
+    using Examples.Common;
 
     public static class FileHelper
     {

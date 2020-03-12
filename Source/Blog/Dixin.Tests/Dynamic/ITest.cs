@@ -7,7 +7,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace Dixin.Tests.Dynamic
+namespace Examples.Tests.Dynamic
 {
     public interface ITest
     {

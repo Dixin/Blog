@@ -1,10 +1,10 @@
-﻿namespace Dixin.Reflection
+﻿namespace Examples.Reflection
 {
     using System;
     using System.Linq;
     using System.Reflection;
 
-    using Dixin.Common;
+    using Examples.Common;
 
     public static partial class TypeExtensions
     {

@@ -1,4 +1,4 @@
-﻿namespace Dixin.IO
+﻿namespace Examples.IO
 {
     using System;
     using System.Collections.Generic;
@@ -6,7 +6,7 @@
     using System.IO;
     using System.Linq;
 
-    using Dixin.Common;
+    using Examples.Common;
 
     using Microsoft.VisualBasic;
 

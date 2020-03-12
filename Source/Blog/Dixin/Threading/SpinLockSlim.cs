@@ -1,4 +1,4 @@
-﻿namespace Dixin.Threading
+﻿namespace Examples.Threading
 {
     using System;
     using System.Threading;

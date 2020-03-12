@@ -1,4 +1,4 @@
-﻿namespace Dixin.Management
+﻿namespace Examples.Management
 {
     using System;
     using System.Diagnostics;

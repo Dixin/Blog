@@ -1,9 +1,9 @@
-﻿namespace Dixin.Threading
+﻿namespace Examples.Threading
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.Threading;
-    using Dixin.Runtime.InteropServices;
+    using Examples.Runtime.InteropServices;
 
     public static class ThreadHelper
     {

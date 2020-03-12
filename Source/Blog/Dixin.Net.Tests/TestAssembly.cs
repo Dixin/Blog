@@ -1,4 +1,4 @@
-﻿namespace Dixin.Tests
+﻿namespace Examples.Tests
 {
     using System;
     using System.IO;

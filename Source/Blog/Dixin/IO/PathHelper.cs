@@ -1,4 +1,4 @@
-namespace Dixin.IO
+namespace Examples.IO
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -6,7 +6,7 @@ namespace Dixin.IO
     using System.Linq;
     using System.Reflection;
 
-    using Dixin.Common;
+    using Examples.Common;
 
     using Microsoft.Win32;
 

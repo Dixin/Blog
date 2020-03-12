@@ -13,7 +13,7 @@
     using CsQuery;
     using CsQuery.ExtensionMethods;
 
-    using Dixin.IO;
+    using Examples.IO;
 
     using Microsoft.Office.Interop.Word;
 

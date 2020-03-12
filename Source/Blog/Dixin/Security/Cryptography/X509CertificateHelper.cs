@@ -1,4 +1,4 @@
-﻿namespace Dixin.Security.Cryptography
+﻿namespace Examples.Security.Cryptography
 {
     using System;
     using System.Linq;
@@ -6,7 +6,7 @@
     using System.Security.Cryptography.X509Certificates;
     using System.Text;
 
-    using Dixin.Common;
+    using Examples.Common;
 
     public static class X509Certificate2Helper
     {

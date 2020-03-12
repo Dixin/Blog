@@ -7,7 +7,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace Dixin.Web
+namespace Examples.Web
 {
     using System;
     using System.Text.RegularExpressions;

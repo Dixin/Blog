@@ -1,8 +1,8 @@
-﻿namespace Dixin.Windows
+﻿namespace Examples.Windows
 {
     using System.Diagnostics.CodeAnalysis;
     using System.Windows.Forms;
-    using Dixin.Threading;
+    using Examples.Threading;
 
     public static class ClipboardHelper
     {

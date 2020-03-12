@@ -1,8 +1,8 @@
-﻿namespace Dixin.Tests.Common
+﻿namespace Examples.Tests.Common
 {
     using System.Linq;
 
-    using Dixin.Common;
+    using Examples.Common;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 

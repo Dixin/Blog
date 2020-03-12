@@ -7,7 +7,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace Dixin.Tests.Dynamic
+namespace Examples.Tests.Dynamic
 {
     internal class StaticTest
     {

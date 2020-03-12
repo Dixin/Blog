@@ -1,4 +1,4 @@
-﻿namespace Dixin.Threading.Tasks
+﻿namespace Examples.Threading.Tasks
 {
     using System;
     using System.Collections.Generic;

@@ -1,9 +1,9 @@
-﻿namespace Dixin
+﻿namespace Examples
 {
     using System;
     using System.Diagnostics;
     using System.IO;
-    using Dixin.Common;
+    using Examples.Common;
 
     internal static class Program
     {

@@ -1,9 +1,9 @@
-﻿namespace Dixin.Text
+﻿namespace Examples.Text
 {
     using System.IO;
     using System.Text;
 
-    using Dixin.Common;
+    using Examples.Common;
 
     public static class EncodingHelper
     {

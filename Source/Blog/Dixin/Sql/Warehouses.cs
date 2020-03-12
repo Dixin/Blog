@@ -1,4 +1,4 @@
-﻿namespace Dixin.Sql
+﻿namespace Examples.Sql
 {
     using System;
     using System.Collections.Concurrent;

@@ -1,4 +1,4 @@
-﻿namespace Dixin.Data.Services
+﻿namespace Examples.Data.Services
 {
     using System;
     using System.Collections;

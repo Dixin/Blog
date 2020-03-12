@@ -1,9 +1,9 @@
-﻿namespace Dixin.Reflection
+﻿namespace Examples.Reflection
 {
     using System.IO;
     using System.Reflection;
 
-    using Dixin.Common;
+    using Examples.Common;
 
     public static class AssemblyExtensions
     {

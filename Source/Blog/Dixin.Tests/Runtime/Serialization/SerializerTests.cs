@@ -1,10 +1,10 @@
-﻿namespace Dixin.Tests.Runtime.Serialization
+﻿namespace Examples.Tests.Runtime.Serialization
 {
     using System;
     using System.Diagnostics;
     using System.Runtime.Serialization.Formatters.Binary;
 
-    using Dixin.Runtime.Serialization;
+    using Examples.Runtime.Serialization;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 

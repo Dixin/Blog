@@ -1,10 +1,10 @@
-﻿namespace Dixin.IO
+﻿namespace Examples.IO
 {
     using System;
     using System.IO;
     using System.Text;
 
-    using Dixin.Common;
+    using Examples.Common;
 
     public class CustomTextWriter : TextWriter
     {

@@ -1,9 +1,9 @@
-﻿namespace Dixin.Threading
+﻿namespace Examples.Threading
 {
     using System;
     using System.Threading;
 
-    using Dixin.Common;
+    using Examples.Common;
 
     public sealed class SingleInstance : IDisposable
     {

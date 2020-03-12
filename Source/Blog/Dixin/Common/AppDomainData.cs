@@ -1,4 +1,4 @@
-﻿namespace Dixin.Common
+﻿namespace Examples.Common
 {
     using System;
     using System.IO;

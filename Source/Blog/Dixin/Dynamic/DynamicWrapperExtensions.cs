@@ -7,7 +7,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace Dixin.Dynamic
+namespace Examples.Dynamic
 {
     public static class DynamicWrapperExtensions
     {

@@ -7,12 +7,12 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace Dixin.Reflection
+namespace Examples.Reflection
 {
     using System.Diagnostics.CodeAnalysis;
     using System.Reflection;
 
-    using Dixin.Common;
+    using Examples.Common;
 
     public static class FieldInfoExtensions
     {

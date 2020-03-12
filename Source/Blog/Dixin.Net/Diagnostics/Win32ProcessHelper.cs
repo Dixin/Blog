@@ -1,10 +1,10 @@
-﻿namespace Dixin.Diagnostics
+﻿namespace Examples.Diagnostics
 {
     using System.Collections.Generic;
     using System.Linq;
     using System.Management;
 
-    using Dixin.Management;
+    using Examples.Management;
 
     public static partial class Win32ProcessHelper
     {

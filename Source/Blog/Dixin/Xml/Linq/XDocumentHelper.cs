@@ -1,9 +1,9 @@
-﻿namespace Dixin.Xml.Linq
+﻿namespace Examples.Xml.Linq
 {
     using System.Xml.Linq;
 
-    using Dixin.Common;
-    using Dixin.IO;
+    using Examples.Common;
+    using Examples.IO;
 
     public static class XDocumentHelper
     {

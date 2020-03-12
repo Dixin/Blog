@@ -1,4 +1,4 @@
-﻿namespace Dixin.Text.ToUtf8
+﻿namespace Examples.Text.ToUtf8
 {
     using System;
     using System.IO;

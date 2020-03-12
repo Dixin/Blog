@@ -7,7 +7,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace Dixin.Dynamic
+namespace Examples.Dynamic
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -15,8 +15,8 @@ namespace Dixin.Dynamic
     using System.Linq;
     using System.Reflection;
 
-    using Dixin.Common;
-    using Dixin.Reflection;
+    using Examples.Common;
+    using Examples.Reflection;
 
     using Microsoft.CSharp.RuntimeBinder;
 

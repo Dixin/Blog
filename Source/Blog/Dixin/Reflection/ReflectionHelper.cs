@@ -1,4 +1,4 @@
-namespace Dixin.Reflection
+namespace Examples.Reflection
 {
     using System;
     using System.Linq.Expressions;

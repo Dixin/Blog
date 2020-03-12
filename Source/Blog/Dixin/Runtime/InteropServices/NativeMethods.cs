@@ -1,4 +1,4 @@
-﻿namespace Dixin.Runtime.InteropServices
+﻿namespace Examples.Runtime.InteropServices
 {
     using System;
     using System.Runtime.InteropServices;

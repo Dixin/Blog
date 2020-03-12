@@ -1,8 +1,8 @@
-﻿namespace Dixin.Tests.Windows
+﻿namespace Examples.Tests.Windows
 {
     using System;
 
-    using Dixin.Windows;
+    using Examples.Windows;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 

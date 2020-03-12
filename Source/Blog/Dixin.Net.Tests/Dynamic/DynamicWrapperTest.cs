@@ -1,4 +1,4 @@
-﻿namespace Dixin.Tests.Dynamic
+﻿namespace Examples.Tests.Dynamic
 {
     using System.Collections.Generic;
     using System.Configuration;
@@ -6,7 +6,7 @@
     using System.Data.Linq.Mapping;
     using System.Linq;
 
-    using Dixin.Dynamic;
+    using Examples.Dynamic;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]

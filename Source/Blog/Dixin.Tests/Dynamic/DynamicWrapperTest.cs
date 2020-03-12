@@ -7,9 +7,9 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace Dixin.Tests.Dynamic
+namespace Examples.Tests.Dynamic
 {
-    using Dixin.Dynamic;
+    using Examples.Dynamic;
 
     using Microsoft.CSharp.RuntimeBinder;
     using Microsoft.VisualStudio.TestTools.UnitTesting;

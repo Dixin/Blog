@@ -1,10 +1,10 @@
-﻿namespace Dixin.Runtime.Serialization
+﻿namespace Examples.Runtime.Serialization
 {
     using System;
     using System.IO;
     using System.Runtime.Serialization;
 
-    using Dixin.Common;
+    using Examples.Common;
 
     public class Serializer
     {

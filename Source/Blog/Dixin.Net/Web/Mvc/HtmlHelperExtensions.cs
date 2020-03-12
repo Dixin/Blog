@@ -7,7 +7,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace Dixin.Web.Mvc
+namespace Examples.Web.Mvc
 {
     using System;
     using System.Web;

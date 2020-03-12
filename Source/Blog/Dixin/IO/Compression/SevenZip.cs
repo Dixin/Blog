@@ -1,11 +1,11 @@
-﻿namespace Dixin.IO.Compression
+﻿namespace Examples.IO.Compression
 {
     using System;
     using System.IO;
     using System.Linq;
 
-    using Dixin.Common;
-    using Dixin.Diagnostics;
+    using Examples.Common;
+    using Examples.Diagnostics;
 
     public class SevenZip
     {

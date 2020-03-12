@@ -1,10 +1,10 @@
-﻿namespace Dixin.Tests.Reflection
+﻿namespace Examples.Tests.Reflection
 {
     using System;
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
 
-    using Dixin.Reflection;
+    using Examples.Reflection;
 
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 

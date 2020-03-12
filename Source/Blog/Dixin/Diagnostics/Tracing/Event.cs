@@ -1,4 +1,4 @@
-﻿namespace Dixin.Diagnostics.Tracing
+﻿namespace Examples.Diagnostics.Tracing
 {
     using System.Diagnostics.Tracing;
 
