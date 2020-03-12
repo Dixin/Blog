@@ -7,7 +7,7 @@
 //     the code is regenerated.
 // </auto-generated>
 // ------------------------------------------------------------------------------
-namespace Dixin.Office.HtmlToWord
+namespace Examples.Office.HtmlToWord
 {
     using System.Linq;
     using System.Collections.Generic;

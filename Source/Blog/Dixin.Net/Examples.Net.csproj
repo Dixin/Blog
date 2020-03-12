@@ -7,8 +7,8 @@
     <ProjectGuid>{FC70FCB4-E0CB-4B16-918D-2E937795938B}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Dixin</RootNamespace>
-    <AssemblyName>Dixin.Net</AssemblyName>
+    <RootNamespace>Examples</RootNamespace>
+    <AssemblyName>Examples.Net</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

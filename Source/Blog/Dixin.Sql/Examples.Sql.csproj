@@ -7,8 +7,8 @@
     <ProjectGuid>{3B8554BA-8A06-460B-9FE6-CF8303476027}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Dixin.Sql</RootNamespace>
-    <AssemblyName>Dixin.Sql</AssemblyName>
+    <RootNamespace>Examples.Sql</RootNamespace>
+    <AssemblyName>Examples.Sql</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />

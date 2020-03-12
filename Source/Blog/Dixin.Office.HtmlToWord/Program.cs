@@ -1,4 +1,4 @@
-﻿namespace Dixin.Office.HtmlToWord
+﻿namespace Examples.Office.HtmlToWord
 {
     using System;
     using System.Collections.Generic;
