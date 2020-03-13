@@ -8,8 +8,6 @@
 
     using Examples.Common;
 
-    using Microsoft.VisualBasic;
-
     internal static class Music
     {
         private const string Separator = ".";

@@ -1,7 +1,6 @@
 ﻿namespace Examples.Common
 {
     using System;
-    using System.Reflection;
 
     internal sealed class AppDomain<TMarshalByRefObject> : IDisposable
         where TMarshalByRefObject : MarshalByRefObject
