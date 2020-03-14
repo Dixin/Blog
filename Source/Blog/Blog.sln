@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.28729.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Examples", "Examples\Examples.csproj", "{348FDE06-D850-4118-8796-E2AEE8DF6376}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Examples.Office.HtmlToWord", "Dixin.Office.HtmlToWord\Examples.Office.HtmlToWord.csproj", "{AF52B5E6-48BB-4900-A111-479CEBD2E134}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{F59804F9-2162-4237-BD61-93C0A156A6FE}"
 	ProjectSection(SolutionItems) = preProject
 		Tools\CodeAnalysis.ruleset = Tools\CodeAnalysis.ruleset
@@ -44,7 +42,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Examples.Net.Tests", "Examp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Examples.Text.ToUtf8", "Examples.Text.ToUtf8\Examples.Text.ToUtf8.csproj", "{9AAF51EF-B38B-4883-81ED-A0946789DB83}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Examples.Windows", "Examples.Windows\Examples.Windows.csproj", "{41019023-4C5E-4C49-BEDD-0E2C4C594EA6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Examples.Windows", "Examples.Windows\Examples.Windows.csproj", "{41019023-4C5E-4C49-BEDD-0E2C4C594EA6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Examples.Office.HtmlToWord", "Examples.Office.HtmlToWord\Examples.Office.HtmlToWord.csproj", "{AF52B5E6-48BB-4900-A111-479CEBD2E134}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -68,18 +68,6 @@ Global
 		{348FDE06-D850-4118-8796-E2AEE8DF6376}.Release|x64.Build.0 = Release|Any CPU
 		{348FDE06-D850-4118-8796-E2AEE8DF6376}.Release|x86.ActiveCfg = Release|Any CPU
 		{348FDE06-D850-4118-8796-E2AEE8DF6376}.Release|x86.Build.0 = Release|Any CPU
-		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Debug|x64.Build.0 = Debug|Any CPU
-		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Debug|x86.Build.0 = Debug|Any CPU
-		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Release|x64.ActiveCfg = Release|Any CPU
-		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Release|x64.Build.0 = Release|Any CPU
-		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Release|x86.ActiveCfg = Release|Any CPU
-		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Release|x86.Build.0 = Release|Any CPU
 		{E331D518-EAC8-4A5E-9273-E420CC01C9E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E331D518-EAC8-4A5E-9273-E420CC01C9E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E331D518-EAC8-4A5E-9273-E420CC01C9E3}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -176,12 +164,24 @@ Global
 		{41019023-4C5E-4C49-BEDD-0E2C4C594EA6}.Release|x64.Build.0 = Release|Any CPU
 		{41019023-4C5E-4C49-BEDD-0E2C4C594EA6}.Release|x86.ActiveCfg = Release|Any CPU
 		{41019023-4C5E-4C49-BEDD-0E2C4C594EA6}.Release|x86.Build.0 = Release|Any CPU
+		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Debug|x64.Build.0 = Debug|Any CPU
+		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Debug|x86.Build.0 = Debug|Any CPU
+		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Release|x64.ActiveCfg = Release|Any CPU
+		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Release|x64.Build.0 = Release|Any CPU
+		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Release|x86.ActiveCfg = Release|Any CPU
+		{AF52B5E6-48BB-4900-A111-479CEBD2E134}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;iseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8
 		SolutionGuid = {3970DD61-4F33-45E3-8BBD-B43AAF9C07F9}
+		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;iseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8
 	EndGlobalSection
 EndGlobal

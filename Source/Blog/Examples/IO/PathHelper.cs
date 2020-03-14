@@ -1,3 +1,4 @@
+#nullable enable
 namespace Examples.IO
 {
     using System;
