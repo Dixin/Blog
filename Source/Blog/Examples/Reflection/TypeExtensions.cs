@@ -1,4 +1,5 @@
-﻿namespace Examples.Reflection
+﻿#nullable enable
+namespace Examples.Reflection
 {
     using System;
     using System.Linq;
@@ -10,7 +11,7 @@
     {
         #region Methods
 
-        internal static FieldInfo GetBaseField(this Type type, string name)
+        internal static FieldInfo? GetBaseField(this Type type, string name)
         {
             type.NotNull(nameof(type));
 
@@ -23,7 +24,7 @@
             return @base.GetTypeField(name) ?? @base.GetBaseField(name);
         }
 
-        internal static PropertyInfo GetBaseIndex(this Type type, params object[] args)
+        internal static PropertyInfo? GetBaseIndex(this Type type, params object[] args)
         {
             type.NotNull(nameof(type));
 
@@ -36,7 +37,7 @@
             return @base.GetTypeIndex(args) ?? @base.GetBaseIndex(args);
         }
 
-        internal static MethodInfo GetBaseMethod(this Type type, string name, params object[] args)
+        internal static MethodInfo? GetBaseMethod(this Type type, string name, params object[] args)
         {
             type.NotNull(nameof(type));
 
@@ -49,7 +50,7 @@
             return @base.GetTypeMethod(name, args) ?? @base.GetBaseMethod(name, args);
         }
 
-        internal static PropertyInfo GetBaseProperty(this Type type, string name)
+        internal static PropertyInfo? GetBaseProperty(this Type type, string name)
         {
             type.NotNull(nameof(type));
 
@@ -62,7 +63,7 @@
             return @base.GetTypeProperty(name) ?? @base.GetBaseProperty(name);
         }
 
-        internal static MethodInfo GetInterfaceMethod(this Type type, string name, params object[] args)
+        internal static MethodInfo? GetInterfaceMethod(this Type type, string name, params object[] args)
         {
             type.NotNull(nameof(type));
 
@@ -77,7 +78,7 @@
                         parameter.ParameterType.IsInstanceOfType(args[index])).Aggregate(true, (a, b) => a && b));
         }
 
-        internal static FieldInfo GetTypeField(this Type type, string name)
+        internal static FieldInfo? GetTypeField(this Type type, string name)
         {
             type.NotNull(nameof(type));
 
@@ -86,7 +87,7 @@
                 .FirstOrDefault(field => field.Name.Equals(name, StringComparison.Ordinal));
         }
 
-        internal static PropertyInfo GetTypeIndex(this Type type, params object[] args)
+        internal static PropertyInfo? GetTypeIndex(this Type type, params object[] args)
         {
             type.NotNull(nameof(type));
 
@@ -100,7 +101,7 @@
                             true, (a, b) => a && b));
         }
 
-        internal static MethodInfo GetTypeMethod(this Type type, string name, params object[] args)
+        internal static MethodInfo? GetTypeMethod(this Type type, string name, params object[] args)
         {
             type.NotNull(nameof(type));
 
@@ -116,7 +117,7 @@
                         .All(match => true));
         }
 
-        internal static PropertyInfo GetTypeProperty(this Type type, string name)
+        internal static PropertyInfo? GetTypeProperty(this Type type, string name)
         {
             type.NotNull(nameof(type));
 
@@ -167,28 +168,28 @@
         {
             @object.NotNull(nameof(@object));
 
-            return (TValue)@object.GetType().GetTypeField(name).GetValue(@object);
+            return (TValue)(@object.GetType().GetTypeField(name) ?? throw new ArgumentOutOfRangeException(nameof(name))).GetValue(@object);
         }
 
         public static void SetField(this object @object, string name, object value)
         {
             @object.NotNull(nameof(@object));
 
-            @object.GetType().GetTypeField(name).SetValue(@object, value);
+            (@object.GetType().GetTypeField(name) ?? throw new ArgumentOutOfRangeException(nameof(name))).SetValue(@object, value);
         }
 
         public static TValue GetProperty<TValue>(this object @object, string name)
         {
             @object.NotNull(nameof(@object));
 
-            return (TValue)@object.GetType().GetTypeProperty(name).GetValue(@object);
+            return (TValue)(@object.GetType().GetTypeProperty(name) ?? throw new ArgumentOutOfRangeException(nameof(name))).GetValue(@object);
         }
 
         public static void SetProperty(this object @object, string name, object value)
         {
             @object.NotNull(nameof(@object));
 
-            @object.GetType().GetTypeProperty(name).SetValue(@object, value);
+            (@object.GetType().GetTypeProperty(name) ?? throw new ArgumentOutOfRangeException(nameof(name))).SetValue(@object, value);
         }
     }
 }

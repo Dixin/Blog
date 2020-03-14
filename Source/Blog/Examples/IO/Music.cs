@@ -37,23 +37,26 @@
                 .Select((track, index) => 
                     $@" -i ""{video}"" -c:a libmp3lame -ar 48000 -b:a 320k -ss {track.start} {(index == tracks.Length - 1 ? string.Empty : $"-to {tracks[index + 1].start}")} ""{Path.GetDirectoryName(video)}\{index + 1}. {track.name}.mp3""");
             arguments.ForEach(argument =>
-            {
-                using (Process ffmpeg = new Process())
                 {
+                    using Process ffmpeg = new Process
+                    {
+                        StartInfo =
+                        {
+                            UseShellExecute = false,
+                            RedirectStandardOutput = true,
+                            FileName = "ffmpeg",
+                            Arguments = argument,
+                            RedirectStandardError = true
+                        }
+                    };
                     // Redirect the output stream of the child process.
-                    ffmpeg.StartInfo.UseShellExecute = false;
-                    ffmpeg.StartInfo.RedirectStandardOutput = true;
-                    ffmpeg.StartInfo.FileName = "ffmpeg";
-                    ffmpeg.StartInfo.Arguments = argument;
-                    ffmpeg.StartInfo.RedirectStandardError = true;
                     ffmpeg.OutputDataReceived += (sender, e) => Console.WriteLine(e.Data);
                     ffmpeg.ErrorDataReceived += (sender, e) => Console.WriteLine(e.Data);
                     ffmpeg.Start();
                     ffmpeg.BeginErrorReadLine();
                     ffmpeg.BeginOutputReadLine();
                     ffmpeg.WaitForExit();
-                }
-            });
+                });
         }
 
         internal static void RenameAlbum(string directory)
@@ -379,7 +382,7 @@
             string[] names = fileName.Split(Separator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
             return names.Length != 7
                 || names[0].Length != 4
-                || (names[2].Length != 2 && names[2].Length != 3 && names.Any(string.IsNullOrWhiteSpace));
+                || names[2].Length != 2 && names[2].Length != 3 && names.Any(string.IsNullOrWhiteSpace);
         }
     }
 }

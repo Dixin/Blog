@@ -14,11 +14,11 @@
         [TestMethod]
         public void SerializeDeserializeTest()
         {
-            Exception exceptionToSerialize = null;
+            Exception? exceptionToSerialize = null;
             int int32 = 1;
             try
             {
-                int32 = int32 / (int32 - int32);
+                int32 /= int32 - int32;
             }
             catch (Exception exception)
             {
@@ -26,7 +26,7 @@
             }
 
             Serializer serializer = new Serializer(new BinaryFormatter());
-            string base64 = serializer.Serialize(exceptionToSerialize);
+            string base64 = serializer.Serialize(exceptionToSerialize ?? throw new AssertFailedException());
             Trace.WriteLine(base64);
             Assert.IsFalse(string.IsNullOrWhiteSpace(base64));
 

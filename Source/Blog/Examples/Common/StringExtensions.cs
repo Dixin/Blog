@@ -37,14 +37,14 @@ namespace Examples.Common
             (this string value, int count) =>
                 string.IsNullOrEmpty(value) || count < 1 ? string.Empty : value.Substring(0, Math.Min(count, value.Length));
 
-        public static void LogWith(this string message, TextWriter logger = null) => logger?.WriteLine(message);
+        public static void LogWith(this string message, TextWriter? logger) => logger?.WriteLine(message);
 
         public static string GetTitleFromHtml(this string html)
         {
             Match match = new Regex(
                 @".*<head>.*<title>(.*)</title>.*</head>.*",
                 RegexOptions.IgnoreCase | RegexOptions.Singleline).Match(html);
-            return match.Success ? match.Groups[1].Value : null;
+            return match.Success ? match.Groups[1].Value : string.Empty;
         }
 
         public static bool Any(this string value, UnicodeCategory category) =>

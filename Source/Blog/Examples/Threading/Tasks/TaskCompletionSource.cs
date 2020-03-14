@@ -8,26 +8,26 @@
 
     public class TaskCompletionSource
     {
-        private readonly TaskCompletionSource<Unit> taskCompletionSource;
+        private readonly TaskCompletionSource<Unit?> taskCompletionSource;
 
         public TaskCompletionSource()
         {
-            this.taskCompletionSource = new TaskCompletionSource<Unit>();
+            this.taskCompletionSource = new TaskCompletionSource<Unit?>();
         }
 
         public TaskCompletionSource(object state)
         {
-            this.taskCompletionSource = new TaskCompletionSource<Unit>(state);
+            this.taskCompletionSource = new TaskCompletionSource<Unit?>(state);
         }
 
         public TaskCompletionSource(TaskCreationOptions creationOptions)
         {
-            this.taskCompletionSource = new TaskCompletionSource<Unit>(creationOptions);
+            this.taskCompletionSource = new TaskCompletionSource<Unit?>(creationOptions);
         }
 
         public TaskCompletionSource(object state, TaskCreationOptions creationOptions)
         {
-            this.taskCompletionSource = new TaskCompletionSource<Unit>(state, creationOptions);
+            this.taskCompletionSource = new TaskCompletionSource<Unit?>(state, creationOptions);
         }
 
         public Task Task => this.taskCompletionSource.Task;

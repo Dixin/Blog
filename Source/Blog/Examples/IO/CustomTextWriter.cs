@@ -10,7 +10,7 @@
     {
         private readonly Action<string> write;
 
-        public CustomTextWriter(Action<string> write, Encoding encoding = null)
+        public CustomTextWriter(Action<string> write, Encoding? encoding = null)
         {
             write.NotNull(nameof(write));
 

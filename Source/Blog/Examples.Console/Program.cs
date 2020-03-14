@@ -10,12 +10,10 @@
         private static void Main(string[] args)
         {
             AppDomainData.DataDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\Data");
-            using (TextWriterTraceListener traceListener = new TextWriterTraceListener(Path.Combine(Path.GetTempPath(), "Trace.txt")))
-            {
-                Trace.Listeners.Add(traceListener);
+            using TextWriterTraceListener traceListener = new TextWriterTraceListener(Path.Combine(Path.GetTempPath(), "Trace.txt"));
+            Trace.Listeners.Add(traceListener);
 
-                Trace.Listeners.Remove(traceListener);
-            }
+            Trace.Listeners.Remove(traceListener);
         }
     }
 }

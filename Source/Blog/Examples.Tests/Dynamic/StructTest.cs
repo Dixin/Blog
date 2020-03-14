@@ -20,15 +20,9 @@ namespace Examples.Tests.Dynamic
 
         internal int Value
         {
-            get
-            {
-                return this.value;
-            }
+            get => this.value;
 
-            set
-            {
-                this.value = value;
-            }
+            set => this.value = value;
         }
     }
 }

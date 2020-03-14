@@ -1,4 +1,5 @@
-﻿namespace Examples.Management
+﻿#nullable enable
+namespace Examples.Management
 {
     using System;
     using System.Diagnostics;
@@ -13,25 +14,25 @@
     [DebuggerDisplay("Name = {this.Name}, Id = {this.ProcessId}")]
     public partial class Win32Process
     {
-        public string Caption { get; }
+        public string? Caption { get; }
 
-        public string CommandLine { get; }
+        public string? CommandLine { get; }
 
-        public string CreationClassName { get; }
+        public string? CreationClassName { get; }
 
         public DateTime? CreationDate { get; }
 
-        public string CSCreationClassName { get; }
+        public string? CSCreationClassName { get; }
 
-        public string CSName { get; }
+        public string? CSName { get; }
 
-        public string Description { get; }
+        public string? Description { get; }
 
-        public string ExecutablePath { get; }
+        public string? ExecutablePath { get; }
 
         public ushort? ExecutionState { get; }
 
-        public string Handle { get; }
+        public string? Handle { get; }
 
         public uint? HandleCount { get; }
 
@@ -43,11 +44,11 @@
 
         public uint? MinimumWorkingSetSize { get; }
 
-        public string Name { get; }
+        public string? Name { get; }
 
-        public string OSCreationClassName { get; }
+        public string? OSCreationClassName { get; }
 
-        public string OSName { get; }
+        public string? OSName { get; }
 
         public ulong? OtherOperationCount { get; }
 
@@ -85,7 +86,7 @@
 
         public uint? SessionId { get; }
 
-        public string Status { get; }
+        public string? Status { get; }
 
         public DateTime? TerminationDate { get; }
 
@@ -95,7 +96,7 @@
 
         public ulong? VirtualSize { get; }
 
-        public string WindowsVersion { get; }
+        public string? WindowsVersion { get; }
 
         public ulong? WorkingSetSize { get; }
 

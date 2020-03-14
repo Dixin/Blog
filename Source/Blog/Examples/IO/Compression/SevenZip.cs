@@ -41,7 +41,7 @@
 
         #region Public Methods and Operators
 
-        public static void DeleteDirectory(string directory, TextWriter logger = null)
+        public static void DeleteDirectory(string directory, TextWriter? logger)
         {
             directory.NotNullOrWhiteSpace(nameof(directory));
 
@@ -50,7 +50,7 @@
             $"End deleting directory {directory}".LogWith(logger);
         }
 
-        public static void DeleteFile(string file, TextWriter logger = null)
+        public static void DeleteFile(string file, TextWriter? logger)
         {
             file.NotNullOrWhiteSpace(nameof(file));
 
@@ -62,10 +62,10 @@
         public void AllToZips(
             string directory,
             string[] archiveExtensions,
-            Func<string, string> zipFile = null,
+            Func<string, string>? zipFile = null,
             bool deleteArchive = false,
             bool isRecursive = false,
-            TextWriter logger = null,
+            TextWriter? logger = null,
             int level = DefaultCompressionLevel)
         {
             directory.NotNullOrWhiteSpace(nameof(directory));
@@ -84,13 +84,13 @@
         public void DoubleZip(
             string source,
             string password,
-            Func<string, string> intermediateFile = null,
-            TextWriter logger = null,
+            Func<string, string>? intermediateFile = null,
+            TextWriter? logger = null,
             int level = DefaultCompressionLevel)
         {
             source.NotNullOrWhiteSpace(nameof(source));
             
-            intermediateFile = intermediateFile ?? (name => $"{source}..zip");
+            intermediateFile ??= name => $"{source}..zip";
 
             string firstPassZip = intermediateFile(source);
             this.Zip(source, firstPassZip, logger, null, level);
@@ -101,13 +101,13 @@
             DeleteFile(firstPassZip, logger);
         }
 
-        public void Extract(string archive, string destination = null, bool deleteArchive = false, TextWriter logger = null)
+        public void Extract(string archive, string? destination = null, bool deleteArchive = false, TextWriter? logger = null)
         {
             archive.NotNullOrWhiteSpace(nameof(archive));
 
             destination = !string.IsNullOrWhiteSpace(destination)
                 ? destination
-                : Path.Combine(Path.GetDirectoryName(archive), Path.GetFileNameWithoutExtension(archive));
+                : Path.Combine(Path.GetDirectoryName(archive) ?? throw new ArgumentOutOfRangeException(nameof(archive)), Path.GetFileNameWithoutExtension(archive));
             $"Start extracting {archive} to {destination}".LogWith(logger);
             ProcessHelper.StartAndWait(
                 this.sevenZ,
@@ -125,10 +125,10 @@
         public void ExtractAll(
             string directory,
             string[] archiveExtensions,
-            Func<string, string> destinationDirectory = null,
+            Func<string, string>? destinationDirectory = null,
             bool deleteArchive = false,
             bool isRecursive = false,
-            TextWriter logger = null)
+            TextWriter? logger = null)
         {
             directory.NotNullOrWhiteSpace(nameof(directory));
             archiveExtensions.NotNull(nameof(archiveExtensions));
@@ -150,9 +150,9 @@
 
         public void ToZip(
             string archive,
-            string zip = null,
+            string? zip = null,
             bool deleteArchive = false,
-            TextWriter logger = null,
+            TextWriter? logger = null,
             int level = DefaultCompressionLevel)
         {
             archive.NotNullOrWhiteSpace(nameof(archive));
@@ -185,16 +185,16 @@
 
         public void Zip(
             string source,
-            string zip = null,
-            TextWriter logger = null,
-            string password = null,
+            string? zip = null,
+            TextWriter? logger = null,
+            string? password = null,
             int level = DefaultCompressionLevel)
         {
             source.NotNullOrWhiteSpace(nameof(source));
 
             level = FormatCompressionLevel(level);
             zip = !string.IsNullOrWhiteSpace(zip) ? zip : $"{source}.zip";
-            string passwordArgument = string.IsNullOrEmpty(password) ? null : $"-p{password}";
+            string? passwordArgument = string.IsNullOrEmpty(password) ? null : $"-p{password}";
 
             $"Start creating {zip} from {source}".LogWith(logger);
             ProcessHelper.StartAndWait(

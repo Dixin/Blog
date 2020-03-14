@@ -12,18 +12,12 @@
         // </connectionStrings>
         public static string DataDirectory
         {
-            get
-            {
-                return AppDomain.CurrentDomain.GetData(nameof(DataDirectory)) as string;
-            }
+            get => (string)AppDomain.CurrentDomain.GetData(nameof(DataDirectory));
 
-            set
-            {
-                AppDomain.CurrentDomain.SetData(
-                    nameof(DataDirectory),
-                    // .. in path does not work. so use new DirectoryInfo(path).FullName to remove .. in path.
-                    new DirectoryInfo(value).FullName);
-            }
+            set => AppDomain.CurrentDomain.SetData(
+                nameof(DataDirectory),
+                // .. in path does not work. so use new DirectoryInfo(path).FullName to remove .. in path.
+                new DirectoryInfo(value).FullName);
         }
     }
 }

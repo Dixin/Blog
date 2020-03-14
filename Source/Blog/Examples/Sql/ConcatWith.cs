@@ -17,7 +17,9 @@ namespace Examples.Sql
         MaxByteSize = 8000)]
     public class ConcatWith : IBinarySerialize
     {
+#pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
         private StringBuilder concatWith;
+#pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
 
         [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
         public void Init()

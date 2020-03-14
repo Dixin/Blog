@@ -13,7 +13,7 @@
         public static void AssignCurrentThreadToCpu
             (int cpuIndex) => AssignThreadToCpu(NativeMethods.GetCurrentThread(), cpuIndex);
 
-        public static void Sta(Action action, bool ignoreException = false) => Sta<object>(
+        public static void Sta(Action action, bool ignoreException = false) => Sta<object?>(
             () =>
                 {
                     action();
@@ -22,10 +22,11 @@
             ignoreException);
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
+        [return: MaybeNull]
         public static TResult Sta<TResult>(Func<TResult> func, bool ignoreException = false)
         {
-            Exception staThreadException = null;
-            TResult result = default(TResult);
+            Exception? staThreadException = null;
+            TResult result = default;
             Thread staThread = new Thread(() =>
             {
                 try

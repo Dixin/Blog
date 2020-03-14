@@ -2,63 +2,55 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.Contracts;
+#if NETSTANDARD2_1
+    using System.Diagnostics.CodeAnalysis;
+#endif
     using System.Linq;
     using System.Reflection;
 
     public static class Argument
     {
-        public static void Requires(bool condition, string message, string paramName = null)
-        {
-            if (!condition)
-            {
-                throw new ArgumentException(message, paramName);
-            }
-            
-            Contract.EndContractBlock();
-        }
-
-        public static void Range(bool condition, string message, string paramName = null)
-        {
-            if (!condition)
-            {
-                throw new ArgumentOutOfRangeException(paramName, message);
-            }
-
-            Contract.EndContractBlock();
-        }
-
-        public static void NotNull<T>([ValidatedNotNull]this T value, string name = null)
+        public static void NotNull<T>(
+#if NETSTANDARD2_1
+            [NotNull]
+#endif
+            [ValidatedNotNull]this T value, string name)
         {
             if (value == null)
             {
                 throw new ArgumentNullException(name);
             }
-
-            Contract.EndContractBlock();
         }
 
-        public static void NotNullOrWhiteSpace([ValidatedNotNull]this string value, string name = null)
+        public static void NotNullOrWhiteSpace(
+#if NETSTANDARD2_1
+            [NotNull]
+#endif
+            [ValidatedNotNull]this string value, string name)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
                 throw new ArgumentNullException(name);
             }
-
-            Contract.EndContractBlock();
         }
 
-        public static void NotNullOrEmpty([ValidatedNotNull]this string value, string name = null)
+        public static void NotNullOrEmpty(
+#if NETSTANDARD2_1
+            [NotNull]
+#endif
+            [ValidatedNotNull]this string value, string name)
         {
             if (string.IsNullOrEmpty(value))
             {
                 throw new ArgumentNullException(name);
             }
-
-            Contract.EndContractBlock();
         }
 
-        public static void NotNullOrEmpty<T>([ValidatedNotNull]this IEnumerable<T> value, string name = null)
+        public static void NotNullOrEmpty<T>(
+#if NETSTANDARD2_1
+            [NotNull]
+#endif
+            [ValidatedNotNull]this IEnumerable<T> value, string name)
         {
             if (value == null)
             {
@@ -69,8 +61,6 @@
             {
                 throw new ArgumentOutOfRangeException(name);
             }
-
-            Contract.EndContractBlock();
         }
 
         public static void NotNull<T>(Func<T> value)
@@ -79,15 +69,13 @@
             {
                 throw new ArgumentNullException(GetName(value));
             }
-
-            Contract.EndContractBlock();
         }
 
         private static string GetName<TValue>(Func<TValue> func)
         {
             // http://weblogs.asp.net/fredriknormen/how-to-validate-a-method-s-arguments
             FieldInfo[] fields = func.Target.GetType().GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
-            return fields.Length == 1 ? fields[0].Name : null;
+            return fields.Single().Name;
         }
     }
 }

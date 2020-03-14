@@ -16,12 +16,9 @@
         {
             predicate.NotNull(nameof(predicate));
 
-            X509Certificate2 certificate;
-            using (X509Store store = new X509Store(location))
-            {
-                store.Open(OpenFlags.ReadOnly);
-                certificate = store.Certificates.OfType<X509Certificate2>().FirstOrDefault(predicate);
-            }
+            using X509Store store = new X509Store(location);
+            store.Open(OpenFlags.ReadOnly);
+            X509Certificate2 certificate = store.Certificates.OfType<X509Certificate2>().FirstOrDefault(predicate);
 
             return certificate;
         }
@@ -31,11 +28,9 @@
             x509.NotNull(nameof(x509));
 
             byte[] encryptedBytes;
-            using (RSACryptoServiceProvider rsa = (RSACryptoServiceProvider)x509.PublicKey.Key)
-            {
-                byte[] bytesToEncrypt = encoding.GetBytes(value);
-                encryptedBytes = rsa.Encrypt(bytesToEncrypt, false);
-            }
+            using RSACryptoServiceProvider rsa = (RSACryptoServiceProvider)x509.PublicKey.Key;
+            byte[] bytesToEncrypt = encoding.GetBytes(value);
+            encryptedBytes = rsa.Encrypt(bytesToEncrypt, false);
 
             return Convert.ToBase64String(encryptedBytes);
         }

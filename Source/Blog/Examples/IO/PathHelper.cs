@@ -35,7 +35,7 @@ namespace Examples.IO
 
         public static string ExecutingDirectory() => Path.GetDirectoryName(ExecutingAssembly());
 
-        public static bool TryGetOneDriveRoot(out string oneDrive)
+        public static bool TryGetOneDriveRoot(out string? oneDrive)
         {
             oneDrive = Registry.GetValue(
                 @"HKEY_CURRENT_USER\Software\Microsoft\OneDrive", "UserFolder", null) as string;

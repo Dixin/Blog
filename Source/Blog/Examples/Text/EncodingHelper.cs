@@ -24,7 +24,7 @@
         public static string Utf8ToGB2312
             (this string utf8Value) => Convert(utf8Value, Encoding.UTF8, Encoding.GetEncoding("gb2312"));
 
-        public static void Convert(Encoding from, Encoding to, string fromPath, string toPath = null)
+        public static void Convert(Encoding from, Encoding to, string fromPath, string? toPath = null)
         {
             from.NotNull(nameof(from));
             to.NotNull(nameof(to));

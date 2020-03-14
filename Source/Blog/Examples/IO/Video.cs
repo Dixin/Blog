@@ -36,7 +36,7 @@
 
         private static readonly byte[] Bom = Utf8Encoding.GetPreamble();
 
-        internal static void RenameFiles(string path, Func<string, int, string> rename, string pattern = null, SearchOption? searchOption = null, Func<string, bool> predicate = null, bool overwrite = false, bool isDryRun = false, Action<string> log = null)
+        internal static void RenameFiles(string path, Func<string, int, string> rename, string? pattern = null, SearchOption? searchOption = null, Func<string, bool>? predicate = null, bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
         {
             log ??= TraceLog;
             Directory.GetFiles(path, pattern ?? "*", searchOption ?? SearchOption.AllDirectories)
@@ -56,7 +56,7 @@
                 });
         }
 
-        internal static void RenameDirectories(string path, Func<string, string> rename, string pattern = null, SearchOption? searchOption = null, Func<string, bool> predicate = null, Action<string> log = null)
+        internal static void RenameDirectories(string path, Func<string, string> rename, string? pattern = null, SearchOption? searchOption = null, Func<string, bool>? predicate = null, Action<string>? log = null)
         {
             log ??= TraceLog;
             Directory.GetDirectories(path, pattern ?? "*", searchOption ?? SearchOption.AllDirectories)
@@ -73,7 +73,7 @@
                 });
         }
 
-        private static void Convert(Encoding from, Encoding to, string fromPath, string toPath = null, byte[] bom = null)
+        private static void Convert(Encoding from, Encoding to, string fromPath, string? toPath = null, byte[]? bom = null)
         {
             byte[] fromBytes = File.ReadAllBytes(fromPath);
             byte[] toBytes = Encoding.Convert(from, to, fromBytes);
@@ -84,7 +84,7 @@
             File.WriteAllBytes(toPath ?? fromPath, toBytes);
         }
 
-        internal static (string Charset, float? Confidence, string File)[] GetSubtitles(string directory)
+        internal static (string? Charset, float? Confidence, string File)[] GetSubtitles(string directory)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             return TextSearchPatterns
@@ -95,14 +95,14 @@
                     Ude.CharsetDetector detector = new Ude.CharsetDetector();
                     detector.Feed(fileStream);
                     detector.DataEnd();
-                    return detector.Charset != null ? (detector.Charset, Confidence: (float?)detector.Confidence, File: file) : (Charset: (string)null, Confidence: (float?)null, File: file);
+                    return detector.Charset != null ? (detector.Charset, Confidence: (float?)detector.Confidence, File: file) : (Charset: (string?)null, Confidence: (float?)null, File: file);
                 })
                 .OrderBy(result => result.Charset)
                 .ThenByDescending(result => result.Confidence)
                 .ToArray();
         }
 
-        internal static void DeleteSubtitle(string directory, bool isDryRun = false, Action<string> log = null, params string[] encodings)
+        internal static void DeleteSubtitle(string directory, bool isDryRun = false, Action<string>? log = null, params string[] encodings)
         {
             log ??= TraceLog;
             GetSubtitles(directory)
@@ -117,7 +117,7 @@
                 });
         }
 
-        internal static void ConvertToUtf8(string directory, bool backup = false, Action<string> log = null)
+        internal static void ConvertToUtf8(string directory, bool backup = false, Action<string>? log = null)
         {
             log ??= TraceLog;
             GetSubtitles(directory)
@@ -205,7 +205,7 @@
                 .SelectMany(pattern => Directory.EnumerateFiles(directory, pattern, SearchOption.AllDirectories));
         }
 
-        private static (string FullPath, string FileName, int Width, int Height, int Audio, int Subtitle) GetVideoMetadata(string file, int retryCount = 10, Action<string> log = null)
+        private static (string FullPath, string FileName, int Width, int Height, int Audio, int Subtitle) GetVideoMetadata(string file, int retryCount = 10, Action<string>? log = null)
         {
             log ??= TraceLog;
             Task<(string FullPath, string FileName, int Width, int Height, int Audio, int Subtitle)> task = Task.Run(() =>
@@ -239,7 +239,7 @@
             return (file, Path.GetFileName(file), -1, -1, -1, -1);
         }
 
-        private static int GetAudioMetadata(string file, Action<string> log = null)
+        private static int GetAudioMetadata(string file, Action<string>? log = null)
         {
             log ??= TraceLog;
             Task<int> task = Task.Run(() =>
@@ -270,7 +270,7 @@
             return -1;
         }
 
-        private static string GetVideoError((string FullPath, string FileName, int Width, int Height, int Audio, int Subtitle) video, bool isNoAudioAllowed)
+        private static string? GetVideoError((string FullPath, string FileName, int Width, int Height, int Audio, int Subtitle) video, bool isNoAudioAllowed)
         {
             if (video.Width <= 0 || video.Height <= 0 || (isNoAudioAllowed ? video.Audio < 0 : video.Audio <= 0))
             {
@@ -328,12 +328,12 @@
             return null;
         }
 
-        internal static void PrintVideoError(string directory, bool isNoAudioAllowed = false, string searchPattern = null, SearchOption searchOption = SearchOption.TopDirectoryOnly, Action<string> log = null)
+        internal static void PrintVideoError(string directory, bool isNoAudioAllowed = false, string? pattern = null, SearchOption searchOption = SearchOption.TopDirectoryOnly, Action<string>? log = null)
         {
-            PrintVideosWithError(string.IsNullOrWhiteSpace(searchPattern) ? GetVideos(directory) : Directory.EnumerateFiles(directory, searchPattern, searchOption), isNoAudioAllowed, log);
+            PrintVideosWithError(string.IsNullOrWhiteSpace(pattern) ? GetVideos(directory) : Directory.EnumerateFiles(directory, pattern, searchOption), isNoAudioAllowed, log);
         }
 
-        internal static void PrintVideosWithError(IEnumerable<string> files, bool isNoAudioAllowed = false, Action<string> log = null)
+        internal static void PrintVideosWithError(IEnumerable<string> files, bool isNoAudioAllowed = false, Action<string>? log = null)
         {
             log ??= TraceLog;
             files
@@ -344,17 +344,17 @@
                 .Where(result => !string.IsNullOrWhiteSpace(result.Error))
                 .AsSequential()
                 .OrderBy(result => result.Video.FullPath)
-                .ForEach(result => log(result.Error));
+                .ForEach(result => log(result.Error ?? string.Empty));
         }
 
-        internal static void PrintVideoErrorsFast(string directory, Action<string> log = null)
+        internal static void PrintVideoErrorsFast(string directory, Action<string>? log = null)
         {
             log ??= TraceLog;
             GetVideos(directory)
                 .OrderBy(video => video)
                 .ForEach(video =>
                 {
-                    if (!Regex.IsMatch(Path.GetFileNameWithoutExtension(video), "[1-9]Audio", RegexOptions.IgnoreCase))
+                    if (!Regex.IsMatch(Path.GetFileNameWithoutExtension(video) ?? string.Empty, "[1-9]Audio", RegexOptions.IgnoreCase))
                     {
                         int audio = GetAudioMetadata(video, _ => { });
                         if (audio != 1)
@@ -367,7 +367,7 @@
 
         private static readonly string MovieDirectory = @"^[^\.]+\.([0-9]{4})\..+\[([0-9]\.[0-9]|\-)\](\[[0-9]{3,4}p\](\[3D\])?)?$";
 
-        internal static void PrintDirectoryError(string directory, int level = 2, Action<string> log = null)
+        internal static void PrintDirectoryError(string directory, int level = 2, Action<string>? log = null)
         {
             log ??= TraceLog;
             GetDirectories(directory, level)
@@ -439,7 +439,7 @@
             });
         }
 
-        internal static void PrintDirectoriesWithMultipleVideos(string directory, int level = 2, Action<string> log = null)
+        internal static void PrintDirectoriesWithMultipleVideos(string directory, int level = 2, Action<string>? log = null)
         {
             log ??= TraceLog;
             GetDirectories(directory, level)
@@ -447,7 +447,7 @@
                 .ForEach(log);
         }
 
-        internal static async Task ConvertAsync(Encoding from, Encoding to, string fromPath, string toPath = null)
+        internal static async Task ConvertAsync(Encoding from, Encoding to, string fromPath, string? toPath = null)
         {
             byte[] fromBytes = await File.ReadAllBytesAsync(fromPath);
             byte[] toBytes = Encoding.Convert(from, to, fromBytes);
@@ -482,14 +482,16 @@
 
         private static string FilterTitleForFileSystem(this string value) => value.Replace("?", "").Replace(": ", "-").Replace("*", "_").Replace("/", "_");
 
-        internal static void RenameEpisodesWithTitle(string nfoDirectory, string mediaDirectory, string searchPattern, Func<string, string, string> rename, bool isDryRun = false, Action<string> log = null)
+        internal static void RenameEpisodesWithTitle(string nfoDirectory, string mediaDirectory, string searchPattern, Func<string, string, string> rename, bool isDryRun = false, Action<string>? log = null)
         {
+            log ??= TraceLog;
             Directory.EnumerateFiles(nfoDirectory, $"{searchPattern}.nfo", SearchOption.AllDirectories)
                 .ToList()
                 .ForEach(nfo =>
                 {
-                    string match = Regex.Match(Path.GetFileNameWithoutExtension(nfo), @"s[\d]+e[\d]+", RegexOptions.IgnoreCase).Value.ToLowerInvariant();
-                    string title = XDocument.Load(nfo).Root?.Element("title")?.Value.FilterTitleForFileSystem();
+
+                    string match = Regex.Match(Path.GetFileNameWithoutExtension(nfo) ?? throw new InvalidOperationException($"{nfo} is invalid."), @"s[\d]+e[\d]+", RegexOptions.IgnoreCase).Value.ToLowerInvariant();
+                    string title = XDocument.Load(nfo).Root?.Element("title")?.Value.FilterTitleForFileSystem() ?? throw  new InvalidOperationException($"{nfo} has no title.");
                     Directory
                         .EnumerateFiles(mediaDirectory, $"*{match}*", SearchOption.AllDirectories)
                         .ForEach(file =>
@@ -505,7 +507,7 @@
                 });
         }
 
-        internal static void RenameDirectoriesWithDefinition(string directory, int level = 2, Action<string> log = null)
+        internal static void RenameDirectoriesWithDefinition(string directory, int level = 2, Action<string>? log = null)
         {
             log ??= TraceLog;
             GetDirectories(directory, level)
@@ -528,7 +530,7 @@
                 });
         }
 
-        internal static void PrintDirectoriesWithLowDefinition(string directory, int level = 2, Action<string> log = null)
+        internal static void PrintDirectoriesWithLowDefinition(string directory, int level = 2, Action<string>? log = null)
         {
             log ??= TraceLog;
             GetDirectories(directory, level)
@@ -545,26 +547,29 @@
                 });
         }
 
-        internal static void PrintDirectoriesMultipleMedia(string directory, int level = 2, Action<string> log = null)
+        internal static void PrintDirectoriesMultipleMedia(string directory, int level = 2, Action<string>? log = null)
         {
+            log ??= TraceLog;
+
             GetDirectories(directory, level)
                 .ForEach(movie =>
                 {
                     if (Directory.GetFiles(movie).Count(file => CommonVideoExtensions.Any(extension => file.EndsWith(extension, StringComparison.OrdinalIgnoreCase))) > 1)
                     {
-                        log(movie);
+                        log.Invoke(movie);
                     }
                 });
         }
 
-        internal static void PrintDirectoriesWithMissingVideo(string directory, int level = 2, Action<string> log = null)
+        internal static void PrintDirectoriesWithMissingVideo(string directory, int level = 2, Action<string>? log = null)
         {
+            log ??= TraceLog;
             GetDirectories(directory, level)
             .Where(m => !Directory.EnumerateFiles(m, "*.mp4", SearchOption.TopDirectoryOnly).Any() && !Directory.EnumerateFiles(m, "*.avi", SearchOption.TopDirectoryOnly).Any())
             .ForEach(log);
         }
 
-        internal static void RenameVideosWithDefinition(string[] files, bool isDryRun = false, Action<string> log = null)
+        internal static void RenameVideosWithDefinition(string[] files, bool isDryRun = false, Action<string>? log = null)
         {
             log ??= TraceLog;
             files.ForEach(file => Debug.Assert(Regex.IsMatch(file, @"^\!(720p|1080p)\: ([0-9]{2,4}x[0-9]{2,4} )?(.*)$")));
@@ -604,8 +609,9 @@
                 });
         }
 
-        internal static void MoveSubtitleToParentDirectory(string directory, bool isDryRun = false, Action<string> log = null)
+        internal static void MoveSubtitleToParentDirectory(string directory, bool isDryRun = false, Action<string>? log = null)
         {
+            log ??= TraceLog;
             Directory.GetFiles(directory, "*.srt", SearchOption.AllDirectories)
                 .ForEach(subtitle =>
                 {
@@ -634,10 +640,11 @@
                 });
         }
 
-        private static readonly Regex[] PreferredVersions = new string[] { @"[\. ]YIFY(\+HI)?$", @"[\. ]YIFY[\. ]", @"\[YTS\.", @"\-RARBG(\.[1-9]Audio)?$", @"\-VXT(\.[1-9]Audio)?$", @"\.GAZ$" }.Select(version => new Regex(version)).ToArray();
+        private static readonly Regex[] PreferredVersions = new string[] { @"[\. ]YIFY(\+HI)?$", @"[\. ]YIFY(\.[1-9]Audio)?$", @"\[YTS\.[A-Z]{2}\](\.[1-9]Audio)?$", @"\-RARBG(\.[1-9]Audio)?$", @"\-VXT(\.[1-9]Audio)?$", @"\.GAZ$" }.Select(version => new Regex(version)).ToArray();
 
-        internal static void PrintVideosNonPreferred(string directory, int level = 2, Action<string> log = null)
+        internal static void PrintVideosNonPreferred(string directory, int level = 2, Action<string>? log = null)
         {
+            log ??= TraceLog;
             GetDirectories(directory, level)
                 .ForEach(movie => Directory
                     .GetFiles(movie, "*.mp4", SearchOption.TopDirectoryOnly)
@@ -645,23 +652,26 @@
                     .ForEach(log));
         }
 
-        internal static void PrintMoviesWithNoSubtitle(string directory, int level = 2, Action<string> log = null)
+        internal static void PrintMoviesWithNoSubtitle(string directory, int level = 2, Action<string>? log = null)
         {
+            log ??= TraceLog;
             GetDirectories(directory, level)
                 .Where(movie => Directory.GetFiles(movie).All(video => SubtitleExtensions.All(extension => !video.EndsWith(extension, StringComparison.OrdinalIgnoreCase))))
                 .ForEach(log);
         }
 
-        internal static void PrintMoviesWithNoSubtitle(string directory, int level = 2, Action<string> log = null, params string[] languages)
+        internal static void PrintMoviesWithNoSubtitle(string directory, int level = 2, Action<string>? log = null, params string[] languages)
         {
+            log ??= TraceLog;
             string[] searchPatterns = languages.SelectMany(language => SubtitleExtensions.Select(extension => $"*{language}*{extension}")).ToArray();
             GetDirectories(directory, level)
                 .Where(movie => searchPatterns.All(searchPattern => !Directory.EnumerateFiles(movie, searchPattern, SearchOption.TopDirectoryOnly).Any()))
                 .ForEach(log);
         }
 
-        internal static void RenameDirectoriesWithMetadata(string directory, int level = 2, bool isDryRun = false, Action<string> log = null)
+        internal static void RenameDirectoriesWithMetadata(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
         {
+            log ??= TraceLog;
             GetDirectories(directory, level)
                 .ToArray()
                 .ForEach(movie =>
@@ -669,14 +679,14 @@
                     string[] nfos = Directory.GetFiles(movie, "*.nfo", SearchOption.TopDirectoryOnly).OrderBy(nfo => nfo).ToArray();
                     XDocument english = XDocument.Load(nfos.First(nfo => nfo.EndsWith(".eng.nfo")));
                     XDocument chinese = XDocument.Load(nfos.First(nfo => !nfo.EndsWith(".eng.nfo")));
-                    string englishTitle = english.Root?.Element("title")?.Value;
-                    string chineseTitle = chinese.Root?.Element("title")?.Value;
-                    string originalTitle = chinese.Root?.Element("originaltitle")?.Value;
-                    string year = chinese.Root?.Element("year")?.Value;
-                    string imdb = chinese.Root?.Element("imdbid")?.Value;
+                    string englishTitle = english.Root?.Element("title")?.Value ?? throw new InvalidOperationException($"{english} has no title.");
+                    string chineseTitle = chinese.Root?.Element("title")?.Value ?? throw new InvalidOperationException($"{chinese} has no title.");
+                    string? originalTitle = chinese.Root?.Element("originaltitle")?.Value;
+                    string year = chinese.Root?.Element("year")?.Value ?? throw new InvalidOperationException($"{chinese} has no year.");
+                    string? imdb = chinese.Root?.Element("imdbid")?.Value;
                     string rating = string.IsNullOrWhiteSpace(imdb)
                         ? "[-]"
-                        : float.TryParse(chinese.Root.Element("rating")?.Value, out float ratingFloat) ? ratingFloat.ToString("0.0") : "0.0";
+                        : float.TryParse(chinese.Root?.Element("rating")?.Value, out float ratingFloat) ? ratingFloat.ToString("0.0") : "0.0";
                     string[] videos = Directory.GetFiles(movie, "*.mp4", SearchOption.TopDirectoryOnly).Concat(Directory.GetFiles(movie, "*.avi", SearchOption.TopDirectoryOnly)).ToArray();
                     string definition = videos switch
                     {
@@ -723,16 +733,18 @@
 
         private static readonly string[] IndependentNfos = { "tvshow.nfo", "season.nfo" };
 
-        internal static void PrintMetadataWithoutMedia(string directory, Action<string> log = null)
+        internal static void PrintMetadataWithoutMedia(string directory, Action<string>? log = null)
         {
+            log ??= TraceLog;
             Directory.EnumerateFiles(directory, "*.nfo", SearchOption.AllDirectories)
                 .Where(nfo => IndependentNfos.All(independent => !string.Equals(independent, Path.GetFileName(nfo), StringComparison.OrdinalIgnoreCase)))
                 .Where(nfo => CommonVideoExtensions.Select(extension => Path.Combine(Path.GetDirectoryName(nfo), Path.GetFileNameWithoutExtension(nfo) + extension)).All(video => !File.Exists(video)))
                 .ForEach(log);
         }
 
-        internal static void PrintMetadataByGroup(string directory, int level = 2, string field = "genre", Action<string> log = null)
+        internal static void PrintMetadataByGroup(string directory, int level = 2, string field = "genre", Action<string>? log = null)
         {
+            log ??= TraceLog;
             GetDirectories(directory, level)
                 .Select(movie => (movie, nfo: XDocument.Load(Directory.GetFiles(movie, "*.nfo", SearchOption.TopDirectoryOnly).First())))
                 .Select(movie => (movie.movie, field: movie.nfo.Root?.Element(field)?.Value))
@@ -740,8 +752,9 @@
                 .ForEach(movie => log($"{movie.field}: {Path.GetFileName(movie.movie)}"));
         }
 
-        internal static void PrintMetadataByDuplication(string directory, int level = 2, string field = "imdbid", Action<string> log = null)
+        internal static void PrintMetadataByDuplication(string directory, string field = "imdbid", Action<string>? log = null)
         {
+            log ??= TraceLog;
             Directory.GetFiles(directory, "*.nfo", SearchOption.AllDirectories)
                 .Select(nfo => (nfo, field: XDocument.Load(nfo).Root?.Element(field)?.Value))
                 .GroupBy(movie => movie.field)
@@ -749,7 +762,7 @@
                 .ForEach(group => group.ForEach(movie => log($"{movie.field} - {movie.nfo}")));
         }
 
-        internal static void MoveMovies(string destination, string directory, int level = 2, string field = "genre", string value = null, bool isDryRun = false)
+        internal static void MoveMovies(string destination, string directory, int level = 2, string field = "genre", string? value = null, bool isDryRun = false)
         {
             MoveMovies(
                 (movie, metadata) => Path.Combine(destination, Path.GetFileName(movie)),
@@ -759,8 +772,9 @@
                 isDryRun);
         }
 
-        internal static void MoveMovies(Func<string, XDocument, string> rename, string directory, int level = 2, Func<string, XDocument, bool> predicate = null, bool isDryRun = false, Action<string> log = null)
+        internal static void MoveMovies(Func<string, XDocument, string> rename, string directory, int level = 2, Func<string, XDocument, bool>? predicate = null, bool isDryRun = false, Action<string>? log = null)
         {
+            log ??= TraceLog;
             GetDirectories(directory, level)
                 .ToArray()
                 .Select(movie => (Directory: movie, Metadata: XDocument.Load(Directory.GetFiles(movie, "*.nfo", SearchOption.TopDirectoryOnly).First())))
@@ -777,7 +791,7 @@
                 });
         }
 
-        internal static void DeleteDuplication(string directory, int level = 2, bool isDryRun = false, Action<string> log = null)
+        internal static void DeleteDuplication(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
         {
             log ??= TraceLog;
             GetDirectories(directory, level)
@@ -803,7 +817,7 @@
 
         private static readonly string[] CommonEnglish = { " of ", " is " };
 
-        internal static void RenameSubtitlesByLanguage(string directory, bool isDryRun = false, Action<string> log = null)
+        internal static void RenameSubtitlesByLanguage(string directory, bool isDryRun = false, Action<string>? log = null)
         {
             log ??= TraceLog;
             TextSubtitleSearchPatterns
@@ -842,7 +856,7 @@
                 });
         }
 
-        internal static void PrintYears(string directory, int level = 2, Action<string> log = null)
+        internal static void PrintYears(string directory, int level = 2, Action<string>? log = null)
         {
             log ??= TraceLog;
             GetDirectories(directory, level)
@@ -858,19 +872,19 @@
                     Match match = Regex.Match(movieDirectory, MovieDirectory);
                     Debug.Assert(match.Success);
                     string directoryYear = match.Groups[1].Value;
-                    string metadataYear = metadata.Root?.Element("year")?.Value;
-                    string videoName = null;
+                    string metadataYear = metadata.Root?.Element("year")?.Value ?? throw new InvalidOperationException($"{metadata} has no year.");
+                    string videoName = string.Empty;
                     if (!(directoryYear == metadataYear
                         && CommonVideoSearchPatterns
                             .SelectMany(pattern => Directory.GetFiles(movie, pattern, SearchOption.TopDirectoryOnly))
-                            .All(video => (videoName = Path.GetFileName(video)).Contains(directoryYear))))
+                            .All(video => (videoName = Path.GetFileName(video) ?? throw new InvalidOperationException($"{video} is invalid.")).Contains(directoryYear))))
                     {
-                        log($"Direcoty: {directoryYear}, Metadata {metadataYear}, Video: {videoName}, {movie}");
+                        log($"Directory: {directoryYear}, Metadata {metadataYear}, Video: {videoName}, {movie}");
                     }
                 });
         }
 
-        internal static void PrintDirectoriesWithNonLatinOriginalTitle(string directory, int level = 2, Action<string> log = null)
+        internal static void PrintDirectoriesWithNonLatinOriginalTitle(string directory, int level = 2, Action<string>? log = null)
         {
             log ??= TraceLog;
             GetDirectories(directory, level)
@@ -879,7 +893,7 @@
                 .ForEach(log);
         }
 
-        internal static void PrintDirectoriesWithDuplicatePictures(string directory, int level = 2, Action<string> log = null)
+        internal static void PrintDirectoriesWithDuplicatePictures(string directory, int level = 2, Action<string>? log = null)
         {
             log ??= TraceLog;
             GetDirectories(directory, level)

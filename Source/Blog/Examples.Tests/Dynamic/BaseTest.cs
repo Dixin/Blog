@@ -40,15 +40,9 @@ namespace Examples.Tests.Dynamic
 
         public string this[int x, int y]
         {
-            get
-            {
-                return this.array[x, y].ToString(CultureInfo.InvariantCulture);
-            }
+            get => this.array[x, y].ToString(CultureInfo.InvariantCulture);
 
-            set
-            {
-                this.array[x, y] = Convert.ToInt32(value);
-            }
+            set => this.array[x, y] = Convert.ToInt32(value);
         }
 
         #endregion

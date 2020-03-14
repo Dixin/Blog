@@ -49,8 +49,8 @@ namespace Examples.IO
 
         public static void Move(string source, string destination, bool overwrite)
         {
-            source.NotNullOrWhiteSpace();
-            destination.NotNullOrWhiteSpace();
+            source.NotNullOrWhiteSpace(nameof(source));
+            destination.NotNullOrWhiteSpace(nameof(destination));
 
             if (overwrite && Directory.Exists(destination))
             {

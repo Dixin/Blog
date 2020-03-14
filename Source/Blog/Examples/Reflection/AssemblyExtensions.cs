@@ -1,5 +1,6 @@
 ﻿namespace Examples.Reflection
 {
+    using System;
     using System.IO;
     using System.Reflection;
 
@@ -12,10 +13,8 @@
             assembly.NotNull(nameof(assembly));
             resourceName.NotNullOrWhiteSpace(nameof(resourceName));
 
-            using (StreamReader reader = new StreamReader(assembly.GetManifestResourceStream(resourceName)))
-            {
-                return reader.ReadToEnd();
-            }
+            using StreamReader reader = new StreamReader(assembly.GetManifestResourceStream(resourceName) ?? throw new ArgumentOutOfRangeException(nameof(resourceName)));
+            return reader.ReadToEnd();
         }
 
         public static void GetResourceFile(this Assembly assembly, string resourceName, string filePath)
@@ -24,12 +23,10 @@
             resourceName.NotNullOrWhiteSpace(nameof(resourceName));
             filePath.NotNullOrWhiteSpace(nameof(filePath));
 
-            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-            using (FileStream fileStream = new FileStream(filePath, FileMode.CreateNew))
-            {
-                stream.Seek(0, SeekOrigin.Begin);
-                stream.CopyTo(fileStream);
-            }
+            using Stream stream = assembly.GetManifestResourceStream(resourceName);
+            using FileStream fileStream = new FileStream(filePath, FileMode.CreateNew);
+            stream.Seek(0, SeekOrigin.Begin);
+            stream.CopyTo(fileStream);
         }
     }
 }

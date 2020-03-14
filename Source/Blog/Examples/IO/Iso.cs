@@ -28,23 +28,26 @@
                     }))
                 .Do(directory => Directory
                     .EnumerateDirectories(directory, "*", SearchOption.AllDirectories)
-                    .Where(subderectory => Path.GetFileName(subderectory).Contains(";"))
-                    .ForEach(subderectory => Directory.Move(subderectory, Path.Combine(Path.GetDirectoryName(subderectory), subderectory.Replace(";", "_")))))
+                    .Where(subDirectory => Path.GetFileName(subDirectory).Contains(";"))
+                    .ForEach(subDirectory => Directory.Move(subDirectory, Path.Combine(Path.GetDirectoryName(subDirectory), subDirectory.Replace(";", "_")))))
                 .Select(directory => $@" create -o ""{destination}\{Path.GetFileName(directory)}.iso"" -add ""{directory}"" ""/{Path.GetFileName(directory)}"" -label {Path.GetFileName(directory)} -disable-optimization")
-                .Do(directory => Console.WriteLine(directory))
+                .Do(Console.WriteLine)
                 .ForEach(argument =>
-                {
-                    using (Process piso = new Process())
                     {
-                        piso.StartInfo.UseShellExecute = true;
-                        piso.StartInfo.CreateNoWindow = false;
-                        piso.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
-                        piso.StartInfo.FileName = @"""C:\Program Files\PowerISO\piso.exe""";
-                        piso.StartInfo.Arguments = argument;
+                        using Process piso = new Process
+                            {
+                                StartInfo =
+                                    {
+                                        UseShellExecute = true,
+                                        CreateNoWindow = false,
+                                        WindowStyle = ProcessWindowStyle.Minimized,
+                                        FileName = @"""C:\Program Files\PowerISO\piso.exe""",
+                                        Arguments = argument
+                                    }
+                            };
                         piso.Start();
                         piso.WaitForExit();
-                    }
-                });
+                    });
         }
     }
 }

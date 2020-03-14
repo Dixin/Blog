@@ -15,20 +15,20 @@ namespace Examples.IO
             File.Delete(file);
         }
 
-        public static bool Contains(string file, string find, Encoding encoding = null)
+        public static bool Contains(string file, string find, Encoding? encoding = null)
         {
             file.NotNullOrWhiteSpace(nameof(file));
 
-            encoding = encoding ?? Encoding.UTF8;
+            encoding ??= Encoding.UTF8;
             return File.ReadAllText(file, encoding).Contains(find);
         }
 
-        public static void Replace(string file, string find, string replace = null, Encoding encoding = null)
+        public static void Replace(string file, string find, string? replace = null, Encoding? encoding = null)
         {
             file.NotNullOrWhiteSpace(nameof(file));
 
-            replace = replace ?? string.Empty;
-            encoding = encoding ?? Encoding.UTF8;
+            replace ??= string.Empty;
+            encoding ??= Encoding.UTF8;
             string text = File.ReadAllText(file, encoding).Replace(find, replace);
             File.WriteAllText(file, text, encoding);
         }
@@ -43,8 +43,8 @@ namespace Examples.IO
 
         public static void Move(string source, string destination, bool overwrite)
         {
-            source.NotNullOrWhiteSpace();
-            destination.NotNullOrWhiteSpace();
+            source.NotNullOrWhiteSpace(nameof(source));
+            destination.NotNullOrWhiteSpace(nameof(destination));
 
             if (overwrite && File.Exists(destination))
             {

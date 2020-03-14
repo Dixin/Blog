@@ -10,7 +10,7 @@
             Thread thread0 = new Thread(() =>
             {
                 ThreadHelper.AssignCurrentThreadToCpu(0);
-                Draw((index, count) => Math.Sin((2 * Math.PI) * ((double)index / count)) / 2 + 0.5);
+                Draw((index, count) => Math.Sin(2 * Math.PI * ((double)index / count)) / 2 + 0.5);
             });
             Thread thread1 = new Thread(() =>
             {
@@ -42,8 +42,8 @@
         private static void Draw(
             Func<int, int, double> getCpuUsage, TimeSpan? period = null, TimeSpan? frame = null)
         {
-            period = period ?? TimeSpan.FromSeconds(20);
-            frame = frame ?? TimeSpan.FromSeconds(0.5);
+            period ??= TimeSpan.FromSeconds(20);
+            frame ??= TimeSpan.FromSeconds(0.5);
 
             int millisecondsPerFrame = (int)frame.Value.TotalMilliseconds;
             int frameCountPerPeriod = (int)(period.Value.TotalMilliseconds / millisecondsPerFrame);

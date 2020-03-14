@@ -29,29 +29,27 @@
             this.mutex.Dispose();
         }
 
-        public static bool Detect(string mutexName, Action single, Action multiple = null)
+        public static bool Detect(string mutexName, Action single, Action? multiple = null)
         {
             mutexName.NotNullOrEmpty(nameof(mutexName));
             single.NotNull(nameof(single));
 
-            using (Mutex mutex = new Mutex(true, mutexName))
+            using Mutex mutex = new Mutex(true, mutexName);
+            if (mutex.WaitOne(TimeSpan.Zero, true))
             {
-                if (mutex.WaitOne(TimeSpan.Zero, true))
+                try
                 {
-                    try
-                    {
-                        single();
-                        return true;
-                    }
-                    finally
-                    {
-                        mutex.ReleaseMutex();
-                    }
+                    single();
+                    return true;
                 }
-
-                multiple?.Invoke();
-                return false;
+                finally
+                {
+                    mutex.ReleaseMutex();
+                }
             }
+
+            multiple?.Invoke();
+            return false;
         }
     }
 }

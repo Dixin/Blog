@@ -13,7 +13,7 @@
         {
             action.NotNull(nameof(action));
 
-            return new Func<object>(() =>
+            return new Func<object?>(() =>
                 {
                     action();
                     return null;
@@ -32,7 +32,7 @@
                 return function();
             }
 
-            TResult result = default(TResult);
+            TResult result = default;
 
             // See: System.Runtime.CompilerServices.AsyncMethodBuilderCore.MoveNextRunner.Run()
             ExecutionContext.Run(executionContext, _ => result = function(), null);
@@ -129,7 +129,7 @@
             task.NotNull(nameof(task));
             continuation.NotNull(nameof(continuation));
 
-            return task.ContinueWithContext(new Func<Task<TResult>, object>(t =>
+            return task.ContinueWithContext(new Func<Task<TResult>, object?>(t =>
                 {
                     continuation(t);
                     return null;
@@ -141,7 +141,7 @@
             task.NotNull(nameof(task));
             continuation.NotNull(nameof(continuation));
 
-            return task.ContinueWithContext(new Func<Task, object>(t =>
+            return task.ContinueWithContext(new Func<Task, object?>(t =>
                 {
                     continuation(t);
                     return null;

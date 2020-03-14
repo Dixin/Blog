@@ -7,30 +7,30 @@ namespace Examples.Reflection
     public static class ReflectionHelper
     {
         public static MethodInfo MethodOf<T>
-            (Expression<Func<T>> methodCall) => (methodCall.Body as MethodCallExpression)?.Method;
+            (Expression<Func<T>> methodCall) => ((MethodCallExpression)methodCall.Body).Method;
 
         public static MethodInfo MethodOf
-            (Expression<Action> methodCall) => (methodCall.Body as MethodCallExpression)?.Method;
+            (Expression<Action> methodCall) => ((MethodCallExpression)methodCall.Body).Method;
 
         public static ConstructorInfo ConstructorOf<T>
-            (Expression<Func<T>> constructorCall) => (constructorCall.Body as NewExpression)?.Constructor;
+            (Expression<Func<T>> constructorCall) => ((NewExpression)constructorCall.Body).Constructor;
 
         public static PropertyInfo PropertyOf<T>
-            (Expression<Func<T>> getterCall) => (getterCall.Body as MemberExpression)?.Member as PropertyInfo;
+            (Expression<Func<T>> getterCall) => (PropertyInfo)((MemberExpression)getterCall.Body).Member;
 
         public static PropertyInfo PropertyOf<T>
-            (Expression<Action<T>> setterCall) => (setterCall.Body as MemberExpression)?.Member as PropertyInfo;
+            (Expression<Action<T>> setterCall) => (PropertyInfo)((MemberExpression)setterCall.Body).Member;
 
         public static FieldInfo FieldOf<T>
-            (Expression<Func<T>> fieldCall) => (fieldCall.Body as MemberExpression)?.Member as FieldInfo;
+            (Expression<Func<T>> fieldCall) => (FieldInfo)((MemberExpression)fieldCall.Body).Member;
 
         public static MemberInfo MemberOf<T>
-            (Expression<Func<T>> memberCall) => (memberCall.Body as MemberExpression)?.Member;
+            (Expression<Func<T>> memberCall) => ((MemberExpression)memberCall.Body).Member;
 
         public static MemberInfo MemberOf
-            (Expression<Action> memberCall) => (memberCall.Body as MemberExpression)?.Member;
+            (Expression<Action> memberCall) => ((MemberExpression)memberCall.Body).Member;
 
         public static MemberInfo MemberOf<T>
-            (Expression<Action<T>> memberCall) => (memberCall.Body as MemberExpression)?.Member;
+            (Expression<Action<T>> memberCall) => ((MemberExpression)memberCall.Body).Member;
     }
 }

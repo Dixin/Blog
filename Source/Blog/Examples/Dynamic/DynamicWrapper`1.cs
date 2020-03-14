@@ -6,7 +6,7 @@
 //   Defines the DynamicWrapper type.
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
-
+#nullable enable
 namespace Examples.Dynamic
 {
     using System;
@@ -26,7 +26,9 @@ namespace Examples.Dynamic
 
 #pragma warning disable 414
         [SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields")]
+#pragma warning disable IDE0052 // Remove unread private members
         private readonly bool hasValue;
+#pragma warning restore IDE0052 // Remove unread private members
 #pragma warning restore 414
 
         private readonly bool isValueType;
@@ -39,7 +41,9 @@ namespace Examples.Dynamic
 
         #region Constructors and Destructors
 
+#pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
         public DynamicWrapper() // For static.
+#pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
         {
             this.type = typeof(T);
             this.isValueType = this.type.IsValueType;
@@ -52,40 +56,43 @@ namespace Examples.Dynamic
             value.NotNull(nameof(value));
 
             this.value = value;
+#if NETSTANDARD
             this.type = value.GetType();
+#else
+            this.type = value!.GetType();
+#endif
             this.isValueType = this.type.IsValueType;
             this.hasValue = true;
         }
 
-        #endregion
+#endregion
 
-        #region Public Methods
+#region Public Methods
 
         public T ToStatic() => this.value;
 
-        public override bool TryConvert(ConvertBinder binder, out object result)
+        public override bool TryConvert(ConvertBinder binder, out object? result)
         {
             result = this.value;
             return true;
         }
 
-        public override bool TryGetIndex(GetIndexBinder binder, object[] indexes, out object result)
+        public override bool TryGetIndex(GetIndexBinder binder, object[] indexes, out object? result)
         {
-            Array array = this.value as Array;
-            if (array != null && indexes.All(item => item is int || item is long))
+            if (this.value is Array array && indexes.All(item => item is int || item is long))
             {
                 result = array.GetValue(indexes.Select(Convert.ToInt64).ToArray());
                 return true;
             }
 
-            PropertyInfo index = this.type.GetTypeIndex(indexes);
+            PropertyInfo? index = this.type.GetTypeIndex(indexes);
             if (index != null)
             {
                 result = index.GetValue(this.value, indexes);
                 return true;
             }
 
-            MethodInfo method = this.type.GetInterfaceMethod("get_Item", indexes);
+            MethodInfo? method = this.type.GetInterfaceMethod("get_Item", indexes);
             if (method != null)
             {
                 result = method.Invoke(this.value, indexes);
@@ -103,10 +110,10 @@ namespace Examples.Dynamic
             return false;
         }
 
-        public override bool TryGetMember(GetMemberBinder binder, out object result)
+        public override bool TryGetMember(GetMemberBinder binder, out object? result)
         {
             // Searches in current type's public and non-public properties.
-            PropertyInfo property = this.type.GetTypeProperty(binder.Name);
+            PropertyInfo? property = this.type.GetTypeProperty(binder.Name);
             if (property != null)
             {
                 result = property.GetValue(this.value, null).ToDynamic();
@@ -114,7 +121,7 @@ namespace Examples.Dynamic
             }
 
             // Searches in explicitly implemented properties for interface.
-            MethodInfo method = this.type.GetInterfaceMethod(string.Concat("get_", binder.Name), null);
+            MethodInfo? method = this.type.GetInterfaceMethod(string.Concat("get_", binder.Name));
             if (method != null)
             {
                 result = method.Invoke(this.value, null).ToDynamic();
@@ -122,7 +129,7 @@ namespace Examples.Dynamic
             }
 
             // Searches in current type's public and non-public fields.
-            FieldInfo field = this.type.GetTypeField(binder.Name);
+            FieldInfo? field = this.type.GetTypeField(binder.Name);
             if (field != null)
             {
                 result = field.GetValue(this.value).ToDynamic();
@@ -150,9 +157,9 @@ namespace Examples.Dynamic
             return false;
         }
 
-        public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
+        public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object? result)
         {
-            MethodInfo method = this.type.GetTypeMethod(binder.Name, args) ??
+            MethodInfo? method = this.type.GetTypeMethod(binder.Name, args) ??
                                 this.type.GetInterfaceMethod(binder.Name, args) ??
                                 this.type.GetBaseMethod(binder.Name, args);
             if (method != null)
@@ -172,21 +179,20 @@ namespace Examples.Dynamic
                 throw new NotSupportedException("Setting index on value type is not supported.");
             }
 
-            Array array = this.value as Array;
-            if (array != null && indexes.All(item => item is int || item is long))
+            if (this.value is Array array && indexes.All(item => item is int || item is long))
             {
                 array.SetValue(value, indexes.Select(Convert.ToInt64).ToArray());
                 return true;
             }
 
-            PropertyInfo index = this.type.GetTypeIndex(indexes);
+            PropertyInfo? index = this.type.GetTypeIndex(indexes);
             if (index != null)
             {
                 index.SetValue(this.value, value, indexes);
                 return true;
             }
 
-            MethodInfo method = this.type.GetInterfaceMethod("set_Item", indexes);
+            MethodInfo? method = this.type.GetInterfaceMethod("set_Item", indexes);
             if (method != null)
             {
                 method.Invoke(this.value, indexes.Concat(Enumerable.Repeat(value, 1)).ToArray());
@@ -207,7 +213,7 @@ namespace Examples.Dynamic
         {
             if (!this.isValueType)
             {
-                PropertyInfo property = this.type.GetTypeProperty(binder.Name);
+                PropertyInfo? property = this.type.GetTypeProperty(binder.Name);
                 if (property != null)
                 {
                     property.SetValue(this.value, value, null);
@@ -215,7 +221,7 @@ namespace Examples.Dynamic
                 }
             }
 
-            FieldInfo field = this.type.GetTypeField(binder.Name);
+            FieldInfo? field = this.type.GetTypeField(binder.Name);
             if (field != null)
             {
                 field.SetValue(ref this.value, value);
@@ -224,10 +230,10 @@ namespace Examples.Dynamic
 
             if (!this.isValueType)
             {
-                MethodInfo method = this.type.GetInterfaceMethod(string.Concat("set_", binder.Name), value);
+                MethodInfo? method = this.type.GetInterfaceMethod(string.Concat("set_", binder.Name), value);
                 method?.Invoke(this.value, new[] { value });
 
-                PropertyInfo property = this.type.GetBaseProperty(binder.Name);
+                PropertyInfo? property = this.type.GetBaseProperty(binder.Name);
                 if (property != null)
                 {
                     property.SetValue(this.value, value, null);
@@ -251,6 +257,6 @@ namespace Examples.Dynamic
             return false;
         }
 
-        #endregion
+#endregion
     }
 }
