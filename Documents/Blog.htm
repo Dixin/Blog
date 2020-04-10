@@ -183,3 +183,12 @@
     ga('create', 'UA-494599-7', 'auto');
     ga('send', 'pageview');
 </script>
+<script>
+    $("article.blog-post pre.code").find("pre code").each(function(){
+        var $this = $(this);
+        $this.html("    " + $this.text().replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", '"').replace(/\n/g, "\n    "));
+    }).end().each(function(){
+        var $this = $(this);
+        $this.html($this.html().replace(/<pre>/g, "").replace(/<code>/g, "").replace(/((\r)?\n)?<p>((\r)?\n)?/g, "").replace(/<\/code>/g, "").replace(/<\/pre>/g, "").replace(/((\r)?\n)?<\/p>((\r)?\n)?/g, ""));
+    });
+</script>
