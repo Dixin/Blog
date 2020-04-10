@@ -1,18 +1,28 @@
 # Understanding (all) JavaScript module formats and tools
 
-JavaScript language was initially invented for simple form manipulation, with no built-in features like module or namespace. In years, tons of terms, patterns, libraries, syntax, and tools are invented to modularize JavaScript. This article discusses all mainstream module systems, formats and tools in JavaScript, including:
+JavaScript language was initially invented for simple form manipulation, with no built-in features like module or namespace. In years, tons of terms, patterns, libraries, syntax, and tools are invented to modularize JavaScript. This article discusses all mainstream module systems, formats, and tools in JavaScript, including:
 
-1. IIFE module: JavaScript module pattern
-2. Revealing module: JavaScript revealing module pattern
-3. CJS module: CommonJS module, or Node.js module
-4. AMD module: Asynchronous Module Definition, or RequireJS module
-5. UMD module: Universal Module Definition, or UmdJS module
-6. ES module: ECMAScript 2015, or ES6 module
-7. ES dynamic module: ECMAScript 2020, or ES11 dynamic module
-8. System module: SystemJS module
-9. Webpack module: transpile and bundle of CJS, AMD, ES modules
-10. Babel module: transpile ES module
-11. TypeScript module and namespace
+- [Understanding (all) JavaScript module formats and tools](#understanding-all-javascript-module-formats-and-tools)
+  - [IIFE module: JavaScript module pattern](#iife-module-javascript-module-pattern)
+    - [IIFE: Immediately invoked function expression](#iife-immediately-invoked-function-expression)
+    - [Import mixins](#import-mixins)
+  - [Revealing module: JavaScript revealing module pattern](#revealing-module-javascript-revealing-module-pattern)
+  - [CJS module: CommonJS module, or Node.js module](#cjs-module-commonjs-module-or-nodejs-module)
+  - [AMD module: Asynchronous Module Definition, or RequireJS module](#amd-module-asynchronous-module-definition-or-requirejs-module)
+    - [Dynamic loading](#dynamic-loading)
+    - [AMD module from CommonJS module](#amd-module-from-commonjs-module)
+  - [UMD module: Universal Module Definition, or UmdJS module](#umd-module-universal-module-definition-or-umdjs-module)
+    - [UMD for both AMD (RequireJS) and native browser](#umd-for-both-amd-requirejs-and-native-browser)
+    - [UMD for both AMD (RequireJS) and CommonJS (Node.js)](#umd-for-both-amd-requirejs-and-commonjs-nodejs)
+  - [ES module: ECMAScript 2015, or ES6 module](#es-module-ecmascript-2015-or-es6-module)
+  - [ES dynamic module: ECMAScript 2020, or ES11 dynamic module](#es-dynamic-module-ecmascript-2020-or-es11-dynamic-module)
+  - [System module: SystemJS module](#system-module-systemjs-module)
+    - [Dynamic module loading](#dynamic-module-loading)
+  - [Webpack module: bundle of CJS, AMD, ES modules](#webpack-module-bundle-of-cjs-amd-es-modules)
+  - [Babel module: transpile ES module](#babel-module-transpile-es-module)
+    - [Babel with SystemJS](#babel-with-systemjs)
+  - [TypeScript module and namespace](#typescript-module-and-namespace)
+  - [Conclusion](#conclusion)
 
 Hopefully this article can help you understand and use all those patterns and terns in JavaScript/TypeScript/Webpack etc. Please leave a comment if any module was missing in the article.
 
@@ -34,7 +44,7 @@ increase();
 reset();
 ```
 
-To avoid the global pollution, a anonymous function can be used to wrap the code:
+To avoid global pollution, an anonymous function can be used to wrap the code:
 
 ```js
 (() => {
@@ -78,11 +88,11 @@ iifeCounterModule.increase();
 iifeCounterModule.reset();
 ```
 
-It wraps the module code inside a IIFE. it returns a object, which is the placeholder of exported APIs. Only 1 global variable is introduced, which is the modal name. Later the module name can be used to call the exported module APIs. This is called the module pattern of JavaScript.
+It wraps the module code inside an IIFE. it returns an object, which is the placeholder of exported APIs. Only 1 global variable is introduced, which is the modal name. Later the module name can be used to call the exported module APIs. This is called the module pattern of JavaScript.
 
 ### Import mixins
 
-When defining a module, some dependencies may be required. With IIFE module pattern, each other modules is a global variable. They can be directly accessed inside the anonymous function, or be passed through the anonymous function’s arguments:
+When defining a module, some dependencies may be required. With IIFE module pattern, each other module is a global variable. They can be directly accessed inside the anonymous function, or be passed through the anonymous function’s arguments:
 
 ```js
 // Define IIFE module with dependencies.
@@ -104,7 +114,7 @@ The early version of popular libraries, like jQuery, followed this pattern.
 
 ## Revealing module: JavaScript revealing module pattern
 
-Revealing module pattern is named by Christian Heilmann. This pattern is also an IIFE, but it emphasizes defining all APIs as local variables inside the anonymous function:
+The revealing module pattern is named by Christian Heilmann. This pattern is also an IIFE, but it emphasizes defining all APIs as local variables inside the anonymous function:
 
 ```js
 // Define revealing module.
@@ -168,7 +178,7 @@ increase();
 reset();
 ```
 
-At runtime, Node.js implements this by wrapping the code inside the file into a function, then pass the exports variable, module variable, and require function through arguments.
+At runtime, Node.js implements this by wrapping the code inside the file into a function, then passes the `exports` variable, `module` variable, and `require` function through arguments.
 
 ```js
 // Define CommonJS module: wrapped commonJSCounterModule.js.
@@ -232,11 +242,11 @@ require(["amdCounterModule"], amdCounterModule => {
 });
 ```
 
-The AMD require function is totally different from the CommonJS require function. AMD require accept the names of modules to be consumed, and pass the module to a function argument.
+The AMD `require` function is totally different from the CommonJS `require` function. AMD `require` accept the names of modules to be consumed, and pass the module to a function argument.
 
 ### Dynamic loading
 
-AMD’s require function has another overload. It accepts a function, and pass a CommonJS-like require function to that function. So AMD modules can be loaded by calling require:
+AMD’s `require` function has another overload. It accepts a callback function, and pass a CommonJS-like `require` function to that callback. So AMD modules can be loaded by calling `require`:
 
 ```js
 // Use dynamic AMD module.
@@ -260,7 +270,7 @@ define(require => {
 
 ### AMD module from CommonJS module
 
-The above define function has a overload that can pass the require function as well as exports variable and module variable to a callback, so that CommonJS code can work inside:
+The above define function has an overload that can pass the require function as well as exports variable and module variable to a callback, so that CommonJS code can work inside:
 
 ```js
 // Define AMD module using CommonJS code.
@@ -326,7 +336,7 @@ For example, the following is a kind of UMD pattern to make module definition wo
 });
 ```
 
-It is more complex but just a IIFE. The anonymous function detects if AMD’s define function exists, if so, call the module factory with AMD’s define function. If not, it calls the module factory directly. At the moment,  the root argument is actually browser’s window object. It gets dependency modules from global variables (properties of window object). When factory returns the module, it assigns the returned module to a global variable too (property of window object).
+It is more complex but just an IIFE. The anonymous function detects if AMD’s define function exists, if so, call the module factory with AMD’s define function. If not, it calls the module factory directly. At the moment,  the `root` argument is actually browser’s `window` object. It gets dependency modules from global variables (properties of `window` object). When `factory` returns the module, the returned module is also assigned to a global variable (property of `window` object).
 
 ### UMD for both AMD (RequireJS) and CommonJS (Node.js)
 
@@ -358,7 +368,7 @@ The following is another kind of UMD pattern to make module definition work with
             define);
 ```
 
-Again, don’t be scared. It is just an IIFE. When the IIFE is called, its argument is evaluated. The argument evaluation detects the environment (the module variable and exports variable of CommonJS/Node.js, as well as the define function of AMD/RequireJS). If the environment is CommonJS/Node.js, the anonymous function’s argument is a manually created define function. If the environment is AMD/RequireJS, the anonymous function’s argument is just AMD’s define function. So when the anonymous function is executed, it is guaranteed to have a working define function. In side the anonymous function, it simply calls the define function to define the module.
+Again, don’t be scared. It is just an IIFE. When the IIFE is called, its argument is evaluated. The argument evaluation detects the environment (the module variable and `exports` variable of CommonJS/Node.js, as well as the `define` function of AMD/RequireJS). If the environment is CommonJS/Node.js, the anonymous function’s argument is a manually created `define` function. If the environment is AMD/RequireJS, the anonymous function’s argument is just AMD’s `define` function. So when the anonymous function is executed, it is guaranteed to have a working `define` function. Inside the anonymous function, it simply calls the `define` function to create the module.
 
 ## ES module: ECMAScript 2015, or ES6 module
 
@@ -383,7 +393,7 @@ export default {
 };
 ```
 
-To use this module file in browser, add a `<script>` tag and specify it is a module: `<script type="module" src="esCounterModule.js"></script>`. To use this module file in Node.js, rename its extension from .js to .mjs.
+To use this module file in browser, add a `<script>` tag and specify it is a module: `<script type="module" src="esCounterModule.js"></script>`. To use this module file in Node.js, rename its extension from `.js` to `.mjs`.
 
 ```js
 // Use ES module.
@@ -409,7 +419,7 @@ For browser, `<script>`’s `nomodule` attribute can be used for fallback:
 
 ## ES dynamic module: ECMAScript 2020, or ES11 dynamic module
 
-In 2020, the latest JavaScript spec version 11 is introducing a built-in function import to consume a ES module dynamically. The import function returns a promise, so its then method can be called to consume the module:
+In 2020, the latest JavaScript spec version 11 is introducing a built-in function `import` to consume an ES module dynamically. The `import` function returns a `promise`, so its `then` method can be called to consume the module:
 
 ```js
 // Use dynamic ES module with promise APIs, import from named export:
@@ -424,7 +434,7 @@ import("./esCounterModule.js").then(dynamicESCounterModule => {
 });
 ```
 
-By returning promise, apparently import function can also works with the await keyword:
+By returning a `promise`, apparently `import` function can also work with the `await` keyword:
 
 ```js
 // Use dynamic ES module with async/await.
@@ -474,7 +484,7 @@ export default {
 }
 ```
 
-If your runtime, like a old browser, does not support ES6 syntax, the above code cannot work. SystemJS can transpile the module definition to a call of library API, System.register:
+If the current runtime, like an old browser, does not support ES6 syntax, the above code cannot work. SystemJS can transpile the module definition to a call of library API, System.register:
 
 ```js
 // Define SystemJS module.
@@ -527,7 +537,7 @@ System.import("./esCounterModule.js").then(dynamicESCounterModule => {
 
 ## Webpack module: bundle of CJS, AMD, ES modules
 
-Webpack is a bundler for modules. It uses transpile combined CommonJS module, AMD module, and ES module into a harmony module pattern, and bundle all code into one single file. For example, the following 3 files defines 3 modules in 3 different syntax:
+Webpack is a bundler for modules. It uses transpile combined CommonJS module, AMD module, and ES module into a harmony module pattern, and bundle all code into one single file. For example, the following 3 files define 3 modules in 3 different syntaxes:
 
 ```js
 // Define AMD module: amdDependencyModule1.js
@@ -571,7 +581,7 @@ counterModule.increase();
 counterModule.reset();
 ```
 
-Webpack can bundle all the above file, even they are in 3 different module systems, into a single file mian.js:
+Webpack can bundle all the above file, even they are in 3 different module systems, into a single file `mian.js`:
 
 - root
   - dist
@@ -583,7 +593,7 @@ Webpack can bundle all the above file, even they are in 3 different module syste
     - index.js
   - webpack.config.js
 
-Interestingly, Webpack uses CommonJS module syntax for itself. In webpack.config.js:
+Interestingly, Webpack uses CommonJS module syntax for itself. In `webpack.config.js`:
 
 ```js
 const path = require('path');
@@ -605,7 +615,7 @@ npm install webpack webpack-cli --save-dev
 npx webpack --config webpack.config.js
 ```
 
-The following bundle file (main.js) is reformatted and variables are renamed to improve readability:
+The following bundle file `main.js` is reformatted and variables are renamed to improve readability:
 
 ```js
 (function (modules) { // webpackBootstrap
@@ -733,11 +743,11 @@ The following bundle file (main.js) is reformatted and variables are renamed to 
 ]);
 ```
 
-Again, it is just an IIFE. The code of all 4 files are transpiled to the code in 4 functions. And these 4 functions are passed to anonymous function as arguments.
+Again, it is just an IIFE. The code of all 4 files is transpiled to the code in 4 functions. And these 4 functions are passed to the anonymous function as arguments.
 
 ## Babel module: transpile ES module
 
-Babel is another transpiler to convert ES6+ JavaScript code to older syntax for older environment like older browsers. The above counter module in ES6 import/export syntax can be converted to the following babel module with new syntax replaced:
+Babel is another transpiler to convert ES6+ JavaScript code to the older syntax for the older environment like older browsers. The above counter module in ES6 import/export syntax can be converted to the following babel module with new syntax replaced:
 
 ```js
 // Babel.
@@ -766,7 +776,7 @@ exports["default"] = {
 };
 ```
 
-And here is the code in index.js which consumes the counter module:
+And here is the code in `index.js` which consumes the counter module:
 
 ```js
 // Babel.
@@ -778,12 +788,15 @@ esCounterModule["default"].increase();
 esCounterModule["default"].reset();
 ```
 
-This is the default transpilation. Bbel can also work with other tools.
+This is the default transpilation. Babel can also work with other tools.
 
 ### Babel with SystemJS
 
 SystemJS can be used as a plugin for Babel:
+
+```cmd
 npm install --save-dev @babel/plugin-transform-modules-systemjs
+```
 
 And it should be added to the Babel configuration:
 
@@ -912,7 +925,7 @@ System.register(["./esCounterModule"], function (_export, _context) {
 
 ## TypeScript module and namespace
 
-TypeScript supports ES module syntax <https://www.typescriptlang.org/docs/handbook/modules.html>, which can be kept as ES6, or transpiled to other formats, including CommonJS/Node.js, AMD/RequireJS, UMD/UmdJS, or System/SystemJS, acording to the specified transpiler option in tsconfig.json:
+TypeScript supports ES module syntax <https://www.typescriptlang.org/docs/handbook/modules.html>, which can be kept as ES6, or transpiled to other formats, including CommonJS/Node.js, AMD/RequireJS, UMD/UmdJS, or System/SystemJS, according to the specified transpiler option in tsconfig.json:
 
 ```js
 {
@@ -998,7 +1011,7 @@ System.register(["./dependencyModule"], function (exports_1, context_1) {
 });
 ```
 
-This was called external modules in TypeScript. TypeScript also has a module keyword and a namespace keyword <https://www.typescriptlang.org/docs/handbook/namespaces-and-modules.html#pitfalls-of-namespaces-and-modules>. They were called internal modules:
+This was called external modules in TypeScript. TypeScript also has a `module` keyword and a `namespace` keyword <https://www.typescriptlang.org/docs/handbook/namespaces-and-modules.html#pitfalls-of-namespaces-and-modules>. They were called internal modules:
 
 ```ts
 module Counter {
@@ -1061,7 +1074,7 @@ var Counter;
 })(Counter|| (Counter = {}));
 ```
 
-TypeScript module and namespace can also be used in export statement:
+TypeScript module and namespace can also be used in the `export` statement:
 
 ```ts
 module Counter {
@@ -1096,16 +1109,16 @@ var Counter;
 
 Welcome to JavaScript, which has so much drama - 10+ systems/formats just for modularization/namespace:
 
-1. IIFE module: JavaScript module pattern
-2. Revealing module: JavaScript revealing module pattern
-3. CJS module: CommonJS module, or Node.js module
-4. AMD module: Asynchronous Module Definition, or RequireJS module
-5. UMD module: Universal Module Definition, or UmdJS module
-6. ES module: ECMAScript 2015, or ES6 module
-7. ES dynamic module: ECMAScript 2020, or ES11 dynamic module
-8. System module: SystemJS module
-9. Webpack module: transpile and bundle of CJS, AMD, ES modules
-10. Babel module: transpile ES module
-11. TypeScript module and namespace
+1. IIFE module: JavaScript **module pattern**
+2. Revealing module: JavaScript **revealing module pattern**
+3. **CJS module**: CommonJS module, or Node.js module
+4. **AMD module**: Asynchronous Module Definition, or RequireJS module
+5. **UMD module**: Universal Module Definition, or UmdJS module
+6. **ES module**: ECMAScript 2015, or ES6 module
+7. **ES dynamic module**: ECMAScript 2020, or ES11 dynamic module
+8. **System module**: SystemJS module
+9. **Webpack module**: transpile and bundle of CJS, AMD, ES modules
+10. **Babel module**: transpile ES module
+11. **TypeScript module** and namespace
 
-Fortunately, now JavaScript has standard built-in language features for module, and it is supported by Node.js and all latest modern browsers. For older environments, you can still code with the new ES module syntax, then use Webpack/Babel/SystemJS/TypeScript to transpile to older or compatible syntax.
+Fortunately, now JavaScript has standard built-in language features for modules, and it is supported by Node.js and all the latest modern browsers. For older environments, you can still code with the new ES module syntax, then use Webpack/Babel/SystemJS/TypeScript to transpile to older or compatible syntax.
