@@ -36,7 +36,7 @@
 
             // See: System.Runtime.CompilerServices.AsyncMethodBuilderCore.MoveNextRunner.Run()
             ExecutionContext.Run(executionContext, _ => result = function(), null);
-            return result;
+            return result!;
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]

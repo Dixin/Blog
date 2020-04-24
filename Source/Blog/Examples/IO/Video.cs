@@ -9,7 +9,8 @@
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using System.Xml.Linq;
-
+    using Examples.Linq;
+    using Examples.Net;
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
     using Newtonsoft.Json;
     using Xabe.FFmpeg;
@@ -20,11 +21,12 @@
         private static readonly string[] UncommonVideoSearchPatterns = { "*.avi", "*.wmv", "*.webm", "*.mpg", "*.mpeg", "*.rmvb", "*.rm", "*.3gp", "*.divx", "*.m1v", "*.mov", "*.ts", "*.vob", "*.flv", "*.m4v", "*.mkv" };
 
         private static readonly string[] CommonVideoSearchPatterns = { "*.avi", "*.mp4" };
+
         private static readonly string[] CommonVideoExtensions = { ".avi", ".mp4", ".mkv", ".iso" };
 
         private static readonly string[] AllVideoSearchPattern = UncommonVideoSearchPatterns.Union(CommonVideoSearchPatterns).ToArray();
 
-        private static readonly string[] TextSearchPatterns = { "*.srt", "*.ass", "*.ssa", "*.txt" };
+        private static readonly string[] TextExtensions = { ".srt", ".ass", ".ssa", ".txt" };
 
         private static readonly string[] TextSubtitleSearchPatterns = { "*.srt", "*.ass", "*.ssa", "*.txt" };
 
@@ -87,8 +89,9 @@
         internal static (string? Charset, float? Confidence, string File)[] GetSubtitles(string directory)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            return TextSearchPatterns
-                .SelectMany(searchPattern => Directory.EnumerateFiles(directory, searchPattern, SearchOption.AllDirectories))
+            return Directory
+                .EnumerateFiles(directory, "*", SearchOption.AllDirectories)
+                .Where(file => TextExtensions.Any(extension => file.EndsWith(extension, StringComparison.OrdinalIgnoreCase)))
                 .Select(file =>
                 {
                     using FileStream fileStream = File.OpenRead(file);
@@ -199,16 +202,17 @@
             }
         }
 
-        private static IEnumerable<string> GetVideos(string directory)
+        private static IEnumerable<string> GetVideos(string directory, Func<string, bool>? predicate = null)
         {
             return AllVideoSearchPattern
-                .SelectMany(pattern => Directory.EnumerateFiles(directory, pattern, SearchOption.AllDirectories));
+                .SelectMany(pattern => Directory.EnumerateFiles(directory, pattern, SearchOption.AllDirectories))
+                .Where(file => predicate?.Invoke(file) ?? true);
         }
 
-        private static (string FullPath, string FileName, int Width, int Height, int Audio, int Subtitle) GetVideoMetadata(string file, int retryCount = 10, Action<string>? log = null)
+        private static (string FullPath, string FileName, int Width, int Height, int Audio, int Subtitle, int[] AudioBitrates) GetVideoMetadata(string file, int retryCount = 10, Action<string>? log = null)
         {
             log ??= TraceLog;
-            Task<(string FullPath, string FileName, int Width, int Height, int Audio, int Subtitle)> task = Task.Run(() =>
+            Task<(string FullPath, string FileName, int Width, int Height, int Audio, int Subtitle, int[] AudioBitrates)> task = Task.Run(() =>
             {
 
                 try
@@ -218,7 +222,7 @@
                         {
                             IMediaInfo mediaInfo = MediaInfo.Get(file).Result;
                             IVideoStream videoStream = mediaInfo.VideoStreams.First();
-                            return (file, Path.GetFileName(file), videoStream.Width, videoStream.Height, mediaInfo.AudioStreams?.Count() ?? 0, mediaInfo.SubtitleStreams?.Count() ?? 0);
+                            return (file, Path.GetFileName(file), videoStream.Width, videoStream.Height, mediaInfo.AudioStreams?.Count() ?? 0, mediaInfo.SubtitleStreams?.Count() ?? 0, mediaInfo.AudioStreams?.Select(audio => (int)audio.Bitrate).ToArray() ?? Array.Empty<int>());
                         },
                         retryCount,
                         exception => true);
@@ -226,7 +230,7 @@
                 catch (Exception exception)
                 {
                     log($"Fail {file} {exception}");
-                    return (file, Path.GetFileName(file), -1, -1, -1, -1);
+                    return (file, Path.GetFileName(file), -1, -1, -1, -1, Array.Empty<int>());
                 }
             });
             if (task.Wait(TimeSpan.FromSeconds(20)))
@@ -236,7 +240,7 @@
             }
 
             log($"Timeout {file}");
-            return (file, Path.GetFileName(file), -1, -1, -1, -1);
+            return (file, Path.GetFileName(file), -1, -1, -1, -1, Array.Empty<int>());
         }
 
         private static int GetAudioMetadata(string file, Action<string>? log = null)
@@ -270,14 +274,14 @@
             return -1;
         }
 
-        private static string? GetVideoError((string FullPath, string FileName, int Width, int Height, int Audio, int Subtitle) video, bool isNoAudioAllowed)
+        private static string? GetVideoError((string FullPath, string FileName, int Width, int Height, int Audio, int Subtitle, int[] AudioBitrates) video, bool isNoAudioAllowed)
         {
             if (video.Width <= 0 || video.Height <= 0 || (isNoAudioAllowed ? video.Audio < 0 : video.Audio <= 0))
             {
                 return $"Failed {video.Width}x{video.Height} {video.Audio}Audio {video.FullPath}";
             }
 
-            string fileName = Path.GetFileNameWithoutExtension(video.FileName);
+            string fileName = Path.GetFileNameWithoutExtension(video.FileName) ?? string.Empty;
             if (fileName.Contains("1080p"))
             {
                 if (video.Height < 1070 && video.Width < 1900)
@@ -325,12 +329,14 @@
                 }
             }
 
-            return null;
+            return video.AudioBitrates.Any(bitRate => bitRate < 192000)
+                ? $"!Bad audio: Bit rate is only {string.Join(',', video.AudioBitrates)} {video.FullPath}"
+                : null;
         }
 
-        internal static void PrintVideoError(string directory, bool isNoAudioAllowed = false, string? pattern = null, SearchOption searchOption = SearchOption.TopDirectoryOnly, Action<string>? log = null)
+        internal static void PrintVideoError(string directory, bool isNoAudioAllowed = false, string? pattern = null, SearchOption searchOption = SearchOption.TopDirectoryOnly, Func<string, bool>? predicate = null, Action<string>? log = null)
         {
-            PrintVideosWithError(string.IsNullOrWhiteSpace(pattern) ? GetVideos(directory) : Directory.EnumerateFiles(directory, pattern, searchOption), isNoAudioAllowed, log);
+            PrintVideosWithError(string.IsNullOrWhiteSpace(pattern) ? GetVideos(directory, predicate) : Directory.EnumerateFiles(directory, pattern, searchOption).Where(file => predicate?.Invoke(file) ?? true), isNoAudioAllowed, log);
         }
 
         internal static void PrintVideosWithError(IEnumerable<string> files, bool isNoAudioAllowed = false, Action<string>? log = null)
@@ -367,15 +373,28 @@
 
         private static readonly string MovieDirectory = @"^[^\.]+\.([0-9]{4})\..+\[([0-9]\.[0-9]|\-)\](\[[0-9]{3,4}p\](\[3D\])?)?$";
 
-        internal static void PrintDirectoryError(string directory, int level = 2, Action<string>? log = null)
+        internal static void PrintDirectoriesWithErrors(string directory, int level = 2, Action<string>? log = null)
         {
             log ??= TraceLog;
             GetDirectories(directory, level)
-                .Where(d => !Regex.IsMatch(Path.GetFileName(d), MovieDirectory))
-                .ForEach(d => log(d));
+                .Where(d =>
+                    {
+                        string movie = Path.GetFileName(d) ?? throw new InvalidOperationException(d);
+                        if (movie.StartsWith("0."))
+                        {
+                            movie = movie.Substring("0.".Length);
+                        }
+
+                        if (movie.Contains("{"))
+                        {
+                            movie = movie.Substring(0, movie.IndexOf("{", StringComparison.Ordinal));
+                        }
+                        return !Regex.IsMatch(movie, MovieDirectory);
+                    })
+                .ForEach(log);
         }
 
-        private static IEnumerable<string> GetDirectories(string directory, int level = 2)
+        internal static IEnumerable<string> GetDirectories(string directory, int level = 2)
         {
             IEnumerable<string> directories = Directory.EnumerateDirectories(directory, "*", SearchOption.TopDirectoryOnly);
             while (--level > 0)
@@ -404,7 +423,7 @@
                     return;
                 }
 
-                List<string> info = Path.GetFileName(file).Split(".").ToList();
+                List<string> info = (Path.GetFileName(file) ?? throw new InvalidOperationException(file)).Split(".").ToList();
                 if (info.Count <= 3)
                 {
                     // Space.
@@ -428,11 +447,11 @@
                 File.Move(file, Path.Combine(directory, newFile));
                 Directory.GetFiles(directory, "*", SearchOption.TopDirectoryOnly)
                     .Where(attachment => attachment != file)
-                    .Where(attachment => Path.GetFileName(attachment).StartsWith(Path.GetFileNameWithoutExtension(file), StringComparison.OrdinalIgnoreCase))
+                    .Where(attachment => (Path.GetFileName(attachment) ?? throw new InvalidOperationException(file)).StartsWith(Path.GetFileNameWithoutExtension(file), StringComparison.OrdinalIgnoreCase))
                     .ToList()
                     .ForEach(attachment =>
                     {
-                        string newAttachment = Path.Combine(directory, Path.GetFileName(attachment).Replace(Path.GetFileNameWithoutExtension(file), string.Join(".", info.SkipLast(1))));
+                        string newAttachment = Path.Combine(directory, (Path.GetFileName(attachment) ?? throw new InvalidOperationException(file)).Replace(Path.GetFileNameWithoutExtension(file), string.Join(".", info.SkipLast(1))));
                         log(newAttachment);
                         File.Move(attachment, newAttachment);
                     });
@@ -473,7 +492,7 @@
                         .Where(file => !file.EndsWith(mediaExtension, StringComparison.OrdinalIgnoreCase))
                         .ForEach(subtitle =>
                         {
-                            string language = Path.GetFileNameWithoutExtension(subtitle).Split(".").Last();
+                            string language = (Path.GetFileNameWithoutExtension(subtitle) ?? throw new InvalidOperationException(subtitle)).Split(".").Last();
                             string newSubtitle = $"{Path.GetFileNameWithoutExtension(video)}.{language}{Path.GetExtension(subtitle)}";
                             FileHelper.Move(subtitle, Path.Combine(Path.GetDirectoryName(video), newSubtitle), true);
                         });
@@ -491,7 +510,7 @@
                 {
 
                     string match = Regex.Match(Path.GetFileNameWithoutExtension(nfo) ?? throw new InvalidOperationException($"{nfo} is invalid."), @"s[\d]+e[\d]+", RegexOptions.IgnoreCase).Value.ToLowerInvariant();
-                    string title = XDocument.Load(nfo).Root?.Element("title")?.Value.FilterTitleForFileSystem() ?? throw  new InvalidOperationException($"{nfo} has no title.");
+                    string title = XDocument.Load(nfo).Root?.Element("title")?.Value.FilterTitleForFileSystem() ?? throw new InvalidOperationException($"{nfo} has no title.");
                     Directory
                         .EnumerateFiles(mediaDirectory, $"*{match}*", SearchOption.AllDirectories)
                         .ForEach(file =>
@@ -577,7 +596,7 @@
                 .Select(file =>
                 {
                     Match match = Regex.Match(file, @"^\!(720p|1080p)\: ([0-9]{2,4}x[0-9]{2,4} )?(.*)$");
-                    string path = match.Groups.Cast<Group>().Last().Value;
+                    string path = match.Groups.Last().Value;
                     return (Definition: match.Groups[1].Value, File: path, Extension: Path.GetExtension(Path.GetFileNameWithoutExtension(path)));
                 })
                 .ForEach(result =>
@@ -622,7 +641,7 @@
                         string mainVideo = videos.Length == 1
                             ? videos[0]
                             : videos.OrderByDescending(video => new FileInfo(video).Length).First();
-                        string language = Path.GetFileNameWithoutExtension(subtitle).ToUpperInvariant();
+                        string language = (Path.GetFileNameWithoutExtension(subtitle) ?? throw new InvalidOperationException(subtitle)).ToUpperInvariant();
                         string suffix = language switch
                         {
                             _ when language.Contains("ENG") => "",
@@ -677,21 +696,31 @@
                 .ForEach(movie =>
                 {
                     string[] nfos = Directory.GetFiles(movie, "*.nfo", SearchOption.TopDirectoryOnly).OrderBy(nfo => nfo).ToArray();
-                    XDocument english = XDocument.Load(nfos.First(nfo => nfo.EndsWith(".eng.nfo")));
-                    XDocument chinese = XDocument.Load(nfos.First(nfo => !nfo.EndsWith(".eng.nfo")));
-                    string englishTitle = english.Root?.Element("title")?.Value ?? throw new InvalidOperationException($"{english} has no title.");
-                    string chineseTitle = chinese.Root?.Element("title")?.Value ?? throw new InvalidOperationException($"{chinese} has no title.");
-                    string? originalTitle = chinese.Root?.Element("originaltitle")?.Value;
-                    string year = chinese.Root?.Element("year")?.Value ?? throw new InvalidOperationException($"{chinese} has no year.");
-                    string? imdb = chinese.Root?.Element("imdbid")?.Value;
+                    XDocument english;
+                    XDocument? chinese;
+                    if (nfos.Any(nfo => nfo.EndsWith(".eng.nfo")))
+                    {
+                        english = XDocument.Load(nfos.First(nfo => nfo.EndsWith(".eng.nfo")));
+                        chinese = XDocument.Load(nfos.First(nfo => !nfo.EndsWith(".eng.nfo")));
+                    }
+                    else
+                    {
+                        english = XDocument.Load(nfos.First());
+                        chinese = null;
+                    }
+                    string englishTitle = english.Root?.Element("title")?.Value ?? throw new InvalidOperationException($"{movie} has no English title.");
+                    string chineseTitle = chinese?.Root?.Element("title")?.Value ?? string.Empty;
+                    string? originalTitle = english.Root?.Element("originaltitle")?.Value;
+                    string year = english.Root?.Element("year")?.Value ?? throw new InvalidOperationException($"{movie} has no year.");
+                    string? imdb = english.Root?.Element("imdbid")?.Value;
                     string rating = string.IsNullOrWhiteSpace(imdb)
                         ? "[-]"
-                        : float.TryParse(chinese.Root?.Element("rating")?.Value, out float ratingFloat) ? ratingFloat.ToString("0.0") : "0.0";
+                        : float.TryParse(english.Root?.Element("rating")?.Value, out float ratingFloat) ? ratingFloat.ToString("0.0") : "0.0";
                     string[] videos = Directory.GetFiles(movie, "*.mp4", SearchOption.TopDirectoryOnly).Concat(Directory.GetFiles(movie, "*.avi", SearchOption.TopDirectoryOnly)).ToArray();
                     string definition = videos switch
                     {
-                        _ when videos.Any(video => Path.GetFileNameWithoutExtension(video).Contains("1080p")) => "[1080p]",
-                        _ when videos.Any(video => Path.GetFileNameWithoutExtension(video).Contains("720p")) => "[720p]",
+                        _ when videos.Any(video => Path.GetFileNameWithoutExtension(video)?.Contains("1080p") ?? false) => "[1080p]",
+                        _ when videos.Any(video => Path.GetFileNameWithoutExtension(video)?.Contains("720p") ?? false) => "[720p]",
                         _ => string.Empty
                     };
                     originalTitle = string.Equals(originalTitle, englishTitle, StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(originalTitle)
@@ -728,7 +757,7 @@
                 .GetFiles(directory, "*.nfo", SearchOption.AllDirectories)
                 .Where(nfo => nfo.EndsWith(".eng.nfo"))
                 .Do(nfo => Debug.Assert(File.Exists(nfo.Replace(".eng.nfo", ".nfo"))))
-                .ForEach(nfo => FileHelper.Move(nfo, Path.Combine(Path.GetDirectoryName(nfo), Path.GetFileNameWithoutExtension(nfo).Replace(".eng", string.Empty) + Path.GetExtension(nfo)), true));
+                .ForEach(nfo => FileHelper.Move(nfo, Path.Combine(Path.GetDirectoryName(nfo), (Path.GetFileNameWithoutExtension(nfo) ?? throw new InvalidOperationException(nfo)).Replace(".eng", string.Empty) + Path.GetExtension(nfo)), true));
         }
 
         private static readonly string[] IndependentNfos = { "tvshow.nfo", "season.nfo" };
@@ -904,6 +933,35 @@
                         && files.Any(file => file.EndsWith("-poster.jpg", StringComparison.OrdinalIgnoreCase));
                 })
                 .ForEach(log);
+        }
+
+        internal static async Task DownloadImdbMetadataAsync(string directory, int level = 2, Action<string>? log = null)
+        {
+            log ??= TraceLog;
+            await GetDirectories(directory, level)
+                .ForEachAsync(async movie =>
+                {
+                    if (Directory.EnumerateFiles(movie, "*.json", SearchOption.TopDirectoryOnly).Any())
+                    {
+                        log($"Skip {movie}.");
+                        return;
+                    }
+
+                    string nfo = Directory.EnumerateFiles(movie, "*.nfo", SearchOption.TopDirectoryOnly).First();
+                    string? imdbId = XDocument.Load(nfo).Root?.Element("imdbid")?.Value;
+                    if (string.IsNullOrWhiteSpace(imdbId))
+                    {
+                        await File.WriteAllTextAsync(Path.Combine(movie, "-.json"), "{}");
+                        return;
+                    }
+
+                    string json = Path.Combine(movie, $"{imdbId}.json");
+                    string imdbJson = await Retry.FixedIntervalAsync(async () => await Imdb.DownloadJsonAsync($"https://www.imdb.com/title/{imdbId}"), retryCount: 10);
+                    Debug.Assert(!string.IsNullOrWhiteSpace(imdbJson));
+                    log($"Downloaded https://www.imdb.com/title/{imdbId}.");
+                    await File.WriteAllTextAsync(json, imdbJson);
+                    log($"Saved to {json}.");
+                });
         }
     }
 }
