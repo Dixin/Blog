@@ -8,7 +8,6 @@
   <ItemGroup>
     <PackageReference Include="System.Interactive" Version="4.0.0" />
     <PackageReference Include="Ude.NetStandard" Version="1.2.0" />
-    <PackageReference Include="UTF.Unknown" Version="2.3.0" />
   </ItemGroup>
 
 </Project>
