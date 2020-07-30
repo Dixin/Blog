@@ -1,0 +1,16 @@
+<script>
+    $("article.blog-post pre.code").find("pre code").each(function(){
+        var $this = $(this);
+        $this.html("    " + $this.text().replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", '"').replace(/\n/g, "\n    "));
+    }).end().each(function(){
+        var $this = $(this);
+        $this.html($this.html().replace(/<pre>/g, "").replace(/<code>/g, "").replace(/((\r)?\n)?<p>((\r)?\n)?/g, "").replace(/<\/code>/g, "").replace(/<\/pre>/g, "").replace(/((\r)?\n)?<\/p>((\r)?\n)?/g, ""));
+    });
+</script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/vs.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
+<script>
+$(document).ready(function() {
+  $('pre>code').each(function(i, e) {hljs.highlightBlock(e);e.style.background="none";});
+});
+</script>
