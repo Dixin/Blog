@@ -1,8 +1,9 @@
 ﻿namespace Examples.Text
 {
     using System.IO;
+    using System.Linq;
     using System.Text;
-
+    using System.Threading.Tasks;
     using Examples.Common;
 
     public static class EncodingHelper
@@ -24,14 +25,17 @@
         public static string Utf8ToGB2312
             (this string utf8Value) => Convert(utf8Value, Encoding.UTF8, Encoding.GetEncoding("gb2312"));
 
-        public static void Convert(Encoding from, Encoding to, string fromPath, string? toPath = null)
+        public static async Task Convert(Encoding from, Encoding to, string fromPath, string? toPath = null, byte[]? bom = null)
         {
-            from.NotNull(nameof(from));
-            to.NotNull(nameof(to));
-
-            byte[] fromBytes = File.ReadAllBytes(fromPath);
+            byte[] fromBytes = await File.ReadAllBytesAsync(fromPath);
             byte[] toBytes = Encoding.Convert(from, to, fromBytes);
             File.WriteAllBytes(toPath ?? fromPath, toBytes);
+            using FileStream fileStream = new FileStream(toPath ?? fromPath, FileMode.Create, FileAccess.Write, FileShare.Read);
+            if (bom != null && !bom.SequenceEqual(toBytes.Take(bom.Length)))
+            {
+                await fileStream.WriteAsync(bom, 0, bom.Length);
+            }
+            await fileStream.WriteAsync(toBytes, 0, toBytes.Length);
         }
     }
 }

@@ -82,23 +82,6 @@
                 });
         }
 
-        internal static void RemoveInfix(string directory)
-        {
-            Directory
-                .EnumerateFiles(directory, "*", SearchOption.AllDirectories)
-                .ForEach(file =>
-                {
-                    try
-                    {
-                        File.Move(file, file.Replace(".m4v.mp4", ".mp4").Replace(".m4a.mp3", $".mp3"));
-                    }
-                    catch (Exception exception)
-                    {
-                        Console.WriteLine(file + " " + exception);
-                    }
-                });
-        }
-
         private static readonly Dictionary<string, string> Translation = new Dictionary<string, string>()
         {
             ["Alternative-Rock"] = "另类摇滚",

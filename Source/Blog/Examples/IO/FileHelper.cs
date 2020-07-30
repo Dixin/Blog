@@ -2,7 +2,7 @@ namespace Examples.IO
 {
     using System.IO;
     using System.Text;
-
+    using System.Threading.Tasks;
     using Examples.Common;
 
     public static class FileHelper
@@ -51,6 +51,39 @@ namespace Examples.IO
                 File.Delete(destination);
             }
             File.Move(source, destination);
+        }
+
+        public static void Backup(string file)
+        {
+            string backUp = $"{file}.bak";
+            if (File.Exists(backUp))
+            {
+                FileInfo backupFile = new FileInfo(backUp);
+                if (backupFile.IsReadOnly)
+                {
+                    backupFile.IsReadOnly = false;
+                }
+            }
+
+            File.Copy(file, backUp, true);
+        }
+
+        public static async Task CopyAsync(string fromPath, string toPath)
+        {
+            await using Stream fromStream = File.OpenRead(fromPath);
+            await using Stream toStream = File.Create(toPath);
+            await fromStream.CopyToAsync(toStream);
+        }
+
+        public static void AddPrefix(string file, string prefix)
+        {
+            string newFile = Path.Combine(Path.GetDirectoryName(file), $"{prefix}{Path.GetFileName(file)}");
+            File.Move(file, PathHelper.AddFilePrefix(file, prefix));
+        }
+
+        public static void AddPostfix(string file, string postfix)
+        {
+            File.Move(file, PathHelper.AddFilePostfix(file, postfix));
         }
     }
 }

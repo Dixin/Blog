@@ -69,5 +69,25 @@ namespace Examples.IO
                 return false;
             }
         }
+
+        public static string AddFilePrefix(string file, string prefix)
+        {
+            return Path.Combine(Path.GetDirectoryName(file), $"{prefix}{Path.GetFileName(file)}");
+        }
+
+        public static string AddFilePostfix(string file, string postfix)
+        {
+            return Path.Combine(Path.GetDirectoryName(file), $"{Path.GetFileNameWithoutExtension(file)}{postfix}{Path.GetExtension(file)}");
+        }
+
+        public static string AddDirectoryPrefix(string directory, string prefix)
+        {
+            return Path.Combine(Path.GetDirectoryName(directory), $"{prefix}{Path.GetFileName(directory)}");
+        }
+
+        public static string AddDirectoryPostfix(string directory, string postfix)
+        {
+            return $"{directory}{postfix}";
+        }
     }
 }

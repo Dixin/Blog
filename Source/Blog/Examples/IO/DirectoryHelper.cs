@@ -3,7 +3,7 @@ namespace Examples.IO
     using System;
     using System.IO;
     using System.Linq;
-
+    using System.Text.RegularExpressions;
     using Examples.Common;
 
     public static class DirectoryHelper
@@ -74,6 +74,29 @@ namespace Examples.IO
             directory.NotNull(nameof(directory));
 
             new DirectoryInfo(directory).Attributes = fileAttributes;
+        }
+
+        public static void AddPrefix(string directory, string prefix)
+        {
+            Directory.Move(directory, PathHelper.AddDirectoryPrefix(directory, prefix));
+        }
+
+        public static void AddPostfix(string directory, string postfix)
+        {
+            Directory.Move(directory, PathHelper.AddDirectoryPostfix(directory, postfix));
+        }
+
+        internal static void RenameFileExtensionToLowerCase(string directory)
+        {
+            Directory
+                .GetFiles(directory, "*", SearchOption.AllDirectories)
+                .Where(file => Regex.IsMatch(file.Split(".").Last(), @"[A-Z]+"))
+                .ToArray()
+                .ForEach(file =>
+                {
+                    string newFile = Path.Combine(Path.GetDirectoryName(file), $"{Path.GetFileNameWithoutExtension(file)}{Path.GetExtension(file).ToLowerInvariant()}");
+                    File.Move(file, newFile);
+                });
         }
     }
 }
