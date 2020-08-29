@@ -10,6 +10,7 @@
         internal static void DirectoriesToIsos(string source, string destination)
         {
             Directory.EnumerateDirectories(source, "*", SearchOption.TopDirectoryOnly)
+                .OrderBy(directory => directory)
                 .Where(directory => !File.Exists(Path.Combine(destination, Path.GetFileName(directory) + ".iso")))
                 .Do(directory => Directory
                     .EnumerateFiles(directory, "*", SearchOption.AllDirectories)
@@ -35,8 +36,8 @@
                 .ForEach(argument =>
                     {
                         using Process piso = new Process
-                            {
-                                StartInfo =
+                        {
+                            StartInfo =
                                     {
                                         UseShellExecute = true,
                                         CreateNoWindow = false,
@@ -44,7 +45,7 @@
                                         FileName = @"""C:\Program Files\PowerISO\piso.exe""",
                                         Arguments = argument
                                     }
-                            };
+                        };
                         piso.Start();
                         piso.WaitForExit();
                     });

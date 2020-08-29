@@ -7,6 +7,7 @@
     using System.Linq;
     using System.Text.RegularExpressions;
     using System.Xml.Linq;
+    using Examples.Net;
 
     internal static partial class Video
     {
@@ -56,9 +57,19 @@
             EnumerateDirectories(directory, level)
                 .ForEach(movie =>
                 {
-                    if (Directory.EnumerateFiles(movie).Count(IsCommonVideo) > 1)
+                    string[] videos = Directory
+                        .GetFiles(movie)
+                        .Where(IsCommonVideo)
+                        .OrderBy(video => video)
+                        .ToArray();
+                    if (videos.Length <= 1)
                     {
-                        log.Invoke(movie);
+                        return;
+                    }
+
+                    if (!videos.Select((video, index) => Path.GetFileNameWithoutExtension(video).EndsWith($".cd{index + 1}")).All(isPart => isPart))
+                    {
+                        log(movie);
                     }
                 });
         }
@@ -295,6 +306,92 @@
             {
                 PrintVideosWithErrors(allVideos!, isNoAudioAllowed, log);
             }
+        }
+
+        internal static void PrintTitlesWithDifferences(string directory, int level = 2, Action<string?>? log = null)
+        {
+            log ??= TraceLog;
+            EnumerateDirectories(directory, level)
+                .ForEach(movie =>
+                {
+                    string[] movieName = Path.GetFileName(movie).Split(".");
+                    string movieTitle = movieName[0].Split("=")[0];
+                    string movieYear = movieName[1];
+                    string json = Directory
+                        .GetFiles(movie, "*.json", SearchOption.TopDirectoryOnly)
+                        .Single();
+                    string? videoYear = null;
+                    string? videoTitle = null;
+                    if (!string.IsNullOrEmpty(json) && Imdb.TryLoad(json, out ImdbMetadata? jsonMetadata))
+                    {
+                        videoYear = jsonMetadata.Year;
+                        videoTitle = jsonMetadata.Name;
+                        Debug.Assert(videoYear?.Length == 4);
+                    }
+
+                    if (string.IsNullOrWhiteSpace(videoYear))
+                    {
+                        (videoTitle, videoYear) = Directory
+                            .GetFiles(movie, "*.nfo", SearchOption.TopDirectoryOnly)
+                            .Select(metadata =>
+                                {
+                                    XElement root = XDocument.Load(metadata).Root;
+                                    return (Title: root.Element("title")?.Value, Year: root.Element("year")?.Value);
+                                })
+                            .Distinct()
+                            .Single();
+                    }
+
+                    if (!string.Equals(movieYear, videoYear))
+                    {
+                        log(movie);
+                        movieName[1] = videoYear!;
+                        string newMovie = Path.Combine(Path.GetDirectoryName(movie), string.Join(".", movieName));
+                        log(newMovie);
+                        //Directory.Move(movie, newMovie);
+                        string backMovie = movie.Replace(@"E:\", @"F:\");
+                        if (Directory.Exists(backMovie))
+                        {
+                            log(backMovie);
+                            string backupNewMovie = newMovie.Replace(@"E:\", @"F:\");
+                            log(backupNewMovie);
+                            //Directory.Move(backMovie, backupNewMovie);
+                        }
+                        log(Path.GetFileNameWithoutExtension(json));
+                        log($"{movieYear}-{movieTitle}");
+                        log($"{videoYear}-{videoTitle}");
+
+                        log(Environment.NewLine);
+                    }
+
+                    if (Math.Abs(int.Parse(movieYear) - int.Parse(videoYear)) > 0)
+                    {
+                        log(movie);
+                        log(movieYear);
+                        log(videoYear);
+                    }
+
+                    videoTitle = videoTitle?.Replace(".", string.Empty).Replace(":", string.Empty);
+                    if (string.Equals(videoTitle, movieName[0].Split("=").Last().Replace("-", " "), StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        return;
+                    }
+
+                    if (string.Equals(videoTitle, movieTitle.Split("-").Last(), StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        return;
+                    }
+
+                    movieTitle = movieTitle.Replace("-", " ");
+                    if (!string.Equals(videoTitle, movieTitle, StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        log(movie);
+                        log(Path.GetFileNameWithoutExtension(json));
+                        log(movieTitle);
+                        log(videoTitle);
+                        log(Environment.NewLine);
+                    }
+                });
         }
     }
 }

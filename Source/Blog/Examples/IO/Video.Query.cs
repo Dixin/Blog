@@ -33,20 +33,20 @@ namespace Examples.IO
                 {
                     return Retry.Incremental(
                         () =>
+                        {
+                            IMediaInfo mediaInfo = FFmpeg.GetMediaInfo(file).Result;
+                            IVideoStream videoStream = mediaInfo.VideoStreams.First();
+                            return new VideoMetadata()
                             {
-                                IMediaInfo mediaInfo = MediaInfo.Get(file).Result;
-                                IVideoStream videoStream = mediaInfo.VideoStreams.First();
-                                return new VideoMetadata()
-                                {
-                                    File = file,
-                                    Width = videoStream.Width,
-                                    Height = videoStream.Height,
-                                    Audio = mediaInfo.AudioStreams?.Count() ?? 0,
-                                    Subtitle = mediaInfo.SubtitleStreams?.Count() ?? 0,
-                                    AudioBitRates = mediaInfo.AudioStreams?.Select(audio => (int)audio.Bitrate).ToArray() ?? Array.Empty<int>(),
-                                    Duration = mediaInfo.Duration
-                                };
-                            },
+                                File = file,
+                                Width = videoStream.Width,
+                                Height = videoStream.Height,
+                                Audio = mediaInfo.AudioStreams?.Count() ?? 0,
+                                Subtitle = mediaInfo.SubtitleStreams?.Count() ?? 0,
+                                AudioBitRates = mediaInfo.AudioStreams?.Select(audio => (int)audio.Bitrate).ToArray() ?? Array.Empty<int>(),
+                                Duration = mediaInfo.Duration
+                            };
+                        },
                         retryCount,
                         exception => true);
                 }
@@ -87,7 +87,7 @@ namespace Examples.IO
                 {
                     try
                     {
-                        IMediaInfo mediaInfo = MediaInfo.Get(file).Result;
+                        IMediaInfo mediaInfo = FFmpeg.GetMediaInfo(file).Result;
                         return mediaInfo.AudioStreams.Count();
                     }
                     catch (AggregateException exception) when (typeof(JsonReaderException) == exception.InnerException?.GetType())
@@ -211,12 +211,21 @@ namespace Examples.IO
                         return;
                     }
 
-                    string json = Path.Combine(movie, $"{imdbId}.json");
-                    (string imdbJson, string[] regions) = await Retry.FixedIntervalAsync(async () => await Imdb.DownloadJsonAsync($"https://www.imdb.com/title/{imdbId}"), retryCount: 10);
+                    (string imdbJson, string year, string[] regions) = await Retry.FixedIntervalAsync(async () => await Imdb.DownloadJsonAsync($"https://www.imdb.com/title/{imdbId}"), retryCount: 10);
                     Debug.Assert(!string.IsNullOrWhiteSpace(imdbJson));
-                    log($"Downloaded https://www.imdb.com/title/{imdbId}.");
+                    if (string.IsNullOrWhiteSpace(year))
+                    {
+                        ImdbMetadata imdbMetadata = JsonSerializer.Deserialize<ImdbMetadata>(
+                            imdbJson,
+                            new JsonSerializerOptions() { PropertyNameCaseInsensitive = true, IgnoreReadOnlyProperties = true });
+                        year = imdbMetadata.YearOfCurrentRegion;
+                    }
+                    
+                    Debug.Assert(!string.IsNullOrWhiteSpace(year));
+                    Debug.Assert(regions.Any());
+                    string json = Path.Combine(movie, $"{imdbId}.{year}.{string.Join(",", regions)}.json");
+                    log($"Downloaded https://www.imdb.com/title/{imdbId} to {json}.");
                     await File.WriteAllTextAsync(json, imdbJson);
-                    await File.WriteAllTextAsync(Path.Combine(movie, $"{imdbId}.{string.Join(",", regions)}.region"), JsonSerializer.Serialize(regions));
                     log($"Saved to {json}.");
                 });
         }

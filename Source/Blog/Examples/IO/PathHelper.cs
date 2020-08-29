@@ -13,6 +13,8 @@ namespace Examples.IO
 
     public static class PathHelper
     {
+        public static readonly char[] InvalidFileNameCharacters = Path.GetInvalidFileNameChars();
+
         [SuppressMessage("Microsoft.Design", "CA1055:UriReturnValuesShouldNotBeStrings")]
         [SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#")]
         public static string FromUrl(string url)
@@ -88,6 +90,29 @@ namespace Examples.IO
         public static string AddDirectoryPostfix(string directory, string postfix)
         {
             return $"{directory}{postfix}";
+        }
+
+        public static bool HasInvalidFileNameCharacter(this string value)
+        {
+            return InvalidFileNameCharacters.Any(invalid => value.Contains(invalid, StringComparison.InvariantCulture));
+        }
+
+        public static string ReplaceFileName(string file, string newFileName)
+        {
+            string? directory = Path.GetDirectoryName(file);
+            return string.IsNullOrEmpty(directory) ? newFileName : Path.Combine(directory, newFileName);
+        }
+
+        public static string ReplaceFileNameWithoutExtension(string file, string newFileNameWithoutExtension)
+        {
+            return ReplaceFileName(file, $"{newFileNameWithoutExtension}{Path.GetExtension(file)}");
+        }
+
+        public static string ReplaceExtension(string file, string extension)
+        {
+            string? directory = Path.GetDirectoryName(file);
+            string newFile = $"{Path.GetFileNameWithoutExtension(file)}{Path.GetExtension(file).ToLowerInvariant()}";
+            return string.IsNullOrEmpty(directory) ? newFile : Path.Combine(directory, newFile);
         }
     }
 }

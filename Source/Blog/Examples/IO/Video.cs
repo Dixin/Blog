@@ -10,7 +10,7 @@
     {
         private static readonly string[] UncommonVideoExtensions = { ".avi", ".wmv", ".webm", ".mpg", ".mpeg", ".rmvb", ".rm", ".3gp", ".divx", ".m1v", ".mov", ".ts", ".vob", ".flv", ".m4v", ".mkv", ".dat" };
 
-        private static readonly string[] CommonVideoExtensions = { ".avi", VideoExtension, ".mkv", ".dat" };
+        private static readonly string[] CommonVideoExtensions = { ".avi", VideoExtension, ".mkv", ".dat", ".iso" };
 
         private static readonly string[] AllVideoExtensions = UncommonVideoExtensions.Union(CommonVideoExtensions).ToArray();
 
@@ -34,9 +34,9 @@
 
         private const string VideoSearchPattern = AllSearchPattern + VideoExtension;
 
-        private static void TraceLog(string message) => Trace.WriteLine(message);
+        private static void TraceLog(string? message) => Trace.WriteLine(message);
 
-        private static string FilterTitleForFileSystem(this string value)
+        internal static string FilterForFileSystem(this string value)
         {
             return value.Replace("?", "").Replace(": ", "-").Replace(":", "-").Replace("*", "_").Replace("/", "_");
         }

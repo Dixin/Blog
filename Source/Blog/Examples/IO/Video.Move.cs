@@ -16,8 +16,10 @@ namespace Examples.IO
         internal static void RenameFiles(string path, Func<string, int, string> rename, string? pattern = null, SearchOption? searchOption = null, Func<string, bool>? predicate = null, bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
         {
             log ??= TraceLog;
-            Directory.GetFiles(path, pattern ?? "*", searchOption ?? SearchOption.AllDirectories)
+            Directory.EnumerateFiles(path, pattern ?? "*", searchOption ?? SearchOption.AllDirectories)
                 .Where(file => predicate?.Invoke(file) ?? true)
+                .OrderBy(file => file)
+                .ToArray()
                 .ForEach((file, index) =>
                 {
                     string newFile = rename(file, index);
@@ -111,7 +113,7 @@ namespace Examples.IO
                 {
 
                     string match = Regex.Match(Path.GetFileNameWithoutExtension(nfo) ?? throw new InvalidOperationException($"{nfo} is invalid."), @"s[\d]+e[\d]+", RegexOptions.IgnoreCase).Value.ToLowerInvariant();
-                    string title = XDocument.Load(nfo).Root?.Element("title")?.Value.FilterTitleForFileSystem() ?? throw new InvalidOperationException($"{nfo} has no title.");
+                    string title = XDocument.Load(nfo).Root?.Element("title")?.Value.FilterForFileSystem() ?? throw new InvalidOperationException($"{nfo} has no title.");
                     Directory
                         .EnumerateFiles(mediaDirectory, $"*{match}*", SearchOption.AllDirectories)
                         .ForEach(file =>
@@ -187,10 +189,10 @@ namespace Examples.IO
                     string[] nfos = Directory.GetFiles(movie, MetadataSearchPattern, SearchOption.TopDirectoryOnly).OrderBy(nfo => nfo).ToArray();
                     XDocument english;
                     XDocument? chinese;
-                    if (nfos.Any(nfo => nfo.EndsWith($".eng{MetadataSearchPattern}")) && nfos.Any(nfo => !nfo.EndsWith($".eng{MetadataSearchPattern}")))
+                    if (nfos.Any(nfo => nfo.EndsWith($".eng{MetadataExtension}")) && nfos.Any(nfo => !nfo.EndsWith($".eng{MetadataExtension}")))
                     {
-                        english = XDocument.Load(nfos.First(nfo => nfo.EndsWith($".eng{MetadataSearchPattern}")));
-                        chinese = XDocument.Load(nfos.First(nfo => !nfo.EndsWith($".eng{MetadataSearchPattern}")));
+                        english = XDocument.Load(nfos.First(nfo => nfo.EndsWith($".eng{MetadataExtension}")));
+                        chinese = XDocument.Load(nfos.First(nfo => !nfo.EndsWith($".eng{MetadataExtension}")));
                     }
                     else
                     {
@@ -199,13 +201,7 @@ namespace Examples.IO
                     }
 
                     string json = Directory.GetFiles(movie, "*.json", SearchOption.TopDirectoryOnly).Single();
-                    ImdbMetadata? imdbMetadata = null;
-                    if (Path.GetFileNameWithoutExtension(json).Length > 1)
-                    {
-                        imdbMetadata = JsonSerializer.Deserialize<ImdbMetadata>(
-                            File.ReadAllText(json),
-                            new JsonSerializerOptions() { PropertyNameCaseInsensitive = true, IgnoreReadOnlyProperties = true });
-                    }
+                    Imdb.TryLoad(json, out ImdbMetadata? imdbMetadata);
 
                     string englishTitle = english.Root?.Element("title")?.Value ?? throw new InvalidOperationException($"{movie} has no English title.");
                     string chineseTitle = chinese?.Root?.Element("title")?.Value ?? string.Empty;
@@ -214,8 +210,7 @@ namespace Examples.IO
                     string? imdb = english.Root?.Element("imdbid")?.Value;
                     Debug.Assert(string.IsNullOrWhiteSpace(imdb)
                         ? string.Equals("-", Path.GetFileNameWithoutExtension(json), StringComparison.InvariantCulture)
-                        : string.Equals(imdb, Path.GetFileNameWithoutExtension(json),
-                            StringComparison.InvariantCultureIgnoreCase));
+                        : string.Equals(imdb, Path.GetFileNameWithoutExtension(json).Split(".")[0], StringComparison.InvariantCultureIgnoreCase));
                     string rating = string.IsNullOrWhiteSpace(imdb)
                         ? "-"
                         : float.TryParse(imdbMetadata?.AggregateRating?.RatingValue, out float ratingFloat) ? ratingFloat.ToString("0.0") : "0.0";
@@ -230,9 +225,9 @@ namespace Examples.IO
                         ? string.Empty
                         : $"={originalTitle}";
                     string additional = additionalInfo
-                        ? $"{{{Path.GetFileNameWithoutExtension(Directory.GetFiles(movie, "*.region", SearchOption.TopDirectoryOnly).SingleOrDefault())?.Split('.')[1]};{string.Join(",", imdbMetadata?.Genre.Take(3))};{imdbMetadata?.ContentRating}}}"
+                        ? $"{{{Path.GetFileNameWithoutExtension(Directory.GetFiles(movie, "*.json", SearchOption.TopDirectoryOnly).Single()).Split('.')[2]};{string.Join(",", imdbMetadata?.Genre.Take(3))};{imdbMetadata?.ContentRating}}}"
                         : string.Empty;
-                    string newMovie = $"{englishTitle.FilterTitleForFileSystem()}{originalTitle.FilterTitleForFileSystem()}.{year}.{chineseTitle.FilterTitleForFileSystem()}[{rating}]{definition}{additional}";
+                    string newMovie = $"{englishTitle.FilterForFileSystem()}{originalTitle.FilterForFileSystem()}.{year}.{chineseTitle.FilterForFileSystem()}[{rating}]{definition}{additional}";
                     string newDirectory = Path.Combine(Path.GetDirectoryName(movie), newMovie);
                     if (isDryRun)
                     {

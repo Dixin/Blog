@@ -16,7 +16,7 @@ namespace Examples.IO
 
         private static readonly byte[] Bom = Utf8Encoding.GetPreamble();
 
-        private static readonly string[] TextSubtitleExtensions = { ".srt", ".ass", ".ssa" };
+        private static readonly string[] TextSubtitleExtensions = { ".srt", ".ass", ".ssa", ".vtt" };
 
         private static readonly string[] BinarySubtitleExtensions = { ".idx", ".sub", ".sup" };
 

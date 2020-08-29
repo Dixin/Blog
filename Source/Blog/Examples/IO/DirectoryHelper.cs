@@ -86,16 +86,29 @@ namespace Examples.IO
             Directory.Move(directory, PathHelper.AddDirectoryPostfix(directory, postfix));
         }
 
-        internal static void RenameFileExtensionToLowerCase(string directory)
+        public static void RenameFileExtensionToLowerCase(string directory)
         {
             Directory
                 .GetFiles(directory, "*", SearchOption.AllDirectories)
-                .Where(file => Regex.IsMatch(file.Split(".").Last(), @"[A-Z]+"))
+                .Where(file => Regex.IsMatch(Path.GetExtension(file), @"[A-Z]+"))
                 .ToArray()
-                .ForEach(file =>
+                .ForEach(file => File.Move(file, PathHelper.ReplaceFileName(file, Path.GetExtension(file).ToLowerInvariant())));
+        }
+
+        public static void MoveFiles(string sourceDirectory, string destinationDirectory, string searchPattern = "*", SearchOption searchOption = SearchOption.AllDirectories)
+        {
+            Directory
+                .GetFiles(sourceDirectory, searchPattern, searchOption)
+                .ForEach(sourceFile =>
                 {
-                    string newFile = Path.Combine(Path.GetDirectoryName(file), $"{Path.GetFileNameWithoutExtension(file)}{Path.GetExtension(file).ToLowerInvariant()}");
-                    File.Move(file, newFile);
+                    string destinationFile = Path.Combine(destinationDirectory, Path.GetRelativePath(sourceDirectory, sourceFile));
+                    string newDirectory = Path.GetDirectoryName(destinationFile) ?? throw new ArgumentException(nameof(destinationDirectory));
+                    if (!Directory.Exists(newDirectory))
+                    {
+                        Directory.CreateDirectory(newDirectory);
+                    }
+
+                    File.Move(sourceFile, destinationFile);
                 });
         }
     }
