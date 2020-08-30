@@ -179,13 +179,48 @@ namespace Examples.IO
                 });
         }
 
-        internal static void RenameDirectoriesWithMetadata(string directory, int level = 2, bool additionalInfo = false, bool isDryRun = false, Action<string>? log = null)
+        internal static void RenameDirectoriesWithAppendingMetadata(string directory, int level = 2, bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
         {
             log ??= TraceLog;
             EnumerateDirectories(directory, level)
                 .ToArray()
                 .ForEach(movie =>
                 {
+                    string movieName = Path.GetFileName(movie);
+                    if (!overwrite && movieName.Contains("{"))
+                    {
+                        return;
+                    }
+
+                    string json = Directory.GetFiles(movie, "*.json", SearchOption.TopDirectoryOnly).Single();
+                    Imdb.TryLoad(json, out ImdbMetadata? imdbMetadata);
+                    string additional = $"{{{Path.GetFileNameWithoutExtension(json).Split('.')[2]};{string.Join(",", imdbMetadata?.Genre.Take(3) ?? Array.Empty<string>())};{imdbMetadata?.ContentRating}}}";
+                    string originalMovie = movieName.Contains("{")
+                        ? PathHelper.ReplaceFileName(movie, movieName.Substring(0, movieName.IndexOf("{", StringComparison.InvariantCulture)))
+                        : movie;
+                    string newMovie = $"{originalMovie}{additional}";
+                    log(movie);
+                    if (!isDryRun)
+                    {
+                        Directory.Move(movie, newMovie);
+                    }
+
+                    log(newMovie);
+                });
+        }
+
+        internal static void RenameDirectoriesWithMetadata(string directory, int level = 2, bool additionalInfo = false, bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
+        {
+            log ??= TraceLog;
+            EnumerateDirectories(directory, level)
+                .ToArray()
+                .ForEach(movie =>
+                {
+                    if (!overwrite && Path.GetFileName(movie).Contains("{"))
+                    {
+                        return;
+                    }
+
                     string[] nfos = Directory.GetFiles(movie, MetadataSearchPattern, SearchOption.TopDirectoryOnly).OrderBy(nfo => nfo).ToArray();
                     XDocument english;
                     XDocument? chinese;
@@ -225,7 +260,7 @@ namespace Examples.IO
                         ? string.Empty
                         : $"={originalTitle}";
                     string additional = additionalInfo
-                        ? $"{{{Path.GetFileNameWithoutExtension(Directory.GetFiles(movie, "*.json", SearchOption.TopDirectoryOnly).Single()).Split('.')[2]};{string.Join(",", imdbMetadata?.Genre.Take(3))};{imdbMetadata?.ContentRating}}}"
+                        ? $"{{{Path.GetFileNameWithoutExtension(json).Split('.')[2]};{string.Join(",", imdbMetadata?.Genre.Take(3) ?? Array.Empty<string>())};{imdbMetadata?.ContentRating}}}"
                         : string.Empty;
                     string newMovie = $"{englishTitle.FilterForFileSystem()}{originalTitle.FilterForFileSystem()}.{year}.{chineseTitle.FilterForFileSystem()}[{rating}]{definition}{additional}";
                     string newDirectory = Path.Combine(Path.GetDirectoryName(movie), newMovie);

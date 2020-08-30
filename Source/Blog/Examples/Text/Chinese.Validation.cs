@@ -18,7 +18,7 @@
                 ("30A0", "30FF"),   // ア Katakana: (U+30A0 to U+30FF).
                 ("3100", "312F"),   // ㄆ Bopomofo: (U+3100 to U+312F).
                 ("31A0", "31BF"),   // ㆡ Bopomofo Extended: (U+31A0 to U+31BF).
-                ("31C0", "31EF"),   // ㇏ CJK Strokes: (U+31C0 to U+31EF) Legitimize.
+                ("31C0", "31EF"),   // ㇏ CJK Strokes: (U+31C0 to U+31EF) Legitimize. Strokes in (31C0, 31E3) are not handled by SQL Server collation: ㇀㇁㇂㇃㇄㇅㇆㇇㇈㇉㇊㇋㇌㇍㇎㇏㇐㇑㇒㇓㇔㇕㇖㇗㇘㇙㇚㇛㇜㇝㇞㇟㇠㇡㇢㇣.
                 ("31F0", "31FF"),   // ㇰ Katakana Phonetic Extensions: (U+31F0 to U+31FF).
                 ("F900", "FAFF"),   // 豈 CJK Compatibility Ideographs: (U+F900 to U+FAFF).
                 ("FE30", "FE4F"),   // ︽ CJK Compatibility Forms: (U+FE30 to U+FE4F).
@@ -35,15 +35,6 @@
                 ("2B820", "2CEAF"), // 𫢸 CJK Ideographs Extension E: (U+2B820 to U+2CEAF).
                 ("2CEB0", "2EBEF"), // 𬺰 CJK Ideographs Extension F: (U+2CEB0 to U+2EBEF).
                 ("2F800", "2FA1F"), // “丽” CJK Comparability Ideographs Supplement: (U+2F800 to U+2FA1F).
-            }
-            .Select(hexCodePoint => (int.Parse(hexCodePoint.Min, NumberStyles.HexNumber, CultureInfo.InvariantCulture), int.Parse(hexCodePoint.Max, NumberStyles.HexNumber, CultureInfo.InvariantCulture)))
-            .ToArray();
-
-#pragma warning disable CA1823 // Avoid unused private fields
-        private static readonly (int Min, int Max)[] StrokeRanges = new (string Min, string Max)[]
-#pragma warning restore CA1823 // Avoid unused private fields
-            {
-                ("31C0", "31E3"),   // Strokes are not handled by SQL Server collation.
             }
             .Select(hexCodePoint => (int.Parse(hexCodePoint.Min, NumberStyles.HexNumber, CultureInfo.InvariantCulture), int.Parse(hexCodePoint.Max, NumberStyles.HexNumber, CultureInfo.InvariantCulture)))
             .ToArray();
