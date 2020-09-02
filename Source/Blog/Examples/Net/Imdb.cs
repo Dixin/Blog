@@ -10,6 +10,7 @@
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using CsQuery;
+    using Examples.IO;
 
     internal static class Imdb
     {
@@ -38,7 +39,7 @@
                     new JsonSerializerOptions() { PropertyNameCaseInsensitive = true, IgnoreReadOnlyProperties = true });
                 year = imdbMetadata.YearOfCurrentRegion;
             }
-            
+
             return (
                 json,
                 year,
@@ -53,16 +54,22 @@
                     .ToArray() ?? Array.Empty<string>());
         }
 
-        internal static bool TryLoad(string file, [NotNullWhen(true)] out ImdbMetadata? imdbMetadata)
+        internal static bool TryLoad(string path, [NotNullWhen(true)] out ImdbMetadata? imdbMetadata)
         {
-            if (Path.GetFileNameWithoutExtension(file).Length > 1)
+            if (Directory.Exists(path))
+            {
+                path = Directory.GetFiles(path, "*.json", SearchOption.TopDirectoryOnly).Single();
+            }
+
+            string name = Path.GetFileNameWithoutExtension(path);
+            if (name.Length > 1)
             {
                 imdbMetadata = JsonSerializer.Deserialize<ImdbMetadata>(
-                    File.ReadAllText(file),
+                    File.ReadAllText(path),
                     new JsonSerializerOptions() { PropertyNameCaseInsensitive = true, IgnoreReadOnlyProperties = true });
-                string[] fileName = Path.GetFileNameWithoutExtension(file).Split('.');
-                imdbMetadata.Year = fileName[1];
-                imdbMetadata.Regions = fileName[2]?.Split(",") ?? Array.Empty<string>();
+                string[] names = name.Split('.');
+                imdbMetadata.Year = names[1];
+                imdbMetadata.Regions = names[2]?.Split(",") ?? Array.Empty<string>();
                 return true;
             }
 

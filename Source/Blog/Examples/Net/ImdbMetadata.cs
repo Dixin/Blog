@@ -17,12 +17,30 @@
         public string DatePublished { get; set; } = string.Empty;
 
         public ImdbAggregateRating? AggregateRating { get; set; }
-        
+
+        public string Url { get; set; } = string.Empty;
+
+        [JsonIgnore]
         internal string Year { get; set; } = string.Empty;
 
+        [JsonIgnore]
         internal string YearOfCurrentRegion => this.DatePublished.Split('-')[0];
 
+        [JsonIgnore]
         internal string[] Regions { get; set; } = Array.Empty<string>();
+
+        [JsonIgnore]
+        internal string FormattedAggregateRating
+        {
+            get
+            {
+                string? rating = this.AggregateRating?.RatingValue;
+                return string.IsNullOrWhiteSpace(rating) ? "0.0" : rating;
+            }
+        }
+
+        [JsonIgnore]
+        internal string Id => this.Url.Split("/", StringSplitOptions.RemoveEmptyEntries).Last();
     }
 
     public class ImdbAggregateRating

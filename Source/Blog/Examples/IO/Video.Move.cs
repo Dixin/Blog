@@ -508,5 +508,42 @@ namespace Examples.IO
                     .ForEach(file => Trace.WriteLine(file));
             });
         }
+
+        internal static void RenameWithUpdatedRatings(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
+        {
+            log ??= TraceLog;
+            EnumerateDirectories(directory, level)
+                .ToArray()
+                .ForEach(movie =>
+                {
+                    string rating = Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata)
+                        ? imdbMetadata.FormattedAggregateRating
+                        : "-";
+                    string name = Path.GetFileName(movie);
+                    string newName = Regex.Replace(name, @"\[([0-9]\.[0-9]|\-)\]", $"[{rating}]");
+                    if (!string.Equals(name, newName, StringComparison.InvariantCulture))
+                    {
+                        string newMovie = PathHelper.ReplaceFileName(movie, newName);
+                        log(movie);
+                        log(newMovie);
+                        log(string.Empty);
+                        if (!isDryRun)
+                        {
+                            Directory.Move(movie, newMovie);
+                        }
+                    }
+                });
+        }
+
+        internal static void RenameCollections(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
+        {
+            log ??= TraceLog;
+            EnumerateDirectories(directory, level)
+                .ToArray()
+                .ForEach(movie =>
+                {
+                    
+                });
+        }
     }
 }

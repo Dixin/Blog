@@ -108,10 +108,10 @@ namespace Examples.IO
             return ReplaceFileName(file, $"{newFileNameWithoutExtension}{Path.GetExtension(file)}");
         }
 
-        public static string ReplaceExtension(string file, string extension)
+        public static string ReplaceExtension(string file, string newExtension)
         {
             string? directory = Path.GetDirectoryName(file);
-            string newFile = $"{Path.GetFileNameWithoutExtension(file)}{Path.GetExtension(file).ToLowerInvariant()}";
+            string newFile = $"{Path.GetFileNameWithoutExtension(file)}{newExtension}";
             return string.IsNullOrEmpty(directory) ? newFile : Path.Combine(directory, newFile);
         }
     }

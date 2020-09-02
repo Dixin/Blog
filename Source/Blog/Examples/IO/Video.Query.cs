@@ -195,7 +195,7 @@ namespace Examples.IO
         {
             log ??= TraceLog;
             await EnumerateDirectories(directory, level)
-                .ForEachAsync(async movie =>
+                .ParallelForEachAsync(async movie =>
                 {
                     if (!overwrite && Directory.EnumerateFiles(movie, "*.json", SearchOption.TopDirectoryOnly).Any())
                     {
@@ -220,14 +220,20 @@ namespace Examples.IO
                             new JsonSerializerOptions() { PropertyNameCaseInsensitive = true, IgnoreReadOnlyProperties = true });
                         year = imdbMetadata.YearOfCurrentRegion;
                     }
-                    
-                    Debug.Assert(!string.IsNullOrWhiteSpace(year));
-                    Debug.Assert(regions.Any());
-                    string json = Path.Combine(movie, $"{imdbId}.{year}.{string.Join(",", regions)}.json");
+
+                    if (string.IsNullOrWhiteSpace(year))
+                    {
+                        log($"!Year is missing for {imdbId}: {movie}");
+                    }
+                    if (!regions.Any())
+                    {
+                        log($"!Location is missing for {imdbId}: {movie}");
+                    }
+                    string json = Path.Combine(movie, $"{imdbId}.{year}.{string.Join(",", regions.Take(5))}.json");
                     log($"Downloaded https://www.imdb.com/title/{imdbId} to {json}.");
                     await File.WriteAllTextAsync(json, imdbJson);
                     log($"Saved to {json}.");
-                });
+                }, 4);
         }
 
         internal static async Task SaveAllVideoMetadata(string jsonPath, params string[] directories)

@@ -249,14 +249,13 @@
                     string[] videos = files.Where(IsCommonVideo).ToArray();
                     string[] subtitles = files.Where(file => file.AnyExtension(AllSubtitleExtensions)).ToArray();
                     string[] metadataFiles = files.Where(file => file.HasExtension(MetadataExtension)).ToArray();
-                    string[] metadataBackupFiles = files.Where(file => file.HasExtension(".nfobak")).ToArray();
                     string[] imdbFiles = files.Where(file => file.AnyExtension(ImdbExtensions)).ToArray();
-                    string[] otherFiles = files.Except(videos).Except(subtitles).Except(metadataFiles).Except(imdbFiles).Except(metadataBackupFiles).ToArray();
+                    string[] otherFiles = files.Except(videos).Except(subtitles).Except(metadataFiles).Except(imdbFiles).ToArray();
                     if (videos.Length < 1)
                     {
                         log($"!No video: {movie}");
                     }
-                    else if (videos.Length == 1 || videos.All(video => Regex.IsMatch(video, "cd[1-9]", RegexOptions.IgnoreCase)))
+                    else if (videos.Length == 1 || videos.All(video => Regex.IsMatch(Path.GetFileNameWithoutExtension(video), @"\.cd[1-9]$", RegexOptions.IgnoreCase)))
                     {
                         string[] allowedAttachments = Attachments.Concat(AdaptiveAttachments).ToArray();
                         otherFiles
@@ -300,6 +299,68 @@
                     {
                         allVideos!.AddRange(videos.Select(video => Path.Combine(movie, video)));
                     }
+
+                    if (metadataFiles.Length < 1)
+                    {
+                        log($"!Metadata: {movie}");
+                    }
+
+                    if (imdbFiles.Length != 1)
+                    {
+                        log($"!Imdb files {imdbFiles.Length}: {movie}");
+                    }
+
+                    string directoryRating = Regex.Match(trimmedMovie, @"\[([0-9]\.[0-9]|\-)\]").Value;
+                    string imdbRating = Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata)
+                        ? imdbMetadata.FormattedAggregateRating
+                        : "-";
+                    imdbRating = $"[{imdbRating}]";
+                    if (!string.Equals(directoryRating, imdbRating, StringComparison.InvariantCulture))
+                    {
+                        log($"!Imdb rating {directoryRating} should be {imdbRating}: {movie}");
+                    }
+
+                    metadataFiles.ForEach(metadataFile =>
+                    {
+                        metadataFile = Path.Combine(movie, metadataFile);
+                        XDocument metadata = XDocument.Load(Path.Combine(movie, metadataFile));
+                        string? metadataImdbId = metadata.Root?.Element("imdbid")?.Value;
+                        if (imdbMetadata == null)
+                        {
+                            if (!string.IsNullOrWhiteSpace(metadataImdbId))
+                            {
+                                log($"!Metadata should have no imdb id: {metadataFile}");
+                            }
+                        }
+                        else
+                        {
+                            if (!string.Equals(imdbMetadata.Id, metadataImdbId))
+                            {
+                                log($"!Metadata imdb id {metadataImdbId} should be {imdbMetadata.Id}: {metadataFile}");
+                            }
+                        }
+                    });
+
+                    string? imdbYear = imdbMetadata?.Year;
+                    if (!string.IsNullOrWhiteSpace(imdbYear))
+                    {
+                        string directoryYear = MovieDirectoryRegex.Match(trimmedMovie).Groups[1].Value;
+                        if (!string.Equals(directoryYear, imdbYear))
+                        {
+                            log($"!Year should be {imdbYear}: {movie}");
+                        }
+                    }
+
+                    string[] directories = Directory.GetDirectories(movie);
+                    if (directories.Length > 1)
+                    {
+                        log($"!Directory {directories.Length}: {movie}");
+                    }
+
+                    if (directories.Length == 1 && !string.Equals("Featurettes", Path.GetFileName(directories.Single())))
+                    {
+                        log($"!Directory: {directories.Single()}");
+                    }
                 });
 
             if (isLoadingVideo)
@@ -317,12 +378,9 @@
                     string[] movieName = Path.GetFileName(movie).Split(".");
                     string movieTitle = movieName[0].Split("=")[0];
                     string movieYear = movieName[1];
-                    string json = Directory
-                        .GetFiles(movie, "*.json", SearchOption.TopDirectoryOnly)
-                        .Single();
                     string? videoYear = null;
                     string? videoTitle = null;
-                    if (!string.IsNullOrEmpty(json) && Imdb.TryLoad(json, out ImdbMetadata? jsonMetadata))
+                    if (Imdb.TryLoad(movie, out ImdbMetadata? jsonMetadata))
                     {
                         videoYear = jsonMetadata.Year;
                         videoTitle = jsonMetadata.Name;
@@ -348,16 +406,15 @@
                         movieName[1] = videoYear!;
                         string newMovie = Path.Combine(Path.GetDirectoryName(movie), string.Join(".", movieName));
                         log(newMovie);
-                        //Directory.Move(movie, newMovie);
+                        // Directory.Move(movie, newMovie);
                         string backMovie = movie.Replace(@"E:\", @"F:\");
                         if (Directory.Exists(backMovie))
                         {
                             log(backMovie);
                             string backupNewMovie = newMovie.Replace(@"E:\", @"F:\");
                             log(backupNewMovie);
-                            //Directory.Move(backMovie, backupNewMovie);
+                            // Directory.Move(backMovie, backupNewMovie);
                         }
-                        log(Path.GetFileNameWithoutExtension(json));
                         log($"{movieYear}-{movieTitle}");
                         log($"{videoYear}-{videoTitle}");
 
@@ -386,7 +443,6 @@
                     if (!string.Equals(videoTitle, movieTitle, StringComparison.InvariantCultureIgnoreCase))
                     {
                         log(movie);
-                        log(Path.GetFileNameWithoutExtension(json));
                         log(movieTitle);
                         log(videoTitle);
                         log(Environment.NewLine);

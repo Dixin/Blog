@@ -22,13 +22,14 @@
             log ??= TraceLog;
             GetTags(directory, (audio, tagFile, tag) =>
             {
-                if (tag.Performers.Any(name => name.HasChineseCharacter() && !TraditionChineseException.Any(name.Contains)))
+                if (tag.Performers.Any(name => name.HasChineseCharacter() && !TraditionChineseException.Any(exception => name.Contains(exception, StringComparison.InvariantCulture))))
                 {
                     string[] performers = tag.Performers
                         .Select(name => ChineseConverter.Convert(name, ChineseConversionDirection.TraditionalToSimplified))
                         .ToArray();
                     if (!tag.Performers.SequenceEqual(performers, StringComparer.InvariantCulture))
                     {
+                        log(audio);
                         tag.Performers.ForEach(log);
                         performers.ForEach(log);
                         log(string.Empty);
@@ -48,6 +49,7 @@
                         .ToArray();
                     if (!tag.AlbumArtists.SequenceEqual(albumArtists, StringComparer.InvariantCulture))
                     {
+                        log(audio);
                         tag.AlbumArtists.ForEach(log);
                         albumArtists.ForEach(log);
                         log(string.Empty);
@@ -64,6 +66,7 @@
                     string title = ChineseConverter.Convert(tag.Title, ChineseConversionDirection.TraditionalToSimplified);
                     if (!string.Equals(tag.Title, title, StringComparison.InvariantCulture))
                     {
+                        log(audio);
                         log(tag.Title);
                         log(title);
                         log(string.Empty);
@@ -80,6 +83,7 @@
                     string album = ChineseConverter.Convert(tag.Album, ChineseConversionDirection.TraditionalToSimplified);
                     if (!string.Equals(tag.Album, album, StringComparison.InvariantCulture))
                     {
+                        log(audio);
                         log(tag.Album);
                         log(album);
                         log(string.Empty);
