@@ -401,9 +401,9 @@ namespace Examples.IO
                             return;
                         }
 
-                        if (Math.Abs(videoMetadata.TotalSeconds - externalVideo.Value.TotalSeconds) > 1.1)
+                        if (Math.Abs(videoMetadata.TotalMilliseconds - externalVideo.Value.TotalMilliseconds) > 1100)
                         {
-                            log($"Duration {externalVideo.Value.File} {externalVideo.Value.TotalSeconds} {videoMetadata.TotalSeconds}");
+                            log($"Duration {externalVideo.Value.TotalMilliseconds}ms to old {videoMetadata.TotalMilliseconds}ms: {externalVideo.Value.File}.");
                             return;
                         }
 

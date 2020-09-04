@@ -8,7 +8,7 @@
 
     public static class EnumerableExtensions
     {
-        internal static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> asyncAction)
+        public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> asyncAction)
         {
             foreach (T value in source)
             {
@@ -32,6 +32,11 @@
                         await asyncAction(partition.Current);
                     }
                 })));
+        }
+
+        public static IEnumerable<T> NotNull<T>(this IEnumerable<T?> source) where T : class
+        {
+            return source.Where(value => !(value is null))!; // Equivalent to: source.Where(value => !(value is null)).Select(value => value!).
         }
     }
 }

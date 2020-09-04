@@ -5,7 +5,7 @@
     using System.Text.Json;
     using System.Text.Json.Serialization;
 
-    public class ImdbMetadata
+    public class ImdbMetadata : IEquatable<ImdbMetadata>
     {
         public string Name { get; set; } = string.Empty;
 
@@ -41,6 +41,14 @@
 
         [JsonIgnore]
         internal string Id => this.Url.Split("/", StringSplitOptions.RemoveEmptyEntries).Last();
+
+        public bool Equals(ImdbMetadata? other) => 
+            !ReferenceEquals(null, other) && (ReferenceEquals(this, other) || string.Equals(this.Id, other.Id, StringComparison.InvariantCulture));
+
+        public override bool Equals(object? obj) => 
+            !ReferenceEquals(null, obj) && (ReferenceEquals(this, obj) || obj.GetType() == this.GetType() && this.Equals((ImdbMetadata)obj));
+
+        public override int GetHashCode() => this.Id.GetHashCode();
     }
 
     public class ImdbAggregateRating
@@ -67,7 +75,7 @@
             }
             else
             {
-                writer.WriteStartArray(nameof(ImdbMetadata.Genre));
+                writer.WriteStartArray(); // Do not call writer.WriteStartArray(propertyName).
                 value.ForEach(writer.WriteStringValue);
                 writer.WriteEndArray();
             }

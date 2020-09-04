@@ -20,9 +20,9 @@
 
         private static readonly Regex[] PreferredVersions = new string[] { @"[\. ]YIFY(\+HI)?$", @"[\. ]YIFY(\.[1-9]Audio)?$", @"\[YTS\.[A-Z]{2}\](\.[1-9]Audio)?$", @"\.GAZ$" }.Select(version => new Regex(version)).ToArray();
 
-        private static readonly Regex[] TopVersions = new string[] { @"x265.+RARBG", @"x265.+VXT" }.Select(version => new Regex(version)).ToArray();
+        private static readonly Regex TopVersion = new Regex("x265.+(VXT|RARBG)");
 
-        private static readonly Regex[] PremiumVersions = new string[] { @"H264.+RARBG", @"H264.+VXT", @"x264.+RARBG", @"x264.+VXT" }.Select(version => new Regex(version)).ToArray();
+        private static readonly Regex PremiumVersion = new Regex("[Hx]264.+(VXT|RARBG)");
 
         private const string MetadataExtension = ".nfo";
 
@@ -34,7 +34,11 @@
 
         private const string VideoSearchPattern = AllSearchPattern + VideoExtension;
 
+        private const string Featurettes = nameof(Featurettes);
+
         private static void TraceLog(string? message) => Trace.WriteLine(message);
+
+        private static readonly int MaxDegreeOfParallelism = Math.Max(Environment.ProcessorCount, 4);
 
         internal static string FilterForFileSystem(this string value)
         {
@@ -71,11 +75,29 @@
                             .SelectMany(video => AdaptiveAttachments.Select(attachment => $"{Path.GetFileNameWithoutExtension(video)}-{attachment}"))
                             .ToArray();
                     allowedAttachments
-                        .Select(attachment=>Path.Combine(movie, attachment))
+                        .Select(attachment => Path.Combine(movie, attachment))
                         .Where(File.Exists)
                         .Do(log)
-                        .Where(attachment=> !isDryRun)
+                        .Where(attachment => !isDryRun)
                         .ForEach(File.Delete);
+                });
+        }
+
+        internal static void CleanFeaturettes(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
+        {
+            log ??= TraceLog;
+            EnumerateDirectories(directory, level)
+                .ForEach(movie =>
+                {
+                    string featurettes = Path.Combine(movie, Featurettes);
+                    if (Directory.Exists(featurettes))
+                    {
+                        string[] metadataFiles = Directory.GetFiles(featurettes, MetadataSearchPattern, SearchOption.AllDirectories);
+                        metadataFiles
+                            .Do(log)
+                            .Where(metadataFile => !isDryRun)
+                            .ForEach(File.Delete);
+                    }
                 });
         }
     }

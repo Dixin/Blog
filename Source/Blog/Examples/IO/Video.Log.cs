@@ -76,7 +76,7 @@
 
         internal static void PrintVideosNonPreferred(string directory, int level = 2, Action<string>? log = null)
         {
-            Regex[] allPreferred = PreferredVersions.Concat(PremiumVersions).Concat(TopVersions).ToArray();
+            Regex[] allPreferred = PreferredVersions.Append(PremiumVersion).Append(TopVersion).ToArray();
             PrintVideos(directory, level, file => !allPreferred.Any(version => version.IsMatch(Path.GetFileNameWithoutExtension(file))));
         }
 
@@ -87,22 +87,33 @@
 
         internal static void PrintVideosNonTop(string directory, int level = 2, Action<string>? log = null)
         {
-            PrintVideos(directory, level, file => !TopVersions.Any(version => version.IsMatch(Path.GetFileNameWithoutExtension(file))));
+            PrintVideos(directory, level, file => !TopVersion.IsMatch(Path.GetFileNameWithoutExtension(file)));
         }
 
         internal static void PrintVideosPremium(string directory, int level = 2, Action<string>? log = null)
         {
-            PrintVideos(directory, level, file => PremiumVersions.Any(version => version.IsMatch(Path.GetFileNameWithoutExtension(file))));
+            PrintVideos(directory, level, file => PremiumVersion.IsMatch(Path.GetFileNameWithoutExtension(file)));
         }
 
         private static void PrintVideos(string directory, int level, Func<string, bool> predicate, Action<string>? log = null)
         {
             log ??= TraceLog;
             EnumerateDirectories(directory, level)
-                .ForEach(movie => Directory
-                    .GetFiles(movie, AllSearchPattern, SearchOption.TopDirectoryOnly)
-                    .Where(file => file.IsCommonVideo() && predicate(file))
-                    .ForEach(log));
+                .OrderBy(movie => movie)
+                .ForEach(movie =>
+                {
+                    string[] files = Directory
+                        .GetFiles(movie, AllSearchPattern, SearchOption.TopDirectoryOnly);
+                    string[] videos = files
+                        .Where(file => file.IsCommonVideo() && predicate(file))
+                        .ToArray();
+                    if (videos.Any())
+                    {
+                        log(Path.GetFileNameWithoutExtension(files.Single(file => file.HasExtension(ImdbExtension))).Split(".")[0]);
+                        videos.ForEach(log);
+                        log(string.Empty);
+                    }
+                });
         }
 
         internal static void PrintMoviesWithNoSubtitle(string directory, int level = 2, Action<string>? log = null)
@@ -192,7 +203,7 @@
 
         private static readonly string[] AdaptiveAttachments = new string[] { "banner.jpg", "box.jpg", "clearart.png", "clearlogo.png", "disc.png", "discart.png", "fanart.jpg", "landscape.jpg", "logo.png", "poster.jpg", "poster.png" };
 
-        private static readonly string[] ImdbExtensions = { ".json", ".region" };
+        private static readonly string ImdbExtension = ".json";
 
         private static readonly string[] SubtitleLanguages = { "can", "chs", "chs&dan", "chs&eng", "chs&fre", "chs&ger", "chs&spa", "cht", "cht&eng", "cht&ger", "dut", "eng", "eng&chs", "fin", "fre", "ger", "ger&chs", "ita", "jap", "kor", "pol", "por", "rus", "spa", "swe", "commentary", "commentary1", "commentary2" };
 
@@ -247,9 +258,9 @@
                     }
 
                     string[] videos = files.Where(IsCommonVideo).ToArray();
-                    string[] subtitles = files.Where(file => file.AnyExtension(AllSubtitleExtensions)).ToArray();
+                    string[] subtitles = files.Where(file => file.HasAnyExtension(AllSubtitleExtensions)).ToArray();
                     string[] metadataFiles = files.Where(file => file.HasExtension(MetadataExtension)).ToArray();
-                    string[] imdbFiles = files.Where(file => file.AnyExtension(ImdbExtensions)).ToArray();
+                    string[] imdbFiles = files.Where(file => file.HasExtension(ImdbExtension)).ToArray();
                     string[] otherFiles = files.Except(videos).Except(subtitles).Except(metadataFiles).Except(imdbFiles).ToArray();
                     if (videos.Length < 1)
                     {
@@ -357,7 +368,7 @@
                         log($"!Directory {directories.Length}: {movie}");
                     }
 
-                    if (directories.Length == 1 && !string.Equals("Featurettes", Path.GetFileName(directories.Single())))
+                    if (directories.Length == 1 && !string.Equals(Featurettes, Path.GetFileName(directories.Single())))
                     {
                         log($"!Directory: {directories.Single()}");
                     }

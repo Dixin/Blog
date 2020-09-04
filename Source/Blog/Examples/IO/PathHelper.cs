@@ -2,6 +2,7 @@
 namespace Examples.IO
 {
     using System;
+    using System.Collections.Generic;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
@@ -113,6 +114,21 @@ namespace Examples.IO
             string? directory = Path.GetDirectoryName(file);
             string newFile = $"{Path.GetFileNameWithoutExtension(file)}{newExtension}";
             return string.IsNullOrEmpty(directory) ? newFile : Path.Combine(directory, newFile);
+        }
+
+        public static bool HasExtension(this string file, string extension)
+        {
+            return string.Equals(Path.GetExtension(file), extension, StringComparison.InvariantCultureIgnoreCase);
+        }
+
+        public static bool HasAnyExtension(this string file, IEnumerable<string> extensions)
+        {
+            return extensions.Any(file.HasExtension);
+        }
+
+        public static bool HasAnyExtension(this string file, params string[] extensions)
+        {
+            return extensions.Any(file.HasExtension);
         }
     }
 }

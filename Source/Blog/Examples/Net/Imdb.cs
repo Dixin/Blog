@@ -10,7 +10,6 @@
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using CsQuery;
-    using Examples.IO;
 
     internal static class Imdb
     {
