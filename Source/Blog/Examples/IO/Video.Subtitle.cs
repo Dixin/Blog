@@ -129,15 +129,20 @@ namespace Examples.IO
                 });
         }
 
-        internal static void MoveSubtitles(string mediaDirectory, string mediaExtension, string subtitleDirectory, bool overwrite = false, Func<string, string, string>? rename = null)
+        internal static void MoveSubtitlesForMovies(string mediaDirectory, string subtitleDirectory, bool overwrite = false, Action<string>? log = null)
+        {
+            FileHelper.MoveAll(mediaDirectory, subtitleDirectory, searchOption: SearchOption.AllDirectories, predicate: file => file.HasAnyExtension(AllSubtitleExtensions), overwrite: overwrite);
+        }
+
+        internal static void MoveSubtitlesForEpisodes(string mediaDirectory, string subtitleDirectory, string mediaExtension = VideoExtension, bool overwrite = false, Func<string, string, string>? rename = null)
         {
             Directory
-                .EnumerateFiles(mediaDirectory, $"*{mediaExtension}", SearchOption.AllDirectories)
+                .EnumerateFiles(mediaDirectory, $"{AllSearchPattern}{mediaExtension}", SearchOption.AllDirectories)
                 .ForEach(video =>
                 {
                     string match = Regex.Match(Path.GetFileNameWithoutExtension(video), @"s[\d]+e[\d]+", RegexOptions.IgnoreCase).Value.ToLowerInvariant();
                     Directory
-                        .EnumerateFiles(subtitleDirectory, $"*{match}*", SearchOption.TopDirectoryOnly)
+                        .EnumerateFiles(subtitleDirectory, $"{AllSearchPattern}{match}{AllSearchPattern}", SearchOption.TopDirectoryOnly)
                         .Where(file => !file.EndsWith(mediaExtension, StringComparison.OrdinalIgnoreCase))
                         .ForEach(subtitle =>
                         {

@@ -38,5 +38,10 @@
         {
             return source.Where(value => !(value is null))!; // Equivalent to: source.Where(value => !(value is null)).Select(value => value!).
         }
+
+        public static ParallelQuery<T> NotNull<T>(this ParallelQuery<T?> source) where T : class
+        {
+            return source.Where(value => !(value is null))!; // Equivalent to: source.Where(value => !(value is null)).Select(value => value!).
+        }
     }
 }

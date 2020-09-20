@@ -8,22 +8,6 @@
 
     internal static partial class Video
     {
-        private static readonly string[] UncommonVideoExtensions = { ".avi", ".wmv", ".webm", ".mpg", ".mpeg", ".rmvb", ".rm", ".3gp", ".divx", ".m1v", ".mov", ".ts", ".vob", ".flv", ".m4v", ".mkv", ".dat" };
-
-        private static readonly string[] CommonVideoExtensions = { ".avi", VideoExtension, ".mkv", ".dat", ".iso" };
-
-        private static readonly string[] AllVideoExtensions = UncommonVideoExtensions.Union(CommonVideoExtensions).ToArray();
-
-        private static readonly string[] IndependentNfos = { $"tvshow{MetadataExtension}", $"season{MetadataExtension}" };
-
-        private static readonly Regex MovieDirectoryRegex = new Regex(@"^[^\.]+\.([0-9]{4})\..+\[([0-9]\.[0-9]|\-)\](\[[0-9]{3,4}p\])?(\[3D\])?$");
-
-        private static readonly Regex[] PreferredVersions = new string[] { @"[\. ]YIFY(\+HI)?$", @"[\. ]YIFY(\.[1-9]Audio)?$", @"\[YTS\.[A-Z]{2}\](\.[1-9]Audio)?$", @"\.GAZ$" }.Select(version => new Regex(version)).ToArray();
-
-        private static readonly Regex TopVersion = new Regex("x265.+(VXT|RARBG)");
-
-        private static readonly Regex PremiumVersion = new Regex("[Hx]264.+(VXT|RARBG)");
-
         private const string MetadataExtension = ".nfo";
 
         private const string AllSearchPattern = "*";
@@ -36,6 +20,22 @@
 
         private const string Featurettes = nameof(Featurettes);
 
+        private const string DefaultLanguage = "eng";
+
+        private static readonly string[] UncommonVideoExtensions = { ".avi", ".wmv", ".webm", ".mpg", ".mpeg", ".rmvb", ".rm", ".3gp", ".divx", ".m1v", ".mov", ".ts", ".vob", ".flv", ".m4v", ".mkv", ".dat" };
+
+        private static readonly string[] CommonVideoExtensions = { ".avi", VideoExtension, ".mkv", ".dat", ".iso" };
+
+        private static readonly string[] AllVideoExtensions = UncommonVideoExtensions.Union(CommonVideoExtensions).ToArray();
+
+        private static readonly string[] IndependentNfos = { $"tvshow{MetadataExtension}", $"season{MetadataExtension}" };
+
+        private static readonly Regex[] PreferredVersions = new string[] { @"[\. ]YIFY(\+HI)?$", @"[\. ]YIFY(\.[1-9]Audio)?$", @"\[YTS\.[A-Z]{2}\](\.[1-9]Audio)?$", @"\.GAZ$" }.Select(version => new Regex(version)).ToArray();
+
+        private static readonly Regex TopVersion = new Regex("x265.+(VXT|RARBG)");
+
+        private static readonly Regex PremiumVersion = new Regex("[Hx]264.+(VXT|RARBG)");
+
         private static void TraceLog(string? message) => Trace.WriteLine(message);
 
         private static readonly int MaxDegreeOfParallelism = Math.Max(Environment.ProcessorCount, 4);
@@ -45,20 +45,20 @@
             return value.Replace("?", "").Replace(": ", "-").Replace(":", "-").Replace("*", "_").Replace("/", "_");
         }
 
-        internal static void BackupMetadata(string directory, string language = "eng")
+        internal static void BackupMetadata(string directory, string language = DefaultLanguage)
         {
             Directory
                 .GetFiles(directory, MetadataSearchPattern, SearchOption.AllDirectories)
                 .ForEach(metadata => File.Copy(metadata, PathHelper.AddFilePostfix(metadata, $".{language}")));
         }
 
-        internal static void RestoreMetadata(string directory, string language = "eng")
+        internal static void RestoreMetadata(string directory, string language = DefaultLanguage)
         {
             Directory
                 .GetFiles(directory, MetadataSearchPattern, SearchOption.AllDirectories)
                 .Where(nfo => nfo.EndsWith($".{language}{MetadataExtension}"))
                 .Where(nfo => File.Exists(nfo.Replace($".{language}{MetadataExtension}", MetadataExtension)))
-                .ForEach(nfo => FileHelper.Move(nfo, Path.Combine(Path.GetDirectoryName(nfo), (Path.GetFileNameWithoutExtension(nfo) ?? throw new InvalidOperationException(nfo)).Replace($".{language}", string.Empty) + Path.GetExtension(nfo)), true));
+                .ForEach(nfo => FileHelper.Move(nfo, Path.Combine(Path.GetDirectoryName(nfo) ?? throw new InvalidOperationException(nfo), (Path.GetFileNameWithoutExtension(nfo) ?? throw new InvalidOperationException(nfo)).Replace($".{language}", string.Empty) + Path.GetExtension(nfo)), true));
         }
 
         internal static void DeletePictures(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)

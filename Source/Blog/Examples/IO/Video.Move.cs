@@ -87,7 +87,7 @@ namespace Examples.IO
 
                     }
                     string newFile = string.Join(".", info);
-                    string directory = Path.GetDirectoryName(file);
+                    string directory = Path.GetDirectoryName(file) ?? throw new InvalidOperationException(file);
                     log(file);
                     log(Path.Combine(directory, newFile));
                     File.Move(file, Path.Combine(directory, newFile));
@@ -154,16 +154,16 @@ namespace Examples.IO
                 {
                     string extension = Path.GetExtension(result.File);
                     string newFile;
-                    if (!string.IsNullOrWhiteSpace(result.Extension) && AllVideoExtensions.Any(extension => string.Equals(extension, result.Extension, StringComparison.OrdinalIgnoreCase)))
+                    if (result.File.HasAnyExtension(AllVideoExtensions))
                     {
                         string file = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(result.File));
-                        newFile = Path.Combine(Path.GetDirectoryName(result.File), $"{file}.{result.Definition}{result.Extension}{extension}");
+                        newFile = Path.Combine(Path.GetDirectoryName(result.File) ?? throw new InvalidOperationException(result.File), $"{file}.{result.Definition}{result.Extension}{extension}");
 
                     }
                     else
                     {
                         string file = Path.GetFileNameWithoutExtension(result.File);
-                        newFile = Path.Combine(Path.GetDirectoryName(result.File), $"{file}.{result.Definition}{extension}");
+                        newFile = Path.Combine(Path.GetDirectoryName(result.File) ?? throw new InvalidOperationException(result.File), $"{file}.{result.Definition}{extension}");
                     }
                     if (isDryRun)
                     {
@@ -263,7 +263,7 @@ namespace Examples.IO
                         ? $"{{{Path.GetFileNameWithoutExtension(json).Split('.')[2]};{string.Join(",", imdbMetadata?.Genre.Take(3) ?? Array.Empty<string>())};{imdbMetadata?.ContentRating}}}"
                         : string.Empty;
                     string newMovie = $"{englishTitle.FilterForFileSystem()}{originalTitle.FilterForFileSystem()}.{year}.{chineseTitle.FilterForFileSystem()}[{rating}]{definition}{additional}";
-                    string newDirectory = Path.Combine(Path.GetDirectoryName(movie), newMovie);
+                    string newDirectory = Path.Combine(Path.GetDirectoryName(movie) ?? throw new InvalidOperationException(movie), newMovie);
                     if (isDryRun)
                     {
                         log(newDirectory);
@@ -285,29 +285,29 @@ namespace Examples.IO
             log ??= TraceLog;
             EnumerateDirectories(directory, level)
                 .ToArray()
-                .ForEach(d =>
+                .ForEach(movie =>
                 {
-                    string movie = Path.GetFileName(d) ?? throw new InvalidOperationException(d);
+                    string movieName = Path.GetFileName(movie) ?? throw new InvalidOperationException(movie);
                     bool isRenamed = false;
-                    if (movie.StartsWith("0."))
+                    if (movieName.StartsWith("0."))
                     {
-                        movie = movie.Substring("0.".Length);
+                        movieName = movieName.Substring("0.".Length);
                         isRenamed = true;
                     }
 
-                    if (movie.Contains("{"))
+                    if (movieName.Contains("{"))
                     {
-                        movie = movie.Substring(0, movie.IndexOf("{", StringComparison.Ordinal));
+                        movieName = movieName.Substring(0, movieName.IndexOf("{", StringComparison.Ordinal));
                         isRenamed = true;
                     }
 
                     if (isRenamed)
                     {
-                        string newMovie = Path.Combine(Path.GetDirectoryName(d), movie);
-                        log(d);
+                        string newMovie = Path.Combine(Path.GetDirectoryName(movie) ?? throw new InvalidOperationException(movie), movieName);
+                        log(movie);
                         if (!isDryRun)
                         {
-                            Directory.Move(d, newMovie);
+                            Directory.Move(movie, newMovie);
                         }
                         log(newMovie);
                     }
@@ -343,158 +343,165 @@ namespace Examples.IO
                 });
         }
 
-        internal static async Task CompareAndMoveAsync(string externalJsonPath, string moviesJsonPath, string newDirectory, string deletedDirectory, Action<string>? log = null, bool isDryRun = false, bool moveAllAttachment = true)
+        internal static async Task CompareAndMoveAsync(string fromJsonPath, string toJsonPath, string newDirectory, string deletedDirectory, Action<string>? log = null, bool isDryRun = false, bool moveAllAttachment = true)
         {
             log ??= TraceLog;
-            Dictionary<string, VideoMetadata> externalMetadata = JsonSerializer.Deserialize<Dictionary<string, VideoMetadata>>(await File.ReadAllTextAsync(externalJsonPath));
-            Dictionary<string, VideoMetadata> moviesMetadata = JsonSerializer.Deserialize<Dictionary<string, VideoMetadata>>(await File.ReadAllTextAsync(moviesJsonPath));
+            Dictionary<string, VideoMetadata> externalMetadata = JsonSerializer.Deserialize<Dictionary<string, VideoMetadata>>(await File.ReadAllTextAsync(fromJsonPath));
+            Dictionary<string, Dictionary<string, VideoMetadata>> moviesMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(toJsonPath));
 
             externalMetadata
                 .Where(externalVideo => File.Exists(externalVideo.Value.File))
                 .ForEach(externalVideo =>
-                    {
-                        string externalMovie = Path.GetDirectoryName(externalVideo.Value.File);
-                        log($"Starting {externalMovie}");
+                {
+                    VideoMetadata fromVideoMetadata = externalVideo.Value;
+                    string fromMovie = Path.GetDirectoryName(fromVideoMetadata.File) ?? throw new InvalidOperationException(fromVideoMetadata.File);
+                    log($"Starting {fromMovie}");
 
-                        if (!moviesMetadata.TryGetValue(externalVideo.Key, out VideoMetadata videoMetadata))
+                    if (!moviesMetadata.TryGetValue(externalVideo.Key, out Dictionary<string, VideoMetadata>? group) || !group.Any())
+                    {
+                        string newExternalMovie = Path.Combine(newDirectory, Path.GetFileName(fromMovie));
+                        if (!isDryRun)
                         {
-                            string newExternalMovie = Path.Combine(newDirectory, Path.GetFileName(Path.GetDirectoryName(externalVideo.Value.File)));
+                            Directory.Move(fromMovie, newExternalMovie);
+                        }
+
+                        log($"Move external movie {fromMovie} to {newExternalMovie}");
+                        return;
+                    }
+
+                    if (group.Count > 1)
+                    {
+                        log($"Multiple videos: {string.Join(", ", group.Keys)}");
+                        return;
+                    }
+
+                    VideoMetadata toVideoMetadata = group.Single().Value;
+                    toVideoMetadata.File = Path.Combine(Path.GetDirectoryName(toJsonPath) ?? throw new ArgumentException(toJsonPath), toVideoMetadata.File);
+                    if (TopVersion.IsMatch(Path.GetFileNameWithoutExtension(toVideoMetadata.File)))
+                    {
+                        log($"Video {toVideoMetadata.File} is x265.");
+                        return;
+                    }
+
+                    if (!File.Exists(toVideoMetadata.File))
+                    {
+                        log($"Video {toVideoMetadata.File} does not exist.");
+                        return;
+                    }
+
+                    if (Regex.IsMatch(Path.GetFileNameWithoutExtension(toVideoMetadata.File), "(RARBG|VXT)", RegexOptions.IgnoreCase) &&
+                        !Regex.IsMatch(Path.GetFileNameWithoutExtension(fromVideoMetadata.File), "(RARBG|VXT)", RegexOptions.IgnoreCase))
+                    {
+                        log($"Video {toVideoMetadata.File} is better version.");
+                        return;
+                    }
+
+                    if (toVideoMetadata.Width - fromVideoMetadata.Width > 5)
+                    {
+                        log($"Width {fromVideoMetadata.File} {fromVideoMetadata.Width} {toVideoMetadata.Width}");
+                        return;
+                    }
+
+                    if (toVideoMetadata.Height - fromVideoMetadata.Height > 20)
+                    {
+                        log($"Height {fromVideoMetadata.File} {fromVideoMetadata.Height} {toVideoMetadata.Height}");
+                        return;
+                    }
+
+                    if (Math.Abs(toVideoMetadata.TotalMilliseconds - fromVideoMetadata.TotalMilliseconds) > 1100)
+                    {
+                        log($"Duration {fromVideoMetadata.TotalMilliseconds}ms to old {toVideoMetadata.TotalMilliseconds}ms: {fromVideoMetadata.File}.");
+                        return;
+                    }
+
+                    if (toVideoMetadata.Audio - fromVideoMetadata.Audio > 0)
+                    {
+                        log($"Audio {fromVideoMetadata.File} {fromVideoMetadata.Audio} {toVideoMetadata.Audio}");
+                        return;
+                    }
+
+                    if (toVideoMetadata.Subtitle - fromVideoMetadata.Subtitle > 0)
+                    {
+                        log($"Subtitle {fromVideoMetadata.File} {fromVideoMetadata.Subtitle} {toVideoMetadata.Subtitle}");
+                        return;
+                    }
+
+                    string toMovie = Path.GetDirectoryName(toVideoMetadata.File) ?? throw new InvalidOperationException(toVideoMetadata.File);
+                    string newExternalVideo = Path.Combine(toMovie, Path.GetFileName(fromVideoMetadata.File));
+                    if (!isDryRun)
+                    {
+                        File.Move(fromVideoMetadata.File, newExternalVideo);
+                    }
+
+                    log($"Move external video {fromVideoMetadata.File} to {newExternalVideo}");
+
+                    Directory.GetFiles(fromMovie, AllSearchPattern, SearchOption.TopDirectoryOnly)
+                        .Where(file => moveAllAttachment || Path.GetFileNameWithoutExtension(file).Contains(Path.GetFileNameWithoutExtension(fromVideoMetadata.File), StringComparison.InvariantCultureIgnoreCase))
+                        .ToArray()
+                        .ForEach(fromAttachment =>
+                        {
+                            string toAttachment = Path.Combine(toMovie, Path.GetFileName(fromAttachment));
+                            if (File.Exists(toAttachment))
+                            {
+                                if (!isDryRun)
+                                {
+                                    new FileInfo(toAttachment).IsReadOnly = false;
+                                    File.Delete(toAttachment);
+                                }
+
+                                log($"Delete attachment {toAttachment}");
+                            }
                             if (!isDryRun)
                             {
-                                Directory.Move(externalMovie, newExternalMovie);
+                                File.Move(fromAttachment, toAttachment);
                             }
 
-                            log($"Move external movie {externalMovie} to {newExternalMovie}");
-                            return;
-                        }
+                            log($"Move external attachment {fromAttachment} to {toAttachment}");
+                        });
 
-                        if (videoMetadata.File.Contains("265", StringComparison.InvariantCultureIgnoreCase) && (videoMetadata.File.Contains("rarbg", StringComparison.InvariantCultureIgnoreCase) || videoMetadata.File.Contains("vxt", StringComparison.InvariantCultureIgnoreCase)))
+                    if (!isDryRun)
+                    {
+                        new FileInfo(toVideoMetadata.File).IsReadOnly = false;
+                        File.Delete(toVideoMetadata.File);
+                    }
+
+                    log($"Delete video {toVideoMetadata.File}");
+
+                    Directory.GetFiles(toMovie, AllSearchPattern, SearchOption.TopDirectoryOnly)
+                        .Where(file => Path.GetFileNameWithoutExtension(file).Contains(Path.GetFileNameWithoutExtension(toVideoMetadata.File), StringComparison.InvariantCultureIgnoreCase))
+                        .ToArray()
+                        .ForEach(existingAttachment =>
                         {
-                            log($"Video {videoMetadata.File} is H265.");
-                            return;
-                        }
-
-                        if (!File.Exists(videoMetadata.File))
-                        {
-                            log($"Video {videoMetadata.File} does not exist.");
-                            return;
-                        }
-
-                        if ((videoMetadata.File.Contains("rarbg", StringComparison.InvariantCultureIgnoreCase) ||
-                             videoMetadata.File.Contains("vxt", StringComparison.InvariantCultureIgnoreCase)) &&
-                            !(externalVideo.Value.File.Contains("rarbg", StringComparison.InvariantCultureIgnoreCase) ||
-                              externalVideo.Value.File.Contains("vxt", StringComparison.InvariantCultureIgnoreCase)))
-                        {
-                            log($"Video {videoMetadata.File} is better version.");
-                            return;
-                        }
-
-                        if (videoMetadata.Width - externalVideo.Value.Width > 5)
-                        {
-                            log($"Width {externalVideo.Value.File} {externalVideo.Value.Width} {videoMetadata.Width}");
-                            return;
-                        }
-
-                        if (videoMetadata.Height - externalVideo.Value.Height > 20)
-                        {
-                            log($"Height {externalVideo.Value.File} {externalVideo.Value.Height} {videoMetadata.Height}");
-                            return;
-                        }
-
-                        if (Math.Abs(videoMetadata.TotalMilliseconds - externalVideo.Value.TotalMilliseconds) > 1100)
-                        {
-                            log($"Duration {externalVideo.Value.TotalMilliseconds}ms to old {videoMetadata.TotalMilliseconds}ms: {externalVideo.Value.File}.");
-                            return;
-                        }
-
-                        if (videoMetadata.Audio - externalVideo.Value.Audio > 0)
-                        {
-                            log($"Audio {externalVideo.Value.File} {externalVideo.Value.Audio} {videoMetadata.Audio}");
-                            return;
-                        }
-
-                        if (videoMetadata.Subtitle - externalVideo.Value.Subtitle > 0)
-                        {
-                            log($"Subtitle {externalVideo.Value.File} {externalVideo.Value.Subtitle} {videoMetadata.Subtitle}");
-                            return;
-                        }
-
-                        string movieDirectory = Path.GetDirectoryName(videoMetadata.File);
-                        string newExternalVideo = Path.Combine(movieDirectory, Path.GetFileName(externalVideo.Value.File));
-                        if (!isDryRun)
-                        {
-                            File.Move(externalVideo.Value.File, newExternalVideo);
-                        }
-
-                        log($"Move external video {externalVideo.Value.File} to {newExternalVideo}");
-
-                        Directory.GetFiles(Path.GetDirectoryName(externalVideo.Value.File), "*", SearchOption.TopDirectoryOnly)
-                            .Where(file => moveAllAttachment || Path.GetFileNameWithoutExtension(file).Contains(Path.GetFileNameWithoutExtension(externalVideo.Value.File), StringComparison.InvariantCultureIgnoreCase))
-                            .ToArray()
-                            .ForEach(externalAttachment =>
+                            string newExistingAttachment = Path.Combine(toMovie, Path.GetFileName(existingAttachment).Replace(Path.GetFileNameWithoutExtension(toVideoMetadata.File), Path.GetFileNameWithoutExtension(externalVideo.Value.File)));
+                            if (File.Exists(newExistingAttachment))
+                            {
+                                if (!isDryRun)
                                 {
-                                    string newExternalAttachment = Path.Combine(movieDirectory, Path.GetFileName(externalAttachment));
-                                    if (File.Exists(newExternalAttachment))
-                                    {
-                                        if (!isDryRun)
-                                        {
-                                            new FileInfo(newExternalAttachment).IsReadOnly = false;
-                                            File.Delete(newExternalAttachment);
-                                        }
+                                    new FileInfo(existingAttachment).IsReadOnly = false;
+                                    File.Delete(existingAttachment);
+                                }
 
-                                        log($"Delete attachment {newExternalAttachment}");
-                                    }
-                                    if (!isDryRun)
-                                    {
-                                        File.Move(externalAttachment, newExternalAttachment);
-                                    }
-
-                                    log($"Move external attachment {externalAttachment} to {newExternalAttachment}");
-                                });
-
-                        if (!isDryRun)
-                        {
-                            new FileInfo(videoMetadata.File).IsReadOnly = false;
-                            File.Delete(videoMetadata.File);
-                        }
-
-                        log($"Delete video {videoMetadata.File}");
-
-                        Directory.GetFiles(movieDirectory, "*", SearchOption.TopDirectoryOnly)
-                            .Where(file => Path.GetFileNameWithoutExtension(file).Contains(Path.GetFileNameWithoutExtension(videoMetadata.File), StringComparison.InvariantCultureIgnoreCase))
-                            .ToArray()
-                            .ForEach(attachment =>
+                                log($"Delete attachment {existingAttachment}");
+                            }
+                            else
+                            {
+                                if (!isDryRun)
                                 {
-                                    string newAttachment = Path.Combine(movieDirectory, Path.GetFileName(attachment).Replace(Path.GetFileNameWithoutExtension(videoMetadata.File), Path.GetFileNameWithoutExtension(externalVideo.Value.File)));
-                                    if (File.Exists(newAttachment))
-                                    {
-                                        if (!isDryRun)
-                                        {
-                                            new FileInfo(attachment).IsReadOnly = false;
-                                            File.Delete(attachment);
-                                        }
+                                    File.Move(existingAttachment, newExistingAttachment);
+                                }
 
-                                        log($"Delete attachment {attachment}");
-                                    }
-                                    else
-                                    {
-                                        if (!isDryRun)
-                                        {
-                                            File.Move(attachment, newAttachment);
-                                        }
+                                log($"Move attachment {existingAttachment} to {newExistingAttachment}");
+                            }
+                        });
 
-                                        log($"Move attachment {attachment} to {newAttachment}");
-                                    }
-                                });
+                    string deletedFromMovie = Path.Combine(deletedDirectory, Path.GetFileName(fromMovie));
+                    if (!isDryRun)
+                    {
+                        Directory.Move(fromMovie, deletedFromMovie);
+                    }
 
-                        string deletedExternalMovie = Path.Combine(deletedDirectory, Path.GetFileName(externalMovie));
-                        if (!isDryRun)
-                        {
-                            Directory.Move(externalMovie, deletedExternalMovie);
-                        }
-
-                        log($"Move external movie {externalMovie} to {deletedExternalMovie}");
-                    });
+                    log($"Move external movie {fromMovie} to {deletedFromMovie}");
+                });
         }
 
         internal static void RenameTVAttachment(IEnumerable<string> videos)
@@ -503,7 +510,7 @@ namespace Examples.IO
             {
                 string match = Regex.Match(Path.GetFileNameWithoutExtension(video), @"s[\d]+e[\d]+", RegexOptions.IgnoreCase).Value.ToLowerInvariant();
                 Directory
-                    .EnumerateFiles(Path.GetDirectoryName(video), $"*{match}*", SearchOption.TopDirectoryOnly)
+                    .EnumerateFiles(Path.GetDirectoryName(video) ?? throw new InvalidOperationException(video), $"*{match}*", SearchOption.TopDirectoryOnly)
                     .Where(file => !string.Equals(file, video, StringComparison.InvariantCultureIgnoreCase))
                     .ForEach(file => Trace.WriteLine(file));
             });
@@ -540,10 +547,115 @@ namespace Examples.IO
             log ??= TraceLog;
             EnumerateDirectories(directory, level)
                 .ToArray()
-                .ForEach(movie =>
+                .Select(movie =>
                 {
-                    
-                });
+                    string name = Path.GetFileName(movie);
+                    MovieDirectoryInfo movieDirectoryInfo = new MovieDirectoryInfo(name);
+                    string defaultNumber1 = Regex.Match(movieDirectoryInfo.DefaultTitle1, " ([0-9]{1,2})$").Value.TrimStart(' ');
+                    string defaultNumber2 = Regex.Match(movieDirectoryInfo.DefaultTitle2, " ([0-9]{1,2})$").Value.TrimStart(' ');
+                    string originalNumber1 = Regex.Match(movieDirectoryInfo.OriginalTitle1, " ([0-9]{1,2})$").Value.TrimStart(' ');
+                    string originalNumber2 = Regex.Match(movieDirectoryInfo.OriginalTitle2, " ([0-9]{1,2})$").Value.TrimStart(' ');
+                    string translatedNumber1 = Regex.Match(movieDirectoryInfo.TranslatedTitle1, "([0-9]{1,2})$").Value;
+                    string translatedNumber2 = Regex.Match(movieDirectoryInfo.TranslatedTitle2, "([0-9]{1,2})$").Value;
+                    if (string.IsNullOrWhiteSpace(defaultNumber1) && string.IsNullOrWhiteSpace(defaultNumber2))
+                    {
+                        return $"-{movie}";
+                    }
+
+                    if (!string.Equals(defaultNumber1, translatedNumber1, StringComparison.InvariantCulture))
+                    {
+                        return $"#Translated number is inconsistent: {movie}";
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(originalNumber1) && !string.Equals(defaultNumber1, originalNumber1, StringComparison.InvariantCulture))
+                    {
+                        return $"!Original number is inconsistent: {movie}";
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(defaultNumber2) && !string.Equals(defaultNumber2, translatedNumber2))
+                    {
+                        return $"!Translated secondary number is inconsistent:  {movie}";
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(originalNumber2) && !string.Equals(defaultNumber2, originalNumber2, StringComparison.InvariantCulture))
+                    {
+                        return $"!Original secondary number is inconsistent:  {movie}";
+                    }
+
+                    movieDirectoryInfo.DefaultTitle1 = Regex.Replace(movieDirectoryInfo.DefaultTitle1, " ([0-9]{1,2})$", "`$1");
+                    movieDirectoryInfo.DefaultTitle2 = Regex.Replace(movieDirectoryInfo.DefaultTitle2, " ([0-9]{1,2})$", "`$1");
+                    movieDirectoryInfo.OriginalTitle1 = Regex.Replace(movieDirectoryInfo.OriginalTitle1, " ([0-9]{1,2})$", "`$1");
+                    movieDirectoryInfo.OriginalTitle2 = Regex.Replace(movieDirectoryInfo.OriginalTitle2, " ([0-9]{1,2})$", "`$1");
+                    movieDirectoryInfo.TranslatedTitle1 = Regex.Replace(movieDirectoryInfo.TranslatedTitle1, "([0-9]{1,2})$", "`$1");
+                    movieDirectoryInfo.TranslatedTitle2 = Regex.Replace(movieDirectoryInfo.TranslatedTitle2, "([0-9]{1,2})$", "`$1");
+                    string newMovie = PathHelper.ReplaceFileName(movie, movieDirectoryInfo.Name);
+                    Debug.Assert(newMovie.Length - movie.Length == 1 || newMovie.Length - movie.Length == 2);
+                    Directory.Move(movie, newMovie);
+                    return newMovie;
+                })
+                .OrderBy(message => message, StringComparer.Ordinal)
+                .ForEach(log);
+        }
+    }
+
+    internal class MovieDirectoryInfo
+    {
+        private static readonly Regex MovieDirectoryRegex = new Regex(@"^([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?((\=[^\.^\-^\=]+)(\-[^\.^\-^\=]+)?)?\.([0-9]{4})\.([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?\[([0-9]\.[0-9]|\-)\](\[(1080p|720p)\])?(\[3D\])?$");
+
+        internal MovieDirectoryInfo(string name) => this.Initialize(name);
+
+        internal string DefaultTitle1 { get; set; } = string.Empty;
+
+        internal string DefaultTitle2 { get; set; } = string.Empty;
+
+        internal string DefaultTitle3 { get; set; } = string.Empty;
+
+        internal string OriginalTitle1 { get; set; } = string.Empty;
+
+        internal string OriginalTitle2 { get; set; } = string.Empty;
+
+        internal string Year { get; set; } = string.Empty;
+
+        internal string TranslatedTitle1 { get; set; } = string.Empty;
+
+        internal string TranslatedTitle2 { get; set; } = string.Empty;
+
+        internal string TranslatedTitle3 { get; set; } = string.Empty;
+
+        internal string Rating { get; set; } = string.Empty;
+
+        internal string Definition { get; set; } = string.Empty;
+
+        internal string Is3D { get; set; } = string.Empty;
+
+        public override string ToString() => this.Name;
+
+        internal string Name
+        {
+            get => $"{this.DefaultTitle1}{this.DefaultTitle2}{this.DefaultTitle3}{this.OriginalTitle1}{this.OriginalTitle2}.{this.Year}.{this.TranslatedTitle1}{this.TranslatedTitle2}{this.TranslatedTitle3}[{this.Rating}]{this.Definition}{this.Is3D}";
+            set => this.Initialize(value);
+        }
+
+        private void Initialize(string name)
+        {
+            Match directoryMatch = MovieDirectoryRegex.Match(name);
+            if (!directoryMatch.Success)
+            {
+                throw new ArgumentOutOfRangeException(nameof(name));
+            }
+
+            this.DefaultTitle1 = directoryMatch.Groups[1].Value;
+            this.DefaultTitle2 = directoryMatch.Groups[2].Value;
+            this.DefaultTitle3 = directoryMatch.Groups[3].Value;
+            this.OriginalTitle1 = directoryMatch.Groups[5].Value;
+            this.OriginalTitle2 = directoryMatch.Groups[6].Value;
+            this.Year = directoryMatch.Groups[7].Value;
+            this.TranslatedTitle1 = directoryMatch.Groups[8].Value;
+            this.TranslatedTitle2 = directoryMatch.Groups[9].Value;
+            this.TranslatedTitle3 = directoryMatch.Groups[10].Value;
+            this.Rating = directoryMatch.Groups[11].Value;
+            this.Definition = directoryMatch.Groups[12].Value;
+            this.Is3D = directoryMatch.Groups[14].Value;
         }
     }
 }

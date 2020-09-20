@@ -14,6 +14,8 @@ namespace Examples.IO
 
     public static class PathHelper
     {
+        public const string AllSearchPattern = "*";
+
         public static readonly char[] InvalidFileNameCharacters = Path.GetInvalidFileNameChars();
 
         [SuppressMessage("Microsoft.Design", "CA1055:UriReturnValuesShouldNotBeStrings")]

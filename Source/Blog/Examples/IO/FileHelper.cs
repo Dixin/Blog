@@ -1,6 +1,8 @@
 namespace Examples.IO
 {
+    using System;
     using System.IO;
+    using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
     using Examples.Common;
@@ -41,7 +43,7 @@ namespace Examples.IO
             file.MoveTo(newName);
         }
 
-        public static void Move(string source, string destination, bool overwrite)
+        public static void Move(string source, string destination, bool overwrite = false)
         {
             source.NotNullOrWhiteSpace(nameof(source));
             destination.NotNullOrWhiteSpace(nameof(destination));
@@ -50,6 +52,13 @@ namespace Examples.IO
             {
                 File.Delete(destination);
             }
+
+            string destinationDirectory = Path.GetDirectoryName(destination) ?? throw new InvalidOperationException(destination);
+            if (!Directory.Exists(destinationDirectory))
+            {
+                Directory.CreateDirectory(destinationDirectory);
+            }
+
             File.Move(source, destination);
         }
 
@@ -77,13 +86,21 @@ namespace Examples.IO
 
         public static void AddPrefix(string file, string prefix)
         {
-            string newFile = Path.Combine(Path.GetDirectoryName(file), $"{prefix}{Path.GetFileName(file)}");
             File.Move(file, PathHelper.AddFilePrefix(file, prefix));
         }
 
         public static void AddPostfix(string file, string postfix)
         {
             File.Move(file, PathHelper.AddFilePostfix(file, postfix));
+        }
+
+        internal static void MoveAll(string sourceDirectory, string destinationDirectory, string searchPattern = PathHelper.AllSearchPattern, SearchOption searchOption = SearchOption.TopDirectoryOnly, Func<string, bool>? predicate = null, bool overwrite = false)
+        {
+            Directory
+                .EnumerateFiles(sourceDirectory, searchPattern, searchOption)
+                .Where(file => predicate?.Invoke(file) ?? true)
+                .ToArray()
+                .ForEach(subtitle => Move(subtitle, subtitle.Replace(sourceDirectory, destinationDirectory, StringComparison.InvariantCulture), overwrite));
         }
     }
 }

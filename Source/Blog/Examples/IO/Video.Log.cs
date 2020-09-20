@@ -7,6 +7,7 @@
     using System.Linq;
     using System.Text.RegularExpressions;
     using System.Xml.Linq;
+    using Examples.Linq;
     using Examples.Net;
 
     internal static partial class Video
@@ -26,7 +27,16 @@
             files
                 .ToArray()
                 .AsParallel()
-                .Select((video, index) => GetVideoMetadata(video, log: message => log($"{index} {message}")))
+                .Select((video, index) =>
+                {
+                    if (!TryGetVideoMetadata(video, out VideoMetadata? videoMetadata, log: message => log($"{index} {message}")))
+                    {
+                        log($"!Failed {video}");
+                    }
+
+                    return videoMetadata;
+                })
+                .NotNull()
                 .Select(video => (Video: video, Error: GetVideoError(video, isNoAudioAllowed)))
                 .Where(result => !string.IsNullOrWhiteSpace(result.Error))
                 .AsSequential()
@@ -166,9 +176,9 @@
                     {
                         movieDirectory = movieDirectory.Substring("0.".Length);
                     }
-                    Match match = MovieDirectoryRegex.Match(movieDirectory);
-                    Debug.Assert(match.Success);
-                    string directoryYear = match.Groups[1].Value;
+                    
+                    MovieDirectoryInfo movieDirectoryInfo = new MovieDirectoryInfo(movieDirectory);
+                    string directoryYear = movieDirectoryInfo.Year;
                     string metadataYear = metadata.Root?.Element("year")?.Value ?? throw new InvalidOperationException($"{metadata} has no year.");
                     string videoName = string.Empty;
                     if (!(directoryYear == metadataYear
@@ -230,10 +240,16 @@
                         trimmedMovie = trimmedMovie.Substring(0, trimmedMovie.IndexOf("{", StringComparison.Ordinal));
                     }
 
-                    if (!MovieDirectoryRegex.IsMatch(trimmedMovie))
-                    {
-                        log($"!Directory pattern: {movie}");
-                    }
+                    MovieDirectoryInfo movieDirectoryInfo = new MovieDirectoryInfo(trimmedMovie);
+                    //if (!string.Equals(level1Number1, level1Number3) || !string.IsNullOrWhiteSpace(level1Number2) && !string.Equals(level1Number1, level1Number2))
+                    //{
+                    //    log($"{movie}");
+                    //}
+
+                    //if (Regex.IsMatch(Regex.Replace(match.Groups[5].Value, "([0-9]{1,2})$", ""), "[0-9]+"))
+                    //{
+                    //    log($"!Index: {movie}");
+                    //}
 
                     string[] files = Directory.GetFiles(movie, AllSearchPattern, SearchOption.TopDirectoryOnly).Select(Path.GetFileName).ToArray();
 
@@ -355,8 +371,7 @@
                     string? imdbYear = imdbMetadata?.Year;
                     if (!string.IsNullOrWhiteSpace(imdbYear))
                     {
-                        string directoryYear = MovieDirectoryRegex.Match(trimmedMovie).Groups[1].Value;
-                        if (!string.Equals(directoryYear, imdbYear))
+                        if (!string.Equals(movieDirectoryInfo.Year, imdbYear))
                         {
                             log($"!Year should be {imdbYear}: {movie}");
                         }
@@ -395,7 +410,7 @@
                     {
                         videoYear = jsonMetadata.Year;
                         videoTitle = jsonMetadata.Name;
-                        Debug.Assert(videoYear?.Length == 4);
+                        Debug.Assert(videoYear.Length == 4);
                     }
 
                     if (string.IsNullOrWhiteSpace(videoYear))
@@ -415,7 +430,7 @@
                     {
                         log(movie);
                         movieName[1] = videoYear!;
-                        string newMovie = Path.Combine(Path.GetDirectoryName(movie), string.Join(".", movieName));
+                        string newMovie = Path.Combine(Path.GetDirectoryName(movie) ?? throw new InvalidOperationException(movie), string.Join(".", movieName));
                         log(newMovie);
                         // Directory.Move(movie, newMovie);
                         string backMovie = movie.Replace(@"E:\", @"F:\");
@@ -432,7 +447,7 @@
                         log(Environment.NewLine);
                     }
 
-                    if (Math.Abs(int.Parse(movieYear) - int.Parse(videoYear)) > 0)
+                    if (Math.Abs(int.Parse(movieYear) - int.Parse(videoYear!)) > 0)
                     {
                         log(movie);
                         log(movieYear);

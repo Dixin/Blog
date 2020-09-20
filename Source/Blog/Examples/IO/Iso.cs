@@ -35,19 +35,19 @@
                 .Do(Console.WriteLine)
                 .ForEach(argument =>
                     {
-                        using Process piso = new Process
+                        using Process powerIso = new Process
                         {
-                            StartInfo =
-                                    {
-                                        UseShellExecute = true,
-                                        CreateNoWindow = false,
-                                        WindowStyle = ProcessWindowStyle.Minimized,
-                                        FileName = @"""C:\Program Files\PowerISO\piso.exe""",
-                                        Arguments = argument
-                                    }
+                            StartInfo = new ProcessStartInfo()
+                            {
+                                UseShellExecute = true,
+                                CreateNoWindow = false,
+                                WindowStyle = ProcessWindowStyle.Minimized,
+                                FileName = @"""C:\Program Files\PowerISO\piso.exe""",
+                                Arguments = argument
+                            }
                         };
-                        piso.Start();
-                        piso.WaitForExit();
+                        powerIso.Start();
+                        powerIso.WaitForExit();
                     });
         }
     }
