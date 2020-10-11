@@ -39,6 +39,8 @@
             }
         }
 
+        internal string FormattedContentRating => string.IsNullOrWhiteSpace(this.ContentRating) ? "NA" : this.ContentRating.Replace("-", string.Empty);
+
         [JsonIgnore]
         internal string Id => this.Url.Split("/", StringSplitOptions.RemoveEmptyEntries).Last();
 
@@ -63,8 +65,8 @@
         public override string[] Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             return reader.TokenType == JsonTokenType.StartArray
-                ? JsonSerializer.Deserialize<string[]>(ref reader, options)
-                : new string[] { reader.GetString() };
+                ? JsonSerializer.Deserialize<string[]>(ref reader, options) ?? Array.Empty<string>()
+                : new string[] { reader.GetString() ?? string.Empty };
         }
 
         public override void Write(Utf8JsonWriter writer, string[] value, JsonSerializerOptions options)

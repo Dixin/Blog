@@ -35,7 +35,7 @@
             {
                 ImdbMetadata imdbMetadata = JsonSerializer.Deserialize<ImdbMetadata>(
                     json,
-                    new JsonSerializerOptions() { PropertyNameCaseInsensitive = true, IgnoreReadOnlyProperties = true });
+                    new JsonSerializerOptions() { PropertyNameCaseInsensitive = true, IgnoreReadOnlyProperties = true }) ?? throw new InvalidOperationException(url);
                 year = imdbMetadata.YearOfCurrentRegion;
             }
 

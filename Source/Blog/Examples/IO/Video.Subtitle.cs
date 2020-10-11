@@ -40,7 +40,7 @@ namespace Examples.IO
                     Ude.CharsetDetector detector = new Ude.CharsetDetector();
                     detector.Feed(fileStream);
                     detector.DataEnd();
-                    return detector.Charset != null ? (detector.Charset, Confidence: (float?)detector.Confidence, File: file) : (Charset: (string?)null, Confidence: (float?)null, File: file);
+                    return detector.Charset != null ? (detector.Charset, Confidence: detector.Confidence, File: file) : (Charset: (string?)null, Confidence: (float?)null, File: file);
                 })
                 .OrderBy(result => result.Charset)
                 .ThenByDescending(result => result.Confidence)

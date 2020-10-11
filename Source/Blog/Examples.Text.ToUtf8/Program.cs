@@ -11,7 +11,7 @@
     {
         private static readonly byte[] Utf8Bom = Encoding.UTF8.GetPreamble();
 
-        private static readonly TextWriter Log = Console.Out;
+        private static readonly Action<string> Log = Console.WriteLine;
 
         private static async Task Main(string[] args)
         {
@@ -50,7 +50,7 @@
             {
                 if (await BackUpAndConvertAsync(file, fromEncoding))
                 {
-                    Log.WriteLine($"Converted {fromEncoding}, {file}");
+                    Log($"Converted {fromEncoding}, {file}");
                 }
             }
             else
@@ -68,18 +68,18 @@
                     }
                     catch (ArgumentException exception)
                     {
-                        Log.WriteLine($"!Not supported {detector.Charset}, {detector.Confidence}, {file}. {exception}");
+                        Log($"!Not supported {detector.Charset}, {detector.Confidence}, {file}. {exception}");
                         return;
                     }
 
                     if (await BackUpAndConvertAsync(file, fromEncoding))
                     {
-                        Log.WriteLine($"Converted {detector.Charset}, {detector.Confidence}, {file}");
+                        Log($"Converted {detector.Charset}, {detector.Confidence}, {file}");
                     }
                 }
                 else
                 {
-                    Log.WriteLine($"!Not detected {detector.Charset}, {detector.Confidence}, {file}");
+                    Log($"!Not detected {detector.Charset}, {detector.Confidence}, {file}");
                 }
             }
         }

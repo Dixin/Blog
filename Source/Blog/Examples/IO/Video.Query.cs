@@ -184,7 +184,7 @@ namespace Examples.IO
             return VersionKeywords.Any(keyword => name.Contains(keyword, StringComparison.InvariantCultureIgnoreCase));
         }
 
-        internal static async Task DownloadImdbMetadataAsync(string directory, int level = 2, bool overwrite = false, Action<string>? log = null)
+        internal static async Task DownloadImdbMetadataAsync(string directory, int level = 2, bool overwrite = false, bool isTV = false, Action<string>? log = null)
         {
             log ??= TraceLog;
             await EnumerateDirectories(directory, level)
@@ -197,7 +197,7 @@ namespace Examples.IO
                     }
 
                     string nfo = Directory.EnumerateFiles(movie, MetadataSearchPattern, SearchOption.TopDirectoryOnly).First();
-                    string? imdbId = XDocument.Load(nfo).Root?.Element("imdbid")?.Value;
+                    string? imdbId = XDocument.Load(nfo).Root?.Element((isTV ? "imdb_id" : "imdbid")!)?.Value;
                     if (string.IsNullOrWhiteSpace(imdbId))
                     {
                         await File.WriteAllTextAsync(Path.Combine(movie, "-.json"), "{}");
@@ -210,7 +210,7 @@ namespace Examples.IO
                     {
                         ImdbMetadata imdbMetadata = JsonSerializer.Deserialize<ImdbMetadata>(
                             imdbJson,
-                            new JsonSerializerOptions() { PropertyNameCaseInsensitive = true, IgnoreReadOnlyProperties = true });
+                            new JsonSerializerOptions() { PropertyNameCaseInsensitive = true, IgnoreReadOnlyProperties = true }) ?? throw new InvalidOperationException(imdbJson);
                         year = imdbMetadata.YearOfCurrentRegion;
                     }
 

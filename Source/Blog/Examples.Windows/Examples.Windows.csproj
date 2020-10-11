@@ -1,7 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <LangVersion>9.0</LangVersion>
     <UseWindowsForms>true</UseWindowsForms>
     <RootNamespace>Examples</RootNamespace>
   </PropertyGroup>

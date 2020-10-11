@@ -16,6 +16,15 @@
             }
         }
 
+        public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, int, Task> asyncAction)
+        {
+            int index = 0;
+            foreach (T value in source)
+            {
+                await asyncAction(value, checked(++index));
+            }
+        }
+
         public static async Task ParallelForEachAsync<T>(
             this IEnumerable<T> source, Func<T, Task> asyncAction, int? maxDegreeOfParallelism = null)
         {

@@ -1,7 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>netstandard2.1</TargetFramework>
+        <TargetFramework>net5.0</TargetFramework>
+        <LangVersion>9.0</LangVersion>
+        <RootNamespace>Examples</RootNamespace>
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
@@ -18,7 +20,7 @@
         <PackageReference Include="System.Text.Json" Version="4.7.2" />
         <PackageReference Include="TagLibSharp" Version="2.2.0" />
         <PackageReference Include="Ude.NetStandard" Version="1.2.0" />
-        <PackageReference Include="Xabe.FFmpeg" Version="4.1.1" />
+        <PackageReference Include="Xabe.FFmpeg" Version="4.3.1" />
     </ItemGroup>
 
 </Project>

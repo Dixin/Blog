@@ -20,7 +20,7 @@
 
         private const string Featurettes = nameof(Featurettes);
 
-        private const string DefaultLanguage = "eng";
+        private const string DefaultBackupFlag = "backup";
 
         private static readonly string[] UncommonVideoExtensions = { ".avi", ".wmv", ".webm", ".mpg", ".mpeg", ".rmvb", ".rm", ".3gp", ".divx", ".m1v", ".mov", ".ts", ".vob", ".flv", ".m4v", ".mkv", ".dat" };
 
@@ -45,20 +45,20 @@
             return value.Replace("?", "").Replace(": ", "-").Replace(":", "-").Replace("*", "_").Replace("/", "_");
         }
 
-        internal static void BackupMetadata(string directory, string language = DefaultLanguage)
+        internal static void BackupMetadata(string directory, string flag = DefaultBackupFlag)
         {
             Directory
                 .GetFiles(directory, MetadataSearchPattern, SearchOption.AllDirectories)
-                .ForEach(metadata => File.Copy(metadata, PathHelper.AddFilePostfix(metadata, $".{language}")));
+                .ForEach(metadata => File.Copy(metadata, PathHelper.AddFilePostfix(metadata, $".{flag}")));
         }
 
-        internal static void RestoreMetadata(string directory, string language = DefaultLanguage)
+        internal static void RestoreMetadata(string directory, string flag = DefaultBackupFlag)
         {
             Directory
                 .GetFiles(directory, MetadataSearchPattern, SearchOption.AllDirectories)
-                .Where(nfo => nfo.EndsWith($".{language}{MetadataExtension}"))
-                .Where(nfo => File.Exists(nfo.Replace($".{language}{MetadataExtension}", MetadataExtension)))
-                .ForEach(nfo => FileHelper.Move(nfo, Path.Combine(Path.GetDirectoryName(nfo) ?? throw new InvalidOperationException(nfo), (Path.GetFileNameWithoutExtension(nfo) ?? throw new InvalidOperationException(nfo)).Replace($".{language}", string.Empty) + Path.GetExtension(nfo)), true));
+                .Where(nfo => nfo.EndsWith($".{flag}{MetadataExtension}"))
+                .Where(nfo => File.Exists(nfo.Replace($".{flag}{MetadataExtension}", MetadataExtension)))
+                .ForEach(nfo => FileHelper.Move(nfo, Path.Combine(Path.GetDirectoryName(nfo) ?? throw new InvalidOperationException(nfo), (Path.GetFileNameWithoutExtension(nfo) ?? throw new InvalidOperationException(nfo)).Replace($".{flag}", string.Empty) + Path.GetExtension(nfo)), true));
         }
 
         internal static void DeletePictures(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)

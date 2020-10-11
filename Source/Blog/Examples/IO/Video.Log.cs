@@ -177,8 +177,8 @@
                         movieDirectory = movieDirectory.Substring("0.".Length);
                     }
                     
-                    MovieDirectoryInfo movieDirectoryInfo = new MovieDirectoryInfo(movieDirectory);
-                    string directoryYear = movieDirectoryInfo.Year;
+                    VideoDirectoryInfo videoDirectoryInfo = new VideoDirectoryInfo(movieDirectory);
+                    string directoryYear = videoDirectoryInfo.Year;
                     string metadataYear = metadata.Root?.Element("year")?.Value ?? throw new InvalidOperationException($"{metadata} has no year.");
                     string videoName = string.Empty;
                     if (!(directoryYear == metadataYear
@@ -240,7 +240,7 @@
                         trimmedMovie = trimmedMovie.Substring(0, trimmedMovie.IndexOf("{", StringComparison.Ordinal));
                     }
 
-                    MovieDirectoryInfo movieDirectoryInfo = new MovieDirectoryInfo(trimmedMovie);
+                    VideoDirectoryInfo videoDirectoryInfo = new VideoDirectoryInfo(trimmedMovie);
                     //if (!string.Equals(level1Number1, level1Number3) || !string.IsNullOrWhiteSpace(level1Number2) && !string.Equals(level1Number1, level1Number2))
                     //{
                     //    log($"{movie}");
@@ -371,7 +371,7 @@
                     string? imdbYear = imdbMetadata?.Year;
                     if (!string.IsNullOrWhiteSpace(imdbYear))
                     {
-                        if (!string.Equals(movieDirectoryInfo.Year, imdbYear))
+                        if (!string.Equals(videoDirectoryInfo.Year, imdbYear))
                         {
                             log($"!Year should be {imdbYear}: {movie}");
                         }

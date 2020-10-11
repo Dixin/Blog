@@ -147,7 +147,7 @@ namespace Examples.IO
                 .Select(file =>
                 {
                     Match match = Regex.Match(file, @"^\!(720p|1080p)\: ([0-9]{2,4}x[0-9]{2,4} )?(.*)$");
-                    string path = match.Groups.Last().Value;
+                    string path = match.Groups.Last<Group>().Value;
                     return (Definition: match.Groups[1].Value, File: path, Extension: Path.GetExtension(Path.GetFileNameWithoutExtension(path)));
                 })
                 .ForEach(result =>
@@ -209,7 +209,7 @@ namespace Examples.IO
                 });
         }
 
-        internal static void RenameDirectoriesWithMetadata(string directory, int level = 2, bool additionalInfo = false, bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
+        internal static void RenameDirectoriesWithMetadata(string directory, int level = 2, bool additionalInfo = false, bool overwrite = false, bool isDryRun = false, string backupFlag = "backup", Action<string>? log = null)
         {
             log ??= TraceLog;
             EnumerateDirectories(directory, level)
@@ -224,10 +224,10 @@ namespace Examples.IO
                     string[] nfos = Directory.GetFiles(movie, MetadataSearchPattern, SearchOption.TopDirectoryOnly).OrderBy(nfo => nfo).ToArray();
                     XDocument english;
                     XDocument? chinese;
-                    if (nfos.Any(nfo => nfo.EndsWith($".eng{MetadataExtension}")) && nfos.Any(nfo => !nfo.EndsWith($".eng{MetadataExtension}")))
+                    if (nfos.Any(nfo => nfo.EndsWith($".{backupFlag}{MetadataExtension}")) && nfos.Any(nfo => !nfo.EndsWith($".{backupFlag}{MetadataExtension}")))
                     {
-                        english = XDocument.Load(nfos.First(nfo => nfo.EndsWith($".eng{MetadataExtension}")));
-                        chinese = XDocument.Load(nfos.First(nfo => !nfo.EndsWith($".eng{MetadataExtension}")));
+                        english = XDocument.Load(nfos.First(nfo => nfo.EndsWith($".{backupFlag}{MetadataExtension}")));
+                        chinese = XDocument.Load(nfos.First(nfo => !nfo.EndsWith($".{backupFlag}{MetadataExtension}")));
                     }
                     else
                     {
@@ -240,7 +240,7 @@ namespace Examples.IO
 
                     string englishTitle = english.Root?.Element("title")?.Value ?? throw new InvalidOperationException($"{movie} has no English title.");
                     string chineseTitle = chinese?.Root?.Element("title")?.Value ?? string.Empty;
-                    string? originalTitle = english.Root?.Element("originaltitle")?.Value ?? imdbMetadata?.Name;
+                    string? originalTitle = imdbMetadata?.Name ?? english.Root?.Element("originaltitle")?.Value ?? imdbMetadata?.Name;
                     string year = imdbMetadata?.Year ?? english.Root?.Element("year")?.Value ?? throw new InvalidOperationException($"{movie} has no year.");
                     string? imdb = english.Root?.Element("imdbid")?.Value;
                     Debug.Assert(string.IsNullOrWhiteSpace(imdb)
@@ -260,7 +260,7 @@ namespace Examples.IO
                         ? string.Empty
                         : $"={originalTitle}";
                     string additional = additionalInfo
-                        ? $"{{{Path.GetFileNameWithoutExtension(json).Split('.')[2]};{string.Join(",", imdbMetadata?.Genre.Take(3) ?? Array.Empty<string>())};{imdbMetadata?.ContentRating}}}"
+                        ? $"{{{string.Join(",", imdbMetadata?.Regions.Take(5) ?? Array.Empty<string>())};{string.Join(",", imdbMetadata?.Genre.Take(3) ?? Array.Empty<string>())};{imdbMetadata?.ContentRating}}}"
                         : string.Empty;
                     string newMovie = $"{englishTitle.FilterForFileSystem()}{originalTitle.FilterForFileSystem()}.{year}.{chineseTitle.FilterForFileSystem()}[{rating}]{definition}{additional}";
                     string newDirectory = Path.Combine(Path.GetDirectoryName(movie) ?? throw new InvalidOperationException(movie), newMovie);
@@ -550,13 +550,13 @@ namespace Examples.IO
                 .Select(movie =>
                 {
                     string name = Path.GetFileName(movie);
-                    MovieDirectoryInfo movieDirectoryInfo = new MovieDirectoryInfo(name);
-                    string defaultNumber1 = Regex.Match(movieDirectoryInfo.DefaultTitle1, " ([0-9]{1,2})$").Value.TrimStart(' ');
-                    string defaultNumber2 = Regex.Match(movieDirectoryInfo.DefaultTitle2, " ([0-9]{1,2})$").Value.TrimStart(' ');
-                    string originalNumber1 = Regex.Match(movieDirectoryInfo.OriginalTitle1, " ([0-9]{1,2})$").Value.TrimStart(' ');
-                    string originalNumber2 = Regex.Match(movieDirectoryInfo.OriginalTitle2, " ([0-9]{1,2})$").Value.TrimStart(' ');
-                    string translatedNumber1 = Regex.Match(movieDirectoryInfo.TranslatedTitle1, "([0-9]{1,2})$").Value;
-                    string translatedNumber2 = Regex.Match(movieDirectoryInfo.TranslatedTitle2, "([0-9]{1,2})$").Value;
+                    VideoDirectoryInfo videoDirectoryInfo = new VideoDirectoryInfo(name);
+                    string defaultNumber1 = Regex.Match(videoDirectoryInfo.DefaultTitle1, " ([0-9]{1,2})$").Value.TrimStart(' ');
+                    string defaultNumber2 = Regex.Match(videoDirectoryInfo.DefaultTitle2, " ([0-9]{1,2})$").Value.TrimStart(' ');
+                    string originalNumber1 = Regex.Match(videoDirectoryInfo.OriginalTitle1, " ([0-9]{1,2})$").Value.TrimStart(' ');
+                    string originalNumber2 = Regex.Match(videoDirectoryInfo.OriginalTitle2, " ([0-9]{1,2})$").Value.TrimStart(' ');
+                    string translatedNumber1 = Regex.Match(videoDirectoryInfo.TranslatedTitle1, "([0-9]{1,2})$").Value;
+                    string translatedNumber2 = Regex.Match(videoDirectoryInfo.TranslatedTitle2, "([0-9]{1,2})$").Value;
                     if (string.IsNullOrWhiteSpace(defaultNumber1) && string.IsNullOrWhiteSpace(defaultNumber2))
                     {
                         return $"-{movie}";
@@ -582,80 +582,19 @@ namespace Examples.IO
                         return $"!Original secondary number is inconsistent:  {movie}";
                     }
 
-                    movieDirectoryInfo.DefaultTitle1 = Regex.Replace(movieDirectoryInfo.DefaultTitle1, " ([0-9]{1,2})$", "`$1");
-                    movieDirectoryInfo.DefaultTitle2 = Regex.Replace(movieDirectoryInfo.DefaultTitle2, " ([0-9]{1,2})$", "`$1");
-                    movieDirectoryInfo.OriginalTitle1 = Regex.Replace(movieDirectoryInfo.OriginalTitle1, " ([0-9]{1,2})$", "`$1");
-                    movieDirectoryInfo.OriginalTitle2 = Regex.Replace(movieDirectoryInfo.OriginalTitle2, " ([0-9]{1,2})$", "`$1");
-                    movieDirectoryInfo.TranslatedTitle1 = Regex.Replace(movieDirectoryInfo.TranslatedTitle1, "([0-9]{1,2})$", "`$1");
-                    movieDirectoryInfo.TranslatedTitle2 = Regex.Replace(movieDirectoryInfo.TranslatedTitle2, "([0-9]{1,2})$", "`$1");
-                    string newMovie = PathHelper.ReplaceFileName(movie, movieDirectoryInfo.Name);
+                    videoDirectoryInfo.DefaultTitle1 = Regex.Replace(videoDirectoryInfo.DefaultTitle1, " ([0-9]{1,2})$", "`$1");
+                    videoDirectoryInfo.DefaultTitle2 = Regex.Replace(videoDirectoryInfo.DefaultTitle2, " ([0-9]{1,2})$", "`$1");
+                    videoDirectoryInfo.OriginalTitle1 = Regex.Replace(videoDirectoryInfo.OriginalTitle1, " ([0-9]{1,2})$", "`$1");
+                    videoDirectoryInfo.OriginalTitle2 = Regex.Replace(videoDirectoryInfo.OriginalTitle2, " ([0-9]{1,2})$", "`$1");
+                    videoDirectoryInfo.TranslatedTitle1 = Regex.Replace(videoDirectoryInfo.TranslatedTitle1, "([0-9]{1,2})$", "`$1");
+                    videoDirectoryInfo.TranslatedTitle2 = Regex.Replace(videoDirectoryInfo.TranslatedTitle2, "([0-9]{1,2})$", "`$1");
+                    string newMovie = PathHelper.ReplaceFileName(movie, videoDirectoryInfo.Name);
                     Debug.Assert(newMovie.Length - movie.Length == 1 || newMovie.Length - movie.Length == 2);
                     Directory.Move(movie, newMovie);
                     return newMovie;
                 })
                 .OrderBy(message => message, StringComparer.Ordinal)
                 .ForEach(log);
-        }
-    }
-
-    internal class MovieDirectoryInfo
-    {
-        private static readonly Regex MovieDirectoryRegex = new Regex(@"^([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?((\=[^\.^\-^\=]+)(\-[^\.^\-^\=]+)?)?\.([0-9]{4})\.([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?\[([0-9]\.[0-9]|\-)\](\[(1080p|720p)\])?(\[3D\])?$");
-
-        internal MovieDirectoryInfo(string name) => this.Initialize(name);
-
-        internal string DefaultTitle1 { get; set; } = string.Empty;
-
-        internal string DefaultTitle2 { get; set; } = string.Empty;
-
-        internal string DefaultTitle3 { get; set; } = string.Empty;
-
-        internal string OriginalTitle1 { get; set; } = string.Empty;
-
-        internal string OriginalTitle2 { get; set; } = string.Empty;
-
-        internal string Year { get; set; } = string.Empty;
-
-        internal string TranslatedTitle1 { get; set; } = string.Empty;
-
-        internal string TranslatedTitle2 { get; set; } = string.Empty;
-
-        internal string TranslatedTitle3 { get; set; } = string.Empty;
-
-        internal string Rating { get; set; } = string.Empty;
-
-        internal string Definition { get; set; } = string.Empty;
-
-        internal string Is3D { get; set; } = string.Empty;
-
-        public override string ToString() => this.Name;
-
-        internal string Name
-        {
-            get => $"{this.DefaultTitle1}{this.DefaultTitle2}{this.DefaultTitle3}{this.OriginalTitle1}{this.OriginalTitle2}.{this.Year}.{this.TranslatedTitle1}{this.TranslatedTitle2}{this.TranslatedTitle3}[{this.Rating}]{this.Definition}{this.Is3D}";
-            set => this.Initialize(value);
-        }
-
-        private void Initialize(string name)
-        {
-            Match directoryMatch = MovieDirectoryRegex.Match(name);
-            if (!directoryMatch.Success)
-            {
-                throw new ArgumentOutOfRangeException(nameof(name));
-            }
-
-            this.DefaultTitle1 = directoryMatch.Groups[1].Value;
-            this.DefaultTitle2 = directoryMatch.Groups[2].Value;
-            this.DefaultTitle3 = directoryMatch.Groups[3].Value;
-            this.OriginalTitle1 = directoryMatch.Groups[5].Value;
-            this.OriginalTitle2 = directoryMatch.Groups[6].Value;
-            this.Year = directoryMatch.Groups[7].Value;
-            this.TranslatedTitle1 = directoryMatch.Groups[8].Value;
-            this.TranslatedTitle2 = directoryMatch.Groups[9].Value;
-            this.TranslatedTitle3 = directoryMatch.Groups[10].Value;
-            this.Rating = directoryMatch.Groups[11].Value;
-            this.Definition = directoryMatch.Groups[12].Value;
-            this.Is3D = directoryMatch.Groups[14].Value;
         }
     }
 }
