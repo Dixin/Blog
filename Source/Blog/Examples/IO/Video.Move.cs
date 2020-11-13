@@ -104,7 +104,7 @@ namespace Examples.IO
                 });
         }
 
-        internal static void RenameEpisodesWithTitle(string nfoDirectory, string mediaDirectory, string searchPattern, Func<string, string, string> rename, bool isDryRun = false, Action<string>? log = null)
+        internal static void RenameEpisodesWithTitle(string nfoDirectory, string mediaDirectory, Func<string, string, string> rename, bool isDryRun = false, Action<string>? log = null)
         {
             log ??= TraceLog;
             Directory.EnumerateFiles(nfoDirectory, MetadataSearchPattern, SearchOption.AllDirectories)
@@ -113,6 +113,11 @@ namespace Examples.IO
                 {
 
                     string match = Regex.Match(Path.GetFileNameWithoutExtension(nfo) ?? throw new InvalidOperationException($"{nfo} is invalid."), @"s[\d]+e[\d]+", RegexOptions.IgnoreCase).Value.ToLowerInvariant();
+                    if (string.IsNullOrWhiteSpace(match))
+                    {
+                        return;
+                    }
+
                     string title = XDocument.Load(nfo).Root?.Element("title")?.Value.FilterForFileSystem() ?? throw new InvalidOperationException($"{nfo} has no title.");
                     Directory
                         .EnumerateFiles(mediaDirectory, $"*{match}*", SearchOption.AllDirectories)
@@ -179,7 +184,7 @@ namespace Examples.IO
                 });
         }
 
-        internal static void RenameDirectoriesWithAppendingMetadata(string directory, int level = 2, bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
+        internal static void RenameDirectoriesWithAdditionalMetadata(string directory, int level = 2, bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
         {
             log ??= TraceLog;
             EnumerateDirectories(directory, level)
@@ -192,9 +197,8 @@ namespace Examples.IO
                         return;
                     }
 
-                    string json = Directory.GetFiles(movie, "*.json", SearchOption.TopDirectoryOnly).Single();
-                    Imdb.TryLoad(json, out ImdbMetadata? imdbMetadata);
-                    string additional = $"{{{Path.GetFileNameWithoutExtension(json).Split('.')[2]};{string.Join(",", imdbMetadata?.Genre.Take(3) ?? Array.Empty<string>())};{imdbMetadata?.ContentRating}}}";
+                    Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata);
+                    string additional = $"{{{string.Join(",", imdbMetadata?.Regions ?? Array.Empty<string>())};{string.Join(",", imdbMetadata?.Genre.Take(3) ?? Array.Empty<string>())}}}";
                     string originalMovie = movieName.Contains("{")
                         ? PathHelper.ReplaceFileName(movie, movieName.Substring(0, movieName.IndexOf("{", StringComparison.InvariantCulture)))
                         : movie;
@@ -242,14 +246,15 @@ namespace Examples.IO
                     string chineseTitle = chinese?.Root?.Element("title")?.Value ?? string.Empty;
                     string? originalTitle = imdbMetadata?.Name ?? english.Root?.Element("originaltitle")?.Value ?? imdbMetadata?.Name;
                     string year = imdbMetadata?.Year ?? english.Root?.Element("year")?.Value ?? throw new InvalidOperationException($"{movie} has no year.");
-                    string? imdb = english.Root?.Element("imdbid")?.Value;
-                    Debug.Assert(string.IsNullOrWhiteSpace(imdb)
+                    string? imdbId = english.Root?.Element("imdbid")?.Value;
+                    Debug.Assert(string.IsNullOrWhiteSpace(imdbId)
                         ? string.Equals("-", Path.GetFileNameWithoutExtension(json), StringComparison.InvariantCulture)
-                        : string.Equals(imdb, Path.GetFileNameWithoutExtension(json).Split(".")[0], StringComparison.InvariantCultureIgnoreCase));
-                    string rating = string.IsNullOrWhiteSpace(imdb)
+                        : string.Equals(imdbId, Path.GetFileNameWithoutExtension(json).Split(".")[0], StringComparison.InvariantCultureIgnoreCase));
+                    string rating = string.IsNullOrWhiteSpace(imdbId)
                         ? "-"
                         : float.TryParse(imdbMetadata?.AggregateRating?.RatingValue, out float ratingFloat) ? ratingFloat.ToString("0.0") : "0.0";
                     string[] videos = Directory.GetFiles(movie, VideoSearchPattern, SearchOption.TopDirectoryOnly).Concat(Directory.GetFiles(movie, "*.avi", SearchOption.TopDirectoryOnly)).ToArray();
+                    string contentRating = imdbMetadata?.FormattedContentRating ?? "-";
                     string definition = videos switch
                     {
                         _ when videos.Any(video => Path.GetFileNameWithoutExtension(video)?.Contains("1080p") ?? false) => "[1080p]",
@@ -262,11 +267,13 @@ namespace Examples.IO
                     string additional = additionalInfo
                         ? $"{{{string.Join(",", imdbMetadata?.Regions.Take(5) ?? Array.Empty<string>())};{string.Join(",", imdbMetadata?.Genre.Take(3) ?? Array.Empty<string>())};{imdbMetadata?.ContentRating}}}"
                         : string.Empty;
-                    string newMovie = $"{englishTitle.FilterForFileSystem()}{originalTitle.FilterForFileSystem()}.{year}.{chineseTitle.FilterForFileSystem()}[{rating}]{definition}{additional}";
+                    string newMovie = $"{englishTitle.FilterForFileSystem()}{originalTitle.FilterForFileSystem()}.{year}.{chineseTitle.FilterForFileSystem()}[{rating}][{contentRating}]{definition}{additional}";
                     string newDirectory = Path.Combine(Path.GetDirectoryName(movie) ?? throw new InvalidOperationException(movie), newMovie);
                     if (isDryRun)
                     {
+                        log(movie);
                         log(newDirectory);
+                        log(string.Empty);
                     }
                     else
                     {
@@ -275,6 +282,7 @@ namespace Examples.IO
                             log(movie);
                             Directory.Move(movie, newDirectory);
                             log(newDirectory);
+                            log(string.Empty);
                         }
                     }
                 });
@@ -595,6 +603,37 @@ namespace Examples.IO
                 })
                 .OrderBy(message => message, StringComparer.Ordinal)
                 .ForEach(log);
+        }
+
+        internal static void RenameEpisodes(string directory, string tvTitle)
+        {
+            Directory
+                .EnumerateDirectories(directory)
+                .Where(season => Regex.IsMatch(Path.GetFileName(season), "Season [0-9]{2}"))
+                .OrderBy(season => season)
+                .ForEach(season =>
+                {
+                    string seasonNumber = Path.GetFileName(season).Replace("Season ", string.Empty);
+                    Directory
+                        .EnumerateFiles(season, VideoSearchPattern)
+                        .OrderBy(video => video)
+                        .ToArray()
+                        .ForEach((video, index) =>
+                        {
+                            string prefix = $"{tvTitle}.S{seasonNumber}E{index + 1:00}.";
+                            if (video.Contains(".1080p."))
+                            {
+                                prefix = $"{prefix}1080p.";
+                            }
+
+                            if (video.Contains(".720p."))
+                            {
+                                prefix = $"{prefix}720p.";
+                            }
+
+                            File.Move(video, PathHelper.AddFilePrefix(video.Replace(".1080p", string.Empty).Replace(".720p", string.Empty), prefix));
+                        });
+                });
         }
     }
 }

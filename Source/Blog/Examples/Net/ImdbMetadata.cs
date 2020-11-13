@@ -39,7 +39,9 @@
             }
         }
 
-        internal string FormattedContentRating => string.IsNullOrWhiteSpace(this.ContentRating) ? "NA" : this.ContentRating.Replace("-", string.Empty);
+        internal string FormattedContentRating => string.IsNullOrWhiteSpace(this.ContentRating) 
+            ? "NA" 
+            : this.ContentRating.Replace("-", string.Empty).Replace("Not Rated", "Unrated").Replace("/", string.Empty).Replace(":", string.Empty);
 
         [JsonIgnore]
         internal string Id => this.Url.Split("/", StringSplitOptions.RemoveEmptyEntries).Last();

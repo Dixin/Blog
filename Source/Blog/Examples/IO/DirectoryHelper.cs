@@ -47,7 +47,7 @@ namespace Examples.IO
             return false;
         }
 
-        public static void Move(string source, string destination, bool overwrite)
+        public static void Move(string source, string destination, bool overwrite = false)
         {
             source.NotNullOrWhiteSpace(nameof(source));
             destination.NotNullOrWhiteSpace(nameof(destination));
@@ -56,6 +56,13 @@ namespace Examples.IO
             {
                 Directory.Delete(destination);
             }
+
+            string? parent = Path.GetDirectoryName(destination);
+            if (!string.IsNullOrWhiteSpace(parent) && !Directory.Exists(parent))
+            {
+                Directory.CreateDirectory(parent);
+            }
+
             Directory.Move(source, destination);
         }
 

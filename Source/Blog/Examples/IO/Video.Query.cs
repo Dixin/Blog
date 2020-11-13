@@ -24,7 +24,7 @@ namespace Examples.IO
                 .Where(file => (predicate?.Invoke(file) ?? true) && file.HasAnyExtension(AllVideoExtensions));
         }
 
-        private static bool TryGetVideoMetadata(string file, out VideoMetadata? videoMetadata, ImdbMetadata? imdbMetadata = null, string? relativePath = null, int retryCount = 10, Action<string>? log = null)
+        internal static bool TryGetVideoMetadata(string file, out VideoMetadata? videoMetadata, ImdbMetadata? imdbMetadata = null, string? relativePath = null, int retryCount = 10, Action<string>? log = null)
         {
             log ??= TraceLog;
             Task<VideoMetadata?> task = Task.Run(() =>
@@ -173,15 +173,7 @@ namespace Examples.IO
                 level--;
             }
 
-            return directories;
-        }
-
-        private static readonly string[] VersionKeywords = { "RARBG", "VXT" };
-
-        internal static bool HasVersionKeywords(this string file)
-        {
-            string name = Path.GetFileNameWithoutExtension(file);
-            return VersionKeywords.Any(keyword => name.Contains(keyword, StringComparison.InvariantCultureIgnoreCase));
+            return directories.OrderBy(movie => movie);
         }
 
         internal static async Task DownloadImdbMetadataAsync(string directory, int level = 2, bool overwrite = false, bool isTV = false, Action<string>? log = null)
@@ -196,7 +188,13 @@ namespace Examples.IO
                         return;
                     }
 
-                    string nfo = Directory.EnumerateFiles(movie, MetadataSearchPattern, SearchOption.TopDirectoryOnly).First();
+                    string? nfo = Directory.EnumerateFiles(movie, MetadataSearchPattern, SearchOption.TopDirectoryOnly).FirstOrDefault();
+                    if (string.IsNullOrWhiteSpace(nfo))
+                    {
+                        log($"!Missing metadata {movie}.");
+                        return;
+                    }
+
                     string? imdbId = XDocument.Load(nfo).Root?.Element((isTV ? "imdb_id" : "imdbid")!)?.Value;
                     if (string.IsNullOrWhiteSpace(imdbId))
                     {

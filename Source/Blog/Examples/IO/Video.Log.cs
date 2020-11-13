@@ -37,7 +37,7 @@
                     return videoMetadata;
                 })
                 .NotNull()
-                .Select(video => (Video: video, Error: GetVideoError(video, isNoAudioAllowed)))
+                .Select(videoMetadata => (Video: videoMetadata, Error: GetVideoError(videoMetadata, isNoAudioAllowed)))
                 .Where(result => !string.IsNullOrWhiteSpace(result.Error))
                 .AsSequential()
                 .OrderBy(result => result.Video.File)
@@ -176,7 +176,7 @@
                     {
                         movieDirectory = movieDirectory.Substring("0.".Length);
                     }
-                    
+
                     VideoDirectoryInfo videoDirectoryInfo = new VideoDirectoryInfo(movieDirectory);
                     string directoryYear = videoDirectoryInfo.Year;
                     string metadataYear = metadata.Root?.Element("year")?.Value ?? throw new InvalidOperationException($"{metadata} has no year.");
@@ -337,14 +337,18 @@
                         log($"!Imdb files {imdbFiles.Length}: {movie}");
                     }
 
-                    string directoryRating = Regex.Match(trimmedMovie, @"\[([0-9]\.[0-9]|\-)\]").Value;
                     string imdbRating = Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata)
                         ? imdbMetadata.FormattedAggregateRating
                         : "-";
-                    imdbRating = $"[{imdbRating}]";
-                    if (!string.Equals(directoryRating, imdbRating, StringComparison.InvariantCulture))
+                    if (!string.Equals(videoDirectoryInfo.AggregateRating, imdbRating, StringComparison.InvariantCulture))
                     {
-                        log($"!Imdb rating {directoryRating} should be {imdbRating}: {movie}");
+                        log($"!Imdb rating {videoDirectoryInfo.AggregateRating} should be {imdbRating}: {movie}");
+                    }
+
+                    string contentRating = imdbMetadata?.FormattedContentRating ?? "-";
+                    if (!string.Equals(contentRating, videoDirectoryInfo.ContentRating, StringComparison.InvariantCulture))
+                    {
+                        log($"!Content rating {videoDirectoryInfo.ContentRating} should be {contentRating}: {movie}");
                     }
 
                     metadataFiles.ForEach(metadataFile =>

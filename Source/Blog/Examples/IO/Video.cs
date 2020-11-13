@@ -5,6 +5,7 @@
     using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
+    using System.Xml.Linq;
 
     internal static partial class Video
     {
@@ -24,7 +25,7 @@
 
         private static readonly string[] UncommonVideoExtensions = { ".avi", ".wmv", ".webm", ".mpg", ".mpeg", ".rmvb", ".rm", ".3gp", ".divx", ".m1v", ".mov", ".ts", ".vob", ".flv", ".m4v", ".mkv", ".dat" };
 
-        private static readonly string[] CommonVideoExtensions = { ".avi", VideoExtension, ".mkv", ".dat", ".iso" };
+        internal static readonly string[] CommonVideoExtensions = { ".avi", VideoExtension, ".mkv", ".iso" };
 
         private static readonly string[] AllVideoExtensions = UncommonVideoExtensions.Union(CommonVideoExtensions).ToArray();
 
@@ -99,6 +100,62 @@
                             .ForEach(File.Delete);
                     }
                 });
+        }
+
+        internal static void CreateEpisodeMetadata(string directory, Func<string, string> getTitle, Func<string, int, string> getEpisode, Func<string, string>? getSeason = null, bool overwrite = false)
+        {
+            Directory.GetFiles(directory, VideoSearchPattern, SearchOption.TopDirectoryOnly)
+                .OrderBy(video => video)
+                .ForEach((video, index) =>
+                {
+                    string metadataPath = PathHelper.ReplaceExtension(video, MetadataExtension);
+                    if (!overwrite && File.Exists(metadataPath))
+                    {
+                        return;
+                    }
+
+                    XDocument metadata = XDocument.Parse(@"<?xml version=""1.0"" encoding=""utf-8"" standalone=""yes""?>
+<episodedetails>
+  <plot />
+  <outline />
+  <lockdata>false</lockdata>
+  <title></title>
+  <episode></episode>
+  <season></season>
+</episodedetails>");
+                    metadata.Root!.Element("title"!)!.Value = getTitle(video);
+                    metadata.Root!.Element("episode"!)!.Value = getEpisode(video, index);
+                    metadata.Root!.Element("season"!)!.Value = getSeason?.Invoke(video) ?? "1";
+                    metadata.Save(metadataPath);
+                });
+        }
+
+        internal static void CreateEpisodeMetadata(string directory, bool overwrite = false)
+        {
+            Directory
+                .EnumerateDirectories(directory)
+                .OrderBy(season=>season)
+                .ForEach(season=> CreateEpisodeMetadata(
+                    season,
+                    video =>
+                    {
+                        video = Path.GetFileNameWithoutExtension(video);
+                        string seasonEpisode = Regex.Match(video, @"\.S[0-9]+E[0-9]+\.").Value;
+                        return video.Substring(video.IndexOf(seasonEpisode, StringComparison.InvariantCulture) + seasonEpisode.Length).Replace("720p.", "").Replace("1080p.", "");
+                    },
+                    (video, index) =>
+                    {
+                        video = Path.GetFileNameWithoutExtension(video);
+                        string seasonEpisode = Regex.Match(video, @"\.S[0-9]+E[0-9]+\.").Value.Trim('.');
+                        return seasonEpisode.Substring(seasonEpisode.IndexOf("E", StringComparison.InvariantCulture) + "E".Length).TrimStart('0');
+                    },
+                    video =>
+                    {
+                        video = Path.GetFileNameWithoutExtension(video);
+                        string seasonEpisode = Regex.Match(video, @"\.S[0-9]+E[0-9]+\.").Value.Trim('.');
+                        return seasonEpisode.Substring(seasonEpisode.IndexOf("S", StringComparison.InvariantCulture) + "S".Length).Substring(0, seasonEpisode.IndexOf("E", StringComparison.InvariantCulture) - 1).TrimStart('0');
+                    },
+                    overwrite));
         }
     }
 }
