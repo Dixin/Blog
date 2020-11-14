@@ -1,4 +1,4 @@
-﻿namespace Examples.Office.HtmlToWord
+﻿namespace Examples.Windows.HtmlToWord
 {
     using System;
     using System.Collections.Generic;
@@ -9,15 +9,13 @@
     using System.Text;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
-
     using CsQuery;
-    using CsQuery.ExtensionMethods;
-
     using Examples.IO;
-
+    using Examples.Linq;
     using Microsoft.Office.Interop.Word;
 
     using Task = System.Threading.Tasks.Task;
+    using WordRang = Microsoft.Office.Interop.Word.Range;
 
     using static System.FormattableString;
 
@@ -92,11 +90,9 @@
                                 string uri = image.GetAttribute("src");
                                 string localPath = Path.Combine("images", string.Join("-", uri.Split('/').Reverse().Take(2).Reverse()));
                                 image.SetAttribute("src", localPath);
-                                using (WebClient webClient = new WebClient())
-                                {
-                                    Trace.WriteLine($"Downloading image {uri} to {localPath}.");
-                                    await webClient.DownloadFileTaskAsync(uri, Path.Combine(htmlOutputDirectory, localPath));
-                                }
+                                using WebClient webClient = new WebClient();
+                                Trace.WriteLine($"Downloading image {uri} to {localPath}.");
+                                await webClient.DownloadFileTaskAsync(uri, Path.Combine(htmlOutputDirectory, localPath));
                             });
                         await SaveAsync(
                             section.TransformText(),
@@ -106,21 +102,14 @@
             await SaveDocumentsAsync(htmlOutputDirectory, html, Path.Combine(outputDirectory, Invariant($"{html.Title}.doc")), Path.Combine(outputDirectory, Invariant($"{html.Title}.pdf")));
         }
 
-        private static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> action) => await Task.WhenAll(source.Select(action));
-
-        private static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, int, Task> action) => await Task.WhenAll(source.Select(action));
-
         private static async Task SaveAsync(string text, string htmlFile)
         {
             Trace.WriteLine(Invariant($"Saving HTML as {htmlFile}, {text.Length}."));
             try
             {
-                using (StreamWriter writer = new StreamWriter(new FileStream(
-                    path: htmlFile, mode: FileMode.Create, access: FileAccess.Write,
-                    share: FileShare.Read, bufferSize: 4096, useAsync: true)))
-                {
-                    await writer.WriteAsync(text);
-                }
+                await using StreamWriter writer = new StreamWriter(new FileStream(
+                    path: htmlFile, mode: FileMode.Create, access: FileAccess.Write, share: FileShare.Read, bufferSize: 4096, useAsync: true));
+                await writer.WriteAsync(text);
             }
             catch (Exception exception)
             {
@@ -130,61 +119,54 @@
             }
         }
 
-        private static async Task<AllHtml> DownloadHtmlAsync(
-            string indexUrl = @"http://weblogs.asp.net/dixin/linq-via-csharp")
+        private static async Task<AllHtml> DownloadHtmlAsync(string indexUrl = @"http://weblogs.asp.net/dixin/linq-via-csharp")
         {
-            using (WebClient indexClient = new WebClient())
-            {
-                indexClient.Encoding = Encoding.UTF8;
-                Trace.WriteLine(Invariant($"Downloading {indexUrl}."));
-                CQ indexPageCq = await indexClient.DownloadStringTaskAsync(indexUrl);
+            using WebClient indexClient = new WebClient { Encoding = Encoding.UTF8 };
+            Trace.WriteLine(Invariant($"Downloading {indexUrl}."));
+            CQ indexPageCq = await indexClient.DownloadStringTaskAsync(indexUrl);
 
-                CQ indexContentCq = indexPageCq["article.blog-post"];
-                (string Title, List<(string Title, CQ Content)> Sections)[] chapters = await Task.WhenAll(indexContentCq
-                    .Children("ol")
-                    .Children("li")
-                    .Select(part => part.Cq())
-                    .AsParallel()
-                    .AsOrdered()
-                    .Select(async categoryCq =>
-                    {
-                        (string Title, CQ Content)[] articles = await Task.WhenAll(categoryCq.Find("h2")
-                            .Select(articleLink => articleLink.Cq().Find("a:last"))
-                            .AsParallel()
-                            .AsOrdered()
-                            .Select(async articleLinkCq =>
+            CQ indexContentCq = indexPageCq["article.blog-post"];
+            (string Title, List<(string Title, CQ Content)> Sections)[] chapters = await Task.WhenAll(indexContentCq
+                .Children("ol")
+                .Children("li")
+                .Select(part => part.Cq())
+                .AsParallel()
+                .AsOrdered()
+                .Select(async categoryCq =>
+                {
+                    (string Title, CQ Content)[] articles = await Task.WhenAll(categoryCq.Find("h2")
+                        .Select(articleLink => articleLink.Cq().Find("a:last"))
+                        .AsParallel()
+                        .AsOrdered()
+                        .Select(async articleLinkCq =>
+                        {
+                            string articleUri = articleLinkCq.Attr<string>("href");
+                            string articleTitle = articleLinkCq.Text().Trim();
+
+                            Trace.WriteLine(Invariant($"Downloading [{articleTitle}] {articleUri}."));
+                            using WebClient articleClient = new WebClient { Encoding = Encoding.UTF8 };
+                            CQ articleCq;
+                            try
                             {
-                                string articleUri = articleLinkCq.Attr<string>("href");
-                                string articleTitle = articleLinkCq.Text().Trim();
+                                articleCq = await articleClient.DownloadStringTaskAsync(articleUri);
+                            }
+                            catch (Exception exception)
+                            {
+                                Trace.WriteLine($"Failed to download {articleUri}");
+                                Trace.WriteLine(exception);
+                                throw;
+                            }
+                            CQ articleContentCq = articleCq["article.blog-post"];
+                            articleContentCq.Children("header").Remove();
 
-                                Trace.WriteLine(Invariant($"Downloading [{articleTitle}] {articleUri}."));
-                                using (WebClient articleClient = new WebClient())
-                                {
-                                    articleClient.Encoding = Encoding.UTF8;
-                                    CQ articleCq;
-                                    try
-                                    {
-                                        articleCq = await articleClient.DownloadStringTaskAsync(articleUri);
-                                    }
-                                    catch (Exception exception)
-                                    {
-                                        Trace.WriteLine($"Failed to download {articleUri}");
-                                        Trace.WriteLine(exception);
-                                        throw;
-                                    }
-                                    CQ articleContentCq = articleCq["article.blog-post"];
-                                    articleContentCq.Children("header").Remove();
+                            return (Title: articleTitle, Content: FormatArticleContent(articleTitle, articleContentCq));
+                        }));
+                    return (categoryCq.Find("h1").Text().Trim(), articles.ToList());
+                }));
 
-                                    return (Title: articleTitle, Content: FormatArticleContent(articleTitle, articleContentCq));
-                                }
-                            }));
-                        return (categoryCq.Find("h1").Text().Trim(), articles.ToList());
-                    }));
-
-                return new AllHtml(
-                    indexPageCq["title"].Text().Replace("Dixin's Blog -", string.Empty).Trim(),
-                    chapters);
-            }
+            return new AllHtml(
+                indexPageCq["title"].Text().Replace("Dixin's Blog -", string.Empty).Trim(),
+                chapters);
         }
 
         private static readonly Regex allowedTag = new Regex("^(p|h[1-9]|pre|blockquote|table|img|ul|ol)$", RegexOptions.IgnoreCase);
@@ -267,7 +249,7 @@
             string tempHtmlFile = Path.Combine(directory, "All.htm");
             string htmlContent = html.TransformText();
             Trace.WriteLine(Invariant($"Saving HTML as {tempHtmlFile}, {htmlContent.Length}."));
-            using (StreamWriter writer = new StreamWriter(new FileStream(
+            await using (StreamWriter writer = new StreamWriter(new FileStream(
                 path: tempHtmlFile, mode: FileMode.Create, access: FileAccess.Write,
                 share: FileShare.Read, bufferSize: 4096, useAsync: true)))
             {
@@ -302,7 +284,7 @@
             document.set_AttachedTemplate(template);
             document.UpdateStyles();
 
-            Range range = document.Range(document.Content.Start, document.Content.Start);
+            WordRang range = document.Range(document.Content.Start, document.Content.Start);
 
             document.TablesOfContents.Add(range);
 

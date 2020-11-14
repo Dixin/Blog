@@ -7,7 +7,7 @@
 //     the code is regenerated.
 // </auto-generated>
 // ------------------------------------------------------------------------------
-namespace Examples.Office.HtmlToWord
+namespace Examples.Windows.HtmlToWord
 {
     using System.Linq;
     using System.Collections.Generic;
