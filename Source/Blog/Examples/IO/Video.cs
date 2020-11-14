@@ -68,7 +68,7 @@
             EnumerateDirectories(directory, level)
                 .ForEach(movie =>
                 {
-                    string[] files = Directory.GetFiles(movie, AllSearchPattern, SearchOption.TopDirectoryOnly).Select(Path.GetFileName).ToArray();
+                    string[] files = Directory.GetFiles(movie, AllSearchPattern, SearchOption.TopDirectoryOnly).Select(file=>Path.GetFileName(file) ?? throw new InvalidOperationException(file)).ToArray();
                     string[] videos = files.Where(IsCommonVideo).ToArray();
                     string[] allowedAttachments = videos.Length == 1 || videos.All(video => Regex.IsMatch(video, "cd[1-9]", RegexOptions.IgnoreCase))
                         ? AdaptiveAttachments.ToArray()

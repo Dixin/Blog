@@ -251,7 +251,7 @@
                     //    log($"!Index: {movie}");
                     //}
 
-                    string[] files = Directory.GetFiles(movie, AllSearchPattern, SearchOption.TopDirectoryOnly).Select(Path.GetFileName).ToArray();
+                    string[] files = Directory.EnumerateFiles(movie, AllSearchPattern, SearchOption.TopDirectoryOnly).Select(file => Path.GetFileName(file) ?? throw new InvalidOperationException(file)).ToArray();
 
                     if (trimmedMovie.Contains("1080p") && !files.Any(file => file.Contains("1080p")))
                     {
@@ -423,8 +423,8 @@
                             .GetFiles(movie, "*.nfo", SearchOption.TopDirectoryOnly)
                             .Select(metadata =>
                                 {
-                                    XElement root = XDocument.Load(metadata).Root;
-                                    return (Title: root.Element("title")?.Value, Year: root.Element("year")?.Value);
+                                    XElement root = XDocument.Load(metadata).Root ?? throw new InvalidOperationException(metadata);
+                                    return (Title: root.Element("title"!)?.Value, Year: root.Element("year"!)?.Value);
                                 })
                             .Distinct()
                             .Single();

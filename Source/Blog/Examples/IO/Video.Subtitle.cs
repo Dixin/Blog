@@ -148,7 +148,7 @@ namespace Examples.IO
                         {
                             string language = (Path.GetFileNameWithoutExtension(subtitle) ?? throw new InvalidOperationException(subtitle)).Split(".").Last();
                             string newSubtitle = $"{Path.GetFileNameWithoutExtension(video)}.{language}{Path.GetExtension(subtitle)}";
-                            string newFile = Path.Combine(Path.GetDirectoryName(video), newSubtitle);
+                            string newFile = Path.Combine(Path.GetDirectoryName(video) ?? throw new InvalidOperationException(video), newSubtitle);
                             if (rename != null)
                             {
                                 newFile = rename(subtitle, newFile);
@@ -176,7 +176,7 @@ namespace Examples.IO
                 .Where(subtitle => "Subs".Equals(Path.GetFileName(Path.GetDirectoryName(subtitle)), StringComparison.OrdinalIgnoreCase))
                 .ForEach(subtitle =>
                     {
-                        string parent = Path.GetDirectoryName(Path.GetDirectoryName(subtitle));
+                        string parent = Path.GetDirectoryName(Path.GetDirectoryName(subtitle)) ?? throw new InvalidOperationException(subtitle);
                         string[] videos = Directory.GetFiles(parent, VideoSearchPattern, SearchOption.TopDirectoryOnly);
                         string mainVideo = videos.OrderByDescending(video => new FileInfo(video).Length).First();
                         string newSubtitle = Path.Combine(parent, Path.GetFileNameWithoutExtension(mainVideo) + Path.GetExtension(subtitle));
@@ -188,7 +188,7 @@ namespace Examples.IO
                 .Where(subtitle => "Subs".Equals(Path.GetFileName(Path.GetDirectoryName(subtitle)), StringComparison.OrdinalIgnoreCase))
                 .ForEach(subtitle =>
                     {
-                        string parent = Path.GetDirectoryName(Path.GetDirectoryName(subtitle));
+                        string parent = Path.GetDirectoryName(Path.GetDirectoryName(subtitle)) ?? throw new InvalidOperationException(subtitle);
                         string[] videos = Directory.GetFiles(parent, "*.mp4", SearchOption.TopDirectoryOnly);
                         string mainVideo = videos.Length == 1
                             ? videos[0]

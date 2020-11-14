@@ -354,8 +354,8 @@ namespace Examples.IO
         internal static async Task CompareAndMoveAsync(string fromJsonPath, string toJsonPath, string newDirectory, string deletedDirectory, Action<string>? log = null, bool isDryRun = false, bool moveAllAttachment = true)
         {
             log ??= TraceLog;
-            Dictionary<string, VideoMetadata> externalMetadata = JsonSerializer.Deserialize<Dictionary<string, VideoMetadata>>(await File.ReadAllTextAsync(fromJsonPath));
-            Dictionary<string, Dictionary<string, VideoMetadata>> moviesMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(toJsonPath));
+            Dictionary<string, VideoMetadata> externalMetadata = JsonSerializer.Deserialize<Dictionary<string, VideoMetadata>>(await File.ReadAllTextAsync(fromJsonPath)) ?? throw new InvalidOperationException(fromJsonPath);
+            Dictionary<string, Dictionary<string, VideoMetadata>> moviesMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(toJsonPath)) ?? throw new InvalidOperationException(toJsonPath);
 
             externalMetadata
                 .Where(externalVideo => File.Exists(externalVideo.Value.File))

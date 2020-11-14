@@ -13,12 +13,14 @@
 
         private static readonly Action<string> Log = Console.WriteLine;
 
+        private const int MaxDegreeOfParallelism = 4;
+
         private static async Task Main(string[] args)
         {
             string path = args[0];
             string searchPattern = args.Length >= 2 ? args[1] : "*.txt";
-            int degree = args.Length >= 3 && int.TryParse(args[2], out degree) ? degree : Environment.ProcessorCount;
-            Encoding fromEncoding = args.Length >= 4 ? Encoding.GetEncoding(args[3]) : null;
+            int degree = args.Length >= 3 && int.TryParse(args[2], out degree) ? degree : Math.Max(Environment.ProcessorCount, MaxDegreeOfParallelism);
+            Encoding? fromEncoding = args.Length >= 4 ? Encoding.GetEncoding(args[3]) : null;
             if (Directory.Exists(path))
             {
                 Directory.GetFiles(path, searchPattern, SearchOption.AllDirectories)
@@ -44,9 +46,9 @@
             return read == Utf8Bom.Length && Utf8Bom.SequenceEqual(head);
         }
 
-        private static async Task ConvertAsync(string file, Encoding fromEncoding)
+        private static async Task ConvertAsync(string file, Encoding? fromEncoding)
         {
-            if (fromEncoding != null)
+            if (fromEncoding is not null)
             {
                 if (await BackUpAndConvertAsync(file, fromEncoding))
                 {
@@ -117,15 +119,15 @@
             return true;
         }
 
-        private static async Task ConvertAsync(Encoding from, Encoding to, string file, string toPath = null, byte[] bom = null)
+        private static async Task ConvertAsync(Encoding from, Encoding to, string file, string? toPath = null, byte[]? bom = null)
         {
             byte[] fromBytes = await File.ReadAllBytesAsync(file);
             byte[] toBytes = Encoding.Convert(from, to, fromBytes);
-            if (bom != null && !bom.SequenceEqual(toBytes.Take(bom.Length)))
+            if (bom is not null && !bom.SequenceEqual(toBytes.Take(bom.Length)))
             {
                 toBytes = bom.Concat(toBytes).ToArray();
             }
-            await File.WriteAllBytesAsync(toPath ?? file, toBytes);
+            await File.WriteAllBytesAsync(string.IsNullOrWhiteSpace(toPath) ? file : toPath, toBytes);
         }
     }
 }
