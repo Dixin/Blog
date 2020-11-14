@@ -157,7 +157,7 @@ namespace Examples.Dynamic
             return false;
         }
 
-        public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object? result)
+        public override bool TryInvokeMember(InvokeMemberBinder binder, object?[]? args, out object? result)
         {
             MethodInfo? method = this.type.GetTypeMethod(binder.Name, args) ??
                                 this.type.GetInterfaceMethod(binder.Name, args) ??
@@ -172,7 +172,7 @@ namespace Examples.Dynamic
             return false;
         }
 
-        public override bool TrySetIndex(SetIndexBinder binder, object[] indexes, object value)
+        public override bool TrySetIndex(SetIndexBinder binder, object[] indexes, object? value)
         {
             if (this.isValueType)
             {
@@ -209,7 +209,7 @@ namespace Examples.Dynamic
             return false;
         }
 
-        public override bool TrySetMember(SetMemberBinder binder, object value)
+        public override bool TrySetMember(SetMemberBinder binder, object? value)
         {
             if (!this.isValueType)
             {

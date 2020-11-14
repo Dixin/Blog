@@ -65,7 +65,7 @@
             {
                 imdbMetadata = JsonSerializer.Deserialize<ImdbMetadata>(
                     File.ReadAllText(path),
-                    new JsonSerializerOptions() { PropertyNameCaseInsensitive = true, IgnoreReadOnlyProperties = true });
+                    new JsonSerializerOptions() { PropertyNameCaseInsensitive = true, IgnoreReadOnlyProperties = true }) ?? throw new InvalidOperationException(path);
                 string[] names = name.Split('.');
                 imdbMetadata.Year = names[1];
                 imdbMetadata.Regions = names[2]?.Split(",") ?? Array.Empty<string>();

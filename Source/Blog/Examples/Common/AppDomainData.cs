@@ -12,7 +12,7 @@
         // </connectionStrings>
         public static string DataDirectory
         {
-            get => (string)AppDomain.CurrentDomain.GetData(nameof(DataDirectory));
+            get => (string?)AppDomain.CurrentDomain.GetData(nameof(DataDirectory)) ?? string.Empty;
 
             set => AppDomain.CurrentDomain.SetData(
                 nameof(DataDirectory),

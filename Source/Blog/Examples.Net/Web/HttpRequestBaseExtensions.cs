@@ -37,6 +37,7 @@ namespace Examples.Web
                 throw new ArgumentNullException(nameof(request));
             }
 
+            // Avoiding user agent detection https://developer.mozilla.org/en-US/docs/Web/HTTP/Browser_detection_using_the_user_agent
             string userAgent = request.ServerVariables["HTTP_USER_AGENT"];
             return Browser.IsMatch(userAgent) || Version.IsMatch(userAgent.Substring(0, Math.Min(4, userAgent.Length)));
         }

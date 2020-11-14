@@ -18,7 +18,7 @@
             this.Encoding = encoding ?? Encoding.Default;
         }
 
-        public override void Write(string value) => this.write(value);
+        public override void Write(string? value) => this.write(value);
 
         public override void Write(char[] buffer, int index, int count) => this.Write(new string(buffer, index, count));
 

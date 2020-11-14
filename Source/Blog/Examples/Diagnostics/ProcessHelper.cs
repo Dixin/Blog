@@ -10,8 +10,8 @@ namespace Examples.Diagnostics
         public static int StartAndWait(
             string fileName,
             string arguments,
-            Action<string>? outputReceived = null,
-            Action<string>? errorReceived = null)
+            Action<string?>? outputReceived = null,
+            Action<string?>? errorReceived = null)
         {
             fileName.NotNullOrWhiteSpace(nameof(fileName));
 
