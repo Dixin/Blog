@@ -23,7 +23,7 @@
             resourceName.NotNullOrWhiteSpace(nameof(resourceName));
             filePath.NotNullOrWhiteSpace(nameof(filePath));
 
-            using Stream stream = assembly.GetManifestResourceStream(resourceName);
+            using Stream stream = assembly.GetManifestResourceStream(resourceName) ?? throw new ArgumentOutOfRangeException(nameof(resourceName));
             using FileStream fileStream = new FileStream(filePath, FileMode.CreateNew);
             stream.Seek(0, SeekOrigin.Begin);
             stream.CopyTo(fileStream);

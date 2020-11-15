@@ -23,7 +23,7 @@
 
     public static partial class FuncExtensions
     {
-        public static TResult InvokeWith<TResult>(this Func<TResult> function, ExecutionContext executionContext)
+        public static TResult InvokeWith<TResult>(this Func<TResult> function, ExecutionContext? executionContext)
         {
             function.NotNull(nameof(function));
 
@@ -40,7 +40,7 @@
         }
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
-        public static Task<TResult> InvokeWith<TResult>(this Func<TResult> function, SynchronizationContext synchronizationContext, ExecutionContext executionContext)
+        public static Task<TResult> InvokeWith<TResult>(this Func<TResult> function, SynchronizationContext? synchronizationContext, ExecutionContext? executionContext)
         {
             function.NotNull(nameof(function));
 
@@ -94,11 +94,11 @@
             continuation.NotNull(nameof(continuation));
 
             // See: System.Runtime.CompilerServices.AsyncMethodBuilderCore.GetCompletionAction()
-            ExecutionContext executionContext = ExecutionContext.Capture();
+            ExecutionContext? executionContext = ExecutionContext.Capture();
 
             // See: System.Runtime.CompilerServices.AsyncVoidMethodBuilder.Create()
             // See: System.Runtime.CompilerServices.AsyncMethodBuilderCore.MoveNextRunner.Run()
-            SynchronizationContext synchronizationContext = SynchronizationContext.Current;
+            SynchronizationContext? synchronizationContext = SynchronizationContext.Current;
             return task
                 .ContinueWith(
                     t =>
@@ -112,11 +112,11 @@
             continuation.NotNull(nameof(continuation));
 
             // See: System.Runtime.CompilerServices.AsyncMethodBuilderCore.GetCompletionAction()
-            ExecutionContext executionContext = ExecutionContext.Capture();
+            ExecutionContext? executionContext = ExecutionContext.Capture();
 
             // See: System.Runtime.CompilerServices.AsyncVoidMethodBuilder.Create()
             // See: System.Runtime.CompilerServices.AsyncMethodBuilderCore.MoveNextRunner.Run()
-            SynchronizationContext synchronizationContext = SynchronizationContext.Current;
+            SynchronizationContext? synchronizationContext = SynchronizationContext.Current;
             return task
                 .ContinueWith(
                     t =>

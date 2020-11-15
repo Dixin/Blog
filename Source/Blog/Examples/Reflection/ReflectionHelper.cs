@@ -13,7 +13,7 @@ namespace Examples.Reflection
             (Expression<Action> methodCall) => ((MethodCallExpression)methodCall.Body).Method;
 
         public static ConstructorInfo ConstructorOf<T>
-            (Expression<Func<T>> constructorCall) => ((NewExpression)constructorCall.Body).Constructor;
+            (Expression<Func<T>> constructorCall) => ((NewExpression)constructorCall.Body).Constructor ?? throw new ArgumentOutOfRangeException(nameof(constructorCall));
 
         public static PropertyInfo PropertyOf<T>
             (Expression<Func<T>> getterCall) => (PropertyInfo)((MemberExpression)getterCall.Body).Member;

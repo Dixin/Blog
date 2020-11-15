@@ -73,7 +73,7 @@
                     string artist = info[4];
                     try
                     {
-                        Directory.Move(album, Path.Combine(Path.GetDirectoryName(album), $"{genre}.{artist}.{year}.{albumName}"));
+                        Directory.Move(album, Path.Combine(Path.GetDirectoryName(album)!, $"{genre}.{artist}.{year}.{albumName}"));
                     }
                     catch (Exception exception)
                     {
@@ -332,7 +332,7 @@
                                     album.Rename(newAlbumName);
                                 }
 
-                                DirectoryInfo newAlbum = new DirectoryInfo(Path.Combine(album.Parent.FullName, newAlbumName));
+                                DirectoryInfo newAlbum = new DirectoryInfo(Path.Combine(album.Parent!.FullName, newAlbumName));
                                 newAlbum.MoveTo(Path.Combine(to, newAlbumName));
                             }
                         }
@@ -355,7 +355,7 @@
                     }
                 }
             }
-            FileSystemHelper.Move(songOrAlbum, Path.Combine(Path.GetDirectoryName(songOrAlbum), string.Join(Separator, names)));
+            FileSystemHelper.Move(songOrAlbum, Path.Combine(Path.GetDirectoryName(songOrAlbum)!, string.Join(Separator, names)));
         });
 
         private static bool IsMusicFile(string extension) => Extensions.Contains(extension);

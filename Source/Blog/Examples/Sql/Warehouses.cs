@@ -228,7 +228,7 @@
             Directory.EnumerateFiles(@"D:\Sql\Aipai").ForEach(file =>
                 {
                     using StreamReader reader = new StreamReader(File.OpenRead(file), Encoding.GetEncoding("GB18030"));
-                    string line;
+                    string? line;
                     while ((line = reader.ReadLine()) != null)
                     {
                         if (string.IsNullOrWhiteSpace(line))
@@ -332,10 +332,10 @@
             Directory.EnumerateFiles(@"D:\Sql\Tianya").ForEach(file =>
                 {
                     using StreamReader reader = new StreamReader(File.OpenRead(file), Encoding.GetEncoding("GB18030"));
-                    string line = string.Concat(previousFileLastLine, reader.ReadLine());
+                    string? line = string.Concat(previousFileLastLine, reader.ReadLine());
                     do
                     {
-                        Match match = Regex.Match(line, @"([^ ]+)[ ]+([^ ]+)[ ]+(.*)");
+                        Match match = Regex.Match(line!, @"([^ ]+)[ ]+([^ ]+)[ ]+(.*)");
                         GroupCollection groups = match.Groups;
                         if (groups.Count == 4)
                         {

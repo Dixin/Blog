@@ -2,6 +2,7 @@
 namespace Examples.Reflection
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.Linq;
     using System.Reflection;
 
@@ -9,61 +10,33 @@ namespace Examples.Reflection
 
     public static partial class TypeExtensions
     {
-        #region Methods
+#region Methods
 
         internal static FieldInfo? GetBaseField(this Type type, string name)
         {
-            type.NotNull(nameof(type));
-
-            Type @base = type.BaseType;
-            if (@base == null)
-            {
-                return null;
-            }
-
-            return @base.GetTypeField(name) ?? @base.GetBaseField(name);
+            Type? @base = type.BaseType;
+            return @base is null ? null : @base.GetTypeField(name) ?? @base.GetBaseField(name);
         }
 
         internal static PropertyInfo? GetBaseIndex(this Type type, params object[] args)
         {
-            type.NotNull(nameof(type));
-
-            Type @base = type.BaseType;
-            if (@base == null)
-            {
-                return null;
-            }
-
-            return @base.GetTypeIndex(args) ?? @base.GetBaseIndex(args);
+            Type? @base = type.BaseType;
+            return @base is null ? null : @base.GetTypeIndex(args) ?? @base.GetBaseIndex(args);
         }
 
-        internal static MethodInfo? GetBaseMethod(this Type type, string name, params object[] args)
+        internal static MethodInfo? GetBaseMethod(this Type type, string name, params object?[] args)
         {
-            type.NotNull(nameof(type));
-
-            Type @base = type.BaseType;
-            if (@base == null)
-            {
-                return null;
-            }
-
-            return @base.GetTypeMethod(name, args) ?? @base.GetBaseMethod(name, args);
+            Type? @base = type.BaseType;
+            return @base is null ? null : @base.GetTypeMethod(name, args) ?? @base.GetBaseMethod(name, args);
         }
 
         internal static PropertyInfo? GetBaseProperty(this Type type, string name)
         {
-            type.NotNull(nameof(type));
-
-            Type @base = type.BaseType;
-            if (@base == null)
-            {
-                return null;
-            }
-
-            return @base.GetTypeProperty(name) ?? @base.GetBaseProperty(name);
+            Type? @base = type.BaseType;
+            return @base is null ? null : @base.GetTypeProperty(name) ?? @base.GetBaseProperty(name);
         }
 
-        internal static MethodInfo? GetInterfaceMethod(this Type type, string name, params object[] args)
+        internal static MethodInfo? GetInterfaceMethod(this Type type, string name, params object?[] args)
         {
             type.NotNull(nameof(type));
 
@@ -101,19 +74,18 @@ namespace Examples.Reflection
                             true, (a, b) => a && b));
         }
 
-        internal static MethodInfo? GetTypeMethod(this Type type, string name, params object[] args)
+        internal static MethodInfo? GetTypeMethod(this Type type, string name, params object?[] args)
         {
             type.NotNull(nameof(type));
 
             return type
                 .GetRuntimeMethods()
                 .FirstOrDefault(method =>
-                    method.Name.Equals(name, StringComparison.Ordinal)
-                    && method.GetParameters().Count() == args.Length
+                    string.Equals(method.Name, name, StringComparison.Ordinal)
+                    && method.GetParameters().Length == args.Length
                     && method
                         .GetParameters()
-                        .Select((parameter, index) =>
-                                parameter.ParameterType == (args[index] != null ? args[index].GetType() : typeof(object)))
+                        .Zip(args, (parameter, arg) => arg is null || parameter.ParameterType == args.GetType())
                         .All(match => true));
         }
 
@@ -126,7 +98,7 @@ namespace Examples.Reflection
                 .FirstOrDefault(property => property.Name.Equals(name, StringComparison.Ordinal));
         }
 
-        #endregion
+#endregion
     }
 
     public static partial class TypeExtensions
@@ -157,18 +129,20 @@ namespace Examples.Reflection
                 return true; // Collection<>/Collection<int> assignable to IEnumerable<>/ICollection<>.
             }
 
-            Type baseOfFrom = from.BaseType;
-            return baseOfFrom != null && IsAssignableTo(baseOfFrom, to);
+            Type? baseOfFrom = from.BaseType;
+            return baseOfFrom is not null && IsAssignableTo(baseOfFrom, to);
         }
     }
 
     public static partial class TypeExtensions
     {
+        [return: MaybeNull]
         public static TValue GetField<TValue>(this object @object, string name)
         {
             @object.NotNull(nameof(@object));
 
-            return (TValue)(@object.GetType().GetTypeField(name) ?? throw new ArgumentOutOfRangeException(nameof(name))).GetValue(@object);
+            object? value = (@object.GetType().GetTypeField(name) ?? throw new ArgumentOutOfRangeException(nameof(name))).GetValue(@object);
+            return value is null ? default : (TValue)value;
         }
 
         public static void SetField(this object @object, string name, object value)
@@ -178,11 +152,13 @@ namespace Examples.Reflection
             (@object.GetType().GetTypeField(name) ?? throw new ArgumentOutOfRangeException(nameof(name))).SetValue(@object, value);
         }
 
+        [return: MaybeNull]
         public static TValue GetProperty<TValue>(this object @object, string name)
         {
             @object.NotNull(nameof(@object));
 
-            return (TValue)(@object.GetType().GetTypeProperty(name) ?? throw new ArgumentOutOfRangeException(nameof(name))).GetValue(@object);
+            object? value = (@object.GetType().GetTypeProperty(name) ?? throw new ArgumentOutOfRangeException(nameof(name))).GetValue(@object);
+            return value is null ? default : (TValue)value;
         }
 
         public static void SetProperty(this object @object, string name, object value)

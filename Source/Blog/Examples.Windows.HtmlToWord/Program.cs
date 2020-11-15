@@ -63,7 +63,7 @@
         private static async Task Main(string[] arguments) =>
             await BuildDocumentsAsync(arguments.FirstOrDefault());
 
-        private static async Task BuildDocumentsAsync(string outputDirectory, string oneDriveDirectory = @"Works\Book\Apress")
+        private static async Task BuildDocumentsAsync(string? outputDirectory, string oneDriveDirectory = @"Works\Book\Apress")
         {
             if (string.IsNullOrWhiteSpace(outputDirectory))
             {
@@ -318,10 +318,10 @@
             string openFile, WdOpenFormat openFormat,
             string saveFile, WdSaveFormat saveFormat,
             string exportFile, WdExportFormat exportFormat,
-            Action<Document> format = null,
+            Action<Document>? format = null,
             bool isWordVisible = false)
         {
-            Application word = null;
+            Application? word = null;
             try
             {
                 word = new Application { Visible = isWordVisible };

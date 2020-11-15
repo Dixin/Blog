@@ -74,7 +74,7 @@
         private static string GetName<TValue>(Func<TValue> func)
         {
             // http://weblogs.asp.net/fredriknormen/how-to-validate-a-method-s-arguments
-            FieldInfo[] fields = func.Target.GetType().GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+            FieldInfo[] fields = (func.Target ?? throw new InvalidOperationException("func must be in the from of () => arg.")).GetType().GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
             return fields.Single().Name;
         }
     }

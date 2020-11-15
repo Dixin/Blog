@@ -39,9 +39,9 @@ namespace Examples.IO
             // Better than AbsolutePath(Assembly.GetExecutingAssembly().GetName().CodeBase);
             () => Assembly.GetExecutingAssembly().Location;
 
-        public static string ExecutingDirectory() => Path.GetDirectoryName(ExecutingAssembly());
+        public static string ExecutingDirectory() => Path.GetDirectoryName(ExecutingAssembly()) ?? string.Empty;
 
-        public static bool TryGetOneDriveRoot(out string? oneDrive)
+        public static bool TryGetOneDriveRoot([NotNullWhen(true)] out string? oneDrive)
         {
             oneDrive = Registry.GetValue(
                 @"HKEY_CURRENT_USER\Software\Microsoft\OneDrive", "UserFolder", null) as string;
@@ -58,10 +58,15 @@ namespace Examples.IO
                 return false;
             }
 
+            string[] datFiles = Directory.GetFiles(settingsDirectory, "*.dat");
+            if (!datFiles.Any())
+            {
+                return false;
+            }
+
+            string iniFile = Path.ChangeExtension(datFiles.First(), "ini");
             try
             {
-                string datFile = Directory.EnumerateFiles(settingsDirectory, "*.dat").FirstOrDefault();
-                string iniFile = Path.ChangeExtension(datFile, "ini");
                 oneDrive = File.ReadLines(iniFile)
                     .Last(line => !string.IsNullOrWhiteSpace(line))
                     .Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
@@ -77,17 +82,23 @@ namespace Examples.IO
 
         public static string AddFilePrefix(string file, string prefix)
         {
-            return Path.Combine(Path.GetDirectoryName(file), $"{prefix}{Path.GetFileName(file)}");
+            string newFile = $"{prefix}{Path.GetFileName(file)}";
+            string? directory = Path.GetDirectoryName(file);
+            return string.IsNullOrWhiteSpace(directory) ? newFile : Path.Combine(directory, newFile);
         }
 
         public static string AddFilePostfix(string file, string postfix)
         {
-            return Path.Combine(Path.GetDirectoryName(file), $"{Path.GetFileNameWithoutExtension(file)}{postfix}{Path.GetExtension(file)}");
+            string newFile = $"{Path.GetFileNameWithoutExtension(file)}{postfix}{Path.GetExtension(file)}";
+            string? directory = Path.GetDirectoryName(file);
+            return string.IsNullOrWhiteSpace(directory) ? newFile : Path.Combine(directory, newFile);
         }
 
         public static string AddDirectoryPrefix(string directory, string prefix)
         {
-            return Path.Combine(Path.GetDirectoryName(directory), $"{prefix}{Path.GetFileName(directory)}");
+            string newDirectory = $"{prefix}{Path.GetFileName(directory)}";
+            string? parent = Path.GetDirectoryName(directory);
+            return string.IsNullOrWhiteSpace(parent) ? newDirectory : Path.Combine(parent, newDirectory);
         }
 
         public static string AddDirectoryPostfix(string directory, string postfix)

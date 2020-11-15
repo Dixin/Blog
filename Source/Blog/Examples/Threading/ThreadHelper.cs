@@ -2,6 +2,7 @@
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
+    using System.Runtime.Versioning;
     using System.Threading;
     using Examples.Runtime.InteropServices;
 
@@ -13,6 +14,7 @@
         public static void AssignCurrentThreadToCpu
             (int cpuIndex) => AssignThreadToCpu(NativeMethods.GetCurrentThread(), cpuIndex);
 
+        [SupportedOSPlatform("windows")]
         public static void Sta(Action action, bool ignoreException = false) => Sta<object?>(
             () =>
                 {
@@ -23,6 +25,7 @@
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
         [return: MaybeNull]
+        [SupportedOSPlatform("windows")]
         public static TResult Sta<TResult>(Func<TResult> func, bool ignoreException = false)
         {
             Exception? staThreadException = null;

@@ -10,7 +10,7 @@
 
     public static class X509Certificate2Helper
     {
-        public static X509Certificate2 Find(
+        public static X509Certificate2? Find(
             Func<X509Certificate2, bool> predicate,
             StoreLocation location = StoreLocation.CurrentUser)
         {
@@ -18,7 +18,7 @@
 
             using X509Store store = new X509Store(location);
             store.Open(OpenFlags.ReadOnly);
-            X509Certificate2 certificate = store.Certificates.OfType<X509Certificate2>().FirstOrDefault(predicate);
+            X509Certificate2? certificate = store.Certificates.OfType<X509Certificate2>().FirstOrDefault(predicate);
 
             return certificate;
         }
@@ -27,10 +27,9 @@
         {
             x509.NotNull(nameof(x509));
 
-            byte[] encryptedBytes;
             using RSACryptoServiceProvider rsa = (RSACryptoServiceProvider)x509.PublicKey.Key;
             byte[] bytesToEncrypt = encoding.GetBytes(value);
-            encryptedBytes = rsa.Encrypt(bytesToEncrypt, false);
+            byte[] encryptedBytes = rsa.Encrypt(bytesToEncrypt, false);
 
             return Convert.ToBase64String(encryptedBytes);
         }
@@ -39,7 +38,7 @@
         {
             x509.NotNull(nameof(x509));
 
-            RSACryptoServiceProvider rsa = (RSACryptoServiceProvider)x509.PrivateKey;
+            RSACryptoServiceProvider rsa = (RSACryptoServiceProvider)(x509.PrivateKey ?? throw new ArgumentOutOfRangeException(nameof(x509)));
             byte[] bytesToDecrypt = Convert.FromBase64String(value);
             byte[] decryptedBytes = rsa.Decrypt(bytesToDecrypt, false);
             return encoding.GetString(decryptedBytes);

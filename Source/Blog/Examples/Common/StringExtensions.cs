@@ -1,12 +1,3 @@
-// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="StringExtensions.cs" company="Bellevues.com">
-//   Copyright (c) Bellevues.com. All rights reserved.
-// </copyright>
-// <summary>
-//   Defines the StringExtensions type.
-// </summary>
-// --------------------------------------------------------------------------------------------------------------------
-
 namespace Examples.Common
 {
     using System;
@@ -37,7 +28,7 @@ namespace Examples.Common
             (this string value, int count) =>
                 string.IsNullOrEmpty(value) || count < 1 ? string.Empty : value.Substring(0, Math.Min(count, value.Length));
 
-        public static void LogWith(this string message, TextWriter? logger) => logger?.WriteLine(message);
+        public static void LogWith(this string? message, TextWriter? logger) => logger?.WriteLine(message);
 
         public static string GetTitleFromHtml(this string html)
         {

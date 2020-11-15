@@ -1,12 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="DynamicWrapper`1.cs" company="WebOS - http://www.coolwebos.com">
-//   Copyright © Dixin 2010 http://weblogs.asp.net/dixin
-// </copyright>
-// <summary>
-//   Defines the DynamicWrapper type.
-// </summary>
-// --------------------------------------------------------------------------------------------------------------------
-#nullable enable
+﻿#nullable enable
 namespace Examples.Dynamic
 {
     using System;
@@ -159,9 +151,9 @@ namespace Examples.Dynamic
 
         public override bool TryInvokeMember(InvokeMemberBinder binder, object?[]? args, out object? result)
         {
-            MethodInfo? method = this.type.GetTypeMethod(binder.Name, args) ??
-                                this.type.GetInterfaceMethod(binder.Name, args) ??
-                                this.type.GetBaseMethod(binder.Name, args);
+            MethodInfo? method = this.type.GetTypeMethod(binder.Name, args ?? Array.Empty<object?>()) ??
+                                this.type.GetInterfaceMethod(binder.Name, args ?? Array.Empty<object?>()) ??
+                                this.type.GetBaseMethod(binder.Name, args ?? Array.Empty<object?>());
             if (method != null)
             {
                 result = method.Invoke(this.value, args).ToDynamic();

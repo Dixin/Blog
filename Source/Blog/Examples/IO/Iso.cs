@@ -19,18 +19,18 @@
                         string truncated = file;
                         if (Path.GetFileName(file).Length > 110)
                         {
-                            truncated = Path.Combine(Path.GetDirectoryName(file), Path.GetFileNameWithoutExtension(file).Substring(0, 110 - Path.GetExtension(file).Length) + Path.GetExtension(file));
+                            truncated = Path.Combine(Path.GetDirectoryName(file) ?? throw new InvalidOperationException(file), Path.GetFileNameWithoutExtension(file).Substring(0, 110 - Path.GetExtension(file).Length) + Path.GetExtension(file));
                             File.Move(file, truncated);
                         }
                         if (Path.GetFileNameWithoutExtension(truncated).Contains(";"))
                         {
-                            File.Move(truncated, Path.Combine(Path.GetDirectoryName(truncated), Path.GetFileNameWithoutExtension(truncated).Replace(";", "_") + Path.GetExtension(truncated)));
+                            File.Move(truncated, Path.Combine(Path.GetDirectoryName(truncated) ?? throw new InvalidOperationException(truncated), Path.GetFileNameWithoutExtension(truncated).Replace(";", "_") + Path.GetExtension(truncated)));
                         }
                     }))
                 .Do(directory => Directory
                     .EnumerateDirectories(directory, "*", SearchOption.AllDirectories)
                     .Where(subDirectory => Path.GetFileName(subDirectory).Contains(";"))
-                    .ForEach(subDirectory => Directory.Move(subDirectory, Path.Combine(Path.GetDirectoryName(subDirectory), subDirectory.Replace(";", "_")))))
+                    .ForEach(subDirectory => Directory.Move(subDirectory, Path.Combine(Path.GetDirectoryName(subDirectory) ?? throw new InvalidOperationException(subDirectory), subDirectory.Replace(";", "_")))))
                 .Select(directory => $@" create -o ""{destination}\{Path.GetFileName(directory)}.iso"" -add ""{directory}"" ""/{Path.GetFileName(directory)}"" -label {Path.GetFileName(directory)} -disable-optimization")
                 .Do(Console.WriteLine)
                 .ForEach(argument =>

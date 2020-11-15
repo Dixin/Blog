@@ -82,7 +82,7 @@
         internal static async Task DownloadItemsAsync()
         {
             string json = await File.ReadAllTextAsync(ListFile);
-            YtsMovieSummary[] movies = JsonSerializer.Deserialize<YtsMovieSummary[]>(json);
+            YtsMovieSummary[] movies = JsonSerializer.Deserialize<YtsMovieSummary[]>(json)!;
             await movies.ParallelForEachAsync(async movie =>
                 {
                     string file = Path.Combine(ItemsDirectory, $"{Path.GetFileName(new Uri(movie.Link).LocalPath)}{HtmlExtension}");
@@ -100,7 +100,7 @@
         internal static async Task MoveItems()
         {
             string json = await File.ReadAllTextAsync(ListFile);
-            YtsMovieSummary[] movies = JsonSerializer.Deserialize<YtsMovieSummary[]>(json);
+            YtsMovieSummary[] movies = JsonSerializer.Deserialize<YtsMovieSummary[]>(json)!;
             movies.ForEach(movie =>
                 {
                     string file = Path.Combine(ItemsDirectory, $"{Path.GetFileName(new Uri(movie.Link).LocalPath)}{HtmlExtension}");
@@ -133,7 +133,7 @@
         internal static async Task SaveLinkList()
         {
             string json = await File.ReadAllTextAsync(ListFile);
-            YtsMovieSummary[] movies = JsonSerializer.Deserialize<YtsMovieSummary[]>(json);
+            YtsMovieSummary[] movies = JsonSerializer.Deserialize<YtsMovieSummary[]>(json)!;
             IEnumerable<string> links = movies
                 .Where(movie => !File.Exists(Path.Combine(ItemsDirectory, $"{Path.GetFileName(new Uri(movie.Link).LocalPath)}{HtmlExtension}l")))
                 .Where(movie => !File.Exists(Path.Combine(ItemsDirectory, $"{Path.GetFileName(new Uri(movie.Link).LocalPath)}{HtmlExtension}")))
@@ -151,7 +151,7 @@
 
         internal static async Task DownloadImdbAsync()
         {
-            string[] imdbFiles = Directory.GetFiles(ImdbDirectory, $"*{JsonExtension}").Select(Path.GetFileNameWithoutExtension).OrderBy(file => file).ToArray();
+            string[] imdbFiles = Directory.GetFiles(ImdbDirectory, $"*{JsonExtension}").Select(file => Path.GetFileNameWithoutExtension(file)!).OrderBy(file => file).ToArray();
             await Directory
                 .GetFiles(ItemsDirectory)
                 .ForEachAsync(async file =>
@@ -170,7 +170,7 @@
                     string imdbJson = cqImdb.Find(@"script[type=""application/ld+json""]").Text();
                     JsonDocument document = JsonDocument.Parse(imdbJson);
                     string contentRating = document.RootElement.TryGetProperty("contentRating", out JsonElement ratingElement)
-                        ? ratingElement.GetString()
+                        ? ratingElement.GetString()!
                         : DefaultContentRating;
                     if (string.IsNullOrWhiteSpace(contentRating))
                     {
@@ -202,7 +202,7 @@
                 .Select(file =>
                     {
                         string url = CQ.CreateDocumentFromFile(file)?.Find(@"a.icon[title=""IMDb Rating""]")?.Attr<string>("href")?.Replace("../../external.html?link=", string.Empty) ?? string.Empty;
-                        if (Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
+                        if (Uri.TryCreate(url, UriKind.Absolute, out Uri? uri))
                         {
                             try
                             {
@@ -235,9 +235,9 @@
         internal static async Task PrintSpecialTitles()
         {
             string jsonYts = await File.ReadAllTextAsync(Path.Combine(DocumentsDirectory, $"YtsTitles{JsonExtension}"));
-            string[] yts = JsonSerializer.Deserialize<string[]>(jsonYts);
+            string[] yts = JsonSerializer.Deserialize<string[]>(jsonYts)!;
             string jsonImdb = await File.ReadAllTextAsync(Path.Combine(DocumentsDirectory, $"ImdbSpecialTitles{JsonExtension}"));
-            string[] imdb = JsonSerializer.Deserialize<string[]>(jsonImdb).OrderBy(imdbid => imdbid).ToArray();
+            string[] imdb = JsonSerializer.Deserialize<string[]>(jsonImdb)!.OrderBy(imdbid => imdbid).ToArray();
             yts
                 .Where(imdbid => Array.BinarySearch(imdb, imdbid) >= 0)
                 .ForEach(imdbid => Trace.WriteLine(imdbid));

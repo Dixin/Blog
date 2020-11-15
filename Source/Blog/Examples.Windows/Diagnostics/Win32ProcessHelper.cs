@@ -14,7 +14,7 @@ namespace Examples.Diagnostics
                 .Query($"SELECT * FROM {Win32Process.WmiClassName}", managementScope)
                 .Select(process => new Win32Process(process));
 
-        public static Win32Process ById
+        public static Win32Process? ById
             (uint processId, ManagementScope? managementScope = null) => Wmi
                 .Query(
                     $"SELECT * FROM {Win32Process.WmiClassName} WHERE {nameof(Win32Process.ProcessId)} = {processId}",

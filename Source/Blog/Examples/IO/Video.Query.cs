@@ -230,7 +230,8 @@ namespace Examples.IO
         internal static async Task SaveAllVideoMetadata(string jsonPath, Action<string>? log = null, params string[] directories)
         {
             log ??= TraceLog;
-            Dictionary<string, Dictionary<string, VideoMetadata>> existingMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(jsonPath));
+            Dictionary<string, Dictionary<string, VideoMetadata>> existingMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(jsonPath))
+                ?? throw new InvalidOperationException(jsonPath);
 
             existingMetadata
                 .Values
