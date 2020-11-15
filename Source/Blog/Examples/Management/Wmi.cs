@@ -4,7 +4,9 @@ namespace Examples.Management
     using System;
     using System.Linq;
     using System.Management;
+    using System.Runtime.Versioning;
 
+    [SupportedOSPlatform("windows")]
     public static class Wmi
     {
         public static ManagementObject[] Query(ObjectQuery objectQuery, ManagementScope? managementScope = null)

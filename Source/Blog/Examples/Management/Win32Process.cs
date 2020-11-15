@@ -4,8 +4,10 @@ namespace Examples.Management
     using System;
     using System.Diagnostics;
     using System.Management;
+    using System.Runtime.Versioning;
 
     // https://msdn.microsoft.com/en-us/library/windows/desktop/aa394372.aspx
+    [SupportedOSPlatform("windows")]
     public partial class Win32Process
     {
         public const string WmiClassName = "Win32_Process";

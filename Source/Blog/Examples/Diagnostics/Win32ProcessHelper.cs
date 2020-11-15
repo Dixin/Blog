@@ -4,9 +4,10 @@ namespace Examples.Diagnostics
     using System.Collections.Generic;
     using System.Linq;
     using System.Management;
-
+    using System.Runtime.Versioning;
     using Examples.Management;
 
+    [SupportedOSPlatform("windows")]
     public static partial class Win32ProcessHelper
     {
         public static IEnumerable<Win32Process> All

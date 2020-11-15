@@ -15,6 +15,7 @@
         <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
         <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
         <PackageReference Include="System.Interactive" Version="5.0.0" />
+        <PackageReference Include="System.Management" Version="5.0.0" />
         <PackageReference Include="System.Text.Encoding.CodePages" Version="5.0.0" />
         <PackageReference Include="System.Text.Json" Version="5.0.0" />
         <PackageReference Include="TagLibSharp" Version="2.2.0" />
