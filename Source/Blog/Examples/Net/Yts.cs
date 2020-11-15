@@ -18,7 +18,7 @@
     {
         private const string BaseUrl = "https://yts.mx";
 
-        private const string RootDirectory = @"D:\User\GitHub\Yts\";
+        private const string RootDirectory = "";
 
         private static readonly string DocumentsDirectory = Path.Combine(RootDirectory, "Documents");
 
@@ -97,7 +97,7 @@
                 });
         }
 
-        internal static async Task MoveItems()
+        internal static async Task MoveItems(string directory)
         {
             string json = await File.ReadAllTextAsync(ListFile);
             YtsMovieSummary[] movies = JsonSerializer.Deserialize<YtsMovieSummary[]>(json)!;
@@ -106,7 +106,7 @@
                     string file = Path.Combine(ItemsDirectory, $"{Path.GetFileName(new Uri(movie.Link).LocalPath)}{HtmlExtension}");
                     if (File.Exists(file))
                     {
-                        string file3 = Path.Combine(@"D:\User\GitHub\Yts_\test\yts.mx\movie", $"{Path.GetFileName(new Uri(movie.Link).LocalPath)}.html");
+                        string file3 = Path.Combine(directory, $"{Path.GetFileName(new Uri(movie.Link).LocalPath)}.html");
                         if (File.Exists(file3))
                         {
                             File.Delete(file3);
@@ -117,7 +117,7 @@
                     string file2 = Path.Combine(ItemsDirectory, $"{Path.GetFileName(new Uri(movie.Link).LocalPath)}{HtmlExtension}l");
                     if (File.Exists(file2))
                     {
-                        string file3 = Path.Combine(@"D:\User\GitHub\Yts_\test\yts.mx\movie", $"{Path.GetFileName(new Uri(movie.Link).LocalPath)}.html");
+                        string file3 = Path.Combine(directory, $"{Path.GetFileName(new Uri(movie.Link).LocalPath)}.html");
                         if (File.Exists(file3))
                         {
                             File.Delete(file3);

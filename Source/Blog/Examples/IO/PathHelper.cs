@@ -7,7 +7,7 @@ namespace Examples.IO
     using System.IO;
     using System.Linq;
     using System.Reflection;
-
+    using System.Runtime.Versioning;
     using Examples.Common;
 
     using Microsoft.Win32;
@@ -41,6 +41,7 @@ namespace Examples.IO
 
         public static string ExecutingDirectory() => Path.GetDirectoryName(ExecutingAssembly()) ?? string.Empty;
 
+        [SupportedOSPlatform("windows")]
         public static bool TryGetOneDriveRoot([NotNullWhen(true)] out string? oneDrive)
         {
             oneDrive = Registry.GetValue(
