@@ -13,7 +13,7 @@
             assembly.NotNull(nameof(assembly));
             resourceName.NotNullOrWhiteSpace(nameof(resourceName));
 
-            using StreamReader reader = new StreamReader(assembly.GetManifestResourceStream(resourceName) ?? throw new ArgumentOutOfRangeException(nameof(resourceName)));
+            using StreamReader reader = new(assembly.GetManifestResourceStream(resourceName) ?? throw new ArgumentOutOfRangeException(nameof(resourceName)));
             return reader.ReadToEnd();
         }
 
@@ -24,7 +24,7 @@
             filePath.NotNullOrWhiteSpace(nameof(filePath));
 
             using Stream stream = assembly.GetManifestResourceStream(resourceName) ?? throw new ArgumentOutOfRangeException(nameof(resourceName));
-            using FileStream fileStream = new FileStream(filePath, FileMode.CreateNew);
+            using FileStream fileStream = new(filePath, FileMode.CreateNew);
             stream.Seek(0, SeekOrigin.Begin);
             stream.CopyTo(fileStream);
         }

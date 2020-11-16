@@ -16,7 +16,7 @@
         {
             predicate.NotNull(nameof(predicate));
 
-            using X509Store store = new X509Store(location);
+            using X509Store store = new(location);
             store.Open(OpenFlags.ReadOnly);
             X509Certificate2? certificate = store.Certificates.OfType<X509Certificate2>().FirstOrDefault(predicate);
 

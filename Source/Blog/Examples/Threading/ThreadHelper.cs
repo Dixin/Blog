@@ -9,7 +9,7 @@
     public static class ThreadHelper
     {
         public static void AssignThreadToCpu
-            (IntPtr thread, int cpuIndex) => NativeMethods.SetThreadAffinityMask(thread, new IntPtr(1 << cpuIndex));
+            (IntPtr thread, int cpuIndex) => NativeMethods.SetThreadAffinityMask(thread, new(1 << cpuIndex));
 
         public static void AssignCurrentThreadToCpu
             (int cpuIndex) => AssignThreadToCpu(NativeMethods.GetCurrentThread(), cpuIndex);
@@ -30,7 +30,7 @@
         {
             Exception? staThreadException = null;
             TResult result = default;
-            Thread staThread = new Thread(() =>
+            Thread staThread = new(() =>
             {
                 try
                 {

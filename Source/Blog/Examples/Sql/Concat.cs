@@ -30,13 +30,13 @@
 
         public void Accumulate(SqlString sqlString) => this.concat = this.concat?
             .Append(Separator).Append(sqlString.IsNull ? null : sqlString.Value)
-            ?? new StringBuilder(sqlString.IsNull ? null : sqlString.Value);
+            ?? new(sqlString.IsNull ? null : sqlString.Value);
 
         public void Merge(Concat concat) => this.concat.Append(concat.concat);
 
-        public SqlString Terminate() => new SqlString(this.concat?.ToString());
+        public SqlString Terminate() => new(this.concat?.ToString());
 
-        public void Read(BinaryReader reader) => this.concat = new StringBuilder(reader.ReadString());
+        public void Read(BinaryReader reader) => this.concat = new(reader.ReadString());
 
         public void Write(BinaryWriter writer) => writer.Write(this.concat?.ToString() ?? string.Empty);
     }

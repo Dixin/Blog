@@ -25,7 +25,7 @@
                 exceptionToSerialize = exception;
             }
 
-            Serializer serializer = new Serializer(new BinaryFormatter());
+            Serializer serializer = new(new BinaryFormatter());
             string base64 = serializer.Serialize(exceptionToSerialize ?? throw new AssertFailedException());
             Trace.WriteLine(base64);
             Assert.IsFalse(string.IsNullOrWhiteSpace(base64));

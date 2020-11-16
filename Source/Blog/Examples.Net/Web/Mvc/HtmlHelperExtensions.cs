@@ -22,9 +22,9 @@ namespace Examples.Web.Mvc
                 throw new ArgumentNullException(nameof(htmlHelper));
             }
 
-            TagBuilder tagBuilder = new TagBuilder("script");
+            TagBuilder tagBuilder = new("script");
             tagBuilder.MergeAttribute("type", "text/javascript");
-            UrlHelper urlHelper = new UrlHelper(htmlHelper.ViewContext.RequestContext);
+            UrlHelper urlHelper = new(htmlHelper.ViewContext.RequestContext);
             tagBuilder.MergeAttribute("src", urlHelper.Content(path));
             return htmlHelper.Raw(tagBuilder.ToString(TagRenderMode.Normal));
         }

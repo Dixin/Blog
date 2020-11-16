@@ -17,25 +17,21 @@ namespace Examples.Sql
         MaxByteSize = 8000)]
     public class ConcatWith : IBinarySerialize
     {
-#pragma warning disable CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
-        private StringBuilder concatWith;
-#pragma warning restore CS8618 // Non-nullable field is uninitialized. Consider declaring as nullable.
+        private StringBuilder? concatWith;
 
         [SuppressMessage("Microsoft.Performance", "CA1822:MarkMembersAsStatic")]
-        public void Init()
-        {
-        }
+        public void Init() { }
 
         public void Accumulate(SqlString sqlString, SqlString separator) => this.concatWith = this.concatWith?
             .Append(separator.IsNull ? null : separator.Value)
             .Append(sqlString.IsNull ? null : sqlString.Value)
-            ?? new StringBuilder(sqlString.IsNull ? null : sqlString.Value);
+            ?? new(sqlString.IsNull ? null : sqlString.Value);
 
-        public void Merge(ConcatWith concatWith) => this.concatWith.Append(concatWith.concatWith);
+        public void Merge(ConcatWith concatWith) => this.concatWith?.Append(concatWith.concatWith);
 
         public SqlString Terminate() => new SqlString(this.concatWith?.ToString());
 
-        public void Read(BinaryReader reader) => this.concatWith = new StringBuilder(reader.ReadString());
+        public void Read(BinaryReader reader) => this.concatWith = new(reader.ReadString());
 
         public void Write(BinaryWriter writer) => writer.Write(this.concatWith?.ToString() ?? string.Empty);
     }

@@ -12,7 +12,7 @@ namespace Examples.IO
 
     internal static partial class Video
     {
-        private static readonly Encoding Utf8Encoding = new UTF8Encoding(true);
+        private static readonly UTF8Encoding Utf8Encoding = new(true);
 
         private static readonly byte[] Bom = Utf8Encoding.GetPreamble();
 
@@ -24,7 +24,7 @@ namespace Examples.IO
 
         private static readonly string[] AllSubtitleExtensions = TextSubtitleExtensions.Concat(BinarySubtitleExtensions).ToArray();
 
-        private static readonly string[] CommonChinese = { "µÄ", "ÊÇ" };
+        private static readonly string[] CommonChinese = { "ï¿½ï¿½", "ï¿½ï¿½" };
 
         private static readonly string[] CommonEnglish = { " of ", " is " };
 
@@ -37,7 +37,7 @@ namespace Examples.IO
                 .Select(file =>
                 {
                     using FileStream fileStream = File.OpenRead(file);
-                    Ude.CharsetDetector detector = new Ude.CharsetDetector();
+                    Ude.CharsetDetector detector = new();
                     detector.Feed(fileStream);
                     detector.DataEnd();
                     return detector.Charset != null ? (detector.Charset, Confidence: detector.Confidence, File: file) : (Charset: (string?)null, Confidence: (float?)null, File: file);
@@ -110,7 +110,7 @@ namespace Examples.IO
                                 return;
                         }
 
-                        FileInfo fileInfo = new FileInfo(result.Item3);
+                        FileInfo fileInfo = new(result.Item3);
                         if (fileInfo.IsReadOnly)
                         {
                             fileInfo.IsReadOnly = false;
@@ -248,7 +248,7 @@ namespace Examples.IO
                 .ForEach(file =>
                 {
                     string content = File.ReadAllText(file);
-                    List<string> languages = new List<string>();
+                    List<string> languages = new();
                     if (CommonChinese.All(chinese => content.Contains(chinese)))
                     {
                         languages.Add("chs");
@@ -310,14 +310,14 @@ namespace Examples.IO
                     string postfix = Path.GetFileNameWithoutExtension(subtitle).Split(".").Last();
                     if (postfix.Contains("chs") || postfix.Contains("cht"))
                     {
-                        if (!File.ReadAllText(subtitle).Contains("µÄ"))
+                        if (!File.ReadAllText(subtitle).Contains("ï¿½ï¿½"))
                         {
                             log($"!Not Chinese {subtitle}");
                         }
                     }
                     else
                     {
-                        if (File.ReadAllText(subtitle).Contains("µÄ"))
+                        if (File.ReadAllText(subtitle).Contains("ï¿½ï¿½"))
                         {
                             log($"!Chinese {subtitle}");
                         }

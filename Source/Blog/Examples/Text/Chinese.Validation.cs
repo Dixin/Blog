@@ -6,7 +6,7 @@
 
     public static partial class Chinese
     {
-        private static readonly (int Min, int Max)[] BasicRanges = new (string Min, string Max)[]
+        private static readonly (int, int)[] BasicRanges = new []
             {
                 ("4E00", "9FFF"),   // 一 CJK Unified Ideograms Unified Ideographs: (U+4E00 to U+9FFF).
                 ("3400", "4DBF"),   // 㐦 CJK Ideographs Extension A: (U+3400 to U+4DBF).
@@ -24,10 +24,10 @@
                 ("FE30", "FE4F"),   // ︽ CJK Compatibility Forms: (U+FE30 to U+FE4F).
                 ("FF00", "FFEF"),   // ｬ Half width and Full width Forms: (U+FF00 to U+FFEF).
             }
-            .Select(hexCodePoint => (int.Parse(hexCodePoint.Min, NumberStyles.HexNumber, CultureInfo.InvariantCulture), int.Parse(hexCodePoint.Max, NumberStyles.HexNumber, CultureInfo.InvariantCulture)))
+            .Select(hexCodePoint => (int.Parse(hexCodePoint.Item1, NumberStyles.HexNumber, CultureInfo.InvariantCulture), int.Parse(hexCodePoint.Item2, NumberStyles.HexNumber, CultureInfo.InvariantCulture)))
             .ToArray();
 
-        private static readonly (int Min, int Max)[] SurrogateRanges = new (string Min, string Max)[]
+        private static readonly (int, int)[] SurrogateRanges = new []
             {
                 ("20000", "2A6DF"), // 𠀀 CJK Ideographs Extension B: (U+20000 to U+2A6DF).
                 ("2A700", "2B73F"), // 𪜀 CJK Ideographs Extension C: (U+2A700 to U+2B73F).
@@ -36,7 +36,7 @@
                 ("2CEB0", "2EBEF"), // 𬺰 CJK Ideographs Extension F: (U+2CEB0 to U+2EBEF).
                 ("2F800", "2FA1F"), // “丽” CJK Comparability Ideographs Supplement: (U+2F800 to U+2FA1F).
             }
-            .Select(hexCodePoint => (int.Parse(hexCodePoint.Min, NumberStyles.HexNumber, CultureInfo.InvariantCulture), int.Parse(hexCodePoint.Max, NumberStyles.HexNumber, CultureInfo.InvariantCulture)))
+            .Select(hexCodePoint => (int.Parse(hexCodePoint.Item1, NumberStyles.HexNumber, CultureInfo.InvariantCulture), int.Parse(hexCodePoint.Item2, NumberStyles.HexNumber, CultureInfo.InvariantCulture)))
             .ToArray();
 
         public static (Exception? Exception, bool IsSingleSurrogatePair) ValidateSingleCharacter(string? text, string? argument = null)

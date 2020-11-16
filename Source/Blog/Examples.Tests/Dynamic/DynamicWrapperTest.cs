@@ -33,7 +33,7 @@ namespace Examples.Tests.Dynamic
         [TestMethod]
         public void GetSetIndexFromTypeTest()
         {
-            BaseTest @base = new BaseTest();
+            BaseTest @base = new();
             Assert.AreEqual("0", @base[5, 5]);
             dynamic wrapper = @base.ToDynamic();
             wrapper[5, 5] = "10";
@@ -51,13 +51,13 @@ namespace Examples.Tests.Dynamic
         [TestMethod]
         public void ValueTypeTest()
         {
-            StructTest test = new StructTest(1);
+            StructTest test = new(1);
             dynamic wrapper = test.ToDynamic();
             wrapper.value = 2;
             Assert.AreEqual(2, wrapper.value.ToStatic());
             Assert.AreNotEqual(2, test.Value);
 
-            StructTest test2 = new StructTest(10);
+            StructTest test2 = new(10);
             dynamic wrapper2 = new DynamicWrapper<StructTest>(ref test2);
             wrapper2.value = 20;
             Assert.AreEqual(20, wrapper2.value.ToStatic());
@@ -68,7 +68,7 @@ namespace Examples.Tests.Dynamic
         [ExpectedException(typeof(RuntimeBinderException))]
         public void ValueTypePropertyTest()
         {
-            StructTest test2 = new StructTest(10);
+            StructTest test2 = new(10);
             dynamic wrapper2 = new DynamicWrapper<StructTest>(ref test2);
 
             wrapper2.Value = 30;

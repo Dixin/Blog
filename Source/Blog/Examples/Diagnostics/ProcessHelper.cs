@@ -15,9 +15,9 @@ namespace Examples.Diagnostics
         {
             fileName.NotNullOrWhiteSpace(nameof(fileName));
 
-            using Process process = new Process()
+            using Process process = new()
             {
-                StartInfo = new ProcessStartInfo()
+                StartInfo = new()
                 {
                     FileName = fileName,
                     Arguments = arguments,

@@ -31,11 +31,11 @@
 
         private static readonly string[] IndependentNfos = { $"tvshow{MetadataExtension}", $"season{MetadataExtension}" };
 
-        private static readonly Regex[] PreferredVersions = new string[] { @"[\. ]YIFY(\+HI)?$", @"[\. ]YIFY(\.[1-9]Audio)?$", @"\[YTS\.[A-Z]{2}\](\.[1-9]Audio)?$", @"\.GAZ$" }.Select(version => new Regex(version)).ToArray();
+        private static readonly Regex[] PreferredVersions = new[] { @"[\. ]YIFY(\+HI)?$", @"[\. ]YIFY(\.[1-9]Audio)?$", @"\[YTS\.[A-Z]{2}\](\.[1-9]Audio)?$", @"\.GAZ$" }.Select(version => new Regex(version)).ToArray();
 
-        private static readonly Regex TopVersion = new Regex("x265.+(VXT|RARBG)");
+        private static readonly Regex TopVersion = new("x265.+(VXT|RARBG)");
 
-        private static readonly Regex PremiumVersion = new Regex("[Hx]264.+(VXT|RARBG)");
+        private static readonly Regex PremiumVersion = new("[Hx]264.+(VXT|RARBG)");
 
         private static void TraceLog(string? message) => Trace.WriteLine(message);
 

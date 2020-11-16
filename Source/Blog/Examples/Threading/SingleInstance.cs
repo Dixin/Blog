@@ -13,7 +13,7 @@
         {
             mutexName.NotNullOrEmpty(nameof(mutexName));
 
-            this.mutex = new Mutex(true, mutexName);
+            this.mutex = new(true, mutexName);
             this.IsSingle = this.mutex.WaitOne(TimeSpan.Zero, true);
         }
 
@@ -34,7 +34,7 @@
             mutexName.NotNullOrEmpty(nameof(mutexName));
             single.NotNull(nameof(single));
 
-            using Mutex mutex = new Mutex(true, mutexName);
+            using Mutex mutex = new(true, mutexName);
             if (mutex.WaitOne(TimeSpan.Zero, true))
             {
                 try

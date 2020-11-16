@@ -35,9 +35,9 @@
                 .Do(Console.WriteLine)
                 .ForEach(argument =>
                     {
-                        using Process powerIso = new Process
+                        using Process powerIso = new()
                         {
-                            StartInfo = new ProcessStartInfo()
+                            StartInfo = new()
                             {
                                 UseShellExecute = true,
                                 CreateNoWindow = false,

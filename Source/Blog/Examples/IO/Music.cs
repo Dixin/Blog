@@ -38,9 +38,9 @@
                     $@" -i ""{video}"" -c:a libmp3lame -ar 48000 -b:a 320k -ss {track.start} {(index == tracks.Length - 1 ? string.Empty : $"-to {tracks[index + 1].start}")} ""{Path.GetDirectoryName(video)}\{index + 1}. {track.name}.mp3""");
             arguments.ForEach(argument =>
                 {
-                    using Process ffmpeg = new Process
+                    using Process ffmpeg = new()
                     {
-                        StartInfo =
+                        StartInfo = new()
                         {
                             UseShellExecute = false,
                             RedirectStandardOutput = true,
@@ -82,7 +82,7 @@
                 });
         }
 
-        private static readonly Dictionary<string, string> Translation = new Dictionary<string, string>()
+        private static readonly Dictionary<string, string> Translation = new()
         {
             ["Alternative-Rock"] = "另类摇滚",
             ["Anime"] = "儿歌",
@@ -230,13 +230,13 @@
             ["The Punisher"] = "惩罚者"
         };
 
-        private static readonly HashSet<string> Extensions = new HashSet<string>(
+        private static readonly HashSet<string> Extensions = new(
             new[] { ".mp3", ".m4a", ".wma" }, StringComparer.OrdinalIgnoreCase);
 
         internal static void RenameAlbum(string from, string to)
         {
-            DirectoryInfo fromDirectory = new DirectoryInfo(from);
-            DirectoryInfo toDirectory = new DirectoryInfo(to);
+            DirectoryInfo fromDirectory = new(from);
+            DirectoryInfo toDirectory = new(to);
 
             bool hasError = false;
 
@@ -270,7 +270,7 @@
                         string genre = names[5];
 
                         string newAlbumName = $"{genre}{Separator}{artistName}{Separator}{year}{Separator}{albumName}";
-                        DirectoryInfo newAlbum = new DirectoryInfo(Path.Combine(toDirectory.FullName, newAlbumName));
+                        DirectoryInfo newAlbum = new(Path.Combine(toDirectory.FullName, newAlbumName));
                         if (!newAlbum.Exists)
                         {
                             newAlbum.Create();
@@ -283,7 +283,7 @@
         internal static void RenameAllAlbums(string from, string to)
         {
             bool hasError = false;
-            DirectoryInfo music = new DirectoryInfo(from);
+            DirectoryInfo music = new(from);
 
             music
                 .EnumerateDirectories()
@@ -332,7 +332,7 @@
                                     album.Rename(newAlbumName);
                                 }
 
-                                DirectoryInfo newAlbum = new DirectoryInfo(Path.Combine(album.Parent!.FullName, newAlbumName));
+                                DirectoryInfo newAlbum = new(Path.Combine(album.Parent!.FullName, newAlbumName));
                                 newAlbum.MoveTo(Path.Combine(to, newAlbumName));
                             }
                         }

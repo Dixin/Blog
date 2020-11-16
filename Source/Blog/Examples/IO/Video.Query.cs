@@ -208,7 +208,7 @@ namespace Examples.IO
                     {
                         ImdbMetadata imdbMetadata = JsonSerializer.Deserialize<ImdbMetadata>(
                             imdbJson,
-                            new JsonSerializerOptions() { PropertyNameCaseInsensitive = true, IgnoreReadOnlyProperties = true }) ?? throw new InvalidOperationException(imdbJson);
+                            new() { PropertyNameCaseInsensitive = true, IgnoreReadOnlyProperties = true }) ?? throw new InvalidOperationException(imdbJson);
                         year = imdbMetadata.YearOfCurrentRegion;
                     }
 
@@ -276,7 +276,7 @@ namespace Examples.IO
                 {
                     if (!existingMetadata.ContainsKey(group.Key))
                     {
-                        existingMetadata[group.Key] = new Dictionary<string, VideoMetadata>();
+                        existingMetadata[group.Key] = new();
                     }
 
                     group.Value.ForEach(pair => existingMetadata[group.Key][pair.Key] = pair.Value);
@@ -288,7 +288,7 @@ namespace Examples.IO
                 .Where(imdbId => !existingMetadata[imdbId].Any())
                 .ForEach(imdbId => existingMetadata.Remove(imdbId));
 
-            string mergedVideoMetadataJson = JsonSerializer.Serialize(existingMetadata, new JsonSerializerOptions() { WriteIndented = true });
+            string mergedVideoMetadataJson = JsonSerializer.Serialize(existingMetadata, new() { WriteIndented = true });
             await File.WriteAllTextAsync(jsonPath, mergedVideoMetadataJson);
         }
 
@@ -311,7 +311,7 @@ namespace Examples.IO
                 .Distinct(metadata => metadata.ImdbId)
                 .ToDictionary(metadata => metadata.ImdbId, metadata => metadata.Value!);
 
-            string mergedVideoMetadataJson = JsonSerializer.Serialize(allVideoMetadata, new JsonSerializerOptions() { WriteIndented = true });
+            string mergedVideoMetadataJson = JsonSerializer.Serialize(allVideoMetadata, new() { WriteIndented = true });
             await File.WriteAllTextAsync(jsonPath, mergedVideoMetadataJson);
         }
 

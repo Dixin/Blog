@@ -14,8 +14,8 @@
     {
         internal static void QQ(int qq)
         {
-            ConcurrentQueue<int> groups = new ConcurrentQueue<int>();
-            using SqlConnection connection = new SqlConnection("Server=.;Database=master;Trusted_Connection=True;MultipleActiveResultSets=true");
+            ConcurrentQueue<int> groups = new();
+            using SqlConnection connection = new("Server=.;Database=master;Trusted_Connection=True;MultipleActiveResultSets=true");
             connection.Open();
             Enumerable
                 .Range(1, 11)
@@ -67,10 +67,10 @@
                         return;
                     }
 
-                    using SqlConnection connection = new SqlConnection($"Server=.;Database={databaseName};Trusted_Connection=True;");
+                    using SqlConnection connection = new($"Server=.;Database={databaseName};Trusted_Connection=True;");
                     connection.Open();
 
-                    List<(string, string)> primaryKeys = new List<(string, string)>();
+                    List<(string, string)> primaryKeys = new();
                     using SqlCommand command1 = connection.CreateCommand();
                     command1.CommandText = $"select name, OBJECT_NAME(OBJECT_ID) from sys.indexes where is_primary_key = 1 and OBJECT_NAME(OBJECT_ID) like 'Group%'";
                     using SqlDataReader reader1 = command1.ExecuteReader();
@@ -89,7 +89,7 @@
                                 command.ExecuteNonQuery();
                             });
 
-                    List<(string, string)> indexes = new List<(string, string)>();
+                    List<(string, string)> indexes = new();
                     using SqlCommand command2 = connection.CreateCommand();
                     command2.CommandText = $"select name, OBJECT_NAME(object_ID) from sys.indexes where OBJECT_NAME(object_ID) like 'Group%' and name is not null;";
                     using SqlDataReader reader2 = command2.ExecuteReader();
@@ -150,10 +150,10 @@
                         return;
                     }
 
-                    using SqlConnection connection = new SqlConnection($"Server=.;Database={databaseName};Trusted_Connection=True;");
+                    using SqlConnection connection = new($"Server=.;Database={databaseName};Trusted_Connection=True;");
                     connection.Open();
 
-                    List<(string, string)> primaryKeys = new List<(string, string)>();
+                    List<(string, string)> primaryKeys = new();
                     using SqlCommand command1 = connection.CreateCommand();
                     command1.CommandText = $"select name, OBJECT_NAME(OBJECT_ID) from sys.indexes where is_primary_key = 1 and OBJECT_NAME(OBJECT_ID) like 'qunlist%'";
                     using SqlDataReader reader1 = command1.ExecuteReader();
@@ -172,7 +172,7 @@
                                 command.ExecuteNonQuery();
                             });
 
-                    List<(string, string)> indexes = new List<(string, string)>();
+                    List<(string, string)> indexes = new();
                     using SqlCommand command2 = connection.CreateCommand();
                     command2.CommandText = $"select name, OBJECT_NAME(object_ID) from sys.indexes where OBJECT_NAME(object_ID) like 'qunlist%' and name is not null;";
                     using SqlDataReader reader2 = command2.ExecuteReader();
@@ -222,12 +222,12 @@
 
         internal static void Aipai()
         {
-            using SqlConnection connection = new SqlConnection("");
-            using StreamWriter writer = new StreamWriter(File.OpenWrite(@"D:\Sql\Aipai.txt"), Encoding.Unicode);
-            using StreamWriter writer2 = new StreamWriter(File.OpenWrite(@"D:\Sql\Aipai2.txt"), Encoding.Unicode);
+            using SqlConnection connection = new("");
+            using StreamWriter writer = new(File.OpenWrite(@"D:\Sql\Aipai.txt"), Encoding.Unicode);
+            using StreamWriter writer2 = new(File.OpenWrite(@"D:\Sql\Aipai2.txt"), Encoding.Unicode);
             Directory.EnumerateFiles(@"D:\Sql\Aipai").ForEach(file =>
                 {
-                    using StreamReader reader = new StreamReader(File.OpenRead(file), Encoding.GetEncoding("GB18030"));
+                    using StreamReader reader = new(File.OpenRead(file), Encoding.GetEncoding("GB18030"));
                     string? line;
                     while ((line = reader.ReadLine()) != null)
                     {
@@ -249,12 +249,12 @@
                             string last = groups[3].Value;
                             if (last.Contains("@"))
                             {
-                                string newLine = string.Join("\t", new string[] { groups[1].Value.TrimEnd(), groups[2].Value, last });
+                                string newLine = string.Join("\t", new[] { groups[1].Value.TrimEnd(), groups[2].Value, last });
                                 writer.WriteLine(newLine);
                             }
                             else
                             {
-                                string newLine = string.Join("\t", new string[] { groups[1].Value.TrimEnd(), groups[2].Value, string.Empty });
+                                string newLine = string.Join("\t", new[] { groups[1].Value.TrimEnd(), groups[2].Value, string.Empty });
                                 writer.WriteLine(newLine);
                             }
                         }
@@ -265,17 +265,17 @@
                             if (lastField.Contains("@"))
                             {
                                 string firstField = line.Substring(0, line.Length - lastField.Length).TrimEnd();
-                                string newLine = string.Join("\t", new string[] { firstField, lastField, string.Empty });
+                                string newLine = string.Join("\t", new[] { firstField, lastField, string.Empty });
                                 writer.WriteLine(newLine);
                             }
                             else if (lastField == fields[0])
                             {
-                                string newLine = string.Join("\t", new string[] { lastField, string.Empty, string.Empty });
+                                string newLine = string.Join("\t", new[] { lastField, string.Empty, string.Empty });
                                 writer.WriteLine(newLine);
                             }
                             else
                             {
-                                string newLine = string.Join("\t", new string[] { line.TrimEnd(), string.Empty, string.Empty });
+                                string newLine = string.Join("\t", new[] { line.TrimEnd(), string.Empty, string.Empty });
                                 writer.WriteLine(newLine);
                             }
                         }
@@ -326,12 +326,12 @@
 
         internal static void Tianya()
         {
-            using StreamWriter writer = new StreamWriter(File.OpenWrite(@"D:\Sql\Tianya.txt"), Encoding.Unicode);
-            using StreamWriter writer2 = new StreamWriter(File.OpenWrite(@"D:\Sql\Tianya2.txt"), Encoding.Unicode);
+            using StreamWriter writer = new(File.OpenWrite(@"D:\Sql\Tianya.txt"), Encoding.Unicode);
+            using StreamWriter writer2 = new(File.OpenWrite(@"D:\Sql\Tianya2.txt"), Encoding.Unicode);
             string? previousFileLastLine = null;
             Directory.EnumerateFiles(@"D:\Sql\Tianya").ForEach(file =>
                 {
-                    using StreamReader reader = new StreamReader(File.OpenRead(file), Encoding.GetEncoding("GB18030"));
+                    using StreamReader reader = new(File.OpenRead(file), Encoding.GetEncoding("GB18030"));
                     string? line = string.Concat(previousFileLastLine, reader.ReadLine());
                     do
                     {
@@ -342,12 +342,12 @@
                             string last = groups[3].Value;
                             if (last.Contains("@"))
                             {
-                                string newLine = string.Join("\t", new string[] { groups[1].Value.TrimEnd(), groups[2].Value, last });
+                                string newLine = string.Join("\t", new[] { groups[1].Value.TrimEnd(), groups[2].Value, last });
                                 writer.WriteLine(newLine);
                             }
                             else
                             {
-                                string newLine = string.Join("\t", new string[] { groups[1].Value.TrimEnd(), groups[2].Value, string.Empty });
+                                string newLine = string.Join("\t", new[] { groups[1].Value.TrimEnd(), groups[2].Value, string.Empty });
                                 writer.WriteLine(newLine);
                             }
                         }
@@ -362,10 +362,10 @@
 
         internal static void Tianya2()
         {
-            using StreamReader reader = new StreamReader(File.OpenRead(@"d:\sql\t1.txt"), Encoding.GetEncoding("GB18030"));
-            using StreamWriter writer = new StreamWriter(File.OpenWrite(@"d:\sql\t11.txt"), Encoding.Unicode);
-            using StreamWriter writer2 = new StreamWriter(File.OpenWrite(@"d:\sql\t12.txt"), Encoding.Unicode);
-            using StreamWriter writer3 = new StreamWriter(File.OpenWrite(@"d:\sql\t13.txt"), Encoding.Unicode);
+            using StreamReader reader = new(File.OpenRead(@"d:\sql\t1.txt"), Encoding.GetEncoding("GB18030"));
+            using StreamWriter writer = new(File.OpenWrite(@"d:\sql\t11.txt"), Encoding.Unicode);
+            using StreamWriter writer2 = new(File.OpenWrite(@"d:\sql\t12.txt"), Encoding.Unicode);
+            using StreamWriter writer3 = new(File.OpenWrite(@"d:\sql\t13.txt"), Encoding.Unicode);
             string? line;
             while ((line = reader.ReadLine()) != null)
             {
@@ -397,10 +397,10 @@
 
         internal static void Tianya3()
         {
-            using StreamReader reader = new StreamReader(File.OpenRead(@"d:\sql\t131.txt"), Encoding.GetEncoding("GB18030"));
-            using StreamWriter writer = new StreamWriter(File.OpenWrite(@"d:\sql\t1311.txt"), Encoding.Unicode);
-            using StreamWriter writer2 = new StreamWriter(File.OpenWrite(@"d:\sql\t1312.txt"), Encoding.Unicode);
-            using StreamWriter writer3 = new StreamWriter(File.OpenWrite(@"d:\sql\t1313.txt"), Encoding.Unicode);
+            using StreamReader reader = new(File.OpenRead(@"d:\sql\t131.txt"), Encoding.GetEncoding("GB18030"));
+            using StreamWriter writer = new(File.OpenWrite(@"d:\sql\t1311.txt"), Encoding.Unicode);
+            using StreamWriter writer2 = new(File.OpenWrite(@"d:\sql\t1312.txt"), Encoding.Unicode);
+            using StreamWriter writer3 = new(File.OpenWrite(@"d:\sql\t1313.txt"), Encoding.Unicode);
             string? line;
             while ((line = reader.ReadLine()) != null)
             {

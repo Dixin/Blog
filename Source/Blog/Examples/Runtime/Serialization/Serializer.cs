@@ -19,7 +19,7 @@
         {
             serializable.NotNull(nameof(serializable));
 
-            using MemoryStream stream = new MemoryStream();
+            using MemoryStream stream = new();
             this.formatter.Serialize(stream, serializable);
             return Convert.ToBase64String(stream.ToArray());
         }

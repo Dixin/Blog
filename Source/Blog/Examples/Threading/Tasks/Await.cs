@@ -53,7 +53,7 @@
 
         public FuncAwaiter(Func<TResult> function)
         {
-            this.task = new Task<TResult>(function);
+            this.task = new(function);
             this.task.Start();
         }
 
@@ -70,7 +70,7 @@
     {
         public static TaskAwaiter<TResult> GetAwaiter<TResult>(this Func<TResult> function)
         {
-            Task<TResult> task = new Task<TResult>(function);
+            Task<TResult> task = new(function);
             task.Start();
             return task.GetAwaiter();
         }
@@ -80,7 +80,7 @@
     {
         public static TaskAwaiter GetAwaiter(this Action action)
         {
-            Task task = new Task(action);
+            Task task = new(action);
             task.Start();
             return task.GetAwaiter();
         }

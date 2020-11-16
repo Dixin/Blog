@@ -34,13 +34,13 @@
 
     public class WebSocketConnections : IWebSocketConnections
     {
-        private readonly WebSocketCollection<WcfWebSocketService> connections = new WebSocketCollection<WcfWebSocketService>();
+        private readonly WebSocketCollection<WcfWebSocketService> connections = new();
 
         private WebSocketConnections()
         {
         }
 
-        public static WebSocketConnections All { get; } = new WebSocketConnections();
+        public static WebSocketConnections All { get; } = new();
 
         public IEnumerator<IWebSocketService> GetEnumerator() => this.connections.GetEnumerator();
 
@@ -59,7 +59,7 @@
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
         protected override ServiceHost CreateServiceHost(Type serviceType, Uri[] baseAddresses)
         {
-            WebSocketHost host = new WebSocketHost(serviceType, baseAddresses);
+            WebSocketHost host = new(serviceType, baseAddresses);
             host.AddWebSocketEndpoint();
             return host;
         }

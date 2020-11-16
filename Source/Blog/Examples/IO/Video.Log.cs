@@ -177,7 +177,7 @@
                         movieDirectory = movieDirectory.Substring("0.".Length);
                     }
 
-                    VideoDirectoryInfo videoDirectoryInfo = new VideoDirectoryInfo(movieDirectory);
+                    VideoDirectoryInfo videoDirectoryInfo = new(movieDirectory);
                     string directoryYear = videoDirectoryInfo.Year;
                     string metadataYear = metadata.Root?.Element("year")?.Value ?? throw new InvalidOperationException($"{metadata} has no year.");
                     string videoName = string.Empty;
@@ -211,7 +211,7 @@
 
         private static readonly string[] Attachments = { "Introduction.txt", "Introduction.mht" };
 
-        private static readonly string[] AdaptiveAttachments = new string[] { "banner.jpg", "box.jpg", "clearart.png", "clearlogo.png", "disc.png", "discart.png", "fanart.jpg", "landscape.jpg", "logo.png", "poster.jpg", "poster.png" };
+        private static readonly string[] AdaptiveAttachments = new[] { "banner.jpg", "box.jpg", "clearart.png", "clearlogo.png", "disc.png", "discart.png", "fanart.jpg", "landscape.jpg", "logo.png", "poster.jpg", "poster.png" };
 
         private static readonly string ImdbExtension = ".json";
 
@@ -223,7 +223,7 @@
             List<string>? allVideos = null;
             if (isLoadingVideo)
             {
-                allVideos = new List<string>();
+                allVideos = new();
             }
 
             EnumerateDirectories(directory, level)
@@ -240,7 +240,7 @@
                         trimmedMovie = trimmedMovie.Substring(0, trimmedMovie.IndexOf("{", StringComparison.Ordinal));
                     }
 
-                    VideoDirectoryInfo videoDirectoryInfo = new VideoDirectoryInfo(trimmedMovie);
+                    VideoDirectoryInfo videoDirectoryInfo = new(trimmedMovie);
                     //if (!string.Equals(level1Number1, level1Number3) || !string.IsNullOrWhiteSpace(level1Number2) && !string.Equals(level1Number1, level1Number2))
                     //{
                     //    log($"{movie}");

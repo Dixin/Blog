@@ -30,7 +30,7 @@
             byte[] fromBytes = await File.ReadAllBytesAsync(fromPath);
             byte[] toBytes = Encoding.Convert(from, to, fromBytes);
             await File.WriteAllBytesAsync(toPath ?? fromPath, toBytes);
-            await using FileStream fileStream = new FileStream(toPath ?? fromPath, FileMode.Create, FileAccess.Write, FileShare.Read);
+            await using FileStream fileStream = new(toPath ?? fromPath, FileMode.Create, FileAccess.Write, FileShare.Read);
             if (bom != null && !bom.SequenceEqual(toBytes.Take(bom.Length)))
             {
                 await fileStream.WriteAsync(bom, 0, bom.Length);

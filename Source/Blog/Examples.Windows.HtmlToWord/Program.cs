@@ -77,7 +77,7 @@
             AllHtml html = await DownloadHtmlAsync();
             await html.Chapters.ForEachAsync(async (chapter, chapterIndex) =>
             {
-                ChapterHtml partHtml = new ChapterHtml(chapter.Title, chapter.Sections);
+                ChapterHtml partHtml = new(chapter.Title, chapter.Sections);
                 await SaveAsync(partHtml.TransformText(), Path.Combine(htmlOutputDirectory, $"{chapterIndex + 1}. {chapter.Title.Replace("/", "-").Replace(":", " -")}.html"));
                 await chapter.Sections
                     .Select(section => new SectionHtml(section.Title, section.Content))
@@ -90,7 +90,7 @@
                                 string uri = image.GetAttribute("src");
                                 string localPath = Path.Combine("images", string.Join("-", uri.Split('/').Reverse().Take(2).Reverse()));
                                 image.SetAttribute("src", localPath);
-                                using WebClient webClient = new WebClient();
+                                using WebClient webClient = new();
                                 Trace.WriteLine($"Downloading image {uri} to {localPath}.");
                                 await webClient.DownloadFileTaskAsync(uri, Path.Combine(htmlOutputDirectory, localPath));
                             });
@@ -107,7 +107,7 @@
             Trace.WriteLine(Invariant($"Saving HTML as {htmlFile}, {text.Length}."));
             try
             {
-                await using StreamWriter writer = new StreamWriter(new FileStream(
+                await using StreamWriter writer = new(new FileStream(
                     path: htmlFile, mode: FileMode.Create, access: FileAccess.Write, share: FileShare.Read, bufferSize: 4096, useAsync: true));
                 await writer.WriteAsync(text);
             }
@@ -121,7 +121,7 @@
 
         private static async Task<AllHtml> DownloadHtmlAsync(string indexUrl = @"http://weblogs.asp.net/dixin/linq-via-csharp")
         {
-            using WebClient indexClient = new WebClient { Encoding = Encoding.UTF8 };
+            using WebClient indexClient = new() { Encoding = Encoding.UTF8 };
             Trace.WriteLine(Invariant($"Downloading {indexUrl}."));
             CQ indexPageCq = await indexClient.DownloadStringTaskAsync(indexUrl);
 
@@ -144,7 +144,7 @@
                             string articleTitle = articleLinkCq.Text().Trim();
 
                             Trace.WriteLine(Invariant($"Downloading [{articleTitle}] {articleUri}."));
-                            using WebClient articleClient = new WebClient { Encoding = Encoding.UTF8 };
+                            using WebClient articleClient = new() { Encoding = Encoding.UTF8 };
                             CQ articleCq;
                             try
                             {
@@ -169,11 +169,11 @@
                 chapters);
         }
 
-        private static readonly Regex allowedTag = new Regex("^(p|h[1-9]|pre|blockquote|table|img|ul|ol)$", RegexOptions.IgnoreCase);
+        private static readonly Regex allowedTag = new("^(p|h[1-9]|pre|blockquote|table|img|ul|ol)$", RegexOptions.IgnoreCase);
 
-        private static readonly Regex allowedParagraphTag = new Regex("^(a|sub|sup|img)$", RegexOptions.IgnoreCase);
+        private static readonly Regex allowedParagraphTag = new("^(a|sub|sup|img)$", RegexOptions.IgnoreCase);
 
-        private static readonly Regex allowedSpanParentTag = new Regex("^(pre|span)$", RegexOptions.IgnoreCase);
+        private static readonly Regex allowedSpanParentTag = new("^(pre|span)$", RegexOptions.IgnoreCase);
 
         private static CQ FormatArticleContent(string articleTitle, CQ articleContentCq)
         {
@@ -249,7 +249,7 @@
             string tempHtmlFile = Path.Combine(directory, "All.htm");
             string htmlContent = html.TransformText();
             Trace.WriteLine(Invariant($"Saving HTML as {tempHtmlFile}, {htmlContent.Length}."));
-            await using (StreamWriter writer = new StreamWriter(new FileStream(
+            await using (StreamWriter writer = new(new FileStream(
                 path: tempHtmlFile, mode: FileMode.Create, access: FileAccess.Write,
                 share: FileShare.Read, bufferSize: 4096, useAsync: true)))
             {
@@ -324,7 +324,7 @@
             Application? word = null;
             try
             {
-                word = new Application { Visible = isWordVisible };
+                word = new() { Visible = isWordVisible };
 
                 Trace.WriteLine(Invariant($"Opening {openFile} as {openFormat}."));
                 word.Documents.Open(openFile, Format: openFormat);
@@ -347,7 +347,7 @@
 #if DEMO
         private static byte[] HtmlToWord(string html, string fileName)
         {
-            using (MemoryStream memoryStream = new MemoryStream())
+            using (MemoryStream memoryStream = new())
 
             using (WordprocessingDocument wordDocument = WordprocessingDocument.Create(
                 memoryStream, WordprocessingDocumentType.Document))
@@ -359,7 +359,7 @@
                     new Document(new Body()).Save(mainPart);
                 }
 
-                HtmlConverter converter = new HtmlConverter(mainPart);
+                HtmlConverter converter = new(mainPart);
                 converter.ImageProcessing = ImageProcessing.AutomaticDownload;
                 Body body = mainPart.Document.Body;
 

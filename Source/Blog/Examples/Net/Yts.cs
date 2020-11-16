@@ -38,12 +38,12 @@
         {
             for (; ; index++)
             {
-                using WebClient webClient = new WebClient();
+                using WebClient webClient = new();
                 string url = $"{BaseUrl}/browse-movies?page={index}";
                 string html = await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(url),
                     RetryCount);
                 Log($"Downloaded {url}");
-                CQ cqHtml = new CQ(html);
+                CQ cqHtml = new(html);
                 if (cqHtml[".browse-movie-wrap"].IsEmpty())
                 {
                     break;
@@ -62,7 +62,7 @@
                 .Select(CQ.CreateDocumentFromFile)
                 .SelectMany(cq => cq.Find(".browse-movie-wrap").Select(dom =>
                     {
-                        CQ cqMovie = new CQ(dom);
+                        CQ cqMovie = new(dom);
                         return new YtsMovieSummary(
                             cqMovie.Find(".browse-movie-title").Text(),
                             cqMovie.Find(".browse-movie-title").Attr("href"),
@@ -75,7 +75,7 @@
                 .ThenBy(movie => movie.Year)
                 .ToArray();
 
-            string json = JsonSerializer.Serialize(movies, new JsonSerializerOptions() { WriteIndented = true });
+            string json = JsonSerializer.Serialize(movies, new() { WriteIndented = true });
             await File.WriteAllTextAsync(ListFile, json);
         }
 
@@ -88,7 +88,7 @@
                     string file = Path.Combine(ItemsDirectory, $"{Path.GetFileName(new Uri(movie.Link).LocalPath)}{HtmlExtension}");
                     if (!File.Exists(file))
                     {
-                        using WebClient webClient = new WebClient();
+                        using WebClient webClient = new();
                         string html = await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(movie.Link), RetryCount);
                         Log($"Downloaded {movie.Link}");
                         await File.WriteAllTextAsync(file, html);
@@ -164,9 +164,9 @@
                         return;
                     }
 
-                    using WebClient webClient = new WebClient();
+                    using WebClient webClient = new();
                     string imdbHtml = await webClient.DownloadStringTaskAsync(url);
-                    CQ cqImdb = new CQ(imdbHtml);
+                    CQ cqImdb = new(imdbHtml);
                     string imdbJson = cqImdb.Find(@"script[type=""application/ld+json""]").Text();
                     JsonDocument document = JsonDocument.Parse(imdbJson);
                     string contentRating = document.RootElement.TryGetProperty("contentRating", out JsonElement ratingElement)
@@ -191,7 +191,7 @@
                 .Where(line => !"0".Equals(line.ElementAtOrDefault(4), StringComparison.Ordinal))
                 .Select(line => line[0])
                 .ToArray();
-            string json = JsonSerializer.Serialize(specialTitles, new JsonSerializerOptions() { WriteIndented = true });
+            string json = JsonSerializer.Serialize(specialTitles, new() { WriteIndented = true });
             await File.WriteAllTextAsync(Path.Combine(DocumentsDirectory, $"ImdbSpecialTitles{JsonExtension}"), json);
         }
 
@@ -228,7 +228,7 @@
                     })
                 .Where(imdbId => !string.IsNullOrWhiteSpace(imdbId))
                 .ToArray();
-            string json = JsonSerializer.Serialize(ytsTitles, new JsonSerializerOptions() { WriteIndented = true });
+            string json = JsonSerializer.Serialize(ytsTitles, new() { WriteIndented = true });
             await File.WriteAllTextAsync(Path.Combine(DocumentsDirectory, $"YtsTitles{JsonExtension}"), json);
         }
 

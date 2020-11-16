@@ -47,7 +47,7 @@ static async Task ConvertAsync(string file, Encoding? fromEncoding)
     else
     {
         await using FileStream fileStream = File.OpenRead(file);
-        CharsetDetector detector = new CharsetDetector();
+        CharsetDetector detector = new();
         detector.Feed(fileStream);
         detector.DataEnd();
         if (detector.Confidence > 0.5 && !string.IsNullOrWhiteSpace(detector.Charset))
@@ -89,7 +89,7 @@ internal static class Extensions
 
     private static void RemoveReadOnly(this string file)
     {
-        FileInfo fileInfo = new FileInfo(file);
+        FileInfo fileInfo = new(file);
         if (fileInfo.IsReadOnly)
         {
             fileInfo.IsReadOnly = false;

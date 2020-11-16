@@ -16,8 +16,8 @@ namespace Examples.Management
                 throw new ArgumentNullException(nameof(objectQuery));
             }
 
-            using ManagementObjectSearcher searcher = new ManagementObjectSearcher(
-                managementScope ?? new ManagementScope(), // Default ManagementPath: \\.\root\cimv2.
+            using ManagementObjectSearcher searcher = new(
+                managementScope ?? new(), // Default ManagementPath: \\.\root\cimv2.
                 objectQuery); // Default QueryLangauge: WQL.
             using ManagementObjectCollection processes = searcher.Get();
             return processes.OfType<ManagementObject>().ToArray();

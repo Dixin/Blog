@@ -15,9 +15,9 @@
     {
         internal static async Task<(string Json, string Year, string[] Regions)> DownloadJsonAsync(string url)
         {
-            using WebClient webClient = new WebClient();
+            using WebClient webClient = new();
             string imdbHtml = await webClient.DownloadStringTaskAsync(url);
-            CQ cqImdb = new CQ(imdbHtml);
+            CQ cqImdb = new(imdbHtml);
             string year = cqImdb.Find(@"#titleYear").Text().Trim().TrimStart('(').TrimEnd(')').Trim();
             string json = cqImdb.Find(@"script[type=""application/ld+json""]").Text();
             if (string.IsNullOrWhiteSpace(year))
@@ -35,7 +35,7 @@
             {
                 ImdbMetadata imdbMetadata = JsonSerializer.Deserialize<ImdbMetadata>(
                     json,
-                    new JsonSerializerOptions() { PropertyNameCaseInsensitive = true, IgnoreReadOnlyProperties = true }) ?? throw new InvalidOperationException(url);
+                    new() { PropertyNameCaseInsensitive = true, IgnoreReadOnlyProperties = true }) ?? throw new InvalidOperationException(url);
                 year = imdbMetadata.YearOfCurrentRegion;
             }
 
@@ -65,7 +65,7 @@
             {
                 imdbMetadata = JsonSerializer.Deserialize<ImdbMetadata>(
                     File.ReadAllText(path),
-                    new JsonSerializerOptions() { PropertyNameCaseInsensitive = true, IgnoreReadOnlyProperties = true }) ?? throw new InvalidOperationException(path);
+                    new() { PropertyNameCaseInsensitive = true, IgnoreReadOnlyProperties = true }) ?? throw new InvalidOperationException(path);
                 string[] names = name.Split('.');
                 imdbMetadata.Year = names[1];
                 imdbMetadata.Regions = names[2]?.Split(",") ?? Array.Empty<string>();

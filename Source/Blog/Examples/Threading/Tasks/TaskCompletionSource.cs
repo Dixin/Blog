@@ -12,22 +12,22 @@
 
         public TaskCompletionSource()
         {
-            this.taskCompletionSource = new TaskCompletionSource<Unit?>();
+            this.taskCompletionSource = new();
         }
 
         public TaskCompletionSource(object state)
         {
-            this.taskCompletionSource = new TaskCompletionSource<Unit?>(state);
+            this.taskCompletionSource = new(state);
         }
 
         public TaskCompletionSource(TaskCreationOptions creationOptions)
         {
-            this.taskCompletionSource = new TaskCompletionSource<Unit?>(creationOptions);
+            this.taskCompletionSource = new(creationOptions);
         }
 
         public TaskCompletionSource(object state, TaskCreationOptions creationOptions)
         {
-            this.taskCompletionSource = new TaskCompletionSource<Unit?>(state, creationOptions);
+            this.taskCompletionSource = new(state, creationOptions);
         }
 
         public Task Task => this.taskCompletionSource.Task;

@@ -9,7 +9,7 @@
 
         public const int EndEventId = 2;
 
-        public static Event Source { get; } = new Event();
+        public static Event Source { get; } = new();
 
         [Event(BeginEventId)]
         public void Begin(string arg) => this.WriteEvent(BeginEventId, arg);

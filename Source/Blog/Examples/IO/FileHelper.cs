@@ -67,7 +67,7 @@ namespace Examples.IO
             string backUp = $"{file}.bak";
             if (File.Exists(backUp))
             {
-                FileInfo backupFile = new FileInfo(backUp);
+                FileInfo backupFile = new(backUp);
                 if (backupFile.IsReadOnly)
                 {
                     backupFile.IsReadOnly = false;

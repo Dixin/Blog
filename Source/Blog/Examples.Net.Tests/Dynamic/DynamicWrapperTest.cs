@@ -15,7 +15,7 @@
         [TestMethod]
         public void GetInvokeMemberConvertFromTypeTest()
         {
-            using AdventureWorks adventureWorks = new AdventureWorks();
+            using AdventureWorks adventureWorks = new();
             {
                 IQueryable<Product> query =
                     adventureWorks.Products.Where(product => product.ProductID > 0).OrderBy(p => p.Name).Take(2);

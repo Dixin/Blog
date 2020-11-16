@@ -7,22 +7,22 @@
     {
         internal static void Draw()
         {
-            Thread thread0 = new Thread(() =>
+            Thread thread0 = new(() =>
             {
                 ThreadHelper.AssignCurrentThreadToCpu(0);
                 Draw((index, count) => Math.Sin(2 * Math.PI * ((double)index / count)) / 2 + 0.5);
             });
-            Thread thread1 = new Thread(() =>
+            Thread thread1 = new(() =>
             {
                 ThreadHelper.AssignCurrentThreadToCpu(1);
                 Draw((index, count) => 0.5);
             });
-            Thread thread2 = new Thread(() =>
+            Thread thread2 = new(() =>
             {
                 ThreadHelper.AssignCurrentThreadToCpu(2);
                 Draw((index, count) => (double)index / (count - 1));
             });
-            Thread thread3 = new Thread(() =>
+            Thread thread3 = new(() =>
             {
                 ThreadHelper.AssignCurrentThreadToCpu(3);
                 Draw((index, count) => index < count / 2 ? 0 : 1);

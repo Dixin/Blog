@@ -68,7 +68,7 @@
         {
             return reader.TokenType == JsonTokenType.StartArray
                 ? JsonSerializer.Deserialize<string[]>(ref reader, options) ?? Array.Empty<string>()
-                : new string[] { reader.GetString() ?? string.Empty };
+                : new[] { reader.GetString() ?? string.Empty };
         }
 
         public override void Write(Utf8JsonWriter writer, string[] value, JsonSerializerOptions options)

@@ -558,7 +558,7 @@ namespace Examples.IO
                 .Select(movie =>
                 {
                     string name = Path.GetFileName(movie);
-                    VideoDirectoryInfo videoDirectoryInfo = new VideoDirectoryInfo(name);
+                    VideoDirectoryInfo videoDirectoryInfo = new(name);
                     string defaultNumber1 = Regex.Match(videoDirectoryInfo.DefaultTitle1, " ([0-9]{1,2})$").Value.TrimStart(' ');
                     string defaultNumber2 = Regex.Match(videoDirectoryInfo.DefaultTitle2, " ([0-9]{1,2})$").Value.TrimStart(' ');
                     string originalNumber1 = Regex.Match(videoDirectoryInfo.OriginalTitle1, " ([0-9]{1,2})$").Value.TrimStart(' ');

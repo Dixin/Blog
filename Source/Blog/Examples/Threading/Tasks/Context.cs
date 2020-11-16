@@ -44,7 +44,7 @@
         {
             function.NotNull(nameof(function));
 
-            TaskCompletionSource<TResult> taskCompletionSource = new TaskCompletionSource<TResult>();
+            TaskCompletionSource<TResult> taskCompletionSource = new();
             try
             {
                 if (synchronizationContext == null)
@@ -100,8 +100,7 @@
             // See: System.Runtime.CompilerServices.AsyncMethodBuilderCore.MoveNextRunner.Run()
             SynchronizationContext? synchronizationContext = SynchronizationContext.Current;
             return task
-                .ContinueWith(
-                    t =>
+                .ContinueWith(t =>
                     new Func<TNewResult>(() => continuation(t)).InvokeWith(synchronizationContext, executionContext))
                 .Unwrap();
         }
@@ -118,8 +117,7 @@
             // See: System.Runtime.CompilerServices.AsyncMethodBuilderCore.MoveNextRunner.Run()
             SynchronizationContext? synchronizationContext = SynchronizationContext.Current;
             return task
-                .ContinueWith(
-                    t =>
+                .ContinueWith(t =>
                     new Func<TNewResult>(() => continuation(t)).InvokeWith(synchronizationContext, executionContext))
                 .Unwrap();
         }
