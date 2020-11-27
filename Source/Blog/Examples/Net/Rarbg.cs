@@ -32,14 +32,14 @@
 
         internal static async Task DownloadSummaryAsync(IEnumerable<string> urls, string jsonPath, int degreeOfParallelism = 4)
         {
-            ConcurrentDictionary<string, VideoSummary[]> allVideoSummaries = File.Exists(jsonPath)
-                ? new(JsonSerializer.Deserialize<Dictionary<string, VideoSummary[]>>(await File.ReadAllTextAsync(jsonPath)) ?? throw new InvalidOperationException(jsonPath))
+            ConcurrentDictionary<string, RarbgSummary[]> allSummaries = File.Exists(jsonPath)
+                ? new(JsonSerializer.Deserialize<Dictionary<string, RarbgSummary[]>>(await File.ReadAllTextAsync(jsonPath)) ?? throw new InvalidOperationException(jsonPath))
                 : new();
-            await urls.ParallelForEachAsync(async (url, index) => await DownloadSummaryAsync(url, jsonPath, allVideoSummaries, index + 1), degreeOfParallelism);
-            SaveJson(jsonPath, allVideoSummaries);
+            await urls.ParallelForEachAsync(async (url, index) => await DownloadSummaryAsync(url, jsonPath, allSummaries, index + 1), degreeOfParallelism);
+            SaveJson(jsonPath, allSummaries);
         }
 
-        private static async Task DownloadSummaryAsync(string url, string jsonPath, ConcurrentDictionary<string, VideoSummary[]> allVideoSummaries, int partitionIndex)
+        private static async Task DownloadSummaryAsync(string url, string jsonPath, ConcurrentDictionary<string, RarbgSummary[]> allSummaries, int partitionIndex)
         {
             try
             {
@@ -86,13 +86,21 @@
 
                             int seed = int.TryParse(cells[4].Text.Trim(), out int seedValue) ? seedValue : -1;
                             int leech = int.TryParse(cells[5].Text.Trim(), out int leechValue) ? leechValue : -1;
-                            return new VideoSummary(title, imdbId, link, genres, imdbRating, cells[2].Text.Trim(), cells[3].Text.Trim(), seed, leech, cells[7].Text.Trim());
+                            return new RarbgSummary(title, imdbId, link, genres, imdbRating, cells[2].Text.Trim(), cells[3].Text.Trim(), seed, leech, cells[7].Text.Trim());
                         })
-                        .ForEach(videoSummary => Add(allVideoSummaries, videoSummary));
+                        .ForEach(summary =>
+                        {
+                            lock (AddItemLock)
+                            {
+                                allSummaries[summary.ImdbId] = allSummaries.ContainsKey(summary.ImdbId)
+                                    ? allSummaries[summary.ImdbId].Where(existing => !string.Equals(existing.Title, summary.Title, StringComparison.OrdinalIgnoreCase)).Append(summary).ToArray()
+                                    : new[] { summary };
+                            }
+                        });
 
                     if (pageIndex % SaveFrequency == 0)
                     {
-                        SaveJson(jsonPath, allVideoSummaries);
+                        SaveJson(jsonPath, allSummaries);
                     }
 
                     Trace.WriteLine($"{partitionIndex}:{pageIndex} End {webDriver.Url}");
@@ -108,15 +116,15 @@
             }
             finally
             {
-                SaveJson(jsonPath, allVideoSummaries);
+                SaveJson(jsonPath, allSummaries);
             }
         }
 
         private static readonly object SaveJsonLock = new();
 
-        private static void SaveJson(string jsonPath, IDictionary<string, VideoSummary[]> allVideoSummaries)
+        private static void SaveJson(string jsonPath, IDictionary<string, RarbgSummary[]> allSummaries)
         {
-            string jsonString = JsonSerializer.Serialize(allVideoSummaries, new() { WriteIndented = true });
+            string jsonString = JsonSerializer.Serialize(allSummaries, new() { WriteIndented = true });
             lock (SaveJsonLock)
             {
                 File.WriteAllText(jsonPath, jsonString);
@@ -124,16 +132,6 @@
         }
 
         private static readonly object AddItemLock = new();
-
-        private static void Add(IDictionary<string, VideoSummary[]> allVideoSummaries, VideoSummary videoSummary)
-        {
-            lock (AddItemLock)
-            {
-                allVideoSummaries[videoSummary.ImdbId] = allVideoSummaries.ContainsKey(videoSummary.ImdbId)
-                    ? allVideoSummaries[videoSummary.ImdbId].Where(existing => !string.Equals(existing.Title, videoSummary.Title, StringComparison.OrdinalIgnoreCase)).Append(videoSummary).ToArray()
-                    : new [] { videoSummary };
-            }
-        }
 
         private static bool HasNextPage(this IWebDriver webDriver, ref IWebElement pager)
         {
@@ -149,5 +147,5 @@
         }
     }
 
-    internal record VideoSummary(string Title, string ImdbId, string Link, string[] Genre, string ImdbRating, string DateAdded, string Size, int Seed, int Leech, string Uploader);
+    internal record RarbgSummary(string Title, string ImdbId, string Link, string[] Genre, string ImdbRating, string DateAdded, string Size, int Seed, int Leech, string Uploader);
 }

@@ -1,6 +1,7 @@
 ﻿namespace Examples.Net
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
@@ -8,197 +9,156 @@
     using System.Net;
     using System.Text.Json;
     using System.Text.RegularExpressions;
+    using System.Threading;
     using System.Threading.Tasks;
 
     using CsQuery;
     using Examples.Linq;
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
+    public record YtsSummary(string Title, string Link, int Year, string Image, string Rating, string[] Tags);
+
+    public record YtsDetail(string Title, string Link, int Year, string Image, string Rating, string[] Tags, string ImdbId, string Language, Dictionary<string, string> Availabilities)
+        : YtsSummary(Title, Link, Year, Image, Rating, Tags);
+
+
     internal static class Yts
     {
         private const string BaseUrl = "https://yts.mx";
 
-        private const string RootDirectory = "";
-
-        private static readonly string DocumentsDirectory = Path.Combine(RootDirectory, "Documents");
-
-        private static readonly string ListDirectory = Path.Combine(DocumentsDirectory, "List");
-
-        private static readonly string ListFile = Path.Combine(DocumentsDirectory, "List.json");
-
-        private static readonly string ItemsDirectory = Path.Combine(DocumentsDirectory, "Items");
-
-        private const string HtmlExtension = ".htm";
-
         private const int RetryCount = 10;
+
+        private const int SaveFrequency = 500;
 
         private static readonly Action<string> Log = text => Trace.WriteLine(text);
 
-        internal static async Task DownloadMovieListAsync(int index = 1)
+        internal static async Task DownloadSummariesAsync(string jsonPath, int index = 1)
         {
+            Dictionary<string, YtsSummary> allSummaries = File.Exists(jsonPath)
+                ? JsonSerializer.Deserialize<Dictionary<string, YtsSummary>>(await File.ReadAllTextAsync(jsonPath)) ?? throw new InvalidOperationException(jsonPath)
+                : new();
+            using WebClient webClient = new();
             for (; ; index++)
             {
-                using WebClient webClient = new();
                 string url = $"{BaseUrl}/browse-movies?page={index}";
-                string html = await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(url),
-                    RetryCount);
+                string html = await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(url), RetryCount);
                 Log($"Downloaded {url}");
-                CQ cqHtml = new(html);
-                if (cqHtml[".browse-movie-wrap"].IsEmpty())
+                CQ cq = new(html);
+                if (cq[".browse-movie-wrap"].IsEmpty())
                 {
                     break;
                 }
 
-                string file = Path.Combine(ListDirectory, $"browse-movies-{index}{HtmlExtension}");
-                await File.WriteAllTextAsync(file, html);
-                Log($"Saved {file}");
-            }
-        }
-
-        internal static async Task ConvertListAsync()
-        {
-            YtsMovieSummary[] movies = Directory
-                .GetFiles(ListDirectory, $"*{HtmlExtension}")
-                .Select(CQ.CreateDocumentFromFile)
-                .SelectMany(cq => cq.Find(".browse-movie-wrap").Select(dom =>
+                YtsSummary[] summaries = cq
+                    .Find(".browse-movie-wrap")
+                    .Select(dom =>
                     {
                         CQ cqMovie = new(dom);
-                        return new YtsMovieSummary(
+                        return new YtsSummary(
                             cqMovie.Find(".browse-movie-title").Text(),
                             cqMovie.Find(".browse-movie-title").Attr("href"),
                             int.TryParse(cqMovie.Find(".browse-movie-year").Text(), out int year) ? year : -1,
                             cqMovie.Find(".img-responsive").Data<string>("cfsrc"),
                             cqMovie.Find(".rating").Text().Replace(" / 10", string.Empty),
                             cqMovie.Find(@"h4[class!=""rating""]").Select(domTag => domTag.TextContent).ToArray());
-                    }))
-                .OrderBy(movie => movie.Title)
-                .ThenBy(movie => movie.Year)
-                .ToArray();
-
-            string json = JsonSerializer.Serialize(movies, new() { WriteIndented = true });
-            await File.WriteAllTextAsync(ListFile, json);
-        }
-
-        internal static async Task DownloadItemsAsync()
-        {
-            string json = await File.ReadAllTextAsync(ListFile);
-            YtsMovieSummary[] movies = JsonSerializer.Deserialize<YtsMovieSummary[]>(json)!;
-            await movies.ParallelForEachAsync(async movie =>
+                    })
+                    .ToArray();
+                if (summaries.All(summary => allSummaries.ContainsKey(summary.Link)))
                 {
-                    string file = Path.Combine(ItemsDirectory, $"{Path.GetFileName(new Uri(movie.Link).LocalPath)}{HtmlExtension}");
-                    if (!File.Exists(file))
-                    {
-                        using WebClient webClient = new();
-                        string html = await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(movie.Link), RetryCount);
-                        Log($"Downloaded {movie.Link}");
-                        await File.WriteAllTextAsync(file, html);
-                        Log($"Saved {file}");
-                    }
-                });
-        }
+                    break;
+                }
 
-        internal static async Task MoveItems(string directory)
-        {
-            string json = await File.ReadAllTextAsync(ListFile);
-            YtsMovieSummary[] movies = JsonSerializer.Deserialize<YtsMovieSummary[]>(json)!;
-            movies.ForEach(movie =>
+                summaries.ForEach(summary => allSummaries[summary.Link] = summary);
+
+                if (index % SaveFrequency == 0)
                 {
-                    string file = Path.Combine(ItemsDirectory, $"{Path.GetFileName(new Uri(movie.Link).LocalPath)}{HtmlExtension}");
-                    if (File.Exists(file))
-                    {
-                        string file3 = Path.Combine(directory, $"{Path.GetFileName(new Uri(movie.Link).LocalPath)}.html");
-                        if (File.Exists(file3))
-                        {
-                            File.Delete(file3);
-                            return;
-                        }
-                        return;
-                    }
-                    string file2 = Path.Combine(ItemsDirectory, $"{Path.GetFileName(new Uri(movie.Link).LocalPath)}{HtmlExtension}l");
-                    if (File.Exists(file2))
-                    {
-                        string file3 = Path.Combine(directory, $"{Path.GetFileName(new Uri(movie.Link).LocalPath)}.html");
-                        if (File.Exists(file3))
-                        {
-                            File.Delete(file3);
-                            return;
-                        }
-                        return;
-                    }
+                    string jsonString = JsonSerializer.Serialize(allSummaries, new() { WriteIndented = true });
+                    await File.WriteAllTextAsync(jsonPath, jsonString);
+                }
+            }
 
-                    Trace.WriteLine(movie.Link);
-                });
+            string finalJsonString = JsonSerializer.Serialize(allSummaries, new() { WriteIndented = true });
+            await File.WriteAllTextAsync(jsonPath, finalJsonString);
         }
 
-        internal static async Task SaveLinkList()
+        internal static async Task DownloadDetailsAsync(string summaryJsonPath, string detailJsonPath, int degreeOfParallelism = 4)
         {
-            string json = await File.ReadAllTextAsync(ListFile);
-            YtsMovieSummary[] movies = JsonSerializer.Deserialize<YtsMovieSummary[]>(json)!;
-            IEnumerable<string> links = movies
-                .Where(movie => !File.Exists(Path.Combine(ItemsDirectory, $"{Path.GetFileName(new Uri(movie.Link).LocalPath)}{HtmlExtension}l")))
-                .Where(movie => !File.Exists(Path.Combine(ItemsDirectory, $"{Path.GetFileName(new Uri(movie.Link).LocalPath)}{HtmlExtension}")))
-                .Select(movie => movie.Link)
-                .ToArray();
-            string text = string.Join(Environment.NewLine, links);
-            await File.WriteAllTextAsync(Path.Combine(DocumentsDirectory, "Links.txt"), text);
-        }
+            string summaryJsonString = await File.ReadAllTextAsync(summaryJsonPath);
+            Dictionary<string, YtsSummary> summaries = JsonSerializer.Deserialize<Dictionary<string, YtsSummary>>(summaryJsonString) ?? throw new InvalidOperationException(summaryJsonPath);
 
-        private static readonly string ImdbDirectory = Path.Combine(DocumentsDirectory, "Imdb");
+            string detailJsonString = await File.ReadAllTextAsync(detailJsonPath);
+            ConcurrentDictionary<string, YtsDetail[]> details = new(JsonSerializer.Deserialize<Dictionary<string, YtsDetail[]>>(detailJsonString) ?? throw new InvalidOperationException(detailJsonPath));
+            Dictionary<string, YtsDetail> detailsByLink = details.Values.SelectMany(details => details).ToDictionary(detail => detail.Link, detail => detail);
 
-        private const string DefaultContentRating = "-";
+            int count = 1;
 
-        private const string JsonExtension = ".json";
-
-        internal static async Task DownloadImdbAsync()
-        {
-            string[] imdbFiles = Directory.GetFiles(ImdbDirectory, $"*{JsonExtension}").Select(file => Path.GetFileNameWithoutExtension(file)!).OrderBy(file => file).ToArray();
-            await Directory
-                .GetFiles(ItemsDirectory)
-                .ForEachAsync(async file =>
+            await summaries.Values.ParallelForEachAsync(async summary =>
+            {
+                if (detailsByLink.ContainsKey(summary.Link))
                 {
-                    CQ cqPage = CQ.CreateDocumentFromFile(file);
-                    string url = cqPage.Find(@"a.icon[title=""IMDb Rating""]").Attr<string>("href");
-                    string imdbId = Path.GetFileName(new Uri(url).LocalPath.TrimEnd('/'));
-                    if (imdbFiles.Any(existingFile => existingFile.Split(".").First().Equals(Path.GetFileNameWithoutExtension(file))))
-                    {
-                        return;
-                    }
+                    return;
+                }
 
-                    using WebClient webClient = new();
-                    string imdbHtml = await webClient.DownloadStringTaskAsync(url);
-                    CQ cqImdb = new(imdbHtml);
-                    string imdbJson = cqImdb.Find(@"script[type=""application/ld+json""]").Text();
-                    JsonDocument document = JsonDocument.Parse(imdbJson);
-                    string contentRating = document.RootElement.TryGetProperty("contentRating", out JsonElement ratingElement)
-                        ? ratingElement.GetString()!
-                        : DefaultContentRating;
-                    if (string.IsNullOrWhiteSpace(contentRating))
-                    {
-                        contentRating = DefaultContentRating;
-                    }
-                    string imdbFile = Path.Combine(ImdbDirectory, $"{Path.GetFileNameWithoutExtension(file)}.{imdbId}.{contentRating}{HtmlExtension}");
-                    await File.WriteAllTextAsync(imdbFile, imdbHtml);
-                    string jsonFile = Path.Combine(ImdbDirectory, $"{Path.GetFileNameWithoutExtension(file)}.{imdbId}.{contentRating}{JsonExtension}");
-                    await File.WriteAllTextAsync(jsonFile, imdbJson);
-                });
+                using WebClient webClient = new();
+                string html = await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(summary.Link), RetryCount);
+                Log($"Downloaded {summary.Link}");
+                CQ cq = new(html);
+                CQ info = cq.Find("#movie-info");
+                YtsDetail detail = new(
+                    summary.Title,
+                    summary.Link,
+                    summary.Year,
+                    summary.Image,
+                    summary.Rating,
+                    summary.Tags,
+                    info.Find("a.icon[title='IMDb Rating']").Attr("href"),
+                    info.Find("h2 a span").Text().Trim().TrimStart('[').TrimEnd(']'),
+                    info.Find("p.hidden-sm a[rel='nofollow']").ToDictionary(link => link.TextContent.Trim(), link => link.GetAttribute("href")));
+                lock (AddItemLock)
+                {
+                    details[detail.ImdbId] = details.ContainsKey(detail.ImdbId)
+                        ? details[detail.ImdbId].Where(item => !string.Equals(item.Link, detail.Link, StringComparison.OrdinalIgnoreCase)).Append(detail).ToArray()
+                        : new[] { detail };
+                }
+
+                if (Interlocked.Increment(ref count) % SaveFrequency == 0)
+                {
+                    SaveDetail(detailJsonPath, details);
+                }
+            }, degreeOfParallelism);
+
+            SaveDetail(detailJsonPath, details);
         }
 
-        internal static async Task SaveImdbSpecialTitles()
+        private static readonly object SaveJsonLock = new();
+
+        private static readonly object AddItemLock = new();
+
+        private static void SaveDetail(string detailJsonPath, IDictionary<string, YtsDetail[]> allDetails)
         {
-            string[] specialTitles = File.ReadLines(Path.Combine(ImdbDirectory, "title.basics.tsv"))
+            string jsonString = JsonSerializer.Serialize(allDetails, new() { WriteIndented = true });
+            lock (SaveJsonLock)
+            {
+                File.WriteAllText(detailJsonPath, jsonString);
+            }
+        }
+
+        internal static async Task SaveImdbSpecialTitles(string imdbBasicsPath, string jsonPath)
+        {
+            string[] specialTitles = File.ReadLines(imdbBasicsPath)
                 .Skip(1)
                 .Select(line => line.Split('\t'))
                 .Where(line => !"0".Equals(line.ElementAtOrDefault(4), StringComparison.Ordinal))
                 .Select(line => line[0])
                 .ToArray();
-            string json = JsonSerializer.Serialize(specialTitles, new() { WriteIndented = true });
-            await File.WriteAllTextAsync(Path.Combine(DocumentsDirectory, $"ImdbSpecialTitles{JsonExtension}"), json);
+            string jsonString = JsonSerializer.Serialize(specialTitles, new() { WriteIndented = true });
+            await File.WriteAllTextAsync(jsonPath, jsonString);
         }
 
-        internal static async Task SaveYtsSpecialTitles()
+        internal static async Task SaveYtsSpecialTitles(string directory, string jsonPath)
         {
-            string[] ytsTitles = Directory
-                .GetFiles(ItemsDirectory)
+            string[] titles = Directory
+                .GetFiles(directory)
                 .Select(file =>
                     {
                         string url = CQ.CreateDocumentFromFile(file)?.Find(@"a.icon[title=""IMDb Rating""]")?.Attr<string>("href")?.Replace("../../external.html?link=", string.Empty) ?? string.Empty;
@@ -228,19 +188,8 @@
                     })
                 .Where(imdbId => !string.IsNullOrWhiteSpace(imdbId))
                 .ToArray();
-            string json = JsonSerializer.Serialize(ytsTitles, new() { WriteIndented = true });
-            await File.WriteAllTextAsync(Path.Combine(DocumentsDirectory, $"YtsTitles{JsonExtension}"), json);
-        }
-
-        internal static async Task PrintSpecialTitles()
-        {
-            string jsonYts = await File.ReadAllTextAsync(Path.Combine(DocumentsDirectory, $"YtsTitles{JsonExtension}"));
-            string[] yts = JsonSerializer.Deserialize<string[]>(jsonYts)!;
-            string jsonImdb = await File.ReadAllTextAsync(Path.Combine(DocumentsDirectory, $"ImdbSpecialTitles{JsonExtension}"));
-            string[] imdb = JsonSerializer.Deserialize<string[]>(jsonImdb)!.OrderBy(imdbid => imdbid).ToArray();
-            yts
-                .Where(imdbid => Array.BinarySearch(imdb, imdbid) >= 0)
-                .ForEach(imdbid => Trace.WriteLine(imdbid));
+            string jsonString = JsonSerializer.Serialize(titles, new() { WriteIndented = true });
+            await File.WriteAllTextAsync(jsonPath, jsonString);
         }
     }
 }
