@@ -13,6 +13,7 @@
         <PackageReference Include="FSharp.Core" Version="5.0.0" />
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
         <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
+        <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
         <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
         <PackageReference Include="System.Interactive" Version="5.0.0" />
         <PackageReference Include="System.Management" Version="5.0.0" />

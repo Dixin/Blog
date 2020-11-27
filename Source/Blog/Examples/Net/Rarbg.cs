@@ -1,0 +1,153 @@
+﻿namespace Examples.Net
+{
+    using System;
+    using System.Collections.Concurrent;
+    using System.Collections.Generic;
+    using System.Collections.ObjectModel;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Linq;
+    using System.Text.Json;
+    using System.Threading.Tasks;
+    using Examples.Linq;
+    using OpenQA.Selenium;
+    using OpenQA.Selenium.Chrome;
+    using OpenQA.Selenium.Support.UI;
+
+    internal static class Rarbg
+    {
+        private const int SaveFrequency = 50;
+
+        private static readonly TimeSpan DefaultWait = TimeSpan.FromSeconds(100);
+
+        private static readonly TimeSpan DomWait = TimeSpan.FromMilliseconds(100);
+
+        public static IWebDriver Start(string profile = @"D:\Temp\Chrome Profile")
+        {
+            ChromeOptions options = new();
+            options.AddArguments($"user-data-dir={profile}");
+            ChromeDriver webDriver = new(options);
+            return webDriver;
+        }
+
+        internal static async Task DownloadSummaryAsync(IEnumerable<string> urls, string jsonPath, int degreeOfParallelism = 4)
+        {
+            ConcurrentDictionary<string, VideoSummary[]> allVideoSummaries = File.Exists(jsonPath)
+                ? new(JsonSerializer.Deserialize<Dictionary<string, VideoSummary[]>>(await File.ReadAllTextAsync(jsonPath)) ?? throw new InvalidOperationException(jsonPath))
+                : new();
+            await urls.ParallelForEachAsync(async (url, index) => await DownloadSummaryAsync(url, jsonPath, allVideoSummaries, index + 1), degreeOfParallelism);
+            SaveJson(jsonPath, allVideoSummaries);
+        }
+
+        private static async Task DownloadSummaryAsync(string url, string jsonPath, ConcurrentDictionary<string, VideoSummary[]> allVideoSummaries, int partitionIndex)
+        {
+            try
+            {
+                using IWebDriver webDriver = Start(@$"D:\Temp\Chrome Profile {partitionIndex}");
+                webDriver.Url = url;
+                new WebDriverWait(webDriver, DefaultWait).Until(e => e.FindElement(By.Id("pager_links")));
+                webDriver.Url = url;
+                IWebElement pager = new WebDriverWait(webDriver, TimeSpan.FromSeconds(100)).Until(e => e.FindElement(By.Id("pager_links")));
+                int pageIndex = 1;
+                do
+                {
+                    await Task.Delay(DomWait);
+                    Trace.WriteLine($"{partitionIndex}:{pageIndex} Start {webDriver.Url}");
+
+                    webDriver
+                        .FindElement(By.CssSelector("table.lista2t"))
+                        .FindElements(By.CssSelector("tr.lista2"))
+                        .Select(row =>
+                        {
+                            ReadOnlyCollection<IWebElement> cells = row.FindElements(By.TagName("td"));
+                            string[] texts = cells[1].Text.Trim().Split(Environment.NewLine);
+                            string title = texts[0].Trim();
+                            ReadOnlyCollection<IWebElement> links = cells[1].FindElements(By.TagName("a"));
+                            string link = links[0].GetAttribute("href");
+                            string imdbId = links.Count > 1
+                                ? links[1].GetAttribute("href").Replace("https://rarbg.to/torrents.php?imdb=", string.Empty).Trim()
+                                : string.Empty;
+
+                            string[] genres = new string[0];
+                            string imdbRating = string.Empty;
+                            if (texts.Length > 1)
+                            {
+                                string[] descriptions = texts[1].Trim().Split(" IMDB: ");
+                                if (descriptions.Length > 0)
+                                {
+                                    genres = descriptions[0].Split(", ").Select(genre => genre.Trim()).ToArray();
+                                }
+
+                                if (descriptions.Length > 1)
+                                {
+                                    imdbRating = descriptions[1].Replace("/10", string.Empty).Trim();
+                                }
+                            }
+
+                            int seed = int.TryParse(cells[4].Text.Trim(), out int seedValue) ? seedValue : -1;
+                            int leech = int.TryParse(cells[5].Text.Trim(), out int leechValue) ? leechValue : -1;
+                            return new VideoSummary(title, imdbId, link, genres, imdbRating, cells[2].Text.Trim(), cells[3].Text.Trim(), seed, leech, cells[7].Text.Trim());
+                        })
+                        .ForEach(videoSummary => Add(allVideoSummaries, videoSummary));
+
+                    if (pageIndex % SaveFrequency == 0)
+                    {
+                        SaveJson(jsonPath, allVideoSummaries);
+                    }
+
+                    Trace.WriteLine($"{partitionIndex}:{pageIndex} End {webDriver.Url}");
+                    pageIndex++;
+                } while (webDriver.HasNextPage(ref pager));
+
+                webDriver.Close();
+                webDriver.Quit();
+            }
+            catch (Exception exception)
+            {
+                Trace.WriteLine(exception);
+            }
+            finally
+            {
+                SaveJson(jsonPath, allVideoSummaries);
+            }
+        }
+
+        private static readonly object SaveJsonLock = new();
+
+        private static void SaveJson(string jsonPath, IDictionary<string, VideoSummary[]> allVideoSummaries)
+        {
+            string jsonString = JsonSerializer.Serialize(allVideoSummaries, new() { WriteIndented = true });
+            lock (SaveJsonLock)
+            {
+                File.WriteAllText(jsonPath, jsonString);
+            }
+        }
+
+        private static readonly object AddItemLock = new();
+
+        private static void Add(IDictionary<string, VideoSummary[]> allVideoSummaries, VideoSummary videoSummary)
+        {
+            lock (AddItemLock)
+            {
+                allVideoSummaries[videoSummary.ImdbId] = allVideoSummaries.ContainsKey(videoSummary.ImdbId)
+                    ? allVideoSummaries[videoSummary.ImdbId].Where(existing => !string.Equals(existing.Title, videoSummary.Title, StringComparison.OrdinalIgnoreCase)).Append(videoSummary).ToArray()
+                    : new [] { videoSummary };
+            }
+        }
+
+        private static bool HasNextPage(this IWebDriver webDriver, ref IWebElement pager)
+        {
+            ReadOnlyCollection<IWebElement> nextPage = pager.FindElements(By.CssSelector("a[title='next page']"));
+            if (nextPage.Count > 0)
+            {
+                webDriver.Url = nextPage[0].GetAttribute("href");
+                pager = new WebDriverWait(webDriver, DefaultWait).Until(e => e.FindElement(By.Id("pager_links")));
+                return true;
+            }
+
+            return false;
+        }
+    }
+
+    internal record VideoSummary(string Title, string ImdbId, string Link, string[] Genre, string ImdbRating, string DateAdded, string Size, int Seed, int Leech, string Uploader);
+}
