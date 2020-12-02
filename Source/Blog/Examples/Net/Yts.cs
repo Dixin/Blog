@@ -16,10 +16,10 @@
     using Examples.Linq;
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
-    public record YtsSummary(string Title, string Link, int Year, string Image, string Rating, string[] Tags);
+    public record YtsSummary(string Link, string Title, string ImdbRating, string[] Genres, int Year, string Image);
 
-    public record YtsDetail(string Title, string Link, int Year, string Image, string Rating, string[] Tags, string ImdbId, string Language, Dictionary<string, string> Availabilities)
-        : YtsSummary(Title, Link, Year, Image, Rating, Tags);
+    public record YtsDetail(string Link, string Title, string ImdbId, string ImdbRating, string[] Genres, int Year, string Image, string Language, Dictionary<string, string> Availabilities)
+        : YtsSummary(Link, Title, ImdbRating, Genres, Year, Image), ISummary;
 
 
     internal static class Yts
@@ -28,7 +28,7 @@
 
         private const int RetryCount = 10;
 
-        private const int SaveFrequency = 500;
+        private const int SaveFrequency = 100;
 
         private static readonly Action<string> Log = text => Trace.WriteLine(text);
 
@@ -41,11 +41,12 @@
             for (; ; index++)
             {
                 string url = $"{BaseUrl}/browse-movies?page={index}";
+                Log($"Start {url}");
                 string html = await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(url), RetryCount);
-                Log($"Downloaded {url}");
                 CQ cq = new(html);
                 if (cq[".browse-movie-wrap"].IsEmpty())
                 {
+                    Log($"! {url} is empty");
                     break;
                 }
 
@@ -55,18 +56,14 @@
                     {
                         CQ cqMovie = new(dom);
                         return new YtsSummary(
-                            cqMovie.Find(".browse-movie-title").Text(),
-                            cqMovie.Find(".browse-movie-title").Attr("href"),
-                            int.TryParse(cqMovie.Find(".browse-movie-year").Text(), out int year) ? year : -1,
-                            cqMovie.Find(".img-responsive").Data<string>("cfsrc"),
-                            cqMovie.Find(".rating").Text().Replace(" / 10", string.Empty),
-                            cqMovie.Find(@"h4[class!=""rating""]").Select(domTag => domTag.TextContent).ToArray());
+                            Link: cqMovie.Find(".browse-movie-title").Attr("href"),
+                            Title: cqMovie.Find(".browse-movie-title").Text(),
+                            ImdbRating: cqMovie.Find(".rating").Text().Replace(" / 10", string.Empty),
+                            Genres: cqMovie.Find(@"h4[class!=""rating""]").Select(genre => genre.TextContent).ToArray(),
+                            Year: int.TryParse(cqMovie.Find(".browse-movie-year").Text(), out int year) ? year : -1,
+                            Image: cqMovie.Find(".img-responsive").Data<string>("cfsrc"));
                     })
                     .ToArray();
-                if (summaries.All(summary => allSummaries.ContainsKey(summary.Link)))
-                {
-                    break;
-                }
 
                 summaries.ForEach(summary => allSummaries[summary.Link] = summary);
 
@@ -75,6 +72,8 @@
                     string jsonString = JsonSerializer.Serialize(allSummaries, new() { WriteIndented = true });
                     await File.WriteAllTextAsync(jsonPath, jsonString);
                 }
+
+                Log($"End {url}");
             }
 
             string finalJsonString = JsonSerializer.Serialize(allSummaries, new() { WriteIndented = true });
@@ -86,45 +85,56 @@
             string summaryJsonString = await File.ReadAllTextAsync(summaryJsonPath);
             Dictionary<string, YtsSummary> summaries = JsonSerializer.Deserialize<Dictionary<string, YtsSummary>>(summaryJsonString) ?? throw new InvalidOperationException(summaryJsonPath);
 
-            string detailJsonString = await File.ReadAllTextAsync(detailJsonPath);
-            ConcurrentDictionary<string, YtsDetail[]> details = new(JsonSerializer.Deserialize<Dictionary<string, YtsDetail[]>>(detailJsonString) ?? throw new InvalidOperationException(detailJsonPath));
+            ConcurrentDictionary<string, YtsDetail[]> details = File.Exists(detailJsonPath)
+                ? new(JsonSerializer.Deserialize<Dictionary<string, YtsDetail[]>>(await File.ReadAllTextAsync(detailJsonPath)) ?? throw new InvalidOperationException(detailJsonPath))
+                : new();
             Dictionary<string, YtsDetail> detailsByLink = details.Values.SelectMany(details => details).ToDictionary(detail => detail.Link, detail => detail);
 
             int count = 1;
 
-            await summaries.Values.ParallelForEachAsync(async summary =>
+            await summaries.Values.ParallelForEachAsync(async (summary, index) =>
             {
                 if (detailsByLink.ContainsKey(summary.Link))
                 {
                     return;
                 }
 
+                Log($"Start {index}:{summary.Link}");
                 using WebClient webClient = new();
-                string html = await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(summary.Link), RetryCount);
-                Log($"Downloaded {summary.Link}");
-                CQ cq = new(html);
-                CQ info = cq.Find("#movie-info");
-                YtsDetail detail = new(
-                    summary.Title,
-                    summary.Link,
-                    summary.Year,
-                    summary.Image,
-                    summary.Rating,
-                    summary.Tags,
-                    info.Find("a.icon[title='IMDb Rating']").Attr("href"),
-                    info.Find("h2 a span").Text().Trim().TrimStart('[').TrimEnd(']'),
-                    info.Find("p.hidden-sm a[rel='nofollow']").ToDictionary(link => link.TextContent.Trim(), link => link.GetAttribute("href")));
-                lock (AddItemLock)
+                try
                 {
-                    details[detail.ImdbId] = details.ContainsKey(detail.ImdbId)
-                        ? details[detail.ImdbId].Where(item => !string.Equals(item.Link, detail.Link, StringComparison.OrdinalIgnoreCase)).Append(detail).ToArray()
-                        : new[] { detail };
+                    string html = await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(summary.Link), RetryCount);
+                    CQ cq = new(html);
+                    CQ info = cq.Find("#movie-info");
+                    YtsDetail detail = new(
+                        Link: summary.Link,
+                        Title: summary.Title,
+                        ImdbId: info.Find("a.icon[title='IMDb Rating']").Attr("href").Replace("https://www.imdb.com/title/", string.Empty).Trim('/'),
+                        ImdbRating: summary.ImdbRating,
+                        Genres: summary.Genres,
+                        Year: summary.Year,
+                        Image: summary.Image,
+                        Language: info.Find("h2 a span").Text().Trim().TrimStart('[').TrimEnd(']'),
+                        Availabilities: info.Find("p.hidden-sm a[rel='nofollow']").ToDictionary(link => link.TextContent.Trim(), link => link.GetAttribute("href")));
+                    lock (AddItemLock)
+                    {
+                        details[detail.ImdbId] = details.ContainsKey(detail.ImdbId)
+                            ? details[detail.ImdbId].Where(item => !string.Equals(item.Link, detail.Link, StringComparison.OrdinalIgnoreCase)).Append(detail).ToArray()
+                            : new[] { detail };
+                    }
                 }
+                catch (Exception exception)
+                {
+                    Log($"{summary.Link} {exception}");
+                }
+
 
                 if (Interlocked.Increment(ref count) % SaveFrequency == 0)
                 {
                     SaveDetail(detailJsonPath, details);
                 }
+
+                Log($"End {index}:{summary.Link}");
             }, degreeOfParallelism);
 
             SaveDetail(detailJsonPath, details);

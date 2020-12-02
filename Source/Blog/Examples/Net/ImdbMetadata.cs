@@ -5,29 +5,22 @@
     using System.Text.Json;
     using System.Text.Json.Serialization;
 
-    public class ImdbMetadata : IEquatable<ImdbMetadata>
+    public partial record ImdbMetadata(string Name, string[] Genre, string ContentRating, string DatePublished, ImdbAggregateRating? AggregateRating, string Url)
     {
-        public string Name { get; set; } = string.Empty;
-
         [JsonConverter(typeof(StringOrArrayConverter))]
-        public string[] Genre { get; set; } = Array.Empty<string>();
+        public string[] Genre { get; init; } = Genre;
+    }
 
-        public string ContentRating { get; set; } = string.Empty;
-
-        public string DatePublished { get; set; } = string.Empty;
-
-        public ImdbAggregateRating? AggregateRating { get; set; }
-
-        public string Url { get; set; } = string.Empty;
-
+    public partial record ImdbMetadata
+    {
         [JsonIgnore]
-        internal string Year { get; set; } = string.Empty;
+        internal string Year { get; init; } = string.Empty;
 
         [JsonIgnore]
         internal string YearOfCurrentRegion => this.DatePublished.Split('-')[0];
 
         [JsonIgnore]
-        internal string[] Regions { get; set; } = Array.Empty<string>();
+        internal string[] Regions { get; init; } = Array.Empty<string>();
 
         [JsonIgnore]
         internal string FormattedAggregateRating
@@ -39,28 +32,27 @@
             }
         }
 
-        internal string FormattedContentRating => string.IsNullOrWhiteSpace(this.ContentRating) 
-            ? "NA" 
+        [JsonIgnore]
+        internal string FormattedContentRating => string.IsNullOrWhiteSpace(this.ContentRating)
+            ? "NA"
             : this.ContentRating.Replace("-", string.Empty).Replace("Not Rated", "Unrated").Replace("/", string.Empty).Replace(":", string.Empty);
 
         [JsonIgnore]
         internal string Id => this.Url.Split("/", StringSplitOptions.RemoveEmptyEntries).Last();
-
-        public bool Equals(ImdbMetadata? other) => 
-            !ReferenceEquals(null, other) && (ReferenceEquals(this, other) || string.Equals(this.Id, other.Id, StringComparison.InvariantCulture));
-
-        public override bool Equals(object? obj) => 
-            !ReferenceEquals(null, obj) && (ReferenceEquals(this, obj) || obj.GetType() == this.GetType() && this.Equals((ImdbMetadata)obj));
-
-        public override int GetHashCode() => this.Id.GetHashCode();
     }
 
-    public class ImdbAggregateRating
-    {
-        public int RatingCount { get; set; }
+    // public partial record ImdbMetadata : IEquatable<ImdbMetadata>
+    // {
+    //    public bool Equals(ImdbMetadata? other) =>
+    //        other is not null && (ReferenceEquals(this, other) || string.Equals(this.Id, other.Id, StringComparison.OrdinalIgnoreCase));
 
-        public string RatingValue { get; set; } = string.Empty;
-    }
+    //    public override bool Equals(object? obj) =>
+    //        obj is not null && (ReferenceEquals(this, obj) || obj is ImdbMetadata other && this.Equals(other));
+
+    //    public override int GetHashCode() => this.Id.GetHashCode();
+    // }
+
+    public record ImdbAggregateRating(int RatingCount, string RatingValue);
 
     public class StringOrArrayConverter : JsonConverter<string[]>
     {

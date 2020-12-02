@@ -5,7 +5,9 @@
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using System.Text.Json;
     using System.Text.RegularExpressions;
+    using System.Threading.Tasks;
     using System.Xml.Linq;
     using Examples.Linq;
     using Examples.Net;
@@ -213,7 +215,9 @@
 
         private static readonly string[] AdaptiveAttachments = new[] { "banner.jpg", "box.jpg", "clearart.png", "clearlogo.png", "disc.png", "discart.png", "fanart.jpg", "landscape.jpg", "logo.png", "poster.jpg", "poster.png" };
 
-        private static readonly string ImdbExtension = ".json";
+        private const string ImdbExtension = ".json";
+
+        private const string ImdbSearchPattern = AllSearchPattern + ImdbExtension;
 
         private static readonly string[] SubtitleLanguages = { "can", "chs", "chs&dan", "chs&eng", "chs&fre", "chs&ger", "chs&spa", "cht", "cht&eng", "cht&ger", "dut", "eng", "eng&chs", "fin", "fre", "ger", "ger&chs", "ita", "jap", "kor", "pol", "por", "rus", "spa", "swe", "commentary", "commentary1", "commentary2" };
 
@@ -477,6 +481,201 @@
                         log(videoTitle);
                         log(Environment.NewLine);
                     }
+                });
+        }
+
+        internal static async Task PrintVersions(string directory, string x265JsonPath, string h264JsonPath, string ytsJsonPath, int level = 2, Action<string>? log = null)
+        {
+            log ??= TraceLog;
+            Dictionary<string, RarbgSummary[]> x265Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgSummary[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
+            Dictionary<string, RarbgSummary[]> h264Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgSummary[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
+            Dictionary<string, YtsDetail[]> ytsDetails = JsonSerializer.Deserialize<Dictionary<string, YtsDetail[]>>(await File.ReadAllTextAsync(ytsJsonPath))!;
+
+            EnumerateDirectories(directory, level).ForEach(movie =>
+            {
+                string[] files = Directory.GetFiles(movie);
+                string[] videos = files.Where(file => file.IsCommonVideo()).ToArray();
+                if (videos.Select(file => Path.GetFileNameWithoutExtension(file)).All(file => file.Contains("x265") && (file.Contains("RARBG") || file.Contains("VXT"))))
+                {
+                    return;
+                }
+
+                string json = files.Single(file => file.EndsWith(".json"));
+                string imdbId = Path.GetFileNameWithoutExtension(json).Split(".")[0];
+                if (imdbId == "-")
+                {
+                    log($"- {movie}");
+                    return;
+                }
+
+                if (x265Summaries.ContainsKey(imdbId) && x265Summaries[imdbId].Any(summary => summary.Title.Contains("RARBG") || summary.Title.Contains("VXT")))
+                {
+                    log(movie);
+                    videos.ForEach(file => log(Path.GetFileName(file)));
+                    x265Summaries[imdbId].Where(summary => summary.Title.Contains("RARBG") || summary.Title.Contains("VXT")).ForEach(summary =>
+                    {
+                        log($"x265 {summary.Link}");
+                        log(summary.Title);
+                        log(string.Empty);
+                    });
+                    return;
+                }
+
+                if (videos.Select(file => Path.GetFileNameWithoutExtension(file)).All(file => file.Contains("RARBG") || file.Contains("VXT")))
+                {
+                    return;
+                }
+
+                if (h264Summaries.ContainsKey(imdbId) && h264Summaries[imdbId].Any(summary => summary.Title.Contains("RARBG") || summary.Title.Contains("VXT")))
+                {
+                    log(movie);
+                    videos.ForEach(f => log(Path.GetFileName(f)));
+                    h264Summaries[imdbId].Where(summary => summary.Title.Contains("RARBG") || summary.Title.Contains("VXT")).ForEach(summary =>
+                    {
+                        log($"H264 {summary.Link}");
+                        log(summary.Title);
+                        log(string.Empty);
+                    });
+                    return;
+                }
+
+                if (files.Select(file => Path.GetFileNameWithoutExtension(file)).Any(file => file.Contains("YIFY") || file.Contains("YTS")))
+                {
+                    return;
+                }
+
+                if (ytsDetails.ContainsKey(imdbId))
+                {
+                    log(movie);
+                    videos.ForEach(file => log(Path.GetFileName(file)));
+                    ytsDetails[imdbId].ForEach(detail =>
+                    {
+                        log($"YTS {detail.Link}");
+                        log(detail.Title);
+                        log(string.Empty);
+                    });
+                    return;
+                }
+            });
+        }
+
+        internal static async Task PrintSpeciailTitles(string specialJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, Action<string>? log = null)
+        {
+            log ??= TraceLog;
+            string[] specialImdbIds = JsonSerializer.Deserialize<string[]>(await File.ReadAllTextAsync(specialJsonPath))!;
+            Dictionary<string, RarbgSummary[]> x265Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgSummary[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
+            Dictionary<string, RarbgSummary[]> h264Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgSummary[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
+            Dictionary<string, YtsDetail[]> ytsDetails = JsonSerializer.Deserialize<Dictionary<string, YtsDetail[]>>(await File.ReadAllTextAsync(ytsJsonPath))!;
+
+            specialImdbIds = specialImdbIds
+                .Where(imdbId => x265Summaries.ContainsKey(imdbId))
+                .Concat(specialImdbIds.Where(imdbId => h264Summaries.ContainsKey(imdbId)))
+                .Concat(specialImdbIds.Where(imdbId => ytsDetails.ContainsKey(imdbId)))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            specialImdbIds.ForEach(imdbId =>
+            {
+                log($"{imdbId} https://www.imdb.com/title/{imdbId}");
+                if (x265Summaries.ContainsKey(imdbId))
+                {
+                    x265Summaries[imdbId].ForEach(summary =>
+                    {
+                        log($"x265 {summary.Link}");
+                        log(summary.Title);
+                    });
+                }
+
+                if (h264Summaries.ContainsKey(imdbId))
+                {
+                    h264Summaries[imdbId].ForEach(summary =>
+                    {
+                        log($"H264 {summary.Link}");
+                        log(summary.Title);
+                    });
+                }
+
+                if (ytsDetails.ContainsKey(imdbId))
+                {
+                    ytsDetails[imdbId].ForEach(details =>
+                    {
+                        log($"YTS {details.Link}");
+                        log(details.Title);
+                    });
+                }
+
+                log(string.Empty);
+            });
+        }
+
+        internal static async Task PrintHighRating(string x265JsonPath, string h264JsonPath, string ytsJsonPath, string threshold = "8.0", Action<string>? log = null, params string[] directories)
+        {
+            log ??= TraceLog;
+            HashSet<string> existingImdbIds = new(
+                directories.SelectMany(directory => Directory
+                    .EnumerateFiles(directory, ImdbSearchPattern, SearchOption.AllDirectories)
+                    .Select(file => Path.GetFileNameWithoutExtension(file).Split(".").First())
+                    .Where(imdbId => imdbId != "-")),
+                StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, RarbgSummary[]> x265Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgSummary[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
+            Dictionary<string, RarbgSummary[]> h264Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgSummary[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
+            Dictionary<string, YtsDetail[]> ytsDetails = JsonSerializer.Deserialize<Dictionary<string, YtsDetail[]>>(await File.ReadAllTextAsync(ytsJsonPath))!;
+
+            Dictionary<string, Dictionary<string, ISummary[]>> highRatings = new();
+
+            x265Summaries
+                .Where(summaries =>
+                    !existingImdbIds.Contains(summaries.Key)
+                    && summaries.Value.Any(summary => string.Compare(summary.ImdbRating, threshold, StringComparison.Ordinal) >= 0))
+                .ForEach(summaries =>
+                {
+                    if (!highRatings.ContainsKey(summaries.Key))
+                    {
+                        highRatings[summaries.Key] = new();
+                    }
+
+                    highRatings[summaries.Key]["x265"] = summaries.Value;
+                });
+
+            h264Summaries
+                .Where(summaries =>
+                    !existingImdbIds.Contains(summaries.Key)
+                    && summaries.Value.Any(summary => string.Compare(summary.ImdbRating, threshold, StringComparison.Ordinal) >= 0))
+                .ForEach(summaries =>
+                {
+                    if (!highRatings.ContainsKey(summaries.Key))
+                    {
+                        highRatings[summaries.Key] = new();
+                    }
+
+                    highRatings[summaries.Key]["H264"] = summaries.Value;
+                });
+
+            ytsDetails
+                .Where(summaries =>
+                    !existingImdbIds.Contains(summaries.Key)
+                    && summaries.Value.Any(summary => string.Compare(summary.ImdbRating, threshold, StringComparison.Ordinal) >= 0))
+                .ForEach(summaries =>
+                {
+                    if (!highRatings.ContainsKey(summaries.Key))
+                    {
+                        highRatings[summaries.Key] = new();
+                    }
+
+                    highRatings[summaries.Key]["YTS"] = summaries.Value;
+                });
+
+            highRatings
+                .ForEach(summaries =>
+                {
+                    log(string.Join(" ", summaries.Value.SelectMany(summary => summary.Value).SelectMany(summary => summary.Genres).Distinct()));
+                    log($"{summaries.Key} https://www.imdb.com/title/{summaries.Key}");
+                    summaries.Value.SelectMany(pair => pair.Value.Select(summary => (pair.Key, summary))).ForEach(summary =>
+                    {
+                        log($"{summary.Key} {summary.summary.ImdbRating} {summary.summary.Link}");
+                        log(summary.summary.Title);
+                    });
+                    log(string.Empty);
                 });
         }
     }

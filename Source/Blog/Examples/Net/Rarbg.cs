@@ -86,7 +86,7 @@
 
                             int seed = int.TryParse(cells[4].Text.Trim(), out int seedValue) ? seedValue : -1;
                             int leech = int.TryParse(cells[5].Text.Trim(), out int leechValue) ? leechValue : -1;
-                            return new RarbgSummary(title, imdbId, link, genres, imdbRating, cells[2].Text.Trim(), cells[3].Text.Trim(), seed, leech, cells[7].Text.Trim());
+                            return new RarbgSummary(link, title, imdbId, imdbRating, genres, cells[2].Text.Trim(), cells[3].Text.Trim(), seed, leech, cells[7].Text.Trim());
                         })
                         .ForEach(summary =>
                         {
@@ -147,5 +147,6 @@
         }
     }
 
-    internal record RarbgSummary(string Title, string ImdbId, string Link, string[] Genre, string ImdbRating, string DateAdded, string Size, int Seed, int Leech, string Uploader);
+    internal record RarbgSummary(string Link, string Title, string ImdbId, string ImdbRating, string[] Genres, string DateAdded, string Size, int Seed, int Leech, string Uploader)
+        : ISummary;
 }
