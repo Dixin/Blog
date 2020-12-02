@@ -268,7 +268,7 @@ namespace Examples.IO
                         })
                         .NotNull();
                 })
-                .ToLookup(videoMetadata => videoMetadata.Imdb?.Id ?? string.Empty, metadata => metadata)
+                .ToLookup(videoMetadata => videoMetadata.Imdb?.ImdbId ?? string.Empty, metadata => metadata)
                 .ToDictionary(group => group.Key, group => group.ToDictionary(videoMetadata => videoMetadata.File, videoMetadata => videoMetadata));
 
             allVideoMetadata.ForEach(

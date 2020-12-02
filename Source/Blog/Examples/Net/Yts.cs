@@ -16,12 +16,6 @@
     using Examples.Linq;
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
-    public record YtsSummary(string Link, string Title, string ImdbRating, string[] Genres, int Year, string Image);
-
-    public record YtsDetail(string Link, string Title, string ImdbId, string ImdbRating, string[] Genres, int Year, string Image, string Language, Dictionary<string, string> Availabilities)
-        : YtsSummary(Link, Title, ImdbRating, Genres, Year, Image), ISummary;
-
-
     internal static class Yts
     {
         private const string BaseUrl = "https://yts.mx";
@@ -85,10 +79,10 @@
             string summaryJsonString = await File.ReadAllTextAsync(summaryJsonPath);
             Dictionary<string, YtsSummary> summaries = JsonSerializer.Deserialize<Dictionary<string, YtsSummary>>(summaryJsonString) ?? throw new InvalidOperationException(summaryJsonPath);
 
-            ConcurrentDictionary<string, YtsDetail[]> details = File.Exists(detailJsonPath)
-                ? new(JsonSerializer.Deserialize<Dictionary<string, YtsDetail[]>>(await File.ReadAllTextAsync(detailJsonPath)) ?? throw new InvalidOperationException(detailJsonPath))
+            ConcurrentDictionary<string, YtsMetadata[]> details = File.Exists(detailJsonPath)
+                ? new(JsonSerializer.Deserialize<Dictionary<string, YtsMetadata[]>>(await File.ReadAllTextAsync(detailJsonPath)) ?? throw new InvalidOperationException(detailJsonPath))
                 : new();
-            Dictionary<string, YtsDetail> detailsByLink = details.Values.SelectMany(details => details).ToDictionary(detail => detail.Link, detail => detail);
+            Dictionary<string, YtsMetadata> detailsByLink = details.Values.SelectMany(details => details).ToDictionary(detail => detail.Link, detail => detail);
 
             int count = 1;
 
@@ -106,7 +100,7 @@
                     string html = await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(summary.Link), RetryCount);
                     CQ cq = new(html);
                     CQ info = cq.Find("#movie-info");
-                    YtsDetail detail = new(
+                    YtsMetadata detail = new(
                         Link: summary.Link,
                         Title: summary.Title,
                         ImdbId: info.Find("a.icon[title='IMDb Rating']").Attr("href").Replace("https://www.imdb.com/title/", string.Empty).Trim('/'),
@@ -144,7 +138,7 @@
 
         private static readonly object AddItemLock = new();
 
-        private static void SaveDetail(string detailJsonPath, IDictionary<string, YtsDetail[]> allDetails)
+        private static void SaveDetail(string detailJsonPath, IDictionary<string, YtsMetadata[]> allDetails)
         {
             string jsonString = JsonSerializer.Serialize(allDetails, new() { WriteIndented = true });
             lock (SaveJsonLock)

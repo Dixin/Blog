@@ -11,16 +11,31 @@
         public string[] Genre { get; init; } = Genre;
     }
 
-    public partial record ImdbMetadata
+    public partial record ImdbMetadata : IMetadata
     {
         [JsonIgnore]
-        internal string Year { get; init; } = string.Empty;
+        public string Link => this.Url;
+
+        [JsonIgnore]
+        public string Title => this.Name;
+
+        [JsonIgnore]
+        public string ImdbId => this.Url.Split("/", StringSplitOptions.RemoveEmptyEntries).Last();
+
+        [JsonIgnore]
+        public string ImdbRating => this.AggregateRating?.RatingValue ?? string.Empty;
+
+        [JsonIgnore]
+        public string[] Genres => this.Genre;
+
+        [JsonIgnore]
+        internal string Year { get; set; } = string.Empty;
 
         [JsonIgnore]
         internal string YearOfCurrentRegion => this.DatePublished.Split('-')[0];
 
         [JsonIgnore]
-        internal string[] Regions { get; init; } = Array.Empty<string>();
+        internal string[] Regions { get; set; } = Array.Empty<string>();
 
         [JsonIgnore]
         internal string FormattedAggregateRating
@@ -36,9 +51,6 @@
         internal string FormattedContentRating => string.IsNullOrWhiteSpace(this.ContentRating)
             ? "NA"
             : this.ContentRating.Replace("-", string.Empty).Replace("Not Rated", "Unrated").Replace("/", string.Empty).Replace(":", string.Empty);
-
-        [JsonIgnore]
-        internal string Id => this.Url.Split("/", StringSplitOptions.RemoveEmptyEntries).Last();
     }
 
     // public partial record ImdbMetadata : IEquatable<ImdbMetadata>

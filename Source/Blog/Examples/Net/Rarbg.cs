@@ -32,14 +32,14 @@
 
         internal static async Task DownloadSummaryAsync(IEnumerable<string> urls, string jsonPath, int degreeOfParallelism = 4)
         {
-            ConcurrentDictionary<string, RarbgSummary[]> allSummaries = File.Exists(jsonPath)
-                ? new(JsonSerializer.Deserialize<Dictionary<string, RarbgSummary[]>>(await File.ReadAllTextAsync(jsonPath)) ?? throw new InvalidOperationException(jsonPath))
+            ConcurrentDictionary<string, RarbgMetadata[]> allSummaries = File.Exists(jsonPath)
+                ? new(JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(jsonPath)) ?? throw new InvalidOperationException(jsonPath))
                 : new();
             await urls.ParallelForEachAsync(async (url, index) => await DownloadSummaryAsync(url, jsonPath, allSummaries, index + 1), degreeOfParallelism);
             SaveJson(jsonPath, allSummaries);
         }
 
-        private static async Task DownloadSummaryAsync(string url, string jsonPath, ConcurrentDictionary<string, RarbgSummary[]> allSummaries, int partitionIndex)
+        private static async Task DownloadSummaryAsync(string url, string jsonPath, ConcurrentDictionary<string, RarbgMetadata[]> allSummaries, int partitionIndex)
         {
             try
             {
@@ -86,7 +86,7 @@
 
                             int seed = int.TryParse(cells[4].Text.Trim(), out int seedValue) ? seedValue : -1;
                             int leech = int.TryParse(cells[5].Text.Trim(), out int leechValue) ? leechValue : -1;
-                            return new RarbgSummary(link, title, imdbId, imdbRating, genres, cells[2].Text.Trim(), cells[3].Text.Trim(), seed, leech, cells[7].Text.Trim());
+                            return new RarbgMetadata(link, title, imdbId, imdbRating, genres, cells[2].Text.Trim(), cells[3].Text.Trim(), seed, leech, cells[7].Text.Trim());
                         })
                         .ForEach(summary =>
                         {
@@ -122,7 +122,7 @@
 
         private static readonly object SaveJsonLock = new();
 
-        private static void SaveJson(string jsonPath, IDictionary<string, RarbgSummary[]> allSummaries)
+        private static void SaveJson(string jsonPath, IDictionary<string, RarbgMetadata[]> allSummaries)
         {
             string jsonString = JsonSerializer.Serialize(allSummaries, new() { WriteIndented = true });
             lock (SaveJsonLock)
@@ -146,7 +146,4 @@
             return false;
         }
     }
-
-    internal record RarbgSummary(string Link, string Title, string ImdbId, string ImdbRating, string[] Genres, string DateAdded, string Size, int Seed, int Leech, string Uploader)
-        : ISummary;
 }

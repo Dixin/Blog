@@ -369,9 +369,9 @@
                         }
                         else
                         {
-                            if (!string.Equals(imdbMetadata.Id, metadataImdbId))
+                            if (!string.Equals(imdbMetadata.ImdbId, metadataImdbId))
                             {
-                                log($"!Metadata imdb id {metadataImdbId} should be {imdbMetadata.Id}: {metadataFile}");
+                                log($"!Metadata imdb id {metadataImdbId} should be {imdbMetadata.ImdbId}: {metadataFile}");
                             }
                         }
                     });
@@ -487,9 +487,9 @@
         internal static async Task PrintVersions(string directory, string x265JsonPath, string h264JsonPath, string ytsJsonPath, int level = 2, Action<string>? log = null)
         {
             log ??= TraceLog;
-            Dictionary<string, RarbgSummary[]> x265Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgSummary[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
-            Dictionary<string, RarbgSummary[]> h264Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgSummary[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
-            Dictionary<string, YtsDetail[]> ytsDetails = JsonSerializer.Deserialize<Dictionary<string, YtsDetail[]>>(await File.ReadAllTextAsync(ytsJsonPath))!;
+            Dictionary<string, RarbgMetadata[]> x265Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
+            Dictionary<string, RarbgMetadata[]> h264Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
+            Dictionary<string, YtsMetadata[]> ytsDetails = JsonSerializer.Deserialize<Dictionary<string, YtsMetadata[]>>(await File.ReadAllTextAsync(ytsJsonPath))!;
 
             EnumerateDirectories(directory, level).ForEach(movie =>
             {
@@ -563,9 +563,9 @@
         {
             log ??= TraceLog;
             string[] specialImdbIds = JsonSerializer.Deserialize<string[]>(await File.ReadAllTextAsync(specialJsonPath))!;
-            Dictionary<string, RarbgSummary[]> x265Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgSummary[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
-            Dictionary<string, RarbgSummary[]> h264Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgSummary[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
-            Dictionary<string, YtsDetail[]> ytsDetails = JsonSerializer.Deserialize<Dictionary<string, YtsDetail[]>>(await File.ReadAllTextAsync(ytsJsonPath))!;
+            Dictionary<string, RarbgMetadata[]> x265Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
+            Dictionary<string, RarbgMetadata[]> h264Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
+            Dictionary<string, YtsMetadata[]> ytsDetails = JsonSerializer.Deserialize<Dictionary<string, YtsMetadata[]>>(await File.ReadAllTextAsync(ytsJsonPath))!;
 
             specialImdbIds = specialImdbIds
                 .Where(imdbId => x265Summaries.ContainsKey(imdbId))
@@ -617,11 +617,11 @@
                     .Select(file => Path.GetFileNameWithoutExtension(file).Split(".").First())
                     .Where(imdbId => imdbId != "-")),
                 StringComparer.OrdinalIgnoreCase);
-            Dictionary<string, RarbgSummary[]> x265Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgSummary[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
-            Dictionary<string, RarbgSummary[]> h264Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgSummary[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
-            Dictionary<string, YtsDetail[]> ytsDetails = JsonSerializer.Deserialize<Dictionary<string, YtsDetail[]>>(await File.ReadAllTextAsync(ytsJsonPath))!;
+            Dictionary<string, RarbgMetadata[]> x265Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
+            Dictionary<string, RarbgMetadata[]> h264Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
+            Dictionary<string, YtsMetadata[]> ytsDetails = JsonSerializer.Deserialize<Dictionary<string, YtsMetadata[]>>(await File.ReadAllTextAsync(ytsJsonPath))!;
 
-            Dictionary<string, Dictionary<string, ISummary[]>> highRatings = new();
+            Dictionary<string, Dictionary<string, IMetadata[]>> highRatings = new();
 
             x265Summaries
                 .Where(summaries =>

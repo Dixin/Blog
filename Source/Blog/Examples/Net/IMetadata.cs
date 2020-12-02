@@ -1,6 +1,6 @@
 ﻿namespace Examples.Net
 {
-    public interface ISummary
+    public interface IMetadata
     {
         string Link { get; }
 
