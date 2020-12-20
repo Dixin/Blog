@@ -20,7 +20,7 @@ namespace Examples.IO
     {
         private static IEnumerable<string> EnumerateVideos(string directory, Func<string, bool>? predicate = null)
         {
-            return Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories)
+            return Directory.EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
                 .Where(file => (predicate?.Invoke(file) ?? true) && file.HasAnyExtension(AllVideoExtensions));
         }
 
@@ -104,11 +104,11 @@ namespace Examples.IO
             return -1;
         }
 
-        private static string? GetVideoError(VideoMetadata videoMetadata, bool isNoAudioAllowed)
+        private static (string? Message, Action<string>? Action) GetVideoError(VideoMetadata videoMetadata, bool isNoAudioAllowed, Action<string>? is720 = null, Action<string>? is1080 = null)
         {
             if (videoMetadata.Width <= 0 || videoMetadata.Height <= 0 || (isNoAudioAllowed ? videoMetadata.Audio < 0 : videoMetadata.Audio <= 0))
             {
-                return $"Failed {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.Audio}Audio {videoMetadata.File}";
+                return ($"Failed {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.Audio}Audio {videoMetadata.File}", null);
             }
 
             string fileName = Path.GetFileNameWithoutExtension(videoMetadata.File) ?? string.Empty;
@@ -116,28 +116,28 @@ namespace Examples.IO
             {
                 if (videoMetadata.Height < 1070 && videoMetadata.Width < 1900)
                 {
-                    return $"!Not 1080p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}";
+                    return ($"!Not 1080p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}", null);
                 }
             }
             else
             {
                 if (videoMetadata.Height >= 1070 || videoMetadata.Width >= 1900)
                 {
-                    return $"!1080p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}";
+                    return ($"!1080p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}", is1080);
                 }
 
                 if (fileName.Contains("720p"))
                 {
                     if (videoMetadata.Height < 720 && videoMetadata.Width < 1280)
                     {
-                        return $"!Not 720p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}";
+                        return ($"!Not 720p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}", null);
                     }
                 }
                 else
                 {
                     if (videoMetadata.Height >= 720 || videoMetadata.Width >= 1280)
                     {
-                        return $"!720p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}";
+                        return ($"!720p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}", is720);
                     }
                 }
             }
@@ -146,30 +146,30 @@ namespace Examples.IO
             {
                 if (videoMetadata.Audio < 2)
                 {
-                    return $"!Not multiple audio: {videoMetadata.Audio} {videoMetadata.File}";
+                    return ($"!Not multiple audio: {videoMetadata.Audio} {videoMetadata.File}", null);
                 }
             }
             else
             {
                 if (videoMetadata.Audio >= 2)
                 {
-                    return $"!Multiple audio: {videoMetadata.Audio} {videoMetadata.File}";
+                    return ($"!Multiple audio: {videoMetadata.Audio} {videoMetadata.File}", null);
                 }
             }
 
             return videoMetadata.AudioBitRates.Any(bitRate => bitRate < 192000)
-                ? $"!Bad audio: Bit rate is only {string.Join(',', videoMetadata.AudioBitRates)} {videoMetadata.File}"
-                : null;
+                ? ($"!Bad audio: Bit rate is only {string.Join(',', videoMetadata.AudioBitRates)} {videoMetadata.File}", null)
+                : (null, null);
         }
 
 
 
         internal static IEnumerable<string> EnumerateDirectories(string directory, int level = 2)
         {
-            IEnumerable<string> directories = Directory.EnumerateDirectories(directory, "*", SearchOption.TopDirectoryOnly);
+            IEnumerable<string> directories = Directory.EnumerateDirectories(directory, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
             while (--level > 0)
             {
-                directories = directories.SelectMany(d => Directory.EnumerateDirectories(d, "*", SearchOption.TopDirectoryOnly));
+                directories = directories.SelectMany(d => Directory.EnumerateDirectories(d, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly));
                 level--;
             }
 
@@ -182,13 +182,13 @@ namespace Examples.IO
             await EnumerateDirectories(directory, level)
                 .ParallelForEachAsync(async movie =>
                 {
-                    if (!overwrite && Directory.EnumerateFiles(movie, "*.json", SearchOption.TopDirectoryOnly).Any())
+                    if (!overwrite && Directory.EnumerateFiles(movie, JsonMetadataSearchPattern, SearchOption.TopDirectoryOnly).Any())
                     {
                         log($"Skip {movie}.");
                         return;
                     }
 
-                    string? nfo = Directory.EnumerateFiles(movie, MetadataSearchPattern, SearchOption.TopDirectoryOnly).FirstOrDefault();
+                    string? nfo = Directory.EnumerateFiles(movie, XmlMetadataSearchPattern, SearchOption.TopDirectoryOnly).FirstOrDefault();
                     if (string.IsNullOrWhiteSpace(nfo))
                     {
                         log($"!Missing metadata {movie}.");
@@ -198,7 +198,7 @@ namespace Examples.IO
                     string? imdbId = XDocument.Load(nfo).Root?.Element((isTV ? "imdb_id" : "imdbid")!)?.Value;
                     if (string.IsNullOrWhiteSpace(imdbId))
                     {
-                        await File.WriteAllTextAsync(Path.Combine(movie, "-.json"), "{}");
+                        await File.WriteAllTextAsync(Path.Combine(movie, $"{NotExistingFlag}{JsonMetadataExtension}"), "{}");
                         return;
                     }
 
@@ -220,18 +220,20 @@ namespace Examples.IO
                     {
                         log($"!Location is missing for {imdbId}: {movie}");
                     }
-                    string json = Path.Combine(movie, $"{imdbId}.{year}.{string.Join(",", regions.Take(5))}.json");
+                    string json = Path.Combine(movie, $"{imdbId}.{year}.{string.Join(",", regions.Take(5))}{JsonMetadataExtension}");
                     log($"Downloaded https://www.imdb.com/title/{imdbId} to {json}.");
                     await File.WriteAllTextAsync(json, imdbJson);
                     log($"Saved to {json}.");
-                }, MaxDegreeOfParallelism);
+                }, IOMaxDegreeOfParallelism);
         }
 
         internal static async Task SaveAllVideoMetadata(string jsonPath, Action<string>? log = null, params string[] directories)
         {
             log ??= TraceLog;
-            Dictionary<string, Dictionary<string, VideoMetadata>> existingMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(jsonPath))
-                ?? throw new InvalidOperationException(jsonPath);
+            Dictionary<string, Dictionary<string, VideoMetadata>> existingMetadata = File.Exists(jsonPath)
+                ? JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(jsonPath))
+                    ?? throw new InvalidOperationException(jsonPath)
+                : new();
 
             existingMetadata
                 .Values
@@ -244,18 +246,18 @@ namespace Examples.IO
             Dictionary<string, string> existingVideos = existingMetadata
                 .Values
                 .SelectMany(group => group.Keys)
-                .ToDictionary(video => video, video => string.Empty);
+                .ToDictionary(video => video, _ => string.Empty);
 
             Dictionary<string, Dictionary<string, VideoMetadata>> allVideoMetadata = directories
-                .SelectMany(directory => Directory.GetFiles(directory, "*.json", SearchOption.AllDirectories))
+                .SelectMany(directory => Directory.GetFiles(directory, JsonMetadataSearchPattern, SearchOption.AllDirectories))
                 .AsParallel()
-                .WithDegreeOfParallelism(MaxDegreeOfParallelism)
+                .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
                 .SelectMany(movieJson =>
                 {
                     string relativePath = Path.GetDirectoryName(jsonPath) ?? string.Empty;
                     Imdb.TryLoad(movieJson, out ImdbMetadata? imdbMetadata);
                     return Directory
-                        .GetFiles(Path.GetDirectoryName(movieJson) ?? string.Empty, AllSearchPattern, SearchOption.TopDirectoryOnly)
+                        .GetFiles(Path.GetDirectoryName(movieJson) ?? string.Empty, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
                         .Where(video => video.IsCommonVideo() && !existingVideos.ContainsKey(Path.GetRelativePath(relativePath, video)))
                         .Select(video =>
                         {
@@ -298,7 +300,7 @@ namespace Examples.IO
                 .SelectMany(directory => Directory.GetFiles(directory, VideoSearchPattern, SearchOption.AllDirectories))
                 .Select(video =>
                 {
-                    string metadata = PathHelper.ReplaceExtension(video, MetadataExtension);
+                    string metadata = PathHelper.ReplaceExtension(video, XmlMetadataExtension);
                     string imdbId = XDocument.Load(metadata).Root?.Element("imdbid")?.Value ?? throw new InvalidOperationException(video);
                     if (TryGetVideoMetadata(video, out VideoMetadata? videoMetadata))
                     {

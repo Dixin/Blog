@@ -5,23 +5,22 @@
     using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
-    using System.Xml.Linq;
 
     internal static partial class Video
     {
-        private const string MetadataExtension = ".nfo";
-
-        private const string AllSearchPattern = "*";
+        private const string XmlMetadataExtension = ".nfo";
 
         private const string VideoExtension = ".mp4";
 
-        private const string MetadataSearchPattern = AllSearchPattern + MetadataExtension;
+        private const string XmlMetadataSearchPattern = PathHelper.AllSearchPattern + XmlMetadataExtension;
 
-        private const string VideoSearchPattern = AllSearchPattern + VideoExtension;
+        private const string VideoSearchPattern = PathHelper.AllSearchPattern + VideoExtension;
 
         private const string Featurettes = nameof(Featurettes);
 
         private const string DefaultBackupFlag = "backup";
+
+        private const string Delimiter = ".";
 
         private static readonly string[] UncommonVideoExtensions = { ".avi", ".wmv", ".webm", ".mpg", ".mpeg", ".rmvb", ".rm", ".3gp", ".divx", ".m1v", ".mov", ".ts", ".vob", ".flv", ".m4v", ".mkv", ".dat" };
 
@@ -29,7 +28,7 @@
 
         private static readonly string[] AllVideoExtensions = UncommonVideoExtensions.Union(CommonVideoExtensions).ToArray();
 
-        private static readonly string[] IndependentNfos = { $"tvshow{MetadataExtension}", $"season{MetadataExtension}" };
+        private static readonly string[] IndependentNfos = { $"tvshow{XmlMetadataExtension}", $"season{XmlMetadataExtension}" };
 
         private static readonly Regex[] PreferredVersions = new[] { @"[\. ]YIFY(\+HI)?$", @"[\. ]YIFY(\.[1-9]Audio)?$", @"\[YTS\.[A-Z]{2}\](\.[1-9]Audio)?$", @"\.GAZ$" }.Select(version => new Regex(version)).ToArray();
 
@@ -37,29 +36,29 @@
 
         private static readonly Regex PremiumVersion = new("[Hx]264.+(VXT|RARBG)");
 
+        private static readonly string[] Attachments = { "Introduction.txt", "Introduction.mht" };
+
+        private static readonly string[] AdaptiveAttachments = new[] { "banner.jpg", "box.jpg", "clearart.png", "clearlogo.png", "disc.png", "discart.png", "fanart.jpg", "landscape.jpg", "logo.png", "poster.jpg", "poster.png" };
+
+        private const string JsonMetadataExtension = ".json";
+
+        private const string JsonMetadataSearchPattern = PathHelper.AllSearchPattern + JsonMetadataExtension;
+
+        private static readonly string[] SubtitleLanguages = { "can", "chs", "chs&dan", "chs&eng", "chs&fre", "chs&ger", "chs&spa", "cht", "cht&eng", "cht&ger", "dut", "eng", "eng&chs", "fin", "fre", "ger", "ger&chs", "ita", "jap", "kor", "pol", "por", "rus", "spa", "swe", "eng-commentary", "eng-commentary1", "eng-commentary2", "chs&eng-preference" };
+
+        internal const string NotExistingFlag = "-";
+
+        private const string SubtitleSeparator = "-";
+        
         private static void TraceLog(string? message) => Trace.WriteLine(message);
 
-        private static readonly int MaxDegreeOfParallelism = Math.Max(Environment.ProcessorCount, 4);
+        private static readonly int IOMaxDegreeOfParallelism = Math.Max(Environment.ProcessorCount, 4);
 
         internal static string FilterForFileSystem(this string value)
         {
-            return value.Replace("?", "").Replace(": ", "-").Replace(":", "-").Replace("*", "_").Replace("/", "_");
-        }
-
-        internal static void BackupMetadata(string directory, string flag = DefaultBackupFlag)
-        {
-            Directory
-                .GetFiles(directory, MetadataSearchPattern, SearchOption.AllDirectories)
-                .ForEach(metadata => File.Copy(metadata, PathHelper.AddFilePostfix(metadata, $".{flag}")));
-        }
-
-        internal static void RestoreMetadata(string directory, string flag = DefaultBackupFlag)
-        {
-            Directory
-                .GetFiles(directory, MetadataSearchPattern, SearchOption.AllDirectories)
-                .Where(nfo => nfo.EndsWith($".{flag}{MetadataExtension}"))
-                .Where(nfo => File.Exists(nfo.Replace($".{flag}{MetadataExtension}", MetadataExtension)))
-                .ForEach(nfo => FileHelper.Move(nfo, Path.Combine(Path.GetDirectoryName(nfo) ?? throw new InvalidOperationException(nfo), (Path.GetFileNameWithoutExtension(nfo) ?? throw new InvalidOperationException(nfo)).Replace($".{flag}", string.Empty) + Path.GetExtension(nfo)), true));
+            value = value.Replace(": ", SubtitleSeparator).Replace(":", SubtitleSeparator).Replace("*", "_").Replace("/", "_");
+            Path.GetInvalidFileNameChars().ForEach(invalid => value = value.Replace(new string(invalid, 1), string.Empty));
+            return value;
         }
 
         internal static void DeletePictures(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
@@ -68,7 +67,7 @@
             EnumerateDirectories(directory, level)
                 .ForEach(movie =>
                 {
-                    string[] files = Directory.GetFiles(movie, AllSearchPattern, SearchOption.TopDirectoryOnly).Select(file=>Path.GetFileName(file) ?? throw new InvalidOperationException(file)).ToArray();
+                    string[] files = Directory.GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly).Select(file => Path.GetFileName(file) ?? throw new InvalidOperationException(file)).ToArray();
                     string[] videos = files.Where(IsCommonVideo).ToArray();
                     string[] allowedAttachments = videos.Length == 1 || videos.All(video => Regex.IsMatch(video, "cd[1-9]", RegexOptions.IgnoreCase))
                         ? AdaptiveAttachments.ToArray()
@@ -82,80 +81,6 @@
                         .Where(attachment => !isDryRun)
                         .ForEach(File.Delete);
                 });
-        }
-
-        internal static void CleanFeaturettes(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
-        {
-            log ??= TraceLog;
-            EnumerateDirectories(directory, level)
-                .ForEach(movie =>
-                {
-                    string featurettes = Path.Combine(movie, Featurettes);
-                    if (Directory.Exists(featurettes))
-                    {
-                        string[] metadataFiles = Directory.GetFiles(featurettes, MetadataSearchPattern, SearchOption.AllDirectories);
-                        metadataFiles
-                            .Do(log)
-                            .Where(metadataFile => !isDryRun)
-                            .ForEach(File.Delete);
-                    }
-                });
-        }
-
-        internal static void CreateEpisodeMetadata(string directory, Func<string, string> getTitle, Func<string, int, string> getEpisode, Func<string, string>? getSeason = null, bool overwrite = false)
-        {
-            Directory.GetFiles(directory, VideoSearchPattern, SearchOption.TopDirectoryOnly)
-                .OrderBy(video => video)
-                .ForEach((video, index) =>
-                {
-                    string metadataPath = PathHelper.ReplaceExtension(video, MetadataExtension);
-                    if (!overwrite && File.Exists(metadataPath))
-                    {
-                        return;
-                    }
-
-                    XDocument metadata = XDocument.Parse(@"<?xml version=""1.0"" encoding=""utf-8"" standalone=""yes""?>
-<episodedetails>
-  <plot />
-  <outline />
-  <lockdata>false</lockdata>
-  <title></title>
-  <episode></episode>
-  <season></season>
-</episodedetails>");
-                    metadata.Root!.Element("title"!)!.Value = getTitle(video);
-                    metadata.Root!.Element("episode"!)!.Value = getEpisode(video, index);
-                    metadata.Root!.Element("season"!)!.Value = getSeason?.Invoke(video) ?? "1";
-                    metadata.Save(metadataPath);
-                });
-        }
-
-        internal static void CreateEpisodeMetadata(string directory, bool overwrite = false)
-        {
-            Directory
-                .EnumerateDirectories(directory)
-                .OrderBy(season=>season)
-                .ForEach(season=> CreateEpisodeMetadata(
-                    season,
-                    video =>
-                    {
-                        video = Path.GetFileNameWithoutExtension(video);
-                        string seasonEpisode = Regex.Match(video, @"\.S[0-9]+E[0-9]+\.").Value;
-                        return video.Substring(video.IndexOf(seasonEpisode, StringComparison.InvariantCulture) + seasonEpisode.Length).Replace("720p.", "").Replace("1080p.", "");
-                    },
-                    (video, index) =>
-                    {
-                        video = Path.GetFileNameWithoutExtension(video);
-                        string seasonEpisode = Regex.Match(video, @"\.S[0-9]+E[0-9]+\.").Value.Trim('.');
-                        return seasonEpisode.Substring(seasonEpisode.IndexOf("E", StringComparison.InvariantCulture) + "E".Length).TrimStart('0');
-                    },
-                    video =>
-                    {
-                        video = Path.GetFileNameWithoutExtension(video);
-                        string seasonEpisode = Regex.Match(video, @"\.S[0-9]+E[0-9]+\.").Value.Trim('.');
-                        return seasonEpisode.Substring(seasonEpisode.IndexOf("S", StringComparison.InvariantCulture) + "S".Length).Substring(0, seasonEpisode.IndexOf("E", StringComparison.InvariantCulture) - 1).TrimStart('0');
-                    },
-                    overwrite));
         }
     }
 }

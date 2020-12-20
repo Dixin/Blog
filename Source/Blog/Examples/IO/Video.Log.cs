@@ -14,16 +14,21 @@
 
     internal static partial class Video
     {
-        internal static void PrintVideosWithErrors(string directory, bool isNoAudioAllowed = false, SearchOption searchOption = SearchOption.TopDirectoryOnly, Func<string, bool>? predicate = null, Action<string>? log = null)
+        internal static void PrintVideosWithErrors(string directory, bool isNoAudioAllowed = false, SearchOption searchOption = SearchOption.TopDirectoryOnly, Func<string, bool>? predicate = null, Action<string>? is720 = null, Action<string>? is1080 = null, Action<string>? log = null)
         {
             PrintVideosWithErrors(
-               Directory.EnumerateFiles(directory, AllSearchPattern, searchOption)
-                   .Where(file => predicate?.Invoke(file) ?? AllVideoExtensions.Where(extension => !string.Equals(extension, ".iso", StringComparison.InvariantCultureIgnoreCase)).Any(extension => file.EndsWith(extension, StringComparison.InvariantCultureIgnoreCase))),
+                Directory
+                    .EnumerateFiles(directory, PathHelper.AllSearchPattern, searchOption)
+                    .Where(file => predicate?.Invoke(file) ?? AllVideoExtensions
+                        .Where(extension => !string.Equals(extension, ".iso", StringComparison.InvariantCultureIgnoreCase))
+                        .Any(extension => file.EndsWith(extension, StringComparison.InvariantCultureIgnoreCase))),
                 isNoAudioAllowed,
+                is720,
+                is1080,
                 log);
         }
 
-        internal static void PrintVideosWithErrors(IEnumerable<string> files, bool isNoAudioAllowed = false, Action<string>? log = null)
+        internal static void PrintVideosWithErrors(IEnumerable<string> files, bool isNoAudioAllowed = false, Action<string>? is720 = null, Action<string>? is1080 = null, Action<string>? log = null)
         {
             log ??= TraceLog;
             files
@@ -39,11 +44,15 @@
                     return videoMetadata;
                 })
                 .NotNull()
-                .Select(videoMetadata => (Video: videoMetadata, Error: GetVideoError(videoMetadata, isNoAudioAllowed)))
-                .Where(result => !string.IsNullOrWhiteSpace(result.Error))
+                .Select(videoMetadata => (Video: videoMetadata, Error: GetVideoError(videoMetadata, isNoAudioAllowed, is720, is1080)))
+                .Where(result => !string.IsNullOrWhiteSpace(result.Error.Message))
                 .AsSequential()
                 .OrderBy(result => result.Video.File)
-                .ForEach(result => log(result.Error ?? string.Empty));
+                .ForEach(result =>
+                {
+                    log(result.Error.Message ?? string.Empty);
+                    result.Error.Action?.Invoke(result.Video.File);
+                });
         }
 
         internal static void PrintDirectoriesWithLowDefinition(string directory, int level = 2, Action<string>? log = null)
@@ -115,13 +124,13 @@
                 .ForEach(movie =>
                 {
                     string[] files = Directory
-                        .GetFiles(movie, AllSearchPattern, SearchOption.TopDirectoryOnly);
+                        .GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
                     string[] videos = files
                         .Where(file => file.IsCommonVideo() && predicate(file))
                         .ToArray();
                     if (videos.Any())
                     {
-                        log(Path.GetFileNameWithoutExtension(files.Single(file => file.HasExtension(ImdbExtension))).Split(".")[0]);
+                        log(Path.GetFileNameWithoutExtension(files.Single(file => file.HasExtension(JsonMetadataExtension))).Split(".")[0]);
                         videos.ForEach(log);
                         log(string.Empty);
                     }
@@ -149,7 +158,7 @@
         {
             log ??= TraceLog;
             EnumerateDirectories(directory, level)
-                .Select(movie => (movie, metadata: XDocument.Load(Directory.GetFiles(movie, MetadataSearchPattern, SearchOption.TopDirectoryOnly).First())))
+                .Select(movie => (movie, metadata: XDocument.Load(Directory.GetFiles(movie, XmlMetadataSearchPattern, SearchOption.TopDirectoryOnly).First())))
                 .Select(movie => (movie.movie, field: movie.metadata.Root?.Element(field)?.Value))
                 .OrderBy(movie => movie.field)
                 .ForEach(movie => log($"{movie.field}: {Path.GetFileName(movie.movie)}"));
@@ -158,7 +167,7 @@
         internal static void PrintMetadataByDuplication(string directory, string field = "imdbid", Action<string>? log = null)
         {
             log ??= TraceLog;
-            Directory.GetFiles(directory, MetadataSearchPattern, SearchOption.AllDirectories)
+            Directory.GetFiles(directory, XmlMetadataSearchPattern, SearchOption.AllDirectories)
                 .Select(metadata => (metadata, field: XDocument.Load(metadata).Root?.Element(field)?.Value))
                 .GroupBy(movie => movie.field)
                 .Where(group => group.Count() > 1)
@@ -172,7 +181,7 @@
                 .ToArray()
                 .ForEach(movie =>
                 {
-                    XDocument metadata = XDocument.Load(Directory.GetFiles(movie, MetadataSearchPattern, SearchOption.TopDirectoryOnly).First());
+                    XDocument metadata = XDocument.Load(Directory.GetFiles(movie, XmlMetadataSearchPattern, SearchOption.TopDirectoryOnly).First());
                     string movieDirectory = Path.GetFileName(movie);
                     if (movieDirectory.StartsWith("0."))
                     {
@@ -184,7 +193,7 @@
                     string metadataYear = metadata.Root?.Element("year")?.Value ?? throw new InvalidOperationException($"{metadata} has no year.");
                     string videoName = string.Empty;
                     if (!(directoryYear == metadataYear
-                        && Directory.GetFiles(movie, AllSearchPattern, SearchOption.TopDirectoryOnly)
+                        && Directory.GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
                             .Where(file => AllVideoExtensions.Any(extension => file.EndsWith(extension, StringComparison.InvariantCultureIgnoreCase)))
                             .All(video => (videoName = Path.GetFileName(video) ?? throw new InvalidOperationException($"{video} is invalid.")).Contains(directoryYear))))
                     {
@@ -205,21 +214,11 @@
         internal static void PrintDuplicateImdbId(Action<string>? log = null, params string[] directories)
         {
             log ??= TraceLog;
-            directories.SelectMany(directory => Directory.EnumerateFiles(directory, "*.json", SearchOption.AllDirectories))
-                .GroupBy(Path.GetFileNameWithoutExtension)
+            directories.SelectMany(directory => Directory.EnumerateFiles(directory, JsonMetadataSearchPattern, SearchOption.AllDirectories))
+                .GroupBy(metadata => Path.GetFileNameWithoutExtension(metadata).Split(".")[0])
                 .Where(group => group.Count() > 1)
-                .ForEach(group => group.ForEach(log));
+                .ForEach(group => group.OrderBy(metadata => metadata).ForEach(log));
         }
-
-        private static readonly string[] Attachments = { "Introduction.txt", "Introduction.mht" };
-
-        private static readonly string[] AdaptiveAttachments = new[] { "banner.jpg", "box.jpg", "clearart.png", "clearlogo.png", "disc.png", "discart.png", "fanart.jpg", "landscape.jpg", "logo.png", "poster.jpg", "poster.png" };
-
-        private const string ImdbExtension = ".json";
-
-        private const string ImdbSearchPattern = AllSearchPattern + ImdbExtension;
-
-        private static readonly string[] SubtitleLanguages = { "can", "chs", "chs&dan", "chs&eng", "chs&fre", "chs&ger", "chs&spa", "cht", "cht&eng", "cht&ger", "dut", "eng", "eng&chs", "fin", "fre", "ger", "ger&chs", "ita", "jap", "kor", "pol", "por", "rus", "spa", "swe", "commentary", "commentary1", "commentary2" };
 
         internal static void PrintDirectoriesWithErrors(string directory, int level = 2, bool isLoadingVideo = false, bool isNoAudioAllowed = false, Action<string>? log = null)
         {
@@ -244,6 +243,16 @@
                         trimmedMovie = trimmedMovie.Substring(0, trimmedMovie.IndexOf("{", StringComparison.Ordinal));
                     }
 
+                    if (Regex.IsMatch(trimmedMovie, @"·[0-9]"))
+                    {
+                        log($"!Special character ·: {trimmedMovie}");
+                    }
+
+                    if (trimmedMovie.Contains("："))
+                    {
+                        log($"!Special character ：: {trimmedMovie}");
+                    }
+
                     VideoDirectoryInfo videoDirectoryInfo = new(trimmedMovie);
                     //if (!string.Equals(level1Number1, level1Number3) || !string.IsNullOrWhiteSpace(level1Number2) && !string.Equals(level1Number1, level1Number2))
                     //{
@@ -255,7 +264,11 @@
                     //    log($"!Index: {movie}");
                     //}
 
-                    string[] files = Directory.EnumerateFiles(movie, AllSearchPattern, SearchOption.TopDirectoryOnly).Select(file => Path.GetFileName(file) ?? throw new InvalidOperationException(file)).ToArray();
+                    new string[] { videoDirectoryInfo.TranslatedTitle1, videoDirectoryInfo.TranslatedTitle2, videoDirectoryInfo.TranslatedTitle3 }
+                        .Where(translated => Regex.IsMatch(translated.Split("`").First(), "[0-9]+"))
+                        .ForEach(translated => log($"!Translation has number {translated}: {movie}"));
+
+                    string[] files = Directory.EnumerateFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly).Select(file => Path.GetFileName(file) ?? throw new InvalidOperationException(file)).ToArray();
 
                     if (trimmedMovie.Contains("1080p") && !files.Any(file => file.Contains("1080p")))
                     {
@@ -279,8 +292,8 @@
 
                     string[] videos = files.Where(IsCommonVideo).ToArray();
                     string[] subtitles = files.Where(file => file.HasAnyExtension(AllSubtitleExtensions)).ToArray();
-                    string[] metadataFiles = files.Where(file => file.HasExtension(MetadataExtension)).ToArray();
-                    string[] imdbFiles = files.Where(file => file.HasExtension(ImdbExtension)).ToArray();
+                    string[] metadataFiles = files.Where(file => file.HasExtension(XmlMetadataExtension)).ToArray();
+                    string[] imdbFiles = files.Where(file => file.HasExtension(JsonMetadataExtension)).ToArray();
                     string[] otherFiles = files.Except(videos).Except(subtitles).Except(metadataFiles).Except(imdbFiles).ToArray();
                     if (videos.Length < 1)
                     {
@@ -315,7 +328,7 @@
                         .ForEach(file => log($"!Subtitle: {Path.Combine(movie, file)}"));
 
                     string[] allowedMetadataFiles = videos
-                        .Select(video => $"{Path.GetFileNameWithoutExtension(video)}{MetadataExtension}")
+                        .Select(video => $"{Path.GetFileNameWithoutExtension(video)}{XmlMetadataExtension}")
                         .ToArray();
                     metadataFiles
                         .Where(metadata => !allowedMetadataFiles.Contains(metadata, StringComparer.InvariantCultureIgnoreCase))
@@ -343,13 +356,13 @@
 
                     string imdbRating = Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata)
                         ? imdbMetadata.FormattedAggregateRating
-                        : "-";
+                        : NotExistingFlag;
                     if (!string.Equals(videoDirectoryInfo.AggregateRating, imdbRating, StringComparison.InvariantCulture))
                     {
                         log($"!Imdb rating {videoDirectoryInfo.AggregateRating} should be {imdbRating}: {movie}");
                     }
 
-                    string contentRating = imdbMetadata?.FormattedContentRating ?? "-";
+                    string contentRating = imdbMetadata?.FormattedContentRating ?? NotExistingFlag;
                     if (!string.Equals(contentRating, videoDirectoryInfo.ContentRating, StringComparison.InvariantCulture))
                     {
                         log($"!Content rating {videoDirectoryInfo.ContentRating} should be {contentRating}: {movie}");
@@ -360,12 +373,18 @@
                         metadataFile = Path.Combine(movie, metadataFile);
                         XDocument metadata = XDocument.Load(Path.Combine(movie, metadataFile));
                         string? metadataImdbId = metadata.Root?.Element("imdbid")?.Value;
+                        // string? metadataImdbRating = metadata.Root?.Element("rating")?.Value;
                         if (imdbMetadata == null)
                         {
                             if (!string.IsNullOrWhiteSpace(metadataImdbId))
                             {
                                 log($"!Metadata should have no imdb id: {metadataFile}");
                             }
+
+                            // if (!string.IsNullOrWhiteSpace(metadataImdbRating))
+                            // {
+                            //    log($"!Metadata should have no rating: {metadataFile}");
+                            // }
                         }
                         else
                         {
@@ -462,18 +481,18 @@
                         log(videoYear);
                     }
 
-                    videoTitle = videoTitle?.Replace(".", string.Empty).Replace(":", string.Empty);
-                    if (string.Equals(videoTitle, movieName[0].Split("=").Last().Replace("-", " "), StringComparison.InvariantCultureIgnoreCase))
+                    videoTitle = videoTitle?.Replace(Delimiter, string.Empty).Replace(":", string.Empty);
+                    if (string.Equals(videoTitle, movieName[0].Split("=").Last().Replace(SubtitleSeparator, " "), StringComparison.InvariantCultureIgnoreCase))
                     {
                         return;
                     }
 
-                    if (string.Equals(videoTitle, movieTitle.Split("-").Last(), StringComparison.InvariantCultureIgnoreCase))
+                    if (string.Equals(videoTitle, movieTitle.Split(SubtitleSeparator).Last(), StringComparison.InvariantCultureIgnoreCase))
                     {
                         return;
                     }
 
-                    movieTitle = movieTitle.Replace("-", " ");
+                    movieTitle = movieTitle.Replace(SubtitleSeparator, " ");
                     if (!string.Equals(videoTitle, movieTitle, StringComparison.InvariantCultureIgnoreCase))
                     {
                         log(movie);
@@ -484,82 +503,134 @@
                 });
         }
 
-        internal static async Task PrintVersions(string directory, string x265JsonPath, string h264JsonPath, string ytsJsonPath, int level = 2, Action<string>? log = null)
+        internal static async Task PrintVersions(string x265JsonPath, string h264JsonPath, string ytsJsonPath, Action<string>? log = null, params (string Directory, int Level)[] directories)
         {
             log ??= TraceLog;
-            Dictionary<string, RarbgMetadata[]> x265Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
-            Dictionary<string, RarbgMetadata[]> h264Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
-            Dictionary<string, YtsMetadata[]> ytsDetails = JsonSerializer.Deserialize<Dictionary<string, YtsMetadata[]>>(await File.ReadAllTextAsync(ytsJsonPath))!;
+            Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
+            Dictionary<string, RarbgMetadata[]> h264Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
+            Dictionary<string, YtsMetadata[]> ytsMetadata = JsonSerializer.Deserialize<Dictionary<string, YtsMetadata[]>>(await File.ReadAllTextAsync(ytsJsonPath))!;
 
-            EnumerateDirectories(directory, level).ForEach(movie =>
-            {
-                string[] files = Directory.GetFiles(movie);
-                string[] videos = files.Where(file => file.IsCommonVideo()).ToArray();
-                if (videos.Select(file => Path.GetFileNameWithoutExtension(file)).All(file => file.Contains("x265") && (file.Contains("RARBG") || file.Contains("VXT"))))
+            directories
+                .SelectMany(directory => EnumerateDirectories(directory.Directory, directory.Level))
+                .ForEach(movie =>
                 {
-                    return;
-                }
-
-                string json = files.Single(file => file.EndsWith(".json"));
-                string imdbId = Path.GetFileNameWithoutExtension(json).Split(".")[0];
-                if (imdbId == "-")
-                {
-                    log($"- {movie}");
-                    return;
-                }
-
-                if (x265Summaries.ContainsKey(imdbId) && x265Summaries[imdbId].Any(summary => summary.Title.Contains("RARBG") || summary.Title.Contains("VXT")))
-                {
-                    log(movie);
-                    videos.ForEach(file => log(Path.GetFileName(file)));
-                    x265Summaries[imdbId].Where(summary => summary.Title.Contains("RARBG") || summary.Title.Contains("VXT")).ForEach(summary =>
+                    string[] files = Directory.GetFiles(movie);
+                    string? json = files.SingleOrDefault(file => file.HasExtension(JsonMetadataExtension));
+                    if (string.IsNullOrWhiteSpace(json))
                     {
-                        log($"x265 {summary.Link}");
-                        log(summary.Title);
+                        log($"!!! {movie}");
                         log(string.Empty);
-                    });
-                    return;
-                }
+                        return;
+                    }
 
-                if (videos.Select(file => Path.GetFileNameWithoutExtension(file)).All(file => file.Contains("RARBG") || file.Contains("VXT")))
-                {
-                    return;
-                }
-
-                if (h264Summaries.ContainsKey(imdbId) && h264Summaries[imdbId].Any(summary => summary.Title.Contains("RARBG") || summary.Title.Contains("VXT")))
-                {
-                    log(movie);
-                    videos.ForEach(f => log(Path.GetFileName(f)));
-                    h264Summaries[imdbId].Where(summary => summary.Title.Contains("RARBG") || summary.Title.Contains("VXT")).ForEach(summary =>
+                    string imdbId = Path.GetFileNameWithoutExtension(json).Split(".")[0];
+                    if (imdbId == NotExistingFlag)
                     {
-                        log($"H264 {summary.Link}");
-                        log(summary.Title);
-                        log(string.Empty);
-                    });
-                    return;
-                }
+                        log($"{NotExistingFlag} {movie}");
+                        return;
+                    }
 
-                if (files.Select(file => Path.GetFileNameWithoutExtension(file)).Any(file => file.Contains("YIFY") || file.Contains("YTS")))
-                {
-                    return;
-                }
-
-                if (ytsDetails.ContainsKey(imdbId))
-                {
-                    log(movie);
-                    videos.ForEach(file => log(Path.GetFileName(file)));
-                    ytsDetails[imdbId].ForEach(detail =>
+                    string[] videos = files.Where(file => file.IsCommonVideo()).ToArray();
+                    RarbgMetadata[] availableX265Metadata = x265Metadata.ContainsKey(imdbId)
+                        ? x265Metadata[imdbId]
+                            .Where(metadata => metadata.Title.Contains("RARBG") || metadata.Title.Contains("VXT"))
+                            .ToArray()
+                        : Array.Empty<RarbgMetadata>();
+                    if (availableX265Metadata.Any())
                     {
-                        log($"YTS {detail.Link}");
-                        log(detail.Title);
-                        log(string.Empty);
-                    });
-                    return;
-                }
-            });
+                        RarbgMetadata[] otherX265Metadata = availableX265Metadata
+                            .Where(metadata => videos.All(video => 
+                                !Path.GetFileNameWithoutExtension(video).StartsWith(metadata.Title, StringComparison.OrdinalIgnoreCase) 
+                                && !Path.GetFileNameWithoutExtension(video).StartsWith(metadata.Title.Replace("WEBRip", "BluRay"), StringComparison.OrdinalIgnoreCase)
+                                && !Path.GetFileNameWithoutExtension(video).StartsWith(metadata.Title.Replace("WEBRip.x264", "BluRay.H264.AAC"), StringComparison.OrdinalIgnoreCase)
+                                && !Path.GetFileNameWithoutExtension(video).StartsWith(metadata.Title.Replace("DUBBED", "CHINESE"), StringComparison.OrdinalIgnoreCase)
+                                && !Path.GetFileNameWithoutExtension(video).Replace(".DC", string.Empty, StringComparison.OrdinalIgnoreCase).StartsWith(metadata.Title, StringComparison.OrdinalIgnoreCase)
+                                && !Path.GetFileNameWithoutExtension(video).Replace(".CRITERION", string.Empty, StringComparison.OrdinalIgnoreCase).StartsWith(metadata.Title, StringComparison.OrdinalIgnoreCase)
+                                && !Path.GetFileNameWithoutExtension(video).Replace(".UNRATED", string.Empty, StringComparison.OrdinalIgnoreCase).StartsWith(metadata.Title, StringComparison.OrdinalIgnoreCase)
+                                && !Path.GetFileNameWithoutExtension(video).Replace(".REPACK", string.Empty, StringComparison.OrdinalIgnoreCase).StartsWith(metadata.Title, StringComparison.OrdinalIgnoreCase)
+                                && !Path.GetFileNameWithoutExtension(video).Replace(".EXTENDED", string.Empty, StringComparison.OrdinalIgnoreCase).StartsWith(metadata.Title, StringComparison.OrdinalIgnoreCase)
+                                && !Path.GetFileNameWithoutExtension(video).Replace(".SHOUT", string.Empty, StringComparison.OrdinalIgnoreCase).StartsWith(metadata.Title, StringComparison.OrdinalIgnoreCase)
+                                && !Path.GetFileNameWithoutExtension(video).Replace(".REMASTERED", string.Empty, StringComparison.OrdinalIgnoreCase).StartsWith(metadata.Title, StringComparison.OrdinalIgnoreCase)
+                                && !Path.GetFileNameWithoutExtension(video).Replace(".REMASTERED", string.Empty, StringComparison.OrdinalIgnoreCase).StartsWith(metadata.Title.Replace("WEBRip", "BluRay"), StringComparison.OrdinalIgnoreCase)
+                                && !Path.GetFileNameWithoutExtension(video).Replace(".PROPER", string.Empty, StringComparison.OrdinalIgnoreCase).StartsWith(metadata.Title, StringComparison.OrdinalIgnoreCase)))
+                            .ToArray();
+                        if (otherX265Metadata.Any())
+                        {
+                            log(movie);
+                            videos.ForEach(file => log(Path.GetFileName(file)));
+                            otherX265Metadata.ForEach(metadata =>
+                            {
+                                log($"x265 {metadata.Link}");
+                                log(metadata.Title);
+                                log(string.Empty);
+                            });
+                        }
+
+                        return;
+                    }
+
+                    RarbgMetadata[] availableH264Metadata = h264Metadata.ContainsKey(imdbId)
+                        ? h264Metadata[imdbId]
+                            .Where(metadata => metadata.Title.Contains("RARBG") || metadata.Title.Contains("VXT"))
+                            .ToArray()
+                        : Array.Empty<RarbgMetadata>();
+                    if (availableH264Metadata.Any())
+                    {
+                        RarbgMetadata[] otherH264Metadata = availableH264Metadata
+                            .Where(metadata => videos.All(video =>
+                                !Path.GetFileNameWithoutExtension(video).StartsWith(metadata.Title, StringComparison.OrdinalIgnoreCase)
+                                && !Path.GetFileNameWithoutExtension(video).StartsWith(metadata.Title.Replace("WEBRip", "BluRay"), StringComparison.OrdinalIgnoreCase)
+                                && !Path.GetFileNameWithoutExtension(video).StartsWith(metadata.Title.Replace("WEBRip.x264", "BluRay.H264.AAC"), StringComparison.OrdinalIgnoreCase)
+                                && !Path.GetFileNameWithoutExtension(video).StartsWith(metadata.Title.Replace("DUBBED", "CHINESE"), StringComparison.OrdinalIgnoreCase)
+                                && !Path.GetFileNameWithoutExtension(video).Replace(".DC", string.Empty, StringComparison.OrdinalIgnoreCase).StartsWith(metadata.Title, StringComparison.OrdinalIgnoreCase)
+                                && !Path.GetFileNameWithoutExtension(video).Replace(".CRITERION", string.Empty, StringComparison.OrdinalIgnoreCase).StartsWith(metadata.Title, StringComparison.OrdinalIgnoreCase)
+                                && !Path.GetFileNameWithoutExtension(video).Replace(".UNRATED", string.Empty, StringComparison.OrdinalIgnoreCase).StartsWith(metadata.Title, StringComparison.OrdinalIgnoreCase)
+                                && !Path.GetFileNameWithoutExtension(video).Replace(".REPACK", string.Empty, StringComparison.OrdinalIgnoreCase).StartsWith(metadata.Title, StringComparison.OrdinalIgnoreCase)
+                                && !Path.GetFileNameWithoutExtension(video).Replace(".EXTENDED", string.Empty, StringComparison.OrdinalIgnoreCase).StartsWith(metadata.Title, StringComparison.OrdinalIgnoreCase)
+                                && !Path.GetFileNameWithoutExtension(video).Replace(".SHOUT", string.Empty, StringComparison.OrdinalIgnoreCase).StartsWith(metadata.Title, StringComparison.OrdinalIgnoreCase)
+                                && !Path.GetFileNameWithoutExtension(video).Replace(".REMASTERED", string.Empty, StringComparison.OrdinalIgnoreCase).StartsWith(metadata.Title, StringComparison.OrdinalIgnoreCase)
+                                && !Path.GetFileNameWithoutExtension(video).Replace(".REMASTERED", string.Empty, StringComparison.OrdinalIgnoreCase).StartsWith(metadata.Title.Replace("WEBRip", "BluRay"), StringComparison.OrdinalIgnoreCase)
+                                && !Path.GetFileNameWithoutExtension(video).Replace(".PROPER", string.Empty, StringComparison.OrdinalIgnoreCase).StartsWith(metadata.Title, StringComparison.OrdinalIgnoreCase)))
+                            .ToArray();
+                        if (otherH264Metadata.Any())
+                        {
+                            log(movie);
+                            videos.ForEach(file => log(Path.GetFileName(file)));
+                            otherH264Metadata.ForEach(metadata =>
+                            {
+                                log($"H264 {metadata.Link}");
+                                log(metadata.Title);
+                                log(string.Empty);
+                            });
+                        }
+
+                        return;
+                    }
+
+                    YtsMetadata[] availableYtsMetadata = ytsMetadata.ContainsKey(imdbId)
+                        ? ytsMetadata[imdbId].ToArray()
+                        : Array.Empty<YtsMetadata>();
+                    if (availableH264Metadata.Any())
+                    {
+                        YtsMetadata[] otherYtsMetadata = availableYtsMetadata
+                            .Where(metadata => videos.All(video => !Path.GetFileNameWithoutExtension(video).StartsWith(metadata.Title, StringComparison.OrdinalIgnoreCase)))
+                            .ToArray();
+                        if (otherYtsMetadata.Any())
+                        {
+                            log(movie);
+                            videos.ForEach(file => log(Path.GetFileName(file)));
+                            otherYtsMetadata.ForEach(metadata =>
+                            {
+                                log($"YTS {metadata.Link}");
+                                log(metadata.Title);
+                                log(string.Empty);
+                            });
+                        }
+                    }
+                });
         }
 
-        internal static async Task PrintSpeciailTitles(string specialJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, Action<string>? log = null)
+        internal static async Task PrintSpecialTitles(string specialJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, Action<string>? log = null)
         {
             log ??= TraceLog;
             string[] specialImdbIds = JsonSerializer.Deserialize<string[]>(await File.ReadAllTextAsync(specialJsonPath))!;
@@ -613,9 +684,9 @@
             log ??= TraceLog;
             HashSet<string> existingImdbIds = new(
                 directories.SelectMany(directory => Directory
-                    .EnumerateFiles(directory, ImdbSearchPattern, SearchOption.AllDirectories)
+                    .EnumerateFiles(directory, JsonMetadataSearchPattern, SearchOption.AllDirectories)
                     .Select(file => Path.GetFileNameWithoutExtension(file).Split(".").First())
-                    .Where(imdbId => imdbId != "-")),
+                    .Where(imdbId => imdbId != NotExistingFlag)),
                 StringComparer.OrdinalIgnoreCase);
             Dictionary<string, RarbgMetadata[]> x265Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
             Dictionary<string, RarbgMetadata[]> h264Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;

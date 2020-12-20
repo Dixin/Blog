@@ -5,7 +5,7 @@
     using System.Text.Json;
     using System.Text.Json.Serialization;
 
-    public partial record ImdbMetadata(string Name, string[] Genre, string ContentRating, string DatePublished, ImdbAggregateRating? AggregateRating, string Url)
+    public partial record ImdbMetadata(string Name, string[] Genre, string ContentRating, string DatePublished, ImdbAggregateRating? AggregateRating, string Url, string Image)
     {
         [JsonConverter(typeof(StringOrArrayConverter))]
         public string[] Genre { get; init; } = Genre;

@@ -9,6 +9,7 @@
     using System.Linq;
     using System.Text.Json;
     using System.Threading.Tasks;
+    using CsQuery;
     using Examples.Linq;
     using OpenQA.Selenium;
     using OpenQA.Selenium.Chrome;
@@ -30,17 +31,23 @@
             return webDriver;
         }
 
-        internal static async Task DownloadSummaryAsync(IEnumerable<string> urls, string jsonPath, int degreeOfParallelism = 4)
+        internal static async Task DownloadMetadataAsync(IEnumerable<string> urls, string jsonPath, Func<int, bool>? @continue = null, int degreeOfParallelism = 4)
         {
             ConcurrentDictionary<string, RarbgMetadata[]> allSummaries = File.Exists(jsonPath)
                 ? new(JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(jsonPath)) ?? throw new InvalidOperationException(jsonPath))
                 : new();
-            await urls.ParallelForEachAsync(async (url, index) => await DownloadSummaryAsync(url, jsonPath, allSummaries, index + 1), degreeOfParallelism);
+            await urls.ParallelForEachAsync(async (url, index) => await DownloadMetadataAsync(url, jsonPath, allSummaries, index + 1, @continue), degreeOfParallelism);
             SaveJson(jsonPath, allSummaries);
         }
 
-        private static async Task DownloadSummaryAsync(string url, string jsonPath, ConcurrentDictionary<string, RarbgMetadata[]> allSummaries, int partitionIndex)
+        internal static async Task DownloadMetadataAsync(string url, string jsonPath, Func<int, bool>? @continue = null)
         {
+            await DownloadMetadataAsync(new[] { url }, jsonPath, @continue, 1);
+        }
+
+        private static async Task DownloadMetadataAsync(string url, string jsonPath, ConcurrentDictionary<string, RarbgMetadata[]> allSummaries, int partitionIndex, Func<int, bool>? @continue = null)
+        {
+            @continue ??= _ => true;
             try
             {
                 using IWebDriver webDriver = Start(@$"D:\Temp\Chrome Profile {partitionIndex}");
@@ -51,21 +58,27 @@
                 int pageIndex = 1;
                 do
                 {
+                    if (!@continue(pageIndex))
+                    {
+                        break;
+                    }
+
                     await Task.Delay(DomWait);
                     Trace.WriteLine($"{partitionIndex}:{pageIndex} Start {webDriver.Url}");
 
-                    webDriver
-                        .FindElement(By.CssSelector("table.lista2t"))
-                        .FindElements(By.CssSelector("tr.lista2"))
+                    CQ page = webDriver.PageSource;
+                    page
+                        .Find("table.lista2t tr.lista2")
                         .Select(row =>
                         {
-                            ReadOnlyCollection<IWebElement> cells = row.FindElements(By.TagName("td"));
-                            string[] texts = cells[1].Text.Trim().Split(Environment.NewLine);
+                            CQ cells = row.Cq().Children();
+                            string[] texts = cells.Eq(1).Text().Trim().Split("  ", StringSplitOptions.RemoveEmptyEntries).Where(text => !string.IsNullOrWhiteSpace(text)).ToArray();
                             string title = texts[0].Trim();
-                            ReadOnlyCollection<IWebElement> links = cells[1].FindElements(By.TagName("a"));
-                            string link = links[0].GetAttribute("href");
-                            string imdbId = links.Count > 1
-                                ? links[1].GetAttribute("href").Replace("https://rarbg.to/torrents.php?imdb=", string.Empty).Trim()
+                            CQ links = cells.Eq(1).Find("a");
+                            string baseUrl = new Uri(webDriver.Url).GetLeftPart(UriPartial.Authority);
+                            string link = $"{baseUrl}{links[0].GetAttribute("href")}";
+                            string imdbId = links.Length > 1
+                                ? links[1].GetAttribute("href").Replace("/torrents.php?imdb=", string.Empty).Trim()
                                 : string.Empty;
 
                             string[] genres = new string[0];
@@ -84,9 +97,10 @@
                                 }
                             }
 
-                            int seed = int.TryParse(cells[4].Text.Trim(), out int seedValue) ? seedValue : -1;
-                            int leech = int.TryParse(cells[5].Text.Trim(), out int leechValue) ? leechValue : -1;
-                            return new RarbgMetadata(link, title, imdbId, imdbRating, genres, cells[2].Text.Trim(), cells[3].Text.Trim(), seed, leech, cells[7].Text.Trim());
+                            string image = links[0].GetAttribute("onmouseover").Replace(@"return overlib('<img src=\'", string.Empty).Replace(@"\' border=0>')", string.Empty);
+                            int seed = int.TryParse(cells.Eq(4).Text().Trim(), out int seedValue) ? seedValue : -1;
+                            int leech = int.TryParse(cells.Eq(5).Text().Trim(), out int leechValue) ? leechValue : -1;
+                            return new RarbgMetadata(link, title, imdbId, imdbRating, genres, image, cells.Eq(2).Text().Trim(), cells.Eq(3).Text().Trim(), seed, leech, cells.Eq(7).Text().Trim());
                         })
                         .ForEach(summary =>
                         {
@@ -98,13 +112,12 @@
                             }
                         });
 
-                    if (pageIndex % SaveFrequency == 0)
+                    if (pageIndex++ % SaveFrequency == 0)
                     {
                         SaveJson(jsonPath, allSummaries);
                     }
 
                     Trace.WriteLine($"{partitionIndex}:{pageIndex} End {webDriver.Url}");
-                    pageIndex++;
                 } while (webDriver.HasNextPage(ref pager));
 
                 webDriver.Close();

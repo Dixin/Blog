@@ -26,13 +26,14 @@
 
         private static readonly Action<string> Log = text => Trace.WriteLine(text);
 
-        internal static async Task DownloadSummariesAsync(string jsonPath, int index = 1)
+        internal static async Task DownloadSummariesAsync(string jsonPath, Func<int, bool>? @continue = null, int index = 1)
         {
+            @continue ??= _ => true;
             Dictionary<string, YtsSummary> allSummaries = File.Exists(jsonPath)
                 ? JsonSerializer.Deserialize<Dictionary<string, YtsSummary>>(await File.ReadAllTextAsync(jsonPath)) ?? throw new InvalidOperationException(jsonPath)
                 : new();
             using WebClient webClient = new();
-            for (; ; index++)
+            for (; @continue(index); index++)
             {
                 string url = $"{BaseUrl}/browse-movies?page={index}";
                 Log($"Start {url}");
@@ -74,64 +75,66 @@
             await File.WriteAllTextAsync(jsonPath, finalJsonString);
         }
 
-        internal static async Task DownloadDetailsAsync(string summaryJsonPath, string detailJsonPath, int degreeOfParallelism = 4)
+        internal static async Task DownloadMetadataAsync(string summaryJsonPath, string metadataJsonPath, Func<int, bool>? @continue = null, int index = 1, int degreeOfParallelism = 4)
+        {
+            await DownloadSummariesAsync(summaryJsonPath, @continue, index);
+            await DownloadMetadataAsync(summaryJsonPath, metadataJsonPath, degreeOfParallelism);
+        }
+
+        internal static async Task DownloadMetadataAsync(string summaryJsonPath, string metadataJsonPath, int degreeOfParallelism = 4)
         {
             string summaryJsonString = await File.ReadAllTextAsync(summaryJsonPath);
             Dictionary<string, YtsSummary> summaries = JsonSerializer.Deserialize<Dictionary<string, YtsSummary>>(summaryJsonString) ?? throw new InvalidOperationException(summaryJsonPath);
 
-            ConcurrentDictionary<string, YtsMetadata[]> details = File.Exists(detailJsonPath)
-                ? new(JsonSerializer.Deserialize<Dictionary<string, YtsMetadata[]>>(await File.ReadAllTextAsync(detailJsonPath)) ?? throw new InvalidOperationException(detailJsonPath))
+            ConcurrentDictionary<string, YtsMetadata[]> details = File.Exists(metadataJsonPath)
+                ? new(JsonSerializer.Deserialize<Dictionary<string, YtsMetadata[]>>(await File.ReadAllTextAsync(metadataJsonPath)) ?? throw new InvalidOperationException(metadataJsonPath))
                 : new();
-            Dictionary<string, YtsMetadata> detailsByLink = details.Values.SelectMany(details => details).ToDictionary(detail => detail.Link, detail => detail);
+            Dictionary<string, YtsMetadata> existingMetadataByLink = details.Values.SelectMany(details => details).ToDictionary(detail => detail.Link, detail => detail);
 
             int count = 1;
-
-            await summaries.Values.ParallelForEachAsync(async (summary, index) =>
-            {
-                if (detailsByLink.ContainsKey(summary.Link))
+            await summaries
+                .Values
+                .Where(summary => !existingMetadataByLink.ContainsKey(summary.Link))
+                .ParallelForEachAsync(async (summary, index) =>
                 {
-                    return;
-                }
-
-                Log($"Start {index}:{summary.Link}");
-                using WebClient webClient = new();
-                try
-                {
-                    string html = await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(summary.Link), RetryCount);
-                    CQ cq = new(html);
-                    CQ info = cq.Find("#movie-info");
-                    YtsMetadata detail = new(
-                        Link: summary.Link,
-                        Title: summary.Title,
-                        ImdbId: info.Find("a.icon[title='IMDb Rating']").Attr("href").Replace("https://www.imdb.com/title/", string.Empty).Trim('/'),
-                        ImdbRating: summary.ImdbRating,
-                        Genres: summary.Genres,
-                        Year: summary.Year,
-                        Image: summary.Image,
-                        Language: info.Find("h2 a span").Text().Trim().TrimStart('[').TrimEnd(']'),
-                        Availabilities: info.Find("p.hidden-sm a[rel='nofollow']").ToDictionary(link => link.TextContent.Trim(), link => link.GetAttribute("href")));
-                    lock (AddItemLock)
+                    Log($"Start {index}:{summary.Link}");
+                    using WebClient webClient = new();
+                    try
                     {
-                        details[detail.ImdbId] = details.ContainsKey(detail.ImdbId)
-                            ? details[detail.ImdbId].Where(item => !string.Equals(item.Link, detail.Link, StringComparison.OrdinalIgnoreCase)).Append(detail).ToArray()
-                            : new[] { detail };
+                        string html = await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(summary.Link), RetryCount);
+                        CQ cq = new(html);
+                        CQ info = cq.Find("#movie-info");
+                        YtsMetadata detail = new(
+                            Link: summary.Link,
+                            Title: summary.Title,
+                            ImdbId: info.Find("a.icon[title='IMDb Rating']").Attr("href").Replace("https://www.imdb.com/title/", string.Empty).Trim('/'),
+                            ImdbRating: summary.ImdbRating,
+                            Genres: summary.Genres,
+                            Year: summary.Year,
+                            Image: summary.Image,
+                            Language: info.Find("h2 a span").Text().Trim().TrimStart('[').TrimEnd(']'),
+                            Availabilities: info.Find("p.hidden-sm a[rel='nofollow']").ToDictionary(link => link.TextContent.Trim(), link => link.GetAttribute("href")));
+                        lock (AddItemLock)
+                        {
+                            details[detail.ImdbId] = details.ContainsKey(detail.ImdbId)
+                                ? details[detail.ImdbId].Where(item => !string.Equals(item.Link, detail.Link, StringComparison.OrdinalIgnoreCase)).Append(detail).ToArray()
+                                : new[] { detail };
+                        }
                     }
-                }
-                catch (Exception exception)
-                {
-                    Log($"{summary.Link} {exception}");
-                }
+                    catch (Exception exception)
+                    {
+                        Log($"{summary.Link} {exception}");
+                    }
 
+                    if (Interlocked.Increment(ref count) % SaveFrequency == 0)
+                    {
+                        SaveDetail(metadataJsonPath, details);
+                    }
 
-                if (Interlocked.Increment(ref count) % SaveFrequency == 0)
-                {
-                    SaveDetail(detailJsonPath, details);
-                }
+                    Log($"End {index}:{summary.Link}");
+                }, degreeOfParallelism);
 
-                Log($"End {index}:{summary.Link}");
-            }, degreeOfParallelism);
-
-            SaveDetail(detailJsonPath, details);
+            SaveDetail(metadataJsonPath, details);
         }
 
         private static readonly object SaveJsonLock = new();

@@ -9,6 +9,7 @@ namespace Examples.IO
     using System.Threading.Tasks;
     using Examples.Linq;
     using Examples.Text;
+    using Ude;
 
     internal static partial class Video
     {
@@ -24,7 +25,7 @@ namespace Examples.IO
 
         private static readonly string[] AllSubtitleExtensions = TextSubtitleExtensions.Concat(BinarySubtitleExtensions).ToArray();
 
-        private static readonly string[] CommonChinese = { "��", "��" };
+        private static readonly string[] CommonChinese = { "的", "是" };
 
         private static readonly string[] CommonEnglish = { " of ", " is " };
 
@@ -32,12 +33,12 @@ namespace Examples.IO
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             return Directory
-                .EnumerateFiles(directory, "*", SearchOption.AllDirectories)
+                .EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
                 .Where(file => TextExtensions.Any(extension => file.EndsWith(extension, StringComparison.OrdinalIgnoreCase)))
                 .Select(file =>
                 {
                     using FileStream fileStream = File.OpenRead(file);
-                    Ude.CharsetDetector detector = new();
+                    CharsetDetector detector = new();
                     detector.Feed(fileStream);
                     detector.DataEnd();
                     return detector.Charset != null ? (detector.Charset, Confidence: detector.Confidence, File: file) : (Charset: (string?)null, Confidence: (float?)null, File: file);
@@ -129,20 +130,20 @@ namespace Examples.IO
                 });
         }
 
-        internal static void MoveSubtitlesForMovies(string mediaDirectory, string subtitleDirectory, bool overwrite = false, Action<string>? log = null)
+        internal static void MoveAllSubtitles(string fromDirectory, string toDirectory, bool overwrite = false, Action<string>? log = null)
         {
-            FileHelper.MoveAll(mediaDirectory, subtitleDirectory, searchOption: SearchOption.AllDirectories, predicate: file => file.HasAnyExtension(AllSubtitleExtensions), overwrite: overwrite);
+            FileHelper.MoveAll(fromDirectory, toDirectory, searchOption: SearchOption.AllDirectories, predicate: file => file.HasAnyExtension(AllSubtitleExtensions), overwrite: overwrite);
         }
 
         internal static void MoveSubtitlesForEpisodes(string mediaDirectory, string subtitleDirectory, string mediaExtension = VideoExtension, bool overwrite = false, Func<string, string, string>? rename = null)
         {
             Directory
-                .EnumerateFiles(mediaDirectory, $"{AllSearchPattern}{mediaExtension}", SearchOption.AllDirectories)
+                .EnumerateFiles(mediaDirectory, $"{PathHelper.AllSearchPattern}{mediaExtension}", SearchOption.AllDirectories)
                 .ForEach(video =>
                 {
                     string match = Regex.Match(Path.GetFileNameWithoutExtension(video), @"s[\d]+e[\d]+", RegexOptions.IgnoreCase).Value.ToLowerInvariant();
                     Directory
-                        .EnumerateFiles(subtitleDirectory, $"{AllSearchPattern}{match}{AllSearchPattern}", SearchOption.TopDirectoryOnly)
+                        .EnumerateFiles(subtitleDirectory, $"{PathHelper.AllSearchPattern}{match}{PathHelper.AllSearchPattern}", SearchOption.TopDirectoryOnly)
                         .Where(file => !file.EndsWith(mediaExtension, StringComparison.OrdinalIgnoreCase))
                         .ForEach(subtitle =>
                         {
@@ -175,74 +176,86 @@ namespace Examples.IO
                 .ToArray()
                 .Where(subtitle => "Subs".Equals(Path.GetFileName(Path.GetDirectoryName(subtitle)), StringComparison.OrdinalIgnoreCase))
                 .ForEach(subtitle =>
+                {
+                    string subtitleDirectory = Path.GetDirectoryName(subtitle)!;
+                    string parent = Path.GetDirectoryName(subtitleDirectory) ?? throw new InvalidOperationException(subtitle);
+                    string[] videos = Directory.GetFiles(parent, VideoSearchPattern, SearchOption.TopDirectoryOnly);
+                    string mainVideo = videos.OrderByDescending(video => new FileInfo(video).Length).First();
+                    string newSubtitle = Path.Combine(parent, Path.GetFileNameWithoutExtension(mainVideo) + Path.GetExtension(subtitle));
+                    log(newSubtitle);
+                    if (!isDryRun)
                     {
-                        string parent = Path.GetDirectoryName(Path.GetDirectoryName(subtitle)) ?? throw new InvalidOperationException(subtitle);
-                        string[] videos = Directory.GetFiles(parent, VideoSearchPattern, SearchOption.TopDirectoryOnly);
-                        string mainVideo = videos.OrderByDescending(video => new FileInfo(video).Length).First();
-                        string newSubtitle = Path.Combine(parent, Path.GetFileNameWithoutExtension(mainVideo) + Path.GetExtension(subtitle));
                         File.Move(subtitle, newSubtitle);
-                    });
+                        if (!Directory.EnumerateFiles(subtitleDirectory).Any())
+                        {
+                            Directory.Delete(subtitleDirectory);
+                        }
+                    }
+                });
 
             Directory
                 .GetFiles(directory, "*.srt", SearchOption.AllDirectories)
                 .Where(subtitle => "Subs".Equals(Path.GetFileName(Path.GetDirectoryName(subtitle)), StringComparison.OrdinalIgnoreCase))
                 .ForEach(subtitle =>
+                {
+                    string subtitleDirectory = Path.GetDirectoryName(subtitle)!;
+                    string parent = Path.GetDirectoryName(subtitleDirectory) ?? throw new InvalidOperationException(subtitle);
+                    string[] videos = Directory.GetFiles(parent, VideoSearchPattern, SearchOption.TopDirectoryOnly);
+                    string mainVideo = videos.Length == 1
+                        ? videos[0]
+                        : videos.OrderByDescending(video => new FileInfo(video).Length).First();
+                    string language = Path.GetFileNameWithoutExtension(subtitle) ?? throw new InvalidOperationException(subtitle);
+                    string suffix = language switch
                     {
-                        string parent = Path.GetDirectoryName(Path.GetDirectoryName(subtitle)) ?? throw new InvalidOperationException(subtitle);
-                        string[] videos = Directory.GetFiles(parent, "*.mp4", SearchOption.TopDirectoryOnly);
-                        string mainVideo = videos.Length == 1
-                            ? videos[0]
-                            : videos.OrderByDescending(video => new FileInfo(video).Length).First();
-                        string language =
-                            (Path.GetFileNameWithoutExtension(subtitle) ?? throw new InvalidOperationException(subtitle))
-                            .ToUpperInvariant();
-                        string suffix = language switch
+                        _ when language.Contains("eng", StringComparison.OrdinalIgnoreCase) => string.Empty,
+                        _ when language.Contains("chi", StringComparison.OrdinalIgnoreCase) => ".chs",
+                        _ => "." + language
+                    };
+                    string newSubtitle = Path.Combine(parent, $"{Path.GetFileNameWithoutExtension(mainVideo)}{suffix}.srt");
+                    log(subtitle);
+                    if (!isDryRun)
+                    {
+                        if (File.Exists(newSubtitle))
                         {
-                            _ when language.Contains("ENG") => string.Empty,
-                            _ when language.Contains("CHI") => ".chs",
-                            _ => "." + language
-                        };
-                        string newSubtitle = Path.Combine(parent, Path.GetFileNameWithoutExtension(mainVideo) + suffix + ".srt");
-                        log(subtitle);
-                        if (!isDryRun)
-                        {
-                            if (File.Exists(newSubtitle))
+                            if (string.IsNullOrEmpty(suffix))
                             {
-                                if (string.IsNullOrEmpty(suffix))
+                                long subtitleSize = new FileInfo(subtitle).Length;
+                                long newSubtitleSize = new FileInfo(newSubtitle).Length;
+                                if (subtitleSize >= newSubtitleSize)
                                 {
-                                    long subtitleSize = new FileInfo(subtitle).Length;
-                                    long newSubtitleSize = new FileInfo(newSubtitle).Length;
-                                    if (subtitleSize >= newSubtitleSize)
-                                    {
-                                        new FileInfo(newSubtitle).IsReadOnly = false;
-                                        File.Delete(newSubtitle);
-                                        File.Move(subtitle, newSubtitle);
-                                    }
-                                    else
-                                    {
-                                        new FileInfo(subtitle).IsReadOnly = false;
-                                        File.Delete(subtitle);
-                                    }
+                                    new FileInfo(newSubtitle).IsReadOnly = false;
+                                    File.Delete(newSubtitle);
+                                    File.Move(subtitle, newSubtitle);
                                 }
                                 else
                                 {
-                                    log($"!{subtitle}");
+                                    new FileInfo(subtitle).IsReadOnly = false;
+                                    File.Delete(subtitle);
                                 }
                             }
                             else
                             {
-                                File.Move(subtitle, newSubtitle);
+                                log($"!{subtitle}");
                             }
                         }
+                        else
+                        {
+                            File.Move(subtitle, newSubtitle);
+                        }
 
-                        log(newSubtitle);
-                    });
+                        if (!Directory.EnumerateFiles(subtitleDirectory).Any())
+                        {
+                            Directory.Delete(subtitleDirectory);
+                        }
+                    }
+                });
         }
 
-        internal static void RenameSubtitlesByLanguage(string directory, bool isDryRun = false, Action<string>? log = null)
+        internal static async Task RenameSubtitlesByLanguageAsync(string directory, bool isDryRun = false, Action<string>? log = null)
         {
             log ??= TraceLog;
-            Directory.GetFiles(directory, AllSearchPattern, SearchOption.AllDirectories)
+            await ConvertToUtf8Async(directory, log: log);
+            Directory.GetFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
                 .Where(IsTextSubtitle)
                 .ToArray()
                 .ForEach(file =>
@@ -287,7 +300,7 @@ namespace Examples.IO
         internal static void PrintSubtitlesWithErrors(string directory, Action<string>? log = null)
         {
             log ??= TraceLog;
-            Directory.GetFiles(directory, "*", SearchOption.AllDirectories)
+            Directory.GetFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
                 .Where(IsTextSubtitle)
                 .ForEach(subtitle =>
                 {
@@ -310,14 +323,14 @@ namespace Examples.IO
                     string postfix = Path.GetFileNameWithoutExtension(subtitle).Split(".").Last();
                     if (postfix.Contains("chs") || postfix.Contains("cht"))
                     {
-                        if (!File.ReadAllText(subtitle).Contains("��"))
+                        if (!File.ReadAllText(subtitle).Contains("的"))
                         {
                             log($"!Not Chinese {subtitle}");
                         }
                     }
                     else
                     {
-                        if (File.ReadAllText(subtitle).Contains("��"))
+                        if (File.ReadAllText(subtitle).Contains("的"))
                         {
                             log($"!Chinese {subtitle}");
                         }

@@ -6,10 +6,6 @@ namespace Examples.IO
 
     internal class VideoDirectoryInfo
     {
-        internal const string InvalidAggregateRating = "-";
-
-        internal const string InvalidContentRating = "-";
-
         private static readonly Regex MovieDirectoryRegex = new(@"^([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?((\=[^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?)?\.([0-9]{4})\.([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?\[([0-9]\.[0-9]|\-)\]\[(\-|R|PG|PG13|Unrated|NA|TVPG|NC17|GP|G|Approved|TVMA|Passed|TV14|TVG|X|E|MPG|M)\](\[(1080p|720p)\])?(\[3D\])?$");
 
         internal VideoDirectoryInfo(string name) => this.Initialize(name);
@@ -46,7 +42,7 @@ namespace Examples.IO
         {
             get
             {
-                if (string.Equals(InvalidAggregateRating, this.AggregateRating))
+                if (string.Equals(Video.NotExistingFlag, this.AggregateRating))
                 {
                     return -1.0;
                 }

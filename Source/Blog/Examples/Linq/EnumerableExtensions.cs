@@ -28,7 +28,13 @@
         public static async Task ParallelForEachAsync<T>(
             this IEnumerable<T> source, Func<T, int, Task> asyncAction, int? maxDegreeOfParallelism = null)
         {
-            maxDegreeOfParallelism ??= Environment.ProcessorCount;
+            if (maxDegreeOfParallelism == 1)
+            {
+                await source.ForEachAsync(asyncAction);
+                return;
+            }
+
+            maxDegreeOfParallelism ??= Math.Min(Environment.ProcessorCount, 512);
             OrderablePartitioner<T> partitioner = source is IList<T> list
                 ? Partitioner.Create(list, loadBalance: true)
                 : Partitioner.Create(source, EnumerablePartitionerOptions.NoBuffering);
@@ -43,7 +49,10 @@
                 })));
         }
 
-
+        public static async Task ForEachAsync<T>(this ParallelQuery<T> source, Func<T, Task> asyncAction)
+        {
+            await Task.WhenAll(source.Select(asyncAction).ToArray());
+        }
 
         public static async Task ParallelForEachAsync<T>(
             this IEnumerable<T> source, Func<T, Task> asyncAction, int? maxDegreeOfParallelism = null)

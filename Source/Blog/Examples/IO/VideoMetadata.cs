@@ -22,6 +22,5 @@
         internal int Subtitle { get; set; }
 
         internal TimeSpan Duration => TimeSpan.FromSeconds(this.TotalMilliseconds);
-
     }
 }

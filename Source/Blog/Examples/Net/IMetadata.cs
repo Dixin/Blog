@@ -11,5 +11,7 @@
         string ImdbRating { get; }
 
         string[] Genres { get; }
+
+        string Image { get; }
     }
 }

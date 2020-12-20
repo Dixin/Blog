@@ -16,7 +16,7 @@ namespace Examples.IO
         internal static void RenameFiles(string path, Func<string, int, string> rename, string? pattern = null, SearchOption? searchOption = null, Func<string, bool>? predicate = null, bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
         {
             log ??= TraceLog;
-            Directory.EnumerateFiles(path, pattern ?? "*", searchOption ?? SearchOption.AllDirectories)
+            Directory.EnumerateFiles(path, pattern ?? PathHelper.AllSearchPattern, searchOption ?? SearchOption.AllDirectories)
                 .Where(file => predicate?.Invoke(file) ?? true)
                 .OrderBy(file => file)
                 .ToArray()
@@ -38,7 +38,7 @@ namespace Examples.IO
         internal static void RenameDirectories(string path, Func<string, string> rename, string? pattern = null, SearchOption? searchOption = null, Func<string, bool>? predicate = null, Action<string>? log = null)
         {
             log ??= TraceLog;
-            Directory.GetDirectories(path, pattern ?? "*", searchOption ?? SearchOption.AllDirectories)
+            Directory.GetDirectories(path, pattern ?? PathHelper.AllSearchPattern, searchOption ?? SearchOption.AllDirectories)
                 .Where(directory => predicate?.Invoke(directory) ?? true)
                 .ForEach(directory =>
                 {
@@ -91,23 +91,23 @@ namespace Examples.IO
                     log(file);
                     log(Path.Combine(directory, newFile));
                     File.Move(file, Path.Combine(directory, newFile));
-                    Directory.GetFiles(directory, "*", SearchOption.TopDirectoryOnly)
+                    Directory.GetFiles(directory, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
                         .Where(attachment => attachment != file)
                         .Where(attachment => (Path.GetFileName(attachment) ?? throw new InvalidOperationException(file)).StartsWith(Path.GetFileNameWithoutExtension(file), StringComparison.OrdinalIgnoreCase))
                         .ToList()
                         .ForEach(attachment =>
-                            {
-                                string newAttachment = Path.Combine(directory, (Path.GetFileName(attachment) ?? throw new InvalidOperationException(file)).Replace(Path.GetFileNameWithoutExtension(file), string.Join(".", info.SkipLast(1))));
-                                log(newAttachment);
-                                File.Move(attachment, newAttachment);
-                            });
+                        {
+                            string newAttachment = Path.Combine(directory, (Path.GetFileName(attachment) ?? throw new InvalidOperationException(file)).Replace(Path.GetFileNameWithoutExtension(file), string.Join(".", info.SkipLast(1))));
+                            log(newAttachment);
+                            File.Move(attachment, newAttachment);
+                        });
                 });
         }
 
         internal static void RenameEpisodesWithTitle(string nfoDirectory, string mediaDirectory, Func<string, string, string> rename, bool isDryRun = false, Action<string>? log = null)
         {
             log ??= TraceLog;
-            Directory.EnumerateFiles(nfoDirectory, MetadataSearchPattern, SearchOption.AllDirectories)
+            Directory.EnumerateFiles(nfoDirectory, XmlMetadataSearchPattern, SearchOption.AllDirectories)
                 .ToList()
                 .ForEach(nfo =>
                 {
@@ -137,7 +137,7 @@ namespace Examples.IO
         internal static void RenameVideosWithDefinition(string directory, SearchOption searchOption = SearchOption.TopDirectoryOnly, bool isDryRun = false, Action<string>? log = null)
         {
             RenameVideosWithDefinition(
-                Directory.GetFiles(directory, "*", searchOption)
+                Directory.GetFiles(directory, PathHelper.AllSearchPattern, searchOption)
                     .Where(file => AllVideoExtensions.Any(extension => file.EndsWith(extension, StringComparison.InvariantCultureIgnoreCase)))
                     .ToArray(),
                 isDryRun,
@@ -163,7 +163,6 @@ namespace Examples.IO
                     {
                         string file = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(result.File));
                         newFile = Path.Combine(Path.GetDirectoryName(result.File) ?? throw new InvalidOperationException(result.File), $"{file}.{result.Definition}{result.Extension}{extension}");
-
                     }
                     else
                     {
@@ -225,13 +224,14 @@ namespace Examples.IO
                         return;
                     }
 
-                    string[] nfos = Directory.GetFiles(movie, MetadataSearchPattern, SearchOption.TopDirectoryOnly).OrderBy(nfo => nfo).ToArray();
+                    string[] files = Directory.GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly).OrderBy(file => file).ToArray();
+                    string[] nfos = files.Where(file=>file.HasExtension(XmlMetadataExtension)).ToArray();
                     XDocument english;
                     XDocument? chinese;
-                    if (nfos.Any(nfo => nfo.EndsWith($".{backupFlag}{MetadataExtension}")) && nfos.Any(nfo => !nfo.EndsWith($".{backupFlag}{MetadataExtension}")))
+                    if (nfos.Any(nfo => nfo.EndsWith($".{backupFlag}{XmlMetadataExtension}")) && nfos.Any(nfo => !nfo.EndsWith($".{backupFlag}{XmlMetadataExtension}")))
                     {
-                        english = XDocument.Load(nfos.First(nfo => nfo.EndsWith($".{backupFlag}{MetadataExtension}")));
-                        chinese = XDocument.Load(nfos.First(nfo => !nfo.EndsWith($".{backupFlag}{MetadataExtension}")));
+                        english = XDocument.Load(nfos.First(nfo => nfo.EndsWith($".{backupFlag}{XmlMetadataExtension}")));
+                        chinese = XDocument.Load(nfos.First(nfo => !nfo.EndsWith($".{backupFlag}{XmlMetadataExtension}")));
                     }
                     else
                     {
@@ -239,7 +239,7 @@ namespace Examples.IO
                         chinese = null;
                     }
 
-                    string json = Directory.GetFiles(movie, "*.json", SearchOption.TopDirectoryOnly).Single();
+                    string json = files.Where(file => file.HasExtension(JsonMetadataExtension)).Single();
                     Imdb.TryLoad(json, out ImdbMetadata? imdbMetadata);
 
                     string englishTitle = english.Root?.Element("title")?.Value ?? throw new InvalidOperationException($"{movie} has no English title.");
@@ -253,7 +253,7 @@ namespace Examples.IO
                     string rating = string.IsNullOrWhiteSpace(imdbId)
                         ? "-"
                         : float.TryParse(imdbMetadata?.AggregateRating?.RatingValue, out float ratingFloat) ? ratingFloat.ToString("0.0") : "0.0";
-                    string[] videos = Directory.GetFiles(movie, VideoSearchPattern, SearchOption.TopDirectoryOnly).Concat(Directory.GetFiles(movie, "*.avi", SearchOption.TopDirectoryOnly)).ToArray();
+                    string[] videos = files.Where(file => file.HasAnyExtension(AllVideoExtensions)).ToArray();
                     string contentRating = imdbMetadata?.FormattedContentRating ?? "-";
                     string definition = videos switch
                     {
@@ -265,7 +265,7 @@ namespace Examples.IO
                         ? string.Empty
                         : $"={originalTitle}";
                     string additional = additionalInfo
-                        ? $"{{{string.Join(",", imdbMetadata?.Regions.Take(5) ?? Array.Empty<string>())};{string.Join(",", imdbMetadata?.Genre.Take(3) ?? Array.Empty<string>())};{imdbMetadata?.ContentRating}}}"
+                        ? $"{{{string.Join(",", imdbMetadata?.Regions.Take(5) ?? Array.Empty<string>())};{string.Join(",", imdbMetadata?.Genre?.Take(3) ?? Array.Empty<string>())}}}"
                         : string.Empty;
                     string newMovie = $"{englishTitle.FilterForFileSystem()}{originalTitle.FilterForFileSystem()}.{year}.{chineseTitle.FilterForFileSystem()}[{rating}][{contentRating}]{definition}{additional}";
                     string newDirectory = Path.Combine(Path.GetDirectoryName(movie) ?? throw new InvalidOperationException(movie), newMovie);
@@ -288,7 +288,7 @@ namespace Examples.IO
                 });
         }
 
-        internal static void RenameDirectoriesWithoutMetadata(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
+        internal static void RenameDirectoriesWithoutAdditionalMetadata(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
         {
             log ??= TraceLog;
             EnumerateDirectories(directory, level)
@@ -337,7 +337,7 @@ namespace Examples.IO
             log ??= TraceLog;
             EnumerateDirectories(directory, level)
                 .ToArray()
-                .Select(movie => (Directory: movie, Metadata: XDocument.Load(Directory.GetFiles(movie, MetadataSearchPattern, SearchOption.TopDirectoryOnly).First())))
+                .Select(movie => (Directory: movie, Metadata: XDocument.Load(Directory.GetFiles(movie, XmlMetadataSearchPattern, SearchOption.TopDirectoryOnly).First())))
                 .Where(movie => predicate?.Invoke(movie.Directory, movie.Metadata) ?? true)
                 .ForEach(movie =>
                 {
@@ -443,7 +443,7 @@ namespace Examples.IO
 
                     log($"Move external video {fromVideoMetadata.File} to {newExternalVideo}");
 
-                    Directory.GetFiles(fromMovie, AllSearchPattern, SearchOption.TopDirectoryOnly)
+                    Directory.GetFiles(fromMovie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
                         .Where(file => moveAllAttachment || Path.GetFileNameWithoutExtension(file).Contains(Path.GetFileNameWithoutExtension(fromVideoMetadata.File), StringComparison.InvariantCultureIgnoreCase))
                         .ToArray()
                         .ForEach(fromAttachment =>
@@ -475,7 +475,7 @@ namespace Examples.IO
 
                     log($"Delete video {toVideoMetadata.File}");
 
-                    Directory.GetFiles(toMovie, AllSearchPattern, SearchOption.TopDirectoryOnly)
+                    Directory.GetFiles(toMovie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
                         .Where(file => Path.GetFileNameWithoutExtension(file).Contains(Path.GetFileNameWithoutExtension(toVideoMetadata.File), StringComparison.InvariantCultureIgnoreCase))
                         .ToArray()
                         .ForEach(existingAttachment =>
@@ -509,6 +509,7 @@ namespace Examples.IO
                     }
 
                     log($"Move external movie {fromMovie} to {deletedFromMovie}");
+                    log(string.Empty);
                 });
         }
 

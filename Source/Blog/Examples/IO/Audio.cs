@@ -184,7 +184,7 @@
 
         internal static void GetTags(string directory, Action<string, TagFile, Tag> action)
         {
-            Directory.EnumerateDirectories(directory, "*", SearchOption.TopDirectoryOnly)
+            Directory.EnumerateDirectories(directory, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
                 .OrderBy(album => album)
                 .ForEach(album => Directory
                     .EnumerateFiles(album, "*.mp3", SearchOption.TopDirectoryOnly)
@@ -200,7 +200,7 @@
 
         internal static void GetTagsByAlbum(string directory, Action<(string Audio, TagFile TagFile, Tag Tag)[]> action)
         {
-            Directory.EnumerateDirectories(directory, "*", SearchOption.TopDirectoryOnly)
+            Directory.EnumerateDirectories(directory, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
                 .OrderBy(album => album)
                 .ForEach(album =>
                 {
@@ -223,10 +223,10 @@
         {
             log ??= TraceLog;
             Directory
-                .GetDirectories(directory, "*", SearchOption.TopDirectoryOnly)
+                .GetDirectories(directory, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
                 .ForEach(album =>
                 {
-                    string[] files = Directory.GetFiles(album, "*", SearchOption.TopDirectoryOnly);
+                    string[] files = Directory.GetFiles(album, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
                     string[] audios = files.Where(f => f.EndsWith(".mp3")).ToArray();
                     string[] attachments = files.Where(f => Attachments.Contains(Path.GetFileNameWithoutExtension(f))).ToArray();
                     string[] metadata = files.Where(f => Path.GetFileName(f) == "album.nfo").ToArray();

@@ -62,7 +62,7 @@ namespace Examples.IO
             File.Move(source, destination);
         }
 
-        public static void Backup(string file)
+        public static void Backup(string file, bool overwrite = false)
         {
             string backUp = $"{file}.bak";
             if (File.Exists(backUp))
@@ -74,7 +74,7 @@ namespace Examples.IO
                 }
             }
 
-            File.Copy(file, backUp, true);
+            File.Copy(file, backUp, overwrite);
         }
 
         public static async Task CopyAsync(string fromPath, string toPath)
