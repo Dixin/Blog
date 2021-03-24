@@ -8,14 +8,31 @@ namespace Examples.Common
 
     public static partial class StringExtensions
     {
-        public static string With
-                (this string format, params object[] args) => string.Format(CultureInfo.InvariantCulture, format, args);
+        public static string With(this string format, params object[] args) => 
+            string.Format(CultureInfo.InvariantCulture, format, args);
 
         public static bool ContainsIgnoreCase(this string value, string substring)
         {
             Argument.NotNull(value, nameof(value));
 
-            return value.IndexOf(substring, StringComparison.OrdinalIgnoreCase) >= 0;
+            return value.Contains(substring, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static bool StartsWithIgnoreCase(this string value, string substring)
+        {
+            Argument.NotNull(value, nameof(value));
+
+            return value.StartsWith(substring, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static bool IsNullOrWhiteSpace(this string value)
+        {
+            return string.IsNullOrWhiteSpace(value);
+        }
+
+        public static bool IsNotNullOrWhiteSpace(this string value)
+        {
+            return !string.IsNullOrWhiteSpace(value);
         }
 
         public static bool EqualsIgnoreCase

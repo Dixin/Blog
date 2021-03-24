@@ -322,6 +322,11 @@ namespace Examples.IO
             return file.HasAnyExtension(CommonVideoExtensions);
         }
 
+        internal static bool IsVideo(this string file)
+        {
+            return file.HasAnyExtension(AllVideoExtensions);
+        }
+
         internal static bool IsTextSubtitle(this string file)
         {
             return file.HasAnyExtension(TextSubtitleExtensions);

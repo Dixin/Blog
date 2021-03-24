@@ -1,42 +1,43 @@
 namespace Examples.IO
 {
     using System;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Text.RegularExpressions;
 
-    internal class VideoDirectoryInfo
+    internal record VideoDirectoryInfo
     {
-        private static readonly Regex MovieDirectoryRegex = new(@"^([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?((\=[^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?)?\.([0-9]{4})\.([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?\[([0-9]\.[0-9]|\-)\]\[(\-|R|PG|PG13|Unrated|NA|TVPG|NC17|GP|G|Approved|TVMA|Passed|TV14|TVG|X|E|MPG|M)\](\[(1080p|720p)\])?(\[3D\])?$");
+        private static readonly Regex NameRegex = new(@"^([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?((\=[^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?)?\.([0-9]{4})\.([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?\[([0-9]\.[0-9]|\-)\]\[(\-|R|PG|PG13|Unrated|NA|TVPG|NC17|GP|G|Approved|TVMA|Passed|TV14|TVG|X|E|MPG|M|AO)\](\[(1080p|720p)\])?(\[3D\])?$");
 
-        internal VideoDirectoryInfo(string name) => this.Initialize(name);
+        internal VideoDirectoryInfo(string name) => this.Name = name;
 
-        internal string DefaultTitle1 { get; set; } = string.Empty;
+        internal string DefaultTitle1 { get; init; } = string.Empty;
 
-        internal string DefaultTitle2 { get; set; } = string.Empty;
+        internal string DefaultTitle2 { get; init; } = string.Empty;
 
-        internal string DefaultTitle3 { get; set; } = string.Empty;
+        internal string DefaultTitle3 { get; init; } = string.Empty;
 
-        internal string OriginalTitle1 { get; set; } = string.Empty;
+        internal string OriginalTitle1 { get; init; } = string.Empty;
 
-        internal string OriginalTitle2 { get; set; } = string.Empty;
+        internal string OriginalTitle2 { get; init; } = string.Empty;
 
-        internal string OriginalTitle3 { get; set; } = string.Empty;
+        internal string OriginalTitle3 { get; init; } = string.Empty;
 
-        internal string Year { get; set; } = string.Empty;
+        internal string Year { get; init; } = string.Empty;
 
-        internal string TranslatedTitle1 { get; set; } = string.Empty;
+        internal string TranslatedTitle1 { get; init; } = string.Empty;
 
-        internal string TranslatedTitle2 { get; set; } = string.Empty;
+        internal string TranslatedTitle2 { get; init; } = string.Empty;
 
-        internal string TranslatedTitle3 { get; set; } = string.Empty;
+        internal string TranslatedTitle3 { get; init; } = string.Empty;
 
-        internal string AggregateRating { get; set; } = string.Empty;
+        internal string AggregateRating { get; init; } = string.Empty;
 
-        internal string ContentRating { get; set; } = string.Empty;
+        internal string ContentRating { get; init; } = string.Empty;
 
-        internal string Definition { get; set; } = string.Empty;
+        internal string Definition { get; init; } = string.Empty;
 
-        internal string Is3D { get; set; } = string.Empty;
+        internal string Is3D { get; init; } = string.Empty;
 
         internal double FormattedAggregateRating
         {
@@ -61,36 +62,48 @@ namespace Examples.IO
         internal string Name
         {
             get => $"{this.DefaultTitle1}{this.DefaultTitle2}{this.DefaultTitle3}{this.OriginalTitle1}{this.OriginalTitle2}{this.OriginalTitle3}.{this.Year}.{this.TranslatedTitle1}{this.TranslatedTitle2}{this.TranslatedTitle3}[{this.AggregateRating}][{this.ContentRating}]{this.Definition}{this.Is3D}";
-            set => this.Initialize(value);
+            init
+            {
+                if (Path.IsPathRooted(value))
+                {
+                    value = Path.GetFileName(value);
+                }
+
+                Match match = NameRegex.Match(value);
+                if (!match.Success)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                this.DefaultTitle1 = match.Groups[1].Value;
+                this.DefaultTitle2 = match.Groups[2].Value;
+                this.DefaultTitle3 = match.Groups[3].Value;
+                this.OriginalTitle1 = match.Groups[5].Value;
+                this.OriginalTitle2 = match.Groups[6].Value;
+                this.OriginalTitle3 = match.Groups[7].Value;
+                this.Year = match.Groups[8].Value;
+                this.TranslatedTitle1 = match.Groups[9].Value;
+                this.TranslatedTitle2 = match.Groups[10].Value;
+                this.TranslatedTitle3 = match.Groups[11].Value;
+                this.AggregateRating = match.Groups[12].Value;
+                this.ContentRating = match.Groups[13].Value;
+                this.Definition = match.Groups[14].Value;
+                this.Is3D = match.Groups[16].Value;
+            }
         }
 
-        private void Initialize(string name)
+        internal static bool TryParse(string name, [NotNullWhen(true)] out VideoDirectoryInfo? info)
         {
-            if (Path.IsPathRooted(name))
+            try
             {
-                name = Path.GetFileName(name);
+                info = new VideoDirectoryInfo(name);
+                return true;
             }
-
-            Match directoryMatch = MovieDirectoryRegex.Match(name);
-            if (!directoryMatch.Success)
+            catch (ArgumentOutOfRangeException)
             {
-                throw new ArgumentOutOfRangeException(nameof(name));
+                info = null;
+                return false;
             }
-
-            this.DefaultTitle1 = directoryMatch.Groups[1].Value;
-            this.DefaultTitle2 = directoryMatch.Groups[2].Value;
-            this.DefaultTitle3 = directoryMatch.Groups[3].Value;
-            this.OriginalTitle1 = directoryMatch.Groups[5].Value;
-            this.OriginalTitle2 = directoryMatch.Groups[6].Value;
-            this.OriginalTitle3 = directoryMatch.Groups[7].Value;
-            this.Year = directoryMatch.Groups[8].Value;
-            this.TranslatedTitle1 = directoryMatch.Groups[9].Value;
-            this.TranslatedTitle2 = directoryMatch.Groups[10].Value;
-            this.TranslatedTitle3 = directoryMatch.Groups[11].Value;
-            this.AggregateRating = directoryMatch.Groups[12].Value;
-            this.ContentRating = directoryMatch.Groups[13].Value;
-            this.Definition = directoryMatch.Groups[14].Value;
-            this.Is3D = directoryMatch.Groups[16].Value;
         }
     }
 }

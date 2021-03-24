@@ -4,6 +4,7 @@
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
 
     public static class EnumerableExtensions
@@ -18,35 +19,56 @@
 
         public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, int, Task> asyncAction)
         {
-            int index = 0;
+            int index = -1;
             foreach (T value in source)
             {
                 await asyncAction(value, checked(++index));
             }
         }
 
+        public static async Task ForEachAsync<T>(this IEnumerator<T> iterator, Func<T, int, Task> asyncAction)
+        {
+            int index = -1;
+            while (iterator.MoveNext())
+            {
+                await asyncAction(iterator.Current, checked(++index));
+            }
+        }
+
+        private static readonly int DefaultMaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 512);
+
         public static async Task ParallelForEachAsync<T>(
             this IEnumerable<T> source, Func<T, int, Task> asyncAction, int? maxDegreeOfParallelism = null)
         {
+            maxDegreeOfParallelism ??= DefaultMaxDegreeOfParallelism;
+            if (maxDegreeOfParallelism <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maxDegreeOfParallelism));
+            }
+
+            int index = -1;
             if (maxDegreeOfParallelism == 1)
             {
-                await source.ForEachAsync(asyncAction);
+                foreach (T value in source)
+                {
+                    await asyncAction(value, checked(++index));
+                }
+
                 return;
             }
 
-            maxDegreeOfParallelism ??= Math.Min(Environment.ProcessorCount, 512);
             OrderablePartitioner<T> partitioner = source is IList<T> list
                 ? Partitioner.Create(list, loadBalance: true)
                 : Partitioner.Create(source, EnumerablePartitionerOptions.NoBuffering);
             await Task.WhenAll(partitioner
                 .GetPartitions(maxDegreeOfParallelism.Value)
-                .Select((partition, index) => Task.Run(async () =>
+                .Select(async partition =>
                 {
                     while (partition.MoveNext())
                     {
-                        await asyncAction(partition.Current, index);
+                        await asyncAction(partition.Current, Interlocked.Increment(ref index));
                     }
-                })));
+                }));
         }
 
         public static async Task ForEachAsync<T>(this ParallelQuery<T> source, Func<T, Task> asyncAction)
@@ -57,7 +79,34 @@
         public static async Task ParallelForEachAsync<T>(
             this IEnumerable<T> source, Func<T, Task> asyncAction, int? maxDegreeOfParallelism = null)
         {
-            await source.ParallelForEachAsync((value, _) => asyncAction(value), maxDegreeOfParallelism);
+            maxDegreeOfParallelism ??= DefaultMaxDegreeOfParallelism;
+            if (maxDegreeOfParallelism <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maxDegreeOfParallelism));
+            }
+
+            if (maxDegreeOfParallelism == 1)
+            {
+                foreach (T value in source)
+                {
+                    await asyncAction(value);
+                }
+
+                return;
+            }
+
+            OrderablePartitioner<T> partitioner = source is IList<T> list
+                ? Partitioner.Create(list, loadBalance: true)
+                : Partitioner.Create(source, EnumerablePartitionerOptions.NoBuffering);
+            await Task.WhenAll(partitioner
+                .GetPartitions(maxDegreeOfParallelism.Value)
+                .Select(async partition =>
+                {
+                    while (partition.MoveNext())
+                    {
+                        await asyncAction(partition.Current);
+                    }
+                }));
         }
 
         public static IEnumerable<T> NotNull<T>(this IEnumerable<T?> source) where T : class
@@ -67,7 +116,7 @@
 
         public static ParallelQuery<T> NotNull<T>(this ParallelQuery<T?> source) where T : class
         {
-            return source.Where(value => !(value is null))!; // Equivalent to: source.Where(value => !(value is null)).Select(value => value!).
+            return source.Where(value => value is not null)!; // Equivalent to: source.Where(value => !(value is null)).Select(value => value!).
         }
     }
 }

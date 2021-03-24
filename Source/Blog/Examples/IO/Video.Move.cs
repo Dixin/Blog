@@ -385,7 +385,7 @@ namespace Examples.IO
 
                     VideoMetadata toVideoMetadata = group.Single().Value;
                     toVideoMetadata.File = Path.Combine(Path.GetDirectoryName(toJsonPath) ?? throw new ArgumentException(toJsonPath), toVideoMetadata.File);
-                    if (TopVersion.IsMatch(Path.GetFileNameWithoutExtension(toVideoMetadata.File)))
+                    if (new VideoFileInfo(Path.GetFileNameWithoutExtension(toVideoMetadata.File)).IsTop)
                     {
                         log($"Video {toVideoMetadata.File} is x265.");
                         return;
@@ -397,8 +397,8 @@ namespace Examples.IO
                         return;
                     }
 
-                    if (Regex.IsMatch(Path.GetFileNameWithoutExtension(toVideoMetadata.File), "(RARBG|VXT)", RegexOptions.IgnoreCase) &&
-                        !Regex.IsMatch(Path.GetFileNameWithoutExtension(fromVideoMetadata.File), "(RARBG|VXT)", RegexOptions.IgnoreCase))
+                    if (VideoFileInfo.IsTopOrPremium(Path.GetFileNameWithoutExtension(toVideoMetadata.File)) &&
+                        !VideoFileInfo.IsTopOrPremium(Path.GetFileNameWithoutExtension(fromVideoMetadata.File)))
                     {
                         log($"Video {toVideoMetadata.File} is better version.");
                         return;
@@ -591,13 +591,16 @@ namespace Examples.IO
                         return $"!Original secondary number is inconsistent:  {movie}";
                     }
 
-                    videoDirectoryInfo.DefaultTitle1 = Regex.Replace(videoDirectoryInfo.DefaultTitle1, " ([0-9]{1,2})$", "`$1");
-                    videoDirectoryInfo.DefaultTitle2 = Regex.Replace(videoDirectoryInfo.DefaultTitle2, " ([0-9]{1,2})$", "`$1");
-                    videoDirectoryInfo.OriginalTitle1 = Regex.Replace(videoDirectoryInfo.OriginalTitle1, " ([0-9]{1,2})$", "`$1");
-                    videoDirectoryInfo.OriginalTitle2 = Regex.Replace(videoDirectoryInfo.OriginalTitle2, " ([0-9]{1,2})$", "`$1");
-                    videoDirectoryInfo.TranslatedTitle1 = Regex.Replace(videoDirectoryInfo.TranslatedTitle1, "([0-9]{1,2})$", "`$1");
-                    videoDirectoryInfo.TranslatedTitle2 = Regex.Replace(videoDirectoryInfo.TranslatedTitle2, "([0-9]{1,2})$", "`$1");
-                    string newMovie = PathHelper.ReplaceFileName(movie, videoDirectoryInfo.Name);
+                    VideoDirectoryInfo newVideoDirectoryInfo = videoDirectoryInfo with
+                    {
+                        DefaultTitle1 = Regex.Replace(videoDirectoryInfo.DefaultTitle1, " ([0-9]{1,2})$", "`$1"),
+                        DefaultTitle2 = Regex.Replace(videoDirectoryInfo.DefaultTitle2, " ([0-9]{1,2})$", "`$1"),
+                        OriginalTitle1 = Regex.Replace(videoDirectoryInfo.OriginalTitle1, " ([0-9]{1,2})$", "`$1"),
+                        OriginalTitle2 = Regex.Replace(videoDirectoryInfo.OriginalTitle2, " ([0-9]{1,2})$", "`$1"),
+                        TranslatedTitle1 = Regex.Replace(videoDirectoryInfo.TranslatedTitle1, "([0-9]{1,2})$", "`$1"),
+                        TranslatedTitle2 = Regex.Replace(videoDirectoryInfo.TranslatedTitle2, "([0-9]{1,2})$", "`$1")
+                    };
+                    string newMovie = PathHelper.ReplaceFileName(movie, newVideoDirectoryInfo.Name);
                     Debug.Assert(newMovie.Length - movie.Length == 1 || newMovie.Length - movie.Length == 2);
                     Directory.Move(movie, newMovie);
                     return newMovie;

@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Text.RegularExpressions;
     using System.Xml.Linq;
+    using Examples.Net;
 
     internal static partial class Video
     {
@@ -117,6 +118,49 @@
                 .Where(season => !string.Equals(Path.GetFileName(season), Featurettes, StringComparison.OrdinalIgnoreCase))
                 .OrderBy(season => season)
                 .ForEach(season => CreateSeasonEpisodeMetadata(season, getTitle, getEpisode, getSeason, overwrite));
+        }
+
+        internal static void SyncRating(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
+        {
+            log ??= TraceLog;
+            EnumerateDirectories(directory, level)
+                .ToArray()
+                .ForEach(movie =>
+                {
+                    string metadataPath = Directory.GetFiles(movie, XmlMetadataSearchPattern).First();
+                    XDocument metadata = XDocument.Load(metadataPath);
+                    XElement? ratingElement = metadata.Root!.Element("rating");
+                    if (Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata) && !string.IsNullOrWhiteSpace(imdbMetadata.AggregateRating?.RatingValue))
+                    {
+                        // IMDB has rating.
+                        if (string.Equals(ratingElement?.Value, imdbMetadata.AggregateRating.RatingValue.Replace(".0", string.Empty)))
+                        {
+                            return;
+                        }
+
+                        log($"{movie} rating {ratingElement?.Value} is set to {imdbMetadata.AggregateRating.RatingValue.Replace(".0", string.Empty)}.");
+                        if (!isDryRun)
+                        {
+                            metadata.Root!.SetElementValue("rating", imdbMetadata.AggregateRating.RatingValue.Replace(".0", string.Empty));
+                            metadata.Save(metadataPath);
+                        }
+                    }
+                    else
+                    {
+                        // IMDB has no rating.
+                        if (ratingElement is null)
+                        {
+                            return;
+                        }
+
+                        log($"{movie} rating {ratingElement.Value} is removed.");
+                        if (!isDryRun)
+                        {
+                            ratingElement.Remove();
+                            metadata.Save(metadataPath);
+                        }
+                    }
+                });
         }
     }
 }
