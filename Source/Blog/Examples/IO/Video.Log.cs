@@ -612,7 +612,7 @@
                                 string videoName = Path.GetFileNameWithoutExtension(video);
                                 VideoFileInfo videoInfo = new(videoName);
                                 string title = metadata.Title;
-                                return !videoInfo.IsTop
+                                return !videoInfo.IsPremium
                                     || !videoName.StartsWithIgnoreCase(metadata.Title)
                                     && (videoInfo.Origin != ".BluRay" || !title.ContainsIgnoreCase(".WEBRip."))
                                     && (videoInfo.Edition.Contains("DUBBED") || !title.ContainsIgnoreCase(".DUBBED."))
@@ -690,7 +690,7 @@
                             videos.ForEach(file => log(Path.GetFileName(file)));
                             otherYtsMetadata.ForEach(metadataVersion =>
                             {
-                                log($"YTS {metadataVersion.metadata.Link}");
+                                log($"Preferred {metadataVersion.metadata.Link}");
                                 log($"{metadataVersion.version.Key} {metadataVersion.version.Value}");
                                 log(string.Empty);
                             });
