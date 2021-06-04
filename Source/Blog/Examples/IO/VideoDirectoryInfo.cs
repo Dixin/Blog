@@ -7,7 +7,7 @@ namespace Examples.IO
 
     internal record VideoDirectoryInfo
     {
-        private static readonly Regex NameRegex = new(@"^([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?((\=[^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?)?\.([0-9]{4})\.([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?\[([0-9]\.[0-9]|\-)\]\[(\-|R|PG|PG13|Unrated|NA|TVPG|NC17|GP|G|Approved|TVMA|Passed|TV14|TVG|X|E|MPG|M|AO)\](\[(1080p|720p)\])?(\[3D\])?$");
+        private static readonly Regex NameRegex = new(@"^([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?((\=[^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?)?\.([0-9]{4})\.([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?\[([0-9]\.[0-9]|\-)\]\[(\-|R|PG|PG13|Unrated|NA|TVPG|NC17|GP|G|Approved|TVMA|Passed|TV14|TVG|X|E|MPG|M|AO|NotRated)\](\[(2160p|1080p|720p)\])?(\[3D\])?(\[HDR\])?$");
 
         internal VideoDirectoryInfo(string name) => this.Name = name;
 
@@ -39,6 +39,8 @@ namespace Examples.IO
 
         internal string Is3D { get; init; } = string.Empty;
 
+        internal string IsHdr { get; init; } = string.Empty;
+
         internal double FormattedAggregateRating
         {
             get
@@ -61,7 +63,7 @@ namespace Examples.IO
 
         internal string Name
         {
-            get => $"{this.DefaultTitle1}{this.DefaultTitle2}{this.DefaultTitle3}{this.OriginalTitle1}{this.OriginalTitle2}{this.OriginalTitle3}.{this.Year}.{this.TranslatedTitle1}{this.TranslatedTitle2}{this.TranslatedTitle3}[{this.AggregateRating}][{this.ContentRating}]{this.Definition}{this.Is3D}";
+            get => $"{this.DefaultTitle1}{this.DefaultTitle2}{this.DefaultTitle3}{this.OriginalTitle1}{this.OriginalTitle2}{this.OriginalTitle3}.{this.Year}.{this.TranslatedTitle1}{this.TranslatedTitle2}{this.TranslatedTitle3}[{this.AggregateRating}][{this.ContentRating}]{this.Definition}{this.Is3D}{this.IsHdr}";
             init
             {
                 if (Path.IsPathRooted(value))
@@ -89,6 +91,7 @@ namespace Examples.IO
                 this.ContentRating = match.Groups[13].Value;
                 this.Definition = match.Groups[14].Value;
                 this.Is3D = match.Groups[16].Value;
+                this.IsHdr = match.Groups[17].Value;
             }
         }
 

@@ -60,5 +60,7 @@ namespace Examples.Common
             && value.Any(@char => char.GetUnicodeCategory(@char) == category);
 
         public static bool HasOtherLetter(this string value) => value.Any(UnicodeCategory.OtherLetter);
+
+        public static string AppendIfMissing(this string value, string append) => value.EndsWith(append) ? value : string.Concat(value, append);
     }
 }

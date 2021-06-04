@@ -328,17 +328,7 @@
                             .Where(file => !allowedAttachments.Contains(file, StringComparer.InvariantCultureIgnoreCase))
                             .ForEach(file => log($"!Attachment: {Path.Combine(movie, file)}"));
                     }
-
-                    videos
-                        .Where(video =>VideoFileInfo.TryParse(video, out _))
-                        .ForEach(video =>
-                        {
-                            log(movie);
-                            log($"{video}");
-                            log($"{video}");
-                            log(string.Empty);
-                        });
-
+                    
                     string[] allowedSubtitles = videos
                         .SelectMany(video => SubtitleLanguages
                             .Select(language => $"{Path.GetFileNameWithoutExtension(video)}.{language}")
@@ -554,6 +544,11 @@
                     }
 
                     string[] videos = files.Where(file => file.IsCommonVideo()).ToArray();
+                    if (videos.All(video => VideoFileInfo.TryParse(video, out VideoFileInfo? parsed) && parsed.Definition == ".2160p"))
+                    {
+                        return;
+                    }
+
                     RarbgMetadata[] availableX265Metadata = x265Metadata.ContainsKey(imdbId)
                         ? x265Metadata[imdbId]
                             .Where(metadata => VideoFileInfo.IsTopOrPremium(metadata.Title))
@@ -568,13 +563,13 @@
                                 string videoName = Path.GetFileNameWithoutExtension(video);
                                 VideoFileInfo videoInfo = new(videoName);
                                 string title = metadata.Title;
-                                return !videoInfo.IsTop 
-                                    || !videoName.StartsWithIgnoreCase(metadata.Title) 
-                                    && (videoInfo.Origin != ".BluRay" || !title.ContainsIgnoreCase(".WEBRip.")) 
-                                    && (videoInfo.Edition.Contains("DUBBED") || !title.ContainsIgnoreCase(".DUBBED.")) 
-                                    && (videoInfo.Edition.Contains("SUBBED") || !title.ContainsIgnoreCase(".SUBBED.")) 
-                                    && (string.IsNullOrWhiteSpace(videoInfo.Edition) || !(videoInfo with { Edition = string.Empty }).Name.StartsWithIgnoreCase(title)) 
-                                    && (!videoInfo.Edition.Contains(".Part") || !title.Contains(".Part")) 
+                                return !videoInfo.IsTop
+                                    || !videoName.StartsWithIgnoreCase(metadata.Title)
+                                    && (videoInfo.Origin != ".BluRay" || !title.ContainsIgnoreCase(".WEBRip."))
+                                    && (videoInfo.Edition.Contains("DUBBED") || !title.ContainsIgnoreCase(".DUBBED."))
+                                    && (videoInfo.Edition.Contains("SUBBED") || !title.ContainsIgnoreCase(".SUBBED."))
+                                    && (string.IsNullOrWhiteSpace(videoInfo.Edition) || !(videoInfo with { Edition = string.Empty }).Name.StartsWithIgnoreCase(title))
+                                    && (!videoInfo.Edition.Contains(".Part") || !title.Contains(".Part"))
                                     && (!VideoFileInfo.TryParse(title, out VideoFileInfo? metadataInfo) || !videoInfo.Edition.IsNotNullOrWhiteSpace() || !videoInfo.Edition.ContainsIgnoreCase(metadataInfo.Edition));
                             }))
                             .ToArray();
@@ -593,7 +588,7 @@
                         return;
                     }
 
-                    if (videos.Any(video => new VideoFileInfo(video).IsTop))
+                    if (videos.Any(video => VideoFileInfo.TryParse(video, out VideoFileInfo? parsed) && parsed.IsTop))
                     {
                         return;
                     }
@@ -637,7 +632,7 @@
                         return;
                     }
 
-                    if (videos.Any(video => new VideoFileInfo(video).IsPremium))
+                    if (videos.Any(video => VideoFileInfo.TryParse(video, out VideoFileInfo? parsed) && parsed.IsPremium))
                     {
                         return;
                     }

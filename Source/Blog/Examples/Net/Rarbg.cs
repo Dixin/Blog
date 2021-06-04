@@ -1,5 +1,9 @@
 ﻿namespace Examples.Net
 {
+    using CsQuery;
+    using Examples.Linq;
+    using OpenQA.Selenium;
+    using OpenQA.Selenium.Support.UI;
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
@@ -9,27 +13,10 @@
     using System.Linq;
     using System.Text.Json;
     using System.Threading.Tasks;
-    using CsQuery;
-    using Examples.Linq;
-    using OpenQA.Selenium;
-    using OpenQA.Selenium.Chrome;
-    using OpenQA.Selenium.Support.UI;
 
     internal static class Rarbg
     {
         private const int SaveFrequency = 50;
-
-        private static readonly TimeSpan DefaultWait = TimeSpan.FromSeconds(100);
-
-        private static readonly TimeSpan DomWait = TimeSpan.FromMilliseconds(100);
-
-        public static IWebDriver Start(string profile = @"D:\Temp\Chrome Profile")
-        {
-            ChromeOptions options = new();
-            options.AddArguments($"user-data-dir={profile}");
-            ChromeDriver webDriver = new(options);
-            return webDriver;
-        }
 
         internal static async Task DownloadMetadataAsync(IEnumerable<string> urls, string jsonPath, Func<int, bool>? @continue = null, int degreeOfParallelism = 4)
         {
@@ -50,9 +37,9 @@
             @continue ??= _ => true;
             try
             {
-                using IWebDriver webDriver = Start(@$"D:\Temp\Chrome Profile {partitionIndex}");
+                using IWebDriver webDriver = ChromeDriverHelper.Start(@$"D:\Temp\Chrome Profile {partitionIndex}");
                 webDriver.Url = url;
-                new WebDriverWait(webDriver, DefaultWait).Until(e => e.FindElement(By.Id("pager_links")));
+                new WebDriverWait(webDriver, ChromeDriverHelper.DefaultWait).Until(e => e.FindElement(By.Id("pager_links")));
                 webDriver.Url = url;
                 IWebElement pager = new WebDriverWait(webDriver, TimeSpan.FromSeconds(100)).Until(e => e.FindElement(By.Id("pager_links")));
                 int pageIndex = 1;
@@ -63,7 +50,7 @@
                         break;
                     }
 
-                    await Task.Delay(DomWait);
+                    await Task.Delay(ChromeDriverHelper.DefaultDomWait);
                     Trace.WriteLine($"{partitionIndex}:{pageIndex} Start {webDriver.Url}");
 
                     CQ page = webDriver.PageSource;
@@ -152,7 +139,7 @@
             if (nextPage.Count > 0)
             {
                 webDriver.Url = nextPage[0].GetAttribute("href");
-                pager = new WebDriverWait(webDriver, DefaultWait).Until(e => e.FindElement(By.Id("pager_links")));
+                pager = new WebDriverWait(webDriver, ChromeDriverHelper.DefaultWait).Until(e => e.FindElement(By.Id("pager_links")));
                 return true;
             }
 

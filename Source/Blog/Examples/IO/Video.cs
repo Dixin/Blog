@@ -36,11 +36,17 @@
 
         private const string JsonMetadataExtension = ".json";
 
-        private const string JsonMetadataSearchPattern = PathHelper.AllSearchPattern + JsonMetadataExtension;
+        internal const string ImdbMetadataExtension = ".txt";
+
+        internal const string JsonMetadataSearchPattern = PathHelper.AllSearchPattern + JsonMetadataExtension;
+
+        private const string ImdbMetadataSearchPattern = PathHelper.AllSearchPattern + ImdbMetadataExtension;
 
         private static readonly string[] SubtitleLanguages = { "can", "chs", "chs&dan", "chs&eng", "chs&fre", "chs&ger", "chs&spa", "cht", "cht&eng", "cht&ger", "dut", "eng", "eng&chs", "fin", "fre", "ger", "ger&chs", "ita", "jap", "kor", "pol", "por", "rus", "spa", "swe", "dan", "nor", "eng-commentary", "eng-commentary1", "eng-commentary2", "chs&eng-preference", "tam" };
 
         internal const string NotExistingFlag = "-";
+
+        private const string InstallmentSeparator = "`";
 
         private const string SubtitleSeparator = "-";
         

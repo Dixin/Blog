@@ -7,7 +7,7 @@
 
     internal record VideoFileInfo
     {
-        private static readonly Regex NameRegex = new(@"^(.+)\.([0-9]{4})(\.3D(\.HSBS)?)?((\.Part[1-9])?(\.[A-Z\.]+)?(\.Part[1-9])?|\.RE\-EDIT|\.S[0-9]{2}E[0-9]{2}\.[a-zA-Z\.]+)?(\.1080p|\.720p|\.480p|\.360p|\.540p)?(\.BOOTLEG|\.US)?(\.WEBRip|\.BluRay|\.DVDRip|\.HDRip|\.HDTV|\.VHSRip|\.LDRip|\.DVD|\.LDVDRip|\.HQDVDRip|\.TV|\.VCD|\.VCDRip)?(\.H264|\.x264|\.x265|\.DivX|\.Xvid)?(\.AAC|\.AC3|\.MP3|\.AAC5\.1|\.DTS)?(\-(RARBG|VXT|\[YTS\.(MX|AM|AG|LT)\]|[a-zA-Z0-9@]+))?(\.[2-9]Audio)?(\.watermark)?(\.ffmpeg|\.nvenc|\.handbrake)?(\.eng|\.chs|\.cht|\.cht&eng|\.chs&eng|\.fre|\.jap|\.kor|\.pol|\.dut)?(\.cd[1-9])?(\.mp4|\.avi|\.iso|\.mkv)?$");
+        private static readonly Regex NameRegex = new(@"^(.+)\.([0-9]{4})(\.3D(\.HSBS)?)?((\.Part[1-9])?(\.[A-Z\.]+)?(\.Part[1-9])?|\.RE\-EDIT|\.S[0-9]{2}E[0-9]{2}\.[a-zA-Z\.]+)?(\.2160p|\.1080p|\.720p|\.540p|\.480p|\.360p)?(\.BOOTLEG|\.US)?(\.WEBRip|\.BluRay|\.DVDRip|\.HDRip|\.HDTV|\.VHSRip|\.LDRip|\.DVD|\.LDVDRip|\.LDDVDRip|\.HQDVDRip|\.TV|\.VCD|\.VCDRip)?(\.H264|\.x264|\.x265|\.DivX|\.Xvid)?(\.AAC|\.AC3|\.MP3|\.AAC5\.1|\.DTS)?(\-(RARBG|VXT|\[YTS\.(MX|AM|AG|LT)\]|[a-zA-Z0-9@]+))?(\.[2-9]Audio)?(\.watermark)?(\.ffmpeg|\.nvenc|\.handbrake)?(\.eng|\.chs|\.cht|\.cht&eng|\.chs&eng|\.fre|\.jap|\.kor|\.pol|\.dut|\.spa|\.por)?(\.cd[1-9])?(\.mp4|\.avi|\.iso|\.mkv)?$");
 
         internal VideoFileInfo(string name) => this.Name = name;
 

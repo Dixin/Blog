@@ -130,18 +130,19 @@
                     string metadataPath = Directory.GetFiles(movie, XmlMetadataSearchPattern).First();
                     XDocument metadata = XDocument.Load(metadataPath);
                     XElement? ratingElement = metadata.Root!.Element("rating");
-                    if (Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata) && !string.IsNullOrWhiteSpace(imdbMetadata.AggregateRating?.RatingValue))
+                    if (Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata) && imdbMetadata.AggregateRating?.RatingValue is not null)
                     {
                         // IMDB has rating.
-                        if (string.Equals(ratingElement?.Value, imdbMetadata.AggregateRating.RatingValue.Replace(".0", string.Empty)))
+                        string jsonRatingFormatted = imdbMetadata.AggregateRating.RatingValue.Replace(".0", string.Empty);
+                        if (string.Equals(ratingElement?.Value, jsonRatingFormatted))
                         {
                             return;
                         }
 
-                        log($"{movie} rating {ratingElement?.Value} is set to {imdbMetadata.AggregateRating.RatingValue.Replace(".0", string.Empty)}.");
+                        log($"{movie} rating {ratingElement?.Value} is set to {jsonRatingFormatted}.");
                         if (!isDryRun)
                         {
-                            metadata.Root!.SetElementValue("rating", imdbMetadata.AggregateRating.RatingValue.Replace(".0", string.Empty));
+                            metadata.Root!.SetElementValue("rating", jsonRatingFormatted);
                             metadata.Save(metadataPath);
                         }
                     }

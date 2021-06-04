@@ -8,6 +8,7 @@ namespace Examples.IO
     using System.Text.Json;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
+    using System.Web;
     using System.Xml.Linq;
     using Examples.Net;
 
@@ -225,7 +226,7 @@ namespace Examples.IO
                     }
 
                     string[] files = Directory.GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly).OrderBy(file => file).ToArray();
-                    string[] nfos = files.Where(file=>file.HasExtension(XmlMetadataExtension)).ToArray();
+                    string[] nfos = files.Where(file => file.HasExtension(XmlMetadataExtension)).ToArray();
                     XDocument english;
                     XDocument? chinese;
                     if (nfos.Any(nfo => nfo.EndsWith($".{backupFlag}{XmlMetadataExtension}")) && nfos.Any(nfo => !nfo.EndsWith($".{backupFlag}{XmlMetadataExtension}")))
@@ -239,7 +240,7 @@ namespace Examples.IO
                         chinese = null;
                     }
 
-                    string json = files.Where(file => file.HasExtension(JsonMetadataExtension)).Single();
+                    string json = files.Single(file => PathHelper.HasExtension(file, JsonMetadataExtension));
                     Imdb.TryLoad(json, out ImdbMetadata? imdbMetadata);
 
                     string englishTitle = english.Root?.Element("title")?.Value ?? throw new InvalidOperationException($"{movie} has no English title.");
@@ -252,7 +253,7 @@ namespace Examples.IO
                         : string.Equals(imdbId, Path.GetFileNameWithoutExtension(json).Split(".")[0], StringComparison.InvariantCultureIgnoreCase));
                     string rating = string.IsNullOrWhiteSpace(imdbId)
                         ? "-"
-                        : float.TryParse(imdbMetadata?.AggregateRating?.RatingValue, out float ratingFloat) ? ratingFloat.ToString("0.0") : "0.0";
+                        : imdbMetadata?.AggregateRating?.RatingValue ?? "0.0";
                     string[] videos = files.Where(file => file.HasAnyExtension(AllVideoExtensions)).ToArray();
                     string contentRating = imdbMetadata?.FormattedContentRating ?? "-";
                     string definition = videos switch
@@ -319,6 +320,46 @@ namespace Examples.IO
                         }
                         log(newMovie);
                     }
+                });
+        }
+
+        internal static void RenameDirectoriesWithImdbMetadata(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
+        {
+            log ??= TraceLog;
+            EnumerateDirectories(directory, level)
+                .ToArray()
+                .ForEach(movie =>
+                {
+                    if (!VideoDirectoryInfo.TryParse(movie, out VideoDirectoryInfo? parsed))
+                    {
+                        log($"!Cannot parse {movie}");
+                        return;
+                    }
+
+                    if (!Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata))
+                    {
+                        log($"!Missing metadata {movie}");
+                        return;
+                    }
+
+                    if (!string.IsNullOrWhiteSpace(imdbMetadata.Year))
+                    {
+                        parsed = parsed with { Year = imdbMetadata.Year };
+                    }
+
+                    parsed = parsed with { AggregateRating = imdbMetadata.FormattedAggregateRating, ContentRating = imdbMetadata.FormattedContentRating };
+                    string newMovie = Path.Combine(Path.GetDirectoryName(movie) ?? throw new InvalidOperationException(movie), parsed.ToString());
+                    if (string.Equals(movie, newMovie, StringComparison.Ordinal))
+                    {
+                        return;
+                    }
+
+                    log(movie);
+                    if (!isDryRun)
+                    {
+                        Directory.Move(movie, newMovie);
+                    }
+                    log(newMovie);
                 });
         }
 
