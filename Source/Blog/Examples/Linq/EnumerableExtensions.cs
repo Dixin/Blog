@@ -118,5 +118,21 @@
         {
             return source.Where(value => value is not null)!; // Equivalent to: source.Where(value => !(value is null)).Select(value => value!).
         }
+
+        public static void ForEach<T>(this IEnumerator<T> source, Action<T> action)
+        {
+            while (source.MoveNext())
+            {
+                action(source.Current);
+            }
+        }
+
+        public static async Task ForEachAsync<T>(this IEnumerator<T> source, Func<T, Task> asyncAction)
+        {
+            while (source.MoveNext())
+            {
+                await asyncAction(source.Current);
+            }
+        }
     }
 }

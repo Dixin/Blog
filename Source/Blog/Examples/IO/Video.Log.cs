@@ -8,6 +8,7 @@
     using System.Text.Json;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
+    using System.Web;
     using System.Xml.Linq;
     using Examples.Common;
     using Examples.Linq;
@@ -810,6 +811,275 @@
                         log($"{summary.Key} {summary.summary.ImdbRating} {summary.summary.Link}");
                         log(summary.summary.Title);
                     });
+                    log(string.Empty);
+                });
+        }
+
+        internal static void PrintDirectoryTitleMismatch(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
+        {
+            log ??= TraceLog;
+            EnumerateDirectories(directory, level)
+                .ToArray()
+                .ForEach(movie =>
+                {
+                    if (!VideoDirectoryInfo.TryParse(movie, out VideoDirectoryInfo? parsed))
+                    {
+                        log($"!Cannot parse {movie}");
+                        return;
+                    }
+
+                    if (!Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata))
+                    {
+                        log($"!Missing metadata {movie}");
+                        return;
+                    }
+
+                    string imdbTitle = HttpUtility.HtmlDecode(imdbMetadata.Title);
+
+                    if (!imdbMetadata.Titles.TryGetValue("World-wide (English title)", out string[]? releaseTitles))
+                    {
+                        releaseTitles = imdbMetadata.Titles
+                            .Where(pair => pair.Key.Contains("World-wide (English title)", StringComparison.OrdinalIgnoreCase))
+                            .SelectMany(pair => pair.Value)
+                            .ToArray();
+                    }
+
+                    if (!releaseTitles.Any()
+                        && !imdbMetadata.Titles.TryGetValue("USA", out releaseTitles)
+                        && !imdbMetadata.Titles.TryGetValue("USA (working title)", out releaseTitles)
+                        && !imdbMetadata.Titles.TryGetValue("USA (informal English title)", out releaseTitles))
+                    {
+                        releaseTitles = imdbMetadata.Titles
+                            .Where(pair => pair.Key.Contains("USA", StringComparison.OrdinalIgnoreCase))
+                            .SelectMany(pair => pair.Value)
+                            .ToArray();
+                    }
+
+                    if (!releaseTitles.Any()
+                        && !imdbMetadata.Titles.TryGetValue("UK", out releaseTitles)
+                        && !imdbMetadata.Titles.TryGetValue("UK (informal English title)", out releaseTitles))
+                    {
+                        releaseTitles = imdbMetadata.Titles
+                            .Where(pair => pair.Key.Contains("UK", StringComparison.OrdinalIgnoreCase))
+                            .SelectMany(pair => pair.Value)
+                            .ToArray();
+                    }
+
+                    if (!releaseTitles.Any()
+                        && !imdbMetadata.Titles.TryGetValue("Hong Kong (English title)", out releaseTitles))
+                    {
+                        releaseTitles = imdbMetadata.Titles
+                            .Where(pair => pair.Key.Contains("Hong Kong (English title)", StringComparison.OrdinalIgnoreCase))
+                            .SelectMany(pair => pair.Value)
+                            .ToArray();
+                    }
+
+                    string[] imdbTitles = imdbTitle.Split(Imdb.TitleSeparator)
+                        .Concat(releaseTitles)
+                        .Select(title => title
+                            .FilterForFileSystem()
+                            .Replace(" 3D", string.Empty)
+                            .Replace(" 3-D", string.Empty)
+                            .Replace("3D ", string.Empty)
+                            .Replace("3-D ", string.Empty)
+                            .Replace(".", string.Empty)
+                            .Replace("[", string.Empty)
+                            .Replace("]", string.Empty)
+                            .Trim())
+                        .SelectMany(imdbTitle => new string[]
+                        {
+                            imdbTitle,
+                            HttpUtility.HtmlDecode(imdbMetadata.Title).Replace(SubtitleSeparator, " ").FilterForFileSystem(),
+                            imdbTitle.Replace("(", string.Empty).Replace(")", string.Empty),
+                            Regex.Replace(imdbTitle, @"\(.+\)", string.Empty).Trim(),
+                            imdbTitle.Replace("...", string.Empty),
+                            imdbTitle.Replace("#", "No "),
+                            imdbTitle,
+                            imdbTitle.Replace(SubtitleSeparator, " "),
+                            imdbTitle.Replace(" · ", " "),
+                            imdbTitle.Replace(" - ", " "),
+                            imdbTitle.Replace(" - ", SubtitleSeparator),
+                            imdbTitle.Replace(" Vol ", SubtitleSeparator, StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace(" Chapter ", SubtitleSeparator, StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace(SubtitleSeparator, " "),
+                            imdbTitle.Replace("zero", "0", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace("one", "1", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace("two", "2", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace("three", "3", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace("four", "4", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace("five", "5", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace(" IV", " 4", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace(" III", " 3", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace(" II", " 2", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace(" Part II", " 2", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace(" -Part ", " ", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace("-Part ", " ", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace(" - Part ", " ", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace("- Part ", " ", StringComparison.OrdinalIgnoreCase),
+                            $"XXX {imdbTitle.Replace(" XXX", string.Empty)}"
+                        })
+                        .ToArray();
+                    List<string> localTitles = new()
+                    {
+                        parsed.DefaultTitle1,
+                        parsed.DefaultTitle1.Replace(InstallmentSeparator, " "),
+                        parsed.DefaultTitle1.Replace(InstallmentSeparator, "-"),
+                        parsed.DefaultTitle1.Split(InstallmentSeparator).First(),
+                        $"{parsed.DefaultTitle1.Split(InstallmentSeparator).First()}{parsed.DefaultTitle2}",
+                        $"{parsed.DefaultTitle1.Split(InstallmentSeparator).First()}{parsed.DefaultTitle2.Replace(SubtitleSeparator, " ")}",
+                        parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()),
+                        parsed.DefaultTitle3.TrimStart(SubtitleSeparator.ToCharArray()),
+                        parsed.OriginalTitle1.TrimStart('='),
+                        $"{parsed.DefaultTitle1}{parsed.DefaultTitle2}",
+                        $"{parsed.DefaultTitle1}{parsed.DefaultTitle2}".Replace(SubtitleSeparator, " "),
+                        $"{parsed.DefaultTitle1}{parsed.DefaultTitle2}".Replace(SubtitleSeparator, " ").Replace(InstallmentSeparator, " "),
+                        $"{parsed.DefaultTitle1}{parsed.DefaultTitle2}".Replace(InstallmentSeparator, " "),
+                        $"{parsed.DefaultTitle1}{parsed.DefaultTitle2}".Replace(InstallmentSeparator, SubtitleSeparator),
+                        $"{parsed.DefaultTitle1.Split(InstallmentSeparator).First()}{parsed.DefaultTitle2.Split(InstallmentSeparator).First()}".Replace(SubtitleSeparator, " "),
+                        parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Replace(InstallmentSeparator, " "),
+                        parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Replace(InstallmentSeparator, "-"),
+                        parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Split(InstallmentSeparator).First(),
+                        $"{parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Split(InstallmentSeparator).First()}{parsed.DefaultTitle3.Split(InstallmentSeparator).First()}",
+                        $"{parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Split(InstallmentSeparator).First()}{parsed.DefaultTitle3.Split(InstallmentSeparator).First()}".Replace(SubtitleSeparator, " "),
+                    };
+                    if (!string.IsNullOrWhiteSpace(parsed.DefaultTitle2))
+                    {
+                        localTitles.Add($"{parsed.DefaultTitle1} {parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()).ToLowerInvariant()[0]}{parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray())[1..]}");
+                        localTitles.Add($"{parsed.DefaultTitle1} {parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()).ToLowerInvariant()[0]}{parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray())[1..].Replace(InstallmentSeparator, " ")}");
+                        localTitles.Add($"{parsed.DefaultTitle1} {parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()).ToLowerInvariant()}");
+                        localTitles.Add($"{parsed.DefaultTitle1} {parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()).ToLowerInvariant().Replace(InstallmentSeparator, " ")}");
+                    }
+                    if (imdbTitles.Any(a => localTitles.Any(b => string.Equals(a, b))))
+                    {
+                        return;
+                    }
+
+                    parsed = parsed with { DefaultTitle1 = imdbTitle };
+                    string newMovie = Path.Combine(Path.GetDirectoryName(movie) ?? throw new InvalidOperationException(movie), parsed.ToString());
+                    if (string.Equals(movie, newMovie, StringComparison.Ordinal))
+                    {
+                        return;
+                    }
+
+                    log(movie);
+                    log(newMovie);
+                    log(string.Empty);
+                });
+        }
+
+        internal static void PrintDirectoryOriginalTitleMismatch(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
+        {
+            log ??= TraceLog;
+            EnumerateDirectories(directory, level)
+                .ToArray()
+                .ForEach(movie =>
+                {
+                    if (!VideoDirectoryInfo.TryParse(movie, out VideoDirectoryInfo? parsed))
+                    {
+                        log($"!Cannot parse {movie}");
+                        return;
+                    }
+
+                    if (!Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata))
+                    {
+                        log($"!Missing metadata {movie}");
+                        return;
+                    }
+
+                    string imdbTitle = HttpUtility.HtmlDecode(imdbMetadata.OriginalTitle);
+                    if (string.IsNullOrEmpty(imdbTitle))
+                    {
+                        return;
+                    }
+
+                    string[] imdbTitles = imdbTitle.Split(Imdb.TitleSeparator)
+                        .Select(title => title
+                            .FilterForFileSystem()
+                            .Replace(" 3D", string.Empty)
+                            .Replace(" 3-D", string.Empty)
+                            .Replace("3D ", string.Empty)
+                            .Replace("3-D ", string.Empty)
+                            .Replace(".", string.Empty)
+                            .Replace("[", string.Empty)
+                            .Replace("]", string.Empty)
+                            .Trim())
+                        .SelectMany(imdbTitle => new string[]
+                        {
+                            imdbTitle,
+                            HttpUtility.HtmlDecode(imdbMetadata.Title).Replace(SubtitleSeparator, " ").FilterForFileSystem(),
+                            imdbTitle.Replace("(", string.Empty).Replace(")", string.Empty),
+                            Regex.Replace(imdbTitle, @"\(.+\)", string.Empty).Trim(),
+                            imdbTitle.Replace("...", string.Empty),
+                            imdbTitle.Replace("#", "No "),
+                            imdbTitle,
+                            imdbTitle.Replace(SubtitleSeparator, " "),
+                            imdbTitle.Replace(" · ", " "),
+                            imdbTitle.Replace(" - ", " "),
+                            imdbTitle.Replace(" - ", SubtitleSeparator),
+                            imdbTitle.Replace(" Vol ", SubtitleSeparator, StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace(" Chapter ", SubtitleSeparator, StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace(SubtitleSeparator, " "),
+                            imdbTitle.Replace("zero", "0", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace("one", "1", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace("two", "2", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace("three", "3", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace("four", "4", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace("five", "5", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace(" IV", " 4", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace(" III", " 3", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace(" II", " 2", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace(" Part II", " 2", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace(" -Part ", " ", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace("-Part ", " ", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace(" - Part ", " ", StringComparison.OrdinalIgnoreCase),
+                            imdbTitle.Replace("- Part ", " ", StringComparison.OrdinalIgnoreCase),
+                            $"XXX {imdbTitle.Replace(" XXX", string.Empty)}"
+                        })
+                        .ToArray();
+                    List<string> localTitles = new()
+                    {
+                        parsed.DefaultTitle1,
+                        parsed.OriginalTitle1.Replace(InstallmentSeparator, " "),
+                        parsed.OriginalTitle1.Replace(InstallmentSeparator, "-"),
+                        parsed.OriginalTitle1.Split(InstallmentSeparator).First(),
+                        $"{parsed.OriginalTitle1.Split(InstallmentSeparator).First()}{parsed.OriginalTitle2}",
+                        $"{parsed.OriginalTitle1.Split(InstallmentSeparator).First()}{parsed.OriginalTitle2.Replace(SubtitleSeparator, " ")}",
+                        parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()),
+                        parsed.OriginalTitle3.TrimStart(SubtitleSeparator.ToCharArray()),
+                        parsed.OriginalTitle1.TrimStart('='),
+                        $"{parsed.OriginalTitle1}{parsed.OriginalTitle2}",
+                        $"{parsed.OriginalTitle1}{parsed.OriginalTitle2}".Replace(SubtitleSeparator, " "),
+                        $"{parsed.OriginalTitle1}{parsed.OriginalTitle2}".Replace(SubtitleSeparator, " ").Replace(InstallmentSeparator, " "),
+                        $"{parsed.OriginalTitle1}{parsed.OriginalTitle2}".Replace(InstallmentSeparator, " "),
+                        $"{parsed.OriginalTitle1}{parsed.OriginalTitle2}".Replace(InstallmentSeparator, SubtitleSeparator),
+                        $"{parsed.OriginalTitle1.Split(InstallmentSeparator).First()}{parsed.OriginalTitle2.Split(InstallmentSeparator).First()}".Replace(SubtitleSeparator, " "),
+                        parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Replace(InstallmentSeparator, " "),
+                        parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Replace(InstallmentSeparator, "-"),
+                        parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Split(InstallmentSeparator).First(),
+                        $"{parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Split(InstallmentSeparator).First()}{parsed.OriginalTitle3.Split(InstallmentSeparator).First()}",
+                        $"{parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Split(InstallmentSeparator).First()}{parsed.OriginalTitle3.Split(InstallmentSeparator).First()}".Replace(SubtitleSeparator, " "),
+                    };
+                    if (!string.IsNullOrWhiteSpace(parsed.OriginalTitle2))
+                    {
+                        localTitles.Add($"{parsed.OriginalTitle1} {parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()).ToLowerInvariant()[0]}{parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray())[1..]}");
+                        localTitles.Add($"{parsed.OriginalTitle1} {parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()).ToLowerInvariant()[0]}{parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray())[1..].Replace(InstallmentSeparator, " ")}");
+                        localTitles.Add($"{parsed.OriginalTitle1} {parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()).ToLowerInvariant()}");
+                        localTitles.Add($"{parsed.OriginalTitle1} {parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()).ToLowerInvariant().Replace(InstallmentSeparator, " ")}");
+                    }
+                    if (imdbTitles.Any(a => localTitles.Any(b => string.Equals(a, b))))
+                    {
+                        return;
+                    }
+
+                    parsed = parsed with { OriginalTitle1 = $"={imdbTitle}" };
+                    string newMovie = Path.Combine(Path.GetDirectoryName(movie) ?? throw new InvalidOperationException(movie), parsed.ToString());
+                    if (string.Equals(movie, newMovie, StringComparison.Ordinal))
+                    {
+                        return;
+                    }
+
+                    log(movie);
+                    log(newMovie);
                     log(string.Empty);
                 });
         }

@@ -4,7 +4,6 @@
     using System.Diagnostics;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
-    using System.IO.Compression;
     using System.Linq;
     using System.Net;
     using System.Text;
@@ -15,46 +14,20 @@
     using CsQuery;
     using Examples.IO;
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
-
-    public static class WebClientExtensions
-    {
-        public static async Task<string> DownloadCompressedStringAsync(this WebClient webClient, string url)
-        {
-            string? encoding = webClient.Headers[HttpRequestHeader.AcceptEncoding];
-            if (string.IsNullOrWhiteSpace(encoding))
-            {
-                webClient.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate, br");
-            }
-
-            await using GZipStream gZipStream = new(await webClient.OpenReadTaskAsync(url), CompressionMode.Decompress);
-            using StreamReader reader = new(gZipStream);
-            return await reader.ReadToEndAsync();
-        }
-    }
+    using OpenQA.Selenium;
 
     internal static class Imdb
     {
         internal static async Task<(string ImdbUrl, string ImdbHtml, string ParentUrl, string ParentHtml, string ReleaseUrl, string ReleaseHtml, ImdbMetadata ImdbMetadata)> DownloadAsync(
-            string imdbId, bool useCache, string imdbFile, string parentFile, string releaseFile)
+            string imdbId, bool useCache, string imdbFile, string parentFile, string releaseFile, IWebDriver? webDriver = null)
         {
-            using WebClient webClient = new() { Encoding = Encoding.UTF8 };
-            webClient.Headers.Add(HttpRequestHeader.Accept, "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
-            webClient.Headers.Add(HttpRequestHeader.AcceptLanguage, "en-US,en;q=0.9");
-            webClient.Headers.Add(HttpRequestHeader.CacheControl, "max-age=0");
-            webClient.Headers.Add("dnt", "1");
-            webClient.Headers.Add("sec-ch-ua", @""" Not A;Brand"";v=""99"", ""Chromium"";v=""90"", ""Google Chrome"";v=""90""");
-            webClient.Headers.Add("sec-ch-ua-mobile", "?0");
-            webClient.Headers.Add("sec-fetch-dest", "document");
-            webClient.Headers.Add("sec-fetch-mode", "navigate");
-            webClient.Headers.Add("sec-fetch-site", "none");
-            webClient.Headers.Add("sec-fetch-user", "1");
-            webClient.Headers.Add("upgrade-insecure-requests", "1");
-            webClient.Headers.Add(HttpRequestHeader.UserAgent, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36");
+            using WebClient? webClient = webDriver is null ? new() { Encoding = Encoding.UTF8 } : null;
+            webClient?.AddChromeHeaders();
 
             string imdbUrl = $"https://www.imdb.com/title/{imdbId}/";
             string imdbHtml = useCache && File.Exists(imdbFile)
                 ? await File.ReadAllTextAsync(imdbFile)
-                : await Retry.FixedIntervalAsync(async () => await webClient.DownloadCompressedStringAsync(imdbUrl), retryCount: 10);
+                : await Retry.FixedIntervalAsync(async () => webDriver is not null ? await webDriver.DownloadStringAsync(imdbUrl) : await webClient!.DownloadCompressedStringAsync(imdbUrl), retryCount: 10);
             CQ imdbCQ = imdbHtml;
             string json = imdbCQ.Find(@"script[type=""application/ld+json""]").Text();
             ImdbMetadata imdbMetadata = JsonSerializer.Deserialize<ImdbMetadata>(
@@ -78,7 +51,13 @@
                 : string.Empty;
             imdbMetadata.Year = Regex.Match(htmlTitleYear, "[0-9]{4}").Value;
             string htmlYear = imdbCQ.Find(@"#titleYear a").Text().Trim();
-            Debug.Assert(string.IsNullOrWhiteSpace(htmlYear) || string.Equals(imdbMetadata.Year, htmlYear, StringComparison.Ordinal) || imdbMetadata.ImdbId is "tt2058092");
+            if (string.IsNullOrWhiteSpace(htmlYear))
+            {
+                htmlYear = imdbCQ.Find(@"div.title_wrapper div.subtext a[title=""See more release dates""]").Text();
+                htmlYear = Regex.Match(htmlYear, "[0-9]{4}").Value;
+            }
+
+            Debug.Assert(string.Equals(imdbMetadata.Year, htmlYear, StringComparison.Ordinal) || imdbMetadata.ImdbId is "tt2058092");
 
             imdbMetadata.Regions = imdbCQ
                 .Find(@"#titleDetails .txt-block")
@@ -147,10 +126,13 @@
             string releaseUrl = imdbMetadata.Parent is null ? $"{imdbUrl}releaseinfo" : $"{imdbMetadata.Parent.Link}releaseinfo";
             string releaseHtml = useCache && File.Exists(releaseFile)
                 ? await File.ReadAllTextAsync(releaseFile)
-                : await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(releaseUrl), retryCount: 10);
+                : await Retry.FixedIntervalAsync(async () => webDriver is not null ? await webDriver.DownloadStringAsync(releaseUrl) : await webClient!.DownloadStringTaskAsync(releaseUrl), retryCount: 10);
             CQ releaseCQ = releaseHtml;
             CQ allTitlesCQ = releaseCQ.Find("#akas").Next();
-            (string TitleKey, string TitleValue)[] allTitles = allTitlesCQ.Find("tr").Select(row => row.Cq().Children()).Select(cells => (TitleKey: cells.First().Text().Trim(), TitleValue: cells.Last().Text().Trim())).ToArray();
+            (string TitleKey, string TitleValue)[] allTitles = allTitlesCQ
+                .Find("tr")
+                .Select(row => row.Cq().Children())
+                .Select(cells => (TitleKey: HttpUtility.HtmlDecode(cells.First().Text().Trim()), TitleValue: HttpUtility.HtmlDecode(cells.Last().Text().Trim()))).ToArray();
             Enumerable.Range(0, allTitles.Length).ForEach(index =>
             {
                 if (string.IsNullOrWhiteSpace(allTitles[index].TitleKey))
@@ -164,115 +146,136 @@
                 .ToDictionary(group => group.Key, group => group.ToArray());
             Debug.Assert(imdbMetadata.Titles.Any() || allTitlesCQ.Text().Contains("It looks like we don't have any AKAs for this title yet."));
 
-            if (!string.IsNullOrWhiteSpace(imdbMetadata.AlternateName))
+            if (webDriver is not null)
             {
-                imdbMetadata.Title = imdbMetadata.AlternateName;
-                Debug.Assert(!string.IsNullOrWhiteSpace(imdbMetadata.Name));
-                imdbMetadata.OriginalTitle = imdbMetadata.Name;
+                imdbMetadata.Title = imdbCQ
+                    .Find("div.title_wrapper h1")
+                    .Find("#titleYear")
+                    .Remove()
+                    .End()
+                    .Text()
+                    .Trim();
+
+                imdbMetadata.OriginalTitle = imdbCQ
+                    .Find("div.originalTitle")
+                    .Find("span")
+                    .Remove()
+                    .End()
+                    .Text()
+                    .Trim();
             }
             else
             {
-                if (imdbMetadata.Titles.Any())
+                if (!string.IsNullOrWhiteSpace(imdbMetadata.AlternateName))
                 {
-                    string releaseHtmlTitle = releaseCQ.Find("title").Text();
-                    releaseHtmlTitle = releaseHtmlTitle.Substring(0, releaseHtmlTitle.LastIndexOf("(", StringComparison.Ordinal)).Trim();
-
-                    if (!imdbMetadata.Titles.TryGetValue("(original title)", out string[]? originalTitleValues))
-                    {
-                        string[] originalTitleKeys = imdbMetadata.Titles.Keys.Where(key => key.Contains("original title", StringComparison.OrdinalIgnoreCase)).ToArray();
-                        if (originalTitleKeys.Length > 1)
-                        {
-                            originalTitleKeys = originalTitleKeys.Where(key => !key.Contains("USA", StringComparison.OrdinalIgnoreCase)).ToArray();
-                        }
-
-                        originalTitleValues = originalTitleKeys.SelectMany(key => imdbMetadata.Titles[key]).ToArray();
-                    }
-
-                    if (originalTitleValues.Length > 1)
-                    {
-                        originalTitleValues = originalTitleValues.Where(title => !string.Equals(title, releaseHtmlTitle, StringComparison.Ordinal)).ToArray();
-                    }
-
-                    if (originalTitleValues.Length > 1)
-                    {
-                        originalTitleValues = originalTitleValues.Where(title => !string.Equals(title, releaseHtmlTitle, StringComparison.OrdinalIgnoreCase)).ToArray();
-                    }
-
-                    imdbMetadata.OriginalTitle = originalTitleValues.Length switch
-                    {
-                        1 => originalTitleValues.Single(),
-                        > 1 => originalTitleValues.FirstOrDefault(titleValue => originalTitleValues.Except(EnumerableEx.Return(titleValue)).All(otherTitle => titleValue.Contains(otherTitle, StringComparison.OrdinalIgnoreCase)))
-                            ?? string.Join(TitleSeparator, originalTitleValues),
-                        _ => string.Empty
-                    };
-
-                    if (!imdbMetadata.Titles.TryGetValue("World-wide (English title)", out string[]? titleValues))
-                    {
-                        titleValues = imdbMetadata.Titles
-                            .Where(pair => pair.Key.Contains("World-wide (English title)", StringComparison.OrdinalIgnoreCase))
-                            .SelectMany(pair => pair.Value)
-                            .ToArray();
-                    }
-
-                    if (!titleValues.Any() 
-                        && !imdbMetadata.Titles.TryGetValue("USA", out titleValues) 
-                        && !imdbMetadata.Titles.TryGetValue("USA (working title)", out titleValues) 
-                        && !imdbMetadata.Titles.TryGetValue("USA (informal English title)", out titleValues) 
-                        && !imdbMetadata.Titles.TryGetValue("UK", out titleValues) 
-                        && !imdbMetadata.Titles.TryGetValue("UK (informal English title)", out titleValues) 
-                        && !imdbMetadata.Titles.TryGetValue("Hong Kong (English title)", out titleValues) 
-                        && !imdbMetadata.Titles.TryGetValue("(original title)", out titleValues))
-                    {
-                        titleValues = Array.Empty<string>();
-                    }
-
-                    Debug.Assert(titleValues.Any());
-                    imdbMetadata.Title = titleValues.Length switch
-                    {
-                        1 => titleValues.Single(),
-                        > 1 => titleValues.FirstOrDefault(availableTitle => string.Equals(releaseHtmlTitle, availableTitle, StringComparison.Ordinal))
-                            ?? titleValues.FirstOrDefault(availableTitle => string.Equals(releaseHtmlTitle, availableTitle, StringComparison.OrdinalIgnoreCase))
-                            ?? titleValues.FirstOrDefault(titleValue => titleValues.Except(EnumerableEx.Return(titleValue)).All(otherTitle => titleValue.Contains(otherTitle, StringComparison.OrdinalIgnoreCase)))
-                            ?? string.Join(TitleSeparator, titleValues),
-                        _ => releaseHtmlTitle
-                    };
-
-                    Debug.Assert(!string.IsNullOrWhiteSpace(imdbMetadata.Title));
+                    imdbMetadata.Title = imdbMetadata.AlternateName;
+                    Debug.Assert(!string.IsNullOrWhiteSpace(imdbMetadata.Name));
+                    imdbMetadata.OriginalTitle = imdbMetadata.Name;
                 }
                 else
                 {
-                    imdbMetadata.Title = imdbCQ
-                        .Find("div.title_wrapper h1")
-                        .Find("#titleYear")
-                        .Remove()
-                        .End()
-                        .Text()
-                        .Replace("&nbsp;", string.Empty)
-                        .Trim();
+                    if (imdbMetadata.Titles.Any())
+                    {
+                        string releaseHtmlTitle = releaseCQ.Find("title").Text();
+                        releaseHtmlTitle = releaseHtmlTitle.Substring(0, releaseHtmlTitle.LastIndexOf("(", StringComparison.Ordinal)).Trim();
 
-                    imdbMetadata.OriginalTitle = imdbCQ
-                        .Find("div.originalTitle")
-                        .Find("span")
-                        .Remove()
-                        .End()
-                        .Text()
-                        .Trim();
+                        if (!imdbMetadata.Titles.TryGetValue("(original title)", out string[]? originalTitleValues))
+                        {
+                            string[] originalTitleKeys = imdbMetadata.Titles.Keys.Where(key => key.Contains("original title", StringComparison.OrdinalIgnoreCase)).ToArray();
+                            if (originalTitleKeys.Length > 1)
+                            {
+                                originalTitleKeys = originalTitleKeys.Where(key => !key.Contains("USA", StringComparison.OrdinalIgnoreCase)).ToArray();
+                            }
 
-                    if (string.IsNullOrWhiteSpace(imdbMetadata.Title))
+                            originalTitleValues = originalTitleKeys.SelectMany(key => imdbMetadata.Titles[key]).ToArray();
+                        }
+
+                        if (originalTitleValues.Length > 1)
+                        {
+                            originalTitleValues = originalTitleValues.Where(title => !string.Equals(title, releaseHtmlTitle, StringComparison.Ordinal)).ToArray();
+                        }
+
+                        if (originalTitleValues.Length > 1)
+                        {
+                            originalTitleValues = originalTitleValues.Where(title => !string.Equals(title, releaseHtmlTitle, StringComparison.OrdinalIgnoreCase)).ToArray();
+                        }
+
+                        imdbMetadata.OriginalTitle = originalTitleValues.Length switch
+                        {
+                            1 => originalTitleValues.Single(),
+                            > 1 => originalTitleValues.FirstOrDefault(titleValue => originalTitleValues.Except(EnumerableEx.Return(titleValue)).All(otherTitle => titleValue.Contains(otherTitle, StringComparison.OrdinalIgnoreCase)))
+                                ?? string.Join(TitleSeparator, originalTitleValues),
+                            _ => string.Empty
+                        };
+
+                        if (!imdbMetadata.Titles.TryGetValue("World-wide (English title)", out string[]? titleValues))
+                        {
+                            titleValues = imdbMetadata.Titles
+                                .Where(pair => pair.Key.Contains("World-wide (English title)", StringComparison.OrdinalIgnoreCase))
+                                .SelectMany(pair => pair.Value)
+                                .ToArray();
+                        }
+
+                        if (!titleValues.Any()
+                            && !imdbMetadata.Titles.TryGetValue("USA", out titleValues)
+                            && !imdbMetadata.Titles.TryGetValue("USA (working title)", out titleValues)
+                            && !imdbMetadata.Titles.TryGetValue("USA (informal English title)", out titleValues)
+                            && !imdbMetadata.Titles.TryGetValue("UK", out titleValues)
+                            && !imdbMetadata.Titles.TryGetValue("UK (informal English title)", out titleValues)
+                            && !imdbMetadata.Titles.TryGetValue("Hong Kong (English title)", out titleValues)
+                            && !imdbMetadata.Titles.TryGetValue("(original title)", out titleValues))
+                        {
+                            titleValues = Array.Empty<string>();
+                        }
+
+                        Debug.Assert(titleValues.Any());
+                        imdbMetadata.Title = titleValues.Length switch
+                        {
+                            1 => titleValues.Single(),
+                            > 1 => titleValues.FirstOrDefault(availableTitle => string.Equals(releaseHtmlTitle, availableTitle, StringComparison.Ordinal))
+                                ?? titleValues.FirstOrDefault(availableTitle => string.Equals(releaseHtmlTitle, availableTitle, StringComparison.OrdinalIgnoreCase))
+                                ?? titleValues.FirstOrDefault(titleValue => titleValues.Except(EnumerableEx.Return(titleValue)).All(otherTitle => titleValue.Contains(otherTitle, StringComparison.OrdinalIgnoreCase)))
+                                ?? string.Join(TitleSeparator, titleValues),
+                            _ => releaseHtmlTitle
+                        };
+
+                        Debug.Assert(!string.IsNullOrWhiteSpace(imdbMetadata.Title));
+                    }
+                    else
                     {
                         imdbMetadata.Title = imdbCQ
-                            .Find(@"h1[data-testid=""hero-title-block__title""]")
+                            .Find("div.title_wrapper h1")
                             .Find("#titleYear")
                             .Remove()
                             .End()
                             .Text()
+                            .Replace("&nbsp;", string.Empty)
                             .Trim();
-                    }
 
-                    htmlTitle = htmlTitle.Contains("(", StringComparison.Ordinal)
-                        ? htmlTitle.Substring(0, htmlTitle.LastIndexOf("(", StringComparison.Ordinal)).Trim()
-                        : htmlTitle.Replace("- IMDB", string.Empty).Trim();
-                    Debug.Assert(string.Equals(imdbMetadata.Title, htmlTitle, StringComparison.Ordinal) || htmlTitle.Contains(imdbMetadata.Title, StringComparison.Ordinal));
+                        imdbMetadata.OriginalTitle = imdbCQ
+                            .Find("div.originalTitle")
+                            .Find("span")
+                            .Remove()
+                            .End()
+                            .Text()
+                            .Trim();
+
+                        if (string.IsNullOrWhiteSpace(imdbMetadata.Title))
+                        {
+                            imdbMetadata.Title = imdbCQ
+                                .Find(@"h1[data-testid=""hero-title-block__title""]")
+                                .Find("#titleYear")
+                                .Remove()
+                                .End()
+                                .Text()
+                                .Trim();
+                        }
+
+                        htmlTitle = htmlTitle.Contains("(", StringComparison.Ordinal)
+                            ? htmlTitle.Substring(0, htmlTitle.LastIndexOf("(", StringComparison.Ordinal)).Trim()
+                            : htmlTitle.Replace("- IMDB", string.Empty).Trim();
+                        Debug.Assert(string.Equals(imdbMetadata.Title, htmlTitle, StringComparison.Ordinal) || htmlTitle.Contains(imdbMetadata.Title, StringComparison.Ordinal));
+                    }
                 }
             }
 
@@ -283,8 +286,8 @@
 
             Debug.Assert(!string.IsNullOrWhiteSpace(imdbMetadata.Title));
 
-            imdbMetadata.Title = HttpUtility.HtmlDecode(imdbMetadata.Title);
-            imdbMetadata.OriginalTitle = HttpUtility.HtmlDecode(imdbMetadata.OriginalTitle);
+            imdbMetadata.Title = HttpUtility.HtmlDecode(imdbMetadata.Title).Trim();
+            imdbMetadata.OriginalTitle = HttpUtility.HtmlDecode(imdbMetadata.OriginalTitle).Trim();
 
             return (imdbUrl, imdbHtml, parentUrl, parentHtml, releaseUrl, releaseHtml, imdbMetadata);
         }
@@ -306,7 +309,7 @@
 
             imdbMetadata = JsonSerializer.Deserialize<ImdbMetadata>(
                 File.ReadAllText(path),
-                new JsonSerializerOptions() { PropertyNameCaseInsensitive = true, IgnoreReadOnlyProperties = true}) ?? throw new InvalidOperationException(path);
+                new JsonSerializerOptions() { PropertyNameCaseInsensitive = true, IgnoreReadOnlyProperties = true }) ?? throw new InvalidOperationException(path);
             return true;
         }
     }

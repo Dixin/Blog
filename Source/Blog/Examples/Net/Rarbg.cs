@@ -37,9 +37,9 @@
             @continue ??= _ => true;
             try
             {
-                using IWebDriver webDriver = ChromeDriverHelper.Start(@$"D:\Temp\Chrome Profile {partitionIndex}");
+                using IWebDriver webDriver = WebDriverHelper.Start(@$"D:\Temp\Chrome Profile {partitionIndex}");
                 webDriver.Url = url;
-                new WebDriverWait(webDriver, ChromeDriverHelper.DefaultWait).Until(e => e.FindElement(By.Id("pager_links")));
+                new WebDriverWait(webDriver, WebDriverHelper.DefaultWait).Until(e => e.FindElement(By.Id("pager_links")));
                 webDriver.Url = url;
                 IWebElement pager = new WebDriverWait(webDriver, TimeSpan.FromSeconds(100)).Until(e => e.FindElement(By.Id("pager_links")));
                 int pageIndex = 1;
@@ -50,7 +50,7 @@
                         break;
                     }
 
-                    await Task.Delay(ChromeDriverHelper.DefaultDomWait);
+                    await Task.Delay(WebDriverHelper.DefaultDomWait);
                     Trace.WriteLine($"{partitionIndex}:{pageIndex} Start {webDriver.Url}");
 
                     CQ page = webDriver.PageSource;
@@ -139,7 +139,7 @@
             if (nextPage.Count > 0)
             {
                 webDriver.Url = nextPage[0].GetAttribute("href");
-                pager = new WebDriverWait(webDriver, ChromeDriverHelper.DefaultWait).Until(e => e.FindElement(By.Id("pager_links")));
+                pager = new WebDriverWait(webDriver, WebDriverHelper.DefaultWait).Until(e => e.FindElement(By.Id("pager_links")));
                 return true;
             }
 

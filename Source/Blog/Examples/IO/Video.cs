@@ -36,11 +36,11 @@
 
         private const string JsonMetadataExtension = ".json";
 
-        internal const string ImdbMetadataExtension = ".txt";
+        internal const string ImdbCacheExtension = ".log";
 
         internal const string JsonMetadataSearchPattern = PathHelper.AllSearchPattern + JsonMetadataExtension;
 
-        private const string ImdbMetadataSearchPattern = PathHelper.AllSearchPattern + ImdbMetadataExtension;
+        private const string ImdbCacheSearchPattern = PathHelper.AllSearchPattern + ImdbCacheExtension;
 
         private static readonly string[] SubtitleLanguages = { "can", "chs", "chs&dan", "chs&eng", "chs&fre", "chs&ger", "chs&spa", "cht", "cht&eng", "cht&ger", "dut", "eng", "eng&chs", "fin", "fre", "ger", "ger&chs", "ita", "jap", "kor", "pol", "por", "rus", "spa", "swe", "dan", "nor", "eng-commentary", "eng-commentary1", "eng-commentary2", "chs&eng-preference", "tam" };
 
@@ -52,7 +52,7 @@
         
         private static void TraceLog(string? message) => Trace.WriteLine(message);
 
-        private static readonly int IOMaxDegreeOfParallelism = Math.Max(Environment.ProcessorCount, 4);
+        private static readonly int IOMaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4);
 
         internal static string FilterForFileSystem(this string value)
         {
