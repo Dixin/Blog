@@ -283,6 +283,16 @@
 
                     string[] files = Directory.EnumerateFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly).Select(file => Path.GetFileName(file) ?? throw new InvalidOperationException(file)).ToArray();
 
+                    if (trimmedMovie.Contains("2160p") && !files.Any(file => file.Contains("2160p")))
+                    {
+                        log($"!Not 2160p: {movie}");
+                    }
+
+                    if (!trimmedMovie.Contains("2160p") && files.Any(file => file.Contains("2160p")))
+                    {
+                        log($"!2160p: {movie}");
+                    }
+
                     if (trimmedMovie.Contains("1080p") && !files.Any(file => file.Contains("1080p")))
                     {
                         log($"!Not 1080p: {movie}");
@@ -307,7 +317,8 @@
                     string[] subtitles = files.Where(file => file.HasAnyExtension(AllSubtitleExtensions)).ToArray();
                     string[] metadataFiles = files.Where(file => file.HasExtension(XmlMetadataExtension)).ToArray();
                     string[] imdbFiles = files.Where(file => file.HasExtension(JsonMetadataExtension)).ToArray();
-                    string[] otherFiles = files.Except(videos).Except(subtitles).Except(metadataFiles).Except(imdbFiles).ToArray();
+                    string[] cacheFiles = files.Where(file => file.HasExtension(ImdbCacheExtension)).ToArray();
+                    string[] otherFiles = files.Except(videos).Except(subtitles).Except(metadataFiles).Except(imdbFiles).Except(cacheFiles).ToArray();
                     if (videos.Length < 1)
                     {
                         log($"!No video: {movie}");
@@ -349,6 +360,7 @@
 
                     files
                         .Except(imdbFiles)
+                        .Except(cacheFiles)
                         .Where(file => Regex.IsMatch(file, "(1080[^p]|720[^p])"))
                         .ForEach(file => log($"Definition: {Path.Combine(movie, file)}"));
 
@@ -815,7 +827,7 @@
                 });
         }
 
-        internal static void PrintDirectoryTitleMismatch(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
+        internal static void PrintDirectoryTitleMismatch(string directory, int level = 2, Action<string>? log = null)
         {
             log ??= TraceLog;
             EnumerateDirectories(directory, level)
@@ -967,7 +979,7 @@
                 });
         }
 
-        internal static void PrintDirectoryOriginalTitleMismatch(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
+        internal static void PrintDirectoryOriginalTitleMismatch(string directory, int level = 2, Action<string>? log = null)
         {
             log ??= TraceLog;
             EnumerateDirectories(directory, level)

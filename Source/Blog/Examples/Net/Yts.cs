@@ -32,7 +32,7 @@
             Dictionary<string, YtsSummary> allSummaries = File.Exists(jsonPath)
                 ? JsonSerializer.Deserialize<Dictionary<string, YtsSummary>>(await File.ReadAllTextAsync(jsonPath)) ?? throw new InvalidOperationException(jsonPath)
                 : new();
-            using WebClient webClient = new();
+            using WebClient webClient = new WebClient().AddChromeHeaders();
             for (; @continue(index); index++)
             {
                 string url = $"{BaseUrl}/browse-movies?page={index}";
@@ -98,7 +98,7 @@
                 .ParallelForEachAsync(async (summary, index) =>
                 {
                     Log($"Start {index}:{summary.Link}");
-                    using WebClient webClient = new();
+                    using WebClient webClient = new WebClient().AddChromeHeaders();
                     try
                     {
                         string html = await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(summary.Link), RetryCount);

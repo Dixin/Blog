@@ -19,6 +19,8 @@
 
         public int[] AudioBitRates { get; set; } = new int[0];
 
+        public double FrameRate { get; set; }
+
         internal int Subtitle { get; set; }
 
         internal TimeSpan Duration => TimeSpan.FromSeconds(this.TotalMilliseconds);

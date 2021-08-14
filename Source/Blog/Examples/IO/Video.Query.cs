@@ -49,7 +49,8 @@ namespace Examples.IO
                                 Subtitle = mediaInfo.SubtitleStreams?.Count() ?? 0,
                                 AudioBitRates = mediaInfo.AudioStreams?.Select(audio => (int)audio.Bitrate).ToArray() ?? Array.Empty<int>(),
                                 TotalMilliseconds = mediaInfo.Duration.TotalMilliseconds,
-                                Imdb = imdbMetadata
+                                Imdb = imdbMetadata,
+                                FrameRate = videoStream.Framerate
                             };
                         },
                         retryCount,
@@ -146,6 +147,11 @@ namespace Examples.IO
                 }
             }
 
+            if (Math.Abs(videoMetadata.FrameRate - 23.976) > 0.001)
+            {
+                return ($"!Not 23.976fps: {videoMetadata.FrameRate} {videoMetadata.File}", null);
+            }
+
             if (Regex.IsMatch(fileName, "[1-9]Audio"))
             {
                 if (videoMetadata.Audio < 2)
@@ -161,9 +167,12 @@ namespace Examples.IO
                 }
             }
 
-            return videoMetadata.AudioBitRates.Any(bitRate => bitRate < 192000)
-                ? ($"!Bad audio: Bit rate is only {string.Join(',', videoMetadata.AudioBitRates)} {videoMetadata.File}", null)
-                : (null, null);
+            if (videoMetadata.AudioBitRates.Any(bitRate => bitRate < 192000))
+            {
+                return ($"!Bad audio: Bit rate is only {string.Join(',', videoMetadata.AudioBitRates)} {videoMetadata.File}", null);
+            }
+
+            return (null, null);
         }
 
         internal static IEnumerable<string> EnumerateDirectories(string directory, int level = 2)
@@ -178,7 +187,7 @@ namespace Examples.IO
             return directories.OrderBy(movie => movie);
         }
 
-        internal static async Task DownloadImdbMetadataAsync(string directory, int level = 2, bool overwrite = false, bool useCache = false, bool useBrowser = false, bool isTV = false, Action<string>? log = null)
+        internal static async Task DownloadImdbMetadataAsync(string directory, int level = 2, bool overwrite = false, bool useCache = false, bool useBrowser = false, Action<string>? log = null)
         {
             log ??= TraceLog;
             string[] movies = EnumerateDirectories(directory, level).ToArray();
@@ -224,7 +233,8 @@ namespace Examples.IO
                                 return;
                             }
 
-                            string imdbId = XDocument.Load(nfo).Root?.Element((isTV ? "imdb_id" : "imdbid")!)?.Value ?? NotExistingFlag;
+                            XElement? root = XDocument.Load(nfo).Root;
+                            string imdbId = (root?.Element("imdbid") ?? root?.Element("imdb_id"))?.Value ?? NotExistingFlag;
                             string imdbFile = Path.Combine(movie, $"{imdbId}{ImdbCacheExtension}");
                             string parentFile = Path.Combine(movie, $"{imdbId}.Parent{ImdbCacheExtension}");
                             string releaseFile = Path.Combine(movie, $"{imdbId}.Release{ImdbCacheExtension}");

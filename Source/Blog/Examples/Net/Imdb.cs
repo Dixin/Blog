@@ -57,6 +57,12 @@
                 htmlYear = Regex.Match(htmlYear, "[0-9]{4}").Value;
             }
 
+            if (string.IsNullOrWhiteSpace(htmlYear))
+            {
+                htmlYear = imdbCQ.Find(@$"ul.ipc-inline-list li a[href=""/title/{imdbId}/releaseinfo?ref_=tt_ov_rdat#releases""]").Text();
+                htmlYear = Regex.Match(htmlYear, "[0-9]{4}").Value;
+            }
+
             Debug.Assert(string.Equals(imdbMetadata.Year, htmlYear, StringComparison.Ordinal) || imdbMetadata.ImdbId is "tt2058092");
 
             imdbMetadata.Regions = imdbCQ
@@ -67,7 +73,11 @@
                 ?.Replace("Country:", string.Empty, StringComparison.InvariantCultureIgnoreCase)
                 .Split('|')
                 .Select(region => region.Trim())
-                .ToArray() ?? Array.Empty<string>();
+                .ToArray()
+                ?? imdbCQ
+                    .Find(@"ul.ipc-metadata-list li[data-testid=""title-details-origin""] ul li")
+                    .Select(element => new CQ(element).Text().Trim())
+                    .ToArray();
             if (!imdbMetadata.Regions.Any())
             {
                 imdbMetadata.Regions = imdbCQ.Find(@"a[href^=""/search/title?country_of_origin=""]").Select(link => link.TextContent.Trim()).Distinct(StringComparer.Ordinal).ToArray();
@@ -102,7 +112,11 @@
                 ?.Replace("Language:", string.Empty, StringComparison.InvariantCultureIgnoreCase)
                 .Split('|')
                 .Select(region => region.Trim())
-                .ToArray() ?? Array.Empty<string>();
+                .ToArray() 
+                ?? imdbCQ
+                    .Find(@"ul.ipc-metadata-list li[data-testid=""title-details-languages""] ul li")
+                    .Select(element => new CQ(element).Text().Trim())
+                    .ToArray();
             if (!imdbMetadata.Languages.Any())
             {
                 imdbMetadata.Languages = imdbCQ.Find(@"a[href^=""/search/title?title_type=feature&primary_language=""]").Select(link => link.TextContent.Trim()).Distinct(StringComparer.Ordinal).ToArray();
@@ -156,6 +170,14 @@
                     .Text()
                     .Trim();
 
+                if (string.IsNullOrWhiteSpace(imdbMetadata.Title))
+                {
+                    imdbMetadata.Title = imdbCQ
+                        .Find(@"h1[data-testid=""hero-title-block__title""]")
+                        .Text()
+                        .Trim();
+                }
+
                 imdbMetadata.OriginalTitle = imdbCQ
                     .Find("div.originalTitle")
                     .Find("span")
@@ -163,6 +185,15 @@
                     .End()
                     .Text()
                     .Trim();
+
+                if (string.IsNullOrWhiteSpace(imdbMetadata.OriginalTitle))
+                {
+                    imdbMetadata.OriginalTitle = imdbCQ
+                        .Find(@"div[data-testid=""hero-title-block__original-title""]")
+                        .Text()
+                        .Trim()
+                        .Replace("Original title: ", string.Empty);
+                }
             }
             else
             {
@@ -286,6 +317,7 @@
 
             Debug.Assert(!string.IsNullOrWhiteSpace(imdbMetadata.Title));
 
+            imdbMetadata.Name = HttpUtility.HtmlDecode(imdbMetadata.Name).Trim();
             imdbMetadata.Title = HttpUtility.HtmlDecode(imdbMetadata.Title).Trim();
             imdbMetadata.OriginalTitle = HttpUtility.HtmlDecode(imdbMetadata.OriginalTitle).Trim();
 
