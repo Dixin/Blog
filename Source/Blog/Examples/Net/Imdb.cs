@@ -63,6 +63,12 @@
                 htmlYear = Regex.Match(htmlYear, "[0-9]{4}").Value;
             }
 
+            if (string.IsNullOrWhiteSpace(htmlYear))
+            {
+                htmlYear = imdbCQ.Find(@$"ul.ipc-inline-list li").Text();
+                htmlYear = Regex.Match(htmlYear, "[0-9]{4}").Value;
+            }
+
             Debug.Assert(string.Equals(imdbMetadata.Year, htmlYear, StringComparison.Ordinal) || imdbMetadata.ImdbId is "tt2058092");
 
             imdbMetadata.Regions = imdbCQ
