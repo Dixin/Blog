@@ -32,7 +32,7 @@
                 return function();
             }
 
-            TResult result = default;
+            TResult? result = default;
 
             // See: System.Runtime.CompilerServices.AsyncMethodBuilderCore.MoveNextRunner.Run()
             ExecutionContext.Run(executionContext, _ => result = function(), null);

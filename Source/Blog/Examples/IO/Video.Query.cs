@@ -196,7 +196,7 @@ namespace Examples.IO
                 .GetOrderablePartitions(IOMaxDegreeOfParallelism)
                 .Select((partition, partitionIndex) => Task.Run(async () =>
                 {
-                    IWebDriver? webDriver = useBrowser ? WebDriverHelper.Start(partitionIndex) : null;
+                    IWebDriver? webDriver = useBrowser ? WebDriverHelper.StartEdge(partitionIndex) : null;
                     try
                     {
                         if (webDriver is not null)
