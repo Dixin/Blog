@@ -336,7 +336,7 @@
         {
             if (Directory.Exists(path))
             {
-                path = Directory.GetFiles(path, Video.JsonMetadataSearchPattern, SearchOption.TopDirectoryOnly).Single();
+                path = Directory.GetFiles(path, Video.ImdbMetadataSearchPattern, SearchOption.TopDirectoryOnly).Single();
             }
 
             if (string.Equals(Path.GetFileNameWithoutExtension(path), Video.NotExistingFlag))

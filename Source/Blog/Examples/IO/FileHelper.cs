@@ -94,7 +94,7 @@ namespace Examples.IO
             File.Move(file, PathHelper.AddFilePostfix(file, postfix));
         }
 
-        internal static void MoveAll(string sourceDirectory, string destinationDirectory, string searchPattern = PathHelper.AllSearchPattern, SearchOption searchOption = SearchOption.TopDirectoryOnly, Func<string, bool>? predicate = null, bool overwrite = false)
+        public static void MoveAll(string sourceDirectory, string destinationDirectory, string searchPattern = PathHelper.AllSearchPattern, SearchOption searchOption = SearchOption.TopDirectoryOnly, Func<string, bool>? predicate = null, bool overwrite = false)
         {
             Directory
                 .EnumerateFiles(sourceDirectory, searchPattern, searchOption)

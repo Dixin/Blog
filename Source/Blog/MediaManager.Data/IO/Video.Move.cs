@@ -240,7 +240,7 @@ namespace Examples.IO
                         chinese = null;
                     }
 
-                    string json = files.Single(file => PathHelper.HasExtension(file, JsonMetadataExtension));
+                    string json = files.Single(file => PathHelper.HasExtension(file, ImdbMetadataExtension));
                     Imdb.TryLoad(json, out ImdbMetadata? imdbMetadata);
 
                     string englishTitle = english.Root?.Element("title")?.Value ?? throw new InvalidOperationException($"{movie} has no English title.");

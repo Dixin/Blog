@@ -39,6 +39,7 @@
                             .Do(log)
                             .Where(metadataFile => !isDryRun)
                             .ForEach(File.Delete);
+                        // TODO.
                     }
                 });
         }

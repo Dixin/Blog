@@ -24,25 +24,25 @@
 
         private static readonly string[] UncommonVideoExtensions = { ".avi", ".wmv", ".webm", ".mpg", ".mpeg", ".rmvb", ".rm", ".3gp", ".divx", ".m1v", ".mov", ".ts", ".vob", ".flv", ".m4v", ".mkv", ".dat" };
 
-        internal static readonly string[] CommonVideoExtensions = { ".avi", VideoExtension, ".mkv", ".iso" };
+        private static readonly string[] CommonVideoExtensions = { ".avi", VideoExtension, ".mkv", ".iso" };
 
         private static readonly string[] AllVideoExtensions = UncommonVideoExtensions.Union(CommonVideoExtensions).ToArray();
 
-        private static readonly string[] IndependentNfos = { $"tvshow{XmlMetadataExtension}", $"season{XmlMetadataExtension}" };
+        private static readonly string[] TVMetadataFiles = { $"tvshow{XmlMetadataExtension}", $"season{XmlMetadataExtension}" };
 
         private static readonly string[] Attachments = { "Introduction.txt", "Introduction.mht" };
 
         private static readonly string[] AdaptiveAttachments = new[] { "banner.jpg", "box.jpg", "clearart.png", "clearlogo.png", "disc.png", "discart.png", "fanart.jpg", "landscape.jpg", "logo.png", "poster.jpg", "poster.png", "backdrop.jpg", "back.jpg" };
 
-        private const string JsonMetadataExtension = ".json";
+        private const string ImdbMetadataExtension = ".json";
 
         internal const string ImdbCacheExtension = ".log";
 
-        internal const string JsonMetadataSearchPattern = PathHelper.AllSearchPattern + JsonMetadataExtension;
+        internal const string ImdbMetadataSearchPattern = PathHelper.AllSearchPattern + ImdbMetadataExtension;
 
         private const string ImdbCacheSearchPattern = PathHelper.AllSearchPattern + ImdbCacheExtension;
 
-        private static readonly string[] SubtitleLanguages = { "can", "chs", "chs&dan", "chs&eng", "chs&fre", "chs&ger", "chs&spa", "cht", "cht&eng", "cht&ger", "dut", "eng", "eng&chs", "fin", "fre", "ger", "ger&chs", "ita", "jap", "kor", "pol", "por", "rus", "spa", "swe", "dan", "nor", "eng-commentary", "eng-commentary1", "eng-commentary2", "chs&eng-preference", "tam" };
+        private static readonly string[] SubtitleLanguages = { "can", "chs", "chs&dan", "chs&eng", "chs&fre", "chs&ger", "chs&spa", "cht", "cht&eng", "cht&ger", "dut", "eng", "eng&chs", "fin", "fre", "ger", "ger&chs", "ita", "jap", "kor", "pol", "por", "rus", "spa", "swe", "dan", "nor", "tam" };
 
         internal const string NotExistingFlag = "-";
 

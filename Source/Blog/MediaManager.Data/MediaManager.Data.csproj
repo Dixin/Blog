@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <RootNamespace>Examples</RootNamespace>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="CHTCHSConv" Version="1.0.0" />
+        <PackageReference Include="CsQuery.NETStandard" Version="1.3.6.1" />
+        <PackageReference Include="EnterpriseLibrary.TransientFaultHandling.Core" Version="2.0.0" />
+        <PackageReference Include="Selenium.WebDriver" Version="4.0.0-beta4" />
+        <PackageReference Include="TagLibSharp" Version="2.2.0" />
+        <PackageReference Include="Ude.NetStandard" Version="1.2.0" />
+        <PackageReference Include="Xabe.FFmpeg" Version="5.0.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Examples\Examples.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -135,7 +135,7 @@
                         .ToArray();
                     if (videos.Any())
                     {
-                        log(Path.GetFileNameWithoutExtension(files.Single(file => file.HasExtension(JsonMetadataExtension))).Split(".")[0]);
+                        log(Path.GetFileNameWithoutExtension(files.Single(file => file.HasExtension(ImdbMetadataExtension))).Split(".")[0]);
                         videos.ForEach(log);
                         log(string.Empty);
                     }
@@ -219,7 +219,7 @@
         internal static void PrintDuplicateImdbId(Action<string>? log = null, params string[] directories)
         {
             log ??= TraceLog;
-            directories.SelectMany(directory => Directory.EnumerateFiles(directory, JsonMetadataSearchPattern, SearchOption.AllDirectories))
+            directories.SelectMany(directory => Directory.EnumerateFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories))
                 .GroupBy(metadata => Path.GetFileNameWithoutExtension(metadata).Split(".")[0])
                 .Where(group => group.Count() > 1)
                 .ForEach(group =>
@@ -316,7 +316,7 @@
                     string[] videos = files.Where(IsCommonVideo).ToArray();
                     string[] subtitles = files.Where(file => file.HasAnyExtension(AllSubtitleExtensions)).ToArray();
                     string[] metadataFiles = files.Where(file => file.HasExtension(XmlMetadataExtension)).ToArray();
-                    string[] imdbFiles = files.Where(file => file.HasExtension(JsonMetadataExtension)).ToArray();
+                    string[] imdbFiles = files.Where(file => file.HasExtension(ImdbMetadataExtension)).ToArray();
                     string[] cacheFiles = files.Where(file => file.HasExtension(ImdbCacheExtension)).ToArray();
                     string[] otherFiles = files.Except(videos).Except(subtitles).Except(metadataFiles).Except(imdbFiles).Except(cacheFiles).ToArray();
                     if (videos.Length < 1)
@@ -541,7 +541,7 @@
                 .ForEach(movie =>
                 {
                     string[] files = Directory.GetFiles(movie);
-                    string? json = files.SingleOrDefault(file => file.HasExtension(JsonMetadataExtension));
+                    string? json = files.SingleOrDefault(file => file.HasExtension(ImdbMetadataExtension));
                     if (string.IsNullOrWhiteSpace(json))
                     {
                         log($"!!! Missing IMDB metadata {movie}");
@@ -764,7 +764,7 @@
             log ??= TraceLog;
             HashSet<string> existingImdbIds = new(
                 directories.SelectMany(directory => Directory
-                    .EnumerateFiles(directory, JsonMetadataSearchPattern, SearchOption.AllDirectories)
+                    .EnumerateFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories)
                     .Select(file => Path.GetFileNameWithoutExtension(file).Split(".").First())
                     .Where(imdbId => imdbId != NotExistingFlag)),
                 StringComparer.OrdinalIgnoreCase);
@@ -1100,6 +1100,15 @@
                     log(newMovie);
                     log(string.Empty);
                 });
+        }
+
+        internal static void PrintMovieByGenre(string directory, string genre, Action<string>? log = null)
+        {
+            Directory
+                .GetFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories)
+                .Select(file => (File: file, Metadata: Imdb.TryLoad(file, out ImdbMetadata? imdbMetadata) ? imdbMetadata : throw new InvalidOperationException(file)))
+                .Where(metadata => metadata.Metadata.Genre.Contains(genre, StringComparer.OrdinalIgnoreCase))
+                .ForEach(metadata => log($"{Path.GetDirectoryName(metadata.File)}"));
         }
     }
 }

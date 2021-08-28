@@ -208,7 +208,7 @@ namespace Examples.IO
                         {
                             (long index, string movie) = movieWithIndex;
                             string[] files = Directory.GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
-                            string[] jsonFiles = files.Where(file => file.EndsWith(JsonMetadataExtension, StringComparison.OrdinalIgnoreCase)).ToArray();
+                            string[] jsonFiles = files.Where(file => file.EndsWith(ImdbMetadataExtension, StringComparison.OrdinalIgnoreCase)).ToArray();
                             if (jsonFiles.Any())
                             {
                                 if (overwrite)
@@ -250,7 +250,7 @@ namespace Examples.IO
                                     await File.WriteAllTextAsync(Path.Combine(movie, releaseFile), string.Empty);
                                 }
 
-                                string emptyMetadataFile = Path.Combine(movie, $"{NotExistingFlag}{JsonMetadataExtension}");
+                                string emptyMetadataFile = Path.Combine(movie, $"{NotExistingFlag}{ImdbMetadataExtension}");
                                 if (!files.Any(file => string.Equals(file, emptyMetadataFile, StringComparison.OrdinalIgnoreCase)))
                                 {
                                     await File.WriteAllTextAsync(emptyMetadataFile, "{}");
@@ -294,7 +294,7 @@ namespace Examples.IO
                                 log($"Saved to {parentFile}.");
                             }
 
-                            string jsonFile = Path.Combine(movie, $"{imdbId}.{imdbMetadata.Year}.{string.Join(",", imdbMetadata.Regions.Take(5))}.{string.Join(",", imdbMetadata.Languages.Take(3))}{JsonMetadataExtension}");
+                            string jsonFile = Path.Combine(movie, $"{imdbId}.{imdbMetadata.Year}.{string.Join(",", imdbMetadata.Regions.Take(5))}.{string.Join(",", imdbMetadata.Languages.Take(3))}{ImdbMetadataExtension}");
                             log($"Merged {imdbUrl} and {releaseUrl} to {jsonFile}.");
                             string jsonContent = JsonSerializer.Serialize(
                                 imdbMetadata,
@@ -339,7 +339,7 @@ namespace Examples.IO
                 .ToDictionary(video => video, _ => string.Empty);
 
             Dictionary<string, Dictionary<string, VideoMetadata>> allVideoMetadata = directories
-                .SelectMany(directory => Directory.GetFiles(directory, JsonMetadataSearchPattern, SearchOption.AllDirectories))
+                .SelectMany(directory => Directory.GetFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories))
                 .AsParallel()
                 .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
                 .SelectMany(movieJson =>
