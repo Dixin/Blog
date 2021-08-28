@@ -127,7 +127,14 @@
             string jsonString = JsonSerializer.Serialize(allSummaries, new() { WriteIndented = true });
             lock (SaveJsonLock)
             {
-                File.WriteAllText(jsonPath, jsonString);
+                string temp = $"{jsonPath}.txt";
+                File.WriteAllText(temp, jsonString);
+                if (File.Exists(jsonPath))
+                {
+                    File.Delete(jsonPath);
+                }
+
+                File.Move(temp, jsonPath);
             }
         }
 

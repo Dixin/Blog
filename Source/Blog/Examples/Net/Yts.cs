@@ -20,7 +20,7 @@
     {
         private const string BaseUrl = "https://yts.mx";
 
-        private const int RetryCount = 10;
+        private const int RetryCount = 3;
 
         private const int SaveFrequency = 100;
 

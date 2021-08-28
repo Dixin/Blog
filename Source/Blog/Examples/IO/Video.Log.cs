@@ -340,7 +340,7 @@
                             .Where(file => !allowedAttachments.Contains(file, StringComparer.InvariantCultureIgnoreCase))
                             .ForEach(file => log($"!Attachment: {Path.Combine(movie, file)}"));
                     }
-                    
+
                     string[] allowedSubtitles = videos
                         .SelectMany(video => SubtitleLanguages
                             .Select(language => $"{Path.GetFileNameWithoutExtension(video)}.{language}")
@@ -583,7 +583,8 @@
                                     && (videoInfo.Edition.Contains("SUBBED") || !title.ContainsIgnoreCase(".SUBBED."))
                                     && (string.IsNullOrWhiteSpace(videoInfo.Edition) || !(videoInfo with { Edition = string.Empty }).Name.StartsWithIgnoreCase(title))
                                     && (!videoInfo.Edition.Contains(".Part") || !title.Contains(".Part"))
-                                    && (!VideoFileInfo.TryParse(title, out VideoFileInfo? metadataInfo) || !videoInfo.Edition.IsNotNullOrWhiteSpace() || !videoInfo.Edition.ContainsIgnoreCase(metadataInfo.Edition));
+                                    && (!VideoFileInfo.TryParse(title, out VideoFileInfo? metadataInfo) || !string.Equals(videoInfo.Origin, metadataInfo.Origin, StringComparison.OrdinalIgnoreCase) || !videoInfo.Edition.IsNotNullOrWhiteSpace()
+                                        || !metadataInfo.Edition.Split(".", StringSplitOptions.RemoveEmptyEntries).All(edition => metadataInfo.Edition.Split(".", StringSplitOptions.RemoveEmptyEntries).Contains(edition)));
                             }))
                             .ToArray();
                         if (otherX265Metadata.Any())
@@ -627,7 +628,8 @@
                                     && (videoInfo.Edition.Contains("SUBBED") || !title.ContainsIgnoreCase(".SUBBED."))
                                     && (string.IsNullOrWhiteSpace(videoInfo.Edition) || !(videoInfo with { Edition = string.Empty }).Name.StartsWithIgnoreCase(title))
                                     && (!videoInfo.Edition.Contains(".Part") || !title.Contains(".Part"))
-                                    && (!VideoFileInfo.TryParse(title, out VideoFileInfo? metadataInfo) || !videoInfo.Edition.IsNotNullOrWhiteSpace() || !videoInfo.Edition.ContainsIgnoreCase(metadataInfo.Edition));
+                                    && (!VideoFileInfo.TryParse(title, out VideoFileInfo? metadataInfo) || !string.Equals(videoInfo.Origin, metadataInfo.Origin, StringComparison.OrdinalIgnoreCase) || !videoInfo.Edition.IsNotNullOrWhiteSpace()
+                                        || !metadataInfo.Edition.Split(".", StringSplitOptions.RemoveEmptyEntries).All(edition => metadataInfo.Edition.Split(".", StringSplitOptions.RemoveEmptyEntries).Contains(edition)));
                             }))
                             .ToArray();
                         if (otherH264Metadata.Any())
@@ -756,7 +758,8 @@
             });
         }
 
-        internal static async Task PrintHighRating(string x265JsonPath, string h264JsonPath, string ytsJsonPath, string threshold = "8.0", Action<string>? log = null, params string[] directories)
+        internal static async Task PrintHighRatingAsync(string x265JsonPath, string h264JsonPath, string ytsJsonPath, 
+            string threshold = "8.0", string[]? excludedGenres = null, Action<string>? log = null, params string[] directories)
         {
             log ??= TraceLog;
             HashSet<string> existingImdbIds = new(
@@ -774,7 +777,8 @@
             x265Summaries
                 .Where(summaries =>
                     !existingImdbIds.Contains(summaries.Key)
-                    && summaries.Value.Any(summary => string.Compare(summary.ImdbRating, threshold, StringComparison.Ordinal) >= 0))
+                    && summaries.Value.Any(summary => string.Compare(summary.ImdbRating, threshold, StringComparison.Ordinal) >= 0)
+                    && (excludedGenres is null || !summaries.Value.Any(summary => excludedGenres.Any(excludedGenre => summary.Genres.Contains(excludedGenre, StringComparer.OrdinalIgnoreCase)))))
                 .ForEach(summaries =>
                 {
                     if (!highRatings.ContainsKey(summaries.Key))
@@ -788,7 +792,8 @@
             h264Summaries
                 .Where(summaries =>
                     !existingImdbIds.Contains(summaries.Key)
-                    && summaries.Value.Any(summary => string.Compare(summary.ImdbRating, threshold, StringComparison.Ordinal) >= 0))
+                    && summaries.Value.Any(summary => string.Compare(summary.ImdbRating, threshold, StringComparison.Ordinal) >= 0)
+                    && (excludedGenres is null || !summaries.Value.Any(summary => excludedGenres.Any(excludedGenre => summary.Genres.Contains(excludedGenre, StringComparer.OrdinalIgnoreCase)))))
                 .ForEach(summaries =>
                 {
                     if (!highRatings.ContainsKey(summaries.Key))
@@ -802,7 +807,8 @@
             ytsDetails
                 .Where(summaries =>
                     !existingImdbIds.Contains(summaries.Key)
-                    && summaries.Value.Any(summary => string.Compare(summary.ImdbRating, threshold, StringComparison.Ordinal) >= 0))
+                    && summaries.Value.Any(summary => string.Compare(summary.ImdbRating, threshold, StringComparison.Ordinal) >= 0)
+                    && (excludedGenres is null || !summaries.Value.Any(summary => excludedGenres.Any(excludedGenre => summary.Genres.Contains(excludedGenre, StringComparer.OrdinalIgnoreCase)))))
                 .ForEach(summaries =>
                 {
                     if (!highRatings.ContainsKey(summaries.Key))
