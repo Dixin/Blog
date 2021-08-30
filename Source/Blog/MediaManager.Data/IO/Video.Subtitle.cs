@@ -7,6 +7,7 @@ namespace Examples.IO
     using System.Text;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
+    using Examples.Common;
     using Examples.Linq;
     using Examples.Text;
     using Ude;
@@ -34,7 +35,7 @@ namespace Examples.IO
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             return Directory
                 .EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
-                .Where(file => TextExtensions.Any(extension => file.EndsWith(extension, StringComparison.OrdinalIgnoreCase)))
+                .Where(file => TextExtensions.Any(file.EndsWithIgnoreCase))
                 .Select(file =>
                 {
                     using FileStream fileStream = File.OpenRead(file);
@@ -52,7 +53,7 @@ namespace Examples.IO
         {
             log ??= TraceLog;
             GetSubtitles(directory)
-                .Where(result => encodings.Any(encoding => string.Equals(encoding, result.Charset, StringComparison.OrdinalIgnoreCase)))
+                .Where(result => encodings.Any(encoding => encoding.EqualsIgnoreCase(result.Charset)))
                 .ForEach(result =>
                 {
                     if (!isDryRun)
@@ -144,7 +145,7 @@ namespace Examples.IO
                     string match = Regex.Match(Path.GetFileNameWithoutExtension(video), @"s[\d]+e[\d]+", RegexOptions.IgnoreCase).Value.ToLowerInvariant();
                     Directory
                         .EnumerateFiles(subtitleDirectory, $"{PathHelper.AllSearchPattern}{match}{PathHelper.AllSearchPattern}", SearchOption.TopDirectoryOnly)
-                        .Where(file => !file.EndsWith(mediaExtension, StringComparison.OrdinalIgnoreCase))
+                        .Where(file => !file.EndsWithIgnoreCase(mediaExtension))
                         .ForEach(subtitle =>
                         {
                             string language = (Path.GetFileNameWithoutExtension(subtitle) ?? throw new InvalidOperationException(subtitle)).Split(".").Last();
@@ -174,7 +175,7 @@ namespace Examples.IO
                 .EnumerateFiles(directory, "*.idx", SearchOption.AllDirectories)
                 .Concat(Directory.EnumerateFiles(directory, "*.sub", SearchOption.AllDirectories))
                 .ToArray()
-                .Where(subtitle => "Subs".Equals(Path.GetFileName(Path.GetDirectoryName(subtitle)), StringComparison.OrdinalIgnoreCase))
+                .Where(subtitle => "Subs".EqualsIgnoreCase(Path.GetFileName(Path.GetDirectoryName(subtitle))))
                 .ForEach(subtitle =>
                 {
                     string subtitleDirectory = Path.GetDirectoryName(subtitle)!;
@@ -195,7 +196,7 @@ namespace Examples.IO
 
             Directory
                 .GetFiles(directory, "*.srt", SearchOption.AllDirectories)
-                .Where(subtitle => "Subs".Equals(Path.GetFileName(Path.GetDirectoryName(subtitle)), StringComparison.OrdinalIgnoreCase))
+                .Where(subtitle => "Subs".EqualsIgnoreCase(Path.GetFileName(Path.GetDirectoryName(subtitle))))
                 .ForEach(subtitle =>
                 {
                     string subtitleDirectory = Path.GetDirectoryName(subtitle)!;
@@ -207,8 +208,8 @@ namespace Examples.IO
                     string language = Path.GetFileNameWithoutExtension(subtitle) ?? throw new InvalidOperationException(subtitle);
                     string suffix = language switch
                     {
-                        _ when language.Contains("eng", StringComparison.OrdinalIgnoreCase) => string.Empty,
-                        _ when language.Contains("chi", StringComparison.OrdinalIgnoreCase) => ".chs",
+                        _ when language.ContainsIgnoreCase("eng") => string.Empty,
+                        _ when language.ContainsIgnoreCase("chi") => ".chs",
                         _ => "." + language
                     };
                     string newSubtitle = Path.Combine(parent, $"{Path.GetFileNameWithoutExtension(mainVideo)}{suffix}.srt");
@@ -262,22 +263,22 @@ namespace Examples.IO
                 {
                     string content = File.ReadAllText(file);
                     List<string> languages = new();
-                    if (CommonChinese.All(chinese => content.Contains(chinese)))
+                    if (CommonChinese.All(chinese => content.ContainsOrdinal(chinese)))
                     {
                         languages.Add("chs");
                     }
-                    if (CommonEnglish.All(english => content.IndexOf(english, StringComparison.OrdinalIgnoreCase) >= 0))
+                    if (CommonEnglish.All(english => content.ContainsIgnoreCase(english)))
                     {
                         languages.Add("eng");
                     }
                     if (languages.Any())
                     {
-                        if (Path.GetFileNameWithoutExtension(file).EndsWith(string.Join('&', languages)) || Path.GetFileNameWithoutExtension(file).EndsWith(string.Join('&', languages.AsEnumerable().Reverse())))
+                        if (Path.GetFileNameWithoutExtension(file).EndsWithIgnoreCase(string.Join('&', languages)) || Path.GetFileNameWithoutExtension(file).EndsWith(string.Join('&', languages.AsEnumerable().Reverse())))
                         {
                             return;
                         }
 
-                        if (languages.Count == 1 && languages.Single().Equals("eng", StringComparison.InvariantCultureIgnoreCase))
+                        if (languages.Count == 1 && languages.Single().EqualsIgnoreCase("eng"))
                         {
                             return;
                         }
@@ -305,13 +306,13 @@ namespace Examples.IO
                 .ForEach(subtitle =>
                 {
 
-                    if (string.Equals(".srt", Path.GetExtension(subtitle), StringComparison.InvariantCultureIgnoreCase)
-                        && !Regex.IsMatch(File.ReadLines(subtitle).FirstOrDefault(line => !string.IsNullOrWhiteSpace(line.Trim()))?.Trim() ?? string.Empty, @"^(\-)?[0-9]+$"))
+                    if (".srt".EqualsIgnoreCase(Path.GetExtension(subtitle))
+                        && !Regex.IsMatch(File.ReadLines(subtitle).FirstOrDefault(line => line.Trim().IsNotNullOrWhiteSpace())?.Trim() ?? string.Empty, @"^(\-)?[0-9]+$"))
                     {
                         log($"!Format {subtitle}");
                     }
 
-                    if (Path.GetFileNameWithoutExtension(subtitle).EndsWith(".eng", StringComparison.InvariantCultureIgnoreCase))
+                    if (Path.GetFileNameWithoutExtension(subtitle).EndsWithIgnoreCase(".eng"))
                     {
                         string sss = subtitle.Replace(".eng.", ".");
                         if (File.Exists(sss))
@@ -321,16 +322,16 @@ namespace Examples.IO
                     }
 
                     string postfix = Path.GetFileNameWithoutExtension(subtitle).Split(".").Last();
-                    if (postfix.Contains("chs") || postfix.Contains("cht"))
+                    if (postfix.ContainsIgnoreCase("chs") || postfix.ContainsIgnoreCase("cht"))
                     {
-                        if (!File.ReadAllText(subtitle).Contains("的"))
+                        if (!File.ReadAllText(subtitle).ContainsOrdinal("的"))
                         {
                             log($"!Not Chinese {subtitle}");
                         }
                     }
                     else
                     {
-                        if (File.ReadAllText(subtitle).Contains("的"))
+                        if (File.ReadAllText(subtitle).ContainsOrdinal("的"))
                         {
                             log($"!Chinese {subtitle}");
                         }

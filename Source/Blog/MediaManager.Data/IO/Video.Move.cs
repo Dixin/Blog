@@ -10,6 +10,7 @@ namespace Examples.IO
     using System.Threading.Tasks;
     using System.Web;
     using System.Xml.Linq;
+    using Examples.Common;
     using Examples.Net;
 
     internal static partial class Video
@@ -24,7 +25,7 @@ namespace Examples.IO
                 .ForEach((file, index) =>
                 {
                     string newFile = rename(file, index);
-                    if (!string.Equals(file, newFile))
+                    if (!file.EqualsOrdinal(newFile))
                     {
                         log(file);
                         if (!isDryRun)
@@ -44,7 +45,7 @@ namespace Examples.IO
                 .ForEach(directory =>
                 {
                     string newDirectory = rename(directory);
-                    if (!string.Equals(directory, newDirectory))
+                    if (!directory.EqualsOrdinal(newDirectory))
                     {
                         log(directory);
                         Directory.Move(directory, newDirectory);
@@ -78,7 +79,7 @@ namespace Examples.IO
                     }
 
                     string last = info[^2];
-                    if (last.IndexOf("handbrake", StringComparison.OrdinalIgnoreCase) >= 0)
+                    if (last.IndexOfIgnoreCase("handbrake") >= 0)
                     {
                         info.Insert(info.Count - 3, $"{audio}Audio");
                     }
@@ -94,7 +95,7 @@ namespace Examples.IO
                     File.Move(file, Path.Combine(directory, newFile));
                     Directory.GetFiles(directory, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
                         .Where(attachment => attachment != file)
-                        .Where(attachment => (Path.GetFileName(attachment) ?? throw new InvalidOperationException(file)).StartsWith(Path.GetFileNameWithoutExtension(file), StringComparison.OrdinalIgnoreCase))
+                        .Where(attachment => (Path.GetFileName(attachment) ?? throw new InvalidOperationException(file)).StartsWithIgnoreCase(Path.GetFileNameWithoutExtension(file)))
                         .ToList()
                         .ForEach(attachment =>
                         {
@@ -114,7 +115,7 @@ namespace Examples.IO
                 {
 
                     string match = Regex.Match(Path.GetFileNameWithoutExtension(nfo) ?? throw new InvalidOperationException($"{nfo} is invalid."), @"s[\d]+e[\d]+", RegexOptions.IgnoreCase).Value.ToLowerInvariant();
-                    if (string.IsNullOrWhiteSpace(match))
+                    if (match.IsNullOrWhiteSpace())
                     {
                         return;
                     }
@@ -139,7 +140,7 @@ namespace Examples.IO
         {
             RenameVideosWithDefinition(
                 Directory.GetFiles(directory, PathHelper.AllSearchPattern, searchOption)
-                    .Where(file => AllVideoExtensions.Any(extension => file.EndsWith(extension, StringComparison.InvariantCultureIgnoreCase)))
+                    .Where(file => AllVideoExtensions.Any(file.EndsWithIgnoreCase))
                     .ToArray(),
                 isDryRun,
                 log);
@@ -192,15 +193,15 @@ namespace Examples.IO
                 .ForEach(movie =>
                 {
                     string movieName = Path.GetFileName(movie);
-                    if (!overwrite && movieName.Contains("{"))
+                    if (!overwrite && movieName.ContainsOrdinal("{"))
                     {
                         return;
                     }
 
                     Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata);
                     string additional = $"{{{string.Join(",", imdbMetadata?.Regions ?? Array.Empty<string>())};{string.Join(",", imdbMetadata?.Genre.Take(3) ?? Array.Empty<string>())}}}";
-                    string originalMovie = movieName.Contains("{")
-                        ? PathHelper.ReplaceFileName(movie, movieName.Substring(0, movieName.IndexOf("{", StringComparison.InvariantCulture)))
+                    string originalMovie = movieName.ContainsOrdinal("{")
+                        ? PathHelper.ReplaceFileName(movie, movieName.Substring(0, movieName.IndexOfOrdinal("{")))
                         : movie;
                     string newMovie = $"{originalMovie}{additional}";
                     log(movie);
@@ -220,7 +221,7 @@ namespace Examples.IO
                 .ToArray()
                 .ForEach(movie =>
                 {
-                    if (!overwrite && Path.GetFileName(movie).Contains("{"))
+                    if (!overwrite && Path.GetFileName(movie).ContainsOrdinal("{"))
                     {
                         return;
                     }
@@ -229,10 +230,10 @@ namespace Examples.IO
                     string[] nfos = files.Where(file => file.HasExtension(XmlMetadataExtension)).ToArray();
                     XDocument english;
                     XDocument? chinese;
-                    if (nfos.Any(nfo => nfo.EndsWith($".{backupFlag}{XmlMetadataExtension}")) && nfos.Any(nfo => !nfo.EndsWith($".{backupFlag}{XmlMetadataExtension}")))
+                    if (nfos.Any(nfo => nfo.EndsWithIgnoreCase($".{backupFlag}{XmlMetadataExtension}")) && nfos.Any(nfo => !nfo.EndsWithIgnoreCase($".{backupFlag}{XmlMetadataExtension}")))
                     {
-                        english = XDocument.Load(nfos.First(nfo => nfo.EndsWith($".{backupFlag}{XmlMetadataExtension}")));
-                        chinese = XDocument.Load(nfos.First(nfo => !nfo.EndsWith($".{backupFlag}{XmlMetadataExtension}")));
+                        english = XDocument.Load(nfos.First(nfo => nfo.EndsWithIgnoreCase($".{backupFlag}{XmlMetadataExtension}")));
+                        chinese = XDocument.Load(nfos.First(nfo => !nfo.EndsWithIgnoreCase($".{backupFlag}{XmlMetadataExtension}")));
                     }
                     else
                     {
@@ -248,21 +249,21 @@ namespace Examples.IO
                     string? originalTitle = imdbMetadata?.Name ?? english.Root?.Element("originaltitle")?.Value ?? imdbMetadata?.Name;
                     string year = imdbMetadata?.Year ?? english.Root?.Element("year")?.Value ?? throw new InvalidOperationException($"{movie} has no year.");
                     string? imdbId = english.Root?.Element("imdbid")?.Value;
-                    Debug.Assert(string.IsNullOrWhiteSpace(imdbId)
-                        ? string.Equals("-", Path.GetFileNameWithoutExtension(json), StringComparison.InvariantCulture)
-                        : string.Equals(imdbId, Path.GetFileNameWithoutExtension(json).Split(".")[0], StringComparison.InvariantCultureIgnoreCase));
-                    string rating = string.IsNullOrWhiteSpace(imdbId)
+                    Debug.Assert(imdbId.IsNullOrWhiteSpace()
+                        ? "-".EqualsOrdinal(Path.GetFileNameWithoutExtension(json))
+                        : imdbId.EqualsIgnoreCase(Path.GetFileNameWithoutExtension(json).Split(".")[0]));
+                    string rating = imdbId.IsNullOrWhiteSpace()
                         ? "-"
                         : imdbMetadata?.AggregateRating?.RatingValue ?? "0.0";
                     string[] videos = files.Where(file => file.HasAnyExtension(AllVideoExtensions)).ToArray();
                     string contentRating = imdbMetadata?.FormattedContentRating ?? "-";
                     string definition = videos switch
                     {
-                        _ when videos.Any(video => Path.GetFileNameWithoutExtension(video)?.Contains("1080p") ?? false) => "[1080p]",
-                        _ when videos.Any(video => Path.GetFileNameWithoutExtension(video)?.Contains("720p") ?? false) => "[720p]",
+                        _ when videos.Any(video => Path.GetFileNameWithoutExtension(video)?.ContainsIgnoreCase("1080p") ?? false) => "[1080p]",
+                        _ when videos.Any(video => Path.GetFileNameWithoutExtension(video)?.ContainsIgnoreCase("720p") ?? false) => "[720p]",
                         _ => string.Empty
                     };
-                    originalTitle = string.Equals(originalTitle, englishTitle, StringComparison.OrdinalIgnoreCase) || string.IsNullOrWhiteSpace(originalTitle)
+                    originalTitle = originalTitle.EqualsIgnoreCase(englishTitle) || originalTitle.IsNullOrWhiteSpace()
                         ? string.Empty
                         : $"={originalTitle}";
                     string additional = additionalInfo
@@ -278,7 +279,7 @@ namespace Examples.IO
                     }
                     else
                     {
-                        if (!string.Equals(movie, newDirectory))
+                        if (!movie.EqualsOrdinal(newDirectory))
                         {
                             log(movie);
                             Directory.Move(movie, newDirectory);
@@ -298,15 +299,15 @@ namespace Examples.IO
                 {
                     string movieName = Path.GetFileName(movie) ?? throw new InvalidOperationException(movie);
                     bool isRenamed = false;
-                    if (movieName.StartsWith("0."))
+                    if (movieName.StartsWithOrdinal("0."))
                     {
                         movieName = movieName.Substring("0.".Length);
                         isRenamed = true;
                     }
 
-                    if (movieName.Contains("{"))
+                    if (movieName.ContainsOrdinal("{"))
                     {
-                        movieName = movieName.Substring(0, movieName.IndexOf("{", StringComparison.Ordinal));
+                        movieName = movieName.Substring(0, movieName.IndexOfOrdinal("{"));
                         isRenamed = true;
                     }
 
@@ -342,14 +343,14 @@ namespace Examples.IO
                         return;
                     }
 
-                    if (!string.IsNullOrWhiteSpace(imdbMetadata.Year))
+                    if (imdbMetadata.Year.IsNotNullOrWhiteSpace())
                     {
                         parsed = parsed with { Year = imdbMetadata.Year };
                     }
 
                     parsed = parsed with { AggregateRating = imdbMetadata.FormattedAggregateRating, ContentRating = imdbMetadata.FormattedContentRating };
                     string newMovie = Path.Combine(Path.GetDirectoryName(movie) ?? throw new InvalidOperationException(movie), parsed.ToString());
-                    if (string.Equals(movie, newMovie, StringComparison.Ordinal))
+                    if (movie.EqualsOrdinal(newMovie))
                     {
                         return;
                     }
@@ -369,7 +370,7 @@ namespace Examples.IO
                 (movie, metadata) => Path.Combine(destination, Path.GetFileName(movie)),
                 directory,
                 level,
-                (movie, metadata) => string.Equals(value, metadata.Root?.Element(field)?.Value, StringComparison.OrdinalIgnoreCase),
+                (movie, metadata) => value.EqualsIgnoreCase(metadata.Root?.Element(field)?.Value),
                 isDryRun);
         }
 
@@ -485,7 +486,7 @@ namespace Examples.IO
                     log($"Move external video {fromVideoMetadata.File} to {newExternalVideo}");
 
                     Directory.GetFiles(fromMovie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
-                        .Where(file => moveAllAttachment || Path.GetFileNameWithoutExtension(file).Contains(Path.GetFileNameWithoutExtension(fromVideoMetadata.File), StringComparison.InvariantCultureIgnoreCase))
+                        .Where(file => moveAllAttachment || Path.GetFileNameWithoutExtension(file).ContainsIgnoreCase(Path.GetFileNameWithoutExtension(fromVideoMetadata.File)))
                         .ToArray()
                         .ForEach(fromAttachment =>
                         {
@@ -517,7 +518,7 @@ namespace Examples.IO
                     log($"Delete video {toVideoMetadata.File}");
 
                     Directory.GetFiles(toMovie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
-                        .Where(file => Path.GetFileNameWithoutExtension(file).Contains(Path.GetFileNameWithoutExtension(toVideoMetadata.File), StringComparison.InvariantCultureIgnoreCase))
+                        .Where(file => Path.GetFileNameWithoutExtension(file).ContainsIgnoreCase(Path.GetFileNameWithoutExtension(toVideoMetadata.File)))
                         .ToArray()
                         .ForEach(existingAttachment =>
                         {
@@ -561,7 +562,7 @@ namespace Examples.IO
                 string match = Regex.Match(Path.GetFileNameWithoutExtension(video), @"s[\d]+e[\d]+", RegexOptions.IgnoreCase).Value.ToLowerInvariant();
                 Directory
                     .EnumerateFiles(Path.GetDirectoryName(video) ?? throw new InvalidOperationException(video), $"*{match}*", SearchOption.TopDirectoryOnly)
-                    .Where(file => !string.Equals(file, video, StringComparison.InvariantCultureIgnoreCase))
+                    .Where(file => !file.EqualsIgnoreCase(video))
                     .ForEach(file => Trace.WriteLine(file));
             });
         }
@@ -578,7 +579,7 @@ namespace Examples.IO
                         : "-";
                     string name = Path.GetFileName(movie);
                     string newName = Regex.Replace(name, @"\[([0-9]\.[0-9]|\-)\]", $"[{rating}]");
-                    if (!string.Equals(name, newName, StringComparison.InvariantCulture))
+                    if (!name.EqualsOrdinal(newName))
                     {
                         string newMovie = PathHelper.ReplaceFileName(movie, newName);
                         log(movie);
@@ -607,27 +608,27 @@ namespace Examples.IO
                     string originalNumber2 = Regex.Match(videoDirectoryInfo.OriginalTitle2, " ([0-9]{1,2})$").Value.TrimStart(' ');
                     string translatedNumber1 = Regex.Match(videoDirectoryInfo.TranslatedTitle1, "([0-9]{1,2})$").Value;
                     string translatedNumber2 = Regex.Match(videoDirectoryInfo.TranslatedTitle2, "([0-9]{1,2})$").Value;
-                    if (string.IsNullOrWhiteSpace(defaultNumber1) && string.IsNullOrWhiteSpace(defaultNumber2))
+                    if (defaultNumber1.IsNullOrWhiteSpace() && defaultNumber2.IsNullOrWhiteSpace())
                     {
                         return $"-{movie}";
                     }
 
-                    if (!string.Equals(defaultNumber1, translatedNumber1, StringComparison.InvariantCulture))
+                    if (!defaultNumber1.EqualsOrdinal(translatedNumber1))
                     {
                         return $"#Translated number is inconsistent: {movie}";
                     }
 
-                    if (!string.IsNullOrWhiteSpace(originalNumber1) && !string.Equals(defaultNumber1, originalNumber1, StringComparison.InvariantCulture))
+                    if (originalNumber1.IsNotNullOrWhiteSpace() && !defaultNumber1.EqualsOrdinal(originalNumber1))
                     {
                         return $"!Original number is inconsistent: {movie}";
                     }
 
-                    if (!string.IsNullOrWhiteSpace(defaultNumber2) && !string.Equals(defaultNumber2, translatedNumber2))
+                    if (defaultNumber2.IsNotNullOrWhiteSpace() && !defaultNumber2.EqualsOrdinal(translatedNumber2))
                     {
                         return $"!Translated secondary number is inconsistent:  {movie}";
                     }
 
-                    if (!string.IsNullOrWhiteSpace(originalNumber2) && !string.Equals(defaultNumber2, originalNumber2, StringComparison.InvariantCulture))
+                    if (originalNumber2.IsNotNullOrWhiteSpace() && !defaultNumber2.EqualsOrdinal(originalNumber2))
                     {
                         return $"!Original secondary number is inconsistent:  {movie}";
                     }
@@ -650,15 +651,17 @@ namespace Examples.IO
                 .ForEach(log);
         }
 
-        internal static void RenameEpisodes(string directory, string tvTitle)
+        internal static void RenameEpisodes(string directory, string tvTitle, bool isDryRun = false, Action<string>? log = null)
         {
+            log ??= TraceLog;
+
             Directory
                 .EnumerateDirectories(directory)
-                .Where(season => Regex.IsMatch(Path.GetFileName(season), "Season [0-9]{2}"))
+                .Where(season => Regex.IsMatch(Path.GetFileName(season), "^Season [0-9]{2}"))
                 .OrderBy(season => season)
                 .ForEach(season =>
                 {
-                    string seasonNumber = Path.GetFileName(season).Replace("Season ", string.Empty);
+                    string seasonNumber = Path.GetFileName(season).Split(".", StringSplitOptions.RemoveEmptyEntries|StringSplitOptions.TrimEntries).First().ReplaceIgnoreCase("Season ", string.Empty);
                     Directory
                         .EnumerateFiles(season, VideoSearchPattern)
                         .OrderBy(video => video)
@@ -666,17 +669,34 @@ namespace Examples.IO
                         .ForEach((video, index) =>
                         {
                             string prefix = $"{tvTitle}.S{seasonNumber}E{index + 1:00}.";
-                            if (video.Contains(".1080p."))
+                            if (!TryGetVideoMetadata(video, out VideoMetadata? videoMetadata))
+                            {
+                                throw new InvalidOperationException(video);
+                            }
+
+                            if (videoMetadata.Is1080P)
                             {
                                 prefix = $"{prefix}1080p.";
                             }
-
-                            if (video.Contains(".720p."))
+                            else if (videoMetadata.Is720P)
                             {
                                 prefix = $"{prefix}720p.";
                             }
 
-                            File.Move(video, PathHelper.AddFilePrefix(video.Replace(".1080p", string.Empty).Replace(".720p", string.Empty), prefix));
+                            log(video);
+                            string newVideo = PathHelper.AddFilePrefix(
+                                video
+                                        .ReplaceIgnoreCase(".1080p", string.Empty).ReplaceIgnoreCase(".720p", string.Empty)
+                                        .ReplaceOrdinal("    ", " ").ReplaceOrdinal("   ", " ").ReplaceOrdinal("  ", " ")
+                                        .ReplaceOrdinal(" - ", "-").ReplaceOrdinal("- ", "-").ReplaceOrdinal(" -", "-"), 
+                                prefix);
+                            if(!isDryRun)
+                            {
+                                File.Move(video, newVideo);
+                            }
+
+                            log(newVideo);
+                            log(string.Empty);
                         });
                 });
         }

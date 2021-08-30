@@ -4,6 +4,7 @@
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
+    using Examples.Common;
     using Examples.Text;
     using Microsoft.International.Converters.TraditionalChineseToSimplifiedConverter;
     using TagLib;
@@ -15,6 +16,8 @@
 
         private static readonly string[] Attachments = { "cover", "clearart", "cdart", "back", "Introduction", "booklet", "box" };
 
+        private const string AudioExtension = ".mp3";
+
         private static void TraceLog(string? message) => Trace.WriteLine(message);
 
         internal static void ReplaceTraditionalChinese(string directory, bool isDryRun = false, Action<string>? log = null)
@@ -22,7 +25,7 @@
             log ??= TraceLog;
             GetTags(directory, (audio, tagFile, tag) =>
             {
-                if (tag.Performers.Any(name => name.HasChineseCharacter() && !TraditionChineseException.Any(exception => name.Contains(exception, StringComparison.InvariantCulture))))
+                if (tag.Performers.Any(name => name.HasChineseCharacter() && !TraditionChineseException.Any(name.ContainsOrdinal)))
                 {
                     string[] performers = tag.Performers
                         .Select(name => ChineseConverter.Convert(name, ChineseConversionDirection.TraditionalToSimplified))
@@ -64,7 +67,7 @@
                 if (tag.Title.HasChineseCharacter())
                 {
                     string title = ChineseConverter.Convert(tag.Title, ChineseConversionDirection.TraditionalToSimplified);
-                    if (!string.Equals(tag.Title, title, StringComparison.InvariantCulture))
+                    if (!tag.Title.EqualsOrdinal(title))
                     {
                         log(audio);
                         log(tag.Title);
@@ -81,7 +84,7 @@
                 if (tag.Album.HasChineseCharacter())
                 {
                     string album = ChineseConverter.Convert(tag.Album, ChineseConversionDirection.TraditionalToSimplified);
-                    if (!string.Equals(tag.Album, album, StringComparison.InvariantCulture))
+                    if (!tag.Album.EqualsOrdinal(album))
                     {
                         log(audio);
                         log(tag.Album);
@@ -103,10 +106,10 @@
             GetTags(directory, (audio, tagFile, tag) => names.ForEach(name =>
             {
                 (string from, string to) = name;
-                if (tag.Performers.Any(name => name.Contains(from, StringComparison.InvariantCultureIgnoreCase)))
+                if (tag.Performers.Any(name => name.ContainsIgnoreCase(from)))
                 {
                     tag.Performers = tag.Performers
-                        .Select(name => name.Replace(from, to, StringComparison.InvariantCultureIgnoreCase))
+                        .Select(name => name.ReplaceIgnoreCase(from, to))
                         .ToArray();
                     tag.Performers.ForEach(log);
                     log(string.Empty);
@@ -116,10 +119,10 @@
                     }
                 }
 
-                if (tag.AlbumArtists.Any(name => name.Contains(from, StringComparison.InvariantCultureIgnoreCase)))
+                if (tag.AlbumArtists.Any(name => name.ContainsIgnoreCase(from)))
                 {
                     tag.AlbumArtists = tag.AlbumArtists
-                        .Select(name => name.Replace(from, to, StringComparison.InvariantCultureIgnoreCase))
+                        .Select(name => name.ReplaceIgnoreCase(from, to))
                         .ToArray();
                     tag.AlbumArtists.ForEach(log);
                     log(string.Empty);
@@ -227,9 +230,9 @@
                 .ForEach(album =>
                 {
                     string[] files = Directory.GetFiles(album, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
-                    string[] audios = files.Where(f => f.EndsWith(".mp3")).ToArray();
-                    string[] attachments = files.Where(f => Attachments.Contains(Path.GetFileNameWithoutExtension(f))).ToArray();
-                    string[] metadata = files.Where(f => Path.GetFileName(f) == "album.nfo").ToArray();
+                    string[] audios = files.Where(f => f.EndsWithIgnoreCase(AudioExtension)).ToArray();
+                    string[] attachments = files.Where(f => Attachments.ContainsIgnoreCase(Path.GetFileNameWithoutExtension(f))).ToArray();
+                    string[] metadata = files.Where(f => Path.GetFileName(f).EqualsIgnoreCase("album.nfo")).ToArray();
 
                     files.Except(audios).Except(attachments).Except(metadata).ForEach(log);
                 });

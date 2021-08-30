@@ -319,8 +319,7 @@
                             string year = names[0];
                             string albumName = names[1];
                             string genre = names[5];
-                            if (string.IsNullOrWhiteSpace(albumName) || string.IsNullOrWhiteSpace(year)
-                                || string.IsNullOrWhiteSpace(artistName))
+                            if (albumName.IsNullOrWhiteSpace() || year.IsNullOrWhiteSpace() || artistName.IsNullOrWhiteSpace())
                             {
                                 Trace.WriteLine(album.Name);
                             }
@@ -349,7 +348,7 @@
                 if (Translation.ContainsKey(name))
                 {
                     string translation = Translation[name];
-                    if (!string.IsNullOrWhiteSpace(translation))
+                    if (translation.IsNotNullOrWhiteSpace())
                     {
                         names[index] = translation;
                     }
@@ -358,7 +357,7 @@
             FileSystemHelper.Move(songOrAlbum, Path.Combine(Path.GetDirectoryName(songOrAlbum)!, string.Join(Separator, names)));
         });
 
-        private static bool IsMusicFile(string extension) => Extensions.Contains(extension);
+        private static bool IsMusicFile(string extension) => Extensions.ContainsIgnoreCase(extension);
 
         private static bool IsNotFormatted(string fileName)
         {

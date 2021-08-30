@@ -4,6 +4,7 @@
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Text.RegularExpressions;
+    using Examples.Common;
 
     internal record VideoFileInfo
     {
@@ -95,18 +96,18 @@
         }
 
         internal bool IsTop =>
-            (string.Equals(this.Version, "RARBG", StringComparison.InvariantCulture)
-            || string.Equals(this.Version, "VXT", StringComparison.InvariantCulture))
-            && string.Equals(this.VideoCodec, ".x265", StringComparison.InvariantCulture);
+            (this.Version.EqualsOrdinal("RARBG")
+            || this.Version.EqualsOrdinal("VXT"))
+            && this.VideoCodec.EqualsOrdinal(".x265");
 
         internal bool IsPremium =>
-            (string.Equals(this.Version, "RARBG", StringComparison.InvariantCulture)
-            || string.Equals(this.Version, "VXT", StringComparison.InvariantCulture))
-            && !string.Equals(this.VideoCodec, ".x265", StringComparison.InvariantCulture);
+            (this.Version.EqualsOrdinal("RARBG")
+            || this.Version.EqualsOrdinal("VXT"))
+            && !this.VideoCodec.EqualsOrdinal(".x265");
 
         internal bool IsPreferred =>
-            string.Equals(this.Version, "YIFY", StringComparison.InvariantCulture)
-            || this.Version.StartsWith("[YTS.", StringComparison.InvariantCulture);
+            this.Version.EqualsIgnoreCase("YIFY")
+            || this.Version.StartsWithIgnoreCase("[YTS.");
 
         internal static bool IsTopOrPremium(string nameWithoutExtension) => Regex.IsMatch(nameWithoutExtension, @"\-(RARBG|VXT)$");
     }

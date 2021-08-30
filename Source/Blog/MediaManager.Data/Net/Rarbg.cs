@@ -13,6 +13,7 @@
     using System.Linq;
     using System.Text.Json;
     using System.Threading.Tasks;
+    using Examples.Common;
 
     internal static class Rarbg
     {
@@ -59,7 +60,7 @@
                         .Select(row =>
                         {
                             CQ cells = row.Cq().Children();
-                            string[] texts = cells.Eq(1).Text().Trim().Split("  ", StringSplitOptions.RemoveEmptyEntries).Where(text => !string.IsNullOrWhiteSpace(text)).ToArray();
+                            string[] texts = cells.Eq(1).Text().Trim().Split("  ", StringSplitOptions.RemoveEmptyEntries).Where(text => text.IsNotNullOrWhiteSpace()).ToArray();
                             string title = texts[0].Trim();
                             CQ links = cells.Eq(1).Find("a");
                             string baseUrl = new Uri(webDriver.Url).GetLeftPart(UriPartial.Authority);
@@ -94,7 +95,7 @@
                             lock (AddItemLock)
                             {
                                 allSummaries[summary.ImdbId] = allSummaries.ContainsKey(summary.ImdbId)
-                                    ? allSummaries[summary.ImdbId].Where(existing => !string.Equals(existing.Title, summary.Title, StringComparison.OrdinalIgnoreCase)).Append(summary).ToArray()
+                                    ? allSummaries[summary.ImdbId].Where(existing => !existing.Title.EqualsIgnoreCase(summary.Title)).Append(summary).ToArray()
                                     : new[] { summary };
                             }
                         });

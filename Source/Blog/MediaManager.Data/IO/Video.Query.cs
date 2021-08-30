@@ -4,6 +4,7 @@ namespace Examples.IO
     using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Linq;
     using System.Text.Encodings.Web;
@@ -12,6 +13,7 @@ namespace Examples.IO
     using System.Text.Unicode;
     using System.Threading.Tasks;
     using System.Xml.Linq;
+    using Examples.Common;
     using Examples.Linq;
     using Examples.Net;
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
@@ -28,7 +30,7 @@ namespace Examples.IO
                 .Where(file => (predicate?.Invoke(file) ?? true) && file.HasAnyExtension(AllVideoExtensions));
         }
 
-        internal static bool TryGetVideoMetadata(string file, out VideoMetadata? videoMetadata, ImdbMetadata? imdbMetadata = null, string? relativePath = null, int retryCount = 10, Action<string>? log = null)
+        internal static bool TryGetVideoMetadata(string file, [NotNullWhen(true)] out VideoMetadata? videoMetadata, ImdbMetadata? imdbMetadata = null, string? relativePath = null, int retryCount = 10, Action<string>? log = null)
         {
             log ??= TraceLog;
             Task<VideoMetadata?> task = Task.Run(() =>
@@ -42,7 +44,7 @@ namespace Examples.IO
                             IVideoStream videoStream = mediaInfo.VideoStreams.First();
                             return new VideoMetadata()
                             {
-                                File = string.IsNullOrWhiteSpace(relativePath) ? file : Path.GetRelativePath(relativePath, file),
+                                File = relativePath.IsNullOrWhiteSpace() ? file : Path.GetRelativePath(relativePath, file),
                                 Width = videoStream.Width,
                                 Height = videoStream.Height,
                                 Audio = mediaInfo.AudioStreams?.Count() ?? 0,
@@ -117,30 +119,30 @@ namespace Examples.IO
             }
 
             string fileName = Path.GetFileNameWithoutExtension(videoMetadata.File) ?? string.Empty;
-            if (fileName.Contains("1080p"))
+            if (fileName.ContainsIgnoreCase("1080p"))
             {
-                if (videoMetadata.Height < 1070 && videoMetadata.Width < 1900)
+                if (!videoMetadata.Is1080P)
                 {
                     return ($"!Not 1080p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}", null);
                 }
             }
             else
             {
-                if (videoMetadata.Height >= 1070 || videoMetadata.Width >= 1900)
+                if (videoMetadata.Is1080P)
                 {
                     return ($"!1080p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}", is1080);
                 }
 
-                if (fileName.Contains("720p"))
+                if (fileName.ContainsIgnoreCase("720p"))
                 {
-                    if (videoMetadata.Height < 720 && videoMetadata.Width < 1280)
+                    if (!videoMetadata.Is720P)
                     {
                         return ($"!Not 720p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}", null);
                     }
                 }
                 else
                 {
-                    if (videoMetadata.Height >= 720 || videoMetadata.Width >= 1280)
+                    if (videoMetadata.Is720P)
                     {
                         return ($"!720p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}", is720);
                     }
@@ -208,7 +210,7 @@ namespace Examples.IO
                         {
                             (long index, string movie) = movieWithIndex;
                             string[] files = Directory.GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
-                            string[] jsonFiles = files.Where(file => file.EndsWith(ImdbMetadataExtension, StringComparison.OrdinalIgnoreCase)).ToArray();
+                            string[] jsonFiles = files.Where(file => file.EndsWithIgnoreCase(ImdbMetadataExtension)).ToArray();
                             if (jsonFiles.Any())
                             {
                                 if (overwrite)
@@ -226,8 +228,8 @@ namespace Examples.IO
                                 }
                             }
 
-                            string? nfo = files.FirstOrDefault(file => file.EndsWith(XmlMetadataExtension, StringComparison.OrdinalIgnoreCase));
-                            if (string.IsNullOrWhiteSpace(nfo))
+                            string? nfo = files.FirstOrDefault(file => file.EndsWithIgnoreCase(XmlMetadataExtension));
+                            if (nfo.IsNullOrWhiteSpace())
                             {
                                 log($"!Missing metadata {movie}.");
                                 return;
@@ -238,20 +240,20 @@ namespace Examples.IO
                             string imdbFile = Path.Combine(movie, $"{imdbId}{ImdbCacheExtension}");
                             string parentFile = Path.Combine(movie, $"{imdbId}.Parent{ImdbCacheExtension}");
                             string releaseFile = Path.Combine(movie, $"{imdbId}.Release{ImdbCacheExtension}");
-                            if (string.Equals(imdbId, NotExistingFlag))
+                            if (imdbId.EqualsOrdinal(NotExistingFlag))
                             {
-                                if (!files.Any(file => string.Equals(file, imdbFile, StringComparison.OrdinalIgnoreCase)))
+                                if (!files.Any(file => file.EqualsIgnoreCase(imdbFile)))
                                 {
                                     await File.WriteAllTextAsync(Path.Combine(movie, imdbFile), string.Empty);
                                 }
 
-                                if (!files.Any(file => string.Equals(file, releaseFile, StringComparison.OrdinalIgnoreCase)))
+                                if (!files.Any(file => file.EqualsIgnoreCase(releaseFile)))
                                 {
                                     await File.WriteAllTextAsync(Path.Combine(movie, releaseFile), string.Empty);
                                 }
 
                                 string emptyMetadataFile = Path.Combine(movie, $"{NotExistingFlag}{ImdbMetadataExtension}");
-                                if (!files.Any(file => string.Equals(file, emptyMetadataFile, StringComparison.OrdinalIgnoreCase)))
+                                if (!files.Any(file => file.EqualsIgnoreCase(emptyMetadataFile)))
                                 {
                                     await File.WriteAllTextAsync(emptyMetadataFile, "{}");
                                 }
@@ -267,27 +269,27 @@ namespace Examples.IO
                                 useCache ? parentFile : string.Empty,
                                 useCache ? releaseFile : string.Empty,
                                 webDriver);
-                            Debug.Assert(!string.IsNullOrWhiteSpace(imdbHtml));
+                            Debug.Assert(imdbHtml.IsNotNullOrWhiteSpace());
                             if (!imdbMetadata.Regions.Any())
                             {
                                 log($"!Location is missing for {imdbId}: {movie}");
                             }
 
-                            if (!useCache || !files.Any(file => string.Equals(file, imdbFile, StringComparison.OrdinalIgnoreCase)))
+                            if (!useCache || !files.Any(file => file.EqualsIgnoreCase(imdbFile)))
                             {
                                 log($"Downloaded {imdbUrl} to {imdbFile}.");
                                 await File.WriteAllTextAsync(imdbFile, imdbHtml);
                                 log($"Saved to {imdbFile}.");
                             }
 
-                            if (!useCache || !files.Any(file => string.Equals(file, releaseFile, StringComparison.OrdinalIgnoreCase)))
+                            if (!useCache || !files.Any(file => file.EqualsIgnoreCase(releaseFile)))
                             {
                                 log($"Downloaded {releaseUrl} to {releaseFile}.");
                                 await File.WriteAllTextAsync(releaseFile, releaseHtml);
                                 log($"Saved to {releaseFile}.");
                             }
 
-                            if (!string.IsNullOrWhiteSpace(parentUrl) && (!useCache || !files.Any(file => string.Equals(file, parentFile, StringComparison.OrdinalIgnoreCase))))
+                            if (parentUrl.IsNotNullOrWhiteSpace() && (!useCache || !files.Any(file => file.EqualsIgnoreCase(parentFile))))
                             {
                                 log($"Downloaded {parentUrl} to {parentFile}.");
                                 await File.WriteAllTextAsync(parentFile, parentHtml);

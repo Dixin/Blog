@@ -13,6 +13,7 @@
     using System.Threading.Tasks;
 
     using CsQuery;
+    using Examples.Common;
     using Examples.Linq;
     using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
@@ -117,7 +118,7 @@
                         lock (AddItemLock)
                         {
                             details[detail.ImdbId] = details.ContainsKey(detail.ImdbId)
-                                ? details[detail.ImdbId].Where(item => !string.Equals(item.Link, detail.Link, StringComparison.OrdinalIgnoreCase)).Append(detail).ToArray()
+                                ? details[detail.ImdbId].Where(item => !item.Link.EqualsIgnoreCase(detail.Link)).Append(detail).ToArray()
                                 : new[] { detail };
                         }
                     }
@@ -155,7 +156,7 @@
             string[] specialTitles = File.ReadLines(imdbBasicsPath)
                 .Skip(1)
                 .Select(line => line.Split('\t'))
-                .Where(line => !"0".Equals(line.ElementAtOrDefault(4), StringComparison.Ordinal))
+                .Where(line => !"0".EqualsOrdinal(line.ElementAtOrDefault(4)))
                 .Select(line => line[0])
                 .ToArray();
             string jsonString = JsonSerializer.Serialize(specialTitles, new() { WriteIndented = true });
@@ -167,33 +168,31 @@
             string[] titles = Directory
                 .GetFiles(directory)
                 .Select(file =>
+                {
+                    string url = CQ.CreateDocumentFromFile(file)?.Find(@"a.icon[title=""IMDb Rating""]")?.Attr<string>("href")?.Replace("../../external.html?link=", string.Empty) ?? string.Empty;
+                    if (Uri.TryCreate(url, UriKind.Absolute, out Uri? uri))
                     {
-                        string url = CQ.CreateDocumentFromFile(file)?.Find(@"a.icon[title=""IMDb Rating""]")?.Attr<string>("href")?.Replace("../../external.html?link=", string.Empty) ?? string.Empty;
-                        if (Uri.TryCreate(url, UriKind.Absolute, out Uri? uri))
+                        try
                         {
-                            try
-                            {
-                                string imdbId = Path.GetFileName(uri?.LocalPath?.TrimEnd('/')) ?? string.Empty;
-                                if (!Regex.IsMatch(imdbId, @"tt[0-9]+"))
-                                {
-                                    Trace.WriteLine($"Invalid IMDB Id: {file}, {url}.");
-                                }
-
-                                return imdbId;
-                            }
-                            catch
+                            string imdbId = Path.GetFileName(uri?.LocalPath?.TrimEnd('/')) ?? string.Empty;
+                            if (!Regex.IsMatch(imdbId, @"tt[0-9]+"))
                             {
                                 Trace.WriteLine($"Invalid IMDB Id: {file}, {url}.");
-                                return string.Empty;
                             }
+
+                            return imdbId;
                         }
-                        else
+                        catch
                         {
                             Trace.WriteLine($"Invalid IMDB Id: {file}, {url}.");
                             return string.Empty;
                         }
-                    })
-                .Where(imdbId => !string.IsNullOrWhiteSpace(imdbId))
+                    }
+
+                    Trace.WriteLine($"Invalid IMDB Id: {file}, {url}.");
+                    return string.Empty;
+                })
+                .Where(imdbId => imdbId.IsNotNullOrWhiteSpace())
                 .ToArray();
             string jsonString = JsonSerializer.Serialize(titles, new() { WriteIndented = true });
             await File.WriteAllTextAsync(jsonPath, jsonString);

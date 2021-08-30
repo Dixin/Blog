@@ -5,6 +5,7 @@
     using System.Linq;
     using System.Text.RegularExpressions;
     using System.Xml.Linq;
+    using Examples.Common;
     using Examples.Net;
 
     internal static partial class Video
@@ -20,7 +21,7 @@
         {
             Directory
                 .GetFiles(directory, XmlMetadataSearchPattern, SearchOption.AllDirectories)
-                .Where(nfo => nfo.EndsWith($"{Delimiter}{flag}{XmlMetadataExtension}"))
+                .Where(nfo => nfo.EndsWithOrdinal($"{Delimiter}{flag}{XmlMetadataExtension}"))
                 .Where(nfo => File.Exists(nfo.Replace($"{Delimiter}{flag}{XmlMetadataExtension}", XmlMetadataExtension)))
                 .ForEach(nfo => FileHelper.Move(nfo, Path.Combine(Path.GetDirectoryName(nfo) ?? throw new InvalidOperationException(nfo), (Path.GetFileNameWithoutExtension(nfo) ?? throw new InvalidOperationException(nfo)).Replace($"{Delimiter}{flag}", string.Empty) + Path.GetExtension(nfo)), true));
         }
@@ -44,7 +45,7 @@
                 });
         }
 
-        internal static void CreateSeasonEpisodeMetadata(string seasonDirectory, Func<string, string>? getTitle = null, Func<string, int, string>? getEpisode = null, Func<string, string>? getSeason = null, bool overwrite = false)
+        private static void CreateSeasonEpisodeMetadata(string seasonDirectory, Func<string, string>? getTitle = null, Func<string, int, string>? getEpisode = null, Func<string, string>? getSeason = null, bool overwrite = false)
         {
             Directory.GetFiles(seasonDirectory, VideoSearchPattern, SearchOption.TopDirectoryOnly)
                 .OrderBy(video => video)
@@ -68,39 +69,39 @@
                     string title = getTitle?.Invoke(video) ?? string.Empty;
                     string episode = getEpisode?.Invoke(video, index) ?? string.Empty;
                     string season = getSeason?.Invoke(video) ?? string.Empty;
-                    if (string.IsNullOrWhiteSpace(title) || string.IsNullOrWhiteSpace(episode) || string.IsNullOrWhiteSpace(season))
+                    if (title.IsNullOrWhiteSpace() || episode.IsNullOrWhiteSpace() || season.IsNullOrWhiteSpace())
                     {
                         Match match = Regex.Match(Path.GetFileNameWithoutExtension(video), @"\.S([0-9]+)E([0-9]+)\.(.*)");
                         if (match.Success)
                         {
-                            if (string.IsNullOrWhiteSpace(season))
+                            if (season.IsNullOrWhiteSpace())
                             {
                                 season = match.Groups[1].Value.TrimStart('0');
                             }
 
-                            if (string.IsNullOrWhiteSpace(episode))
+                            if (episode.IsNullOrWhiteSpace())
                             {
                                 episode = match.Groups[2].Value.TrimStart('0');
                             }
 
-                            if (string.IsNullOrWhiteSpace(title))
+                            if (title.IsNullOrWhiteSpace())
                             {
                                 title = match.Groups[3].Value.Replace("BluRay.", string.Empty).Replace("WEBRip.", string.Empty).Replace("1080p.", string.Empty).Replace("720p.", string.Empty).Replace("ffmpeg.", string.Empty);
                             }
                         }
                     }
 
-                    if (string.IsNullOrWhiteSpace(season))
+                    if (season.IsNullOrWhiteSpace())
                     {
                         season = "1";
                     }
 
-                    if (string.IsNullOrWhiteSpace(episode))
+                    if (episode.IsNullOrWhiteSpace())
                     {
                         episode = (index + 1).ToString();
                     }
 
-                    if (string.IsNullOrWhiteSpace(title))
+                    if (title.IsNullOrWhiteSpace())
                     {
                         title = $"Episode {episode}";
                     }
@@ -116,7 +117,7 @@
         {
             Directory
                 .EnumerateDirectories(tvDirectory)
-                .Where(season => !string.Equals(Path.GetFileName(season), Featurettes, StringComparison.OrdinalIgnoreCase))
+                .Where(season => !Path.GetFileName(season).EqualsIgnoreCase(Featurettes))
                 .OrderBy(season => season)
                 .ForEach(season => CreateSeasonEpisodeMetadata(season, getTitle, getEpisode, getSeason, overwrite));
         }
@@ -135,7 +136,7 @@
                     {
                         // IMDB has rating.
                         string jsonRatingFormatted = imdbMetadata.AggregateRating.RatingValue.Replace(".0", string.Empty);
-                        if (string.Equals(ratingElement?.Value, jsonRatingFormatted))
+                        if ((ratingElement?.Value).EqualsOrdinal(jsonRatingFormatted))
                         {
                             return;
                         }

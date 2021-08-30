@@ -4,6 +4,7 @@ namespace Examples.IO
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
     using System.Text.RegularExpressions;
+    using Examples.Common;
 
     internal record VideoDirectoryInfo
     {
@@ -45,7 +46,7 @@ namespace Examples.IO
         {
             get
             {
-                if (string.Equals(Video.NotExistingFlag, this.AggregateRating))
+                if (Video.NotExistingFlag.EqualsOrdinal(this.AggregateRating))
                 {
                     return -1.0;
                 }

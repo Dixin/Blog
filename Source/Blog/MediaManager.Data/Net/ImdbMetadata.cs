@@ -63,12 +63,12 @@
             get
             {
                 string? rating = this.AggregateRating?.RatingValue;
-                return string.IsNullOrWhiteSpace(rating) ? "0.0" : rating;
+                return rating.IsNullOrWhiteSpace() ? "0.0" : rating;
             }
         }
 
         [JsonIgnore]
-        internal string FormattedContentRating => string.IsNullOrWhiteSpace(this.ContentRating)
+        internal string FormattedContentRating => this.ContentRating.IsNullOrWhiteSpace()
             ? "NA"
             : this.ContentRating.Replace("-", string.Empty).Replace(" ", string.Empty).Replace("/", string.Empty).Replace(":", string.Empty);
     }
@@ -90,7 +90,7 @@
     // public partial record ImdbMetadata : IEquatable<ImdbMetadata>
     // {
     //    public bool Equals(ImdbMetadata? other) =>
-    //        other is not null && (ReferenceEquals(this, other) || string.Equals(this.Id, other.Id, StringComparison.OrdinalIgnoreCase));
+    //        other is not null && (ReferenceEquals(this, other) || this.Id.EqualsIgnoreCase(other.Id));
 
     //    public override bool Equals(object? obj) =>
     //        obj is not null && (ReferenceEquals(this, obj) || obj is ImdbMetadata other && this.Equals(other));
