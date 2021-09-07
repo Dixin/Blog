@@ -42,7 +42,7 @@
 
         private const string ImdbCacheSearchPattern = PathHelper.AllSearchPattern + ImdbCacheExtension;
 
-        private static readonly string[] SubtitleLanguages = { "can", "chs", "chs&dan", "chs&eng", "chs&fre", "chs&ger", "chs&spa", "cht", "cht&eng", "cht&ger", "dut", "eng", "eng&chs", "fin", "fre", "ger", "ger&chs", "ita", "jap", "kor", "pol", "por", "rus", "spa", "swe", "dan", "nor", "tam" };
+        private static readonly string[] SubtitleLanguages = { "can", "chs", "cht", "dan", "dut", "eng", "fin", "fre", "hin", "ger", "ita", "jap", "kor", "nor", "pol", "por", "rus", "spa", "swe", "tam" };
 
         internal const string NotExistingFlag = "-";
 

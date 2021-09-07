@@ -199,9 +199,9 @@ namespace Examples.IO
                     }
 
                     Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata);
-                    string additional = $"{{{string.Join(",", imdbMetadata?.Regions ?? Array.Empty<string>())};{string.Join(",", imdbMetadata?.Genre.Take(3) ?? Array.Empty<string>())}}}";
+                    string additional = $"@{string.Join(",", imdbMetadata?.Regions.Take(4) ?? Array.Empty<string>())}#{string.Join(",", imdbMetadata?.Languages.Take(3) ?? Array.Empty<string>())}";
                     string originalMovie = movieName.ContainsOrdinal("{")
-                        ? PathHelper.ReplaceFileName(movie, movieName.Substring(0, movieName.IndexOfOrdinal("{")))
+                        ? PathHelper.ReplaceFileName(movie, movieName.Substring(0, movieName.IndexOfOrdinal("@")))
                         : movie;
                     string newMovie = $"{originalMovie}{additional}";
                     log(movie);
@@ -305,9 +305,9 @@ namespace Examples.IO
                         isRenamed = true;
                     }
 
-                    if (movieName.ContainsOrdinal("{"))
+                    if (movieName.ContainsOrdinal("]@"))
                     {
-                        movieName = movieName.Substring(0, movieName.IndexOfOrdinal("{"));
+                        movieName = movieName[..(movieName.IndexOfOrdinal("]@") + 1)];
                         isRenamed = true;
                     }
 
@@ -661,7 +661,7 @@ namespace Examples.IO
                 .OrderBy(season => season)
                 .ForEach(season =>
                 {
-                    string seasonNumber = Path.GetFileName(season).Split(".", StringSplitOptions.RemoveEmptyEntries|StringSplitOptions.TrimEntries).First().ReplaceIgnoreCase("Season ", string.Empty);
+                    string seasonNumber = Path.GetFileName(season).Split(".", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).First().ReplaceIgnoreCase("Season ", string.Empty);
                     Directory
                         .EnumerateFiles(season, VideoSearchPattern)
                         .OrderBy(video => video)
@@ -688,9 +688,9 @@ namespace Examples.IO
                                 video
                                         .ReplaceIgnoreCase(".1080p", string.Empty).ReplaceIgnoreCase(".720p", string.Empty)
                                         .ReplaceOrdinal("    ", " ").ReplaceOrdinal("   ", " ").ReplaceOrdinal("  ", " ")
-                                        .ReplaceOrdinal(" - ", "-").ReplaceOrdinal("- ", "-").ReplaceOrdinal(" -", "-"), 
+                                        .ReplaceOrdinal(" - ", "-").ReplaceOrdinal("- ", "-").ReplaceOrdinal(" -", "-"),
                                 prefix);
-                            if(!isDryRun)
+                            if (!isDryRun)
                             {
                                 File.Move(video, newVideo);
                             }

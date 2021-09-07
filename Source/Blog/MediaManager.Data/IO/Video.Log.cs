@@ -277,9 +277,13 @@
                     //    log($"!Index: {movie}");
                     //}
 
-                    new string[] { videoDirectoryInfo.TranslatedTitle1, videoDirectoryInfo.TranslatedTitle2, videoDirectoryInfo.TranslatedTitle3 }
+                    string[] translations = new string[] { videoDirectoryInfo.TranslatedTitle1, videoDirectoryInfo.TranslatedTitle2, videoDirectoryInfo.TranslatedTitle3 };
+                    translations
                         .Where(translated => Regex.IsMatch(translated.Split("`").First(), "[0-9]+"))
                         .ForEach(translated => log($"!Translation has number {translated}: {movie}"));
+                    translations
+                        .Where(translation => !string.IsNullOrEmpty(translation) && translation.All(character => character is >= 'a' and <= 'z' or >= 'A' and <= 'Z' || char.IsPunctuation(character) || char.IsSeparator(character) || char.IsSymbol(character) || char.IsWhiteSpace(character)))
+                        .ForEach(translated => log($"!Title not translated {translated}: {movie}"));
 
                     string[] files = Directory.EnumerateFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly).Select(file => Path.GetFileName(file) ?? throw new InvalidOperationException(file)).ToArray();
 
@@ -323,7 +327,7 @@
                     {
                         log($"!No video: {movie}");
                     }
-                    else if (videos.Length == 1 || videos.All(video => Regex.IsMatch(Path.GetFileNameWithoutExtension(video), @"\.cd[1-9]$")))
+                    else if (videos.Length == 1 || videos.All(video => Regex.IsMatch(Path.GetFileNameWithoutExtension(video), @"\.cd[0-9]+$")))
                     {
                         string[] allowedAttachments = Attachments.Concat(AdaptiveAttachments).ToArray();
                         otherFiles
@@ -341,14 +345,23 @@
                             .ForEach(file => log($"!Attachment: {Path.Combine(movie, file)}"));
                     }
 
-                    string[] allowedSubtitles = videos
-                        .SelectMany(video => SubtitleLanguages
-                            .Select(language => $"{Path.GetFileNameWithoutExtension(video)}.{language}")
-                            .Prepend(Path.GetFileNameWithoutExtension(video)))
-                        .SelectMany(subtitle => AllSubtitleExtensions.Select(extension => $"{subtitle}{extension}"))
+                    string[] allowedSubtitleLanguages = SubtitleLanguages.Concat(
+                            from language1 in SubtitleLanguages
+                            from language2 in SubtitleLanguages
+                            where !language1.EqualsOrdinal(language2)
+                            select $"{language1}&{language2}")
                         .ToArray();
                     subtitles
-                        .Where(subtitle => !allowedSubtitles.ContainsIgnoreCase(subtitle))
+                        .Where(subtitle => !(AllSubtitleExtensions.ContainsIgnoreCase(Path.GetExtension(subtitle)) && videos.Any(video =>
+                        {
+                            string videoName = Path.GetFileNameWithoutExtension(video);
+                            string subtitleName = Path.GetFileNameWithoutExtension(subtitle);
+                            return subtitleName.EqualsOrdinal(videoName) || subtitle.StartsWithOrdinal($"{videoName}.") && allowedSubtitleLanguages.Any(allowedLanguage =>
+                            {
+                                string subtitleLanguage = subtitleName.Substring($"{videoName}.".Length);
+                                return subtitleLanguage.Equals(allowedLanguage) || subtitleLanguage.StartsWithOrdinal($"{allowedLanguage}-");
+                            });
+                        })))
                         .ForEach(file => log($"!Subtitle: {Path.Combine(movie, file)}"));
 
                     string[] allowedMetadataFiles = videos

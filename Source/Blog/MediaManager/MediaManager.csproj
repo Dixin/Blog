@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net5.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="92.0.902.73" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\MediaManager.Data\MediaManager.Data.csproj" />
+    </ItemGroup>
+
+</Project>

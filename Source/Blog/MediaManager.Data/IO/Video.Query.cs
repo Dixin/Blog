@@ -194,7 +194,7 @@ namespace Examples.IO
             log ??= TraceLog;
             string[] movies = EnumerateDirectories(directory, level).ToArray();
             Task[] tasks = Partitioner
-                .Create(movies)
+                .Create(movies, true)
                 .GetOrderablePartitions(IOMaxDegreeOfParallelism)
                 .Select((partition, partitionIndex) => Task.Run(async () =>
                 {
