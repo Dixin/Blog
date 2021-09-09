@@ -100,12 +100,11 @@
                             }
                         });
 
+                    Trace.WriteLine($"{partitionIndex}:{pageIndex} End {webDriver.Url}");
                     if (pageIndex++ % SaveFrequency == 0)
                     {
                         SaveJson(jsonPath, allSummaries);
                     }
-
-                    Trace.WriteLine($"{partitionIndex}:{pageIndex} End {webDriver.Url}");
                 } while (webDriver.HasNextPage(ref pager));
 
                 webDriver.Close();

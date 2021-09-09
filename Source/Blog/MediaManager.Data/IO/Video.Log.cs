@@ -99,26 +99,30 @@
 
         internal static void PrintVideosNonPreferred(string directory, int level = 2, Action<string>? log = null)
         {
-            PrintVideos(directory, level, file =>
-            {
-                VideoFileInfo videoInfo = new(file);
-                return !videoInfo.IsTop && !videoInfo.IsPremium && !videoInfo.IsPreferred;
-            });
+            PrintVideos(
+                directory,
+                level,
+                file =>
+                {
+                    VideoFileInfo videoInfo = new(file);
+                    return !videoInfo.IsTop && !videoInfo.IsPremium && !videoInfo.IsPreferred;
+                },
+                log);
         }
 
         internal static void PrintVideosPreferred(string directory, int level = 2, Action<string>? log = null)
         {
-            PrintVideos(directory, level, file => new VideoFileInfo(file).IsPreferred);
+            PrintVideos(directory, level, file => new VideoFileInfo(file).IsPreferred, log);
         }
 
         internal static void PrintVideosNonTop(string directory, int level = 2, Action<string>? log = null)
         {
-            PrintVideos(directory, level, file => !new VideoFileInfo(file).IsTop);
+            PrintVideos(directory, level, file => !new VideoFileInfo(file).IsTop, log);
         }
 
         internal static void PrintVideosPremium(string directory, int level = 2, Action<string>? log = null)
         {
-            PrintVideos(directory, level, file => new VideoFileInfo(file).IsPremium);
+            PrintVideos(directory, level, file => new VideoFileInfo(file).IsPremium, log);
         }
 
         private static void PrintVideos(string directory, int level, Func<string, bool> predicate, Action<string>? log = null)
@@ -302,7 +306,7 @@
                         log($"!Not 1080p: {movie}");
                     }
 
-                    if (!trimmedMovie.ContainsIgnoreCase("1080p") && files.Any(file => file.ContainsIgnoreCase("1080p")))
+                    if (!trimmedMovie.ContainsIgnoreCase("1080p") && files.Any(file => file.ContainsIgnoreCase("1080p") && !file.ContainsIgnoreCase(".FAKE.1080p")))
                     {
                         log($"!1080p: {movie}");
                     }
@@ -312,7 +316,7 @@
                         log($"!Not 720p: {movie}");
                     }
 
-                    if (!trimmedMovie.ContainsIgnoreCase("1080p") && !trimmedMovie.ContainsIgnoreCase("720p") && files.Any(file => file.ContainsIgnoreCase("720p")))
+                    if (!trimmedMovie.ContainsIgnoreCase("1080p") && !trimmedMovie.ContainsIgnoreCase("720p") && files.Any(file => file.ContainsIgnoreCase("720p") && !file.ContainsIgnoreCase(".FAKE.720p")))
                     {
                         log($"!720p: {movie}");
                     }
@@ -323,6 +327,9 @@
                     string[] imdbFiles = files.Where(file => file.HasExtension(ImdbMetadataExtension)).ToArray();
                     string[] cacheFiles = files.Where(file => file.HasExtension(ImdbCacheExtension)).ToArray();
                     string[] otherFiles = files.Except(videos).Except(subtitles).Except(metadataFiles).Except(imdbFiles).Except(cacheFiles).ToArray();
+                    videos
+                        .Where(video => !VideoFileInfo.TryParse(video, out _))
+                        .ForEach(video => log($"!Video name {video}: {movie}"));
                     if (videos.Length < 1)
                     {
                         log($"!No video: {movie}");

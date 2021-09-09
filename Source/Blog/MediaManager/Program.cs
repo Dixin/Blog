@@ -42,15 +42,14 @@ log(typeof(Enumerable).Assembly.Location);
 //await Video.DownloadImdbMetadataAsync(@"E:\Files\Library\Movies 3D.立体电影", overwrite: false, useCache: true, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(@"E:\Files\Library\Movies Controversial.非主流电影", overwrite: false, useCache: true, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(@"E:\Files\Library\Movies Mainstream.主流电影", overwrite: false, useCache: true, useBrowser: true);
-//await Video.DownloadImdbMetadataAsync(@"H:\Files\Library\Movies Mainstream.主流电影", 2, overwrite: false, useCache: true, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(@"H:\Files\Library\Movies Controversial.非主流电影", 2, overwrite: false, useCache: true, useBrowser: true);
-//await Video.DownloadImdbMetadataAsync(@"H:\Files\Library.Subtitle\Movies Mainstream.主流电影", 2, overwrite: false, useCache: true, useBrowser: true);
-//await Video.DownloadImdbMetadataAsync(@"H:\Files\Library.Subtitle\Movies Controversial.非主流电影", 2, overwrite: false, useCache: true, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(@"H:\Files\Library\Movies Mainstream.主流电影", 2, overwrite: false, useCache: true, useBrowser: true);
 
 //await Video.DownloadImdbMetadataAsync(@"E:\Files\Library\TV Controversial.非主流电视剧", 1, overwrite: false, useCache: true, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(@"E:\Files\Library\TV Documentary.记录电视剧", 1, overwrite: false, useCache: true, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(@"E:\Files\Library\TV Mainstream.主流电视剧", 1, overwrite: false, useCache: true, useBrowser: true);
-//await Video.DownloadImdbMetadataAsync(@"H:\TV", 1, overwrite: false, useCache: true, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(@"H:\Files\Library\TV Controversial.非主流电视剧", 1, overwrite: false, useCache: true, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(@"H:\Files\Library\TV Mainstream.主流电视剧", 1, overwrite: false, useCache: true, useBrowser: true);
 
 //Video.PrintDirectoryTitleMismatch(@"E:\Files\Library\Movies 3D.立体电影");
 //Video.PrintDirectoryTitleMismatch(@"E:\Files\Library\Movies Controversial.非主流电影");
@@ -86,8 +85,6 @@ log(typeof(Enumerable).Assembly.Location);
 //Video.RenameDirectoriesWithImdbMetadata(@"E:\Files\Library\Movies Mainstream.主流电影", isDryRun: true);
 //Video.RenameDirectoriesWithImdbMetadata(@"H:\Files\Library\Movies Controversial.非主流电影", isDryRun: true);
 //Video.RenameDirectoriesWithImdbMetadata(@"H:\Files\Library\Movies Mainstream.主流电影", isDryRun: true);
-//Video.RenameDirectoriesWithImdbMetadata(@"H:\Files\Library.Subtitle\Movies Controversial.非主流电影", isDryRun: true);
-//Video.RenameDirectoriesWithImdbMetadata(@"H:\Files\Library.Subtitle\Movies Mainstream.主流电影", isDryRun: true);
 
 //Video.RenameDirectoriesWithImdbMetadata(@"E:\Files\Library\TV Controversial.非主流电视剧", level: 1, isDryRun: true);
 //Video.RenameDirectoriesWithImdbMetadata(@"E:\Files\Library\TV Documentary.记录电视剧", level: 1, isDryRun: true);
@@ -112,9 +109,6 @@ log(typeof(Enumerable).Assembly.Location);
 //Video.PrintDirectoriesWithErrors(@"E:\Files\Library\Movies Mainstream.主流电影");
 //Video.PrintDirectoriesWithErrors(@"H:\Files\Library\Movies Controversial.非主流电影");
 //Video.PrintDirectoriesWithErrors(@"H:\Files\Library\Movies Mainstream.主流电影");
-//Video.PrintDirectoriesWithErrors(@"H:\Files\Library.Subtitle\Movies Controversial.非主流电影");
-//Video.PrintDirectoriesWithErrors(@"H:\Files\Library.Subtitle\Movies Mainstream.主流电影");
-
 
 //Video.PrintVideosWithErrors(@"E:\Files\Library\Movies 3D.立体电影", searchOption: SearchOption.AllDirectories);
 //Video.PrintVideosWithErrors(@"E:\Files\Library\Movies Controversial.非主流电影", searchOption: SearchOption.AllDirectories);
@@ -131,8 +125,6 @@ log(typeof(Enumerable).Assembly.Location);
 //await Video.ConvertToUtf8Async(@"E:\Files\Library\Movies Controversial.非主流电影");
 //await Video.ConvertToUtf8Async(@"H:\Files\Library\Movies Mainstream.主流电影");
 //await Video.ConvertToUtf8Async(@"H:\Files\Library\Movies Controversial.非主流电影");
-//await Video.ConvertToUtf8Async(@"H:\Files\Library.Subtitle\Movies Mainstream.主流电影");
-//await Video.ConvertToUtf8Async(@"H:\Files\Library.Subtitle\Movies Controversial.非主流电影");
 
 //await Video.ConvertToUtf8Async(@"E:\Files\Library\TV Controversial.非主流电视剧");
 //await Video.ConvertToUtf8Async(@"E:\Files\Library\TV Documentary.记录电视剧");
@@ -181,12 +173,12 @@ log(typeof(Enumerable).Assembly.Location);
 
 //Video.MoveSubtitles(@"K:\Move\New folder\The L Word-Generation Q.2019.拉字至上-Q世代[7.3][1080p]\Season 01", ".mp4", @"K:\Move\New folder\The L Word-Generation Q.2019.拉字至上-Q世代[7.3][1080p]\New folder");
 
-//await Rarbg.DownloadMetadataAsync("https://rarbg.to/torrents.php?category[]=54", @"D:\Files\Code\RarbgMetadata.x265.json", index => index <= 10);
-//await Rarbg.DownloadMetadataAsync("https://rarbg.to/torrents.php?category[]=44", @"D:\Files\Code\RarbgMetadata.H264.json", index => index <= 20);
-//await Yts.DownloadMetadataAsync(@"D:\Files\Code\YtsSummary.json", @"D:\Files\Code\YtsMetadata.json", index => index <= 15);
-//await Video.PrintVersions(@"D:\Files\Code\RarbgMetadata.x265.json", @"D:\Files\Code\RarbgMetadata.H264.json", @"D:\Files\Code\YtsMetadata.json", @"D:\Files\Code\Library.Ignore.json", null,
-//    (@"E:\Files\Library\Movies Mainstream.主流电影", 2), (@"E:\Files\Library\Movies Controversial.非主流电影", 2),
-//    (@"H:\Files\Library\Movies Mainstream.主流电影", 2), (@"H:\Files\Library\Movies Controversial.非主流电影", 2), (@"H:\Files\Library.Subtitle\Movies Mainstream.主流电影", 2), (@"H:\Files\Library.Subtitle\Movies Controversial.非主流电影", 2));
+//await Rarbg.DownloadMetadataAsync("https://rarbg.to/torrents.php?category[]=54", @"D:\Files\Code\RarbgMetadata.x265.json", index => index <= 5);
+//await Rarbg.DownloadMetadataAsync("https://rarbg.to/torrents.php?category[]=44", @"D:\Files\Code\RarbgMetadata.H264.json", index => index <= 10);
+//await Yts.DownloadMetadataAsync(@"D:\Files\Code\YtsSummary.json", @"D:\Files\Code\YtsMetadata.json", index => index <= 5);
+await Video.PrintVersions(@"D:\Files\Code\RarbgMetadata.x265.json", @"D:\Files\Code\RarbgMetadata.H264.json", @"D:\Files\Code\YtsMetadata.json", @"D:\Files\Code\Library.Ignore.json", null,
+    (@"E:\Files\Library\Movies Mainstream.主流电影", 2), (@"E:\Files\Library\Movies Controversial.非主流电影", 2),
+    (@"H:\Files\Library\Movies Mainstream.主流电影", 2), (@"H:\Files\Library\Movies Controversial.非主流电影", 2));
 
 //Audio.ReplaceTraditionalChinese(@"E:\Files\Library\Audio Mainstream.主流音乐", true);
 
@@ -289,25 +281,25 @@ log(typeof(Enumerable).Assembly.Location);
 //    log("");
 //});
 
-Video.EnumerateDirectories(@"H:\Files\Library\Movies Mainstream.主流电影\American", 1)
-    //.Concat(Video.EnumerateDirectories(@"H:\Files\Library\Movies Mainstream.主流电影"))
-    //.Concat(Video.EnumerateDirectories(@"H:\Files\Library.Subtitle\Movies Mainstream.主流电影"))
-    //.Concat(Video.EnumerateDirectories(@"E:\Files\Library\Movies Controversial.非主流电影"))
-    //.Concat(Video.EnumerateDirectories(@"H:\Files\Library\Movies Controversial.非主流电影"))
-    //.Concat(Video.EnumerateDirectories(@"H:\Files\Library.Subtitle\Movies Controversial.非主流电影"))
-    .OrderBy(d => d)
-    .ToArray()
-    .Select(m => (m, Imdb.TryLoad(m, out ImdbMetadata imdbMetadata) ? imdbMetadata : null))
-    .Where(m=>m.Item2?.FormattedAggregateRating?.CompareTo("6.5") >= 0)
-    //.Where(m => m.Item2?.Genre?.Length == 2)
-    .ForEach(d =>
-    {
-        log(d.Item1);
-        log(d.Item1 + $"@{string.Join(",", d.Item2?.Genres?.OrderBy(g => g).ToArray() ?? Array.Empty<string>())}");
-        //DirectoryHelper.AddPostfix(d.Item1, $"@{string.Join(",", d.Item2.Genres?.OrderBy(g => g).ToArray() ?? Array.Empty<string>())}");
-        log(d.Item2?.Link);
-        log("");
-    });
+//Video.EnumerateDirectories(@"H:\Files\Library\Movies Mainstream.主流电影\American", 1)
+//    //.Concat(Video.EnumerateDirectories(@"H:\Files\Library\Movies Mainstream.主流电影"))
+//    //.Concat(Video.EnumerateDirectories(@"H:\Files\Library.Subtitle\Movies Mainstream.主流电影"))
+//    //.Concat(Video.EnumerateDirectories(@"E:\Files\Library\Movies Controversial.非主流电影"))
+//    //.Concat(Video.EnumerateDirectories(@"H:\Files\Library\Movies Controversial.非主流电影"))
+//    //.Concat(Video.EnumerateDirectories(@"H:\Files\Library.Subtitle\Movies Controversial.非主流电影"))
+//    .Select(m => (m, Imdb.TryLoad(m, out ImdbMetadata imdbMetadata) ? imdbMetadata : null))
+//    .Where(m => m.Item2?.FormattedAggregateRating?.CompareTo("6.0") >= 0)
+//    //.Where(m => m.Item2?.Genre?.Length == 2)
+//    .OrderBy(d => d)
+//    .ToArray()
+//    .ForEach(d =>
+//    {
+//        log(d.Item1);
+//        log(d.Item1 + $"@{string.Join(",", d.Item2?.Genres?.OrderBy(g => g).ToArray() ?? Array.Empty<string>())}");
+//        //DirectoryHelper.AddPostfix(d.Item1, $"@{string.Join(",", d.Item2.Genres?.OrderBy(g => g).ToArray() ?? Array.Empty<string>())}");
+//        log(d.Item2?.Link);
+//        log("");
+//    });
 
 
 //Dictionary<string, string> allLocalRegions = new()

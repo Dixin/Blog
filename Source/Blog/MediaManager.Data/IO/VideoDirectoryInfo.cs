@@ -75,7 +75,7 @@ namespace Examples.IO
                 Match match = NameRegex.Match(value);
                 if (!match.Success)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value));
+                    throw new ArgumentOutOfRangeException(nameof(value), value, null);
                 }
 
                 this.DefaultTitle1 = match.Groups[1].Value;
