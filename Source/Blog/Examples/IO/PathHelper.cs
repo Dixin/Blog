@@ -9,7 +9,7 @@ namespace Examples.IO
     using System.Reflection;
     using System.Runtime.Versioning;
     using Examples.Common;
-
+    using Examples.Diagnostics;
     using Microsoft.Win32;
 
     public static class PathHelper
@@ -102,15 +102,10 @@ namespace Examples.IO
             return string.IsNullOrWhiteSpace(parent) ? newDirectory : Path.Combine(parent, newDirectory);
         }
 
-        public static string AddDirectoryPostfix(string directory, string postfix)
-        {
-            return $"{directory}{postfix}";
-        }
+        public static string AddDirectoryPostfix(string directory, string postfix) => $"{directory}{postfix}";
 
-        public static bool HasInvalidFileNameCharacter(this string value)
-        {
-            return InvalidFileNameCharacters.Any(invalid => value.Contains(invalid, StringComparison.InvariantCulture));
-        }
+        public static bool HasInvalidFileNameCharacter(this string value) =>
+            InvalidFileNameCharacters.Any(invalid => value.Contains(invalid, StringComparison.InvariantCulture));
 
         public static string ReplaceFileName(string file, string newFileName)
         {
@@ -118,10 +113,8 @@ namespace Examples.IO
             return string.IsNullOrEmpty(directory) ? newFileName : Path.Combine(directory, newFileName);
         }
 
-        public static string ReplaceFileNameWithoutExtension(string file, string newFileNameWithoutExtension)
-        {
-            return ReplaceFileName(file, $"{newFileNameWithoutExtension}{Path.GetExtension(file)}");
-        }
+        public static string ReplaceFileNameWithoutExtension(string file, string newFileNameWithoutExtension) =>
+            ReplaceFileName(file, $"{newFileNameWithoutExtension}{Path.GetExtension(file)}");
 
         public static string ReplaceExtension(string file, string newExtension)
         {
@@ -130,19 +123,51 @@ namespace Examples.IO
             return string.IsNullOrEmpty(directory) ? newFile : Path.Combine(directory, newFile);
         }
 
-        public static bool HasExtension(this string file, string extension)
-        {
-            return string.Equals(Path.GetExtension(file), extension, StringComparison.InvariantCultureIgnoreCase);
-        }
+        public static bool HasExtension(this string file, string extension) =>
+            string.Equals(Path.GetExtension(file), extension, StringComparison.InvariantCultureIgnoreCase);
 
-        public static bool HasAnyExtension(this string file, IEnumerable<string> extensions)
-        {
-            return extensions.Any(file.HasExtension);
-        }
+        public static bool HasAnyExtension(this string file, IEnumerable<string> extensions) =>
+            extensions.Any(file.HasExtension);
 
-        public static bool HasAnyExtension(this string file, params string[] extensions)
+        public static bool HasAnyExtension(this string file, params string[] extensions) =>
+            extensions.Any(file.HasExtension);
+
+        public static string ToWsl(string path, bool forceAbsolute = false)
         {
-            return extensions.Any(file.HasExtension);
+            (int exitCode, List<string?> output, List<string?> error) = OperatingSystem.IsLinux()
+                ? ProcessHelper.StartAndWait("wslpath", $@"{(forceAbsolute ? "-a " : string.Empty)}""{path.ReplaceOrdinal("'", @"\'")}""")
+                : (OperatingSystem.IsWindows()
+                    ? ProcessHelper.StartAndWait("wsl", $@"wslpath {(forceAbsolute ? "-a " : string.Empty)}""{path.ReplaceOrdinal("'", @"\'")}""")
+                    : throw new NotSupportedException(Environment.OSVersion.ToString()));
+            if (exitCode is 0)
+            {
+                string[] nonNullOutput = output.Where(line => line is not null).Select(line => line!).ToArray();
+                if (nonNullOutput.Length is 1)
+                {
+                    return nonNullOutput.Single();
+                }
+            }
+
+            throw new InvalidOperationException(string.Join(Environment.NewLine, error.Concat(output)));
+        }
+        
+        public static string FromWsl(string path, bool forwardSlash = false)
+        {
+            (int exitCode, List<string?> output, List<string?> error) = OperatingSystem.IsLinux()
+                ? ProcessHelper.StartAndWait("wslpath", $@"-{(forwardSlash ? "w" : "m")} ""{path.ReplaceOrdinal("'", @"\'")}""")
+                : (OperatingSystem.IsWindows()
+                    ? ProcessHelper.StartAndWait("wsl", $@"wslpath -{(forwardSlash ? "w" : "m")} ""{path.ReplaceOrdinal("'", @"\'")}""")
+                    : throw new NotSupportedException(Environment.OSVersion.ToString()));
+            if (exitCode is 0)
+            {
+                string[] nonNullOutput = output.Where(line => line is not null).Select(line => line!).ToArray();
+                if (nonNullOutput.Length is 1)
+                {
+                    return nonNullOutput.Single();
+                }
+            }
+
+            throw new InvalidOperationException(string.Join(Environment.NewLine, error.Concat(output)));
         }
     }
 }
