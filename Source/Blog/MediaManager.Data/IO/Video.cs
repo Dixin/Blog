@@ -49,6 +49,8 @@
         private const string InstallmentSeparator = "`";
 
         private const string SubtitleSeparator = "-";
+
+        internal const string FakeDefinition = ".FAKE";
         
         private static void TraceLog(string? message) => Trace.WriteLine(message);
 

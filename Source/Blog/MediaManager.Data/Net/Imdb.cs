@@ -72,6 +72,8 @@
 
             Debug.Assert(imdbMetadata.Year.EqualsOrdinal(htmlYear) || imdbMetadata.ImdbId is "tt2058092");
 
+            // string aggregateRatingCountText = imdbCQ.Find("div[data-testid='hero-rating-bar__aggregate-rating__score']").Siblings().Last().Text
+
             imdbMetadata.Regions = imdbCQ
                 .Find(@"#titleDetails .txt-block")
                 .Elements

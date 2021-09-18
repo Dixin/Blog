@@ -229,34 +229,33 @@ namespace Examples.IO
                     string[] files = Directory.GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly).OrderBy(file => file).ToArray();
                     string[] nfos = files.Where(file => file.HasExtension(XmlMetadataExtension)).ToArray();
                     XDocument english;
-                    XDocument? chinese;
+                    XDocument? translated;
                     if (nfos.Any(nfo => nfo.EndsWithIgnoreCase($".{backupFlag}{XmlMetadataExtension}")) && nfos.Any(nfo => !nfo.EndsWithIgnoreCase($".{backupFlag}{XmlMetadataExtension}")))
                     {
                         english = XDocument.Load(nfos.First(nfo => nfo.EndsWithIgnoreCase($".{backupFlag}{XmlMetadataExtension}")));
-                        chinese = XDocument.Load(nfos.First(nfo => !nfo.EndsWithIgnoreCase($".{backupFlag}{XmlMetadataExtension}")));
+                        translated = XDocument.Load(nfos.First(nfo => !nfo.EndsWithIgnoreCase($".{backupFlag}{XmlMetadataExtension}")));
                     }
                     else
                     {
                         english = XDocument.Load(nfos.First());
-                        chinese = null;
+                        translated = null;
                     }
 
                     string json = files.Single(file => PathHelper.HasExtension(file, ImdbMetadataExtension));
                     Imdb.TryLoad(json, out ImdbMetadata? imdbMetadata);
 
                     string englishTitle = english.Root?.Element("title")?.Value ?? throw new InvalidOperationException($"{movie} has no English title.");
-                    string chineseTitle = chinese?.Root?.Element("title")?.Value ?? string.Empty;
+                    string chineseTitle = translated?.Root?.Element("title")?.Value ?? string.Empty;
                     string? originalTitle = imdbMetadata?.Name ?? english.Root?.Element("originaltitle")?.Value ?? imdbMetadata?.Name;
                     string year = imdbMetadata?.Year ?? english.Root?.Element("year")?.Value ?? throw new InvalidOperationException($"{movie} has no year.");
                     string? imdbId = english.Root?.Element("imdbid")?.Value;
                     Debug.Assert(imdbId.IsNullOrWhiteSpace()
-                        ? "-".EqualsOrdinal(Path.GetFileNameWithoutExtension(json))
+                        ? NotExistingFlag.EqualsOrdinal(Path.GetFileNameWithoutExtension(json))
                         : imdbId.EqualsIgnoreCase(Path.GetFileNameWithoutExtension(json).Split(".")[0]));
-                    string rating = imdbId.IsNullOrWhiteSpace()
-                        ? "-"
-                        : imdbMetadata?.AggregateRating?.RatingValue ?? "0.0";
+                    string rating = imdbMetadata?.FormattedAggregateRating ?? NotExistingFlag;
+                    string ratingCount = imdbMetadata?.FormattedAggregateRatingCount ?? NotExistingFlag;
                     string[] videos = files.Where(file => file.HasAnyExtension(AllVideoExtensions)).ToArray();
-                    string contentRating = imdbMetadata?.FormattedContentRating ?? "-";
+                    string contentRating = imdbMetadata?.FormattedContentRating ?? NotExistingFlag;
                     string definition = videos switch
                     {
                         _ when videos.Any(video => Path.GetFileNameWithoutExtension(video)?.ContainsIgnoreCase("1080p") ?? false) => "[1080p]",
@@ -269,7 +268,7 @@ namespace Examples.IO
                     string additional = additionalInfo
                         ? $"{{{string.Join(",", imdbMetadata?.Regions.Take(5) ?? Array.Empty<string>())};{string.Join(",", imdbMetadata?.Genre?.Take(3) ?? Array.Empty<string>())}}}"
                         : string.Empty;
-                    string newMovie = $"{englishTitle.FilterForFileSystem()}{originalTitle.FilterForFileSystem()}.{year}.{chineseTitle.FilterForFileSystem()}[{rating}][{contentRating}]{definition}{additional}";
+                    string newMovie = $"{englishTitle.FilterForFileSystem()}{originalTitle.FilterForFileSystem()}.{year}.{chineseTitle.FilterForFileSystem()}[{rating}-{ratingCount}][{contentRating}]{definition}{additional}";
                     string newDirectory = Path.Combine(Path.GetDirectoryName(movie) ?? throw new InvalidOperationException(movie), newMovie);
                     if (isDryRun)
                     {
@@ -348,7 +347,21 @@ namespace Examples.IO
                         parsed = parsed with { Year = imdbMetadata.Year };
                     }
 
-                    parsed = parsed with { AggregateRating = imdbMetadata.FormattedAggregateRating, ContentRating = imdbMetadata.FormattedContentRating };
+                    parsed = parsed with
+                    {
+                        AggregateRating = imdbMetadata.FormattedAggregateRating,
+                        AggregateRatingCount = imdbMetadata.FormattedAggregateRatingCount,
+                        ContentRating = imdbMetadata.FormattedContentRating
+                    };
+
+                    if (imdbMetadata.Year.IsNotNullOrWhiteSpace())
+                    {
+                        parsed = parsed with
+                        {
+                            Year = imdbMetadata.Year
+                        };
+                    }
+
                     string newMovie = Path.Combine(Path.GetDirectoryName(movie) ?? throw new InvalidOperationException(movie), parsed.ToString());
                     if (movie.EqualsOrdinal(newMovie))
                     {
@@ -427,7 +440,7 @@ namespace Examples.IO
 
                     VideoMetadata toVideoMetadata = group.Single().Value;
                     toVideoMetadata.File = Path.Combine(Path.GetDirectoryName(toJsonPath) ?? throw new ArgumentException(toJsonPath), toVideoMetadata.File);
-                    if (new VideoFileInfo(Path.GetFileNameWithoutExtension(toVideoMetadata.File)).IsTop)
+                    if (new VideoFileInfo(Path.GetFileNameWithoutExtension(toVideoMetadata.File)).IsX)
                     {
                         log($"Video {toVideoMetadata.File} is x265.");
                         return;
@@ -439,8 +452,8 @@ namespace Examples.IO
                         return;
                     }
 
-                    if (VideoFileInfo.IsTopOrPremium(Path.GetFileNameWithoutExtension(toVideoMetadata.File)) &&
-                        !VideoFileInfo.IsTopOrPremium(Path.GetFileNameWithoutExtension(fromVideoMetadata.File)))
+                    if (VideoFileInfo.IsXOrH(Path.GetFileNameWithoutExtension(toVideoMetadata.File)) &&
+                        !VideoFileInfo.IsXOrH(Path.GetFileNameWithoutExtension(fromVideoMetadata.File)))
                     {
                         log($"Video {toVideoMetadata.File} is better version.");
                         return;

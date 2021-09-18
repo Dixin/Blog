@@ -3,12 +3,13 @@ namespace Examples.IO
     using System;
     using System.Diagnostics.CodeAnalysis;
     using System.IO;
+    using System.Linq;
     using System.Text.RegularExpressions;
     using Examples.Common;
 
     internal record VideoDirectoryInfo
     {
-        private static readonly Regex NameRegex = new(@"^([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?((\=[^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?)?\.([0-9]{4})\.([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?\[([0-9]\.[0-9]|\-)\]\[(\-|R|PG|PG13|Unrated|NA|TVPG|NC17|GP|G|Approved|TVMA|Passed|TV14|TVG|X|E|MPG|M|AO|NotRated)\](\[(2160p|1080p|720p)\])?(\[3D\])?(\[HDR\])?$");
+        private static readonly Regex NameRegex = new(@"^([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?((\=[^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?)?\.([0-9]{4})\.([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?\[([0-9]\.[0-9]|\-)(-([0-9\.KM]+|\-))?\]\[(\-|R|PG|PG13|Unrated|NA|TVPG|NC17|GP|G|Approved|TVMA|Passed|TV14|TVG|X|E|MPG|M|AO|NotRated)\](\[(2160|1080|720)(p|y|h|x)\])?(\[3D\])?(\[HDR\])?$");
 
         internal VideoDirectoryInfo(string name) => this.Name = name;
 
@@ -34,37 +35,34 @@ namespace Examples.IO
 
         internal string AggregateRating { get; init; } = string.Empty;
 
+        internal string AggregateRatingCount { get; init; } = string.Empty;
+
         internal string ContentRating { get; init; } = string.Empty;
 
-        internal string Definition { get; init; } = string.Empty;
+        internal string Resolution { get; init; } = string.Empty;
+
+        internal string Source { get; init; } = string.Empty;
 
         internal string Is3D { get; init; } = string.Empty;
 
         internal string IsHdr { get; init; } = string.Empty;
 
-        internal double FormattedAggregateRating
-        {
-            get
-            {
-                if (Video.NotExistingFlag.EqualsOrdinal(this.AggregateRating))
-                {
-                    return -1.0;
-                }
+        internal string FormattedDefinition => this.IsHD ? $"[{this.Resolution}{this.Source}]" : string.Empty;
 
-                if (double.TryParse(this.AggregateRating, out double value) && value >= 0 && value < 10)
-                {
-                    return value;
-                }
+        internal bool Is2160P => this.Resolution is "2160";
 
-                throw new InvalidOperationException(this.AggregateRating);
-            }
-        }
+        internal bool Is1080P => this.Resolution is "1080";
+
+        internal bool Is720P => this.Resolution is "720";
+
+        internal bool IsHD => this.Resolution is ("2160" or "1080" or "720");
 
         public override string ToString() => this.Name;
 
         internal string Name
         {
-            get => $"{this.DefaultTitle1}{this.DefaultTitle2}{this.DefaultTitle3}{this.OriginalTitle1}{this.OriginalTitle2}{this.OriginalTitle3}.{this.Year}.{this.TranslatedTitle1}{this.TranslatedTitle2}{this.TranslatedTitle3}[{this.AggregateRating}][{this.ContentRating}]{this.Definition}{this.Is3D}{this.IsHdr}";
+            get => $"{this.DefaultTitle1}{this.DefaultTitle2}{this.DefaultTitle3}{this.OriginalTitle1}{this.OriginalTitle2}{this.OriginalTitle3}.{this.Year}.{this.TranslatedTitle1}{this.TranslatedTitle2}{this.TranslatedTitle3}[{this.AggregateRating}-{this.AggregateRatingCount}][{this.ContentRating}]{this.FormattedDefinition}{this.Is3D}{this.IsHdr}";
+
             init
             {
                 if (Path.IsPathRooted(value))
@@ -89,10 +87,13 @@ namespace Examples.IO
                 this.TranslatedTitle2 = match.Groups[10].Value;
                 this.TranslatedTitle3 = match.Groups[11].Value;
                 this.AggregateRating = match.Groups[12].Value;
-                this.ContentRating = match.Groups[13].Value;
-                this.Definition = match.Groups[14].Value;
-                this.Is3D = match.Groups[16].Value;
-                this.IsHdr = match.Groups[17].Value;
+                this.AggregateRatingCount = match.Groups[14].Value;
+                this.ContentRating = match.Groups[15].Value;
+                // this.FormatedDefinition = match.Groups[16].Value;
+                this.Resolution = match.Groups[17].Value;
+                this.Source = match.Groups[18].Value;
+                this.Is3D = match.Groups[19].Value;
+                this.IsHdr = match.Groups[20].Value;
             }
         }
 
@@ -108,6 +109,39 @@ namespace Examples.IO
                 info = null;
                 return false;
             }
+        }
+
+        internal static string GetSource(string path) =>
+            GetSource(Directory
+                .EnumerateFiles(path, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
+                .Where(Video.IsVideo)
+                .Select(video => new VideoFileInfo(video))
+                .ToArray());
+
+        internal static string GetSource(VideoFileInfo[] videos)
+        {
+            videos = videos.Where(video => video.IsHD).ToArray();
+            if (videos.IsEmpty())
+            {
+                return string.Empty;
+            }
+
+            if (videos.Any(video => video.IsX))
+            {
+                return "x";
+            }
+
+            if (videos.Any(video => video.IsH))
+            {
+                return "h";
+            }
+
+            if (videos.Any(video => video.IsY))
+            {
+                return "y";
+            }
+
+            return "p";
         }
     }
 }

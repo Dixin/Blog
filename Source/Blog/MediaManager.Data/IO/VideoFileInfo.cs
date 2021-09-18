@@ -95,20 +95,40 @@
             }
         }
 
-        internal bool IsTop =>
-            (this.Version.EqualsOrdinal("RARBG")
+        internal bool IsX =>
+            this.IsHD
+            && (this.Version.EqualsOrdinal("RARBG")
             || this.Version.EqualsOrdinal("VXT"))
             && this.VideoCodec.EqualsOrdinal(".x265");
 
-        internal bool IsPremium =>
-            (this.Version.EqualsOrdinal("RARBG")
+        internal bool IsH =>
+            this.IsHD
+            && (this.Version.EqualsOrdinal("RARBG")
             || this.Version.EqualsOrdinal("VXT"))
             && !this.VideoCodec.EqualsOrdinal(".x265");
 
-        internal bool IsPreferred =>
-            this.Version.EqualsIgnoreCase("YIFY")
-            || this.Version.StartsWithIgnoreCase("[YTS.");
+        internal bool IsY =>
+            this.IsHD
+            && (this.Version.EqualsIgnoreCase("YIFY")
+            || this.Version.StartsWithIgnoreCase("[YTS."));
 
-        internal static bool IsTopOrPremium(string nameWithoutExtension) => Regex.IsMatch(nameWithoutExtension, @"\-(RARBG|VXT)$");
+        internal bool IsP => 
+            this.IsHD
+            && !this.Version.EqualsIgnoreCase("RARBG") 
+            && !this.Version.EqualsIgnoreCase("VXT") 
+            && !this.Version.EqualsIgnoreCase("YIFY") 
+            && !this.Version.StartsWithIgnoreCase("[YTS.");
+
+        internal bool IsHD =>
+            this.Definition is (".2160p" or ".1080p" or ".720p")
+            && !this.Edition.EndsWithIgnoreCase(Video.FakeDefinition);
+
+        internal bool Is2160P => this.Definition is ".2160p" && !this.Edition.EndsWithIgnoreCase(Video.FakeDefinition);
+
+        internal bool Is1080P => this.Definition is ".1080p" && !this.Edition.EndsWithIgnoreCase(Video.FakeDefinition);
+
+        internal bool Is720P => this.Definition is ".720p" && !this.Edition.EndsWithIgnoreCase(Video.FakeDefinition);
+
+        internal static bool IsXOrH(string nameWithoutExtension) => Regex.IsMatch(nameWithoutExtension, @"\-(RARBG|VXT)$");
     }
 }

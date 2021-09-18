@@ -97,33 +97,17 @@
                 });
         }
 
-        internal static void PrintVideosNonPreferred(string directory, int level = 2, Action<string>? log = null)
-        {
-            PrintVideos(
-                directory,
-                level,
-                file =>
-                {
-                    VideoFileInfo videoInfo = new(file);
-                    return !videoInfo.IsTop && !videoInfo.IsPremium && !videoInfo.IsPreferred;
-                },
-                log);
-        }
+        internal static void PrintVideosP(string directory, int level = 2, Action<string>? log = null) =>
+            PrintVideos(directory, level, file => new VideoFileInfo(file).IsP, log);
 
-        internal static void PrintVideosPreferred(string directory, int level = 2, Action<string>? log = null)
-        {
-            PrintVideos(directory, level, file => new VideoFileInfo(file).IsPreferred, log);
-        }
+        internal static void PrintVideosY(string directory, int level = 2, Action<string>? log = null) =>
+            PrintVideos(directory, level, file => new VideoFileInfo(file).IsY, log);
 
-        internal static void PrintVideosNonTop(string directory, int level = 2, Action<string>? log = null)
-        {
-            PrintVideos(directory, level, file => !new VideoFileInfo(file).IsTop, log);
-        }
+        internal static void PrintVideosNotX(string directory, int level = 2, Action<string>? log = null) =>
+            PrintVideos(directory, level, file => !new VideoFileInfo(file).IsX, log);
 
-        internal static void PrintVideosPremium(string directory, int level = 2, Action<string>? log = null)
-        {
-            PrintVideos(directory, level, file => new VideoFileInfo(file).IsPremium, log);
-        }
+        internal static void PrintVideosH(string directory, int level = 2, Action<string>? log = null) =>
+            PrintVideos(directory, level, file => new VideoFileInfo(file).IsH, log);
 
         private static void PrintVideos(string directory, int level, Func<string, bool> predicate, Action<string>? log = null)
         {
@@ -256,32 +240,37 @@
                         trimmedMovie = trimmedMovie.Substring(0, trimmedMovie.IndexOfOrdinal("{"));
                     }
 
+                    if (!VideoDirectoryInfo.TryParse(trimmedMovie, out VideoDirectoryInfo? directoryInfo))
+                    {
+                        log($"!Directory: {trimmedMovie}");
+                        return;
+                    }
+
+                    string[] paths = Directory.GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
+                    string[] files = paths.Select(file => Path.GetFileName(file) ?? throw new InvalidOperationException(file)).ToArray();
+                    string[] videos = files.Where(IsCommonVideo).ToArray();
+                    VideoFileInfo?[] allVideoFileInfos = videos
+                        .Select(video =>
+                        {
+                            VideoFileInfo.TryParse(video, out VideoFileInfo? videoFileInfo);
+                            return videoFileInfo;
+                        })
+                        .ToArray();
+                    VideoFileInfo[] videoFileInfos = allVideoFileInfos.NotNull().ToArray();
+                    string[] subtitles = files.Where(file => file.HasAnyExtension(AllSubtitleExtensions)).ToArray();
+                    string[] metadataFiles = files.Where(file => file.HasExtension(XmlMetadataExtension)).ToArray();
+                    string[] imdbFiles = files.Where(file => file.HasExtension(ImdbMetadataExtension)).ToArray();
+                    string[] cacheFiles = files.Where(file => file.HasExtension(ImdbCacheExtension)).ToArray();
+                    string[] otherFiles = files.Except(videos).Except(subtitles).Except(metadataFiles).Except(imdbFiles).Except(cacheFiles).ToArray();
+                    string[] translations = new string[] { directoryInfo.TranslatedTitle1, directoryInfo.TranslatedTitle2, directoryInfo.TranslatedTitle3 };
+
                     if (Regex.IsMatch(trimmedMovie, @"·[0-9]"))
                     {
                         log($"!Special character ·: {trimmedMovie}");
                     }
 
-                    if (trimmedMovie.ContainsOrdinal("："))
-                    {
-                        log($"!Special character ：: {trimmedMovie}");
-                    }
+                    "：@#(){}".ToCharArray().Where(trimmedMovie.Contains).ForEach(specialCharacter => log($"!Special character {specialCharacter}: {trimmedMovie}"));
 
-                    if (!VideoDirectoryInfo.TryParse(trimmedMovie, out VideoDirectoryInfo? videoDirectoryInfo))
-                    {
-                        log($"!Directory: {trimmedMovie}");
-                        return;
-                    }
-                    //if (!level1Number1.EqualsOrdinal(level1Number3) || level1Number2.IsNotNullOrWhiteSpace() && !level1Number1.EqualsOrdinal(level1Number2))
-                    //{
-                    //    log($"{movie}");
-                    //}
-
-                    //if (Regex.IsMatch(Regex.Replace(match.Groups[5].Value, "([0-9]{1,2})$", ""), "[0-9]+"))
-                    //{
-                    //    log($"!Index: {movie}");
-                    //}
-
-                    string[] translations = new string[] { videoDirectoryInfo.TranslatedTitle1, videoDirectoryInfo.TranslatedTitle2, videoDirectoryInfo.TranslatedTitle3 };
                     translations
                         .Where(translated => Regex.IsMatch(translated.Split("`").First(), "[0-9]+"))
                         .ForEach(translated => log($"!Translation has number {translated}: {movie}"));
@@ -289,47 +278,40 @@
                         .Where(translation => !string.IsNullOrEmpty(translation) && translation.All(character => character is >= 'a' and <= 'z' or >= 'A' and <= 'Z' || char.IsPunctuation(character) || char.IsSeparator(character) || char.IsSymbol(character) || char.IsWhiteSpace(character)))
                         .ForEach(translated => log($"!Title not translated {translated}: {movie}"));
 
-                    string[] files = Directory.EnumerateFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly).Select(file => Path.GetFileName(file) ?? throw new InvalidOperationException(file)).ToArray();
+                    paths.Where(path => path.Length > 256).ForEach(path => log($"!Path too long: {path}"));
 
-                    if (trimmedMovie.ContainsIgnoreCase("2160p") && !files.Any(file => file.ContainsIgnoreCase("2160p")))
+                    Enumerable.Range(0, videos.Length).Where(index => allVideoFileInfos[index] is null).ForEach(index => log($"!Video name {videos[index]}: {movie}"));
+
+                    if (directoryInfo.Is2160P && !videoFileInfos.Any(video => video.Is2160P))
                     {
-                        log($"!Not 2160p: {movie}");
+                        log($"!Not 2160: {movie}");
                     }
 
-                    if (!trimmedMovie.ContainsIgnoreCase("2160p") && files.Any(file => file.ContainsIgnoreCase("2160p")))
+                    if (!directoryInfo.Is2160P && videoFileInfos.Any(video => video.Is2160P))
                     {
-                        log($"!2160p: {movie}");
+                        log($"!2160: {movie}");
                     }
 
-                    if (trimmedMovie.ContainsIgnoreCase("1080p") && !files.Any(file => file.ContainsIgnoreCase("1080p")))
+                    if (directoryInfo.Is1080P && !videoFileInfos.Any(video => video.Is1080P))
                     {
-                        log($"!Not 1080p: {movie}");
+                        log($"!Not 1080: {movie}");
                     }
 
-                    if (!trimmedMovie.ContainsIgnoreCase("1080p") && files.Any(file => file.ContainsIgnoreCase("1080p") && !file.ContainsIgnoreCase(".FAKE.1080p")))
+                    if (!directoryInfo.Is1080P && videoFileInfos.Any(video => video.Is1080P) && !videoFileInfos.Any(video => video.Is2160P))
                     {
-                        log($"!1080p: {movie}");
+                        log($"!1080: {movie}");
                     }
 
-                    if (trimmedMovie.ContainsIgnoreCase("720p") && !files.Any(file => file.ContainsIgnoreCase("720p")))
+                    if (directoryInfo.Is720P && !videoFileInfos.Any(video => video.Is720P))
                     {
-                        log($"!Not 720p: {movie}");
+                        log($"!Not 720: {movie}");
                     }
 
-                    if (!trimmedMovie.ContainsIgnoreCase("1080p") && !trimmedMovie.ContainsIgnoreCase("720p") && files.Any(file => file.ContainsIgnoreCase("720p") && !file.ContainsIgnoreCase(".FAKE.720p")))
+                    if (!directoryInfo.Is720P && videoFileInfos.Any(video => video.Is720P) && !videoFileInfos.Any(video => video.Is1080P) && !videoFileInfos.Any(video => video.Is2160P))
                     {
-                        log($"!720p: {movie}");
+                        log($"!720: {movie}");
                     }
 
-                    string[] videos = files.Where(IsCommonVideo).ToArray();
-                    string[] subtitles = files.Where(file => file.HasAnyExtension(AllSubtitleExtensions)).ToArray();
-                    string[] metadataFiles = files.Where(file => file.HasExtension(XmlMetadataExtension)).ToArray();
-                    string[] imdbFiles = files.Where(file => file.HasExtension(ImdbMetadataExtension)).ToArray();
-                    string[] cacheFiles = files.Where(file => file.HasExtension(ImdbCacheExtension)).ToArray();
-                    string[] otherFiles = files.Except(videos).Except(subtitles).Except(metadataFiles).Except(imdbFiles).Except(cacheFiles).ToArray();
-                    videos
-                        .Where(video => !VideoFileInfo.TryParse(video, out _))
-                        .ForEach(video => log($"!Video name {video}: {movie}"));
                     if (videos.Length < 1)
                     {
                         log($"!No video: {movie}");
@@ -350,6 +332,12 @@
                         otherFiles
                             .Where(file => !allowedAttachments.ContainsIgnoreCase(file))
                             .ForEach(file => log($"!Attachment: {Path.Combine(movie, file)}"));
+                    }
+
+                    string source = VideoDirectoryInfo.GetSource(videoFileInfos);
+                    if (!source.EqualsOrdinal(directoryInfo.Source))
+                    {
+                        log($"!Source {directoryInfo.Source} should be {source}: {movie}");
                     }
 
                     string[] allowedSubtitleLanguages = SubtitleLanguages.Concat(
@@ -402,15 +390,21 @@
                     string imdbRating = Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata)
                         ? imdbMetadata.FormattedAggregateRating
                         : NotExistingFlag;
-                    if (!videoDirectoryInfo.AggregateRating.EqualsOrdinal(imdbRating))
+                    if (!directoryInfo.AggregateRating.EqualsOrdinal(imdbRating))
                     {
-                        log($"!Imdb rating {videoDirectoryInfo.AggregateRating} should be {imdbRating}: {movie}");
+                        log($"!Imdb rating {directoryInfo.AggregateRating} should be {imdbRating}: {movie}");
+                    }
+
+                    string imdbRatingCount = imdbMetadata?.FormattedAggregateRatingCount ?? NotExistingFlag;
+                    if (!imdbRatingCount.EqualsOrdinal(directoryInfo.AggregateRatingCount))
+                    {
+                        log($"!Imdb rating count {directoryInfo.AggregateRatingCount} should be {imdbRatingCount}: {movie}");
                     }
 
                     string contentRating = imdbMetadata?.FormattedContentRating ?? NotExistingFlag;
-                    if (!contentRating.EqualsOrdinal(videoDirectoryInfo.ContentRating))
+                    if (!contentRating.EqualsOrdinal(directoryInfo.ContentRating))
                     {
-                        log($"!Content rating {videoDirectoryInfo.ContentRating} should be {contentRating}: {movie}");
+                        log($"!Content rating {directoryInfo.ContentRating} should be {contentRating}: {movie}");
                     }
 
                     metadataFiles.ForEach(metadataFile =>
@@ -443,7 +437,7 @@
                     string? imdbYear = imdbMetadata?.Year;
                     if (imdbYear.IsNotNullOrWhiteSpace())
                     {
-                        if (!videoDirectoryInfo.Year.EqualsOrdinal(imdbYear))
+                        if (!directoryInfo.Year.EqualsOrdinal(imdbYear))
                         {
                             log($"!Year should be {imdbYear}: {movie}");
                         }
@@ -584,7 +578,7 @@
 
                     RarbgMetadata[] availableX265Metadata = x265Metadata.ContainsKey(imdbId)
                         ? x265Metadata[imdbId]
-                            .Where(metadata => VideoFileInfo.IsTopOrPremium(metadata.Title))
+                            .Where(metadata => VideoFileInfo.IsXOrH(metadata.Title))
                             .ToArray()
                         : Array.Empty<RarbgMetadata>();
                     if (availableX265Metadata.Any())
@@ -596,7 +590,7 @@
                                 string videoName = Path.GetFileNameWithoutExtension(video);
                                 VideoFileInfo videoInfo = new(videoName);
                                 string title = metadata.Title;
-                                return !videoInfo.IsTop
+                                return !videoInfo.IsX
                                     || !videoName.StartsWithIgnoreCase(metadata.Title)
                                     && (!videoInfo.Origin.EqualsIgnoreCase(".BluRay") || !title.ContainsIgnoreCase(".WEBRip."))
                                     && (videoInfo.Edition.ContainsIgnoreCase("DUBBED") || !title.ContainsIgnoreCase(".DUBBED."))
@@ -622,14 +616,14 @@
                         return;
                     }
 
-                    if (videos.Any(video => VideoFileInfo.TryParse(video, out VideoFileInfo? parsed) && parsed.IsTop))
+                    if (videos.Any(video => VideoFileInfo.TryParse(video, out VideoFileInfo? parsed) && parsed.IsX))
                     {
                         return;
                     }
 
                     RarbgMetadata[] availableH264Metadata = h264Metadata.ContainsKey(imdbId)
                         ? h264Metadata[imdbId]
-                            .Where(metadata => VideoFileInfo.IsTopOrPremium(metadata.Title))
+                            .Where(metadata => VideoFileInfo.IsXOrH(metadata.Title))
                             .ToArray()
                         : Array.Empty<RarbgMetadata>();
                     if (availableH264Metadata.Any())
@@ -641,7 +635,7 @@
                                 string videoName = Path.GetFileNameWithoutExtension(video);
                                 VideoFileInfo videoInfo = new(videoName);
                                 string title = metadata.Title;
-                                return !videoInfo.IsPremium
+                                return !videoInfo.IsH
                                     || !videoName.StartsWithIgnoreCase(metadata.Title)
                                     && (!videoInfo.Origin.EqualsIgnoreCase(".BluRay") || !title.ContainsIgnoreCase(".WEBRip."))
                                     && (videoInfo.Edition.ContainsIgnoreCase("DUBBED") || !title.ContainsIgnoreCase(".DUBBED."))
@@ -667,7 +661,7 @@
                         return;
                     }
 
-                    if (videos.Any(video => VideoFileInfo.TryParse(video, out VideoFileInfo? parsed) && parsed.IsPremium))
+                    if (videos.Any(video => VideoFileInfo.TryParse(video, out VideoFileInfo? parsed) && parsed.IsH))
                     {
                         return;
                     }
@@ -679,7 +673,7 @@
                     {
                         string[] ytsVideos = videos
                             .Select(video => Path.GetFileNameWithoutExtension(video)!)
-                            .Where(video => new VideoFileInfo(video).IsPreferred)
+                            .Where(video => new VideoFileInfo(video).IsY)
                             .ToArray();
                         Debug.Assert(ytsVideos.Length <= 1);
                         (YtsMetadata metadata, KeyValuePair<string, string> version)[] otherYtsMetadata = availableYtsMetadata

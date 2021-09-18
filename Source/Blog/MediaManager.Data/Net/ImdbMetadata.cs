@@ -68,6 +68,37 @@
         }
 
         [JsonIgnore]
+        internal string FormattedAggregateRatingCount
+        {
+            get
+            {
+                if (this.AggregateRating is null)
+                {
+                    return "0";
+                }
+
+                if (this.AggregateRating.RatingCount < 1_000)
+                {
+                    return this.AggregateRating.RatingCount.ToString();
+                }
+
+                if (this.AggregateRating.RatingCount >= 1_000_000)
+                {
+                    string mega = Math.Round(this.AggregateRating.RatingCount / 1_000_000d, 1).ToString();
+                    return $"{(mega.EndsWithOrdinal(".0") ? mega.ReplaceOrdinal(".0", string.Empty) : mega)}M";
+                }
+
+                if (this.AggregateRating.RatingCount >= 10_000)
+                {
+                    return $"{Math.Round(this.AggregateRating.RatingCount / 1000d)}K";
+                }
+
+                string kilo = Math.Round(this.AggregateRating.RatingCount / 1_000d, 1).ToString();
+                return $"{(kilo.EndsWithOrdinal(".0") ? kilo.ReplaceOrdinal(".0", string.Empty) : kilo)}K";
+            }
+        }
+
+        [JsonIgnore]
         internal string FormattedContentRating => this.ContentRating.IsNullOrWhiteSpace()
             ? "NA"
             : this.ContentRating.Replace("-", string.Empty).Replace(" ", string.Empty).Replace("/", string.Empty).Replace(":", string.Empty);
@@ -148,7 +179,7 @@
                 _ => throw new InvalidOperationException($"The value should be either string or array. It is actually {reader.TokenType}.")
             };
 
-        public override void Write(Utf8JsonWriter writer, ImdbEntity[] value, JsonSerializerOptions options) => 
+        public override void Write(Utf8JsonWriter writer, ImdbEntity[] value, JsonSerializerOptions options) =>
             JsonSerializer.Serialize(writer, value, options);
     }
 

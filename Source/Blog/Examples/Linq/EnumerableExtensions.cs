@@ -116,7 +116,7 @@
 
         public static ParallelQuery<T> NotNull<T>(this ParallelQuery<T?> source) where T : class
         {
-            return source.Where(value => value is not null)!; // Equivalent to: source.Where(value => !(value is null)).Select(value => value!).
+            return source.Where(value => value is not null)!; // Equivalent to: source.Where(value => value is not null).Select(value => value!).
         }
 
         public static void ForEach<T>(this IEnumerator<T> source, Action<T> action)
