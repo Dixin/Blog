@@ -1,4 +1,4 @@
-﻿namespace Examples.IO
+namespace Examples.IO
 {
     using System;
     using System.Diagnostics.CodeAnalysis;
@@ -6,23 +6,25 @@
     using System.Text.RegularExpressions;
     using Examples.Common;
 
-    internal record VideoFileInfo
+    internal record VideoEpisodeFileInfo
     {
-        private static readonly Regex NameRegex = new(@"^(.+?)\.([0-9]{4})(\.3D(\.HSBS)?)?((\.Part[1-9])?(\.[A-Z\.]+?)?(\.Part[1-9])?|\.RE\-EDIT|\.S[0-9]{2}E[0-9]{2}\.[a-zA-Z\.]+?)?(\.2160p|\.1080p|\.720p|\.540p|\.480p|\.360p)?(\.BOOTLEG|\.US)?(\.WEBRip|\.BluRay|\.DVDRip|\.HDRip|\.HDTV|\.VHSRip|\.LDRip|\.DVD|\.LDVDRip|\.LDDVDRip|\.HQDVDRip|\.TV|\.VCD|\.VCDRip)?(\.H264|\.x264|\.x265|\.DivX|\.Xvid)?(\.AAC|\.AC3|\.MP3|\.AAC5\.1|\.DTS)?(\-(RARBG|VXT|\[YTS\.(MX|AM|AG|LT)\]|[a-zA-Z0-9@]+?))?(\.[2-9]Audio)?(\.watermark)?(\.ffmpeg|\.nvenc|\.handbrake)?(\.bul|\.chs|\.cht|\.cht&eng|\.chs&eng|\.dut|\.eng|\.fre|\.heb|\.jap|\.kor|\.pol|\.dut|\.spa|\.swe|\.por)?(\.cd[0-9]{1,2})?(\.mp4|\.avi|\.iso|\.mkv)?$");
+        private static readonly Regex NameRegex = new(@"^(.+?)(\.([0-9]{4}))?\.S([0-9]{2,4})E([0-9]{2,3})(E([0-9]{2,3}))?(\.[A-Z]+?)?(\.2160p|\.1080p|\.720p|\.540p|\.480p|\.360p)?(\.WEBRip|\.BluRay|\.DVDRip|\.HDRip|\.HDTV|\.VHSRip|\.LDRip|\.DVD|\.LDVDRip|\.LDDVDRip|\.HQDVDRip|\.TV|\.VCD|\.VCDRip)?(\.H264|\.x264|\.x265|\.DivX|\.Xvid)?(\.AAC|\.AC3|\.MP3|\.AAC5\.1|\.DTS)?(\-(RARBG|VXT|\[YTS\.(MX|AM|AG|LT)\]|[a-zA-Z0-9@]+?))?(\.[2-9]Audio)?(\.watermark)?(\.ffmpeg|\.nvenc|\.handbrake)?(\.bul|\.chs|\.cht|\.cht&eng|\.chs&eng|\.dut|\.eng|\.fre|\.heb|\.jap|\.kor|\.pol|\.dut|\.spa|\.swe|\.por)?(\.(.+))?(\.mp4|\.avi)$");
 
-        internal VideoFileInfo(string name) => this.Name = name;
+        internal VideoEpisodeFileInfo(string name) => this.Name = name;
 
-        internal string Title { get; init; } = string.Empty;
+        internal string TVTitle { get; init; } = string.Empty;
 
         internal string Year { get; init; } = string.Empty;
 
-        internal string ThreeD { get; init; } = string.Empty;
+        internal string Season { get; init; } = string.Empty;
+
+        internal string Episode { get; init; } = string.Empty;
+
+        internal string AdditionalEpisode { get; init; } = string.Empty;
 
         internal string Edition { get; init; } = string.Empty;
 
         internal string Definition { get; init; } = string.Empty;
-
-        internal string AdditionalEdition { get; init; } = string.Empty;
 
         internal string Origin { get; init; } = string.Empty;
 
@@ -40,7 +42,7 @@
 
         internal string Subtitle { get; init; } = string.Empty;
 
-        internal string Part { get; init; } = string.Empty;
+        internal string EpisodeTitle { get; init; } = string.Empty;
 
         internal string Extension { get; init; } = string.Empty;
 
@@ -48,7 +50,7 @@
 
         internal string Name
         {
-            get => $"{this.Title}.{this.Year}{this.ThreeD}{this.Edition}{this.Definition}{this.AdditionalEdition}{this.Origin}{this.VideoCodec}{this.AudioCodec}{(this.Version.IsNullOrWhiteSpace() ? string.Empty : $"-{this.Version}")}{this.MultipleAudio}{this.Watermark}{this.Encoder}{this.Subtitle}{this.Part}{this.Extension}";
+            get => $"{this.TVTitle}{(this.Year.IsNullOrWhiteSpace() ? string.Empty : $".{this.Year}")}.S{this.Season}E{this.Episode}{this.Definition}{this.Origin}{this.VideoCodec}{this.AudioCodec}{(this.Version.IsNullOrWhiteSpace() ? string.Empty : $"-{this.Version}")}{this.MultipleAudio}{this.Watermark}{this.Encoder}{this.Subtitle}{(this.EpisodeTitle.IsNullOrWhiteSpace() ? string.Empty : $".{this.EpisodeTitle}")}{this.Extension}";
             init
             {
                 if (Path.IsPathRooted(value))
@@ -62,30 +64,31 @@
                     throw new ArgumentOutOfRangeException(nameof(value), value, null);
                 }
 
-                this.Title = match.Groups[1].Value;
-                this.Year = match.Groups[2].Value;
-                this.ThreeD = match.Groups[3].Value;
-                this.Edition = match.Groups[5].Value;
+                this.TVTitle = match.Groups[1].Value;
+                this.Year = match.Groups[3].Value;
+                this.Season = match.Groups[4].Value;
+                this.Episode = match.Groups[5].Value;
+                this.AdditionalEpisode = match.Groups[7].Value;
+                this.Edition = match.Groups[8].Value;
                 this.Definition = match.Groups[9].Value;
-                this.AdditionalEdition = match.Groups[10].Value;
-                this.Origin = match.Groups[11].Value;
-                this.VideoCodec = match.Groups[12].Value;
-                this.AudioCodec = match.Groups[13].Value;
-                this.Version = match.Groups[15].Value;
-                this.MultipleAudio = match.Groups[17].Value;
-                this.Watermark = match.Groups[18].Value;
-                this.Encoder = match.Groups[19].Value;
-                this.Subtitle = match.Groups[20].Value;
-                this.Part = match.Groups[21].Value;
+                this.Origin = match.Groups[10].Value;
+                this.VideoCodec = match.Groups[11].Value;
+                this.AudioCodec = match.Groups[12].Value;
+                this.Version = match.Groups[14].Value;
+                this.MultipleAudio = match.Groups[16].Value;
+                this.Watermark = match.Groups[17].Value;
+                this.Encoder = match.Groups[18].Value;
+                this.Subtitle = match.Groups[19].Value;
+                this.EpisodeTitle = match.Groups[21].Value;
                 this.Extension = match.Groups[22].Value;
             }
         }
 
-        internal static bool TryParse(string name, [NotNullWhen(true)] out VideoFileInfo? info)
+        internal static bool TryParse(string name, [NotNullWhen(true)] out VideoEpisodeFileInfo? info)
         {
             try
             {
-                info = new VideoFileInfo(name);
+                info = new VideoEpisodeFileInfo(name);
                 return true;
             }
             catch (ArgumentOutOfRangeException)
@@ -112,11 +115,11 @@
             && (this.Version.EqualsIgnoreCase("YIFY")
             || this.Version.StartsWithIgnoreCase("[YTS."));
 
-        internal bool IsP => 
+        internal bool IsP =>
             this.IsHD
-            && !this.Version.EqualsIgnoreCase("RARBG") 
-            && !this.Version.EqualsIgnoreCase("VXT") 
-            && !this.Version.EqualsIgnoreCase("YIFY") 
+            && !this.Version.EqualsIgnoreCase("RARBG")
+            && !this.Version.EqualsIgnoreCase("VXT")
+            && !this.Version.EqualsIgnoreCase("YIFY")
             && !this.Version.StartsWithIgnoreCase("[YTS.");
 
         internal bool IsHD =>
@@ -128,7 +131,5 @@
         internal bool Is1080P => this.Definition is ".1080p" && !this.Edition.EndsWithIgnoreCase(Video.FakeDefinition);
 
         internal bool Is720P => this.Definition is ".720p" && !this.Edition.EndsWithIgnoreCase(Video.FakeDefinition);
-
-        internal static bool IsXOrH(string nameWithoutExtension) => Regex.IsMatch(nameWithoutExtension, @"\-(RARBG|VXT)$");
     }
 }

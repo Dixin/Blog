@@ -120,7 +120,7 @@ namespace Examples.IO
                         return;
                     }
 
-                    string title = XDocument.Load(nfo).Root?.Element("title")?.Value.FilterForFileSystem() ?? throw new InvalidOperationException($"{nfo} has no title.");
+                    string title = XDocument.Load(nfo).Root?.Element("title")?.Value.FilterForFileSystem().Trim() ?? throw new InvalidOperationException($"{nfo} has no title.");
                     Directory
                         .EnumerateFiles(mediaDirectory, $"*{match}*", SearchOption.AllDirectories)
                         .ForEach(file =>
@@ -244,9 +244,15 @@ namespace Examples.IO
                     string json = files.Single(file => PathHelper.HasExtension(file, ImdbMetadataExtension));
                     Imdb.TryLoad(json, out ImdbMetadata? imdbMetadata);
 
-                    string englishTitle = english.Root?.Element("title")?.Value ?? throw new InvalidOperationException($"{movie} has no English title.");
-                    string chineseTitle = translated?.Root?.Element("title")?.Value ?? string.Empty;
-                    string? originalTitle = imdbMetadata?.Name ?? english.Root?.Element("originaltitle")?.Value ?? imdbMetadata?.Name;
+                    string defaultTitle = english.Root?.Element("title")?.Value ?? throw new InvalidOperationException($"{movie} has no default title.");
+                    defaultTitle = defaultTitle.ReplaceOrdinal(" - ", "-");
+                    string translatedTitle = translated?.Root?.Element("title")?.Value ?? string.Empty;
+                    translatedTitle = translatedTitle.ReplaceOrdinal(" - ", "-");
+                    string originalTitle = imdbMetadata?.Name ?? english.Root?.Element("originaltitle")?.Value ?? imdbMetadata?.Name ?? string.Empty;
+                    originalTitle = originalTitle.ReplaceOrdinal(" - ", "-");
+                    originalTitle = originalTitle.EqualsIgnoreCase(defaultTitle) || originalTitle.IsNullOrWhiteSpace()
+                        ? string.Empty
+                        : $"={originalTitle}";
                     string year = imdbMetadata?.Year ?? english.Root?.Element("year")?.Value ?? throw new InvalidOperationException($"{movie} has no year.");
                     string? imdbId = english.Root?.Element("imdbid")?.Value;
                     Debug.Assert(imdbId.IsNullOrWhiteSpace()
@@ -254,38 +260,45 @@ namespace Examples.IO
                         : imdbId.EqualsIgnoreCase(Path.GetFileNameWithoutExtension(json).Split(".")[0]));
                     string rating = imdbMetadata?.FormattedAggregateRating ?? NotExistingFlag;
                     string ratingCount = imdbMetadata?.FormattedAggregateRatingCount ?? NotExistingFlag;
-                    string[] videos = files.Where(file => file.HasAnyExtension(AllVideoExtensions)).ToArray();
+                    string[] videos = files.Where(IsVideo).ToArray();
                     string contentRating = imdbMetadata?.FormattedContentRating ?? NotExistingFlag;
-                    string definition = videos switch
+                    VideoFileInfo[] videoFileInfos = videos.Select(video => new VideoFileInfo(video)).ToArray();
+                    VideoDirectoryInfo videoDirectoryInfo = new()
                     {
-                        _ when videos.Any(video => Path.GetFileNameWithoutExtension(video)?.ContainsIgnoreCase("1080p") ?? false) => "[1080p]",
-                        _ when videos.Any(video => Path.GetFileNameWithoutExtension(video)?.ContainsIgnoreCase("720p") ?? false) => "[720p]",
-                        _ => string.Empty
+                        DefaultTitle1 = defaultTitle.FilterForFileSystem(),
+                        OriginalTitle1 = originalTitle.FilterForFileSystem(),
+                        Year = year,
+                        TranslatedTitle1 = translatedTitle.FilterForFileSystem(),
+                        AggregateRating = rating,
+                        AggregateRatingCount = ratingCount,
+                        ContentRating = contentRating,
+                        Resolution = videoFileInfos switch
+                        {
+                            _ when videoFileInfos.Any(video => video.Is2160P) => "2160",
+                            _ when videoFileInfos.Any(video => video.Is1080P) => "1080",
+                            _ when videoFileInfos.Any(video => video.Is720P) => "720",
+                            _ => string.Empty
+                        },
+                        Source = VideoDirectoryInfo.GetSource(videoFileInfos)
                     };
-                    originalTitle = originalTitle.EqualsIgnoreCase(englishTitle) || originalTitle.IsNullOrWhiteSpace()
-                        ? string.Empty
-                        : $"={originalTitle}";
                     string additional = additionalInfo
                         ? $"{{{string.Join(",", imdbMetadata?.Regions.Take(5) ?? Array.Empty<string>())};{string.Join(",", imdbMetadata?.Genre?.Take(3) ?? Array.Empty<string>())}}}"
                         : string.Empty;
-                    string newMovie = $"{englishTitle.FilterForFileSystem()}{originalTitle.FilterForFileSystem()}.{year}.{chineseTitle.FilterForFileSystem()}[{rating}-{ratingCount}][{contentRating}]{definition}{additional}";
+                    string newMovie = $"{videoDirectoryInfo}{additional}";
                     string newDirectory = Path.Combine(Path.GetDirectoryName(movie) ?? throw new InvalidOperationException(movie), newMovie);
-                    if (isDryRun)
+                    if (movie.EqualsOrdinal(newDirectory))
                     {
-                        log(movie);
-                        log(newDirectory);
-                        log(string.Empty);
+                        return;
                     }
-                    else
+
+                    log(movie);
+                    if (!isDryRun)
                     {
-                        if (!movie.EqualsOrdinal(newDirectory))
-                        {
-                            log(movie);
-                            Directory.Move(movie, newDirectory);
-                            log(newDirectory);
-                            log(string.Empty);
-                        }
+                        Directory.Move(movie, newDirectory);
                     }
+
+                    log(newDirectory);
+                    log(string.Empty);
                 });
         }
 

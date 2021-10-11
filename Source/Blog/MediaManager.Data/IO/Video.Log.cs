@@ -217,7 +217,7 @@
                 });
         }
 
-        internal static void PrintDirectoriesWithErrors(string directory, int level = 2, bool isLoadingVideo = false, bool isNoAudioAllowed = false, Action<string>? log = null)
+        internal static void PrintDirectoriesWithErrors(string directory, int level = 2, bool isLoadingVideo = false, bool isNoAudioAllowed = false, bool isTV = false, Action<string>? log = null)
         {
             log ??= TraceLog;
             List<string>? allVideos = null;
@@ -246,23 +246,14 @@
                         return;
                     }
 
-                    string[] paths = Directory.GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
-                    string[] files = paths.Select(file => Path.GetFileName(file) ?? throw new InvalidOperationException(file)).ToArray();
-                    string[] videos = files.Where(IsCommonVideo).ToArray();
-                    VideoFileInfo?[] allVideoFileInfos = videos
-                        .Select(video =>
-                        {
-                            VideoFileInfo.TryParse(video, out VideoFileInfo? videoFileInfo);
-                            return videoFileInfo;
-                        })
-                        .ToArray();
-                    VideoFileInfo[] videoFileInfos = allVideoFileInfos.NotNull().ToArray();
-                    string[] subtitles = files.Where(file => file.HasAnyExtension(AllSubtitleExtensions)).ToArray();
-                    string[] metadataFiles = files.Where(file => file.HasExtension(XmlMetadataExtension)).ToArray();
-                    string[] imdbFiles = files.Where(file => file.HasExtension(ImdbMetadataExtension)).ToArray();
-                    string[] cacheFiles = files.Where(file => file.HasExtension(ImdbCacheExtension)).ToArray();
-                    string[] otherFiles = files.Except(videos).Except(subtitles).Except(metadataFiles).Except(imdbFiles).Except(cacheFiles).ToArray();
-                    string[] translations = new string[] { directoryInfo.TranslatedTitle1, directoryInfo.TranslatedTitle2, directoryInfo.TranslatedTitle3 };
+                    string[] allPaths = Directory.GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.AllDirectories);
+                    string[] translations = { directoryInfo.TranslatedTitle1, directoryInfo.TranslatedTitle2, directoryInfo.TranslatedTitle3 };
+                    string[] titles =
+                    {
+                        directoryInfo.DefaultTitle1, directoryInfo.DefaultTitle2.TrimStart('-'), directoryInfo.DefaultTitle3.TrimStart('-'),
+                        directoryInfo.OriginalTitle1.TrimStart('='), directoryInfo.OriginalTitle2.TrimStart('-'), directoryInfo.OriginalTitle3.TrimStart('-'),
+                        directoryInfo.TranslatedTitle1, directoryInfo.TranslatedTitle2.TrimStart('-'), directoryInfo.TranslatedTitle3.TrimStart('-')
+                    };
 
                     if (Regex.IsMatch(trimmedMovie, @"·[0-9]"))
                     {
@@ -278,7 +269,159 @@
                         .Where(translation => !string.IsNullOrEmpty(translation) && translation.All(character => character is >= 'a' and <= 'z' or >= 'A' and <= 'Z' || char.IsPunctuation(character) || char.IsSeparator(character) || char.IsSymbol(character) || char.IsWhiteSpace(character)))
                         .ForEach(translated => log($"!Title not translated {translated}: {movie}"));
 
-                    paths.Where(path => path.Length > 256).ForEach(path => log($"!Path too long: {path}"));
+                    titles
+                        .Where(title => title.IsNotNullOrWhiteSpace() && (char.IsWhiteSpace(title.First()) || char.IsWhiteSpace(title.Last())))
+                        .ForEach(title => log($"!Title has white space {title}: {movie}"));
+
+                    allPaths.Where(path => path.Length > 256).ForEach(path => log($"!Path too long: {path}"));
+
+                    string[] topFiles = Directory
+                        .GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
+                        .Select(file => Path.GetFileName(file) ?? throw new InvalidOperationException(file))
+                        .ToArray();
+
+                    string imdbRating = Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata)
+                        ? imdbMetadata.FormattedAggregateRating
+                        : NotExistingFlag;
+
+                    string? imdbYear = imdbMetadata?.Year;
+                    if (imdbYear.IsNotNullOrWhiteSpace() && !directoryInfo.Year.EqualsOrdinal(imdbYear))
+                    {
+                        log($"!Year should be {imdbYear}: {movie}");
+                    }
+
+                    if (!directoryInfo.AggregateRating.EqualsOrdinal(imdbRating))
+                    {
+                        log($"!Imdb rating {directoryInfo.AggregateRating} should be {imdbRating}: {movie}");
+                    }
+
+                    string imdbRatingCount = imdbMetadata?.FormattedAggregateRatingCount ?? NotExistingFlag;
+                    if (!imdbRatingCount.EqualsOrdinal(directoryInfo.AggregateRatingCount))
+                    {
+                        log($"!Imdb rating count {directoryInfo.AggregateRatingCount} should be {imdbRatingCount}: {movie}");
+                    }
+
+                    string contentRating = imdbMetadata?.FormattedContentRating ?? NotExistingFlag;
+                    if (!contentRating.EqualsOrdinal(directoryInfo.ContentRating))
+                    {
+                        log($"!Content rating {directoryInfo.ContentRating} should be {contentRating}: {movie}");
+                    }
+
+                    string[] imdbFiles = topFiles.Where(file => file.HasExtension(ImdbMetadataExtension)).ToArray();
+                    string[] cacheFiles = topFiles.Where(file => file.HasExtension(ImdbCacheExtension)).ToArray();
+
+                    if (imdbFiles.Length != 1)
+                    {
+                        log($"!Imdb files {imdbFiles.Length}: {movie}");
+                    }
+
+                    string[] topDirectories = Directory.GetDirectories(movie).Select(topDirectory => Path.GetFileName(topDirectory)!).ToArray();
+
+                    string[] allowedSubtitleLanguages = SubtitleLanguages.Concat(
+                            from language1 in SubtitleLanguages
+                            from language2 in SubtitleLanguages
+                            where !language1.EqualsOrdinal(language2)
+                            select $"{language1}&{language2}")
+                        .ToArray();
+
+                    if (isTV)
+                    {
+                        topDirectories
+                            .Where(topDirectory => !Featurettes.EqualsOrdinal(topDirectory) && !Regex.IsMatch(topDirectory, @"^Season [0-9]{2,4}(\..+)?"))
+                            .ForEach(topDirectory => log($"!Directory incorrect {topDirectory}: {movie}"));
+
+                        string metadataFile = Path.Combine(movie, TVShowMetadataFile);
+                        if (!File.Exists(metadataFile))
+                        {
+                            log($"!Metadata file missing {TVShowMetadataFile}: {movie}");
+                        }
+
+                        XDocument metadata = XDocument.Load(Path.Combine(movie, metadataFile));
+                        string? metadataImdbId = metadata.Root?.Element("imdb_id")?.Value;
+                        if (imdbMetadata is null)
+                        {
+                            if (metadataImdbId.IsNotNullOrWhiteSpace())
+                            {
+                                log($"!Metadata https://www.imdb.com/title/{metadataImdbId}/ should have no imdb id: {metadataFile}");
+                            }
+                        }
+                        else if (!imdbMetadata.ImdbId.EqualsOrdinal(metadataImdbId))
+                        {
+                            log($"!Metadata imdb id {metadataImdbId} should be {imdbMetadata.ImdbId}: {metadataFile}");
+                        }
+
+                        string[] seasonPaths = Directory.GetDirectories(movie).Where(path => Regex.IsMatch(Path.GetFileName(path), @"^Season [0-9]{2,4}(\..+)?")).ToArray();
+                        seasonPaths.ForEach(season =>
+                        {
+                            Directory.EnumerateDirectories(season).ForEach(seasonDirectory => log($"!Season directory: {seasonDirectory}"));
+
+                            string[] seasonFiles = Directory.GetFiles(season, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly).Select(file => Path.GetFileName(file)!).ToArray();
+                            string[] videos = seasonFiles.Where(IsCommonVideo).ToArray();
+                            string[] videoMetadataFiles = videos.Select(video => $"{Path.GetFileNameWithoutExtension(video)}{XmlMetadataExtension}").ToArray();
+                            string[] videoThumbFiles = videos.Select(video => $"{Path.GetFileNameWithoutExtension(video)}-thumb{ThumbExtension}").ToArray();
+                            VideoEpisodeFileInfo?[] allVideoFileInfos = videos
+                                .Select(video =>
+                                {
+                                    VideoEpisodeFileInfo.TryParse(video, out VideoEpisodeFileInfo? videoFileInfo);
+                                    return videoFileInfo;
+                                })
+                                .ToArray();
+                            VideoEpisodeFileInfo[] videoFileInfos = allVideoFileInfos.NotNull().ToArray();
+                            string[] subtitles = topFiles.Where(file => file.HasAnyExtension(AllSubtitleExtensions)).ToArray();
+                            string[] metadataFiles = topFiles.Where(file => file.HasExtension(XmlMetadataExtension)).ToArray();
+
+                            Enumerable.Range(0, videos.Length).Where(index => allVideoFileInfos[index] is null).ForEach(index => log($"!Video name {videos[index]}: {movie}"));
+
+                            videoFileInfos.ForEach((video, index) =>
+                            {
+                                if (video.EpisodeTitle.IsNullOrWhiteSpace())
+                                {
+                                    log($"!Episode title missing {videos[index]}");
+                                }
+                            });
+
+                            videos.Where(video => !Regex.IsMatch(video, @"S[0-9]{2,4}E[0-9]{2,3}[\.E]")).ForEach(video => log($"!Video name: {video}"));
+
+                            string[] allowedSubtitles = videos
+                                .Select(video => Path.GetFileNameWithoutExtension(video)!)
+                                .Concat(videos.SelectMany(video => allowedSubtitleLanguages, (video, language) => $"{Path.GetFileNameWithoutExtension(video)!}.{language}"))
+                                .SelectMany(subtitle => AllSubtitleExtensions, (subtitle, extension) => $"{subtitle}{extension}")
+                                .ToArray();
+
+                            seasonFiles
+                                .Except(videos)
+                                .Except(videoMetadataFiles)
+                                .Except(videoThumbFiles)
+                                .Except(allowedSubtitles)
+                                .Except(EnumerableEx.Return(TVSeasonMetadataFile))
+                                .ForEach(file => log($"!File: {file}"));
+                        });
+
+                        return;
+                    }
+
+                    switch (topDirectories.Length)
+                    {
+                        case > 1:
+                            log($"!Directory count: {topDirectories.Length}: {movie}");
+                            break;
+                        case 1 when !Featurettes.EqualsOrdinal(topDirectories.Single()):
+                            log($"!Directory incorrect: {topDirectories.Single()}");
+                            break;
+                    }
+
+                    string[] videos = topFiles.Where(IsCommonVideo).ToArray();
+                    VideoFileInfo?[] allVideoFileInfos = videos
+                        .Select(video =>
+                        {
+                            VideoFileInfo.TryParse(video, out VideoFileInfo? videoFileInfo);
+                            return videoFileInfo;
+                        })
+                        .ToArray();
+                    VideoFileInfo[] videoFileInfos = allVideoFileInfos.NotNull().ToArray();
+                    string[] subtitles = topFiles.Where(file => file.HasAnyExtension(AllSubtitleExtensions)).ToArray();
+                    string[] metadataFiles = topFiles.Where(file => file.HasExtension(XmlMetadataExtension)).ToArray();
+                    string[] otherFiles = topFiles.Except(videos).Except(subtitles).Except(metadataFiles).Except(imdbFiles).Except(cacheFiles).ToArray();
 
                     Enumerable.Range(0, videos.Length).Where(index => allVideoFileInfos[index] is null).ForEach(index => log($"!Video name {videos[index]}: {movie}"));
 
@@ -340,12 +483,6 @@
                         log($"!Source {directoryInfo.Source} should be {source}: {movie}");
                     }
 
-                    string[] allowedSubtitleLanguages = SubtitleLanguages.Concat(
-                            from language1 in SubtitleLanguages
-                            from language2 in SubtitleLanguages
-                            where !language1.EqualsOrdinal(language2)
-                            select $"{language1}&{language2}")
-                        .ToArray();
                     subtitles
                         .Where(subtitle => !(AllSubtitleExtensions.ContainsIgnoreCase(Path.GetExtension(subtitle)) && videos.Any(video =>
                         {
@@ -366,7 +503,7 @@
                         .Where(metadata => !allowedMetadataFiles.ContainsIgnoreCase(metadata))
                         .ForEach(file => log($"!Metadata: {Path.Combine(movie, file)}"));
 
-                    files
+                    topFiles
                         .Except(imdbFiles)
                         .Except(cacheFiles)
                         .Where(file => Regex.IsMatch(file, "(1080[^p]|720[^p])"))
@@ -379,32 +516,7 @@
 
                     if (metadataFiles.Length < 1)
                     {
-                        log($"!Metadata: {movie}");
-                    }
-
-                    if (imdbFiles.Length != 1)
-                    {
-                        log($"!Imdb files {imdbFiles.Length}: {movie}");
-                    }
-
-                    string imdbRating = Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata)
-                        ? imdbMetadata.FormattedAggregateRating
-                        : NotExistingFlag;
-                    if (!directoryInfo.AggregateRating.EqualsOrdinal(imdbRating))
-                    {
-                        log($"!Imdb rating {directoryInfo.AggregateRating} should be {imdbRating}: {movie}");
-                    }
-
-                    string imdbRatingCount = imdbMetadata?.FormattedAggregateRatingCount ?? NotExistingFlag;
-                    if (!imdbRatingCount.EqualsOrdinal(directoryInfo.AggregateRatingCount))
-                    {
-                        log($"!Imdb rating count {directoryInfo.AggregateRatingCount} should be {imdbRatingCount}: {movie}");
-                    }
-
-                    string contentRating = imdbMetadata?.FormattedContentRating ?? NotExistingFlag;
-                    if (!contentRating.EqualsOrdinal(directoryInfo.ContentRating))
-                    {
-                        log($"!Content rating {directoryInfo.ContentRating} should be {contentRating}: {movie}");
+                        log($"!Metadata missing: {movie}");
                     }
 
                     metadataFiles.ForEach(metadataFile =>
@@ -417,7 +529,7 @@
                         {
                             if (metadataImdbId.IsNotNullOrWhiteSpace())
                             {
-                                log($"!Metadata should have no imdb id: {metadataFile}");
+                                log($"!Metadata https://www.imdb.com/title/{metadataImdbId}/ should have no imdb id: {metadataFile}");
                             }
 
                             // if (metadataImdbRating.IsNotNullOrWhiteSpace())
@@ -433,26 +545,6 @@
                             }
                         }
                     });
-
-                    string? imdbYear = imdbMetadata?.Year;
-                    if (imdbYear.IsNotNullOrWhiteSpace())
-                    {
-                        if (!directoryInfo.Year.EqualsOrdinal(imdbYear))
-                        {
-                            log($"!Year should be {imdbYear}: {movie}");
-                        }
-                    }
-
-                    string[] directories = Directory.GetDirectories(movie);
-                    if (directories.Length > 1)
-                    {
-                        log($"!Directory {directories.Length}: {movie}");
-                    }
-
-                    if (directories.Length == 1 && !Featurettes.EqualsOrdinal(Path.GetFileName(directories.Single())))
-                    {
-                        log($"!Directory: {directories.Single()}");
-                    }
                 });
 
             if (isLoadingVideo)
@@ -1118,10 +1210,11 @@
 
         internal static void PrintMovieByGenre(string directory, string genre, Action<string>? log = null)
         {
+            log ??= TraceLog;
             Directory
                 .GetFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories)
-                .Select(file => (File: file, Metadata: Imdb.TryLoad(file, out ImdbMetadata? imdbMetadata) ? imdbMetadata : throw new InvalidOperationException(file)))
-                .Where(metadata => metadata.Metadata.Genre.ContainsIgnoreCase(genre))
+                .Select(file => (File: file, Metadata: Imdb.TryLoad(file, out ImdbMetadata? imdbMetadata) ? imdbMetadata : null))
+                .Where(metadata => metadata.Metadata?.Genre.ContainsIgnoreCase(genre) is true)
                 .ForEach(metadata => log($"{Path.GetDirectoryName(metadata.File)}"));
         }
     }

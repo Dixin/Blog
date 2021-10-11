@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="92.0.902.73" />
+         <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="94.0.986" /> 
     </ItemGroup>
 
     <ItemGroup>

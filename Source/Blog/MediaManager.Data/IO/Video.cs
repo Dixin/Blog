@@ -12,6 +12,8 @@
 
         private const string VideoExtension = ".mp4";
 
+        private const string ThumbExtension = ".jpg";
+
         private const string XmlMetadataSearchPattern = PathHelper.AllSearchPattern + XmlMetadataExtension;
 
         private const string VideoSearchPattern = PathHelper.AllSearchPattern + VideoExtension;
@@ -28,11 +30,13 @@
 
         private static readonly string[] AllVideoExtensions = UncommonVideoExtensions.Union(CommonVideoExtensions).ToArray();
 
-        private static readonly string[] TVMetadataFiles = { $"tvshow{XmlMetadataExtension}", $"season{XmlMetadataExtension}" };
+        private static readonly string TVShowMetadataFile = $"tvshow{XmlMetadataExtension}";
+
+        private static readonly string TVSeasonMetadataFile = $"season{XmlMetadataExtension}";
 
         private static readonly string[] Attachments = { "Introduction.txt", "Introduction.mht" };
 
-        private static readonly string[] AdaptiveAttachments = new[] { "banner.jpg", "box.jpg", "clearart.png", "clearlogo.png", "disc.png", "discart.png", "fanart.jpg", "landscape.jpg", "logo.png", "poster.jpg", "poster.png", "backdrop.jpg", "back.jpg" };
+        private static readonly string[] AdaptiveAttachments = new[] { "banner.jpg", "box.jpg", "clearart.png", "clearlogo.png", "disc.jpg", "disc.png", "discart.png", "fanart.jpg", "landscape.jpg", "logo.png", "poster.jpg", "poster.png", "backdrop.jpg", "back.jpg" };
 
         private const string ImdbMetadataExtension = ".json";
 
@@ -51,7 +55,7 @@
         private const string SubtitleSeparator = "-";
 
         internal const string FakeDefinition = ".FAKE";
-        
+
         private static void TraceLog(string? message) => Trace.WriteLine(message);
 
         private static readonly int IOMaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4);

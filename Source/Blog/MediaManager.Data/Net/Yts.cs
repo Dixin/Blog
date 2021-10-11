@@ -33,6 +33,7 @@
             Dictionary<string, YtsSummary> allSummaries = File.Exists(jsonPath)
                 ? JsonSerializer.Deserialize<Dictionary<string, YtsSummary>>(await File.ReadAllTextAsync(jsonPath)) ?? throw new InvalidOperationException(jsonPath)
                 : new();
+            List<string> links = new();
             using WebClient webClient = new WebClient().AddChromeHeaders();
             for (; @continue(index); index++)
             {
@@ -62,6 +63,7 @@
                     .ToArray();
 
                 summaries.ForEach(summary => allSummaries[summary.Link] = summary);
+                summaries.ForEach(summary => links.Add(summary.Link));
 
                 if (index % SaveFrequency == 0)
                 {
@@ -71,6 +73,8 @@
 
                 Log($"End {url}");
             }
+
+            links.OrderBy(link=>link).ForEach(Log);
 
             string finalJsonString = JsonSerializer.Serialize(allSummaries, new() { WriteIndented = true });
             await File.WriteAllTextAsync(jsonPath, finalJsonString);
@@ -96,6 +100,9 @@
             await summaries
                 .Values
                 .Where(summary => !existingMetadataByLink.ContainsKey(summary.Link))
+                .OrderBy(summary => summary.Link)
+                .Do(summary => Log(summary.Link))
+                .ToArray()
                 .ParallelForEachAsync(async (summary, index) =>
                 {
                     Log($"Start {index}:{summary.Link}");

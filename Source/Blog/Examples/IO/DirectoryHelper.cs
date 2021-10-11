@@ -12,8 +12,8 @@ namespace Examples.IO
         {
             directory.NotNullOrWhiteSpace(nameof(directory));
 
-            Directory.EnumerateFiles(directory).ForEach(FileHelper.Delete);
-            Directory.EnumerateDirectories(directory).ForEach(Delete);
+            Directory.GetFiles(directory).ForEach(FileHelper.Delete);
+            Directory.GetDirectories(directory).ForEach(Delete);
             SetAttributes(directory, FileAttributes.Normal);
             Directory.Delete(directory, false);
         }

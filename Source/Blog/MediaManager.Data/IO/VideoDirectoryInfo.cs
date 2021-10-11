@@ -5,13 +5,14 @@ namespace Examples.IO
     using System.IO;
     using System.Linq;
     using System.Text.RegularExpressions;
-    using Examples.Common;
 
     internal record VideoDirectoryInfo
     {
-        private static readonly Regex NameRegex = new(@"^([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?((\=[^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?)?\.([0-9]{4})\.([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?\[([0-9]\.[0-9]|\-)(-([0-9\.KM]+|\-))?\]\[(\-|R|PG|PG13|Unrated|NA|TVPG|NC17|GP|G|Approved|TVMA|Passed|TV14|TVG|X|E|MPG|M|AO|NotRated)\](\[(2160|1080|720)(p|y|h|x)\])?(\[3D\])?(\[HDR\])?$");
+        private static readonly Regex NameRegex = new(@"^([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?((\=[^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?)?\.([0-9]{4})\.([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?\[([0-9]\.[0-9]|\-)-([0-9\.KM]+|\-)\]\[(\-|R|PG|PG13|Unrated|NA|TVPG|NC17|GP|G|Approved|TVMA|Passed|TV14|TVG|X|E|MPG|M|AO|NotRated)\](\[(2160|1080|720)(p|y|h|x)\])?(\[3D\])?(\[HDR\])?$");
 
         internal VideoDirectoryInfo(string name) => this.Name = name;
+
+        internal VideoDirectoryInfo() { }
 
         internal string DefaultTitle1 { get; init; } = string.Empty;
 
@@ -87,13 +88,13 @@ namespace Examples.IO
                 this.TranslatedTitle2 = match.Groups[10].Value;
                 this.TranslatedTitle3 = match.Groups[11].Value;
                 this.AggregateRating = match.Groups[12].Value;
-                this.AggregateRatingCount = match.Groups[14].Value;
-                this.ContentRating = match.Groups[15].Value;
-                // this.FormatedDefinition = match.Groups[16].Value;
-                this.Resolution = match.Groups[17].Value;
-                this.Source = match.Groups[18].Value;
-                this.Is3D = match.Groups[19].Value;
-                this.IsHdr = match.Groups[20].Value;
+                this.AggregateRatingCount = match.Groups[13].Value;
+                this.ContentRating = match.Groups[14].Value;
+                // this.FormatedDefinition = match.Groups[15].Value;
+                this.Resolution = match.Groups[16].Value;
+                this.Source = match.Groups[17].Value;
+                this.Is3D = match.Groups[18].Value;
+                this.IsHdr = match.Groups[29].Value;
             }
         }
 
