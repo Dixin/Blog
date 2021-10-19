@@ -8,7 +8,7 @@ namespace Examples.IO
 
     internal record VideoDirectoryInfo
     {
-        private static readonly Regex NameRegex = new(@"^([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?((\=[^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?)?\.([0-9]{4})\.([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?\[([0-9]\.[0-9]|\-)-([0-9\.KM]+|\-)\]\[(\-|R|PG|PG13|Unrated|NA|TVPG|NC17|GP|G|Approved|TVMA|Passed|TV14|TVG|X|E|MPG|M|AO|NotRated)\](\[(2160|1080|720)(p|y|h|x)\])?(\[3D\])?(\[HDR\])?$");
+        private static readonly Regex NameRegex = new(@"^([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?((\=[^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?)?\.([0-9\-]{4})\.([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?\[([0-9]\.[0-9]|\-)-([0-9\.KM]+|\-)\]\[(\-|R|PG|PG13|Unrated|NA|TVPG|NC17|GP|G|Approved|TVMA|Passed|TV14|TVG|X|E|MPG|M|AO|NotRated)\](\[(2160|1080|720)(p|y|h|x)\])?(\[3D\])?(\[HDR\])?$");
 
         internal VideoDirectoryInfo(string name) => this.Name = name;
 
@@ -33,6 +33,8 @@ namespace Examples.IO
         internal string TranslatedTitle2 { get; init; } = string.Empty;
 
         internal string TranslatedTitle3 { get; init; } = string.Empty;
+
+        internal string TranslatedTitle4 { get; init; } = string.Empty;
 
         internal string AggregateRating { get; init; } = string.Empty;
 
@@ -62,7 +64,7 @@ namespace Examples.IO
 
         internal string Name
         {
-            get => $"{this.DefaultTitle1}{this.DefaultTitle2}{this.DefaultTitle3}{this.OriginalTitle1}{this.OriginalTitle2}{this.OriginalTitle3}.{this.Year}.{this.TranslatedTitle1}{this.TranslatedTitle2}{this.TranslatedTitle3}[{this.AggregateRating}-{this.AggregateRatingCount}][{this.ContentRating}]{this.FormattedDefinition}{this.Is3D}{this.IsHdr}";
+            get => $"{this.DefaultTitle1}{this.DefaultTitle2}{this.DefaultTitle3}{this.OriginalTitle1}{this.OriginalTitle2}{this.OriginalTitle3}.{this.Year}.{this.TranslatedTitle1}{this.TranslatedTitle2}{this.TranslatedTitle3}{this.TranslatedTitle4}[{this.AggregateRating}-{this.AggregateRatingCount}][{this.ContentRating}]{this.FormattedDefinition}{this.Is3D}{this.IsHdr}";
 
             init
             {
@@ -87,14 +89,15 @@ namespace Examples.IO
                 this.TranslatedTitle1 = match.Groups[9].Value;
                 this.TranslatedTitle2 = match.Groups[10].Value;
                 this.TranslatedTitle3 = match.Groups[11].Value;
-                this.AggregateRating = match.Groups[12].Value;
-                this.AggregateRatingCount = match.Groups[13].Value;
-                this.ContentRating = match.Groups[14].Value;
-                // this.FormatedDefinition = match.Groups[15].Value;
-                this.Resolution = match.Groups[16].Value;
-                this.Source = match.Groups[17].Value;
-                this.Is3D = match.Groups[18].Value;
-                this.IsHdr = match.Groups[29].Value;
+                this.TranslatedTitle4 = match.Groups[12].Value;
+                this.AggregateRating = match.Groups[13].Value;
+                this.AggregateRatingCount = match.Groups[14].Value;
+                this.ContentRating = match.Groups[15].Value;
+                // this.FormatedDefinition = match.Groups[16].Value;
+                this.Resolution = match.Groups[17].Value;
+                this.Source = match.Groups[18].Value;
+                this.Is3D = match.Groups[19].Value;
+                this.IsHdr = match.Groups[20].Value;
             }
         }
 

@@ -1,6 +1,7 @@
 ﻿namespace Examples.Net
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using OpenQA.Selenium;
     using OpenQA.Selenium.Chrome;
@@ -31,7 +32,7 @@
 
         public static IWebDriver StartChrome(int index) => StartChrome(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(ChromeDriver)} {index:00}"));
 
-        public static IWebDriver StartEdge(string profile = "")
+        public static IWebDriver StartEdge(string profile = "", bool isLoadingImages = false)
         {
             if (string.IsNullOrWhiteSpace(profile))
             {
@@ -40,10 +41,16 @@
 
             EdgeOptions options = new();
             options.AddArguments($"user-data-dir={profile}");
+            if (!isLoadingImages)
+            {
+                options.AddUserProfilePreference("profile.managed_default_content_settings.images", 2);
+            }
+
             EdgeDriver webDriver = new(options);
             return webDriver;
         }
 
-        public static IWebDriver StartEdge(int index) => StartEdge(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(EdgeDriver)} {index:00}"));
+        public static IWebDriver StartEdge(int index, bool isLoadingImages = false) => 
+            StartEdge(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(EdgeDriver)} {index:00}"), isLoadingImages);
     }
 }

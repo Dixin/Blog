@@ -38,7 +38,7 @@
             @continue ??= _ => true;
             try
             {
-                using IWebDriver webDriver = WebDriverHelper.StartEdge(@$"D:\Temp\Chrome Profile {partitionIndex}");
+                using IWebDriver webDriver = WebDriverHelper.StartEdge(partitionIndex, true);
                 webDriver.Url = url;
                 new WebDriverWait(webDriver, WebDriverHelper.DefaultWait).Until(e => e.FindElement(By.Id("pager_links")));
                 webDriver.Url = url;

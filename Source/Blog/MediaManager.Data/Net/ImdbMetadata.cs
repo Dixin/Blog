@@ -10,9 +10,7 @@
 
     public record ImdbEntry(string Type)
     {
-        internal const string TypePropertyName = "@type";
-
-        [JsonPropertyName(TypePropertyName)]
+        [JsonPropertyName("@type")]
         public string Type { get; init; } = Type;
     }
 
@@ -22,16 +20,13 @@
     }
 
     public partial record ImdbMetadata(
-        string Context, string Type, string Url, string Name, string AlternateName, string Image, string[] Genre, string ContentRating,
-        ImdbEntity[] Actor, ImdbEntity[] Director, ImdbEntity[] Creator,
+        string Context, string Type, string Url, string Name, string AlternateName, string Image, string ContentRating,
+        string[] Genres, ImdbEntity[] Actor, ImdbEntity[] Director, ImdbEntity[] Creator,
         string Description, string DatePublished, string Keywords, ImdbAggregateRating? AggregateRating,
         string Duration, ImdbTrailer Trailer) : ImdbEntity(Type, Url, Name)
     {
         [JsonPropertyName("@context")]
         public string Context { get; init; } = Context;
-
-        [JsonConverter(typeof(StringOrArrayConverter))]
-        public string[] Genre { get; init; } = Genre;
 
         [JsonConverter(typeof(EntityOrArrayConverter))]
         public ImdbEntity[] Actor { get; init; } = Actor;
@@ -72,29 +67,21 @@
         {
             get
             {
-                if (this.AggregateRating is null)
+                switch (this.AggregateRating)
                 {
-                    return "0";
+                    case null:
+                        return "0";
+                    case { RatingCount: < 1_000 }:
+                        return this.AggregateRating.RatingCount.ToString();
+                    case { RatingCount: >= 1_000_000 }:
+                        string mega = Math.Round(this.AggregateRating.RatingCount / 1_000_000d, 1).ToString();
+                        return $"{(mega.EndsWithOrdinal(".0") ? mega.ReplaceOrdinal(".0", string.Empty) : mega)}M";
+                    case { RatingCount: >= 10_000 }:
+                        return $"{Math.Round(this.AggregateRating.RatingCount / 1000d)}K";
+                    default:
+                        string kilo = Math.Round(this.AggregateRating.RatingCount / 1_000d, 1).ToString();
+                        return $"{(kilo.EndsWithOrdinal(".0") ? kilo.ReplaceOrdinal(".0", string.Empty) : kilo)}K";
                 }
-
-                if (this.AggregateRating.RatingCount < 1_000)
-                {
-                    return this.AggregateRating.RatingCount.ToString();
-                }
-
-                if (this.AggregateRating.RatingCount >= 1_000_000)
-                {
-                    string mega = Math.Round(this.AggregateRating.RatingCount / 1_000_000d, 1).ToString();
-                    return $"{(mega.EndsWithOrdinal(".0") ? mega.ReplaceOrdinal(".0", string.Empty) : mega)}M";
-                }
-
-                if (this.AggregateRating.RatingCount >= 10_000)
-                {
-                    return $"{Math.Round(this.AggregateRating.RatingCount / 1000d)}K";
-                }
-
-                string kilo = Math.Round(this.AggregateRating.RatingCount / 1_000d, 1).ToString();
-                return $"{(kilo.EndsWithOrdinal(".0") ? kilo.ReplaceOrdinal(".0", string.Empty) : kilo)}K";
             }
         }
 
@@ -114,8 +101,9 @@
 
         public string ImdbRating => this.AggregateRating?.RatingValue ?? string.Empty;
 
-        [JsonIgnore]
-        public string[] Genres => this.Genre;
+        [JsonConverter(typeof(StringOrArrayConverter))]
+        [JsonPropertyName("genre")]
+        public string[] Genres { get; init; } = Genres;
     }
 
     // public partial record ImdbMetadata : IEquatable<ImdbMetadata>

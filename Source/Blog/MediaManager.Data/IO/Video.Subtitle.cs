@@ -140,12 +140,14 @@ namespace Examples.IO
         {
             Directory
                 .EnumerateFiles(mediaDirectory, $"{PathHelper.AllSearchPattern}{mediaExtension}", SearchOption.AllDirectories)
+                .ToArray()
                 .ForEach(video =>
                 {
                     string match = Regex.Match(Path.GetFileNameWithoutExtension(video), @"s[\d]+e[\d]+", RegexOptions.IgnoreCase).Value.ToLowerInvariant();
                     Directory
                         .EnumerateFiles(subtitleDirectory, $"{PathHelper.AllSearchPattern}{match}{PathHelper.AllSearchPattern}", SearchOption.TopDirectoryOnly)
                         .Where(file => !file.EndsWithIgnoreCase(mediaExtension))
+                        .ToArray()
                         .ForEach(subtitle =>
                         {
                             string language = (Path.GetFileNameWithoutExtension(subtitle) ?? throw new InvalidOperationException(subtitle)).Split(".").Last();

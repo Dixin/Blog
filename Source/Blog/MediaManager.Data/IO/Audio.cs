@@ -2,6 +2,7 @@
 {
     using System;
     using System.Diagnostics;
+    using System.Drawing;
     using System.IO;
     using System.Linq;
     using Examples.Common;
@@ -236,6 +237,20 @@
 
                     files.Except(audios).Except(attachments).Except(metadata).ForEach(log);
                 });
+        }
+
+        public static void SavePicture(string tagFile, string pictureFile)
+        {
+            using TagFile audioFile = TagFile.Create(tagFile);
+            IPicture? picture = audioFile.Tag.Pictures.FirstOrDefault();
+            if (picture is null)
+            {
+                throw new ArgumentOutOfRangeException(nameof(tagFile), tagFile, "The file contains no pictures.");
+            }
+
+            using MemoryStream ms = new(audioFile.Tag.Pictures[0].Data.Data);
+            using Image image = Image.FromStream(ms);
+            image.Save(pictureFile);
         }
     }
 }

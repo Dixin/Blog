@@ -21,8 +21,6 @@
     {
         private const string BaseUrl = "https://yts.mx";
 
-        private const int RetryCount = 3;
-
         private const int SaveFrequency = 100;
 
         private static readonly Action<string> Log = text => Trace.WriteLine(text);
@@ -39,7 +37,7 @@
             {
                 string url = $"{BaseUrl}/browse-movies?page={index}";
                 Log($"Start {url}");
-                string html = await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(url), RetryCount);
+                string html = await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(url));
                 CQ cq = new(html);
                 if (cq[".browse-movie-wrap"].IsEmpty())
                 {
@@ -74,7 +72,7 @@
                 Log($"End {url}");
             }
 
-            links.OrderBy(link=>link).ForEach(Log);
+            links.OrderBy(link => link).ForEach(Log);
 
             string finalJsonString = JsonSerializer.Serialize(allSummaries, new() { WriteIndented = true });
             await File.WriteAllTextAsync(jsonPath, finalJsonString);
@@ -109,7 +107,9 @@
                     using WebClient webClient = new WebClient().AddChromeHeaders();
                     try
                     {
-                        string html = await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(summary.Link), RetryCount);
+                        string html = await Retry.FixedIntervalAsync(
+                            async () => await webClient.DownloadStringTaskAsync(summary.Link),
+                            isTransient: exception => exception is not WebException { Response: HttpWebResponse { StatusCode: HttpStatusCode.NotFound } });
                         CQ cq = new(html);
                         CQ info = cq.Find("#movie-info");
                         YtsMetadata detail = new(

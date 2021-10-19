@@ -294,7 +294,7 @@ namespace Examples.IO
                             log($"Saved to {parentFile}.");
                         }
 
-                        string jsonFile = Path.Combine(movie, $"{imdbId}.{imdbMetadata.Year}.{string.Join(",", imdbMetadata.Regions.Take(5))}.{string.Join(",", imdbMetadata.Languages.Take(3))}{ImdbMetadataExtension}");
+                        string jsonFile = Path.Combine(movie, $"{imdbId}{SubtitleSeparator}{imdbMetadata.Year}{SubtitleSeparator}{string.Join(",", imdbMetadata.Regions?.Select(value => value.Replace(SubtitleSeparator, string.Empty)).Take(5) ?? Array.Empty<string>())}{SubtitleSeparator}{string.Join(",", imdbMetadata.Languages?.Take(3).Select(value => value.Replace(SubtitleSeparator, string.Empty)) ?? Array.Empty<string>())}{SubtitleSeparator}{string.Join(",", imdbMetadata.Genres?.Take(5).Select(value => value.Replace(SubtitleSeparator, string.Empty)) ?? Array.Empty<string>())}{ImdbMetadataExtension}");
                         log($"Merged {imdbUrl} and {releaseUrl} to {jsonFile}.");
                         string jsonContent = JsonSerializer.Serialize(
                             imdbMetadata,

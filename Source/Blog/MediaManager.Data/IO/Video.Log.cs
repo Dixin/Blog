@@ -217,6 +217,10 @@
                 });
         }
 
+        private static readonly string[] TitlesWithNoTranslation = { "Beyond", "IMAX", "Paul & Wing", "Paul & Steve", "Paul", "Wing", "Steve", "GEM", "Metro", "TVB" };
+
+        private static readonly char[] DirectorySpecialCharacters = "：@#(){}".ToCharArray();
+
         internal static void PrintDirectoriesWithErrors(string directory, int level = 2, bool isLoadingVideo = false, bool isNoAudioAllowed = false, bool isTV = false, Action<string>? log = null)
         {
             log ??= TraceLog;
@@ -260,13 +264,13 @@
                         log($"!Special character ·: {trimmedMovie}");
                     }
 
-                    "：@#(){}".ToCharArray().Where(trimmedMovie.Contains).ForEach(specialCharacter => log($"!Special character {specialCharacter}: {trimmedMovie}"));
-
+                    DirectorySpecialCharacters.Where(trimmedMovie.Contains).ForEach(specialCharacter => log($"!Special character {specialCharacter}: {trimmedMovie}"));
                     translations
                         .Where(translated => Regex.IsMatch(translated.Split("`").First(), "[0-9]+"))
                         .ForEach(translated => log($"!Translation has number {translated}: {movie}"));
                     translations
                         .Where(translation => !string.IsNullOrEmpty(translation) && translation.All(character => character is >= 'a' and <= 'z' or >= 'A' and <= 'Z' || char.IsPunctuation(character) || char.IsSeparator(character) || char.IsSymbol(character) || char.IsWhiteSpace(character)))
+                        .Where(title => !TitlesWithNoTranslation.ContainsIgnoreCase(title))
                         .ForEach(translated => log($"!Title not translated {translated}: {movie}"));
 
                     titles
@@ -655,15 +659,22 @@
                         return;
                     }
 
-                    string imdbId = Path.GetFileNameWithoutExtension(json).Split(".")[0];
+                    string imdbId = Path.GetFileNameWithoutExtension(json);
                     if (imdbId.EqualsOrdinal(NotExistingFlag))
                     {
                         log($"{NotExistingFlag} {movie}");
                         return;
                     }
 
+                    imdbId = imdbId.Split(SubtitleSeparator)[0];
+                    if (!Regex.IsMatch(imdbId, "tt[0-9]+"))
+                    {
+                        log($"Invalid IMDB id {imdbId}: {movie}");
+                        return;
+                    }
+
                     string[] videos = files.Where(file => file.IsCommonVideo()).ToArray();
-                    if (videos.All(video => VideoFileInfo.TryParse(video, out VideoFileInfo? parsed) && parsed.Definition.EqualsOrdinal(".2160p")))
+                    if (videos.All(video => VideoFileInfo.TryParse(video, out VideoFileInfo? parsed) && parsed.Is2160P))
                     {
                         return;
                     }
@@ -677,20 +688,30 @@
                     {
                         RarbgMetadata[] otherX265Metadata = availableX265Metadata
                             .Where(metadata => !ignore.Contains(metadata.Title))
-                            .Where(metadata => videos.All(video =>
+                            .Where(metadata => !videos.Any(video =>
                             {
                                 string videoName = Path.GetFileNameWithoutExtension(video);
                                 VideoFileInfo videoInfo = new(videoName);
-                                string title = metadata.Title;
-                                return !videoInfo.IsX
-                                    || !videoName.StartsWithIgnoreCase(metadata.Title)
-                                    && (!videoInfo.Origin.EqualsIgnoreCase(".BluRay") || !title.ContainsIgnoreCase(".WEBRip."))
-                                    && (videoInfo.Edition.ContainsIgnoreCase("DUBBED") || !title.ContainsIgnoreCase(".DUBBED."))
-                                    && (videoInfo.Edition.ContainsIgnoreCase("SUBBED") || !title.ContainsIgnoreCase(".SUBBED."))
-                                    && (videoInfo.Edition.IsNullOrWhiteSpace() || !(videoInfo with { Edition = string.Empty }).Name.StartsWithIgnoreCase(title))
-                                    && (!videoInfo.Edition.ContainsIgnoreCase(".Part") || !title.ContainsIgnoreCase(".Part"))
-                                    && (!VideoFileInfo.TryParse(title, out VideoFileInfo? metadataInfo) || !videoInfo.Origin.EqualsIgnoreCase(metadataInfo.Origin) || !videoInfo.Edition.IsNotNullOrWhiteSpace()
-                                        || !metadataInfo.Edition.Split(".", StringSplitOptions.RemoveEmptyEntries).All(edition => metadataInfo.Edition.Split(".", StringSplitOptions.RemoveEmptyEntries).ContainsIgnoreCase(edition)));
+                                string metadataTitle = metadata.Title;
+                                string[] videoEditions = videoInfo.Edition.Split(".", StringSplitOptions.RemoveEmptyEntries);
+                                // (Not any) Local is equal to or better than remote metadata.
+                                return videoInfo.IsX 
+                                    && (videoName.StartsWithIgnoreCase(metadata.Title) 
+                                        || videoInfo.Origin.ContainsIgnoreCase(".BluRay") && metadataTitle.ContainsIgnoreCase(".WEBRip.") 
+                                        || !videoInfo.Edition.ContainsIgnoreCase("PREVIEW") && metadataTitle.ContainsIgnoreCase(".PREVIEW.") 
+                                        || !videoInfo.Edition.ContainsIgnoreCase("DUBBED") && metadataTitle.ContainsIgnoreCase(".DUBBED.") 
+                                        || !videoInfo.Edition.ContainsIgnoreCase("SUBBED") && metadataTitle.ContainsIgnoreCase(".SUBBED.") 
+                                        || videoInfo.Edition.ContainsIgnoreCase("DC") && metadataTitle.ContainsIgnoreCase(".THEATRICAL.")
+                                        || videoInfo.Edition.ContainsIgnoreCase("EXTENDED") && !metadataTitle.ContainsIgnoreCase(".EXTENDED.")
+                                        || videoInfo.Edition.IsNotNullOrWhiteSpace() && (videoInfo with { Edition = string.Empty }).Name.StartsWithIgnoreCase(metadataTitle)
+                                        || videoInfo.Edition.ContainsIgnoreCase(".Part") && metadataTitle.ContainsIgnoreCase(".Part") 
+                                        || VideoFileInfo.TryParse(metadataTitle, out VideoFileInfo? metadataInfo) 
+                                            && videoInfo.Origin.EqualsIgnoreCase(metadataInfo.Origin) 
+                                            && videoInfo.Edition.IsNotNullOrWhiteSpace() 
+                                            && metadataInfo
+                                                .Edition
+                                                .Split(".", StringSplitOptions.RemoveEmptyEntries)
+                                                .All(metadataEdition => videoEditions.ContainsIgnoreCase(metadataEdition)));
                             }))
                             .ToArray();
                         if (otherX265Metadata.Any())
@@ -722,20 +743,30 @@
                     {
                         RarbgMetadata[] otherH264Metadata = availableH264Metadata
                             .Where(metadata => !ignore.Contains(metadata.Title))
-                            .Where(metadata => videos.All(video =>
+                            .Where(metadata => !videos.Any(video =>
                             {
                                 string videoName = Path.GetFileNameWithoutExtension(video);
                                 VideoFileInfo videoInfo = new(videoName);
-                                string title = metadata.Title;
-                                return !videoInfo.IsH
-                                    || !videoName.StartsWithIgnoreCase(metadata.Title)
-                                    && (!videoInfo.Origin.EqualsIgnoreCase(".BluRay") || !title.ContainsIgnoreCase(".WEBRip."))
-                                    && (videoInfo.Edition.ContainsIgnoreCase("DUBBED") || !title.ContainsIgnoreCase(".DUBBED."))
-                                    && (videoInfo.Edition.ContainsIgnoreCase("SUBBED") || !title.ContainsIgnoreCase(".SUBBED."))
-                                    && (videoInfo.Edition.IsNullOrWhiteSpace() || !(videoInfo with { Edition = string.Empty }).Name.StartsWithIgnoreCase(title))
-                                    && (!videoInfo.Edition.ContainsIgnoreCase(".Part") || !title.ContainsIgnoreCase(".Part"))
-                                    && (!VideoFileInfo.TryParse(title, out VideoFileInfo? metadataInfo) || !videoInfo.Origin.EqualsIgnoreCase(metadataInfo.Origin) || !videoInfo.Edition.IsNotNullOrWhiteSpace()
-                                        || !metadataInfo.Edition.Split(".", StringSplitOptions.RemoveEmptyEntries).All(edition => metadataInfo.Edition.Split(".", StringSplitOptions.RemoveEmptyEntries).ContainsIgnoreCase(edition)));
+                                string metadataTitle = metadata.Title;
+                                string[] videoEditions = videoInfo.Edition.Split(".", StringSplitOptions.RemoveEmptyEntries);
+                                // (Not any) Local is equal to or better than remote metadata.
+                                return videoInfo.IsH
+                                    && (videoName.StartsWithIgnoreCase(metadata.Title)
+                                        || videoInfo.Origin.ContainsIgnoreCase(".BluRay") && metadataTitle.ContainsIgnoreCase(".WEBRip.")
+                                        || !videoInfo.Edition.ContainsIgnoreCase("PREVIEW") && metadataTitle.ContainsIgnoreCase(".PREVIEW.")
+                                        || !videoInfo.Edition.ContainsIgnoreCase("DUBBED") && metadataTitle.ContainsIgnoreCase(".DUBBED.")
+                                        || !videoInfo.Edition.ContainsIgnoreCase("SUBBED") && metadataTitle.ContainsIgnoreCase(".SUBBED.")
+                                        || videoInfo.Edition.ContainsIgnoreCase("DC") && metadataTitle.ContainsIgnoreCase(".THEATRICAL.")
+                                        || videoInfo.Edition.ContainsIgnoreCase("EXTENDED") && !metadataTitle.ContainsIgnoreCase(".EXTENDED.")
+                                        || videoInfo.Edition.IsNotNullOrWhiteSpace() && (videoInfo with { Edition = string.Empty }).Name.StartsWithIgnoreCase(metadataTitle)
+                                        || videoInfo.Edition.ContainsIgnoreCase(".Part") && metadataTitle.ContainsIgnoreCase(".Part")
+                                        || VideoFileInfo.TryParse(metadataTitle, out VideoFileInfo? metadataInfo)
+                                            && videoInfo.Origin.EqualsIgnoreCase(metadataInfo.Origin)
+                                            && videoInfo.Edition.IsNotNullOrWhiteSpace()
+                                            && metadataInfo
+                                                .Edition
+                                                .Split(".", StringSplitOptions.RemoveEmptyEntries)
+                                                .All(metadataEdition => videoEditions.ContainsIgnoreCase(metadataEdition)));
                             }))
                             .ToArray();
                         if (otherH264Metadata.Any())
@@ -1214,7 +1245,7 @@
             Directory
                 .GetFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories)
                 .Select(file => (File: file, Metadata: Imdb.TryLoad(file, out ImdbMetadata? imdbMetadata) ? imdbMetadata : null))
-                .Where(metadata => metadata.Metadata?.Genre.ContainsIgnoreCase(genre) is true)
+                .Where(metadata => metadata.Metadata?.Genres.ContainsIgnoreCase(genre) is true)
                 .ForEach(metadata => log($"{Path.GetDirectoryName(metadata.File)}"));
         }
     }

@@ -282,7 +282,7 @@ namespace Examples.IO
                         Source = VideoDirectoryInfo.GetSource(videoFileInfos)
                     };
                     string additional = additionalInfo
-                        ? $"{{{string.Join(",", imdbMetadata?.Regions.Take(5) ?? Array.Empty<string>())};{string.Join(",", imdbMetadata?.Genre?.Take(3) ?? Array.Empty<string>())}}}"
+                        ? $"{{{string.Join(",", imdbMetadata?.Regions.Take(5) ?? Array.Empty<string>())};{string.Join(",", imdbMetadata?.Genres?.Take(3) ?? Array.Empty<string>())}}}"
                         : string.Empty;
                     string newMovie = $"{videoDirectoryInfo}{additional}";
                     string newDirectory = Path.Combine(Path.GetDirectoryName(movie) ?? throw new InvalidOperationException(movie), newMovie);
@@ -387,6 +387,7 @@ namespace Examples.IO
                         Directory.Move(movie, newMovie);
                     }
                     log(newMovie);
+                    log(string.Empty);
                 });
         }
 
