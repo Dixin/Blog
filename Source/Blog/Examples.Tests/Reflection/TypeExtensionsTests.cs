@@ -4,8 +4,6 @@
     using System.Collections.Generic;
     using System.Collections.ObjectModel;
 
-    using Examples.Reflection;
-
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]

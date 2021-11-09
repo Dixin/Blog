@@ -52,7 +52,7 @@
                 }
             }, 4);
 
-            string jsonString = JsonSerializer.Serialize(rareMetadata, new() { WriteIndented = true });
+            string jsonString = JsonSerializer.Serialize(rareMetadata, new JsonSerializerOptions() { WriteIndented = true });
             await File.WriteAllTextAsync(rareJsonPath, jsonString);
 
             Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;

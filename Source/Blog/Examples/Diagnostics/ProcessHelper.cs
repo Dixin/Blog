@@ -3,7 +3,6 @@ namespace Examples.Diagnostics
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Text;
     using Examples.Common;
 
     public static partial class ProcessHelper

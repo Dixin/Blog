@@ -8,7 +8,6 @@ namespace Examples.IO
     using System.Text.Json;
     using System.Text.RegularExpressions;
     using System.Threading.Tasks;
-    using System.Web;
     using System.Xml.Linq;
     using Examples.Common;
     using Examples.Net;

@@ -124,7 +124,7 @@
 
         private static void SaveJson(string jsonPath, IDictionary<string, RarbgMetadata[]> allSummaries)
         {
-            string jsonString = JsonSerializer.Serialize(allSummaries, new() { WriteIndented = true });
+            string jsonString = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
             lock (SaveJsonLock)
             {
                 string temp = $"{jsonPath}.txt";

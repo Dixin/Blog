@@ -375,7 +375,7 @@ namespace Examples.IO
                 .Where(imdbId => !existingMetadata[imdbId].Any())
                 .ForEach(imdbId => existingMetadata.Remove(imdbId));
 
-            string mergedVideoMetadataJson = JsonSerializer.Serialize(existingMetadata, new() { WriteIndented = true });
+            string mergedVideoMetadataJson = JsonSerializer.Serialize(existingMetadata, new JsonSerializerOptions() { WriteIndented = true });
             await File.WriteAllTextAsync(jsonPath, mergedVideoMetadataJson);
         }
 
@@ -398,7 +398,7 @@ namespace Examples.IO
                 .Distinct(metadata => metadata.ImdbId)
                 .ToDictionary(metadata => metadata.ImdbId, metadata => metadata.Value!);
 
-            string mergedVideoMetadataJson = JsonSerializer.Serialize(allVideoMetadata, new() { WriteIndented = true });
+            string mergedVideoMetadataJson = JsonSerializer.Serialize(allVideoMetadata, new JsonSerializerOptions() { WriteIndented = true });
             await File.WriteAllTextAsync(jsonPath, mergedVideoMetadataJson);
         }
 

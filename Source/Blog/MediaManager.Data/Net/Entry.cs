@@ -66,7 +66,7 @@
                 }
             }, 4);
 
-            string jsonString = JsonSerializer.Serialize(entryMetadata, new() { WriteIndented = true });
+            string jsonString = JsonSerializer.Serialize(entryMetadata, new JsonSerializerOptions() { WriteIndented = true });
             await File.WriteAllTextAsync(entryJsonPath, jsonString);
 
             Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;

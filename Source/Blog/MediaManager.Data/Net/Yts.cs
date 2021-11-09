@@ -65,7 +65,7 @@
 
                 if (index % SaveFrequency == 0)
                 {
-                    string jsonString = JsonSerializer.Serialize(allSummaries, new() { WriteIndented = true });
+                    string jsonString = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
                     await File.WriteAllTextAsync(jsonPath, jsonString);
                 }
 
@@ -74,7 +74,7 @@
 
             links.OrderBy(link => link).ForEach(Log);
 
-            string finalJsonString = JsonSerializer.Serialize(allSummaries, new() { WriteIndented = true });
+            string finalJsonString = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
             await File.WriteAllTextAsync(jsonPath, finalJsonString);
         }
 
@@ -151,7 +151,7 @@
 
         private static void SaveDetail(string detailJsonPath, IDictionary<string, YtsMetadata[]> allDetails)
         {
-            string jsonString = JsonSerializer.Serialize(allDetails, new() { WriteIndented = true });
+            string jsonString = JsonSerializer.Serialize(allDetails, new JsonSerializerOptions() { WriteIndented = true });
             lock (SaveJsonLock)
             {
                 File.WriteAllText(detailJsonPath, jsonString);
@@ -166,7 +166,7 @@
                 .Where(line => !"0".EqualsOrdinal(line.ElementAtOrDefault(4)))
                 .Select(line => line[0])
                 .ToArray();
-            string jsonString = JsonSerializer.Serialize(specialTitles, new() { WriteIndented = true });
+            string jsonString = JsonSerializer.Serialize(specialTitles, new JsonSerializerOptions() { WriteIndented = true });
             await File.WriteAllTextAsync(jsonPath, jsonString);
         }
 
@@ -201,7 +201,7 @@
                 })
                 .Where(imdbId => imdbId.IsNotNullOrWhiteSpace())
                 .ToArray();
-            string jsonString = JsonSerializer.Serialize(titles, new() { WriteIndented = true });
+            string jsonString = JsonSerializer.Serialize(titles, new JsonSerializerOptions() { WriteIndented = true });
             await File.WriteAllTextAsync(jsonPath, jsonString);
         }
     }

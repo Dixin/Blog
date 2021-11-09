@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MediaManager.Data.Database
+﻿namespace Examples.Database
 {
-    class Jellyfin
+    internal static class Jellyfin
     {
     }
 }

@@ -510,7 +510,7 @@
                     topFiles
                         .Except(imdbFiles)
                         .Except(cacheFiles)
-                        .Where(file => Regex.IsMatch(file, "(1080[^p]|720[^p])"))
+                        .Where(file => Regex.IsMatch(file, @"\.(1080[^p]|720[^p])"))
                         .ForEach(file => log($"Definition: {Path.Combine(movie, file)}"));
 
                     if (isLoadingVideo)

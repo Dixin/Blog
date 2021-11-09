@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28729.10
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Examples", "Examples\Examples.csproj", "{348FDE06-D850-4118-8796-E2AEE8DF6376}"
 EndProject
@@ -48,7 +48,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Examples.Windows.HtmlToWord
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaManager.Data", "MediaManager.Data\MediaManager.Data.csproj", "{BF0AA388-2DC1-431F-A89C-159DF60D917D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaManager", "MediaManager\MediaManager.csproj", "{0597AAFA-110F-4C42-AA2D-8081D5C5583F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaManager", "MediaManager\MediaManager.csproj", "{0597AAFA-110F-4C42-AA2D-8081D5C5583F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaManager.Service", "MediaManager.Service\MediaManager.Service.csproj", "{477C61CE-FC83-4031-8FE0-183AC7CD40F3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -204,12 +206,24 @@ Global
 		{0597AAFA-110F-4C42-AA2D-8081D5C5583F}.Release|x64.Build.0 = Release|Any CPU
 		{0597AAFA-110F-4C42-AA2D-8081D5C5583F}.Release|x86.ActiveCfg = Release|Any CPU
 		{0597AAFA-110F-4C42-AA2D-8081D5C5583F}.Release|x86.Build.0 = Release|Any CPU
+		{477C61CE-FC83-4031-8FE0-183AC7CD40F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{477C61CE-FC83-4031-8FE0-183AC7CD40F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{477C61CE-FC83-4031-8FE0-183AC7CD40F3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{477C61CE-FC83-4031-8FE0-183AC7CD40F3}.Debug|x64.Build.0 = Debug|Any CPU
+		{477C61CE-FC83-4031-8FE0-183AC7CD40F3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{477C61CE-FC83-4031-8FE0-183AC7CD40F3}.Debug|x86.Build.0 = Debug|Any CPU
+		{477C61CE-FC83-4031-8FE0-183AC7CD40F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{477C61CE-FC83-4031-8FE0-183AC7CD40F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{477C61CE-FC83-4031-8FE0-183AC7CD40F3}.Release|x64.ActiveCfg = Release|Any CPU
+		{477C61CE-FC83-4031-8FE0-183AC7CD40F3}.Release|x64.Build.0 = Release|Any CPU
+		{477C61CE-FC83-4031-8FE0-183AC7CD40F3}.Release|x86.ActiveCfg = Release|Any CPU
+		{477C61CE-FC83-4031-8FE0-183AC7CD40F3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {3970DD61-4F33-45E3-8BBD-B43AAF9C07F9}
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;iseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8
+		SolutionGuid = {3970DD61-4F33-45E3-8BBD-B43AAF9C07F9}
 	EndGlobalSection
 EndGlobal
