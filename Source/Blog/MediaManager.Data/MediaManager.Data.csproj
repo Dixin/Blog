@@ -4,9 +4,14 @@
         <TargetFramework>net6.0</TargetFramework>
         <RootNamespace>Examples</RootNamespace>
         <Nullable>enable</Nullable>
-    </PropertyGroup>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
 
     <ItemGroup>
+      <Compile Include="..\Tools\GlobalUsings.cs" Link="GlobalUsings.cs" />
+    </ItemGroup>
+
+	<ItemGroup>
         <PackageReference Include="CHTCHSConv" Version="1.0.0" />
         <PackageReference Include="CsQuery.NETStandard" Version="1.3.6.1" />
         <PackageReference Include="EnterpriseLibrary.TransientFaultHandling.Core" Version="2.0.0" />

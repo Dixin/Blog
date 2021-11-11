@@ -4,12 +4,17 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
+	<ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
-    <ItemGroup>
+	<ItemGroup>
     <None Remove="Css\github-markdown.css" />
     <None Remove="Css\style.css" />
   </ItemGroup>
+
+	<ItemGroup>
+	  <Compile Include="..\Tools\GlobalUsings.cs" Link="GlobalUsings.cs" />
+	</ItemGroup>
 
   <ItemGroup>
     <COMReference Include="Microsoft.Office.Word.dll">

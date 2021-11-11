@@ -4,9 +4,14 @@
         <TargetFramework>net6.0</TargetFramework>
         <RootNamespace>Examples</RootNamespace>
         <Nullable>enable</Nullable>
-    </PropertyGroup>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
 
     <ItemGroup>
+      <Compile Include="..\Tools\GlobalUsings.cs" Link="GlobalUsings.cs" />
+    </ItemGroup>
+
+	<ItemGroup>
         <PackageReference Include="FSharp.Core" Version="5.0.1" />
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
         <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />

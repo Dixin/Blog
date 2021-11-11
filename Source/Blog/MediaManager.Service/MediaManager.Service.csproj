@@ -3,7 +3,12 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <Nullable>enable</Nullable>
-        <CopyRefAssembliesToPublishDirectory>false</CopyRefAssembliesToPublishDirectory>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<CopyRefAssembliesToPublishDirectory>false</CopyRefAssembliesToPublishDirectory>
     </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Include="..\Tools\GlobalUsings.cs" Link="GlobalUsings.cs" />
+    </ItemGroup>
 
 </Project>

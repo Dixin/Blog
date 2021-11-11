@@ -4,9 +4,15 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <RootNamespace>Examples</RootNamespace>
+	<Nullable>enable</Nullable>
+	<ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Tools\GlobalUsings.cs" Link="GlobalUsings.cs" />
+  </ItemGroup>
+
+	<ItemGroup>
     <ProjectReference Include="..\Examples\Examples.csproj" />
   </ItemGroup>
 
