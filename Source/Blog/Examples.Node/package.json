@@ -1,0 +1,17 @@
+{
+  "name": "examples.node",
+  "version": "0.0.0",
+  "description": "Examples.Node",
+  "main": "app.js",
+  "author": {
+    "name": "Dixin",
+    "dependencies": {
+      "bluebird": "^3.5.2",
+      "cheerio": "^0.22.0",
+      "oauth": "^0.9.15",
+      "opn": "^5.4.0",
+      "tumblr.js": "^1.1.1",
+      "twit": "^2.2.11"
+    }
+  }
+}

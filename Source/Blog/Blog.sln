@@ -10,6 +10,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{F59804F9
 		Tools\CodeAnalysis.ruleset = Tools\CodeAnalysis.ruleset
 		Tools\CodeAnalysisDictionary.xml = Tools\CodeAnalysisDictionary.xml
 		Tools\CommonAssemblyInfo.cs = Tools\CommonAssemblyInfo.cs
+		Tools\GlobalUsings.cs = Tools\GlobalUsings.cs
 		Tools\Key.snk = Tools\Key.snk
 	EndProjectSection
 EndProject
@@ -223,7 +224,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;iseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8
 		SolutionGuid = {3970DD61-4F33-45E3-8BBD-B43AAF9C07F9}
+		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;iseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8
 	EndGlobalSection
 EndGlobal

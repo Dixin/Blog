@@ -1,16 +1,15 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore;
 
 await WebHost
     .CreateDefaultBuilder(args)
-    .Configure(app => app.Run(async context =>
+    .Configure(Configure)
+    .Build()
+    .RunAsync();
+
+static void Configure(WebHostBuilderContext hostContext, IApplicationBuilder app) =>
+    app.Run(async httpContext =>
     {
-        string requestPath = context.Request.Path.Value?.TrimStart('/').TrimEnd('/') ?? string.Empty;
+        string requestPath = httpContext.Request.Path.Value?.TrimStart('/').TrimEnd('/') ?? string.Empty;
         string localRelativePath = requestPath.Replace('/', '\\');
         const string LocalRoot = @"D:\Files\Library";
         string localPath = Path.Combine(LocalRoot, localRelativePath);
@@ -21,14 +20,12 @@ await WebHost
 
         string[] requestSegments = localRelativePath.Split('\\', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         string parentHtml = requestSegments.Length > 0 ? $@"<li>⬆️<a href=""/{string.Join('/', requestSegments.SkipLast(1))}"">..</a></li>" : string.Empty;
-        string directoriesHtml = string.Join(
-            Environment.NewLine,
+        string directoriesHtml = string.Join(Environment.NewLine,
             new DirectoryInfo(localPath)
                 .GetDirectories()
                 .OrderBy(item => item.Name)
                 .Select(directory => $@"<li>{(directory.Attributes.HasFlag(FileAttributes.Hidden) ? "🗀" : "📁")}<a href=""{(string.IsNullOrWhiteSpace(requestPath) ? "/" : "/" + requestPath + "/")}{directory.Name}"">{directory.Name}</a></li>"));
-        string filesHtml = string.Join(
-            Environment.NewLine,
+        string filesHtml = string.Join(Environment.NewLine,
             new DirectoryInfo(localPath)
                 .GetFiles()
                 .OrderBy(item => item.Name)
@@ -50,7 +47,5 @@ await WebHost
         </ul>
     </body>
 </html>";
-        await context.Response.WriteAsync(html);
-    }))
-    .Build()
-    .RunAsync();
+        await httpContext.Response.WriteAsync(html);
+    });

@@ -1,31 +1,29 @@
 ﻿#nullable enable
-namespace Examples.Reflection
+namespace Examples.Reflection;
+
+using System.Reflection;
+
+using Examples.Common;
+
+public static class FieldInfoExtensions
 {
-    using System.Diagnostics.CodeAnalysis;
-    using System.Reflection;
+    #region Methods
 
-    using Examples.Common;
-
-    public static class FieldInfoExtensions
+    [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", MessageId = "1#")]
+    public static void SetValue<T>(this FieldInfo field, ref T obj, object? value)
     {
-        #region Methods
+        field.NotNull(nameof(field));
 
-        [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", MessageId = "1#")]
-        public static void SetValue<T>(this FieldInfo field, ref T obj, object? value)
+        if (typeof(T).IsValueType)
         {
-            field.NotNull(nameof(field));
-
-            if (typeof(T).IsValueType)
-            {
-                // Cannot use SetValue, which boxes obj.
-                field.SetValueDirect(__makeref(obj), value);
-            }
-            else
-            {
-                field.SetValue(obj, value);
-            }
+            // Cannot use SetValue, which boxes obj.
+            field.SetValueDirect(__makeref(obj), value);
         }
-
-        #endregion
+        else
+        {
+            field.SetValue(obj, value);
+        }
     }
+
+    #endregion
 }

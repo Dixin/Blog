@@ -1,37 +1,33 @@
-﻿namespace Examples.Threading
+﻿namespace Examples.Threading;
+
+public class SpinlockSlim
 {
-    using System;
-    using System.Threading;
+    private const int Locked = 1;
 
-    public class SpinlockSlim
+    private const int Unlocked = 0;
+
+    private int isLocking = Unlocked;
+
+    public void Enter()
     {
-        private const int Locked = 1;
-
-        private const int Unlocked = 0;
-
-        private int isLocking = Unlocked;
-
-        public void Enter()
+        while(Interlocked.Exchange(ref this.isLocking, Locked) == Locked)
         {
-            while(Interlocked.Exchange(ref this.isLocking, Locked) == Locked)
-            {
-            }
         }
+    }
 
-        public void Exit() => Interlocked.Exchange(ref this.isLocking, Unlocked);
+    public void Exit() => Interlocked.Exchange(ref this.isLocking, Unlocked);
 
-        public void Lock(Action action)
+    public void Lock(Action action)
+    {
+        this.Enter();
+
+        try
         {
-            this.Enter();
-
-            try
-            {
-                action();
-            }
-            finally
-            {
-                this.Exit();
-            }
+            action();
+        }
+        finally
+        {
+            this.Exit();
         }
     }
 }

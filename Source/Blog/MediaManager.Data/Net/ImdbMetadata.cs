@@ -1,187 +1,181 @@
-﻿namespace Examples.Net
+﻿namespace Examples.Net;
+
+using System.Text.Json.Serialization;
+using Examples.Common;
+
+public record ImdbEntry(string Type)
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Linq;
-    using System.Text.Json;
-    using System.Text.Json.Serialization;
-    using Examples.Common;
+    [JsonPropertyName("@type")]
+    public string Type { get; init; } = Type;
+}
 
-    public record ImdbEntry(string Type)
+public record ImdbEntity(string Type, string Url, string Name) : ImdbEntry(Type)
+{
+    public string Name { get; set; } = Name;
+}
+
+public partial record ImdbMetadata(
+    string Context, string Type, string Url, string Name, string AlternateName, string Image, string ContentRating,
+    string[] Genres, ImdbEntity[] Actor, ImdbEntity[] Director, ImdbEntity[] Creator,
+    string Description, string DatePublished, string Keywords, ImdbAggregateRating? AggregateRating,
+    string Duration, ImdbTrailer Trailer) : ImdbEntity(Type, Url, Name)
+{
+    [JsonPropertyName("@context")]
+    public string Context { get; init; } = Context;
+
+    [JsonConverter(typeof(EntityOrArrayConverter))]
+    public ImdbEntity[] Actor { get; init; } = Actor;
+
+    [JsonConverter(typeof(EntityOrArrayConverter))]
+    public ImdbEntity[] Director { get; init; } = Director;
+
+    [JsonConverter(typeof(EntityOrArrayConverter))]
+    public ImdbEntity[] Creator { get; init; } = Creator;
+
+    public string OriginalTitle { get; set; } = string.Empty;
+
+    public string Year { get; set; } = string.Empty;
+
+    public string[] Regions { get; set; } = Array.Empty<string>();
+
+    public string[] Languages { get; set; } = Array.Empty<string>();
+
+    public Dictionary<string, string[]> Titles { get; set; } = new();
+
+    public ImdbMetadata? Parent { get; set; }
+
+    [JsonIgnore]
+    internal string YearOfLatestRelease => DateTime.Parse(this.DatePublished).Year.ToString(CultureInfo.InvariantCulture);
+
+    [JsonIgnore]
+    internal string FormattedAggregateRating
     {
-        [JsonPropertyName("@type")]
-        public string Type { get; init; } = Type;
-    }
-
-    public record ImdbEntity(string Type, string Url, string Name) : ImdbEntry(Type)
-    {
-        public string Name { get; set; } = Name;
-    }
-
-    public partial record ImdbMetadata(
-        string Context, string Type, string Url, string Name, string AlternateName, string Image, string ContentRating,
-        string[] Genres, ImdbEntity[] Actor, ImdbEntity[] Director, ImdbEntity[] Creator,
-        string Description, string DatePublished, string Keywords, ImdbAggregateRating? AggregateRating,
-        string Duration, ImdbTrailer Trailer) : ImdbEntity(Type, Url, Name)
-    {
-        [JsonPropertyName("@context")]
-        public string Context { get; init; } = Context;
-
-        [JsonConverter(typeof(EntityOrArrayConverter))]
-        public ImdbEntity[] Actor { get; init; } = Actor;
-
-        [JsonConverter(typeof(EntityOrArrayConverter))]
-        public ImdbEntity[] Director { get; init; } = Director;
-
-        [JsonConverter(typeof(EntityOrArrayConverter))]
-        public ImdbEntity[] Creator { get; init; } = Creator;
-
-        public string OriginalTitle { get; set; } = string.Empty;
-
-        public string Year { get; set; } = string.Empty;
-
-        public string[] Regions { get; set; } = Array.Empty<string>();
-
-        public string[] Languages { get; set; } = Array.Empty<string>();
-
-        public Dictionary<string, string[]> Titles { get; set; } = new();
-
-        public ImdbMetadata? Parent { get; set; }
-
-        [JsonIgnore]
-        internal string YearOfLatestRelease => DateTime.Parse(this.DatePublished).Year.ToString(CultureInfo.InvariantCulture);
-
-        [JsonIgnore]
-        internal string FormattedAggregateRating
+        get
         {
-            get
+            string? rating = this.AggregateRating?.RatingValue;
+            return rating.IsNullOrWhiteSpace() ? "0.0" : rating;
+        }
+    }
+
+    [JsonIgnore]
+    internal string FormattedAggregateRatingCount
+    {
+        get
+        {
+            switch (this.AggregateRating)
             {
-                string? rating = this.AggregateRating?.RatingValue;
-                return rating.IsNullOrWhiteSpace() ? "0.0" : rating;
+                case null:
+                    return "0";
+                case { RatingCount: < 1_000 }:
+                    return this.AggregateRating.RatingCount.ToString();
+                case { RatingCount: >= 1_000_000 }:
+                    string mega = Math.Round(this.AggregateRating.RatingCount / 1_000_000d, 1).ToString();
+                    return $"{(mega.EndsWithOrdinal(".0") ? mega.ReplaceOrdinal(".0", string.Empty) : mega)}M";
+                case { RatingCount: >= 10_000 }:
+                    return $"{Math.Round(this.AggregateRating.RatingCount / 1000d)}K";
+                default:
+                    string kilo = Math.Round(this.AggregateRating.RatingCount / 1_000d, 1).ToString();
+                    return $"{(kilo.EndsWithOrdinal(".0") ? kilo.ReplaceOrdinal(".0", string.Empty) : kilo)}K";
             }
         }
+    }
 
-        [JsonIgnore]
-        internal string FormattedAggregateRatingCount
+    [JsonIgnore]
+    internal string FormattedContentRating => this.ContentRating.IsNullOrWhiteSpace()
+        ? "NA"
+        : this.ContentRating.Replace("-", string.Empty).Replace(" ", string.Empty).Replace("/", string.Empty).Replace(":", string.Empty);
+}
+
+public partial record ImdbMetadata : IMetadata
+{
+    public string Link => $"https://www.imdb.com{this.Url}".AppendIfMissing("/");
+
+    public string Title { get; set; } = string.Empty;
+
+    public string ImdbId => this.Url.Split("/", StringSplitOptions.RemoveEmptyEntries).Last();
+
+    public string ImdbRating => this.AggregateRating?.RatingValue ?? string.Empty;
+
+    [JsonConverter(typeof(StringOrArrayConverter))]
+    [JsonPropertyName("genre")]
+    public string[] Genres { get; init; } = Genres;
+}
+
+// public partial record ImdbMetadata : IEquatable<ImdbMetadata>
+// {
+//    public bool Equals(ImdbMetadata? other) =>
+//        other is not null && (ReferenceEquals(this, other) || this.Id.EqualsIgnoreCase(other.Id));
+
+//    public override bool Equals(object? obj) =>
+//        obj is not null && (ReferenceEquals(this, obj) || obj is ImdbMetadata other && this.Equals(other));
+
+//    public override int GetHashCode() => this.Id.GetHashCode();
+// }
+
+public record ImdbAggregateRating(string Type, int RatingCount, string BestRating, string WorstRating, string RatingValue) : ImdbEntry(Type)
+{
+    [JsonConverter(typeof(StringOrDoubleConverter))]
+    public string BestRating { get; init; } = BestRating;
+
+    [JsonConverter(typeof(StringOrDoubleConverter))]
+    public string WorstRating { get; init; } = WorstRating;
+
+    [JsonConverter(typeof(StringOrDoubleConverter))]
+    public string RatingValue { get; init; } = RatingValue;
+}
+
+public record ImdbTrailer(string Type, string Name, string EmbedUrl, string ThumbnailUrl, string Description, DateTime UploadDate) : ImdbEntry(Type);
+
+public class StringOrArrayConverter : JsonConverter<string[]>
+{
+    public override string[] Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
+        reader.TokenType switch
         {
-            get
-            {
-                switch (this.AggregateRating)
-                {
-                    case null:
-                        return "0";
-                    case { RatingCount: < 1_000 }:
-                        return this.AggregateRating.RatingCount.ToString();
-                    case { RatingCount: >= 1_000_000 }:
-                        string mega = Math.Round(this.AggregateRating.RatingCount / 1_000_000d, 1).ToString();
-                        return $"{(mega.EndsWithOrdinal(".0") ? mega.ReplaceOrdinal(".0", string.Empty) : mega)}M";
-                    case { RatingCount: >= 10_000 }:
-                        return $"{Math.Round(this.AggregateRating.RatingCount / 1000d)}K";
-                    default:
-                        string kilo = Math.Round(this.AggregateRating.RatingCount / 1_000d, 1).ToString();
-                        return $"{(kilo.EndsWithOrdinal(".0") ? kilo.ReplaceOrdinal(".0", string.Empty) : kilo)}K";
-                }
-            }
-        }
+            JsonTokenType.String => new[] { reader.GetString() ?? string.Empty },
+            JsonTokenType.StartArray => JsonSerializer.Deserialize<string[]>(ref reader, options) ?? Array.Empty<string>(),
+            _ => throw new InvalidOperationException($"The value should be either string or array. It is actually {reader.TokenType}.")
+        };
 
-        [JsonIgnore]
-        internal string FormattedContentRating => this.ContentRating.IsNullOrWhiteSpace()
-            ? "NA"
-            : this.ContentRating.Replace("-", string.Empty).Replace(" ", string.Empty).Replace("/", string.Empty).Replace(":", string.Empty);
-    }
-
-    public partial record ImdbMetadata : IMetadata
+    public override void Write(Utf8JsonWriter writer, string[] value, JsonSerializerOptions options)
     {
-        public string Link => $"https://www.imdb.com{this.Url}".AppendIfMissing("/");
-
-        public string Title { get; set; } = string.Empty;
-
-        public string ImdbId => this.Url.Split("/", StringSplitOptions.RemoveEmptyEntries).Last();
-
-        public string ImdbRating => this.AggregateRating?.RatingValue ?? string.Empty;
-
-        [JsonConverter(typeof(StringOrArrayConverter))]
-        [JsonPropertyName("genre")]
-        public string[] Genres { get; init; } = Genres;
+        // if (value.Length == 1)
+        // {
+        //    writer.WriteStringValue(value[0]);
+        // }
+        // else
+        // {
+        //    writer.WriteStartArray(); // Do not call writer.WriteStartArray(propertyName).
+        //    value.ForEach(writer.WriteStringValue);
+        //    writer.WriteEndArray();
+        // }
+        JsonSerializer.Serialize(writer, value, options);
     }
+}
 
-    // public partial record ImdbMetadata : IEquatable<ImdbMetadata>
-    // {
-    //    public bool Equals(ImdbMetadata? other) =>
-    //        other is not null && (ReferenceEquals(this, other) || this.Id.EqualsIgnoreCase(other.Id));
-
-    //    public override bool Equals(object? obj) =>
-    //        obj is not null && (ReferenceEquals(this, obj) || obj is ImdbMetadata other && this.Equals(other));
-
-    //    public override int GetHashCode() => this.Id.GetHashCode();
-    // }
-
-    public record ImdbAggregateRating(string Type, int RatingCount, string BestRating, string WorstRating, string RatingValue) : ImdbEntry(Type)
-    {
-        [JsonConverter(typeof(StringOrDoubleConverter))]
-        public string BestRating { get; init; } = BestRating;
-
-        [JsonConverter(typeof(StringOrDoubleConverter))]
-        public string WorstRating { get; init; } = WorstRating;
-
-        [JsonConverter(typeof(StringOrDoubleConverter))]
-        public string RatingValue { get; init; } = RatingValue;
-    }
-
-    public record ImdbTrailer(string Type, string Name, string EmbedUrl, string ThumbnailUrl, string Description, DateTime UploadDate) : ImdbEntry(Type);
-
-    public class StringOrArrayConverter : JsonConverter<string[]>
-    {
-        public override string[] Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
-            reader.TokenType switch
-            {
-                JsonTokenType.String => new[] { reader.GetString() ?? string.Empty },
-                JsonTokenType.StartArray => JsonSerializer.Deserialize<string[]>(ref reader, options) ?? Array.Empty<string>(),
-                _ => throw new InvalidOperationException($"The value should be either string or array. It is actually {reader.TokenType}.")
-            };
-
-        public override void Write(Utf8JsonWriter writer, string[] value, JsonSerializerOptions options)
+public class EntityOrArrayConverter : JsonConverter<ImdbEntity[]>
+{
+    public override ImdbEntity[] Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
+        reader.TokenType switch
         {
-            // if (value.Length == 1)
-            // {
-            //    writer.WriteStringValue(value[0]);
-            // }
-            // else
-            // {
-            //    writer.WriteStartArray(); // Do not call writer.WriteStartArray(propertyName).
-            //    value.ForEach(writer.WriteStringValue);
-            //    writer.WriteEndArray();
-            // }
-            JsonSerializer.Serialize(writer, value, options);
-        }
-    }
+            JsonTokenType.StartObject => new[] { JsonSerializer.Deserialize<ImdbEntity>(ref reader, options)! },
+            JsonTokenType.StartArray => JsonSerializer.Deserialize<ImdbEntity[]>(ref reader, options) ?? Array.Empty<ImdbEntity>(),
+            _ => throw new InvalidOperationException($"The value should be either string or array. It is actually {reader.TokenType}.")
+        };
 
-    public class EntityOrArrayConverter : JsonConverter<ImdbEntity[]>
-    {
-        public override ImdbEntity[] Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
-            reader.TokenType switch
-            {
-                JsonTokenType.StartObject => new[] { JsonSerializer.Deserialize<ImdbEntity>(ref reader, options)! },
-                JsonTokenType.StartArray => JsonSerializer.Deserialize<ImdbEntity[]>(ref reader, options) ?? Array.Empty<ImdbEntity>(),
-                _ => throw new InvalidOperationException($"The value should be either string or array. It is actually {reader.TokenType}.")
-            };
+    public override void Write(Utf8JsonWriter writer, ImdbEntity[] value, JsonSerializerOptions options) =>
+        JsonSerializer.Serialize(writer, value, options);
+}
 
-        public override void Write(Utf8JsonWriter writer, ImdbEntity[] value, JsonSerializerOptions options) =>
-            JsonSerializer.Serialize(writer, value, options);
-    }
+public class StringOrDoubleConverter : JsonConverter<string>
+{
+    public override string Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
+        reader.TokenType switch
+        {
+            JsonTokenType.String => reader.GetString() ?? string.Empty,
+            JsonTokenType.Number => JsonSerializer.Deserialize<double>(ref reader, options).ToString("0.0", CultureInfo.InvariantCulture),
+            _ => throw new InvalidOperationException($"The value should be either string or number. It is actually {reader.TokenType}.")
+        };
 
-    public class StringOrDoubleConverter : JsonConverter<string>
-    {
-        public override string Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
-            reader.TokenType switch
-            {
-                JsonTokenType.String => reader.GetString() ?? string.Empty,
-                JsonTokenType.Number => JsonSerializer.Deserialize<double>(ref reader, options).ToString("0.0", CultureInfo.InvariantCulture),
-                _ => throw new InvalidOperationException($"The value should be either string or number. It is actually {reader.TokenType}.")
-            };
-
-        public override void Write(Utf8JsonWriter writer, string value, JsonSerializerOptions options) =>
-            writer.WriteStringValue(value);
-    }
+    public override void Write(Utf8JsonWriter writer, string value, JsonSerializerOptions options) =>
+        writer.WriteStringValue(value);
 }

@@ -1,20 +1,17 @@
-﻿namespace Examples.Tests.Windows
+﻿namespace Examples.Tests.Windows;
+
+using Examples.Windows;
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+[TestClass]
+public class ClipboardHelperTests
 {
-    using System;
-
-    using Examples.Windows;
-
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-    [TestClass]
-    public class ClipboardHelperTests
+    [TestMethod]
+    public void TextTest()
     {
-        [TestMethod]
-        public void TextTest()
-        {
-            string guid = Guid.NewGuid().ToString();
-            ClipboardHelper.SetText(guid);
-            Assert.AreEqual(guid, ClipboardHelper.GetText());
-        }
+        string guid = Guid.NewGuid().ToString();
+        ClipboardHelper.SetText(guid);
+        Assert.AreEqual(guid, ClipboardHelper.GetText());
     }
 }

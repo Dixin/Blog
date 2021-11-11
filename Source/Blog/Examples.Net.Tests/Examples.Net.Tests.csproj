@@ -75,6 +75,9 @@
     <Compile Include="..\Examples\Reflection\TypeExtensions.cs">
       <Link>Dynamic\TypeExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\Tools\GlobalUsings.cs">
+      <Link>GlobalUsings.cs</Link>
+    </Compile>
     <Compile Include="Dynamic\DynamicWrapperTest.cs" />
     <Compile Include="Nullable\AllowNullAttribute.cs" />
     <Compile Include="Nullable\DisallowNullAttribute.cs" />

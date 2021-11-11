@@ -1,81 +1,74 @@
-﻿namespace Examples.Common
+﻿namespace Examples.Common;
+
+using System.Reflection;
+
+public static class Argument
 {
-    using System;
-    using System.Collections.Generic;
+    public static void NotNull<T>(
 #if NETSTANDARD2_1
-    using System.Diagnostics.CodeAnalysis;
+            [NotNull]
 #endif
-    using System.Linq;
-    using System.Reflection;
-
-    public static class Argument
+        [ValidatedNotNull]this T value, string name)
     {
-        public static void NotNull<T>(
+        if (value == null)
+        {
+            throw new ArgumentNullException(name);
+        }
+    }
+
+    public static void NotNullOrWhiteSpace(
 #if NETSTANDARD2_1
             [NotNull]
 #endif
-            [ValidatedNotNull]this T value, string name)
+        [ValidatedNotNull]this string value, string name)
+    {
+        if (string.IsNullOrWhiteSpace(value))
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(name);
-            }
+            throw new ArgumentNullException(name);
         }
+    }
 
-        public static void NotNullOrWhiteSpace(
+    public static void NotNullOrEmpty(
 #if NETSTANDARD2_1
             [NotNull]
 #endif
-            [ValidatedNotNull]this string value, string name)
+        [ValidatedNotNull]this string value, string name)
+    {
+        if (string.IsNullOrEmpty(value))
         {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                throw new ArgumentNullException(name);
-            }
+            throw new ArgumentNullException(name);
         }
+    }
 
-        public static void NotNullOrEmpty(
+    public static void NotNullOrEmpty<T>(
 #if NETSTANDARD2_1
             [NotNull]
 #endif
-            [ValidatedNotNull]this string value, string name)
+        [ValidatedNotNull]this IEnumerable<T> value, string name)
+    {
+        if (value == null)
         {
-            if (string.IsNullOrEmpty(value))
-            {
-                throw new ArgumentNullException(name);
-            }
+            throw new ArgumentNullException(name);
         }
 
-        public static void NotNullOrEmpty<T>(
-#if NETSTANDARD2_1
-            [NotNull]
-#endif
-            [ValidatedNotNull]this IEnumerable<T> value, string name)
+        if (!value.Any())
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException(name);
-            }
-
-            if (!value.Any())
-            {
-                throw new ArgumentOutOfRangeException(name);
-            }
+            throw new ArgumentOutOfRangeException(name);
         }
+    }
 
-        public static void NotNull<T>(Func<T> value)
+    public static void NotNull<T>(Func<T> value)
+    {
+        if (value() == null)
         {
-            if (value() == null)
-            {
-                throw new ArgumentNullException(GetName(value));
-            }
+            throw new ArgumentNullException(GetName(value));
         }
+    }
 
-        private static string GetName<TValue>(Func<TValue> func)
-        {
-            // http://weblogs.asp.net/fredriknormen/how-to-validate-a-method-s-arguments
-            FieldInfo[] fields = (func.Target ?? throw new InvalidOperationException("func must be in the from of () => arg.")).GetType().GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
-            return fields.Single().Name;
-        }
+    private static string GetName<TValue>(Func<TValue> func)
+    {
+        // http://weblogs.asp.net/fredriknormen/how-to-validate-a-method-s-arguments
+        FieldInfo[] fields = (func.Target ?? throw new InvalidOperationException("func must be in the from of () => arg.")).GetType().GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+        return fields.Single().Name;
     }
 }

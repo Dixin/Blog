@@ -1,42 +1,39 @@
-﻿namespace Examples.Common
+﻿namespace Examples.Common;
+
+internal sealed class AppDomain<TMarshalByRefObject> : IDisposable
+    where TMarshalByRefObject : MarshalByRefObject
 {
-    using System;
+    private AppDomain? appDomain;
 
-    internal sealed class AppDomain<TMarshalByRefObject> : IDisposable
-        where TMarshalByRefObject : MarshalByRefObject
+    internal AppDomain(params object[] args)
     {
-        private AppDomain? appDomain;
+        Type type = typeof(TMarshalByRefObject);
+        this.appDomain = AppDomain.CreateDomain($"{nameof(AppDomain<TMarshalByRefObject>)} {Guid.NewGuid()}");
+        this.MarshalByRefObject = (TMarshalByRefObject?)this.appDomain.CreateInstanceAndUnwrap(
+            type.Assembly.FullName ?? throw new ArgumentException(nameof(TMarshalByRefObject)), 
+            type.FullName ?? throw new ArgumentException(nameof(TMarshalByRefObject)), 
+            false, 
+            default, 
+            null, 
+            args, 
+            null, 
+            null);
+    }
 
-        internal AppDomain(params object[] args)
+    internal TMarshalByRefObject? MarshalByRefObject { get; private set; }
+
+    public void Dispose()
+    {
+        if (this.MarshalByRefObject is IDisposable disposable)
         {
-            Type type = typeof(TMarshalByRefObject);
-            this.appDomain = AppDomain.CreateDomain($"{nameof(AppDomain<TMarshalByRefObject>)} {Guid.NewGuid()}");
-            this.MarshalByRefObject = (TMarshalByRefObject?)this.appDomain.CreateInstanceAndUnwrap(
-                type.Assembly.FullName ?? throw new ArgumentException(nameof(TMarshalByRefObject)), 
-                type.FullName ?? throw new ArgumentException(nameof(TMarshalByRefObject)), 
-                false, 
-                default, 
-                null, 
-                args, 
-                null, 
-                null);
+            disposable?.Dispose();
+            this.MarshalByRefObject = null;
         }
 
-        internal TMarshalByRefObject? MarshalByRefObject { get; private set; }
-
-        public void Dispose()
+        if (this.appDomain is not null)
         {
-            if (this.MarshalByRefObject is IDisposable disposable)
-            {
-                disposable?.Dispose();
-                this.MarshalByRefObject = null;
-            }
-
-            if (this.appDomain is not null)
-            {
-                AppDomain.Unload(this.appDomain);
-                this.appDomain = null;
-            }
+            AppDomain.Unload(this.appDomain);
+            this.appDomain = null;
         }
     }
 }

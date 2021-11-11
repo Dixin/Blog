@@ -1,55 +1,51 @@
-﻿namespace Examples.Threading
+﻿namespace Examples.Threading;
+
+using Examples.Common;
+
+public sealed class SingleInstance : IDisposable
 {
-    using System;
-    using System.Threading;
+    private readonly Mutex mutex;
 
-    using Examples.Common;
-
-    public sealed class SingleInstance : IDisposable
+    public SingleInstance(string mutexName)
     {
-        private readonly Mutex mutex;
+        mutexName.NotNullOrEmpty(nameof(mutexName));
 
-        public SingleInstance(string mutexName)
+        this.mutex = new(true, mutexName);
+        this.IsSingle = this.mutex.WaitOne(TimeSpan.Zero, true);
+    }
+
+    public bool IsSingle { get; }
+
+    public void Dispose()
+    {
+        if (this.IsSingle)
         {
-            mutexName.NotNullOrEmpty(nameof(mutexName));
-
-            this.mutex = new(true, mutexName);
-            this.IsSingle = this.mutex.WaitOne(TimeSpan.Zero, true);
+            this.mutex.ReleaseMutex();
         }
 
-        public bool IsSingle { get; }
+        this.mutex.Dispose();
+    }
 
-        public void Dispose()
+    public static bool Detect(string mutexName, Action single, Action? multiple = null)
+    {
+        mutexName.NotNullOrEmpty(nameof(mutexName));
+        single.NotNull(nameof(single));
+
+        using Mutex mutex = new(true, mutexName);
+        if (mutex.WaitOne(TimeSpan.Zero, true))
         {
-            if (this.IsSingle)
+            try
             {
-                this.mutex.ReleaseMutex();
+                single();
+                return true;
             }
-
-            this.mutex.Dispose();
-        }
-
-        public static bool Detect(string mutexName, Action single, Action? multiple = null)
-        {
-            mutexName.NotNullOrEmpty(nameof(mutexName));
-            single.NotNull(nameof(single));
-
-            using Mutex mutex = new(true, mutexName);
-            if (mutex.WaitOne(TimeSpan.Zero, true))
+            finally
             {
-                try
-                {
-                    single();
-                    return true;
-                }
-                finally
-                {
-                    mutex.ReleaseMutex();
-                }
+                mutex.ReleaseMutex();
             }
-
-            multiple?.Invoke();
-            return false;
         }
+
+        multiple?.Invoke();
+        return false;
     }
 }

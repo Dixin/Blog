@@ -1,27 +1,22 @@
-﻿namespace Examples.IO
+﻿namespace Examples.IO;
+
+using Examples.Common;
+
+public class CustomTextWriter : TextWriter
 {
-    using System;
-    using System.IO;
-    using System.Text;
+    private readonly Action<string?> write;
 
-    using Examples.Common;
-
-    public class CustomTextWriter : TextWriter
+    public CustomTextWriter(Action<string?> write, Encoding? encoding = null)
     {
-        private readonly Action<string?> write;
+        write.NotNull(nameof(write));
 
-        public CustomTextWriter(Action<string?> write, Encoding? encoding = null)
-        {
-            write.NotNull(nameof(write));
-
-            this.write = write;
-            this.Encoding = encoding ?? Encoding.Default;
-        }
-
-        public override void Write(string? value) => this.write(value);
-
-        public override void Write(char[] buffer, int index, int count) => this.Write(new string(buffer, index, count));
-
-        public override Encoding Encoding { get; }
+        this.write = write;
+        this.Encoding = encoding ?? Encoding.Default;
     }
+
+    public override void Write(string? value) => this.write(value);
+
+    public override void Write(char[] buffer, int index, int count) => this.Write(new string(buffer, index, count));
+
+    public override Encoding Encoding { get; }
 }

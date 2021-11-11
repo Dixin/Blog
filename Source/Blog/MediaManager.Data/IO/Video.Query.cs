@@ -1,425 +1,413 @@
-namespace Examples.IO
+namespace Examples.IO;
+
+using System.Text.Encodings.Web;
+using System.Text.Unicode;
+using Examples.Common;
+using Examples.Linq;
+using Examples.Net;
+using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+using OpenQA.Selenium;
+using Xabe.FFmpeg;
+
+using JsonReaderException = Newtonsoft.Json.JsonReaderException;
+
+internal static partial class Video
 {
-    using System;
-    using System.Collections.Concurrent;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Diagnostics.CodeAnalysis;
-    using System.IO;
-    using System.Linq;
-    using System.Text.Encodings.Web;
-    using System.Text.Json;
-    using System.Text.RegularExpressions;
-    using System.Text.Unicode;
-    using System.Threading.Tasks;
-    using System.Xml.Linq;
-    using Examples.Common;
-    using Examples.Linq;
-    using Examples.Net;
-    using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
-    using OpenQA.Selenium;
-    using Xabe.FFmpeg;
-
-    using JsonReaderException = Newtonsoft.Json.JsonReaderException;
-
-    internal static partial class Video
+    private static IEnumerable<string> EnumerateVideos(string directory, Func<string, bool>? predicate = null)
     {
-        private static IEnumerable<string> EnumerateVideos(string directory, Func<string, bool>? predicate = null)
-        {
-            return Directory.EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
-                .Where(file => (predicate?.Invoke(file) ?? true) && file.HasAnyExtension(AllVideoExtensions));
-        }
+        return Directory.EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
+            .Where(file => (predicate?.Invoke(file) ?? true) && file.HasAnyExtension(AllVideoExtensions));
+    }
 
-        internal static bool TryGetVideoMetadata(string file, [NotNullWhen(true)] out VideoMetadata? videoMetadata, ImdbMetadata? imdbMetadata = null, string? relativePath = null, int retryCount = 10, Action<string>? log = null)
+    internal static bool TryGetVideoMetadata(string file, [NotNullWhen(true)] out VideoMetadata? videoMetadata, ImdbMetadata? imdbMetadata = null, string? relativePath = null, int retryCount = 10, Action<string>? log = null)
+    {
+        log ??= TraceLog;
+        Task<VideoMetadata?> task = Task.Run(() =>
         {
-            log ??= TraceLog;
-            Task<VideoMetadata?> task = Task.Run(() =>
+            try
             {
-                try
-                {
-                    return Retry.Incremental(
-                        () =>
-                        {
-                            IMediaInfo mediaInfo = FFmpeg.GetMediaInfo(file).Result;
-                            IVideoStream videoStream = mediaInfo.VideoStreams.First();
-                            return new VideoMetadata()
-                            {
-                                File = relativePath.IsNullOrWhiteSpace() ? file : Path.GetRelativePath(relativePath, file),
-                                Width = videoStream.Width,
-                                Height = videoStream.Height,
-                                Audio = mediaInfo.AudioStreams?.Count() ?? 0,
-                                Subtitle = mediaInfo.SubtitleStreams?.Count() ?? 0,
-                                AudioBitRates = mediaInfo.AudioStreams?.Select(audio => (int)audio.Bitrate).ToArray() ?? Array.Empty<int>(),
-                                TotalMilliseconds = mediaInfo.Duration.TotalMilliseconds,
-                                Imdb = imdbMetadata,
-                                FrameRate = videoStream.Framerate
-                            };
-                        },
-                        retryCount,
-                        exception => true);
-                }
-                catch (Exception exception)
-                {
-                    log($"!Fail {file} {exception}");
-                    return null;
-                }
-            });
-            if (task.Wait(TimeSpan.FromSeconds(30)))
-            {
-                if ((videoMetadata = task.Result) is null)
-                {
-                    return false;
-                }
-
-                log($"{videoMetadata.Width}x{videoMetadata.Height}, {videoMetadata.Audio} audio, {file}");
-                return true;
-            }
-
-            log($"!Timeout {file}");
-            videoMetadata = null;
-            return false;
-        }
-
-        internal static int GetAudioMetadata(string file, Action<string>? log = null)
-        {
-            log ??= TraceLog;
-            Task<int> task = Task.Run(() =>
-                {
-                    try
+                return Retry.Incremental(
+                    () =>
                     {
                         IMediaInfo mediaInfo = FFmpeg.GetMediaInfo(file).Result;
-                        return mediaInfo.AudioStreams.Count();
-                    }
-                    catch (AggregateException exception) when (typeof(JsonReaderException) == exception.InnerException?.GetType())
-                    {
-                        log($"Fail {file} {exception}");
-                        return -1;
-                    }
-                    catch (AggregateException exception) when (typeof(ArgumentException) == exception.InnerException?.GetType())
-                    {
-                        log($"Cannot read {file} {exception}");
-                        return -1;
-                    }
-                });
-            if (task.Wait(TimeSpan.FromSeconds(3)))
+                        IVideoStream videoStream = mediaInfo.VideoStreams.First();
+                        return new VideoMetadata()
+                        {
+                            File = relativePath.IsNullOrWhiteSpace() ? file : Path.GetRelativePath(relativePath, file),
+                            Width = videoStream.Width,
+                            Height = videoStream.Height,
+                            Audio = mediaInfo.AudioStreams?.Count() ?? 0,
+                            Subtitle = mediaInfo.SubtitleStreams?.Count() ?? 0,
+                            AudioBitRates = mediaInfo.AudioStreams?.Select(audio => (int)audio.Bitrate).ToArray() ?? Array.Empty<int>(),
+                            TotalMilliseconds = mediaInfo.Duration.TotalMilliseconds,
+                            Imdb = imdbMetadata,
+                            FrameRate = videoStream.Framerate
+                        };
+                    },
+                    retryCount,
+                    exception => true);
+            }
+            catch (Exception exception)
             {
-                log($"{task.Result} audio, {file}");
-                return task.Result;
+                log($"!Fail {file} {exception}");
+                return null;
+            }
+        });
+        if (task.Wait(TimeSpan.FromSeconds(30)))
+        {
+            if ((videoMetadata = task.Result) is null)
+            {
+                return false;
             }
 
-            log($"Timeout {file}");
-            return -1;
+            log($"{videoMetadata.Width}x{videoMetadata.Height}, {videoMetadata.Audio} audio, {file}");
+            return true;
         }
 
-        private static (string? Message, Action<string>? Action) GetVideoError(VideoMetadata videoMetadata, bool isNoAudioAllowed, Action<string>? is720 = null, Action<string>? is1080 = null)
+        log($"!Timeout {file}");
+        videoMetadata = null;
+        return false;
+    }
+
+    internal static int GetAudioMetadata(string file, Action<string>? log = null)
+    {
+        log ??= TraceLog;
+        Task<int> task = Task.Run(() =>
         {
-            if (videoMetadata.Width <= 0 || videoMetadata.Height <= 0 || (isNoAudioAllowed ? videoMetadata.Audio < 0 : videoMetadata.Audio <= 0))
+            try
             {
-                return ($"Failed {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.Audio}Audio {videoMetadata.File}", null);
+                IMediaInfo mediaInfo = FFmpeg.GetMediaInfo(file).Result;
+                return mediaInfo.AudioStreams.Count();
+            }
+            catch (AggregateException exception) when (typeof(JsonReaderException) == exception.InnerException?.GetType())
+            {
+                log($"Fail {file} {exception}");
+                return -1;
+            }
+            catch (AggregateException exception) when (typeof(ArgumentException) == exception.InnerException?.GetType())
+            {
+                log($"Cannot read {file} {exception}");
+                return -1;
+            }
+        });
+        if (task.Wait(TimeSpan.FromSeconds(3)))
+        {
+            log($"{task.Result} audio, {file}");
+            return task.Result;
+        }
+
+        log($"Timeout {file}");
+        return -1;
+    }
+
+    private static (string? Message, Action<string>? Action) GetVideoError(VideoMetadata videoMetadata, bool isNoAudioAllowed, Action<string>? is720 = null, Action<string>? is1080 = null)
+    {
+        if (videoMetadata.Width <= 0 || videoMetadata.Height <= 0 || (isNoAudioAllowed ? videoMetadata.Audio < 0 : videoMetadata.Audio <= 0))
+        {
+            return ($"Failed {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.Audio}Audio {videoMetadata.File}", null);
+        }
+
+        string fileName = Path.GetFileNameWithoutExtension(videoMetadata.File) ?? string.Empty;
+        if (fileName.ContainsIgnoreCase("1080p"))
+        {
+            if (!videoMetadata.Is1080P)
+            {
+                return ($"!Not 1080p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}", null);
+            }
+        }
+        else
+        {
+            if (videoMetadata.Is1080P)
+            {
+                return ($"!1080p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}", is1080);
             }
 
-            string fileName = Path.GetFileNameWithoutExtension(videoMetadata.File) ?? string.Empty;
-            if (fileName.ContainsIgnoreCase("1080p"))
+            if (fileName.ContainsIgnoreCase("720p"))
             {
-                if (!videoMetadata.Is1080P)
+                if (!videoMetadata.Is720P)
                 {
-                    return ($"!Not 1080p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}", null);
+                    return ($"!Not 720p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}", null);
                 }
             }
             else
             {
-                if (videoMetadata.Is1080P)
+                if (videoMetadata.Is720P)
                 {
-                    return ($"!1080p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}", is1080);
-                }
-
-                if (fileName.ContainsIgnoreCase("720p"))
-                {
-                    if (!videoMetadata.Is720P)
-                    {
-                        return ($"!Not 720p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}", null);
-                    }
-                }
-                else
-                {
-                    if (videoMetadata.Is720P)
-                    {
-                        return ($"!720p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}", is720);
-                    }
+                    return ($"!720p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}", is720);
                 }
             }
-
-            if (Math.Abs(videoMetadata.FrameRate - 23.976) > 0.001)
-            {
-                return ($"!Not 23.976fps: {videoMetadata.FrameRate} {videoMetadata.File}", null);
-            }
-
-            if (Regex.IsMatch(fileName, "[1-9]Audio"))
-            {
-                if (videoMetadata.Audio < 2)
-                {
-                    return ($"!Not multiple audio: {videoMetadata.Audio} {videoMetadata.File}", null);
-                }
-            }
-            else
-            {
-                if (videoMetadata.Audio >= 2)
-                {
-                    return ($"!Multiple audio: {videoMetadata.Audio} {videoMetadata.File}", null);
-                }
-            }
-
-            if (videoMetadata.AudioBitRates.Any(bitRate => bitRate < 192000))
-            {
-                return ($"!Bad audio: Bit rate is only {string.Join(',', videoMetadata.AudioBitRates)} {videoMetadata.File}", null);
-            }
-
-            return (null, null);
         }
 
-        internal static IEnumerable<string> EnumerateDirectories(string directory, int level = 2)
+        if (Math.Abs(videoMetadata.FrameRate - 23.976) > 0.001)
         {
-            IEnumerable<string> directories = Directory.EnumerateDirectories(directory, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
-            while (--level > 0)
-            {
-                directories = directories.SelectMany(d => Directory.EnumerateDirectories(d, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly));
-                level--;
-            }
-
-            return directories.OrderBy(movie => movie);
+            return ($"!Not 23.976fps: {videoMetadata.FrameRate} {videoMetadata.File}", null);
         }
 
-        internal static async Task DownloadImdbMetadataAsync(string directory, int level = 2, bool overwrite = false, bool useCache = false, bool useBrowser = false, int? degreeOfParallelism = null, Action<string>? log = null)
+        if (Regex.IsMatch(fileName, "[1-9]Audio"))
         {
-            log ??= TraceLog;
-            string[] movies = EnumerateDirectories(directory, level).ToArray();
-            Task[] tasks = Partitioner
-                .Create(movies, true)
-                .GetOrderablePartitions(degreeOfParallelism ?? IOMaxDegreeOfParallelism)
-                .Select((partition, partitionIndex) => Task.Run(async () =>
+            if (videoMetadata.Audio < 2)
+            {
+                return ($"!Not multiple audio: {videoMetadata.Audio} {videoMetadata.File}", null);
+            }
+        }
+        else
+        {
+            if (videoMetadata.Audio >= 2)
+            {
+                return ($"!Multiple audio: {videoMetadata.Audio} {videoMetadata.File}", null);
+            }
+        }
+
+        if (videoMetadata.AudioBitRates.Any(bitRate => bitRate < 192000))
+        {
+            return ($"!Bad audio: Bit rate is only {string.Join(',', videoMetadata.AudioBitRates)} {videoMetadata.File}", null);
+        }
+
+        return (null, null);
+    }
+
+    internal static IEnumerable<string> EnumerateDirectories(string directory, int level = 2)
+    {
+        IEnumerable<string> directories = Directory.EnumerateDirectories(directory, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
+        while (--level > 0)
+        {
+            directories = directories.SelectMany(d => Directory.EnumerateDirectories(d, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly));
+            level--;
+        }
+
+        return directories.OrderBy(movie => movie);
+    }
+
+    internal static async Task DownloadImdbMetadataAsync(string directory, int level = 2, bool overwrite = false, bool useCache = false, bool useBrowser = false, int? degreeOfParallelism = null, Action<string>? log = null)
+    {
+        log ??= TraceLog;
+        string[] movies = EnumerateDirectories(directory, level).ToArray();
+        Task[] tasks = Partitioner
+            .Create(movies, true)
+            .GetOrderablePartitions(degreeOfParallelism ?? IOMaxDegreeOfParallelism)
+            .Select((partition, partitionIndex) => Task.Run(async () =>
+            {
+                using IWebDriver? webDriver = useBrowser ? WebDriverHelper.StartEdge(partitionIndex) : null;
+                if (webDriver is not null)
                 {
-                    using IWebDriver? webDriver = useBrowser ? WebDriverHelper.StartEdge(partitionIndex) : null;
-                    if (webDriver is not null)
+                    webDriver.Url = "https://www.imdb.com/";
+                }
+
+                await partition.ForEachAsync(async movieWithIndex =>
+                {
+                    (long index, string movie) = movieWithIndex;
+                    string[] files = Directory.GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
+                    string[] jsonFiles = files.Where(file => file.EndsWithIgnoreCase(ImdbMetadataExtension)).ToArray();
+                    if (jsonFiles.Any())
                     {
-                        webDriver.Url = "https://www.imdb.com/";
-                    }
-
-                    await partition.ForEachAsync(async movieWithIndex =>
-                    {
-                        (long index, string movie) = movieWithIndex;
-                        string[] files = Directory.GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
-                        string[] jsonFiles = files.Where(file => file.EndsWithIgnoreCase(ImdbMetadataExtension)).ToArray();
-                        if (jsonFiles.Any())
+                        if (overwrite)
                         {
-                            if (overwrite)
+                            jsonFiles.ForEach(jsonFile =>
                             {
-                                jsonFiles.ForEach(jsonFile =>
-                                {
-                                    log($"Delete imdb metadata {jsonFile}.");
-                                    File.Delete(jsonFile);
-                                });
-                            }
-                            else
-                            {
-                                log($"Skip {movie}.");
-                                return;
-                            }
-                        }
-
-                        string? nfo = files.FirstOrDefault(file => file.EndsWithIgnoreCase(XmlMetadataExtension));
-                        if (nfo.IsNullOrWhiteSpace())
-                        {
-                            log($"!Missing metadata {movie}.");
-                            return;
-                        }
-
-                        XElement? root = XDocument.Load(nfo).Root;
-                        string imdbId = (root?.Element("imdbid") ?? root?.Element("imdb_id"))?.Value ?? NotExistingFlag;
-                        string imdbFile = Path.Combine(movie, $"{imdbId}{ImdbCacheExtension}");
-                        string parentFile = Path.Combine(movie, $"{imdbId}.Parent{ImdbCacheExtension}");
-                        string releaseFile = Path.Combine(movie, $"{imdbId}.Release{ImdbCacheExtension}");
-                        if (imdbId.EqualsOrdinal(NotExistingFlag))
-                        {
-                            if (!files.Any(file => file.EqualsIgnoreCase(imdbFile)))
-                            {
-                                await File.WriteAllTextAsync(Path.Combine(movie, imdbFile), string.Empty);
-                            }
-
-                            if (!files.Any(file => file.EqualsIgnoreCase(releaseFile)))
-                            {
-                                await File.WriteAllTextAsync(Path.Combine(movie, releaseFile), string.Empty);
-                            }
-
-                            string emptyMetadataFile = Path.Combine(movie, $"{NotExistingFlag}{ImdbMetadataExtension}");
-                            if (!files.Any(file => file.EqualsIgnoreCase(emptyMetadataFile)))
-                            {
-                                await File.WriteAllTextAsync(emptyMetadataFile, "{}");
-                            }
-
-                            return;
-                        }
-
-                        log($"{index} Start {movie}");
-                        (string imdbUrl, string imdbHtml, string parentUrl, string parentHtml, string releaseUrl, string releaseHtml, ImdbMetadata imdbMetadata) = await Imdb.DownloadAsync(
-                            imdbId,
-                            useCache,
-                            useCache ? imdbFile : string.Empty,
-                            useCache ? parentFile : string.Empty,
-                            useCache ? releaseFile : string.Empty,
-                            webDriver);
-                        Debug.Assert(imdbHtml.IsNotNullOrWhiteSpace());
-                        if (!imdbMetadata.Regions.Any())
-                        {
-                            log($"!Location is missing for {imdbId}: {movie}");
-                        }
-
-                        if (!useCache || !files.Any(file => file.EqualsIgnoreCase(imdbFile)))
-                        {
-                            log($"Downloaded {imdbUrl} to {imdbFile}.");
-                            await File.WriteAllTextAsync(imdbFile, imdbHtml);
-                            log($"Saved to {imdbFile}.");
-                        }
-
-                        if (!useCache || !files.Any(file => file.EqualsIgnoreCase(releaseFile)))
-                        {
-                            log($"Downloaded {releaseUrl} to {releaseFile}.");
-                            await File.WriteAllTextAsync(releaseFile, releaseHtml);
-                            log($"Saved to {releaseFile}.");
-                        }
-
-                        if (parentUrl.IsNotNullOrWhiteSpace() && (!useCache || !files.Any(file => file.EqualsIgnoreCase(parentFile))))
-                        {
-                            log($"Downloaded {parentUrl} to {parentFile}.");
-                            await File.WriteAllTextAsync(parentFile, parentHtml);
-                            log($"Saved to {parentFile}.");
-                        }
-
-                        string jsonFile = Path.Combine(movie, $"{imdbId}{SubtitleSeparator}{imdbMetadata.Year}{SubtitleSeparator}{string.Join(",", imdbMetadata.Regions?.Select(value => value.Replace(SubtitleSeparator, string.Empty)).Take(5) ?? Array.Empty<string>())}{SubtitleSeparator}{string.Join(",", imdbMetadata.Languages?.Take(3).Select(value => value.Replace(SubtitleSeparator, string.Empty)) ?? Array.Empty<string>())}{SubtitleSeparator}{string.Join(",", imdbMetadata.Genres?.Take(5).Select(value => value.Replace(SubtitleSeparator, string.Empty)) ?? Array.Empty<string>())}{ImdbMetadataExtension}");
-                        log($"Merged {imdbUrl} and {releaseUrl} to {jsonFile}.");
-                        string jsonContent = JsonSerializer.Serialize(
-                            imdbMetadata,
-                            new JsonSerializerOptions()
-                            {
-                                WriteIndented = true,
-                                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                                Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+                                log($"Delete imdb metadata {jsonFile}.");
+                                File.Delete(jsonFile);
                             });
-                        await File.WriteAllTextAsync(jsonFile, jsonContent);
-                        log($"Saved to {jsonFile}.");
-                    });
-                }))
-                .ToArray();
-            await Task.WhenAll(tasks);
-        }
-
-        internal static async Task SaveAllVideoMetadata(string jsonPath, Action<string>? log = null, params string[] directories)
-        {
-            log ??= TraceLog;
-            Dictionary<string, Dictionary<string, VideoMetadata>> existingMetadata = File.Exists(jsonPath)
-                ? JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(jsonPath))
-                    ?? throw new InvalidOperationException(jsonPath)
-                : new();
-
-            existingMetadata
-                .Values
-                .ForEach(group => group
-                    .Keys
-                    .ToArray()
-                    .Where(video => !File.Exists(Path.IsPathRooted(video) ? video : Path.Combine(Path.GetDirectoryName(jsonPath) ?? string.Empty, video)))
-                    .ForEach(video => group.Remove(video)));
-
-            Dictionary<string, string> existingVideos = existingMetadata
-                .Values
-                .SelectMany(group => group.Keys)
-                .ToDictionary(video => video, _ => string.Empty);
-
-            Dictionary<string, Dictionary<string, VideoMetadata>> allVideoMetadata = directories
-                .SelectMany(directory => Directory.GetFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories))
-                .AsParallel()
-                .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
-                .SelectMany(movieJson =>
-                {
-                    string relativePath = Path.GetDirectoryName(jsonPath) ?? string.Empty;
-                    Imdb.TryLoad(movieJson, out ImdbMetadata? imdbMetadata);
-                    return Directory
-                        .GetFiles(Path.GetDirectoryName(movieJson) ?? string.Empty, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
-                        .Where(video => video.IsCommonVideo() && !existingVideos.ContainsKey(Path.GetRelativePath(relativePath, video)))
-                        .Select(video =>
+                        }
+                        else
                         {
-                            if (!TryGetVideoMetadata(video, out VideoMetadata? videoMetadata, imdbMetadata, relativePath))
-                            {
-                                log($"!Fail: {video}");
-                            }
-
-                            return videoMetadata;
-                        })
-                        .NotNull();
-                })
-                .ToLookup(videoMetadata => videoMetadata.Imdb?.ImdbId ?? string.Empty, metadata => metadata)
-                .ToDictionary(group => group.Key, group => group.ToDictionary(videoMetadata => videoMetadata.File, videoMetadata => videoMetadata));
-
-            allVideoMetadata.ForEach(
-                group =>
-                {
-                    if (!existingMetadata.ContainsKey(group.Key))
-                    {
-                        existingMetadata[group.Key] = new();
+                            log($"Skip {movie}.");
+                            return;
+                        }
                     }
 
-                    group.Value.ForEach(pair => existingMetadata[group.Key][pair.Key] = pair.Value);
-                });
+                    string? nfo = files.FirstOrDefault(file => file.EndsWithIgnoreCase(XmlMetadataExtension));
+                    if (nfo.IsNullOrWhiteSpace())
+                    {
+                        log($"!Missing metadata {movie}.");
+                        return;
+                    }
 
-            existingMetadata
+                    XElement? root = XDocument.Load(nfo).Root;
+                    string imdbId = (root?.Element("imdbid") ?? root?.Element("imdb_id"))?.Value ?? NotExistingFlag;
+                    string imdbFile = Path.Combine(movie, $"{imdbId}{ImdbCacheExtension}");
+                    string parentFile = Path.Combine(movie, $"{imdbId}.Parent{ImdbCacheExtension}");
+                    string releaseFile = Path.Combine(movie, $"{imdbId}.Release{ImdbCacheExtension}");
+                    if (imdbId.EqualsOrdinal(NotExistingFlag))
+                    {
+                        if (!files.Any(file => file.EqualsIgnoreCase(imdbFile)))
+                        {
+                            await File.WriteAllTextAsync(Path.Combine(movie, imdbFile), string.Empty);
+                        }
+
+                        if (!files.Any(file => file.EqualsIgnoreCase(releaseFile)))
+                        {
+                            await File.WriteAllTextAsync(Path.Combine(movie, releaseFile), string.Empty);
+                        }
+
+                        string emptyMetadataFile = Path.Combine(movie, $"{NotExistingFlag}{ImdbMetadataExtension}");
+                        if (!files.Any(file => file.EqualsIgnoreCase(emptyMetadataFile)))
+                        {
+                            await File.WriteAllTextAsync(emptyMetadataFile, "{}");
+                        }
+
+                        return;
+                    }
+
+                    log($"{index} Start {movie}");
+                    (string imdbUrl, string imdbHtml, string parentUrl, string parentHtml, string releaseUrl, string releaseHtml, ImdbMetadata imdbMetadata) = await Imdb.DownloadAsync(
+                        imdbId,
+                        useCache,
+                        useCache ? imdbFile : string.Empty,
+                        useCache ? parentFile : string.Empty,
+                        useCache ? releaseFile : string.Empty,
+                        webDriver);
+                    Debug.Assert(imdbHtml.IsNotNullOrWhiteSpace());
+                    if (!imdbMetadata.Regions.Any())
+                    {
+                        log($"!Location is missing for {imdbId}: {movie}");
+                    }
+
+                    if (!useCache || !files.Any(file => file.EqualsIgnoreCase(imdbFile)))
+                    {
+                        log($"Downloaded {imdbUrl} to {imdbFile}.");
+                        await File.WriteAllTextAsync(imdbFile, imdbHtml);
+                        log($"Saved to {imdbFile}.");
+                    }
+
+                    if (!useCache || !files.Any(file => file.EqualsIgnoreCase(releaseFile)))
+                    {
+                        log($"Downloaded {releaseUrl} to {releaseFile}.");
+                        await File.WriteAllTextAsync(releaseFile, releaseHtml);
+                        log($"Saved to {releaseFile}.");
+                    }
+
+                    if (parentUrl.IsNotNullOrWhiteSpace() && (!useCache || !files.Any(file => file.EqualsIgnoreCase(parentFile))))
+                    {
+                        log($"Downloaded {parentUrl} to {parentFile}.");
+                        await File.WriteAllTextAsync(parentFile, parentHtml);
+                        log($"Saved to {parentFile}.");
+                    }
+
+                    string jsonFile = Path.Combine(movie, $"{imdbId}{SubtitleSeparator}{imdbMetadata.Year}{SubtitleSeparator}{string.Join(",", imdbMetadata.Regions?.Select(value => value.Replace(SubtitleSeparator, string.Empty)).Take(5) ?? Array.Empty<string>())}{SubtitleSeparator}{string.Join(",", imdbMetadata.Languages?.Take(3).Select(value => value.Replace(SubtitleSeparator, string.Empty)) ?? Array.Empty<string>())}{SubtitleSeparator}{string.Join(",", imdbMetadata.Genres?.Take(5).Select(value => value.Replace(SubtitleSeparator, string.Empty)) ?? Array.Empty<string>())}{ImdbMetadataExtension}");
+                    log($"Merged {imdbUrl} and {releaseUrl} to {jsonFile}.");
+                    string jsonContent = JsonSerializer.Serialize(
+                        imdbMetadata,
+                        new JsonSerializerOptions()
+                        {
+                            WriteIndented = true,
+                            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                            Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+                        });
+                    await File.WriteAllTextAsync(jsonFile, jsonContent);
+                    log($"Saved to {jsonFile}.");
+                });
+            }))
+            .ToArray();
+        await Task.WhenAll(tasks);
+    }
+
+    internal static async Task SaveAllVideoMetadata(string jsonPath, Action<string>? log = null, params string[] directories)
+    {
+        log ??= TraceLog;
+        Dictionary<string, Dictionary<string, VideoMetadata>> existingMetadata = File.Exists(jsonPath)
+            ? JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(jsonPath))
+            ?? throw new InvalidOperationException(jsonPath)
+            : new();
+
+        existingMetadata
+            .Values
+            .ForEach(group => group
                 .Keys
                 .ToArray()
-                .Where(imdbId => !existingMetadata[imdbId].Any())
-                .ForEach(imdbId => existingMetadata.Remove(imdbId));
+                .Where(video => !File.Exists(Path.IsPathRooted(video) ? video : Path.Combine(Path.GetDirectoryName(jsonPath) ?? string.Empty, video)))
+                .ForEach(video => group.Remove(video)));
 
-            string mergedVideoMetadataJson = JsonSerializer.Serialize(existingMetadata, new JsonSerializerOptions() { WriteIndented = true });
-            await File.WriteAllTextAsync(jsonPath, mergedVideoMetadataJson);
-        }
+        Dictionary<string, string> existingVideos = existingMetadata
+            .Values
+            .SelectMany(group => group.Keys)
+            .ToDictionary(video => video, _ => string.Empty);
 
-        internal static async Task SaveExternalVideoMetadataAsync(string jsonPath, params string[] directories)
-        {
-            Dictionary<string, VideoMetadata> allVideoMetadata = directories
-                .SelectMany(directory => Directory.GetFiles(directory, VideoSearchPattern, SearchOption.AllDirectories))
-                .Select(video =>
-                {
-                    string metadata = PathHelper.ReplaceExtension(video, XmlMetadataExtension);
-                    string imdbId = XDocument.Load(metadata).Root?.Element("imdbid")?.Value ?? throw new InvalidOperationException(video);
-                    if (TryGetVideoMetadata(video, out VideoMetadata? videoMetadata))
+        Dictionary<string, Dictionary<string, VideoMetadata>> allVideoMetadata = directories
+            .SelectMany(directory => Directory.GetFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories))
+            .AsParallel()
+            .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
+            .SelectMany(movieJson =>
+            {
+                string relativePath = Path.GetDirectoryName(jsonPath) ?? string.Empty;
+                Imdb.TryLoad(movieJson, out ImdbMetadata? imdbMetadata);
+                return Directory
+                    .GetFiles(Path.GetDirectoryName(movieJson) ?? string.Empty, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
+                    .Where(video => video.IsCommonVideo() && !existingVideos.ContainsKey(Path.GetRelativePath(relativePath, video)))
+                    .Select(video =>
                     {
-                        return (ImdbId: imdbId, Value: videoMetadata);
-                    }
+                        if (!TryGetVideoMetadata(video, out VideoMetadata? videoMetadata, imdbMetadata, relativePath))
+                        {
+                            log($"!Fail: {video}");
+                        }
 
-                    throw new InvalidOperationException(video);
-                })
-                .Where(metadata => metadata.Value != null)
-                .Distinct(metadata => metadata.ImdbId)
-                .ToDictionary(metadata => metadata.ImdbId, metadata => metadata.Value!);
+                        return videoMetadata;
+                    })
+                    .NotNull();
+            })
+            .ToLookup(videoMetadata => videoMetadata.Imdb?.ImdbId ?? string.Empty, metadata => metadata)
+            .ToDictionary(group => group.Key, group => group.ToDictionary(videoMetadata => videoMetadata.File, videoMetadata => videoMetadata));
 
-            string mergedVideoMetadataJson = JsonSerializer.Serialize(allVideoMetadata, new JsonSerializerOptions() { WriteIndented = true });
-            await File.WriteAllTextAsync(jsonPath, mergedVideoMetadataJson);
-        }
+        allVideoMetadata.ForEach(
+            group =>
+            {
+                if (!existingMetadata.ContainsKey(group.Key))
+                {
+                    existingMetadata[group.Key] = new();
+                }
 
-        internal static bool IsCommonVideo(this string file)
-        {
-            return file.HasAnyExtension(CommonVideoExtensions);
-        }
+                group.Value.ForEach(pair => existingMetadata[group.Key][pair.Key] = pair.Value);
+            });
 
-        internal static bool IsVideo(this string file)
-        {
-            return file.HasAnyExtension(AllVideoExtensions);
-        }
+        existingMetadata
+            .Keys
+            .ToArray()
+            .Where(imdbId => !existingMetadata[imdbId].Any())
+            .ForEach(imdbId => existingMetadata.Remove(imdbId));
 
-        internal static bool IsTextSubtitle(this string file)
-        {
-            return file.HasAnyExtension(TextSubtitleExtensions);
-        }
+        string mergedVideoMetadataJson = JsonSerializer.Serialize(existingMetadata, new JsonSerializerOptions() { WriteIndented = true });
+        await File.WriteAllTextAsync(jsonPath, mergedVideoMetadataJson);
+    }
 
-        internal static bool IsSubtitle(this string file)
-        {
-            return file.HasAnyExtension(AllSubtitleExtensions);
-        }
+    internal static async Task SaveExternalVideoMetadataAsync(string jsonPath, params string[] directories)
+    {
+        Dictionary<string, VideoMetadata> allVideoMetadata = directories
+            .SelectMany(directory => Directory.GetFiles(directory, VideoSearchPattern, SearchOption.AllDirectories))
+            .Select(video =>
+            {
+                string metadata = PathHelper.ReplaceExtension(video, XmlMetadataExtension);
+                string imdbId = XDocument.Load(metadata).Root?.Element("imdbid")?.Value ?? throw new InvalidOperationException(video);
+                if (TryGetVideoMetadata(video, out VideoMetadata? videoMetadata))
+                {
+                    return (ImdbId: imdbId, Value: videoMetadata);
+                }
+
+                throw new InvalidOperationException(video);
+            })
+            .Where(metadata => metadata.Value != null)
+            .Distinct(metadata => metadata.ImdbId)
+            .ToDictionary(metadata => metadata.ImdbId, metadata => metadata.Value!);
+
+        string mergedVideoMetadataJson = JsonSerializer.Serialize(allVideoMetadata, new JsonSerializerOptions() { WriteIndented = true });
+        await File.WriteAllTextAsync(jsonPath, mergedVideoMetadataJson);
+    }
+
+    internal static bool IsCommonVideo(this string file)
+    {
+        return file.HasAnyExtension(CommonVideoExtensions);
+    }
+
+    internal static bool IsVideo(this string file)
+    {
+        return file.HasAnyExtension(AllVideoExtensions);
+    }
+
+    internal static bool IsTextSubtitle(this string file)
+    {
+        return file.HasAnyExtension(TextSubtitleExtensions);
+    }
+
+    internal static bool IsSubtitle(this string file)
+    {
+        return file.HasAnyExtension(AllSubtitleExtensions);
     }
 }

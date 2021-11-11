@@ -1,21 +1,11 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="DynamicWrapperExtensions.cs" company="WebOS - http://www.coolwebos.com">
-//   Copyright © Dixin 2010 http://weblogs.asp.net/dixin
-// </copyright>
-// <summary>
-//   Defines the DynamicWrapperExtensions type.
-// </summary>
-// --------------------------------------------------------------------------------------------------------------------
+﻿namespace Examples.Dynamic;
 
-namespace Examples.Dynamic
+public static class DynamicWrapperExtensions
 {
-    public static class DynamicWrapperExtensions
-    {
-        #region Public Methods
+    #region Public Methods
 
-        public static dynamic ToDynamic<T>(this T value) // where T : class
-            => new DynamicWrapper<T>(ref value);
+    public static dynamic ToDynamic<T>(this T value) // where T : class
+        => new DynamicWrapper<T>(ref value);
 
-        #endregion
-    }
+    #endregion
 }

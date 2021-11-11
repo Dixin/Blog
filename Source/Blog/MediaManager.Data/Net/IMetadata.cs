@@ -1,17 +1,16 @@
-﻿namespace Examples.Net
+﻿namespace Examples.Net;
+
+public interface IMetadata
 {
-    public interface IMetadata
-    {
-        string Link { get; }
+    string Link { get; }
 
-        string Title { get; }
+    string Title { get; }
 
-        string ImdbId { get; }
+    string ImdbId { get; }
 
-        string ImdbRating { get; }
+    string ImdbRating { get; }
 
-        string[] Genres { get; }
+    string[] Genres { get; }
 
-        string Image { get; }
-    }
+    string Image { get; }
 }

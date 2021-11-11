@@ -1,9 +1,6 @@
-﻿namespace Examples.Common
-{
-    using System;
+﻿namespace Examples.Common;
 
-    [AttributeUsage(AttributeTargets.Parameter)]
-    public sealed class ValidatedNotNullAttribute : Attribute
-    {
-    }
+[AttributeUsage(AttributeTargets.Parameter)]
+public sealed class ValidatedNotNullAttribute : Attribute
+{
 }

@@ -1,4 +1,3 @@
-﻿namespace Examples.Net
-{
-    public record RareMetadata(string Title, string Content);
-}
+﻿namespace Examples.Net;
+
+public record RareMetadata(string Title, string Content);

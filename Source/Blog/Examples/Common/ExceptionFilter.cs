@@ -1,46 +1,43 @@
-﻿namespace Examples.Common
+﻿namespace Examples.Common;
+
+internal static partial class ExceptionFilter
 {
-    using System;
-    using System.Diagnostics;
+    private static void A() => B();
 
-    internal static partial class ExceptionFilter
+    private static void B() => C();
+
+    private static void C() => D();
+
+    private static void D()
     {
-        private static void A() => B();
-
-        private static void B() => C();
-
-        private static void C() => D();
-
-        private static void D()
-        {
-            int localVariable1 = 1;
-            int localVariable2 = 2;
-            int localVariable3 = 3;
-            int localVariable4 = 4;
-            int localVariable5 = 5;
-            Trace.WriteLine(localVariable1 + localVariable2 + localVariable3 + localVariable4 + localVariable5);
-            throw new OperationCanceledException(nameof(ExceptionFilter));
-        }
-
-        private static bool Log(this object message, bool result = false)
-        {
-            Trace.WriteLine(message);
-            return result;
-        }
+        int localVariable1 = 1;
+        int localVariable2 = 2;
+        int localVariable3 = 3;
+        int localVariable4 = 4;
+        int localVariable5 = 5;
+        Trace.WriteLine(localVariable1 + localVariable2 + localVariable3 + localVariable4 + localVariable5);
+        throw new OperationCanceledException(nameof(ExceptionFilter));
     }
 
-    internal static partial class ExceptionFilter
+    private static bool Log(this object message, bool result = false)
     {
-        private static void Filter()
+        Trace.WriteLine(message);
+        return result;
+    }
+}
+
+internal static partial class ExceptionFilter
+{
+    private static void Filter()
+    {
+        try
         {
-            try
-            {
-                A();
-            }
-            catch (OperationCanceledException exception) when (string.Equals(nameof(ExceptionFilter), exception.Message, StringComparison.Ordinal))
-            {
-            }
+            A();
         }
+        catch (OperationCanceledException exception) when (string.Equals(nameof(ExceptionFilter), exception.Message, StringComparison.Ordinal))
+        {
+        }
+    }
 
 #if DEMO
         private static void Filter()
@@ -57,45 +54,44 @@
          // }
         }
 #endif
+}
+
+internal static partial class ExceptionFilter
+{
+    private static void Catch()
+    {
+        try
+        {
+            A();
+        }
+        catch (Exception exception)
+        {
+            exception.Log();
+            throw;
+        }
     }
 
-    internal static partial class ExceptionFilter
+    private static void When()
     {
-        private static void Catch()
+        try
         {
-            try
-            {
-                A();
-            }
-            catch (Exception exception)
-            {
-                exception.Log();
-                throw;
-            }
+            A();
         }
-
-        private static void When()
+        catch (Exception exception) when (exception.Log())
         {
-            try
-            {
-                A();
-            }
-            catch (Exception exception) when (exception.Log())
-            {
-            }
         }
+    }
 
-        internal static void Log()
+    internal static void Log()
+    {
+        try
         {
-            try
-            {
-                A();
-            }
-            catch (Exception exception) when (exception.Log(true))
-            {
-                exception.Log();
-                throw;
-            }
+            A();
+        }
+        catch (Exception exception) when (exception.Log(true))
+        {
+            exception.Log();
+            throw;
         }
     }
 }
