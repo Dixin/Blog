@@ -12,8 +12,7 @@
     </ItemGroup>
 
 	<ItemGroup>
-         <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="94.0.986" />
-         <PackageReference Include="System.Drawing.Common" Version="5.0.2" /> 
+         <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="95.0.1020.30" /> 
     </ItemGroup>
 
     <ItemGroup>
