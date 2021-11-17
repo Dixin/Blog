@@ -74,7 +74,7 @@ public static partial class Chinese
     public static (Exception? Exception, bool IsSingleSurrogatePair) ValidateSingleChineseCharacter(string? text, string? argument = null)
     {
         (Exception? exception, bool isSurrogate) = ValidateSingleCharacter(text, argument);
-        if (exception != null)
+        if (exception is not null)
         {
             return (exception, isSurrogate);
         }

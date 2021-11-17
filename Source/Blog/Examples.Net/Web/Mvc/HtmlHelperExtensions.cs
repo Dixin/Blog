@@ -7,7 +7,7 @@ public static class HtmlHelperExtensions
 {
     public static IHtmlString Script(this HtmlHelper htmlHelper, string path)
     {
-        if (htmlHelper == null)
+        if (htmlHelper is null)
         {
             throw new ArgumentNullException(nameof(htmlHelper));
         }

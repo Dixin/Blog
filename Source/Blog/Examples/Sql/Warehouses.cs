@@ -221,7 +221,7 @@ internal static class Warehouses
         {
             using StreamReader reader = new(File.OpenRead(file), Encoding.GetEncoding("GB18030"));
             string? line;
-            while ((line = reader.ReadLine()) != null)
+            while ((line = reader.ReadLine()) is not null)
             {
                 if (string.IsNullOrWhiteSpace(line))
                 {
@@ -348,7 +348,7 @@ internal static class Warehouses
                     writer2.WriteLine(line);
                 }
 
-            } while ((previousFileLastLine = line = reader.ReadLine()) != null);
+            } while ((previousFileLastLine = line = reader.ReadLine()) is not null);
         });
     }
 
@@ -359,7 +359,7 @@ internal static class Warehouses
         using StreamWriter writer2 = new(File.OpenWrite(@"d:\sql\t12.txt"), Encoding.Unicode);
         using StreamWriter writer3 = new(File.OpenWrite(@"d:\sql\t13.txt"), Encoding.Unicode);
         string? line;
-        while ((line = reader.ReadLine()) != null)
+        while ((line = reader.ReadLine()) is not null)
         {
             line = line.TrimStart();
             Match match = Regex.Match(line, @"([^\t]+)\t([^\t]+)\t([^\t]*)");
@@ -394,7 +394,7 @@ internal static class Warehouses
         using StreamWriter writer2 = new(File.OpenWrite(@"d:\sql\t1312.txt"), Encoding.Unicode);
         using StreamWriter writer3 = new(File.OpenWrite(@"d:\sql\t1313.txt"), Encoding.Unicode);
         string? line;
-        while ((line = reader.ReadLine()) != null)
+        while ((line = reader.ReadLine()) is not null)
         {
             line = line.TrimStart();
             Match match = Regex.Match(line, @"([^\t]+)\t([^\t]+)\t([^\t]*)");

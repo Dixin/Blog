@@ -1,7 +1,5 @@
 ﻿namespace Examples.Threading.Tasks;
 
-using System.Runtime.CompilerServices;
-
 public interface IAwaitable
 {
     [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]

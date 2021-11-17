@@ -2,11 +2,9 @@
 namespace Examples.Dynamic;
 
 using System.Dynamic;
-using System.Reflection;
 
 using Examples.Common;
 using Examples.Reflection;
-
 using Microsoft.CSharp.RuntimeBinder;
 
 public class DynamicWrapper<T> : DynamicObject
@@ -42,11 +40,9 @@ public class DynamicWrapper<T> : DynamicObject
     [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", MessageId = "0#")]
     public DynamicWrapper(ref T value) // Uses ref in case of 'value' is value type.
     {
-        value.NotNull(nameof(value));
-
-        this.value = value;
+        this.value = value.NotNull();
 #if NETSTANDARD
-            this.type = value.GetType();
+        this.type = value.GetType();
 #else
         this.type = value!.GetType();
 #endif
@@ -75,21 +71,21 @@ public class DynamicWrapper<T> : DynamicObject
         }
 
         PropertyInfo? index = this.type.GetTypeIndex(indexes);
-        if (index != null)
+        if (index is not null)
         {
             result = index.GetValue(this.value, indexes);
             return true;
         }
 
         MethodInfo? method = this.type.GetInterfaceMethod("get_Item", indexes);
-        if (method != null)
+        if (method is not null)
         {
             result = method.Invoke(this.value, indexes);
             return true;
         }
 
         index = this.type.GetBaseIndex(indexes);
-        if (index != null)
+        if (index is not null)
         {
             result = index.GetValue(this.value, indexes);
             return true;
@@ -103,7 +99,7 @@ public class DynamicWrapper<T> : DynamicObject
     {
         // Searches in current type's public and non-public properties.
         PropertyInfo? property = this.type.GetTypeProperty(binder.Name);
-        if (property != null)
+        if (property is not null)
         {
             result = property.GetValue(this.value, null).ToDynamic();
             return true;
@@ -111,7 +107,7 @@ public class DynamicWrapper<T> : DynamicObject
 
         // Searches in explicitly implemented properties for interface.
         MethodInfo? method = this.type.GetInterfaceMethod(string.Concat("get_", binder.Name));
-        if (method != null)
+        if (method is not null)
         {
             result = method.Invoke(this.value, null).ToDynamic();
             return true;
@@ -119,7 +115,7 @@ public class DynamicWrapper<T> : DynamicObject
 
         // Searches in current type's public and non-public fields.
         FieldInfo? field = this.type.GetTypeField(binder.Name);
-        if (field != null)
+        if (field is not null)
         {
             result = field.GetValue(this.value).ToDynamic();
             return true;
@@ -127,7 +123,7 @@ public class DynamicWrapper<T> : DynamicObject
 
         // Searches in base type's public and non-public properties.
         property = this.type.GetBaseProperty(binder.Name);
-        if (property != null)
+        if (property is not null)
         {
             result = property.GetValue(this.value, null).ToDynamic();
             return true;
@@ -135,7 +131,7 @@ public class DynamicWrapper<T> : DynamicObject
 
         // Searches in base type's public and non-public fields.
         field = this.type.GetBaseField(binder.Name);
-        if (field != null)
+        if (field is not null)
         {
             result = field.GetValue(this.value).ToDynamic();
             return true;
@@ -151,7 +147,7 @@ public class DynamicWrapper<T> : DynamicObject
         MethodInfo? method = this.type.GetTypeMethod(binder.Name, args ?? Array.Empty<object?>()) ??
             this.type.GetInterfaceMethod(binder.Name, args ?? Array.Empty<object?>()) ??
             this.type.GetBaseMethod(binder.Name, args ?? Array.Empty<object?>());
-        if (method != null)
+        if (method is not null)
         {
             result = method.Invoke(this.value, args).ToDynamic();
             return true;
@@ -175,21 +171,21 @@ public class DynamicWrapper<T> : DynamicObject
         }
 
         PropertyInfo? index = this.type.GetTypeIndex(indexes);
-        if (index != null)
+        if (index is not null)
         {
             index.SetValue(this.value, value, indexes);
             return true;
         }
 
         MethodInfo? method = this.type.GetInterfaceMethod("set_Item", indexes);
-        if (method != null)
+        if (method is not null)
         {
             method.Invoke(this.value, indexes.Concat(Enumerable.Repeat(value, 1)).ToArray());
             return true;
         }
 
         index = this.type.GetBaseIndex(indexes);
-        if (index != null)
+        if (index is not null)
         {
             index.SetValue(this.value, value, indexes);
             return true;
@@ -203,7 +199,7 @@ public class DynamicWrapper<T> : DynamicObject
         if (!this.isValueType)
         {
             PropertyInfo? property = this.type.GetTypeProperty(binder.Name);
-            if (property != null)
+            if (property is not null)
             {
                 property.SetValue(this.value, value, null);
                 return true;
@@ -211,7 +207,7 @@ public class DynamicWrapper<T> : DynamicObject
         }
 
         FieldInfo? field = this.type.GetTypeField(binder.Name);
-        if (field != null)
+        if (field is not null)
         {
             field.SetValue(ref this.value, value);
             return true;
@@ -223,7 +219,7 @@ public class DynamicWrapper<T> : DynamicObject
             method?.Invoke(this.value, new[] { value });
 
             PropertyInfo? property = this.type.GetBaseProperty(binder.Name);
-            if (property != null)
+            if (property is not null)
             {
                 property.SetValue(this.value, value, null);
                 return true;
@@ -231,7 +227,7 @@ public class DynamicWrapper<T> : DynamicObject
         }
 
         field = this.type.GetBaseField(binder.Name);
-        if (field != null)
+        if (field is not null)
         {
             field.SetValue(ref this.value, value);
             return true;

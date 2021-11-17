@@ -344,7 +344,7 @@ internal static class Program
                 memoryStream, WordprocessingDocumentType.Document))
             {
                 MainDocumentPart mainPart = wordDocument.MainDocumentPart;
-                if (mainPart == null)
+                if (mainPart is null)
                 {
                     mainPart = wordDocument.AddMainDocumentPart();
                     new Document(new Body()).Save(mainPart);

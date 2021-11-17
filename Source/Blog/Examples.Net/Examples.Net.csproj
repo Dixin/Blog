@@ -13,7 +13,7 @@
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <Nullable>enable</Nullable>
-	<ImplicitUsings>enable</ImplicitUsings>
+    <ImplicitUsings>enable</ImplicitUsings>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -96,7 +96,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Tools\GlobalUsings.cs">
-      <Link>GlobalUsings.cs</Link>
+      <Link>Properties\GlobalUsings.cs</Link>
     </Compile>
     <Compile Include="Data\Services\WcfWebSocketService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

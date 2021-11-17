@@ -35,7 +35,7 @@ internal static partial class Video
                 CharsetDetector detector = new();
                 detector.Feed(fileStream);
                 detector.DataEnd();
-                return detector.Charset != null ? (detector.Charset, Confidence: detector.Confidence, File: file) : (Charset: (string?)null, Confidence: (float?)null, File: file);
+                return detector.Charset is not null ? (detector.Charset, Confidence: detector.Confidence, File: file) : (Charset: (string?)null, Confidence: (float?)null, File: file);
             })
             .OrderBy(result => result.Charset)
             .ThenByDescending(result => result.Confidence)
@@ -146,7 +146,7 @@ internal static partial class Video
                         string language = (Path.GetFileNameWithoutExtension(subtitle) ?? throw new InvalidOperationException(subtitle)).Split(".").Last();
                         string newSubtitle = $"{Path.GetFileNameWithoutExtension(video)}.{language}{Path.GetExtension(subtitle)}";
                         string newFile = Path.Combine(Path.GetDirectoryName(video) ?? throw new InvalidOperationException(video), newSubtitle);
-                        if (rename != null)
+                        if (rename is not null)
                         {
                             newFile = rename(subtitle, newFile);
                         }

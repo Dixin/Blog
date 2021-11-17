@@ -21,7 +21,7 @@ public static class HttpRequestBaseExtensions
 
     public static bool IsMobile(this HttpRequestBase request)
     {
-        if (request == null)
+        if (request is null)
         {
             throw new ArgumentNullException(nameof(request));
         }

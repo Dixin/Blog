@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Compile Include="..\Tools\GlobalUsings.cs" Link="GlobalUsings.cs" />
+      <Compile Include="..\Tools\GlobalUsings.cs" Link="Properties\GlobalUsings.cs" />
     </ItemGroup>
 
 </Project>

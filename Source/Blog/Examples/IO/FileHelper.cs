@@ -6,44 +6,36 @@ public static class FileHelper
 {
     public static void Delete(string file)
     {
-        file.NotNullOrWhiteSpace(nameof(file));
-
-        File.SetAttributes(file, FileAttributes.Normal); // In case file is read only.
+        File.SetAttributes(file.NotNullOrWhiteSpace(), FileAttributes.Normal); // In case file is read only.
         File.Delete(file);
     }
 
     public static bool Contains(string file, string find, Encoding? encoding = null)
     {
-        file.NotNullOrWhiteSpace(nameof(file));
-
+        file.NotNullOrWhiteSpace();
         encoding ??= Encoding.UTF8;
+        
         return File.ReadAllText(file, encoding).Contains(find);
     }
 
     public static void Replace(string file, string find, string? replace = null, Encoding? encoding = null)
     {
-        file.NotNullOrWhiteSpace(nameof(file));
-
+        file.NotNullOrWhiteSpace();
         replace ??= string.Empty;
         encoding ??= Encoding.UTF8;
+        
         string text = File.ReadAllText(file, encoding).Replace(find, replace);
         File.WriteAllText(file, text, encoding);
     }
 
-    public static void Rename(this FileInfo file, string newName)
-    {
-        file.NotNull(nameof(file));
-        newName.NotNullOrWhiteSpace(nameof(newName));
-
-        file.MoveTo(newName);
-    }
+    public static void Rename(this FileInfo file, string newName) => 
+        file.NotNull().MoveTo(newName.NotNullOrWhiteSpace());
 
     public static void Move(string source, string destination, bool overwrite = false)
     {
-        source.NotNullOrWhiteSpace(nameof(source));
-        destination.NotNullOrWhiteSpace(nameof(destination));
+        source.NotNullOrWhiteSpace();
 
-        if (overwrite && File.Exists(destination))
+        if (overwrite && File.Exists(destination.NotNullOrWhiteSpace()))
         {
             File.Delete(destination);
         }

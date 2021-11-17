@@ -26,12 +26,7 @@ public class SevenZip
 
     #region Constructors and Destructors
 
-    public SevenZip(string sevenZ)
-    {
-        sevenZ.NotNullOrWhiteSpace(nameof(sevenZ));
-
-        this.sevenZ = sevenZ;
-    }
+    public SevenZip(string sevenZ) => this.sevenZ = sevenZ.NotNullOrWhiteSpace();
 
     #endregion
 
@@ -39,18 +34,14 @@ public class SevenZip
 
     public static void DeleteDirectory(string directory, TextWriter? logger)
     {
-        directory.NotNullOrWhiteSpace(nameof(directory));
-
-        $"Start deleting directory {directory}".LogWith(logger);
+        $"Start deleting directory {directory.NotNullOrWhiteSpace()}".LogWith(logger);
         DirectoryHelper.Delete(directory);
         $"End deleting directory {directory}".LogWith(logger);
     }
 
     public static void DeleteFile(string file, TextWriter? logger)
     {
-        file.NotNullOrWhiteSpace(nameof(file));
-
-        $"Start deleting file {file}".LogWith(logger);
+        $"Start deleting file {file.NotNullOrWhiteSpace()}".LogWith(logger);
         FileHelper.Delete(file);
         $"End deleting file {file}".LogWith(logger);
     }
@@ -64,9 +55,7 @@ public class SevenZip
         TextWriter? logger = null,
         int level = DefaultCompressionLevel)
     {
-        directory.NotNullOrWhiteSpace(nameof(directory));
-
-        Directory.EnumerateFiles(directory)
+        Directory.EnumerateFiles(directory.NotNullOrWhiteSpace())
             .Where(file => archiveExtensions.Contains(Path.GetExtension(file), StringComparer.OrdinalIgnoreCase))
             .ForEach(archive => this.ToZip(archive, zipFile?.Invoke(archive), deleteArchive, logger, level));
 
@@ -84,8 +73,7 @@ public class SevenZip
         TextWriter? logger = null,
         int level = DefaultCompressionLevel)
     {
-        source.NotNullOrWhiteSpace(nameof(source));
-            
+        source.NotNullOrWhiteSpace();
         intermediateFile ??= name => $"{source}..zip";
 
         string firstPassZip = intermediateFile(source);
@@ -99,7 +87,7 @@ public class SevenZip
 
     public void Extract(string archive, string? destination = null, bool deleteArchive = false, TextWriter? logger = null)
     {
-        archive.NotNullOrWhiteSpace(nameof(archive));
+        archive.NotNullOrWhiteSpace();
 
         destination = !string.IsNullOrWhiteSpace(destination)
             ? destination
@@ -126,11 +114,10 @@ public class SevenZip
         bool isRecursive = false,
         TextWriter? logger = null)
     {
-        directory.NotNullOrWhiteSpace(nameof(directory));
-        archiveExtensions.NotNull(nameof(archiveExtensions));
+        archiveExtensions.NotNull();
 
         Directory
-            .EnumerateFiles(directory)
+            .EnumerateFiles(directory.NotNullOrWhiteSpace())
             .Where(file => archiveExtensions.Contains(Path.GetExtension(file), StringComparer.OrdinalIgnoreCase))
             .ForEach(archive =>
                 this.Extract(archive, destinationDirectory?.Invoke(archive), deleteArchive, logger));
@@ -151,7 +138,7 @@ public class SevenZip
         TextWriter? logger = null,
         int level = DefaultCompressionLevel)
     {
-        archive.NotNullOrWhiteSpace(nameof(archive));
+        archive.NotNullOrWhiteSpace();
 
         // Create temp directory.
         string tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
@@ -186,8 +173,7 @@ public class SevenZip
         string? password = null,
         int level = DefaultCompressionLevel)
     {
-        source.NotNullOrWhiteSpace(nameof(source));
-
+        source.NotNullOrWhiteSpace();
         level = FormatCompressionLevel(level);
         zip = !string.IsNullOrWhiteSpace(zip) ? zip : $"{source}.zip";
         string? passwordArgument = string.IsNullOrEmpty(password) ? null : $"-p{password}";
@@ -205,21 +191,14 @@ public class SevenZip
 
     #region Methods
 
-    private static int FormatCompressionLevel(int level)
-    {
-        // http://sevenzip.sourceforge.jp/chm/cmdline/switches/method.htm#Zip
-        if (level < 0)
+    private static int FormatCompressionLevel(int level) =>
+        level switch
         {
-            return 0;
-        }
-
-        if (level > 9)
-        {
-            return 9;
-        }
-
-        return level;
-    }
+            // http://sevenzip.sourceforge.jp/chm/cmdline/switches/method.htm#Zip
+            < 0 => 0,
+            > 9 => 9,
+            _ => level
+        };
 
     #endregion
 }

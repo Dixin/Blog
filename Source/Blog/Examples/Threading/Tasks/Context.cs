@@ -6,7 +6,7 @@ public static partial class ActionExtensions
 {
     public static Task InvokeWith(this Action action, SynchronizationContext synchronizationContext, ExecutionContext executionContext)
     {
-        action.NotNull(nameof(action));
+        action.NotNull();
 
         return new Func<object?>(() =>
         {
@@ -20,9 +20,9 @@ public static partial class FuncExtensions
 {
     public static TResult InvokeWith<TResult>(this Func<TResult> function, ExecutionContext? executionContext)
     {
-        function.NotNull(nameof(function));
+        function.NotNull();
 
-        if (executionContext == null)
+        if (executionContext is null)
         {
             return function();
         }
@@ -37,12 +37,12 @@ public static partial class FuncExtensions
     [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
     public static Task<TResult> InvokeWith<TResult>(this Func<TResult> function, SynchronizationContext? synchronizationContext, ExecutionContext? executionContext)
     {
-        function.NotNull(nameof(function));
+        function.NotNull();
 
         TaskCompletionSource<TResult> taskCompletionSource = new();
         try
         {
-            if (synchronizationContext == null)
+            if (synchronizationContext is null)
             {
                 TResult result = function.InvokeWith(executionContext);
                 taskCompletionSource.SetResult(result);
@@ -85,8 +85,8 @@ public static class TaskExtensions
 {
     public static Task<TNewResult> ContinueWithContext<TResult, TNewResult>(this Task<TResult> task, Func<Task<TResult>, TNewResult> continuation)
     {
-        task.NotNull(nameof(task));
-        continuation.NotNull(nameof(continuation));
+        task.NotNull();
+        continuation.NotNull();
 
         // See: System.Runtime.CompilerServices.AsyncMethodBuilderCore.GetCompletionAction()
         ExecutionContext? executionContext = ExecutionContext.Capture();
@@ -102,8 +102,8 @@ public static class TaskExtensions
 
     public static Task<TNewResult> ContinueWithContext<TNewResult>(this Task task, Func<Task, TNewResult> continuation)
     {
-        task.NotNull(nameof(task));
-        continuation.NotNull(nameof(continuation));
+        task.NotNull();
+        continuation.NotNull();
 
         // See: System.Runtime.CompilerServices.AsyncMethodBuilderCore.GetCompletionAction()
         ExecutionContext? executionContext = ExecutionContext.Capture();
@@ -119,10 +119,9 @@ public static class TaskExtensions
 
     public static Task ContinueWithContext<TResult>(this Task<TResult> task, Action<Task<TResult>> continuation)
     {
-        task.NotNull(nameof(task));
-        continuation.NotNull(nameof(continuation));
+        continuation.NotNull();
 
-        return task.ContinueWithContext(new Func<Task<TResult>, object?>(t =>
+        return task.NotNull().ContinueWithContext(new Func<Task<TResult>, object?>(t =>
         {
             continuation(t);
             return null;
@@ -131,10 +130,9 @@ public static class TaskExtensions
 
     public static Task ContinueWithContext(this Task task, Action<Task> continuation)
     {
-        task.NotNull(nameof(task));
-        continuation.NotNull(nameof(continuation));
+        continuation.NotNull();
 
-        return task.ContinueWithContext(new Func<Task, object?>(t =>
+        return task.NotNull().ContinueWithContext(new Func<Task, object?>(t =>
         {
             continuation(t);
             return null;

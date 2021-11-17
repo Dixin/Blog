@@ -5,35 +5,29 @@ public static class StringExtensions
     public static string With(this string format, params object[] args) => 
         string.Format(CultureInfo.InvariantCulture, format, args);
 
-    public static bool ContainsIgnoreCase(this string value, string substring)
-    {
-        Argument.NotNull(value, nameof(value));
+    public static bool ContainsIgnoreCase(this string value, string substring) => 
+        value.NotNull().Contains(substring, StringComparison.OrdinalIgnoreCase);
 
-        return value.Contains(substring, StringComparison.OrdinalIgnoreCase);
-    }
+    public static bool StartsWithIgnoreCase(this string value, string substring) => 
+        value.NotNull().StartsWith(substring, StringComparison.OrdinalIgnoreCase);
 
-    public static bool StartsWithIgnoreCase(this string value, string substring)
-    {
-        Argument.NotNull(value, nameof(value));
+    public static bool IsNullOrWhiteSpace([NotNullWhen(false)] this string? value) => 
+        string.IsNullOrWhiteSpace(value);
 
-        return value.StartsWith(substring, StringComparison.OrdinalIgnoreCase);
-    }
+    public static bool IsNotNullOrWhiteSpace([NotNullWhen(true)] this string? value) => 
+        !string.IsNullOrWhiteSpace(value);
 
-    public static bool IsNullOrWhiteSpace([NotNullWhen(false)] this string? value) => string.IsNullOrWhiteSpace(value);
+    public static bool EqualsIgnoreCase(this string? value1, string? value2) => 
+        string.Equals(value1, value2, StringComparison.OrdinalIgnoreCase);
 
-    public static bool IsNotNullOrWhiteSpace([NotNullWhen(true)] this string? value) => !string.IsNullOrWhiteSpace(value);
+    public static bool EqualsOrdinal(this string? value1, string? value2) => 
+        string.Equals(value1, value2, StringComparison.Ordinal);
 
-    public static bool EqualsIgnoreCase
-        (this string? value1, string? value2) => string.Equals(value1, value2, StringComparison.OrdinalIgnoreCase);
-
-    public static bool EqualsOrdinal
-        (this string? value1, string? value2) => string.Equals(value1, value2, StringComparison.Ordinal);
-
-    public static string Left
-        (this string value, int count) =>
+    public static string Left(this string value, int count) =>
         string.IsNullOrEmpty(value) || count < 1 ? string.Empty : value.Substring(0, Math.Min(count, value.Length));
 
-    public static void LogWith(this string? message, TextWriter? logger) => logger?.WriteLine(message);
+    public static void LogWith(this string? message, TextWriter? logger) => 
+        logger?.WriteLine(message);
 
     public static string GetTitleFromHtml(this string html)
     {

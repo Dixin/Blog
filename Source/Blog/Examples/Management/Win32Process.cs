@@ -4,15 +4,17 @@ namespace Examples.Management;
 using System.Management;
 using System.Runtime.Versioning;
 
+using Examples.Common;
+
 // https://msdn.microsoft.com/en-us/library/windows/desktop/aa394372.aspx
 [SupportedOSPlatform("windows")]
-public partial class Win32Process
+public partial record Win32Process
 {
     public const string WmiClassName = "Win32_Process";
 }
 
 [DebuggerDisplay("Name = {this.Name}, Id = {this.ProcessId}")]
-public partial class Win32Process
+public partial record Win32Process
 {
     public string? Caption { get; }
 
@@ -105,16 +107,11 @@ public partial class Win32Process
     public ulong? WriteTransferCount { get; }
 }
 
-public partial class Win32Process
+public partial record Win32Process
 {
     public Win32Process(ManagementObject process)
     {
-        if (process == null)
-        {
-            throw new ArgumentNullException(nameof(process));
-        }
-
-        this.Caption = process[nameof(this.Caption)] as string;
+        this.Caption = process.NotNull()[nameof(this.Caption)] as string;
         this.CommandLine = process[nameof(this.CommandLine)] as string;
         this.CreationClassName = process[nameof(this.CreationClassName)] as string;
         this.CreationDate = process[nameof(this.CreationDate)] is string creationDate && !string.IsNullOrWhiteSpace(creationDate)

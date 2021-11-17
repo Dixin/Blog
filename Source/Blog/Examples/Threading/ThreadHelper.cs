@@ -40,7 +40,7 @@ public static class ThreadHelper
         staThread.SetApartmentState(ApartmentState.STA);
         staThread.Start();
         staThread.Join();
-        if (!ignoreException && staThreadException != null)
+        if (!ignoreException && staThreadException is not null)
         {
             throw staThreadException;
         }

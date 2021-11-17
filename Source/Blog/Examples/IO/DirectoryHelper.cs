@@ -6,28 +6,18 @@ public static class DirectoryHelper
 {
     public static void Delete(string directory)
     {
-        directory.NotNullOrWhiteSpace(nameof(directory));
-
-        Directory.GetFiles(directory).ForEach(FileHelper.Delete);
+        Directory.GetFiles(directory.NotNull()).ForEach(FileHelper.Delete);
         Directory.GetDirectories(directory).ForEach(Delete);
         SetAttributes(directory, FileAttributes.Normal);
         Directory.Delete(directory, false);
     }
 
-    public static void Rename(this DirectoryInfo directory, string newName)
-    {
-        directory.NotNull(nameof(directory));
-        newName.NotNullOrWhiteSpace(nameof(newName));
-
-        Directory.Move(directory.FullName, newName);
-    }
+    public static void Rename(this DirectoryInfo directory, string newName) => 
+        Directory.Move(directory.NotNull().FullName, newName.NotNullOrWhiteSpace());
 
     public static bool TryRename(this DirectoryInfo directory, string newName)
     {
-        directory.NotNull(nameof(directory));
-        newName.NotNullOrWhiteSpace(nameof(newName));
-
-        if (directory.Exists && !directory.Name.EqualsOrdinal(newName))
+        if (directory.NotNull().Exists && !directory.Name.EqualsOrdinal(newName.NotNullOrWhiteSpace()))
         {
             try
             {
@@ -45,10 +35,9 @@ public static class DirectoryHelper
 
     public static void Move(string source, string destination, bool overwrite = false)
     {
-        source.NotNullOrWhiteSpace(nameof(source));
-        destination.NotNullOrWhiteSpace(nameof(destination));
+        source.NotNullOrWhiteSpace();
 
-        if (overwrite && Directory.Exists(destination))
+        if (overwrite && Directory.Exists(destination.NotNullOrWhiteSpace()))
         {
             Directory.Delete(destination);
         }
@@ -64,42 +53,29 @@ public static class DirectoryHelper
 
     public static void Empty(DirectoryInfo directory)
     {
-        directory.NotNull(nameof(directory));
-
-        if (directory.Exists)
+        if (directory.NotNull().Exists)
         {
             directory.EnumerateFileSystemInfos().ForEach(fileSystemInfo => fileSystemInfo.Delete());
         }
     }
 
-    public static void SetAttributes(string directory, FileAttributes fileAttributes)
-    {
-        directory.NotNull(nameof(directory));
+    public static void SetAttributes(string directory, FileAttributes fileAttributes) => 
+        new DirectoryInfo(directory.NotNull()).Attributes = fileAttributes;
 
-        new DirectoryInfo(directory).Attributes = fileAttributes;
-    }
-
-    public static void AddPrefix(string directory, string prefix)
-    {
+    public static void AddPrefix(string directory, string prefix) => 
         Directory.Move(directory, PathHelper.AddDirectoryPrefix(directory, prefix));
-    }
 
-    public static void AddPostfix(string directory, string postfix)
-    {
+    public static void AddPostfix(string directory, string postfix) => 
         Directory.Move(directory, PathHelper.AddDirectoryPostfix(directory, postfix));
-    }
 
-    public static void RenameFileExtensionToLowerCase(string directory)
-    {
+    public static void RenameFileExtensionToLowerCase(string directory) =>
         Directory
             .GetFiles(directory, "*", SearchOption.AllDirectories)
             .Where(file => Regex.IsMatch(Path.GetExtension(file), @"[A-Z]+"))
             .ToArray()
             .ForEach(file => File.Move(file, PathHelper.ReplaceFileName(file, Path.GetExtension(file).ToLowerInvariant())));
-    }
 
-    public static void MoveFiles(string sourceDirectory, string destinationDirectory, string searchPattern = "*", SearchOption searchOption = SearchOption.AllDirectories)
-    {
+    public static void MoveFiles(string sourceDirectory, string destinationDirectory, string searchPattern = "*", SearchOption searchOption = SearchOption.AllDirectories) =>
         Directory
             .GetFiles(sourceDirectory, searchPattern, searchOption)
             .ForEach(sourceFile =>
@@ -113,5 +89,4 @@ public static class DirectoryHelper
 
                 File.Move(sourceFile, destinationFile);
             });
-    }
 }

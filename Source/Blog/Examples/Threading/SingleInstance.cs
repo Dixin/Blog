@@ -8,9 +8,7 @@ public sealed class SingleInstance : IDisposable
 
     public SingleInstance(string mutexName)
     {
-        mutexName.NotNullOrEmpty(nameof(mutexName));
-
-        this.mutex = new(true, mutexName);
+        this.mutex = new(true, mutexName.NotNullOrEmpty());
         this.IsSingle = this.mutex.WaitOne(TimeSpan.Zero, true);
     }
 
@@ -28,10 +26,9 @@ public sealed class SingleInstance : IDisposable
 
     public static bool Detect(string mutexName, Action single, Action? multiple = null)
     {
-        mutexName.NotNullOrEmpty(nameof(mutexName));
-        single.NotNull(nameof(single));
+        single.NotNull();
 
-        using Mutex mutex = new(true, mutexName);
+        using Mutex mutex = new(true, mutexName.NotNullOrEmpty());
         if (mutex.WaitOne(TimeSpan.Zero, true))
         {
             try

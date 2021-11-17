@@ -54,7 +54,7 @@
       <Link>Properties\CommonAssemblyInfo.cs</Link>
     </Compile>
     <Compile Include="..\Tools\GlobalUsings.cs">
-      <Link>GlobalUsings.cs</Link>
+      <Link>Properties\GlobalUsings.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

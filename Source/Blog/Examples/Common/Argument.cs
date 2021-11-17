@@ -1,52 +1,41 @@
 ﻿namespace Examples.Common;
 
-using System.Reflection;
-
 public static class Argument
 {
-    public static void NotNull<T>(
-#if NETSTANDARD2_1
+    public static T NotNull<T>(
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             [NotNull]
 #endif
-        [ValidatedNotNull]this T value, string name)
-    {
-        if (value == null)
-        {
-            throw new ArgumentNullException(name);
-        }
-    }
+        [ValidatedNotNull]this T value, [CallerArgumentExpression("value")] string name = "") =>
+        value is null
+            ? throw new ArgumentNullException(name)
+            : value;
 
-    public static void NotNullOrWhiteSpace(
-#if NETSTANDARD2_1
+    public static string NotNullOrWhiteSpace(
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             [NotNull]
 #endif
-        [ValidatedNotNull]this string value, string name)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            throw new ArgumentNullException(name);
-        }
-    }
+        [ValidatedNotNull]this string value, [CallerArgumentExpression("value")] string name = "") =>
+        string.IsNullOrWhiteSpace(value)
+            ? throw new ArgumentNullException(name)
+            : value;
 
-    public static void NotNullOrEmpty(
-#if NETSTANDARD2_1
+    public static string NotNullOrEmpty(
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             [NotNull]
 #endif
-        [ValidatedNotNull]this string value, string name)
-    {
-        if (string.IsNullOrEmpty(value))
-        {
-            throw new ArgumentNullException(name);
-        }
-    }
+        [ValidatedNotNull]this string value, [CallerArgumentExpression("value")] string name = "") =>
+        string.IsNullOrEmpty(value)
+            ? throw new ArgumentNullException(name)
+            : value;
 
-    public static void NotNullOrEmpty<T>(
-#if NETSTANDARD2_1
+    public static IEnumerable<T> NotNullOrEmpty<T>(
+#if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             [NotNull]
 #endif
-        [ValidatedNotNull]this IEnumerable<T> value, string name)
+        [ValidatedNotNull]this IEnumerable<T> value, [CallerArgumentExpression("value")] string name = "")
     {
-        if (value == null)
+        if (value is null)
         {
             throw new ArgumentNullException(name);
         }
@@ -55,20 +44,41 @@ public static class Argument
         {
             throw new ArgumentOutOfRangeException(name);
         }
+
+        return value;
     }
 
     public static void NotNull<T>(Func<T> value)
     {
-        if (value() == null)
+        if (value() is null)
         {
             throw new ArgumentNullException(GetName(value));
         }
     }
 
-    private static string GetName<TValue>(Func<TValue> func)
+    private static string GetName<T>(Func<T> func)
     {
-        // http://weblogs.asp.net/fredriknormen/how-to-validate-a-method-s-arguments
-        FieldInfo[] fields = (func.Target ?? throw new InvalidOperationException("func must be in the from of () => arg.")).GetType().GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
-        return fields.Single().Name;
+        // func: () => arg is compiled to DisplayClass with a field and a method. That method is func.
+        object displayClassInstance = func.Target!;
+        FieldInfo closure = displayClassInstance.GetType()
+            .GetFields(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance)
+            .Single();
+        return closure.Name;
+    }
+
+    public static void NotNull<T>(Expression<Func<T>> value)
+    {
+        if (value.Compile().Invoke() is null)
+        {
+            throw new ArgumentNullException(GetName(value));
+        }
+    }
+
+    private static string GetName<T>(Expression<Func<T>> expression)
+    {
+        // expression: () => arg is compiled to DisplayClass with a field. Here expression body is to access DisplayClass instance's field.
+        MemberExpression displayClassInstance = (MemberExpression)expression.Body;
+        MemberInfo closure = displayClassInstance.Member;
+        return closure.Name;
     }
 }

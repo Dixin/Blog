@@ -1,6 +1,4 @@
-﻿using System;
-using System.Reflection;
-using System.Resources;
+﻿using System.Resources;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyDescription("Code snippets for https://weblogs.asp.net/dixin.")]

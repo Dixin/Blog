@@ -15,19 +15,15 @@ public class Serializer
 
     public string Serialize(ISerializable serializable)
     {
-        serializable.NotNull(nameof(serializable));
+        serializable.NotNull();
 
         using MemoryStream stream = new();
         this.formatter.Serialize(stream, serializable);
         return Convert.ToBase64String(stream.ToArray());
     }
 
-    public T Deserialize<T>(string base64) where T : class, ISerializable
-    {
-        base64.NotNullOrEmpty(nameof(base64));
-
-        return this.formatter.Deserialize(new MemoryStream(Convert.FromBase64String(base64))) is T result
+    public T Deserialize<T>(string base64) where T : class, ISerializable =>
+        this.formatter.Deserialize(new MemoryStream(Convert.FromBase64String(base64.NotNullOrEmpty()))) is T result
             ? result
             : throw new SerializationException();
-    }
 }

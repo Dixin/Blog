@@ -1,8 +1,6 @@
 ﻿#nullable enable
 namespace Examples.Reflection;
 
-using System.Reflection;
-
 using Examples.Common;
 
 public static class FieldInfoExtensions
@@ -12,7 +10,7 @@ public static class FieldInfoExtensions
     [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", MessageId = "1#")]
     public static void SetValue<T>(this FieldInfo field, ref T obj, object? value)
     {
-        field.NotNull(nameof(field));
+        field.NotNull();
 
         if (typeof(T).IsValueType)
         {

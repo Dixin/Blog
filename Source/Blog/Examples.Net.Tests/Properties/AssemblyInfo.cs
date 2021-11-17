@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("Examples.Net.Tests")]

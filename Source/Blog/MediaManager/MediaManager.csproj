@@ -8,7 +8,7 @@
 	</PropertyGroup>
 
     <ItemGroup>
-      <Compile Include="..\Tools\GlobalUsings.cs" Link="GlobalUsings.cs" />
+      <Compile Include="..\Tools\GlobalUsings.cs" Link="Properties\GlobalUsings.cs" />
     </ItemGroup>
 
 	<ItemGroup>
@@ -18,6 +18,10 @@
 
     <ItemGroup>
         <ProjectReference Include="..\MediaManager.Data\MediaManager.Data.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Properties\" />
     </ItemGroup>
 
 </Project>

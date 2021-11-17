@@ -1,8 +1,8 @@
 #nullable enable
 namespace Examples.IO;
 
-using System.Reflection;
 using System.Runtime.Versioning;
+
 using Examples.Common;
 using Examples.Diagnostics;
 using Microsoft.Win32;
@@ -15,26 +15,19 @@ public static class PathHelper
 
     [SuppressMessage("Microsoft.Design", "CA1055:UriReturnValuesShouldNotBeStrings")]
     [SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#")]
-    public static string FromUrl(string url)
-    {
-        url.NotNullOrWhiteSpace(nameof(url));
-
-        return new Uri(url).AbsoluteUri;
-    }
+    public static string FromUrl(string url) =>
+        new Uri(url.NotNullOrWhiteSpace()).AbsoluteUri;
 
     [SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#")]
-    public static string AbsolutePath(string url)
-    {
-        url.NotNullOrWhiteSpace(nameof(url));
+    public static string AbsolutePath(string url) =>
+        new Uri(url.NotNullOrWhiteSpace()).AbsolutePath;
 
-        return new Uri(url).AbsolutePath;
-    }
+    public static string ExecutingAssembly() =>
+         // Better than AbsolutePath(Assembly.GetExecutingAssembly().GetName().CodeBase);
+         Assembly.GetExecutingAssembly().Location;
 
-    public static string ExecutingAssembly
-        // Better than AbsolutePath(Assembly.GetExecutingAssembly().GetName().CodeBase);
-        () => Assembly.GetExecutingAssembly().Location;
-
-    public static string ExecutingDirectory() => Path.GetDirectoryName(ExecutingAssembly()) ?? string.Empty;
+    public static string ExecutingDirectory() => 
+        Path.GetDirectoryName(ExecutingAssembly()) ?? string.Empty;
 
     [SupportedOSPlatform("windows")]
     public static bool TryGetOneDriveRoot([NotNullWhen(true)] out string? oneDrive)
@@ -131,9 +124,9 @@ public static class PathHelper
     {
         (int exitCode, List<string?> output, List<string?> error) = OperatingSystem.IsLinux()
             ? ProcessHelper.StartAndWait("wslpath", $@"{(forceAbsolute ? "-a " : string.Empty)}""{path.ReplaceOrdinal("'", @"\'")}""")
-            : (OperatingSystem.IsWindows()
+            : OperatingSystem.IsWindows()
                 ? ProcessHelper.StartAndWait("wsl", $@"wslpath {(forceAbsolute ? "-a " : string.Empty)}""{path.ReplaceOrdinal("'", @"\'")}""")
-                : throw new NotSupportedException(Environment.OSVersion.ToString()));
+                : throw new NotSupportedException(Environment.OSVersion.ToString());
         if (exitCode is 0)
         {
             string[] nonNullOutput = output.Where(line => line is not null).Select(line => line!).ToArray();
@@ -145,14 +138,14 @@ public static class PathHelper
 
         throw new InvalidOperationException(string.Join(Environment.NewLine, error.Concat(output)));
     }
-        
+
     public static string FromWsl(string path, bool forwardSlash = false)
     {
         (int exitCode, List<string?> output, List<string?> error) = OperatingSystem.IsLinux()
             ? ProcessHelper.StartAndWait("wslpath", $@"-{(forwardSlash ? "w" : "m")} ""{path.ReplaceOrdinal("'", @"\'")}""")
-            : (OperatingSystem.IsWindows()
+            : OperatingSystem.IsWindows()
                 ? ProcessHelper.StartAndWait("wsl", $@"wslpath -{(forwardSlash ? "w" : "m")} ""{path.ReplaceOrdinal("'", @"\'")}""")
-                : throw new NotSupportedException(Environment.OSVersion.ToString()));
+                : throw new NotSupportedException(Environment.OSVersion.ToString());
         if (exitCode is 0)
         {
             string[] nonNullOutput = output.Where(line => line is not null).Select(line => line!).ToArray();

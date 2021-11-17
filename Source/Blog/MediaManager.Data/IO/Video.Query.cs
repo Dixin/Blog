@@ -383,7 +383,7 @@ internal static partial class Video
 
                 throw new InvalidOperationException(video);
             })
-            .Where(metadata => metadata.Value != null)
+            .Where(metadata => metadata.Value is not null)
             .Distinct(metadata => metadata.ImdbId)
             .ToDictionary(metadata => metadata.ImdbId, metadata => metadata.Value!);
 
