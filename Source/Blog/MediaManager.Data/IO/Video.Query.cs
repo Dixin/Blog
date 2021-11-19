@@ -196,109 +196,135 @@ internal static partial class Video
                 await partition.ForEachAsync(async movieWithIndex =>
                 {
                     (long index, string movie) = movieWithIndex;
-                    string[] files = Directory.GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
-                    string[] jsonFiles = files.Where(file => file.EndsWithIgnoreCase(ImdbMetadataExtension)).ToArray();
-                    if (jsonFiles.Any())
-                    {
-                        if (overwrite)
-                        {
-                            jsonFiles.ForEach(jsonFile =>
-                            {
-                                log($"Delete imdb metadata {jsonFile}.");
-                                File.Delete(jsonFile);
-                            });
-                        }
-                        else
-                        {
-                            log($"Skip {movie}.");
-                            return;
-                        }
-                    }
-
-                    string? nfo = files.FirstOrDefault(file => file.EndsWithIgnoreCase(XmlMetadataExtension));
-                    if (nfo.IsNullOrWhiteSpace())
-                    {
-                        log($"!Missing metadata {movie}.");
-                        return;
-                    }
-
-                    XElement? root = XDocument.Load(nfo).Root;
-                    string imdbId = (root?.Element("imdbid") ?? root?.Element("imdb_id"))?.Value ?? NotExistingFlag;
-                    string imdbFile = Path.Combine(movie, $"{imdbId}{ImdbCacheExtension}");
-                    string parentFile = Path.Combine(movie, $"{imdbId}.Parent{ImdbCacheExtension}");
-                    string releaseFile = Path.Combine(movie, $"{imdbId}.Release{ImdbCacheExtension}");
-                    if (imdbId.EqualsOrdinal(NotExistingFlag))
-                    {
-                        if (!files.Any(file => file.EqualsIgnoreCase(imdbFile)))
-                        {
-                            await File.WriteAllTextAsync(Path.Combine(movie, imdbFile), string.Empty);
-                        }
-
-                        if (!files.Any(file => file.EqualsIgnoreCase(releaseFile)))
-                        {
-                            await File.WriteAllTextAsync(Path.Combine(movie, releaseFile), string.Empty);
-                        }
-
-                        string emptyMetadataFile = Path.Combine(movie, $"{NotExistingFlag}{ImdbMetadataExtension}");
-                        if (!files.Any(file => file.EqualsIgnoreCase(emptyMetadataFile)))
-                        {
-                            await File.WriteAllTextAsync(emptyMetadataFile, "{}");
-                        }
-
-                        return;
-                    }
-
-                    log($"{index} Start {movie}");
-                    (string imdbUrl, string imdbHtml, string parentUrl, string parentHtml, string releaseUrl, string releaseHtml, ImdbMetadata imdbMetadata) = await Imdb.DownloadAsync(
-                        imdbId,
-                        useCache,
-                        useCache ? imdbFile : string.Empty,
-                        useCache ? parentFile : string.Empty,
-                        useCache ? releaseFile : string.Empty,
-                        webDriver);
-                    Debug.Assert(imdbHtml.IsNotNullOrWhiteSpace());
-                    if (!imdbMetadata.Regions.Any())
-                    {
-                        log($"!Location is missing for {imdbId}: {movie}");
-                    }
-
-                    if (!useCache || !files.Any(file => file.EqualsIgnoreCase(imdbFile)))
-                    {
-                        log($"Downloaded {imdbUrl} to {imdbFile}.");
-                        await File.WriteAllTextAsync(imdbFile, imdbHtml);
-                        log($"Saved to {imdbFile}.");
-                    }
-
-                    if (!useCache || !files.Any(file => file.EqualsIgnoreCase(releaseFile)))
-                    {
-                        log($"Downloaded {releaseUrl} to {releaseFile}.");
-                        await File.WriteAllTextAsync(releaseFile, releaseHtml);
-                        log($"Saved to {releaseFile}.");
-                    }
-
-                    if (parentUrl.IsNotNullOrWhiteSpace() && (!useCache || !files.Any(file => file.EqualsIgnoreCase(parentFile))))
-                    {
-                        log($"Downloaded {parentUrl} to {parentFile}.");
-                        await File.WriteAllTextAsync(parentFile, parentHtml);
-                        log($"Saved to {parentFile}.");
-                    }
-
-                    string jsonFile = Path.Combine(movie, $"{imdbId}{SubtitleSeparator}{imdbMetadata.Year}{SubtitleSeparator}{string.Join(",", imdbMetadata.Regions?.Select(value => value.Replace(SubtitleSeparator, string.Empty)).Take(5) ?? Array.Empty<string>())}{SubtitleSeparator}{string.Join(",", imdbMetadata.Languages?.Take(3).Select(value => value.Replace(SubtitleSeparator, string.Empty)) ?? Array.Empty<string>())}{SubtitleSeparator}{string.Join(",", imdbMetadata.Genres?.Take(5).Select(value => value.Replace(SubtitleSeparator, string.Empty)) ?? Array.Empty<string>())}{ImdbMetadataExtension}");
-                    log($"Merged {imdbUrl} and {releaseUrl} to {jsonFile}.");
-                    string jsonContent = JsonSerializer.Serialize(
-                        imdbMetadata,
-                        new JsonSerializerOptions()
-                        {
-                            WriteIndented = true,
-                            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                            Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
-                        });
-                    await File.WriteAllTextAsync(jsonFile, jsonContent);
-                    log($"Saved to {jsonFile}.");
+                    await DownloadImdbMetadataAsync(movie, webDriver, overwrite, useCache, useBrowser, log);
                 });
             }))
             .ToArray();
         await Task.WhenAll(tasks);
+    }
+
+    private static async Task DownloadImdbMetadataAsync(string directory, IWebDriver? webDriver, bool overwrite = false, bool useCache = false, bool useBrowser = false, Action<string>? log = null)
+    {
+        log ??= TraceLog;
+        string[] files = Directory.GetFiles(directory, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
+        string[] jsonFiles = files.Where(file => file.EndsWithIgnoreCase(ImdbMetadataExtension)).ToArray();
+        if (jsonFiles.Any())
+        {
+            if (overwrite)
+            {
+                jsonFiles.ForEach(jsonFile =>
+                {
+                    log($"Delete imdb metadata {jsonFile}.");
+                    File.Delete(jsonFile);
+                });
+            }
+            else
+            {
+                log($"Skip {directory}.");
+                return;
+            }
+        }
+
+        string? nfo = files.FirstOrDefault(file => file.EndsWithIgnoreCase(XmlMetadataExtension));
+        if (nfo.IsNullOrWhiteSpace())
+        {
+            log($"!Missing metadata {directory}.");
+            return;
+        }
+
+        XElement? root = XDocument.Load(nfo).Root;
+        string imdbId = (root?.Element("imdbid") ?? root?.Element("imdb_id"))?.Value ?? NotExistingFlag;
+        string imdbFile = Path.Combine(directory, $"{imdbId}{ImdbCacheExtension}");
+        string parentFile = Path.Combine(directory, $"{imdbId}.Parent{ImdbCacheExtension}");
+        string releaseFile = Path.Combine(directory, $"{imdbId}.Release{ImdbCacheExtension}");
+        if (imdbId.EqualsOrdinal(NotExistingFlag))
+        {
+            if (!files.Any(file => file.EqualsIgnoreCase(imdbFile)))
+            {
+                await File.WriteAllTextAsync(Path.Combine(directory, imdbFile), string.Empty);
+            }
+
+            if (!files.Any(file => file.EqualsIgnoreCase(releaseFile)))
+            {
+                await File.WriteAllTextAsync(Path.Combine(directory, releaseFile), string.Empty);
+            }
+
+            string emptyMetadataFile = Path.Combine(directory, $"{NotExistingFlag}{ImdbMetadataExtension}");
+            if (!files.Any(file => file.EqualsIgnoreCase(emptyMetadataFile)))
+            {
+                await File.WriteAllTextAsync(emptyMetadataFile, "{}");
+            }
+
+            return;
+        }
+
+        log($"Start {directory}");
+        (string imdbUrl, string imdbHtml, string parentUrl, string parentHtml, string releaseUrl, string releaseHtml, ImdbMetadata imdbMetadata) = await Imdb.DownloadAsync(
+            imdbId,
+            useCache,
+            useCache ? imdbFile : string.Empty,
+            useCache ? parentFile : string.Empty,
+            useCache ? releaseFile : string.Empty,
+            webDriver);
+        Debug.Assert(imdbHtml.IsNotNullOrWhiteSpace());
+        if (!imdbMetadata.Regions.Any())
+        {
+            log($"!Location is missing for {imdbId}: {directory}");
+        }
+
+        if (!useCache || !files.Any(file => file.EqualsIgnoreCase(imdbFile)))
+        {
+            log($"Downloaded {imdbUrl} to {imdbFile}.");
+            await File.WriteAllTextAsync(imdbFile, imdbHtml);
+            log($"Saved to {imdbFile}.");
+        }
+
+        if (!useCache || !files.Any(file => file.EqualsIgnoreCase(releaseFile)))
+        {
+            log($"Downloaded {releaseUrl} to {releaseFile}.");
+            await File.WriteAllTextAsync(releaseFile, releaseHtml);
+            log($"Saved to {releaseFile}.");
+        }
+
+        if (parentUrl.IsNotNullOrWhiteSpace() && (!useCache || !files.Any(file => file.EqualsIgnoreCase(parentFile))))
+        {
+            log($"Downloaded {parentUrl} to {parentFile}.");
+            await File.WriteAllTextAsync(parentFile, parentHtml);
+            log($"Saved to {parentFile}.");
+        }
+
+        string jsonFile = Path.Combine(directory, $"{imdbId}{SubtitleSeparator}{imdbMetadata.Year}{SubtitleSeparator}{string.Join(",", imdbMetadata.Regions?.Select(value => value.Replace(SubtitleSeparator, string.Empty)).Take(5) ?? Array.Empty<string>())}{SubtitleSeparator}{string.Join(",", imdbMetadata.Languages?.Take(3).Select(value => value.Replace(SubtitleSeparator, string.Empty)) ?? Array.Empty<string>())}{SubtitleSeparator}{string.Join(",", imdbMetadata.Genres?.Take(5).Select(value => value.Replace(SubtitleSeparator, string.Empty)) ?? Array.Empty<string>())}{ImdbMetadataExtension}");
+        log($"Merged {imdbUrl} and {releaseUrl} to {jsonFile}.");
+        string jsonContent = JsonSerializer.Serialize(
+            imdbMetadata,
+            new JsonSerializerOptions()
+            {
+                WriteIndented = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+            });
+        await File.WriteAllTextAsync(jsonFile, jsonContent);
+        log($"Saved to {jsonFile}.");
+    }
+
+    internal static async Task DownloadImdbMetadataAsync(
+        (string directory, int level)[] directories, Func<VideoDirectoryInfo, bool> predicate,
+        bool overwrite = false, bool useCache = false, bool useBrowser = false, int? degreeOfParallelism = null, Action<string>? log = null)
+    {
+        string[] movies = directories
+            .SelectMany(directory => EnumerateDirectories(directory.directory, directory.level))
+            .Where(directory => predicate(new VideoDirectoryInfo(directory)))
+            .ToArray();
+        if (movies.Any())
+        {
+            using IWebDriver? webDriver = useBrowser ? WebDriverHelper.StartEdge() : null;
+            if (webDriver is not null)
+            {
+                webDriver.Url = "https://www.imdb.com/";
+            }
+
+            await movies.ForEachAsync(async movie => await DownloadImdbMetadataAsync(movie, webDriver, overwrite, useCache, useBrowser, log));
+        }
     }
 
     internal static async Task SaveAllVideoMetadata(string jsonPath, Action<string>? log = null, params string[] directories)
