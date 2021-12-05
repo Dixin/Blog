@@ -22,7 +22,7 @@ internal static class Audio
         log ??= TraceLog;
         GetTags(directory, (audio, tagFile, tag) =>
         {
-            if (tag.Performers.Any(name => name.HasChineseCharacter() && !TraditionChineseException.Any(name.ContainsOrdinal)))
+            if (tag.Performers.Any(name => name.ContainsChineseCharacter() && !TraditionChineseException.Any(name.ContainsOrdinal)))
             {
                 string[] performers = tag.Performers
                     .Select(name => ChineseConverter.Convert(name, ChineseConversionDirection.TraditionalToSimplified))
@@ -42,7 +42,7 @@ internal static class Audio
 
             }
 
-            if (tag.AlbumArtists.Any(name => name.HasChineseCharacter() && !TraditionChineseException.Any(name.Contains)))
+            if (tag.AlbumArtists.Any(name => name.ContainsChineseCharacter() && !TraditionChineseException.Any(name.Contains)))
             {
                 string[] albumArtists = tag.AlbumArtists
                     .Select(name => ChineseConverter.Convert(name, ChineseConversionDirection.TraditionalToSimplified))
@@ -61,7 +61,7 @@ internal static class Audio
                 }
             }
 
-            if (tag.Title.HasChineseCharacter())
+            if (tag.Title.ContainsChineseCharacter())
             {
                 string title = ChineseConverter.Convert(tag.Title, ChineseConversionDirection.TraditionalToSimplified);
                 if (!tag.Title.EqualsOrdinal(title))
@@ -78,7 +78,7 @@ internal static class Audio
                 }
             }
 
-            if (tag.Album.HasChineseCharacter())
+            if (tag.Album.ContainsChineseCharacter())
             {
                 string album = ChineseConverter.Convert(tag.Album, ChineseConversionDirection.TraditionalToSimplified);
                 if (!tag.Album.EqualsOrdinal(album))
@@ -136,8 +136,8 @@ internal static class Audio
         log ??= TraceLog;
         GetTags(directory, (audio, tagFile, tag) =>
         {
-            if (tag.Performers.Any(name => name.HasChineseCharacter())
-                || tag.AlbumArtists.Any(name => name.HasChineseCharacter()))
+            if (tag.Performers.Any(name => name.ContainsChineseCharacter())
+                || tag.AlbumArtists.Any(name => name.ContainsChineseCharacter()))
             {
                 log(audio);
                 tag.AlbumArtists.ForEach(name => log(name));

@@ -2,7 +2,7 @@
 
 public static partial class Chinese
 {
-    private static readonly (int, int)[] BasicRanges = new []
+    private static readonly (int, int)[] BasicRanges = new[]
         {
             ("4E00", "9FFF"),   // 一 CJK Unified Ideograms Unified Ideographs: (U+4E00 to U+9FFF).
             ("3400", "4DBF"),   // 㐦 CJK Ideographs Extension A: (U+3400 to U+4DBF).
@@ -23,7 +23,7 @@ public static partial class Chinese
         .Select(hexCodePoint => (int.Parse(hexCodePoint.Item1, NumberStyles.HexNumber, CultureInfo.InvariantCulture), int.Parse(hexCodePoint.Item2, NumberStyles.HexNumber, CultureInfo.InvariantCulture)))
         .ToArray();
 
-    private static readonly (int, int)[] SurrogateRanges = new []
+    private static readonly (int, int)[] SurrogateRanges = new[]
         {
             ("20000", "2A6DF"), // 𠀀 CJK Ideographs Extension B: (U+20000 to U+2A6DF).
             ("2A700", "2B73F"), // 𪜀 CJK Ideographs Extension C: (U+2A700 to U+2B73F).
@@ -35,117 +35,35 @@ public static partial class Chinese
         .Select(hexCodePoint => (int.Parse(hexCodePoint.Item1, NumberStyles.HexNumber, CultureInfo.InvariantCulture), int.Parse(hexCodePoint.Item2, NumberStyles.HexNumber, CultureInfo.InvariantCulture)))
         .ToArray();
 
-    public static (Exception? Exception, bool IsSingleSurrogatePair) ValidateSingleCharacter(string? text, string? argument = null)
+    public static bool IsChineseCharacter([NotNullWhen(true)] string? value, int index, out bool isSurrogate)
     {
-        // Equivalent to: !string.IsNullOrEmpty(text) && new StringInfo(text).LengthInTextElements == 1.
-        if (string.IsNullOrEmpty(text))
+        if (string.IsNullOrWhiteSpace(value))
         {
-            return (new ArgumentNullException(argument, "Input is null or empty."), false);
+            isSurrogate = false;
+            return false;
         }
 
-        int length = text.Length;
-        if (length > 2)
-        {
-            return (new ArgumentOutOfRangeException(argument, "Input is more than a single character."), false);
-        }
-
-        // length is either 1 or 2.
-        bool isSurrogate = char.IsHighSurrogate(text, 0);
-        if (isSurrogate)
-        {
-            // length must be 2.
-            if (length != 2)
-            {
-                return (new ArgumentException("Input is a single surrogate character and missing another character in the pair.", argument), false);
-            }
-        }
-        else
-        {
-            // length must be 1.
-            if (length != 1)
-            {
-                return (new ArgumentOutOfRangeException(argument, "Input is more than a single character."), false);
-            }
-        }
-
-        return (null, isSurrogate);
-    }
-
-    public static (Exception? Exception, bool IsSingleSurrogatePair) ValidateSingleChineseCharacter(string? text, string? argument = null)
-    {
-        (Exception? exception, bool isSurrogate) = ValidateSingleCharacter(text, argument);
-        if (exception is not null)
-        {
-            return (exception, isSurrogate);
-        }
-
-        // Equivalent to:
-        // byte[] bytes = isSurrogate
-        //    ? text.TextToBytes().Convert(Encoding.Unicode, Encoding.UTF32).FormatForUtf32()
-        //    : text.TextToBytes().Adjust();
-        // int codePoint = bytes.BytesToInt32();
-        int codePoint = isSurrogate ? char.ConvertToUtf32(text!, 0) : text![0];
-
-        (int Min, int Max)[] ranges = isSurrogate ? SurrogateRanges : BasicRanges;
-        return ranges.Any(range => range.Min <= codePoint && range.Max >= codePoint)
-            ? (null, isSurrogate)
-            : (new ArgumentOutOfRangeException(argument, "Input is a single character but not Chinese."), isSurrogate);
-    }
-
-    public static bool IsSingleChineseCharacter(this string text)
-    {
-        if (string.IsNullOrWhiteSpace(text))
+        isSurrogate = char.IsHighSurrogate(value, index);
+        if (isSurrogate && index == value.Length - 1)
         {
             return false;
         }
 
-        int length = text.Length;
-        if (length > 2)
-        {
-            return false;
-        }
-
-        bool isSurrogate = char.IsHighSurrogate(text, 0);
-        if (isSurrogate)
-        {
-            // length must be 2.
-            if (length != 2)
-            {
-                return false;
-            }
-        }
-        else
-        {
-            // length must be 1.
-            if (length != 1)
-            {
-                return false;
-            }
-        }
-
-        int codePoint = isSurrogate ? char.ConvertToUtf32(text, 0) : text[0];
+        int codePoint = isSurrogate ? char.ConvertToUtf32(value, index) : value[index];
         (int Min, int Max)[] ranges = isSurrogate ? SurrogateRanges : BasicRanges;
         return ranges.Any(range => range.Min <= codePoint && range.Max >= codePoint);
     }
 
-    public static bool HasChineseCharacter(this string text)
+    public static bool ContainsChineseCharacter([NotNullWhen(true)] this string? value)
     {
-        if (string.IsNullOrWhiteSpace(text))
+        if (string.IsNullOrWhiteSpace(value))
         {
             return false;
         }
 
-        for (int index = 0; index < text.Length; index++)
+        for (int index = 0; index < value.Length; index++)
         {
-            bool isSurrogate = char.IsHighSurrogate(text, index);
-            if (isSurrogate && index == text.Length - 1)
-            {
-                return false;
-            }
-
-            int codePoint = isSurrogate ? char.ConvertToUtf32(text, index) : text[index];
-            (int Min, int Max)[] ranges = isSurrogate ? SurrogateRanges : BasicRanges;
-            if (ranges.Any(range => range.Min <= codePoint && range.Max >= codePoint))
+            if (IsChineseCharacter(value, index, out bool isSurrogate))
             {
                 return true;
             }
@@ -156,6 +74,104 @@ public static partial class Chinese
             }
         }
 
+        return false;
+    }
+
+    public static bool IsSingleChineseCharacter([NotNullWhen(true)] this string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        int length = value.Length;
+        if (length > 2)
+        {
+            return false;
+        }
+
+        // length is either 1 or 2.
+        bool isSurrogate = char.IsHighSurrogate(value, 0);
+        if (isSurrogate)
+        {
+            // length must be 2.
+            if (length != 2)
+            {
+                return false;
+            }
+        }
+        else
+        {
+            // length must be 1.
+            if (length != 1)
+            {
+                return false;
+            }
+        }
+
+        int codePoint = isSurrogate ? char.ConvertToUtf32(value, 0) : value[0];
+        (int Min, int Max)[] ranges = isSurrogate ? SurrogateRanges : BasicRanges;
+        return ranges.Any(range => range.Min <= codePoint && range.Max >= codePoint);
+    }
+
+    public static bool IsSingleCharacter([NotNullWhen(true)] this string? value, [NotNullWhen(false)] out Exception? error, out bool isSingleSurrogatePair, [CallerArgumentExpression("value")] string argument = "")
+    {
+        // Equivalent to: !string.IsNullOrEmpty(text) && new StringInfo(text).LengthInTextElements == 1.
+        if (string.IsNullOrEmpty(value))
+        {
+            error = new ArgumentNullException(argument, "Input is null or empty.");
+            isSingleSurrogatePair = false;
+            return false;
+        }
+
+        int length = value.Length;
+        if (length > 2)
+        {
+            error = new ArgumentOutOfRangeException(argument, "Input is more than a single character.");
+            isSingleSurrogatePair = false;
+            return false;
+        }
+
+        // length is either 1 or 2.
+        isSingleSurrogatePair = char.IsHighSurrogate(value, 0);
+        if (isSingleSurrogatePair)
+        {
+            // length must be 2.
+            if (length != 2)
+            {
+                error = new ArgumentException("Input is a single surrogate character and missing another character in the pair.", argument);
+                isSingleSurrogatePair = false;
+                return false;
+            }
+        }
+        else
+        {
+            // length must be 1.
+            if (length != 1)
+            {
+                error = new ArgumentOutOfRangeException(argument, "Input is more than a single character.");
+                // isSingleSurrogatePair = false;
+                return false;
+            }
+        }
+
+        error = null;
+        return true;
+    }
+
+    public static bool IsSingleChineseCharacter([NotNullWhen(true)] this string? value, [NotNullWhen(false)] out Exception? error, out bool isSingleSurrogatePair, [CallerArgumentExpression("value")] string argument = "")
+    {
+        if (!IsSingleCharacter(value, out error, out isSingleSurrogatePair, argument))
+        {
+            return false;
+        }
+
+        if (IsChineseCharacter(value, 0, out isSingleSurrogatePair))
+        {
+            return true;
+        }
+
+        error = new ArgumentOutOfRangeException(argument, "Input is a single character but not Chinese.");
         return false;
     }
 }

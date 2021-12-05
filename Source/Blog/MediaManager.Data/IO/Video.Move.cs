@@ -113,6 +113,7 @@ internal static partial class Video
                 string title = XDocument.Load(nfo).Root?.Element("title")?.Value.FilterForFileSystem().Trim() ?? throw new InvalidOperationException($"{nfo} has no title.");
                 Directory
                     .EnumerateFiles(mediaDirectory, $"*{match}*", SearchOption.AllDirectories)
+                    .ToArray()
                     .ForEach(file =>
                     {
                         log(file);
