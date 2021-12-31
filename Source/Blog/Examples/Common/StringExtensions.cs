@@ -63,6 +63,8 @@ public static class StringExtensions
 
     public static bool ContainsOrdinal(this string value, string substring) => value.Contains(substring, StringComparison.Ordinal);
 
+    public static bool ContainsOrdinal(this string value, char character) => value.Contains(character, StringComparison.Ordinal);
+
     public static int IndexOfOrdinal(this string value, string substring) => value.IndexOf(substring, StringComparison.Ordinal);
 
     public static int LastIndexOfOrdinal(this string value, string substring) => value.LastIndexOf(substring, StringComparison.Ordinal);

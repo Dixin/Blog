@@ -355,11 +355,9 @@ internal static partial class Video
                         string[] videoMetadataFiles = videos.Select(video => $"{Path.GetFileNameWithoutExtension(video)}{XmlMetadataExtension}").ToArray();
                         string[] videoThumbFiles = videos.Select(video => $"{Path.GetFileNameWithoutExtension(video)}-thumb{ThumbExtension}").ToArray();
                         VideoEpisodeFileInfo?[] allVideoFileInfos = videos
-                            .Select(video =>
-                            {
-                                VideoEpisodeFileInfo.TryParse(video, out VideoEpisodeFileInfo? videoFileInfo);
-                                return videoFileInfo;
-                            })
+                            .Select(video => VideoEpisodeFileInfo.TryParse(video, out VideoEpisodeFileInfo? videoFileInfo)
+                                ? videoFileInfo
+                                : throw new InvalidOperationException(video))
                             .ToArray();
                         VideoEpisodeFileInfo[] videoFileInfos = allVideoFileInfos.NotNull().ToArray();
                         string[] subtitles = topFiles.Where(file => file.HasAnyExtension(AllSubtitleExtensions)).ToArray();
@@ -629,7 +627,7 @@ internal static partial class Video
             });
     }
 
-    internal static async Task PrintVersions(string x265JsonPath, string h264JsonPath, string ytsJsonPath, string ignoreJsonPath, Action<string>? log = null, params (string Directory, int Level)[] directories)
+    internal static async Task PrintMovieVersions(string x265JsonPath, string h264JsonPath, string ytsJsonPath, string ignoreJsonPath, Action<string>? log = null, params (string Directory, int Level)[] directories)
     {
         log ??= TraceLog;
         Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
@@ -686,19 +684,19 @@ internal static partial class Video
                             string metadataTitle = metadata.Title;
                             string[] videoEditions = videoInfo.Edition.Split(".", StringSplitOptions.RemoveEmptyEntries);
                             // (Not any) Local is equal to or better than remote metadata.
-                            return videoInfo.IsX 
-                                && (videoName.StartsWithIgnoreCase(metadata.Title) 
-                                    || videoInfo.Origin.ContainsIgnoreCase(".BluRay") && metadataTitle.ContainsIgnoreCase(".WEBRip.") 
-                                    || !videoInfo.Edition.ContainsIgnoreCase("PREVIEW") && metadataTitle.ContainsIgnoreCase(".PREVIEW.") 
-                                    || !videoInfo.Edition.ContainsIgnoreCase("DUBBED") && metadataTitle.ContainsIgnoreCase(".DUBBED.") 
+                            return videoInfo.IsX
+                                && (videoName.StartsWithIgnoreCase(metadata.Title)
+                                    || videoInfo.Origin.ContainsIgnoreCase(".BluRay") && metadataTitle.ContainsIgnoreCase(".WEBRip.")
+                                    || !videoInfo.Edition.ContainsIgnoreCase("PREVIEW") && metadataTitle.ContainsIgnoreCase(".PREVIEW.")
+                                    || !videoInfo.Edition.ContainsIgnoreCase("DUBBED") && metadataTitle.ContainsIgnoreCase(".DUBBED.")
                                     || !videoInfo.Edition.ContainsIgnoreCase("SUBBED") && (metadataTitle.ContainsIgnoreCase(".SUBBED.") || metadataTitle.ContainsIgnoreCase(".ENSUBBED."))
                                     || videoInfo.Edition.ContainsIgnoreCase("DC") && metadataTitle.ContainsIgnoreCase(".THEATRICAL.")
                                     || videoInfo.Edition.ContainsIgnoreCase("EXTENDED") && !metadataTitle.ContainsIgnoreCase(".EXTENDED.")
                                     || videoInfo.Edition.IsNotNullOrWhiteSpace() && (videoInfo with { Edition = string.Empty }).Name.StartsWithIgnoreCase(metadataTitle)
-                                    || videoInfo.Edition.ContainsIgnoreCase(".Part") && metadataTitle.ContainsIgnoreCase(".Part") 
-                                    || VideoFileInfo.TryParse(metadataTitle, out VideoFileInfo? metadataInfo) 
-                                    && videoInfo.Origin.EqualsIgnoreCase(metadataInfo.Origin) 
-                                    && videoInfo.Edition.IsNotNullOrWhiteSpace() 
+                                    || videoInfo.Edition.ContainsIgnoreCase(".Part") && metadataTitle.ContainsIgnoreCase(".Part")
+                                    || VideoFileInfo.TryParse(metadataTitle, out VideoFileInfo? metadataInfo)
+                                    && videoInfo.Origin.EqualsIgnoreCase(metadataInfo.Origin)
+                                    && videoInfo.Edition.IsNotNullOrWhiteSpace()
                                     && metadataInfo
                                         .Edition
                                         .Split(".", StringSplitOptions.RemoveEmptyEntries)
@@ -833,6 +831,56 @@ internal static partial class Video
                             log(string.Empty);
                         });
                     }
+                }
+            });
+    }
+
+    internal static async Task PrintTVVersions(string x265JsonPath, Action<string>? log = null, params (string Directory, int Level)[] directories)
+    {
+        log ??= TraceLog;
+        Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
+
+        directories
+            .SelectMany(directory => EnumerateDirectories(directory.Directory, directory.Level))
+            .ForEach(tv =>
+            {
+                string[] topFiles = Directory.GetFiles(tv);
+                string? json = topFiles.SingleOrDefault(file => file.HasExtension(ImdbMetadataExtension));
+                if (json.IsNullOrWhiteSpace())
+                {
+                    log($"!!! Missing IMDB metadata {tv}");
+                    log(string.Empty);
+                    return;
+                }
+
+                string imdbId = Path.GetFileNameWithoutExtension(json);
+                if (imdbId.EqualsOrdinal(NotExistingFlag))
+                {
+                    log($"{NotExistingFlag} {tv}");
+                    return;
+                }
+
+                imdbId = imdbId.Split(SubtitleSeparator)[0];
+                if (!Regex.IsMatch(imdbId, "tt[0-9]+"))
+                {
+                    log($"Invalid IMDB id {imdbId}: {tv}");
+                    return;
+                }
+
+                string[] videos = Directory.EnumerateDirectories(tv, "Season *").Where(season => !Path.GetFileName(season).EqualsIgnoreCase("Season 00")).SelectMany(Directory.EnumerateFiles).Where(IsCommonVideo).ToArray();
+                if (videos.All(video => VideoEpisodeFileInfo.TryParse(video, out VideoEpisodeFileInfo? parsed) && parsed.IsX))
+                {
+                    return;
+                }
+
+                if (x265Metadata.TryGetValue(imdbId, out RarbgMetadata[]? metadatas))
+                {
+                    metadatas.ForEach(metadata =>
+                    {
+                        log($"x265 {metadata.Link}");
+                        log(metadata.Title);
+                        log(string.Empty);
+                    });
                 }
             });
     }

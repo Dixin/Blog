@@ -10,13 +10,8 @@ public static class FileHelper
         File.Delete(file);
     }
 
-    public static bool Contains(string file, string find, Encoding? encoding = null)
-    {
-        file.NotNullOrWhiteSpace();
-        encoding ??= Encoding.UTF8;
-        
-        return File.ReadAllText(file, encoding).Contains(find);
-    }
+    public static bool Contains(string file, string find, Encoding? encoding = null) => 
+        File.ReadAllText(file.NotNullOrWhiteSpace(), encoding ?? Encoding.UTF8).Contains(find);
 
     public static void Replace(string file, string find, string? replace = null, Encoding? encoding = null)
     {
@@ -35,10 +30,18 @@ public static class FileHelper
     {
         source.NotNullOrWhiteSpace();
 
-        if (overwrite && File.Exists(destination.NotNullOrWhiteSpace()))
+        string destinationDirectory = Path.GetDirectoryName(destination) ?? throw new InvalidOperationException(destination);
+        if (!Directory.Exists(destinationDirectory))
         {
-            File.Delete(destination);
+            Directory.CreateDirectory(destinationDirectory);
         }
+
+        File.Move(source, destination, overwrite);
+    }
+
+    public static void Copy(string source, string destination, bool overwrite = false)
+    {
+        source.NotNullOrWhiteSpace();
 
         string destinationDirectory = Path.GetDirectoryName(destination) ?? throw new InvalidOperationException(destination);
         if (!Directory.Exists(destinationDirectory))
@@ -46,7 +49,7 @@ public static class FileHelper
             Directory.CreateDirectory(destinationDirectory);
         }
 
-        File.Move(source, destination);
+        File.Copy(source, destination, overwrite);
     }
 
     public static void Backup(string file, bool overwrite = false)
@@ -71,22 +74,23 @@ public static class FileHelper
         await fromStream.CopyToAsync(toStream);
     }
 
-    public static void AddPrefix(string file, string prefix)
-    {
+    public static void AddPrefix(string file, string prefix) => 
         File.Move(file, PathHelper.AddFilePrefix(file, prefix));
-    }
 
-    public static void AddPostfix(string file, string postfix)
-    {
+    public static void AddPostfix(string file, string postfix) => 
         File.Move(file, PathHelper.AddFilePostfix(file, postfix));
-    }
 
-    public static void MoveAll(string sourceDirectory, string destinationDirectory, string searchPattern = PathHelper.AllSearchPattern, SearchOption searchOption = SearchOption.TopDirectoryOnly, Func<string, bool>? predicate = null, bool overwrite = false)
-    {
+    public static void MoveAll(string sourceDirectory, string destinationDirectory, string searchPattern = PathHelper.AllSearchPattern, SearchOption searchOption = SearchOption.TopDirectoryOnly, Func<string, bool>? predicate = null, bool overwrite = false) =>
         Directory
             .EnumerateFiles(sourceDirectory, searchPattern, searchOption)
             .Where(file => predicate?.Invoke(file) ?? true)
             .ToArray()
             .ForEach(subtitle => Move(subtitle, subtitle.Replace(sourceDirectory, destinationDirectory, StringComparison.InvariantCulture), overwrite));
-    }
+
+    public static void CopyAll(string sourceDirectory, string destinationDirectory, string searchPattern = PathHelper.AllSearchPattern, SearchOption searchOption = SearchOption.TopDirectoryOnly, Func<string, bool>? predicate = null, bool overwrite = false) =>
+        Directory
+            .EnumerateFiles(sourceDirectory, searchPattern, searchOption)
+            .Where(file => predicate?.Invoke(file) ?? true)
+            .ToArray()
+            .ForEach(subtitle => Copy(subtitle, subtitle.Replace(sourceDirectory, destinationDirectory, StringComparison.InvariantCulture), overwrite));
 }

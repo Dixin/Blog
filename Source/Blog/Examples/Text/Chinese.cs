@@ -2,60 +2,243 @@
 
 public static partial class Chinese
 {
-    private static readonly (int, int)[] BasicRanges = new[]
-        {
-            ("4E00", "9FFF"),   // 一 CJK Unified Ideograms Unified Ideographs: (U+4E00 to U+9FFF).
-            ("3400", "4DBF"),   // 㐦 CJK Ideographs Extension A: (U+3400 to U+4DBF).
-            ("2E80", "2EFF"),   // ⺀ CJK Radicals Supplement: (U+2E80 to U+2EFF).
-            ("2F00", "2FDF"),   // ⼀ Kangxi Radicals: (U+2F00 to U+2FDF).
-            ("2FF0", "2FFF"),   // “⿰” Ideographic Description Characters: (U+2FF0 to U+2FFF).
-            ("3000", "303F"),   // 〥 CJK Symbols and Punctuation: (U+3000 to U+303F).
-            ("3040", "309F"),   // い Hiragana: (U+3040 to U+309F).
-            ("30A0", "30FF"),   // ア Katakana: (U+30A0 to U+30FF).
-            ("3100", "312F"),   // ㄆ Bopomofo: (U+3100 to U+312F).
-            ("31A0", "31BF"),   // ㆡ Bopomofo Extended: (U+31A0 to U+31BF).
-            ("31C0", "31EF"),   // ㇏ CJK Strokes: (U+31C0 to U+31EF) Legitimize. Strokes in (31C0, 31E3) are not handled by SQL Server collation: ㇀㇁㇂㇃㇄㇅㇆㇇㇈㇉㇊㇋㇌㇍㇎㇏㇐㇑㇒㇓㇔㇕㇖㇗㇘㇙㇚㇛㇜㇝㇞㇟㇠㇡㇢㇣.
-            ("31F0", "31FF"),   // ㇰ Katakana Phonetic Extensions: (U+31F0 to U+31FF).
-            ("F900", "FAFF"),   // 豈 CJK Compatibility Ideographs: (U+F900 to U+FAFF).
-            ("FE30", "FE4F"),   // ︽ CJK Compatibility Forms: (U+FE30 to U+FE4F).
-            ("FF00", "FFEF"),   // ｬ Half width and Full width Forms: (U+FF00 to U+FFEF).
-        }
-        .Select(hexCodePoint => (int.Parse(hexCodePoint.Item1, NumberStyles.HexNumber, CultureInfo.InvariantCulture), int.Parse(hexCodePoint.Item2, NumberStyles.HexNumber, CultureInfo.InvariantCulture)))
-        .ToArray();
-
-    private static readonly (int, int)[] SurrogateRanges = new[]
-        {
-            ("20000", "2A6DF"), // 𠀀 CJK Ideographs Extension B: (U+20000 to U+2A6DF).
-            ("2A700", "2B73F"), // 𪜀 CJK Ideographs Extension C: (U+2A700 to U+2B73F).
-            ("2B740", "2B81F"), // 𫝀 CJK Ideographs Extension D: (U+2B740 to U+2B81F).
-            ("2B820", "2CEAF"), // 𫢸 CJK Ideographs Extension E: (U+2B820 to U+2CEAF).
-            ("2CEB0", "2EBEF"), // 𬺰 CJK Ideographs Extension F: (U+2CEB0 to U+2EBEF).
-            ("2F800", "2FA1F"), // “丽” CJK Comparability Ideographs Supplement: (U+2F800 to U+2FA1F).
-        }
-        .Select(hexCodePoint => (int.Parse(hexCodePoint.Item1, NumberStyles.HexNumber, CultureInfo.InvariantCulture), int.Parse(hexCodePoint.Item2, NumberStyles.HexNumber, CultureInfo.InvariantCulture)))
-        .ToArray();
-
-    public static bool IsChineseCharacter([NotNullWhen(true)] string? value, int index, out bool isSurrogate)
+    // https://en.wikipedia.org/wiki/List_of_Unicode_characters#East_Asian_writing_systems
+    public static (char Min, char Max, string Name, string Uri)[] BasicBlocks { get; } =
     {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            isSurrogate = false;
-            return false;
-        }
+        // ⺀
+        ('\u2E80', '\u2EFF', "CJK Radicals Supplement", "https://en.wikipedia.org/wiki/CJK_Radicals_Supplement"),   
+        
+        // ⼀
+        ('\u2F00', '\u2FDF', "Kangxi Radicals", "https://en.wikipedia.org/wiki/Kangxi_radical#Unicode"),   
+        
+        // ⿰
+        ('\u2FF0', '\u2FFF', "Ideographic Description Characters", "https://en.wikipedia.org/wiki/Ideographic_Description_Characters_(Unicode_block)"),   
+        
+        // 〥
+        ('\u3000', '\u303F', "CJK Symbols and Punctuation", "https://en.wikipedia.org/wiki/CJK_Symbols_and_Punctuation"),   
+        
+        // い
+        ('\u3040', '\u309F', "Hiragana", "https://en.wikipedia.org/wiki/Hiragana_(Unicode_block)"),   
+        
+        // ア
+        ('\u30A0', '\u30FF', "Katakana", "https://en.wikipedia.org/wiki/Katakana_(Unicode_block)"),   
+        
+        // ㄆ
+        ('\u3100', '\u312F', "Bopomofo", "https://en.wikipedia.org/wiki/Bopomofo_(Unicode_block)"),   
 
-        isSurrogate = char.IsHighSurrogate(value, index);
-        if (isSurrogate && index == value.Length - 1)
-        {
-            return false;
-        }
+        // ㆝
+        ('\u3190', '\u319F', "Kanbun", "https://en.wikipedia.org/wiki/Kanbun_(Unicode_block)"),
 
-        int codePoint = isSurrogate ? char.ConvertToUtf32(value, index) : value[index];
-        (int Min, int Max)[] ranges = isSurrogate ? SurrogateRanges : BasicRanges;
-        return ranges.Any(range => range.Min <= codePoint && range.Max >= codePoint);
+        // ㆡ
+        ('\u31A0', '\u31BF', "Bopomofo Extended", "https://en.wikipedia.org/wiki/Bopomofo_Extended"),   
+        
+        // ㇏
+        // Strokes in (31C0, 31E3) are not handled by SQL Server collation: ㇀㇁㇂㇃㇄㇅㇆㇇㇈㇉㇊㇋㇌㇍㇎㇏㇐㇑㇒㇓㇔㇕㇖㇗㇘㇙㇚㇛㇜㇝㇞㇟㇠㇡㇢㇣.
+        ('\u31C0', '\u31EF', "CJK Strokes", "https://en.wikipedia.org/wiki/CJK_Strokes_(Unicode_block)"),   
+        
+        // ㇰ
+        ('\u31F0', '\u31FF', "Katakana Phonetic Extensions", "https://en.wikipedia.org/wiki/Katakana_Phonetic_Extensions"),   
+
+        // ㊥
+        ('\u3200', '\u32FF', "Enclosed CJK Letters and Months", "https://en.wikipedia.org/wiki/Enclosed_CJK_Letters_and_Months"),   
+
+        // ㍞
+        ('\u3300', '\u33FF', "CJK Compatibility", "https://en.wikipedia.org/wiki/CJK_Compatibility"),   
+        
+        // 㐦
+        ('\u3400', '\u4DBF', "CJK Ideographs Extension A", "https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_Extension_A"),   
+
+        // ䷿
+        ('\u4DC0', '\u4DFF', "Yijing Hexagram Symbols", "https://en.wikipedia.org/wiki/Yijing_Hexagram_Symbols_(Unicode_block)"),
+        
+        // 一
+        ('\u4E00', '\u9FFF', "CJK Unified Ideographs", "https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_(Unicode_block)"),
+
+        // ꀎ
+        ('\uA000', '\uA48F', "Yi Syllables", "https://en.wikipedia.org/wiki/Yi_Syllables"),
+
+        // ꒘
+        ('\uA490', '\uA4CF', "Yi Radicals", "https://en.wikipedia.org/wiki/Yi_Radicals"),
+
+        // ꜔ 
+        ('\uA700', '\uA71F', "Modifier Tone Letters", "https://en.wikipedia.org/wiki/Modifier_Tone_Letters"),
+
+        // 豈
+        ('\uF900', '\uFAFF', "CJK Compatibility Ideographs", "https://en.wikipedia.org/wiki/CJK_Compatibility_Ideographs"),   
+        
+        // ︗
+        ('\uFE10', '\uFE1F', "Vertical Forms", "https://en.wikipedia.org/wiki/Vertical_Forms"),
+
+        // ︽
+        ('\uFE30', '\uFE4F', "CJK Compatibility Forms", "https://en.wikipedia.org/wiki/CJK_Compatibility_Forms"),   
+        
+        // ﹨
+        ('\uFE50', '\uFE6F', "Small Form Variants", "https://en.wikipedia.org/wiki/Small_Form_Variants"),
+
+        // ｬ
+        ('\uFF00', '\uFFEF', "Half width and Full width Forms", "https://en.wikipedia.org/wiki/Halfwidth_and_Fullwidth_Forms_(Unicode_block)"),
+    };
+
+    public static (int Min, int Max, string Name, string Uri)[] SurrogatePairBlocks { get; } =
+    {
+        // 𖿡
+        (0x16FE0, 0x16FFF, "Ideographic Symbols and Punctuation", "https://en.wikipedia.org/wiki/Ideographic_Symbols_and_Punctuation"),
+
+        // 𗀀
+        (0x17000, 0x187FF, "Tangut", "https://en.wikipedia.org/wiki/Tangut_(Unicode_block)"),
+
+        // 𘠀
+        (0x18800, 0x18AFF, "Tangut Components", "https://en.wikipedia.org/wiki/Tangut_Components"),
+
+        // 𘮐
+        (0x18B00, 0x18CFF, "Khitan Small Script", "https://en.wikipedia.org/wiki/Khitan_Small_Script_(Unicode_block)"),
+
+        // 𘴀
+        (0x18D00, 0x18D7F, "Tangut Supplement", "https://en.wikipedia.org/wiki/Tangut_Supplement"),
+
+        // 𚿻
+        (0x1AFF0, 0x1AFFF, "Kana Extended-B", "https://en.wikipedia.org/wiki/Kana_Extended-B"),
+
+        // 𛁺
+        (0x1B000, 0x1B0FF, "Kana Supplement", "https://en.wikipedia.org/wiki/Kana_Supplement"),
+
+        // 𛄏
+        (0x1B100, 0x1B12F, "Kana Extended-A", "https://en.wikipedia.org/wiki/Kana_Extended-A"),
+
+        // 𛄯
+        (0x1B130, 0x1B16F, "Small Kana Extension", "https://en.wikipedia.org/wiki/Small_Kana_Extension"),
+
+        // 𛅰
+        (0x1B170, 0x1B2FF, "Nushu", "https://en.wikipedia.org/wiki/Nushu_(Unicode_block)"),
+
+        // 𝌿
+        (0x1D300, 0x1D35F, "Tai Xuan Jing Symbols", "https://en.wikipedia.org/wiki/Taixuanjing"),
+
+        // 𝍵
+        (0x1D360, 0x1D37F, "Counting Rod Numerals", "https://en.wikipedia.org/wiki/Counting_Rod_Numerals_(Unicode_block)"),
+
+        // 🈗
+        (0x1F200, 0x1F2FF, "Enclosed Ideographic Supplement", "https://en.wikipedia.org/wiki/Enclosed_Ideographic_Supplement"),
+
+        // 𠀀
+        (0x20000, 0x2A6DF, "CJK Ideographs Extension B", "https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_Extension_B"),
+
+        // 𪜀
+        (0x2A700, 0x2B73F, "CJK Ideographs Extension C", "https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_Extension_C"),
+
+        // 𫝀
+        (0x2B740, 0x2B81F, "CJK Ideographs Extension D", "https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_Extension_D"),
+
+        // 𫢸
+        (0x2B820, 0x2CEAF, "CJK Ideographs Extension E", "https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_Extension_E"),
+
+        // 𬺰
+        (0x2CEB0, 0x2EBEF, "CJK Ideographs Extension F", "https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_Extension_F"),
+
+        // 丽
+        (0x2F800, 0x2FA1F, "CJK Comparability Ideographs Supplement", "https://en.wikipedia.org/wiki/CJK_Compatibility_Ideographs_Supplement"),
+
+        // 𰀃
+        (0x30000, 0x3134F, "CJK Ideographs Extension G", "https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_Extension_G"),
+    };
+
+    public static IEnumerable<(int Index, int Length)> GetTextElements(this string value)
+    {
+        int index = 0;
+        ReadOnlyMemory<char> remaining = value.AsMemory(); // ReadOnlySpan<> cannot be used with yield.
+        while (!remaining.IsEmpty)
+        {
+            int length = StringInfo.GetNextTextElementLength(remaining.Span);
+            yield return (index, length);
+            index += length;
+            remaining = remaining.Slice(length);
+        }
     }
 
-    public static bool ContainsChineseCharacter([NotNullWhen(true)] this string? value)
+    private static string GetChart(int min) => $"https://www.unicode.org/charts/PDF/U{min:X4}.pdf";
+
+    public static bool IsChineseCharacter(
+        [NotNullWhen(true)] string? value,
+        int index,
+        out bool isSurrogatePair,
+        [NotNullWhen(true)] out string? unicodeBlockName,
+        [NotNullWhen(true)] out string? unicodeBlockUri,
+        [NotNullWhen(true)] out string? unicodeBlockChart)
     {
+        return IsChineseCharacter(value.AsSpan(), index, out isSurrogatePair, out unicodeBlockName, out unicodeBlockUri, out unicodeBlockChart);
+    }
+
+    public static bool IsChineseCharacter(
+        ReadOnlySpan<char> value,
+        int index,
+        out bool isSurrogatePair,
+        [NotNullWhen(true)] out string? unicodeBlockName,
+        [NotNullWhen(true)] out string? unicodeBlockUri,
+        [NotNullWhen(true)] out string? unicodeBlockChart)
+    {
+        unicodeBlockName = null;
+        unicodeBlockUri = null;
+        unicodeBlockChart = null;
+        if (value.Length == 0 || index >= value.Length)
+        {
+            isSurrogatePair = false;
+            return false;
+        }
+
+        isSurrogatePair = char.IsHighSurrogate(value[index]);
+        if (isSurrogatePair)
+        {
+            int lowIndex = index + 1;
+            if (lowIndex == value.Length)
+            {
+                isSurrogatePair = false;
+                return false;
+            }
+
+            int codePoint = char.ConvertToUtf32(value[index], value[lowIndex]);
+            foreach ((int Min, int Max, string Name, string Uri) block in SurrogatePairBlocks)
+            {
+                if (codePoint <= block.Max && codePoint >= block.Min)
+                {
+                    unicodeBlockName = block.Name;
+                    unicodeBlockUri = block.Uri;
+                    unicodeBlockChart = GetChart(block.Min);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        char character = value[index];
+        foreach ((char Min, char Max, string Name, string Uri) block in BasicBlocks)
+        {
+            if (character <= block.Max && character >= block.Min)
+            {
+                unicodeBlockName = block.Name;
+                unicodeBlockUri = block.Uri;
+                unicodeBlockChart = GetChart(block.Min);
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public static bool IsChineseCharacter([NotNullWhen(true)] string? value, int index) =>
+        IsChineseCharacter(value, index, out _, out _, out _, out _);
+
+    public static bool ContainsChineseCharacter(
+        [NotNullWhen(true)] this string? value,
+        out bool isSurrogatePair,
+        [NotNullWhen(true)] out string? unicodeBlockName,
+        [NotNullWhen(true)] out string? unicodeBlockUri,
+        [NotNullWhen(true)] out string? unicodeBlockChart)
+    {
+        isSurrogatePair = false;
+        unicodeBlockName = null;
+        unicodeBlockUri = null;
+        unicodeBlockChart = null;
         if (string.IsNullOrWhiteSpace(value))
         {
             return false;
@@ -63,12 +246,12 @@ public static partial class Chinese
 
         for (int index = 0; index < value.Length; index++)
         {
-            if (IsChineseCharacter(value, index, out bool isSurrogate))
+            if (IsChineseCharacter(value, index, out isSurrogatePair, out unicodeBlockName, out unicodeBlockUri, out unicodeBlockChart))
             {
                 return true;
             }
 
-            if (isSurrogate)
+            if (isSurrogatePair)
             {
                 index++;
             }
@@ -77,44 +260,21 @@ public static partial class Chinese
         return false;
     }
 
-    public static bool IsSingleChineseCharacter([NotNullWhen(true)] this string? value)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return false;
-        }
+    public static bool ContainsChineseCharacter([NotNullWhen(true)] this string? value) =>
+        ContainsChineseCharacter(value, out _, out _, out _, out _);
 
-        int length = value.Length;
-        if (length > 2)
-        {
-            return false;
-        }
+    public static bool IsSingleChineseCharacter(
+        [NotNullWhen(true)] this string? value,
+        out bool isSurrogatePair,
+        [NotNullWhen(true)] out string? unicodeBlockName,
+        [NotNullWhen(true)] out string? unicodeBlockUri,
+        [NotNullWhen(true)] out string? unicodeBlockChart) =>
+        IsChineseCharacter(value, 0, out isSurrogatePair, out unicodeBlockName, out unicodeBlockUri, out unicodeBlockChart) && (isSurrogatePair ? value.Length == 2 : value.Length == 1);
 
-        // length is either 1 or 2.
-        bool isSurrogate = char.IsHighSurrogate(value, 0);
-        if (isSurrogate)
-        {
-            // length must be 2.
-            if (length != 2)
-            {
-                return false;
-            }
-        }
-        else
-        {
-            // length must be 1.
-            if (length != 1)
-            {
-                return false;
-            }
-        }
+    public static bool IsSingleChineseCharacter([NotNullWhen(true)] this string? value) =>
+        IsSingleChineseCharacter(value, out _, out _, out _, out _);
 
-        int codePoint = isSurrogate ? char.ConvertToUtf32(value, 0) : value[0];
-        (int Min, int Max)[] ranges = isSurrogate ? SurrogateRanges : BasicRanges;
-        return ranges.Any(range => range.Min <= codePoint && range.Max >= codePoint);
-    }
-
-    public static bool IsSingleCharacter([NotNullWhen(true)] this string? value, [NotNullWhen(false)] out Exception? error, out bool isSingleSurrogatePair, [CallerArgumentExpression("value")] string argument = "")
+    public static bool IsSingleCharacter([NotNullWhen(true)] this string? value, out bool isSingleSurrogatePair, [NotNullWhen(false)] out Exception? error, [CallerArgumentExpression("value")] string argument = "")
     {
         // Equivalent to: !string.IsNullOrEmpty(text) && new StringInfo(text).LengthInTextElements == 1.
         if (string.IsNullOrEmpty(value))
@@ -159,14 +319,24 @@ public static partial class Chinese
         return true;
     }
 
-    public static bool IsSingleChineseCharacter([NotNullWhen(true)] this string? value, [NotNullWhen(false)] out Exception? error, out bool isSingleSurrogatePair, [CallerArgumentExpression("value")] string argument = "")
+    public static bool IsSingleChineseCharacter(
+        [NotNullWhen(true)] this string? value,
+        out bool isSingleSurrogatePair,
+        [NotNullWhen(true)] out string? unicodeBlockName,
+        [NotNullWhen(true)] out string? unicodeBlockUri,
+        [NotNullWhen(true)] out string? unicodeBlockChart,
+        [NotNullWhen(false)] out Exception? error,
+        [CallerArgumentExpression("value")] string argument = "")
     {
-        if (!IsSingleCharacter(value, out error, out isSingleSurrogatePair, argument))
+        unicodeBlockName = null;
+        unicodeBlockUri = null;
+        unicodeBlockChart = null;
+        if (!IsSingleCharacter(value, out isSingleSurrogatePair, out error, argument))
         {
             return false;
         }
 
-        if (IsChineseCharacter(value, 0, out isSingleSurrogatePair))
+        if (IsChineseCharacter(value, 0, out isSingleSurrogatePair, out unicodeBlockName, out unicodeBlockUri, out unicodeBlockChart))
         {
             return true;
         }

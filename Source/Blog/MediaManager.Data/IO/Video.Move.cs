@@ -96,15 +96,20 @@ internal static partial class Video
         });
     }
 
-    internal static void RenameEpisodesWithTitle(string nfoDirectory, string mediaDirectory, Func<string, string, string> rename, bool isDryRun = false, Action<string>? log = null)
+    internal static void RenameEpisodesWithTitle(string mediaDirectory, string metadataDirectory = "", Func<string, string, string>? rename = null, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= TraceLog;
-        Directory.EnumerateFiles(nfoDirectory, XmlMetadataSearchPattern, SearchOption.AllDirectories)
-            .ToList()
+        if (metadataDirectory.IsNullOrWhiteSpace())
+        {
+            metadataDirectory = mediaDirectory;
+        }
+
+        rename ??= (file, title) => PathHelper.AddFilePostfix(file, $".{title}");
+
+        Directory.GetFiles(metadataDirectory, XmlMetadataSearchPattern, SearchOption.AllDirectories)
             .ForEach(nfo =>
             {
-
-                string match = Regex.Match(Path.GetFileNameWithoutExtension(nfo) ?? throw new InvalidOperationException($"{nfo} is invalid."), @"s[\d]+e[\d]+", RegexOptions.IgnoreCase).Value.ToLowerInvariant();
+                string match = Regex.Match(Path.GetFileNameWithoutExtension(nfo) ?? throw new InvalidOperationException($"{nfo} is invalid."), @"S[\d]+E[\d]+", RegexOptions.IgnoreCase).Value.ToLowerInvariant();
                 if (match.IsNullOrWhiteSpace())
                 {
                     return;
@@ -112,8 +117,7 @@ internal static partial class Video
 
                 string title = XDocument.Load(nfo).Root?.Element("title")?.Value.FilterForFileSystem().Trim() ?? throw new InvalidOperationException($"{nfo} has no title.");
                 Directory
-                    .EnumerateFiles(mediaDirectory, $"*{match}*", SearchOption.AllDirectories)
-                    .ToArray()
+                    .GetFiles(mediaDirectory, $"*{match}*", SearchOption.AllDirectories)
                     .ForEach(file =>
                     {
                         log(file);
@@ -122,6 +126,7 @@ internal static partial class Video
                         {
                             File.Move(file, newFile);
                         }
+
                         log(newFile);
                     });
             });

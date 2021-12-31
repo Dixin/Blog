@@ -21,6 +21,7 @@
         <PackageReference Include="System.Management" Version="6.0.0" />
         <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
         <PackageReference Include="System.Text.Json" Version="6.0.0" />
+        <PackageReference Include="Ude.NetStandard" Version="1.2.0" />
     </ItemGroup>
 
 </Project>

@@ -4,7 +4,7 @@ using Examples.Common;
 
 internal record VideoEpisodeFileInfo
 {
-    private static readonly Regex NameRegex = new(@"^(.+?)(\.([0-9]{4}))?\.S([0-9]{2,4})E([0-9]{2,3})(E([0-9]{2,3}))?(\.[A-Z]+?)?(\.2160p|\.1080p|\.720p|\.540p|\.480p|\.360p)?(\.WEBRip|\.BluRay|\.DVDRip|\.HDRip|\.HDTV|\.VHSRip|\.LDRip|\.DVD|\.LDVDRip|\.LDDVDRip|\.HQDVDRip|\.TV|\.VCD|\.VCDRip)?(\.H264|\.x264|\.x265|\.DivX|\.Xvid)?(\.AAC|\.AC3|\.MP3|\.AAC5\.1|\.DTS)?(\-(RARBG|VXT|\[YTS\.(MX|AM|AG|LT)\]|[a-zA-Z0-9@]+?))?(\.[2-9]Audio)?(\.watermark)?(\.ffmpeg|\.nvenc|\.handbrake)?(\.bul|\.chs|\.cht|\.cht&eng|\.chs&eng|\.dut|\.eng|\.fre|\.heb|\.jap|\.kor|\.pol|\.dut|\.spa|\.swe|\.por)?(\.(.+))?(\.mp4|\.avi)$");
+    private static readonly Regex NameRegex = new(@"^(.+?)(\.([0-9]{4}))?(\.[A-Z]+?)?\.S([0-9]{2,4})E([0-9]{2,3})(E([0-9]{2,3}))?(\.2160p|\.1080p|\.720p|\.540p|\.480p|\.360p)?(\.WEBRip|\.BluRay|\.DVDRip|\.HDRip|\.HDTV|\.VHSRip|\.LDRip|\.DVD|\.LDVDRip|\.LDDVDRip|\.HQDVDRip|\.TV|\.VCD|\.VCDRip)?(\.H264|\.x264|\.x265|\.DivX|\.Xvid)?(\.AAC|\.AC3|\.MP3|\.AAC5\.1|\.DTS)?(\-(RARBG|VXT|\[YTS\.(MX|AM|AG|LT)\]|[a-zA-Z0-9@]+?))?(\.[2-9]Audio)?(\.watermark)?(\.ffmpeg|\.nvenc|\.handbrake)?(\.bul|\.chs|\.cht|\.cht&eng|\.chs&eng|\.dut|\.eng|\.fre|\.heb|\.jap|\.kor|\.pol|\.dut|\.spa|\.swe|\.por)?(\.(.+))?(\.mp4|\.avi)$");
 
     internal VideoEpisodeFileInfo(string name) => this.Name = name;
 
@@ -62,10 +62,10 @@ internal record VideoEpisodeFileInfo
 
             this.TVTitle = match.Groups[1].Value;
             this.Year = match.Groups[3].Value;
-            this.Season = match.Groups[4].Value;
-            this.Episode = match.Groups[5].Value;
-            this.AdditionalEpisode = match.Groups[7].Value;
-            this.Edition = match.Groups[8].Value;
+            this.Edition = match.Groups[4].Value;
+            this.Season = match.Groups[5].Value;
+            this.Episode = match.Groups[6].Value;
+            this.AdditionalEpisode = match.Groups[8].Value;
             this.Definition = match.Groups[9].Value;
             this.Origin = match.Groups[10].Value;
             this.VideoCodec = match.Groups[11].Value;

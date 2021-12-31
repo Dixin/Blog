@@ -252,7 +252,7 @@ internal static partial class Video
             string emptyMetadataFile = Path.Combine(directory, $"{NotExistingFlag}{ImdbMetadataExtension}");
             if (!files.Any(file => file.EqualsIgnoreCase(emptyMetadataFile)))
             {
-                await File.WriteAllTextAsync(emptyMetadataFile, "{}");
+                await File.WriteAllTextAsync(emptyMetadataFile, string.Empty);
             }
 
             return;
