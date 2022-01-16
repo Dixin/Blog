@@ -12,7 +12,7 @@
     </ItemGroup>
 
 	<ItemGroup>
-         <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="95.0.1020.30" /> 
+         <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="97.0.1072.8-pre" /> 
     </ItemGroup>
 
     <ItemGroup>
