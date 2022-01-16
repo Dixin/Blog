@@ -89,7 +89,7 @@ internal static partial class Video
                 .ToList()
                 .ForEach(attachment =>
                 {
-                    string newAttachment = Path.Combine(directory, (Path.GetFileName(attachment) ?? throw new InvalidOperationException(file)).Replace(Path.GetFileNameWithoutExtension(file), string.Join(".", info.SkipLast(1))));
+                    string newAttachment = Path.Combine(directory, (Path.GetFileName(attachment) ?? throw new InvalidOperationException(file)).Replace(Path.GetFileNameWithoutExtension(file), string.Join(".", info.Take(..^1))));
                     log(newAttachment);
                     File.Move(attachment, newAttachment);
                 });

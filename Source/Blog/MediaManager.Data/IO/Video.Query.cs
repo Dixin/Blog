@@ -358,7 +358,7 @@ internal static partial class Video
                 Imdb.TryLoad(movieJson, out ImdbMetadata? imdbMetadata);
                 return Directory
                     .GetFiles(Path.GetDirectoryName(movieJson) ?? string.Empty, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
-                    .Where(video => video.IsCommonVideo() && !existingVideos.ContainsKey(Path.GetRelativePath(relativePath, video)))
+                    .Where(video => video.IsCommonVideo() && !video.IsDiskImage() && !existingVideos.ContainsKey(Path.GetRelativePath(relativePath, video)))
                     .Select(video =>
                     {
                         if (!TryGetVideoMetadata(video, out VideoMetadata? videoMetadata, imdbMetadata, relativePath))
@@ -417,23 +417,13 @@ internal static partial class Video
         await File.WriteAllTextAsync(jsonPath, mergedVideoMetadataJson);
     }
 
-    internal static bool IsCommonVideo(this string file)
-    {
-        return file.HasAnyExtension(CommonVideoExtensions);
-    }
+    internal static bool IsCommonVideo(this string file) => file.HasAnyExtension(CommonVideoExtensions);
 
-    internal static bool IsVideo(this string file)
-    {
-        return file.HasAnyExtension(AllVideoExtensions);
-    }
+    internal static bool IsVideo(this string file) => file.HasAnyExtension(AllVideoExtensions);
 
-    internal static bool IsTextSubtitle(this string file)
-    {
-        return file.HasAnyExtension(TextSubtitleExtensions);
-    }
+    internal static bool IsTextSubtitle(this string file) => file.HasAnyExtension(TextSubtitleExtensions);
 
-    internal static bool IsSubtitle(this string file)
-    {
-        return file.HasAnyExtension(AllSubtitleExtensions);
-    }
+    internal static bool IsSubtitle(this string file) => file.HasAnyExtension(AllSubtitleExtensions);
+
+    internal static bool IsDiskImage(this string file) => file.HasExtension(DiskImageExtension);
 }

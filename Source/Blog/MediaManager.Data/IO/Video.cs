@@ -19,8 +19,10 @@ internal static partial class Video
     private const string Delimiter = ".";
 
     private static readonly string[] UncommonVideoExtensions = { ".avi", ".wmv", ".webm", ".mpg", ".mpeg", ".rmvb", ".rm", ".3gp", ".divx", ".m1v", ".mov", ".ts", ".vob", ".flv", ".m4v", ".mkv", ".dat" };
+    
+    private const string DiskImageExtension = ".iso";
 
-    private static readonly string[] CommonVideoExtensions = { ".avi", VideoExtension, ".mkv", ".iso" };
+    private static readonly string[] CommonVideoExtensions = { ".avi", VideoExtension, ".mkv", DiskImageExtension };
 
     private static readonly string[] AllVideoExtensions = UncommonVideoExtensions.Union(CommonVideoExtensions).ToArray();
 
