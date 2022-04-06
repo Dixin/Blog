@@ -11,9 +11,8 @@ internal static class Entry
     internal static async Task DownloadMetadataAsync(
         string baseUrl, int startIndex, int count,
         string entryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string libraryJsonPath,
-        Action<string>? log = null)
+        Action<string> log)
     {
-        log ??= message => Trace.WriteLine(message);
         List<string> entryLinks = new();
         using WebClient webClient = new();
         await Enumerable

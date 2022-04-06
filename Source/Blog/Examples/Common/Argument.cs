@@ -2,6 +2,7 @@
 
 public static class Argument
 {
+    [return: NotNull]
     public static T NotNull<T>(
 #if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             [NotNull]
@@ -11,6 +12,7 @@ public static class Argument
             ? throw new ArgumentNullException(name)
             : value;
 
+    [return: NotNull]
     public static string NotNullOrWhiteSpace(
 #if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             [NotNull]
@@ -20,6 +22,7 @@ public static class Argument
             ? throw new ArgumentNullException(name)
             : value;
 
+    [return: NotNull]
     public static string NotNullOrEmpty(
 #if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             [NotNull]
@@ -29,6 +32,7 @@ public static class Argument
             ? throw new ArgumentNullException(name)
             : value;
 
+    [return: NotNull]
     public static IEnumerable<T> NotNullOrEmpty<T>(
 #if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             [NotNull]

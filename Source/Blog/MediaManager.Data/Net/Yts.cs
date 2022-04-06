@@ -2,6 +2,7 @@
 
 using CsQuery;
 using Examples.Common;
+using Examples.IO;
 using Examples.Linq;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
@@ -11,9 +12,7 @@ internal static class Yts
 
     private const int SaveFrequency = 100;
 
-    private static readonly Action<string> Log = text => Trace.WriteLine(text);
-
-    internal static async Task DownloadSummariesAsync(string jsonPath, Func<int, bool>? @continue = null, int index = 1)
+    internal static async Task DownloadSummariesAsync(string jsonPath, Action<string> log, Func<int, bool>? @continue = null, int index = 1)
     {
         @continue ??= _ => true;
         Dictionary<string, YtsSummary> allSummaries = File.Exists(jsonPath)
@@ -24,12 +23,12 @@ internal static class Yts
         for (; @continue(index); index++)
         {
             string url = $"{BaseUrl}/browse-movies?page={index}";
-            Log($"Start {url}");
+            log($"Start {url}");
             string html = await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(url));
             CQ cq = new(html);
             if (cq[".browse-movie-wrap"].IsEmpty())
             {
-                Log($"! {url} is empty");
+                log($"! {url} is empty");
                 break;
             }
 
@@ -54,25 +53,25 @@ internal static class Yts
             if (index % SaveFrequency == 0)
             {
                 string jsonString = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
-                await File.WriteAllTextAsync(jsonPath, jsonString);
+                await FileHelper.SaveAndReplace(jsonPath, jsonString, null, SaveJsonLock);
             }
 
-            Log($"End {url}");
+            log($"End {url}");
         }
 
-        links.OrderBy(link => link).ForEach(Log);
+        links.OrderBy(link => link).ForEach(log);
 
         string finalJsonString = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
-        await File.WriteAllTextAsync(jsonPath, finalJsonString);
+        await FileHelper.SaveAndReplace(jsonPath, finalJsonString, null, SaveJsonLock);
     }
 
-    internal static async Task DownloadMetadataAsync(string summaryJsonPath, string metadataJsonPath, Func<int, bool>? @continue = null, int index = 1, int degreeOfParallelism = 4)
+    internal static async Task DownloadMetadataAsync(string summaryJsonPath, string metadataJsonPath, Action<string> log, Func<int, bool>? @continue = null, int index = 1, int degreeOfParallelism = 4)
     {
-        await DownloadSummariesAsync(summaryJsonPath, @continue, index);
-        await DownloadMetadataAsync(summaryJsonPath, metadataJsonPath, degreeOfParallelism);
+        await DownloadSummariesAsync(summaryJsonPath, log, @continue, index);
+        await DownloadMetadataAsync(summaryJsonPath, metadataJsonPath, log, degreeOfParallelism);
     }
 
-    internal static async Task DownloadMetadataAsync(string summaryJsonPath, string metadataJsonPath, int degreeOfParallelism = 4)
+    internal static async Task DownloadMetadataAsync(string summaryJsonPath, string metadataJsonPath, Action<string> log, int degreeOfParallelism = 4)
     {
         string summaryJsonString = await File.ReadAllTextAsync(summaryJsonPath);
         Dictionary<string, YtsSummary> summaries = JsonSerializer.Deserialize<Dictionary<string, YtsSummary>>(summaryJsonString) ?? throw new InvalidOperationException(summaryJsonPath);
@@ -87,11 +86,11 @@ internal static class Yts
             .Values
             .Where(summary => !existingMetadataByLink.ContainsKey(summary.Link))
             .OrderBy(summary => summary.Link)
-            .Do(summary => Log(summary.Link))
+            .Do(summary => log(summary.Link))
             .ToArray()
             .ParallelForEachAsync(async (summary, index) =>
             {
-                Log($"Start {index}:{summary.Link}");
+                log($"Start {index}:{summary.Link}");
                 using WebClient webClient = new WebClient().AddChromeHeaders();
                 try
                 {
@@ -106,8 +105,8 @@ internal static class Yts
                         ImdbId: info.Find("a.icon[title='IMDb Rating']").Attr("href").Replace("https://www.imdb.com/title/", string.Empty).Trim('/'),
                         ImdbRating: summary.ImdbRating,
                         Genres: summary.Genres,
-                        Year: summary.Year,
                         Image: summary.Image,
+                        Year: summary.Year,
                         Language: info.Find("h2 a span").Text().Trim().TrimStart('[').TrimEnd(']'),
                         Availabilities: info.Find("p.hidden-sm a[rel='nofollow']").ToDictionary(link => link.TextContent.Trim(), link => link.GetAttribute("href")));
                     lock (AddItemLock)
@@ -119,32 +118,25 @@ internal static class Yts
                 }
                 catch (Exception exception)
                 {
-                    Log($"{summary.Link} {exception}");
+                    log($"{summary.Link} {exception}");
                 }
 
                 if (Interlocked.Increment(ref count) % SaveFrequency == 0)
                 {
-                    SaveDetail(metadataJsonPath, details);
+                    string jsonString = JsonSerializer.Serialize(details, new JsonSerializerOptions() { WriteIndented = true });
+                    await FileHelper.SaveAndReplace(metadataJsonPath, jsonString, null, SaveJsonLock);
                 }
 
-                Log($"End {index}:{summary.Link}");
+                log($"End {index}:{summary.Link}");
             }, degreeOfParallelism);
 
-        SaveDetail(metadataJsonPath, details);
+        string jsonString = JsonSerializer.Serialize(details, new JsonSerializerOptions() { WriteIndented = true });
+        await FileHelper.SaveAndReplace(metadataJsonPath, jsonString, null, SaveJsonLock);
     }
 
     private static readonly object SaveJsonLock = new();
 
     private static readonly object AddItemLock = new();
-
-    private static void SaveDetail(string detailJsonPath, IDictionary<string, YtsMetadata[]> allDetails)
-    {
-        string jsonString = JsonSerializer.Serialize(allDetails, new JsonSerializerOptions() { WriteIndented = true });
-        lock (SaveJsonLock)
-        {
-            File.WriteAllText(detailJsonPath, jsonString);
-        }
-    }
 
     internal static async Task SaveImdbSpecialTitles(string imdbBasicsPath, string jsonPath)
     {
@@ -158,7 +150,7 @@ internal static class Yts
         await File.WriteAllTextAsync(jsonPath, jsonString);
     }
 
-    internal static async Task SaveYtsSpecialTitles(string directory, string jsonPath)
+    internal static async Task SaveYtsSpecialTitles(string directory, string jsonPath, Action<string> log)
     {
         string[] titles = Directory
             .GetFiles(directory)
@@ -172,19 +164,19 @@ internal static class Yts
                         string imdbId = Path.GetFileName(uri?.LocalPath?.TrimEnd('/')) ?? string.Empty;
                         if (!Regex.IsMatch(imdbId, @"tt[0-9]+"))
                         {
-                            Trace.WriteLine($"Invalid IMDB Id: {file}, {url}.");
+                            log($"Invalid IMDB Id: {file}, {url}.");
                         }
 
                         return imdbId;
                     }
                     catch
                     {
-                        Trace.WriteLine($"Invalid IMDB Id: {file}, {url}.");
+                        log($"Invalid IMDB Id: {file}, {url}.");
                         return string.Empty;
                     }
                 }
 
-                Trace.WriteLine($"Invalid IMDB Id: {file}, {url}.");
+                log($"Invalid IMDB Id: {file}, {url}.");
                 return string.Empty;
             })
             .Where(imdbId => imdbId.IsNotNullOrWhiteSpace())

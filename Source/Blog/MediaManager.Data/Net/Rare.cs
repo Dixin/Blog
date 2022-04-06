@@ -11,9 +11,8 @@ internal static class Rare
     internal static async Task DownloadMetadataAsync(
         string indexUrl,
         string rareJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string libraryJsonPath,
-        Action<string>? log = null)
+        Action<string> log)
     {
-        log ??= message => Trace.WriteLine(message);
         using WebClient webClient = new();
         string html = await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(indexUrl));
         CQ indexCQ = html;

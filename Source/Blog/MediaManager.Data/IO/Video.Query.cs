@@ -217,6 +217,8 @@ internal static partial class Video
                     log($"Delete imdb metadata {jsonFile}.");
                     File.Delete(jsonFile);
                 });
+                files = files.Except(jsonFiles).ToArray();
+                jsonFiles = Array.Empty<string>();
             }
             else
             {

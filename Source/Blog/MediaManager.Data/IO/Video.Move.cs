@@ -253,7 +253,7 @@ internal static partial class Video
                 string? imdbId = english.Root?.Element("imdbid")?.Value;
                 Debug.Assert(imdbId.IsNullOrWhiteSpace()
                     ? NotExistingFlag.EqualsOrdinal(Path.GetFileNameWithoutExtension(json))
-                    : imdbId.EqualsIgnoreCase(Path.GetFileNameWithoutExtension(json).Split(".")[0]));
+                    : imdbId.EqualsIgnoreCase(Path.GetFileNameWithoutExtension(json).Split("-")[0]));
                 string rating = imdbMetadata?.FormattedAggregateRating ?? NotExistingFlag;
                 string ratingCount = imdbMetadata?.FormattedAggregateRatingCount ?? NotExistingFlag;
                 string[] videos = files.Where(IsVideo).ToArray();
@@ -578,15 +578,16 @@ internal static partial class Video
             });
     }
 
-    internal static void RenameTVAttachment(IEnumerable<string> videos)
+    internal static void RenameTVAttachment(IEnumerable<string> videos, Action<string>? log = null)
     {
+        log ??= TraceLog;
         videos.ForEach(video =>
         {
             string match = Regex.Match(Path.GetFileNameWithoutExtension(video), @"s[\d]+e[\d]+", RegexOptions.IgnoreCase).Value.ToLowerInvariant();
             Directory
                 .EnumerateFiles(Path.GetDirectoryName(video) ?? throw new InvalidOperationException(video), $"*{match}*", SearchOption.TopDirectoryOnly)
                 .Where(file => !file.EqualsIgnoreCase(video))
-                .ForEach(file => Trace.WriteLine(file));
+                .ForEach(log);
         });
     }
 

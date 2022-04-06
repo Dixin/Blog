@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 
 using CsQuery;
 using Examples.Common;
+using Examples.IO;
 using Examples.Linq;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
@@ -12,21 +13,22 @@ internal static class Rarbg
 {
     private const int SaveFrequency = 50;
 
-    internal static async Task DownloadMetadataAsync(IEnumerable<string> urls, string jsonPath, Func<int, bool>? @continue = null, int degreeOfParallelism = 4)
+    internal static async Task DownloadMetadataAsync(IEnumerable<string> urls, string jsonPath, Action<string> log, Func<int, bool>? @continue = null, int degreeOfParallelism = 4)
     {
         ConcurrentDictionary<string, RarbgMetadata[]> allSummaries = File.Exists(jsonPath)
             ? new(JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(jsonPath)) ?? throw new InvalidOperationException(jsonPath))
             : new();
-        await urls.ParallelForEachAsync(async (url, index) => await DownloadMetadataAsync(url, jsonPath, allSummaries, index + 1, @continue), degreeOfParallelism);
-        SaveJson(jsonPath, allSummaries);
+        await urls.ParallelForEachAsync(async (url, index) => await DownloadMetadataAsync(url, jsonPath, allSummaries, index + 1, log, @continue), degreeOfParallelism);
+        string jsonText = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
+        await FileHelper.SaveAndReplace(jsonPath, jsonText, null, SaveJsonLock);
     }
 
-    internal static async Task DownloadMetadataAsync(string url, string jsonPath, Func<int, bool>? @continue = null)
+    internal static async Task DownloadMetadataAsync(string url, string jsonPath, Action<string> log, Func<int, bool>? @continue = null)
     {
-        await DownloadMetadataAsync(new[] { url }, jsonPath, @continue, 1);
+        await DownloadMetadataAsync(new[] { url }, jsonPath, log, @continue, 1);
     }
 
-    private static async Task DownloadMetadataAsync(string url, string jsonPath, ConcurrentDictionary<string, RarbgMetadata[]> allSummaries, int partitionIndex, Func<int, bool>? @continue = null)
+    private static async Task DownloadMetadataAsync(string url, string jsonPath, ConcurrentDictionary<string, RarbgMetadata[]> allSummaries, int partitionIndex, Action<string> log, Func<int, bool>? @continue = null)
     {
         @continue ??= _ => true;
         try
@@ -45,7 +47,7 @@ internal static class Rarbg
                 }
 
                 await Task.Delay(WebDriverHelper.DefaultDomWait);
-                Trace.WriteLine($"{partitionIndex}:{pageIndex} Start {webDriver.Url}");
+                log($"{partitionIndex}:{pageIndex} Start {webDriver.Url}");
 
                 CQ page = webDriver.PageSource;
                 page
@@ -62,7 +64,7 @@ internal static class Rarbg
                             ? links[1].GetAttribute("href").Replace("/torrents.php?imdb=", string.Empty).Trim()
                             : string.Empty;
 
-                        string[] genres = new string[0];
+                        string[] genres = Array.Empty<string>();
                         string imdbRating = string.Empty;
                         if (texts.Length > 1)
                         {
@@ -93,56 +95,50 @@ internal static class Rarbg
                         }
                     });
 
-                Trace.WriteLine($"{partitionIndex}:{pageIndex} End {webDriver.Url}");
+                log($"{partitionIndex}:{pageIndex} End {webDriver.Url}");
                 if (pageIndex++ % SaveFrequency == 0)
                 {
-                    SaveJson(jsonPath, allSummaries);
+                    string jsonText = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
+                    await FileHelper.SaveAndReplace(jsonPath, jsonText, null, SaveJsonLock);
                 }
-            } while (webDriver.HasNextPage(ref pager));
+            } while (webDriver.HasNextPage(ref pager, log));
 
             webDriver.Close();
             webDriver.Quit();
         }
         catch (Exception exception)
         {
-            Trace.WriteLine(exception);
+            log(exception.ToString());
         }
         finally
         {
-            SaveJson(jsonPath, allSummaries);
+            string jsonText = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
+            await FileHelper.SaveAndReplace(jsonPath, jsonText, null, SaveJsonLock);
         }
     }
 
     private static readonly object SaveJsonLock = new();
 
-    private static void SaveJson(string jsonPath, IDictionary<string, RarbgMetadata[]> allSummaries)
-    {
-        string jsonString = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
-        lock (SaveJsonLock)
-        {
-            string temp = $"{jsonPath}.txt";
-            File.WriteAllText(temp, jsonString);
-            if (File.Exists(jsonPath))
-            {
-                File.Delete(jsonPath);
-            }
-
-            File.Move(temp, jsonPath);
-        }
-    }
-
     private static readonly object AddItemLock = new();
 
-    private static bool HasNextPage(this IWebDriver webDriver, ref IWebElement pager)
+    private static bool HasNextPage(this IWebDriver webDriver, ref IWebElement pager, Action<string> log)
     {
         ReadOnlyCollection<IWebElement> nextPage = pager.FindElements(By.CssSelector("a[title='next page']"));
-        if (nextPage.Count > 0)
+        if (nextPage.Count <= 0)
         {
-            webDriver.Url = nextPage[0].GetAttribute("href");
+            return false;
+        }
+
+        webDriver.Url = nextPage[0].GetAttribute("href");
+        try
+        {
             pager = new WebDriverWait(webDriver, WebDriverHelper.DefaultWait).Until(e => e.FindElement(By.Id("pager_links")));
             return true;
         }
-
-        return false;
+        catch (NoSuchElementException exception)
+        {
+            log(exception.ToString());
+            return false;
+        }
     }
 }

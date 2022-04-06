@@ -10,7 +10,7 @@ public static class FileHelper
         File.Delete(file);
     }
 
-    public static bool Contains(string file, string find, Encoding? encoding = null) => 
+    public static bool Contains(string file, string find, Encoding? encoding = null) =>
         File.ReadAllText(file.NotNullOrWhiteSpace(), encoding ?? Encoding.UTF8).Contains(find);
 
     public static void Replace(string file, string find, string? replace = null, Encoding? encoding = null)
@@ -18,12 +18,12 @@ public static class FileHelper
         file.NotNullOrWhiteSpace();
         replace ??= string.Empty;
         encoding ??= Encoding.UTF8;
-        
+
         string text = File.ReadAllText(file, encoding).Replace(find, replace);
         File.WriteAllText(file, text, encoding);
     }
 
-    public static void Rename(this FileInfo file, string newName) => 
+    public static void Rename(this FileInfo file, string newName) =>
         file.NotNull().MoveTo(newName.NotNullOrWhiteSpace());
 
     public static void Move(string source, string destination, bool overwrite = false)
@@ -74,10 +74,10 @@ public static class FileHelper
         await fromStream.CopyToAsync(toStream);
     }
 
-    public static void AddPrefix(string file, string prefix) => 
+    public static void AddPrefix(string file, string prefix) =>
         File.Move(file, PathHelper.AddFilePrefix(file, prefix));
 
-    public static void AddPostfix(string file, string postfix) => 
+    public static void AddPostfix(string file, string postfix) =>
         File.Move(file, PathHelper.AddFilePostfix(file, postfix));
 
     public static void MoveAll(string sourceDirectory, string destinationDirectory, string searchPattern = PathHelper.AllSearchPattern, SearchOption searchOption = SearchOption.TopDirectoryOnly, Func<string, bool>? predicate = null, bool overwrite = false) =>
@@ -93,4 +93,33 @@ public static class FileHelper
             .Where(file => predicate?.Invoke(file) ?? true)
             .ToArray()
             .ForEach(subtitle => Copy(subtitle, subtitle.Replace(sourceDirectory, destinationDirectory, StringComparison.InvariantCulture), overwrite));
+
+    public static async Task SaveAndReplace(string file, string content, Encoding? encoding = null, object? @lock = null)
+    {
+        encoding ??= Encoding.UTF8;
+        string tempFile = $"{file}.tmp";
+        if (@lock is not null)
+        {
+            lock (@lock)
+            {
+                File.WriteAllText(tempFile, content, encoding);
+                if (File.Exists(file))
+                {
+                    File.Delete(file);
+                }
+
+                File.Move(tempFile, file);
+            }
+        }
+        else
+        {
+            await File.WriteAllTextAsync(tempFile, content, encoding);
+            if (File.Exists(file))
+            {
+                File.Delete(file);
+            }
+
+            File.Move(tempFile, file);
+        }
+    }
 }

@@ -411,7 +411,7 @@ internal static partial class Video
                         return videoFileInfo;
                     })
                     .ToArray();
-                VideoFileInfo[] videoFileInfos = allVideoFileInfos.NotNull().ToArray();
+                VideoFileInfo[] videoFileInfos = allVideoFileInfos.Select(video => video.NotNull()).ToArray();
                 string[] subtitles = topFiles.Where(file => file.HasAnyExtension(AllSubtitleExtensions)).ToArray();
                 string[] metadataFiles = topFiles.Where(file => file.HasExtension(XmlMetadataExtension)).ToArray();
                 string[] otherFiles = topFiles.Except(videos).Except(subtitles).Except(metadataFiles).Except(imdbFiles).Except(cacheFiles).ToArray();
@@ -627,11 +627,12 @@ internal static partial class Video
             });
     }
 
-    internal static async Task PrintMovieVersions(string x265JsonPath, string h264JsonPath, string ytsJsonPath, string ignoreJsonPath, Action<string>? log = null, params (string Directory, int Level)[] directories)
+    internal static async Task PrintMovieVersions(string x265JsonPath, string h264JsonPath, string h264720PJsonPath, string ytsJsonPath, string ignoreJsonPath, Action<string>? log = null, params (string Directory, int Level)[] directories)
     {
         log ??= TraceLog;
         Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
         Dictionary<string, RarbgMetadata[]> h264Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
+        Dictionary<string, RarbgMetadata[]> h264720PMetadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264720PJsonPath))!;
         Dictionary<string, YtsMetadata[]> ytsMetadata = JsonSerializer.Deserialize<Dictionary<string, YtsMetadata[]>>(await File.ReadAllTextAsync(ytsJsonPath))!;
         HashSet<string> ignore = new(JsonSerializer.Deserialize<string[]>(await File.ReadAllTextAsync(ignoreJsonPath))!);
 
@@ -662,7 +663,7 @@ internal static partial class Video
                     return;
                 }
 
-                string[] videos = files.Where(file => file.IsCommonVideo()).ToArray();
+                string[] videos = files.Where(file => file.IsVideo()).ToArray();
                 if (videos.All(video => VideoFileInfo.TryParse(video, out VideoFileInfo? parsed) && parsed.Is2160P))
                 {
                     return;
@@ -831,6 +832,54 @@ internal static partial class Video
                             log(string.Empty);
                         });
                     }
+
+                    return;
+                }
+
+                RarbgMetadata[] availableOtherMetadata = Array.Empty<RarbgMetadata>();
+                if (videos.Any(video => VideoFileInfo.TryParse(video, out VideoFileInfo? videoFileInfo) && videoFileInfo.Is1080P))
+                {
+                    return;
+                }
+
+                availableOtherMetadata = x265Metadata.ContainsKey(imdbId)
+                    ? x265Metadata[imdbId]
+                    : availableOtherMetadata;
+                availableOtherMetadata = h264Metadata.ContainsKey(imdbId)
+                    ? availableOtherMetadata.Concat(h264Metadata[imdbId]).ToArray()
+                    : availableOtherMetadata;
+                if (availableOtherMetadata.Any())
+                {
+                    log(movie);
+                    videos.ForEach(file => log(Path.GetFileName(file)));
+                    availableOtherMetadata.ForEach(metadata =>
+                    {
+                        log($"HD {metadata.Link}");
+                        log(metadata.Title);
+                        log(string.Empty);
+                    });
+
+                    return;
+                }
+
+                if (videos.Any(video => VideoFileInfo.TryParse(video, out VideoFileInfo? videoFileInfo) && videoFileInfo.Is720P))
+                {
+                    return;
+                }
+
+                availableOtherMetadata = h264720PMetadata.ContainsKey(imdbId)
+                    ? availableOtherMetadata.Concat(h264720PMetadata[imdbId]).ToArray()
+                    : availableOtherMetadata;
+                if (availableOtherMetadata.Any())
+                {
+                    log(movie);
+                    videos.ForEach(file => log(Path.GetFileName(file)));
+                    availableOtherMetadata.ForEach(metadata =>
+                    {
+                        log($"HD {metadata.Link}");
+                        log(metadata.Title);
+                        log(string.Empty);
+                    });
                 }
             });
     }
@@ -873,9 +922,9 @@ internal static partial class Video
                     return;
                 }
 
-                if (x265Metadata.TryGetValue(imdbId, out RarbgMetadata[]? metadatas))
+                if (x265Metadata.TryGetValue(imdbId, out RarbgMetadata[]? metadata))
                 {
-                    metadatas.ForEach(metadata =>
+                    metadata.ForEach(metadata =>
                     {
                         log($"x265 {metadata.Link}");
                         log(metadata.Title);
