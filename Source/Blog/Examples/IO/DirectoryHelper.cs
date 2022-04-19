@@ -48,7 +48,10 @@ public static class DirectoryHelper
             Directory.CreateDirectory(parent);
         }
 
-        Directory.Move(source, destination);
+        if (!source.EqualsOrdinal(destination))
+        {
+            Directory.Move(source, destination);
+        }
     }
 
     public static void Empty(DirectoryInfo directory)

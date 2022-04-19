@@ -23,10 +23,8 @@ internal static class Rarbg
         await FileHelper.SaveAndReplace(jsonPath, jsonText, null, SaveJsonLock);
     }
 
-    internal static async Task DownloadMetadataAsync(string url, string jsonPath, Action<string> log, Func<int, bool>? @continue = null)
-    {
+    internal static async Task DownloadMetadataAsync(string url, string jsonPath, Action<string> log, Func<int, bool>? @continue = null) => 
         await DownloadMetadataAsync(new[] { url }, jsonPath, log, @continue, 1);
-    }
 
     private static async Task DownloadMetadataAsync(string url, string jsonPath, ConcurrentDictionary<string, RarbgMetadata[]> allSummaries, int partitionIndex, Action<string> log, Func<int, bool>? @continue = null)
     {
