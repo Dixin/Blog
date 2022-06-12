@@ -10,7 +10,7 @@ internal static partial class Video
         log ??= TraceLog;
         Directory.EnumerateFiles(path, pattern ?? PathHelper.AllSearchPattern, searchOption ?? SearchOption.AllDirectories)
             .Where(file => predicate?.Invoke(file) ?? true)
-            .OrderBy(file => file)
+            .OrderBy(file => file, StringComparer.CurrentCulture)
             .ToArray()
             .ForEach((file, index) =>
             {
@@ -258,25 +258,24 @@ internal static partial class Video
                 string ratingCount = imdbMetadata?.FormattedAggregateRatingCount ?? NotExistingFlag;
                 string[] videos = files.Where(IsVideo).ToArray();
                 string contentRating = imdbMetadata?.FormattedContentRating ?? NotExistingFlag;
-                VideoFileInfo[] videoFileInfos = videos.Select(video => new VideoFileInfo(video)).ToArray();
-                VideoDirectoryInfo videoDirectoryInfo = new()
-                {
-                    DefaultTitle1 = defaultTitle.FilterForFileSystem(),
-                    OriginalTitle1 = originalTitle.FilterForFileSystem(),
-                    Year = year,
-                    TranslatedTitle1 = translatedTitle.FilterForFileSystem(),
-                    AggregateRating = rating,
-                    AggregateRatingCount = ratingCount,
-                    ContentRating = contentRating,
-                    Resolution = videoFileInfos switch
+                VideoFileInfo[] videoFileInfos = videos.Select(VideoFileInfo.Parse).ToArray();
+                VideoDirectoryInfo videoDirectoryInfo = new(
+                    DefaultTitle1: defaultTitle.FilterForFileSystem(), DefaultTitle2: string.Empty, DefaultTitle3: string.Empty,
+                    OriginalTitle1: originalTitle.FilterForFileSystem(), OriginalTitle2: string.Empty, OriginalTitle3: string.Empty,
+                    Year: year,
+                    TranslatedTitle1: translatedTitle.FilterForFileSystem(), TranslatedTitle2: string.Empty, TranslatedTitle3: string.Empty, TranslatedTitle4: string.Empty,
+                    AggregateRating: rating, AggregateRatingCount: ratingCount,
+                    ContentRating: contentRating,
+                    Resolution: videoFileInfos switch
                     {
                         _ when videoFileInfos.Any(video => video.Is2160P) => "2160",
                         _ when videoFileInfos.Any(video => video.Is1080P) => "1080",
                         _ when videoFileInfos.Any(video => video.Is720P) => "720",
                         _ => string.Empty
                     },
-                    Source = VideoDirectoryInfo.GetSource(videoFileInfos)
-                };
+                    Source: VideoDirectoryInfo.GetSource(videoFileInfos),
+                    Is3D: string.Empty, IsHdr: string.Empty
+                );
                 string additional = additionalInfo
                     ? $"{{{string.Join(",", imdbMetadata?.Regions.Take(5) ?? Array.Empty<string>())};{string.Join(",", imdbMetadata?.Genres?.Take(3) ?? Array.Empty<string>())}}}"
                     : string.Empty;
@@ -450,7 +449,7 @@ internal static partial class Video
 
                 VideoMetadata toVideoMetadata = group.Single().Value;
                 toVideoMetadata.File = Path.Combine(Path.GetDirectoryName(toJsonPath) ?? throw new ArgumentException(toJsonPath), toVideoMetadata.File);
-                if (new VideoFileInfo(Path.GetFileNameWithoutExtension(toVideoMetadata.File)).IsX)
+                if (VideoFileInfo.Parse(Path.GetFileNameWithoutExtension(toVideoMetadata.File)).IsX)
                 {
                     log($"Video {toVideoMetadata.File} is x265.");
                     return;
@@ -625,7 +624,7 @@ internal static partial class Video
             .Select(movie =>
             {
                 string name = Path.GetFileName(movie);
-                VideoDirectoryInfo videoDirectoryInfo = new(name);
+                VideoDirectoryInfo videoDirectoryInfo = VideoDirectoryInfo.Parse(name);
                 string defaultNumber1 = Regex.Match(videoDirectoryInfo.DefaultTitle1, " ([0-9]{1,2})$").Value.TrimStart(' ');
                 string defaultNumber2 = Regex.Match(videoDirectoryInfo.DefaultTitle2, " ([0-9]{1,2})$").Value.TrimStart(' ');
                 string originalNumber1 = Regex.Match(videoDirectoryInfo.OriginalTitle1, " ([0-9]{1,2})$").Value.TrimStart(' ');

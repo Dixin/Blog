@@ -12,15 +12,16 @@
     </ItemGroup>
 
 	<ItemGroup>
-        <PackageReference Include="FSharp.Core" Version="6.0.3" />
+        <PackageReference Include="FSharp.Core" Version="6.0.4" />
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+        <PackageReference Include="Microsoft.VisualBasic" Version="10.3.0" />
         <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
-        <PackageReference Include="Selenium.WebDriver" Version="4.1.0" />
+        <PackageReference Include="Selenium.WebDriver" Version="4.2.0" />
         <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
         <PackageReference Include="System.Interactive" Version="6.0.1" />
         <PackageReference Include="System.Management" Version="6.0.0" />
         <PackageReference Include="System.Text.Encoding.CodePages" Version="6.0.0" />
-        <PackageReference Include="System.Text.Json" Version="6.0.2" />
+        <PackageReference Include="System.Text.Json" Version="6.0.4" />
         <PackageReference Include="Ude.NetStandard" Version="1.2.0" />
     </ItemGroup>
 

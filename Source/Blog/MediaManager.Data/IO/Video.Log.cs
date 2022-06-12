@@ -89,16 +89,16 @@ internal static partial class Video
     }
 
     internal static void PrintVideosP(string directory, int level = 2, Action<string>? log = null) =>
-        PrintVideos(directory, level, file => new VideoFileInfo(file).IsP, log);
+        PrintVideos(directory, level, file => VideoFileInfo.Parse(file).IsP, log);
 
     internal static void PrintVideosY(string directory, int level = 2, Action<string>? log = null) =>
-        PrintVideos(directory, level, file => new VideoFileInfo(file).IsY, log);
+        PrintVideos(directory, level, file => VideoFileInfo.Parse(file).IsY, log);
 
     internal static void PrintVideosNotX(string directory, int level = 2, Action<string>? log = null) =>
-        PrintVideos(directory, level, file => !new VideoFileInfo(file).IsX, log);
+        PrintVideos(directory, level, file => VideoFileInfo.Parse(file).IsX, log);
 
     internal static void PrintVideosH(string directory, int level = 2, Action<string>? log = null) =>
-        PrintVideos(directory, level, file => new VideoFileInfo(file).IsH, log);
+        PrintVideos(directory, level, file => VideoFileInfo.Parse(file).IsH, log);
 
     private static void PrintVideos(string directory, int level, Func<string, bool> predicate, Action<string>? log = null)
     {
@@ -172,7 +172,7 @@ internal static partial class Video
                     movieDirectory = movieDirectory.Substring("0.".Length);
                 }
 
-                VideoDirectoryInfo videoDirectoryInfo = new(movieDirectory);
+                VideoDirectoryInfo videoDirectoryInfo = VideoDirectoryInfo.Parse(movieDirectory);
                 string directoryYear = videoDirectoryInfo.Year;
                 string metadataYear = metadata.Root?.Element("year")?.Value ?? throw new InvalidOperationException($"{metadata} has no year.");
                 string videoName = string.Empty;
@@ -681,7 +681,7 @@ internal static partial class Video
                         .Where(metadata => !videos.Any(video =>
                         {
                             string videoName = Path.GetFileNameWithoutExtension(video);
-                            VideoFileInfo videoInfo = new(videoName);
+                            VideoFileInfo videoInfo = VideoFileInfo.Parse(videoName);
                             string metadataTitle = metadata.Title;
                             string[] videoEditions = videoInfo.Edition.Split(".", StringSplitOptions.RemoveEmptyEntries);
                             // (Not any) Local is equal to or better than remote metadata.
@@ -736,7 +736,7 @@ internal static partial class Video
                         .Where(metadata => !videos.Any(video =>
                         {
                             string videoName = Path.GetFileNameWithoutExtension(video);
-                            VideoFileInfo videoInfo = new(videoName);
+                            VideoFileInfo videoInfo = VideoFileInfo.Parse(videoName);
                             string metadataTitle = metadata.Title;
                             string[] videoEditions = videoInfo.Edition.Split(".", StringSplitOptions.RemoveEmptyEntries);
                             // (Not any) Local is equal to or better than remote metadata.
@@ -786,7 +786,7 @@ internal static partial class Video
                 {
                     string[] ytsVideos = videos
                         .Select(video => Path.GetFileNameWithoutExtension(video)!)
-                        .Where(video => new VideoFileInfo(video).IsY)
+                        .Where(video => VideoFileInfo.Parse(video).IsY)
                         .ToArray();
                     Debug.Assert(ytsVideos.Length <= 1);
                     (YtsMetadata metadata, KeyValuePair<string, string> version)[] otherYtsMetadata = availableYtsMetadata
@@ -916,21 +916,31 @@ internal static partial class Video
                     return;
                 }
 
-                string[] videos = Directory.EnumerateDirectories(tv, "Season *").Where(season => !Path.GetFileName(season).EqualsIgnoreCase("Season 00")).SelectMany(Directory.EnumerateFiles).Where(IsCommonVideo).ToArray();
-                if (videos.All(video => VideoEpisodeFileInfo.TryParse(video, out VideoEpisodeFileInfo? parsed) && parsed.IsX))
+                if (!x265Metadata.TryGetValue(imdbId, out RarbgMetadata[]? metadata))
                 {
                     return;
                 }
 
-                if (x265Metadata.TryGetValue(imdbId, out RarbgMetadata[]? metadata))
+                string[] seasons = Directory.EnumerateDirectories(tv, "Season *").ToArray();
+
+                metadata.ForEach(seasonMetadata =>
                 {
-                    metadata.ForEach(metadata =>
+                    string seasonNumber = Regex.Match(seasonMetadata.Title, @"\.S([0-9]{2})\.").Groups[1].Value;
+                    string seasonDirectory = seasons.SingleOrDefault(season => Path.GetFileName(season).StartsWithIgnoreCase($"Season {seasonNumber}"), string.Empty);
+                    if (seasonDirectory.IsNotNullOrWhiteSpace()
+                        && Directory
+                            .EnumerateFiles(seasonDirectory)
+                            .Where(IsCommonVideo)
+                            .All(episode => VideoEpisodeFileInfo.TryParse(episode, out VideoEpisodeFileInfo? parsed) && parsed.IsX))
                     {
-                        log($"x265 {metadata.Link}");
-                        log(metadata.Title);
-                        log(string.Empty);
-                    });
-                }
+                        return;
+                    }
+
+                    log(tv);
+                    log($"x265 {seasonMetadata.Link}");
+                    log(seasonMetadata.Title);
+                    log(string.Empty);
+                });
             });
     }
 

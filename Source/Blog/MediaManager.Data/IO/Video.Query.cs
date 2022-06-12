@@ -315,7 +315,7 @@ internal static partial class Video
     {
         string[] movies = directories
             .SelectMany(directory => EnumerateDirectories(directory.directory, directory.level))
-            .Where(directory => predicate(new VideoDirectoryInfo(directory)))
+            .Where(directory => predicate(VideoDirectoryInfo.Parse(directory)))
             .ToArray();
         if (movies.Any())
         {

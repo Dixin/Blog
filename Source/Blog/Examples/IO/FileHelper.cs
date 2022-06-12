@@ -1,6 +1,8 @@
 namespace Examples.IO;
 
 using Examples.Common;
+using Microsoft.VisualBasic.FileIO;
+using SearchOption = System.IO.SearchOption;
 
 public static class FileHelper
 {
@@ -122,4 +124,23 @@ public static class FileHelper
             File.Move(tempFile, file);
         }
     }
+
+    public static void Recycle(string file)
+    {
+        if (!File.Exists(file))
+        {
+            throw new ArgumentOutOfRangeException(nameof(file), file, "Not found.");
+        }
+
+        FileSystem.DeleteFile(file, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+    }
+
+    public static void ReplaceFileName(string file, string newFileName, bool overwrite = false) => 
+        Move(file, PathHelper.ReplaceFileName(file, newFileName), overwrite);
+
+    public static void ReplaceFileNameWithoutExtension(string file, string newFileNameWithoutExtension, bool overwrite = false) =>
+        Move(file, PathHelper.ReplaceFileNameWithoutExtension(file, newFileNameWithoutExtension), overwrite);
+
+    public static void ReplaceFileNameWithoutExtension(string file, Func<string, string> replace, bool overwrite = false) =>
+        Move(file, PathHelper.ReplaceFileNameWithoutExtension(file, replace), overwrite);
 }

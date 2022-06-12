@@ -1,6 +1,8 @@
 namespace Examples.IO;
 
 using Examples.Common;
+using Microsoft.VisualBasic.FileIO;
+using SearchOption = System.IO.SearchOption;
 
 public static class DirectoryHelper
 {
@@ -92,4 +94,21 @@ public static class DirectoryHelper
 
                 File.Move(sourceFile, destinationFile);
             });
+
+    public static void Recycle(string directory)
+    {
+        if (!Directory.Exists(directory))
+        {
+            throw new ArgumentOutOfRangeException(nameof(directory), directory, "Not found.");
+        }
+
+        FileSystem.DeleteDirectory(directory, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
+    }
+
+    public static void ReplaceDirectoryName(string directory, string newName, bool overwrite = false) => 
+        Move(directory, PathHelper.ReplaceDirectoryName(directory, newName), overwrite);
+
+    public static void ReplaceDirectoryName(string directory, Func<string, string> replace, bool overwrite = false) =>
+        Move(directory, PathHelper.ReplaceDirectoryName(directory, replace), overwrite);
+
 }

@@ -26,7 +26,7 @@ public static class PathHelper
          // Better than AbsolutePath(Assembly.GetExecutingAssembly().GetName().CodeBase);
          Assembly.GetExecutingAssembly().Location;
 
-    public static string ExecutingDirectory() => 
+    public static string ExecutingDirectory() =>
         Path.GetDirectoryName(ExecutingAssembly()) ?? string.Empty;
 
     [SupportedOSPlatform("windows")]
@@ -69,26 +69,14 @@ public static class PathHelper
         }
     }
 
-    public static string AddFilePrefix(string file, string prefix)
-    {
-        string newFile = $"{prefix}{Path.GetFileName(file)}";
-        string? directory = Path.GetDirectoryName(file);
-        return string.IsNullOrWhiteSpace(directory) ? newFile : Path.Combine(directory, newFile);
-    }
+    public static string AddFilePrefix(string file, string prefix) =>
+        ReplaceFileNameWithoutExtension(file, name => $"{prefix}{name}");
 
-    public static string AddFilePostfix(string file, string postfix)
-    {
-        string newFile = $"{Path.GetFileNameWithoutExtension(file)}{postfix}{Path.GetExtension(file)}";
-        string? directory = Path.GetDirectoryName(file);
-        return string.IsNullOrWhiteSpace(directory) ? newFile : Path.Combine(directory, newFile);
-    }
+    public static string AddFilePostfix(string file, string postfix) =>
+        ReplaceFileNameWithoutExtension(file, name => $"{name}{postfix}");
 
-    public static string AddDirectoryPrefix(string directory, string prefix)
-    {
-        string newDirectory = $"{prefix}{Path.GetFileName(directory)}";
-        string? parent = Path.GetDirectoryName(directory);
-        return string.IsNullOrWhiteSpace(parent) ? newDirectory : Path.Combine(parent, newDirectory);
-    }
+    public static string AddDirectoryPrefix(string directory, string prefix) =>
+        ReplaceDirectoryName(directory, name => $"{prefix}{name}");
 
     public static string AddDirectoryPostfix(string directory, string postfix) => $"{directory}{postfix}";
 
@@ -97,12 +85,24 @@ public static class PathHelper
 
     public static string ReplaceFileName(string file, string newFileName)
     {
-        string? directory = Path.GetDirectoryName(file);
-        return string.IsNullOrEmpty(directory) ? newFileName : Path.Combine(directory, newFileName);
+        string? parent = Path.GetDirectoryName(file);
+        return parent.IsNullOrWhiteSpace() ? newFileName : Path.Combine(parent, newFileName);
     }
 
     public static string ReplaceFileNameWithoutExtension(string file, string newFileNameWithoutExtension) =>
         ReplaceFileName(file, $"{newFileNameWithoutExtension}{Path.GetExtension(file)}");
+
+    public static string ReplaceFileNameWithoutExtension(string file, Func<string, string> replace) =>
+        ReplaceFileNameWithoutExtension(file, replace(Path.GetFileNameWithoutExtension(file)));
+
+    public static string ReplaceDirectoryName(string directory, string newName)
+    {
+        string? parent = Path.GetDirectoryName(directory);
+        return parent.IsNullOrWhiteSpace() ? newName : Path.Combine(parent, newName);
+    }
+
+    public static string ReplaceDirectoryName(string directory, Func<string, string> replace) =>
+        ReplaceDirectoryName(directory, replace(Path.GetFileName(directory)));
 
     public static string ReplaceExtension(string file, string newExtension)
     {
@@ -123,9 +123,9 @@ public static class PathHelper
     public static string ToWsl(string path, bool forceAbsolute = false)
     {
         (int exitCode, List<string?> output, List<string?> error) = OperatingSystem.IsLinux()
-            ? ProcessHelper.StartAndWait("wslpath", $@"{(forceAbsolute ? "-a " : string.Empty)}""{path.ReplaceOrdinal("'", @"\'")}""")
+            ? ProcessHelper.Run("wslpath", $@"{(forceAbsolute ? "-a " : string.Empty)}""{path.ReplaceOrdinal("'", @"\'")}""")
             : OperatingSystem.IsWindows()
-                ? ProcessHelper.StartAndWait("wsl", $@"wslpath {(forceAbsolute ? "-a " : string.Empty)}""{path.ReplaceOrdinal("'", @"\'")}""")
+                ? ProcessHelper.Run("wsl", $@"wslpath {(forceAbsolute ? "-a " : string.Empty)}""{path.ReplaceOrdinal("'", @"\'")}""")
                 : throw new NotSupportedException(Environment.OSVersion.ToString());
         if (exitCode is 0)
         {
@@ -142,9 +142,9 @@ public static class PathHelper
     public static string FromWsl(string path, bool forwardSlash = false)
     {
         (int exitCode, List<string?> output, List<string?> error) = OperatingSystem.IsLinux()
-            ? ProcessHelper.StartAndWait("wslpath", $@"-{(forwardSlash ? "w" : "m")} ""{path.ReplaceOrdinal("'", @"\'")}""")
+            ? ProcessHelper.Run("wslpath", $@"-{(forwardSlash ? "w" : "m")} ""{path.ReplaceOrdinal("'", @"\'")}""")
             : OperatingSystem.IsWindows()
-                ? ProcessHelper.StartAndWait("wsl", $@"wslpath -{(forwardSlash ? "w" : "m")} ""{path.ReplaceOrdinal("'", @"\'")}""")
+                ? ProcessHelper.Run("wsl", $@"wslpath -{(forwardSlash ? "w" : "m")} ""{path.ReplaceOrdinal("'", @"\'")}""")
                 : throw new NotSupportedException(Environment.OSVersion.ToString());
         if (exitCode is 0)
         {

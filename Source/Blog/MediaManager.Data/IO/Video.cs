@@ -8,7 +8,7 @@ internal static partial class Video
 
     private const string ThumbExtension = ".jpg";
 
-    private const string XmlMetadataSearchPattern = PathHelper.AllSearchPattern + XmlMetadataExtension;
+    internal const string XmlMetadataSearchPattern = PathHelper.AllSearchPattern + XmlMetadataExtension;
 
     private const string VideoSearchPattern = PathHelper.AllSearchPattern + VideoExtension;
 
