@@ -448,7 +448,7 @@ internal static partial class Video
                 }
 
                 VideoMetadata toVideoMetadata = group.Single().Value;
-                toVideoMetadata.File = Path.Combine(Path.GetDirectoryName(toJsonPath) ?? throw new ArgumentException(toJsonPath), toVideoMetadata.File);
+                toVideoMetadata = toVideoMetadata with { File = Path.Combine(Path.GetDirectoryName(toJsonPath) ?? throw new ArgumentException(toJsonPath), toVideoMetadata.File) };
                 if (VideoFileInfo.Parse(Path.GetFileNameWithoutExtension(toVideoMetadata.File)).IsX)
                 {
                     log($"Video {toVideoMetadata.File} is x265.");

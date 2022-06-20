@@ -2,25 +2,25 @@
 
 using Examples.Net;
 
-public class VideoMetadata
+public record VideoMetadata
 {
-    public ImdbMetadata? Imdb { get; set; }
+    public ImdbMetadata? Imdb { get; init; }
 
-    public string File { get; set; } = string.Empty;
+    public string File { get; init; } = string.Empty;
 
-    public int Width { get; set; }
+    public int Width { get; init; }
 
-    public int Height { get; set; }
+    public int Height { get; init; }
 
-    public double TotalMilliseconds { get; set; }
+    public double TotalMilliseconds { get; init; }
 
-    public int Audio { get; set; }
+    public int Audio { get; init; }
 
-    public int[] AudioBitRates { get; set; } = Array.Empty<int>();
+    public int[] AudioBitRates { get; init; } = Array.Empty<int>();
 
-    public double FrameRate { get; set; }
+    public double FrameRate { get; init; }
 
-    internal int Subtitle { get; set; }
+    internal int Subtitle { get; init; }
 
     internal TimeSpan Duration => TimeSpan.FromSeconds(this.TotalMilliseconds);
 

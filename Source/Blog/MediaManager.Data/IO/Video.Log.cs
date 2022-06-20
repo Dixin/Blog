@@ -931,7 +931,7 @@ internal static partial class Video
                         && Directory
                             .EnumerateFiles(seasonDirectory)
                             .Where(IsCommonVideo)
-                            .All(episode => VideoEpisodeFileInfo.TryParse(episode, out VideoEpisodeFileInfo? parsed) && parsed.IsX))
+                            .All(episode => VideoEpisodeFileInfo.TryParse(episode, out VideoEpisodeFileInfo? parsed) && parsed.IsX && !(parsed.Origin.ContainsIgnoreCase("WEBRip") && seasonMetadata.Title.ContainsIgnoreCase("BluRay"))))
                     {
                         return;
                     }
