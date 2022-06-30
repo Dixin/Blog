@@ -53,7 +53,7 @@ internal static class Yts
             if (index % SaveFrequency == 0)
             {
                 string jsonString = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
-                await FileHelper.SaveAndReplace(jsonPath, jsonString, null, SaveJsonLock);
+                await FileHelper.SaveAndReplaceAsync(jsonPath, jsonString, null, SaveJsonLock);
             }
 
             log($"End {url}");
@@ -62,7 +62,7 @@ internal static class Yts
         links.OrderBy(link => link).ForEach(log);
 
         string finalJsonString = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
-        await FileHelper.SaveAndReplace(jsonPath, finalJsonString, null, SaveJsonLock);
+        await FileHelper.SaveAndReplaceAsync(jsonPath, finalJsonString, null, SaveJsonLock);
     }
 
     internal static async Task DownloadMetadataAsync(string summaryJsonPath, string metadataJsonPath, Action<string> log, Func<int, bool>? @continue = null, int index = 1, int degreeOfParallelism = 4)
@@ -124,14 +124,14 @@ internal static class Yts
                 if (Interlocked.Increment(ref count) % SaveFrequency == 0)
                 {
                     string jsonString = JsonSerializer.Serialize(details, new JsonSerializerOptions() { WriteIndented = true });
-                    await FileHelper.SaveAndReplace(metadataJsonPath, jsonString, null, SaveJsonLock);
+                    await FileHelper.SaveAndReplaceAsync(metadataJsonPath, jsonString, null, SaveJsonLock);
                 }
 
                 log($"End {index}:{summary.Link}");
             }, degreeOfParallelism);
 
         string jsonString = JsonSerializer.Serialize(details, new JsonSerializerOptions() { WriteIndented = true });
-        await FileHelper.SaveAndReplace(metadataJsonPath, jsonString, null, SaveJsonLock);
+        await FileHelper.SaveAndReplaceAsync(metadataJsonPath, jsonString, null, SaveJsonLock);
     }
 
     private static readonly object SaveJsonLock = new();

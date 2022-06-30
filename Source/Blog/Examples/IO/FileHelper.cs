@@ -96,7 +96,7 @@ public static class FileHelper
             .ToArray()
             .ForEach(subtitle => Copy(subtitle, subtitle.Replace(sourceDirectory, destinationDirectory, StringComparison.InvariantCulture), overwrite));
 
-    public static async Task SaveAndReplace(string file, string content, Encoding? encoding = null, object? @lock = null)
+    public static async Task SaveAndReplaceAsync(string file, string content, Encoding? encoding = null, object? @lock = null)
     {
         encoding ??= Encoding.UTF8;
         string tempFile = $"{file}.tmp";

@@ -20,7 +20,7 @@ internal static class Rarbg
             : new();
         await urls.ParallelForEachAsync(async (url, index) => await DownloadMetadataAsync(url, jsonPath, allSummaries, index + 1, log, @continue), degreeOfParallelism);
         string jsonText = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
-        await FileHelper.SaveAndReplace(jsonPath, jsonText, null, SaveJsonLock);
+        await FileHelper.SaveAndReplaceAsync(jsonPath, jsonText, null, SaveJsonLock);
     }
 
     internal static async Task DownloadMetadataAsync(string url, string jsonPath, Action<string> log, Func<int, bool>? @continue = null) => 
@@ -35,7 +35,7 @@ internal static class Rarbg
             webDriver.Url = url;
             new WebDriverWait(webDriver, WebDriverHelper.DefaultWait).Until(e => e.FindElement(By.Id("pager_links")));
             webDriver.Url = url;
-            IWebElement pager = new WebDriverWait(webDriver, TimeSpan.FromSeconds(100)).Until(e => e.FindElement(By.Id("pager_links")));
+            IWebElement pager = new WebDriverWait(webDriver, WebDriverHelper.DefaultDomWait).Until(e => e.FindElement(By.Id("pager_links")));
             int pageIndex = 1;
             do
             {
@@ -97,7 +97,7 @@ internal static class Rarbg
                 if (pageIndex++ % SaveFrequency == 0)
                 {
                     string jsonText = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
-                    await FileHelper.SaveAndReplace(jsonPath, jsonText, null, SaveJsonLock);
+                    await FileHelper.SaveAndReplaceAsync(jsonPath, jsonText, null, SaveJsonLock);
                 }
             } while (webDriver.HasNextPage(ref pager, log));
 
@@ -111,7 +111,7 @@ internal static class Rarbg
         finally
         {
             string jsonText = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
-            await FileHelper.SaveAndReplace(jsonPath, jsonText, null, SaveJsonLock);
+            await FileHelper.SaveAndReplaceAsync(jsonPath, jsonText, null, SaveJsonLock);
         }
     }
 
