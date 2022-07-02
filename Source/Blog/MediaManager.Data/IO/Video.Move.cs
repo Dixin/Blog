@@ -1,7 +1,8 @@
-namespace Examples.IO;
+﻿namespace Examples.IO;
 
 using Examples.Common;
 using Examples.Net;
+using Examples.Text;
 
 internal static partial class Video
 {
@@ -722,5 +723,193 @@ internal static partial class Video
                         log(string.Empty);
                     });
             });
+    }
+
+    internal static void MoveRarbgTVEpisodes(string directory, string subtitleBackupDirectory, bool isDryRun = false, Action<string>? log = null)
+    {
+        log ??= TraceLog;
+
+        Directory
+            .GetFiles(directory, "*.txt", SearchOption.AllDirectories)
+            .ForEach(textFile =>
+            {
+                log($"Delete {textFile}");
+                if (!isDryRun)
+                {
+                    File.Delete(textFile);
+                }
+            });
+
+        Directory
+            .GetFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
+            .Where(file => Path.GetFileNameWithoutExtension(file).ContainsOrdinal(" (1)"))
+            .ForEach(duplicateFile =>
+            {
+                log($"Delete {duplicateFile}");
+                if (!isDryRun)
+                {
+                    File.Delete(duplicateFile);
+                }
+            });
+
+        Directory
+            .GetDirectories(directory)
+            .Where(season => season.EndsWithIgnoreCase("-RARBG"))
+            .ForEach(season =>
+            {
+                string subtitleDirectory = Path.Combine(season, "Subs");
+                Directory
+                    .GetDirectories(subtitleDirectory)
+                    .ForEach(episodeSubtitleDirectory => Directory
+                        .GetFiles(episodeSubtitleDirectory)
+                        .ForEach(subtitle =>
+                        {
+                            string newSubtitle = Path.Combine(season, $"{Path.GetFileName(episodeSubtitleDirectory)}.{Path.GetFileName(subtitle)}");
+                            log($"Move {subtitle}");
+                            if (!isDryRun)
+                            {
+                                File.Move(subtitle, newSubtitle);
+                            }
+
+                            log(newSubtitle);
+                            log(string.Empty);
+                        }));
+            });
+
+        Directory
+            .GetDirectories(directory)
+            .Where(season => season.EndsWithIgnoreCase("-RARBG"))
+            .ForEach(season =>
+            {
+                Match match = Regex.Match(Path.GetFileName(season), @"^(.+)\.S([0-9]{2})(\.[A-Z]+)?\.1080p\.+");
+                Debug.Assert(match.Success && match.Groups.Count is 3 or 4);
+                string title = match.Groups[1].Value;
+                string seasonNumber = match.Groups[2].Value;
+                string tv = Path.Combine(directory, title);
+                string newSeason = Path.Combine(tv, $"Season {seasonNumber}");
+                log($"Move {season}");
+                if (!isDryRun)
+                {
+                    if (!Directory.Exists(tv))
+                    {
+                        Directory.CreateDirectory(tv);
+                    }
+
+                    Directory.Move(season, newSeason);
+                }
+
+                log(newSeason);
+                log(string.Empty);
+            });
+
+        Directory
+            .EnumerateDirectories(directory)
+            .SelectMany(Directory.EnumerateDirectories)
+            .Select(season => Path.Combine(season, "Subs"))
+            .ToArray()
+            .ForEach(seasonSubtitleDirectory =>
+            {
+                log($"Delete {seasonSubtitleDirectory}");
+                if (!isDryRun && Directory.Exists(seasonSubtitleDirectory))
+                {
+                    DirectoryHelper.Delete(seasonSubtitleDirectory);
+                }
+            });
+
+        Directory
+            .EnumerateDirectories(directory)
+            .SelectMany(Directory.EnumerateDirectories)
+            .SelectMany(season => Directory.EnumerateFiles(season, PathHelper.AllSearchPattern))
+            .Where(IsSubtitle)
+            .GroupBy(subtitle =>
+            {
+                string name = Path.GetFileNameWithoutExtension(subtitle);
+                return name[..name.LastIndexOf(".", StringComparison.Ordinal)];
+            })
+            .ToArray()
+            .ForEach(group =>
+            {
+                string[] subtitles = group.ToArray();
+                string? englishSubtitle = group
+                    .Where(subtitle => Path.GetFileNameWithoutExtension(subtitle).ContainsIgnoreCase("_eng"))
+                    .MaxBy(subtitle => new FileInfo(subtitle).Length);
+                if (!string.IsNullOrWhiteSpace(englishSubtitle))
+                {
+                    const string language = "eng";
+                    string englishSubtitleName = Path.GetFileNameWithoutExtension(englishSubtitle);
+                    string newEnglishSubtitle = Path.Combine(Path.GetDirectoryName(englishSubtitle)!, $"{englishSubtitleName.Substring(0, englishSubtitleName.LastIndexOf(".", StringComparison.Ordinal))}.{language}{Path.GetExtension(englishSubtitle)}");
+                    log($"Move {englishSubtitle}");
+                    if (!isDryRun)
+                    {
+                        File.Move(englishSubtitle, newEnglishSubtitle);
+                    }
+
+                    log(newEnglishSubtitle);
+                    log(string.Empty);
+                }
+
+                string[] chineseSubtitles = group
+                    .Where(subtitle => Path.GetFileNameWithoutExtension(subtitle).ContainsIgnoreCase("_chi"))
+                    .ToArray();
+                switch (chineseSubtitles.Length)
+                {
+                    case 1:
+                        {
+                            string chineseSubtitle = chineseSubtitles.Single();
+
+                            string language = EncodingHelper.TryRead(chineseSubtitle, out string? content, out _) && "為們說無當".Any(content.ContainsOrdinal) ? "cht" : "chs";
+                            string chineseSubtitleName = Path.GetFileNameWithoutExtension(chineseSubtitle);
+                            string newChineseSubtitle = Path.Combine(Path.GetDirectoryName(chineseSubtitle)!, $"{chineseSubtitleName.Substring(0, chineseSubtitleName.LastIndexOf(".", StringComparison.Ordinal))}.{language}{Path.GetExtension(chineseSubtitle)}");
+                            log($"Move {chineseSubtitle}");
+                            if (!isDryRun)
+                            {
+                                File.Move(chineseSubtitle, newChineseSubtitle);
+                            }
+
+                            log(newChineseSubtitle);
+                            log(string.Empty);
+                            break;
+                        }
+                    case > 1:
+                        {
+                            string chineseSubtitle = chineseSubtitles
+                                .Where(subtitle => EncodingHelper.TryRead(subtitle, out string? content, out _) && !"為們說無當".Any(content.ContainsOrdinal))
+                                .OrderByDescending(subtitle => new FileInfo(subtitle).Length)
+                                .First();
+                            chineseSubtitles = new string[] { chineseSubtitle };
+
+                            const string language = "chs";
+                            string chineseSubtitleName = Path.GetFileNameWithoutExtension(chineseSubtitle);
+                            string newChineseSubtitle = Path.Combine(Path.GetDirectoryName(chineseSubtitle)!, $"{chineseSubtitleName.Substring(0, chineseSubtitleName.LastIndexOf(".", StringComparison.Ordinal))}.{language}{Path.GetExtension(chineseSubtitle)}");
+                            log($"Move {chineseSubtitle}");
+                            if (!isDryRun)
+                            {
+                                File.Move(chineseSubtitle, newChineseSubtitle);
+                            }
+
+                            log(newChineseSubtitle);
+                            log(string.Empty);
+                            break;
+                        }
+                }
+
+                subtitles.Except(string.IsNullOrWhiteSpace(englishSubtitle) ? chineseSubtitles : chineseSubtitles.Append(englishSubtitle))
+                    .ForEach(subtitle =>
+                    {
+                        string newSubtitle = Path.Combine(subtitleBackupDirectory, Path.GetFileName(subtitle));
+                        log($"Move {subtitle}");
+                        if (!isDryRun)
+                        {
+                            File.Move(subtitle, newSubtitle);
+                        }
+
+                        log(newSubtitle);
+                        log(string.Empty);
+                    });
+            });
+
+        Directory
+            .GetFiles(directory, "*.eng.srt", SearchOption.AllDirectories)
+            .ForEach(f => File.Move(f, f.ReplaceIgnoreCase(".eng.srt", ".srt"), false));
     }
 }
