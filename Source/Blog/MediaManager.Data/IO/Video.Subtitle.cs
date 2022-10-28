@@ -114,7 +114,7 @@ internal static partial class Video
                     {
                         FileHelper.Backup(result.Item3);
                     }
-                    await EncodingHelper.Convert(encoding, Utf8Encoding, result.File, null, Utf8Bom);
+                    await EncodingHelper.ConvertAsync(encoding, Utf8Encoding, result.File, null, Utf8Bom);
                     log($"Charset: {result.Charset}, confidence: {result.Confidence}, file {result.File}");
                 }
                 catch (Exception exception)
@@ -166,7 +166,7 @@ internal static partial class Video
                         string language = subtitleBase.IsNotNullOrWhiteSpace() && subtitleName.StartsWithIgnoreCase(subtitleBase)
                             ? subtitleName.Substring(subtitleBase.Length).TrimStart('.')
                             : subtitleName.Split(".").Last();
-                        Debug.Assert(Regex.IsMatch(language, @"^([a-z]{3}(\&[a-z]{3})?)?$"));
+                        Debug.Assert(Regex.IsMatch(language, @"^([a-z]{3}(\&[a-z]{3})?(\-[a-z0-9]+)?)?$"));
                         string newSubtitleName = $"{Path.GetFileNameWithoutExtension(video)}{(language.IsNullOrWhiteSpace() ? string.Empty : ".")}{language}{Path.GetExtension(subtitle)}";
                         string newSubtitle = Path.Combine(Path.GetDirectoryName(video) ?? throw new InvalidOperationException(video), newSubtitleName);
                         if (rename is not null)

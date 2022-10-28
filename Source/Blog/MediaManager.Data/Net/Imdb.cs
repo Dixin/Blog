@@ -175,7 +175,7 @@ internal static class Imdb
             .ToDictionary(group => group.Key, group => group.ToArray());
         Debug.Assert(imdbMetadata.Titles.Any() 
             || allTitlesCQ.Text().ContainsIgnoreCase("It looks like we don't have any AKAs for this title yet.") 
-            || imdbId is "tt10562876" or "tt13734388" or "tt11485640" or "tt11127510" or "tt11127706" or "tt11423284");
+            || imdbId is "tt10562876" or "tt13734388" or "tt11485640" or "tt11127510" or "tt11127706" or "tt11423284" or "tt20855690");
 
         if (webDriver is not null)
         {

@@ -267,15 +267,10 @@ internal static partial class Video
                     TranslatedTitle1: translatedTitle.FilterForFileSystem(), TranslatedTitle2: string.Empty, TranslatedTitle3: string.Empty, TranslatedTitle4: string.Empty,
                     AggregateRating: rating, AggregateRatingCount: ratingCount,
                     ContentRating: contentRating,
-                    Resolution: videoFileInfos switch
-                    {
-                        _ when videoFileInfos.Any(video => video.Is2160P) => "2160",
-                        _ when videoFileInfos.Any(video => video.Is1080P) => "1080",
-                        _ when videoFileInfos.Any(video => video.Is720P) => "720",
-                        _ => string.Empty
-                    },
+                    Resolution: VideoDirectoryInfo.GetResolution(videoFileInfos),
                     Source: VideoDirectoryInfo.GetSource(videoFileInfos),
-                    Is3D: string.Empty, IsHdr: string.Empty
+                    Is3D: string.Empty,
+                    Hdr: string.Empty
                 );
                 string additional = additionalInfo
                     ? $"{{{string.Join(",", imdbMetadata?.Regions.Take(5) ?? Array.Empty<string>())};{string.Join(",", imdbMetadata?.Genres?.Take(3) ?? Array.Empty<string>())}}}"
@@ -345,31 +340,35 @@ internal static partial class Video
                     return;
                 }
 
-                if (!Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata))
+                if (Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata))
                 {
-                    log($"!Missing metadata {movie}");
-                    return;
-                }
+                    if (imdbMetadata.Year.IsNotNullOrWhiteSpace())
+                    {
+                        parsed = parsed with { Year = imdbMetadata.Year };
+                    }
 
-                if (imdbMetadata.Year.IsNotNullOrWhiteSpace())
-                {
-                    parsed = parsed with { Year = imdbMetadata.Year };
-                }
-
-                parsed = parsed with
-                {
-                    AggregateRating = imdbMetadata.FormattedAggregateRating,
-                    AggregateRatingCount = imdbMetadata.FormattedAggregateRatingCount,
-                    ContentRating = imdbMetadata.FormattedContentRating
-                };
-
-                if (imdbMetadata.Year.IsNotNullOrWhiteSpace())
-                {
                     parsed = parsed with
                     {
-                        Year = imdbMetadata.Year
+                        AggregateRating = imdbMetadata.FormattedAggregateRating,
+                        AggregateRatingCount = imdbMetadata.FormattedAggregateRatingCount,
+                        ContentRating = imdbMetadata.FormattedContentRating
                     };
+
+                    if (imdbMetadata.Year.IsNotNullOrWhiteSpace())
+                    {
+                        parsed = parsed with
+                        {
+                            Year = imdbMetadata.Year
+                        };
+                    }
                 }
+
+                VideoFileInfo[] videos = VideoDirectoryInfo.GetVideos(movie).ToArray();
+                parsed = parsed with
+                {
+                    Resolution = VideoDirectoryInfo.GetResolution(videos),
+                    Source = VideoDirectoryInfo.GetSource(videos)
+                };
 
                 string newMovie = Path.Combine(Path.GetDirectoryName(movie) ?? throw new InvalidOperationException(movie), parsed.ToString());
                 if (movie.EqualsOrdinal(newMovie))
@@ -382,6 +381,7 @@ internal static partial class Video
                 {
                     Directory.Move(movie, newMovie);
                 }
+
                 log(newMovie);
                 log(string.Empty);
             });
@@ -911,5 +911,33 @@ internal static partial class Video
         Directory
             .GetFiles(directory, "*.eng.srt", SearchOption.AllDirectories)
             .ForEach(f => File.Move(f, f.ReplaceIgnoreCase(".eng.srt", ".srt"), false));
+    }
+
+    internal static void MoveFanArt(string directory, int level = 2, Action<string>? log = null)
+    {
+        log ??= TraceLog;
+
+        EnumerateDirectories(directory, level)
+            .ForEach(movie =>
+            {
+                string fanArtDirectory = Path.Combine(movie, "extrafanart");
+                if (!Directory.Exists(fanArtDirectory))
+                {
+                    return;
+                }
+
+                string fanArt = Directory.GetFiles(fanArtDirectory).Single();
+                Debug.Assert(Path.GetFileNameWithoutExtension(fanArt).StartsWithIgnoreCase("fanart"));
+                Debug.Assert(Path.GetExtension(fanArt).EqualsIgnoreCase(".jpg"));
+
+                string newFanArt = Path.Combine(movie, "fanart.jpg");
+                Debug.Assert(!File.Exists(newFanArt));
+
+                log(fanArt);
+                File.Move(fanArt, newFanArt);
+                log(newFanArt);
+
+                Directory.Delete(fanArtDirectory);
+            });
     }
 }

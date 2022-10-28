@@ -8,9 +8,9 @@ using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 
-internal static class Browser115
+internal static class Drive115
 {
-    internal static List<Browser115OfflineTask> DownloadOfflineTasks(string url, Action<string> log, string keywords = "")
+    internal static List<Drive115OfflineTask> DownloadOfflineTasks(string url, Action<string> log, Func<string, string, bool>? predicate = null, Action<string, string>? action = null)
     {
         using IWebDriver parentFrame = WebDriverHelper.StartEdge(isLoadingImages: true);
         parentFrame.Url = url;
@@ -26,7 +26,7 @@ internal static class Browser115
         ReadOnlyCollection<IWebElement>? frames = new WebDriverWait(parentFrame2, WebDriverHelper.DefaultWait).Until(e => e.FindElements(By.TagName("iframe")));
         IWebElement offlineTasksFrameElement = frames.Single(item => item.GetAttribute("src").EndsWithIgnoreCase("//115.com/?ct=index&ac=offline_new_tpl&offline=1&file_dialog_iframe=1"));
         using IWebDriver offlineTasksFrame = parentFrame2.SwitchTo().Frame(offlineTasksFrameElement);
-        List<Browser115OfflineTask> offlineTasks = new();
+        List<Drive115OfflineTask> offlineTasks = new();
         string firstTask = string.Empty;
         for (int page = 1; ; page++)
         {
@@ -55,15 +55,15 @@ internal static class Browser115
                 CQ listItemCQ = listItemDom.Cq();
                 string link = listItemCQ.Find("div.file-operate a[task_popup='copy']").Attr("cp_href");
                 string title = listItemCQ.Find("div.file-name").Text();
-                if (title.ContainsIgnoreCase(keywords) && Debugger.IsAttached)
+                if (predicate is not null && predicate(title, link) && action is not null)
                 {
-                    Debugger.Break();
+                    action(title, link);
                 }
 
                 string size = listItemCQ.Find("div.file-size").Text();
                 bool isSuccessful = listItemCQ.Find("div.file-process i.ifst-success").Length > 0;
                 bool isBlocked = listItemCQ.Find("div.desc-tips").Css("display") is "block";
-                Browser115OfflineTask task = new(link, title, size, isSuccessful, isBlocked, page);
+                Drive115OfflineTask task = new(link, title, size, isSuccessful, isBlocked, page);
                 log(JsonSerializer.Serialize(task, new JsonSerializerOptions() { WriteIndented = true }));
                 return task;
             }));
@@ -81,9 +81,9 @@ internal static class Browser115
         }
     }
 
-    internal static async Task SaveOfflineTasksAsync(string url, string path, Action<string> log, string keywords = "")
+    internal static async Task SaveOfflineTasksAsync(string url, string path, Action<string> log, string keyword = "")
     {
-        List<Browser115OfflineTask> tasks = DownloadOfflineTasks(url, log, keywords);
+        List<Drive115OfflineTask> tasks = DownloadOfflineTasks(url, log, (title, link) => title.ContainsIgnoreCase(keyword) || link.ContainsIgnoreCase(keyword), (_, _) => Debugger.Break());
         string jsonText = JsonSerializer.Serialize(tasks.ToArray(), new JsonSerializerOptions() { WriteIndented = true });
         await FileHelper.SaveAndReplaceAsync(path, jsonText);
     }

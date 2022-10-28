@@ -404,19 +404,20 @@ internal static partial class Video
                 }
 
                 string[] videos = topFiles.Where(IsCommonVideo).ToArray();
-                VideoFileInfo?[] allVideoFileInfos = videos
+                VideoFileInfo[] videoFileInfos = videos
                     .Select(video =>
                     {
-                        VideoFileInfo.TryParse(video, out VideoFileInfo? videoFileInfo);
-                        return videoFileInfo;
+                        if (VideoFileInfo.TryParse(video, out VideoFileInfo? videoFileInfo))
+                        {
+                            return videoFileInfo;
+                        }
+
+                        throw new InvalidOperationException(video);
                     })
                     .ToArray();
-                VideoFileInfo[] videoFileInfos = allVideoFileInfos.Select(video => video.NotNull()).ToArray();
                 string[] subtitles = topFiles.Where(file => file.HasAnyExtension(AllSubtitleExtensions)).ToArray();
                 string[] metadataFiles = topFiles.Where(file => file.HasExtension(XmlMetadataExtension)).ToArray();
                 string[] otherFiles = topFiles.Except(videos).Except(subtitles).Except(metadataFiles).Except(imdbFiles).Except(cacheFiles).ToArray();
-
-                Enumerable.Range(0, videos.Length).Where(index => allVideoFileInfos[index] is null).ForEach(index => log($"!Video name {videos[index]}: {movie}"));
 
                 if (directoryInfo.Is2160P && !videoFileInfos.Any(video => video.Is2160P))
                 {
@@ -1345,5 +1346,83 @@ internal static partial class Video
             .Select(file => (File: file, Metadata: Imdb.TryLoad(file, out ImdbMetadata? imdbMetadata) ? imdbMetadata : null))
             .Where(metadata => metadata.Metadata?.Genres.ContainsIgnoreCase(genre) is true)
             .ForEach(metadata => log($"{Path.GetDirectoryName(metadata.File)}"));
+    }
+
+    internal static void PrintMovieRegionsWithErrors(Dictionary<string, string[]> allLocalRegions, Action<string>? log = null, params (string Directory, int Level)[] directories)
+    {
+        log ??= TraceLog;
+        directories
+            .SelectMany(directory => EnumerateDirectories(directory.Directory, directory.Level - 1))
+            .OrderBy(localRegionDirectory => localRegionDirectory)
+            .ForEach(localRegionDirectory =>
+            {
+                string localRegionText = Path.GetFileNameWithoutExtension(localRegionDirectory);
+                if (localRegionText.ContainsIgnoreCase("Delete") || localRegionText.ContainsIgnoreCase("Temp"))
+                {
+                    return;
+                }
+
+                if (!allLocalRegions.TryGetValue(localRegionText, out string[]? currentLocalRegion))
+                {
+                    int lastIndex = localRegionText.LastIndexOfOrdinal(" ");
+                    if (lastIndex >= 0)
+                    {
+                        localRegionText = localRegionText[..lastIndex];
+                        if (allLocalRegions.TryGetValue(localRegionText, out currentLocalRegion))
+                        {
+                        }
+                        else
+                        {
+                            currentLocalRegion = new[] { localRegionText };
+                        }
+                    }
+                    else
+                    {
+                        currentLocalRegion = new[] { localRegionText };
+                    }
+                }
+
+                log($"==={localRegionDirectory}==={string.Join(", ", currentLocalRegion)}");
+                string[] currentRegions = currentLocalRegion.Where(region => !region.EndsWithOrdinal(NotExistingFlag)).ToArray();
+                string[] ignorePrefixes = currentLocalRegion.Where(prefix => prefix.EndsWithOrdinal(NotExistingFlag)).Select(prefix => prefix.TrimEnd(NotExistingFlag.ToCharArray())).ToArray();
+                Directory
+                    .GetDirectories(localRegionDirectory)
+                    .ForEach(movie =>
+                    {
+                        string movieName = Path.GetFileName(movie);
+                        if (ignorePrefixes.Any(movieName.StartsWithOrdinal))
+                        {
+                            return;
+                        }
+
+                        if (Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata))
+                        {
+                            if (!imdbMetadata.Regions.Any(imdbRegion => currentRegions.Any(localRegion => imdbRegion.EqualsOrdinal(localRegion) || $"{imdbRegion}n".EqualsOrdinal(localRegion))))
+                            {
+                                log(movie);
+                                log($"{string.Join(", ", currentRegions)}==={string.Join(", ", imdbMetadata.Regions)}");
+                                log(string.Empty);
+                            }
+                        }
+                    });
+            });
+    }
+
+    internal static void PrintMovieWithoutTextSubtitle(Action<string>? log = null, params (string Directory, int Level)[] directories)
+    {
+        log ??= TraceLog;
+        directories
+            .SelectMany(directory => EnumerateDirectories(directory.Directory, directory.Level))
+            .ForEach(m =>
+            {
+                string[] files = Directory.GetFiles(m);
+                if (!files.Any(IsTextSubtitle))
+                {
+                    Imdb.TryLoad(m, out ImdbMetadata? meta);
+                    log(meta?.ImdbId ?? "-");
+                    log(m);
+                    log("");
+                }
+            });
     }
 }

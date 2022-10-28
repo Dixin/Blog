@@ -70,12 +70,16 @@ internal record VideoFileInfo(
         && (this.Version.EqualsIgnoreCase("YIFY")
             || this.Version.StartsWithIgnoreCase("[YTS."));
 
+    internal bool IsF =>
+        this.Encoder.IsNotNullOrWhiteSpace();
+
     internal bool IsP =>
         this.IsHD
         && !this.Version.EqualsIgnoreCase("RARBG")
         && !this.Version.EqualsIgnoreCase("VXT")
         && !this.Version.EqualsIgnoreCase("YIFY")
-        && !this.Version.StartsWithIgnoreCase("[YTS.");
+        && !this.Version.StartsWithIgnoreCase("[YTS.")
+        && this.Encoder.IsNullOrWhiteSpace();
 
     internal bool IsHD =>
         this.Definition is (".2160p" or ".1080p" or ".720p")
@@ -86,6 +90,10 @@ internal record VideoFileInfo(
     internal bool Is1080P => this.Definition is ".1080p" && !this.Edition.EndsWithIgnoreCase(Video.FakeDefinition);
 
     internal bool Is720P => this.Definition is ".720p" && !this.Edition.EndsWithIgnoreCase(Video.FakeDefinition);
+
+    internal bool Is480P => !this.IsHD;
+
+    internal string FormattedAudioCount => this.MultipleAudio.IsNullOrWhiteSpace() ? string.Empty : Regex.Match(this.MultipleAudio, @"\.([2-9])Audio").Groups[1].Value;
 
     internal static bool IsXOrH(string nameWithoutExtension) => Regex.IsMatch(nameWithoutExtension, @"\-(RARBG|VXT)$");
 }
