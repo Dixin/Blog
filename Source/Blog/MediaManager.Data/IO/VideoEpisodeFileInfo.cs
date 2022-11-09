@@ -57,27 +57,10 @@ internal record VideoEpisodeFileInfo(
 
     internal bool IsX =>
         this.IsHD
-        && (this.Version.EqualsOrdinal("RARBG")
-            || this.Version.EqualsOrdinal("VXT"))
+        && this.Version.EqualsOrdinal("RARBG")
         && this.VideoCodec.EqualsOrdinal(".x265");
 
-    internal bool IsH =>
-        this.IsHD
-        && (this.Version.EqualsOrdinal("RARBG")
-            || this.Version.EqualsOrdinal("VXT"))
-        && !this.VideoCodec.EqualsOrdinal(".x265");
-
-    internal bool IsY =>
-        this.IsHD
-        && (this.Version.EqualsIgnoreCase("YIFY")
-            || this.Version.StartsWithIgnoreCase("[YTS."));
-
-    internal bool IsP =>
-        this.IsHD
-        && !this.Version.EqualsIgnoreCase("RARBG")
-        && !this.Version.EqualsIgnoreCase("VXT")
-        && !this.Version.EqualsIgnoreCase("YIFY")
-        && !this.Version.StartsWithIgnoreCase("[YTS.");
+    internal bool IsP => this.IsHD && !this.IsX;
 
     internal bool IsHD =>
         this.Definition is (".2160p" or ".1080p" or ".720p")

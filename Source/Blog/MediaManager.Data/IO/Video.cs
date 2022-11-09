@@ -2,6 +2,8 @@
 
 internal static partial class Video
 {
+    private const int DefaultLevel = 2;
+
     private const string XmlMetadataExtension = ".nfo";
 
     private const string VideoExtension = ".mp4";
@@ -34,7 +36,7 @@ internal static partial class Video
 
     private static readonly string[] AdaptiveAttachments = new[] { "banner.jpg", "box.jpg", "clearart.png", "clearlogo.png", "disc.jpg", "disc.png", "discart.png", "fanart.jpg", "landscape.jpg", "logo.png", "poster.jpg", "poster.png", "backdrop.jpg", "back.jpg" };
 
-    private const string ImdbMetadataExtension = ".json";
+    internal const string ImdbMetadataExtension = ".json";
 
     internal const string ImdbCacheExtension = ".log";
 
@@ -48,7 +50,7 @@ internal static partial class Video
 
     private const string InstallmentSeparator = "`";
 
-    private const string SubtitleSeparator = "-";
+    internal const string SubtitleSeparator = "-";
 
     internal const string FakeDefinition = ".FAKE";
 

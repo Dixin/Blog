@@ -173,8 +173,8 @@ internal static class Imdb
         imdbMetadata.Titles = allTitles
             .ToLookup(row => row.TitleKey, row => row.TitleValue, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(group => group.Key, group => group.ToArray());
-        Debug.Assert(imdbMetadata.Titles.Any() 
-            || allTitlesCQ.Text().ContainsIgnoreCase("It looks like we don't have any AKAs for this title yet.") 
+        Debug.Assert(imdbMetadata.Titles.Any()
+            || allTitlesCQ.Text().ContainsIgnoreCase("It looks like we don't have any AKAs for this title yet.")
             || imdbId is "tt10562876" or "tt13734388" or "tt11485640" or "tt11127510" or "tt11127706" or "tt11423284" or "tt20855690");
 
         if (webDriver is not null)
@@ -353,22 +353,66 @@ internal static class Imdb
 
     internal const string TitleSeparator = "~";
 
-    internal static bool TryLoad(string path, [NotNullWhen(true)] out ImdbMetadata? imdbMetadata)
+    internal static bool TryGet(string path, [NotNullWhen(true)] out string? imdbId, [NotNullWhen(true)] out string? year, [NotNullWhen(true)] out string[]? regions, [NotNullWhen(true)] out string[]? languages, [NotNullWhen(true)] out string[]? genres)
     {
-        if (Directory.Exists(path))
-        {
-            path = Directory.GetFiles(path, Video.ImdbMetadataSearchPattern, SearchOption.TopDirectoryOnly).Single();
-        }
+        imdbId = null;
+        year = null;
+        regions = null;
+        languages = null;
+        genres = null;
 
-        if (Path.GetFileNameWithoutExtension(path).EqualsOrdinal(Video.NotExistingFlag))
+        if (!TryGet(path, out string? file))
         {
-            imdbMetadata = null;
             return false;
         }
 
-        imdbMetadata = JsonSerializer.Deserialize<ImdbMetadata>(
-            File.ReadAllText(path),
-            new JsonSerializerOptions() { PropertyNameCaseInsensitive = true, IgnoreReadOnlyProperties = true }) ?? throw new InvalidOperationException(path);
+        string name = Path.GetFileNameWithoutExtension(file);
+        if (name.EqualsOrdinal(Video.NotExistingFlag))
+        {
+            return false;
+        }
+
+        string[] info = name.Split(Video.SubtitleSeparator);
+        Debug.Assert(info.Length == 5 && info[0].IsNotNullOrWhiteSpace());
+        imdbId = info[0];
+        year = info[1];
+        regions = info[2].Split(Video.ImdbMetadataSeparator);
+        languages = info[3].Split(Video.ImdbMetadataSeparator);
+        genres = info[4].Split(Video.ImdbMetadataSeparator);
         return true;
+    }
+
+    internal static bool TryGet(string path, [NotNullWhen(true)] out string? file)
+    {
+        if (Directory.Exists(path))
+        {
+            file = Directory.GetFiles(path, Video.ImdbMetadataSearchPattern, SearchOption.TopDirectoryOnly).SingleOrDefault();
+            Debug.Assert(file.IsNullOrWhiteSpace() || Path.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.SubtitleSeparator) || Path.GetFileNameWithoutExtension(file).Split(Video.SubtitleSeparator).Length == 5);
+            return file.IsNotNullOrWhiteSpace();
+        }
+
+        if (path.EndsWith(Video.ImdbMetadataExtension) && File.Exists(path))
+        {
+            file = path;
+            Debug.Assert(file.IsNullOrWhiteSpace() || Path.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.SubtitleSeparator) || Path.GetFileNameWithoutExtension(file).Split(Video.SubtitleSeparator).Length == 5);
+            return true;
+        }
+
+        file = null;
+        return false;
+    }
+
+    internal static bool TryLoad(string path, [NotNullWhen(true)] out ImdbMetadata? imdbMetadata)
+    {
+        if (TryGet(path, out string? file) && !Path.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.NotExistingFlag))
+        {
+            imdbMetadata = JsonSerializer.Deserialize<ImdbMetadata>(
+                File.ReadAllText(file),
+                new JsonSerializerOptions() { PropertyNameCaseInsensitive = true, IgnoreReadOnlyProperties = true }) ?? throw new InvalidOperationException(file);
+            return true;
+        }
+
+        imdbMetadata = null;
+        return false;
     }
 }

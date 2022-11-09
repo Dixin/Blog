@@ -8,11 +8,9 @@ using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 internal static class Yts
 {
-    private const string BaseUrl = "https://yts.mx";
-
     private const int SaveFrequency = 100;
 
-    internal static async Task DownloadSummariesAsync(string jsonPath, Action<string> log, Func<int, bool>? @continue = null, int index = 1)
+    internal static async Task DownloadSummariesAsync(string baseUrl, string jsonPath, Action<string> log, Func<int, bool>? @continue = null, int index = 1)
     {
         @continue ??= _ => true;
         Dictionary<string, YtsSummary> allSummaries = File.Exists(jsonPath)
@@ -22,7 +20,7 @@ internal static class Yts
         using WebClient webClient = new WebClient().AddChromeHeaders();
         for (; @continue(index); index++)
         {
-            string url = $"{BaseUrl}/browse-movies?page={index}";
+            string url = $"{baseUrl}/browse-movies?page={index}";
             log($"Start {url}");
             string html = await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(url));
             CQ cq = new(html);
@@ -65,9 +63,9 @@ internal static class Yts
         await FileHelper.SaveAndReplaceAsync(jsonPath, finalJsonString, null, SaveJsonLock);
     }
 
-    internal static async Task DownloadMetadataAsync(string summaryJsonPath, string metadataJsonPath, Action<string> log, Func<int, bool>? @continue = null, int index = 1, int degreeOfParallelism = 4)
+    internal static async Task DownloadMetadataAsync(string baseUrl, string summaryJsonPath, string metadataJsonPath, Action<string> log, Func<int, bool>? @continue = null, int index = 1, int degreeOfParallelism = 4)
     {
-        await DownloadSummariesAsync(summaryJsonPath, log, @continue, index);
+        await DownloadSummariesAsync(baseUrl, summaryJsonPath, log, @continue, index);
         await DownloadMetadataAsync(summaryJsonPath, metadataJsonPath, log, degreeOfParallelism);
     }
 

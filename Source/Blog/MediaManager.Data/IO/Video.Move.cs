@@ -873,7 +873,7 @@ internal static partial class Video
                     case > 1:
                         {
                             string chineseSubtitle = chineseSubtitles
-                                .Where(subtitle => EncodingHelper.TryRead(subtitle, out string? content, out _) && !"為們說無當".Any(content.ContainsOrdinal))
+                                .Where(subtitle => EncodingHelper.TryRead(subtitle, out string? content, out _) && !"為們說無當嗎這".Any(content.ContainsOrdinal))
                                 .OrderByDescending(subtitle => new FileInfo(subtitle).Length)
                                 .First();
                             chineseSubtitles = new string[] { chineseSubtitle };
@@ -939,5 +939,56 @@ internal static partial class Video
 
                 Directory.Delete(fanArtDirectory);
             });
+    }
+
+    internal static void RenameEpisodeWithoutTitle(string directory, bool isDryRun = false, Action<string>? log = null)
+    {
+        log ??= TraceLog;
+
+        string[] files = Directory.GetFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories);
+        files
+            .Where(IsVideo)
+            .ForEach(video =>
+            {
+                log(video);
+                if (VideoEpisodeFileInfo.TryParse(video, out VideoEpisodeFileInfo? episode) && episode.IsX && episode.EpisodeTitle.IsNotNullOrWhiteSpace())
+                {
+                    episode = episode with { EpisodeTitle = string.Empty };
+                    if (!isDryRun)
+                    {
+                        FileHelper.ReplaceFileName(video, episode.Name);
+                    }
+
+                    log(PathHelper.ReplaceFileName(video, episode.Name));
+                    log(string.Empty);
+
+                    string initial = video.Substring(0, video.Length - Path.GetExtension(video).Length);
+                    string newInitial = Path.Combine(Path.GetDirectoryName(video)!, Path.GetFileNameWithoutExtension(episode.Name));
+                    string[] attachments = files
+                        .Where(file => !file.EqualsIgnoreCase(video) && file.StartsWithIgnoreCase(initial))
+                        .ToArray();
+                    attachments.ForEach(attachment =>
+                    {
+                        string newAttachment = attachment.Replace(initial, newInitial);
+                        log(attachment);
+                        if (!isDryRun)
+                        {
+                            FileHelper.Move(attachment, newAttachment);
+                        }
+
+                        log(newAttachment);
+                        log(string.Empty);
+                    });
+                }
+
+            });
+    }
+
+    internal static void ReplaceTV(string mediaDirectory, string metadataDirectory, string subtitleDirectory, Action<string>? log = null)
+    {
+        log ??= TraceLog;
+
+
+
     }
 }

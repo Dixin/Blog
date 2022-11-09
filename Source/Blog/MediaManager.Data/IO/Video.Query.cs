@@ -295,7 +295,7 @@ internal static partial class Video
             log($"Saved to {parentFile}.");
         }
 
-        string jsonFile = Path.Combine(directory, $"{imdbId}{SubtitleSeparator}{imdbMetadata.Year}{SubtitleSeparator}{string.Join(",", imdbMetadata.Regions?.Select(value => value.Replace(SubtitleSeparator, string.Empty)).Take(5) ?? Array.Empty<string>())}{SubtitleSeparator}{string.Join(",", imdbMetadata.Languages?.Take(3).Select(value => value.Replace(SubtitleSeparator, string.Empty)) ?? Array.Empty<string>())}{SubtitleSeparator}{string.Join(",", imdbMetadata.Genres?.Take(5).Select(value => value.Replace(SubtitleSeparator, string.Empty)) ?? Array.Empty<string>())}{ImdbMetadataExtension}");
+        string jsonFile = Path.Combine(directory, $"{imdbId}{SubtitleSeparator}{imdbMetadata.Year}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Regions?.Select(value => value.Replace(SubtitleSeparator, string.Empty)).Take(5) ?? Array.Empty<string>())}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Languages?.Take(3).Select(value => value.Replace(SubtitleSeparator, string.Empty)) ?? Array.Empty<string>())}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Genres?.Take(5).Select(value => value.Replace(SubtitleSeparator, string.Empty)) ?? Array.Empty<string>())}{ImdbMetadataExtension}");
         log($"Merged {imdbUrl} and {releaseUrl} to {jsonFile}.");
         string jsonContent = JsonSerializer.Serialize(
             imdbMetadata,
@@ -308,6 +308,8 @@ internal static partial class Video
         await File.WriteAllTextAsync(jsonFile, jsonContent);
         log($"Saved to {jsonFile}.");
     }
+
+    internal const string ImdbMetadataSeparator = ",";
 
     internal static async Task DownloadImdbMetadataAsync(
         (string directory, int level)[] directories, Func<VideoDirectoryInfo, bool> predicate,

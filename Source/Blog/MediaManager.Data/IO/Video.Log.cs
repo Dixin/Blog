@@ -48,56 +48,40 @@ internal static partial class Video
             });
     }
 
-    internal static void PrintDirectoriesWithLowDefinition(string directory, int level = 2, Action<string>? log = null)
+    internal static void PrintDirectoriesWithLowDefinition(string directory, int level = DefaultLevel, Action<string>? log = null)
     {
         log ??= TraceLog;
         EnumerateDirectories(directory, level)
-            .ForEach(movie =>
-            {
-                List<string> files = Directory
-                    .GetFiles(movie)
-                    .Where(IsCommonVideo)
-                    .ToList();
-                if (files.All(file => !file.ContainsIgnoreCase("1080p") && !file.ContainsIgnoreCase("2160p")))
-                {
-                    log(movie);
-                }
-            });
+            .Where(movie => !VideoDirectoryInfo.GetVideos(movie).Any(video => video.IsHD))
+            .ForEach(log);
     }
 
-    internal static void PrintDirectoriesWithMultipleMedia(string directory, int level = 2, Action<string>? log = null)
+    internal static void PrintDirectoriesWithMultipleMedia(string directory, int level = DefaultLevel, Action<string>? log = null)
     {
         log ??= TraceLog;
         EnumerateDirectories(directory, level)
             .ForEach(movie =>
             {
-                string[] videos = Directory
-                    .GetFiles(movie)
-                    .Where(IsCommonVideo)
-                    .OrderBy(video => video)
-                    .ToArray();
-                if (videos.Length <= 1)
+                VideoFileInfo[] videos = VideoDirectoryInfo.GetVideos(movie).ToArray();
+                if (videos.Length <= 1 || videos.All(video => video.Part.IsNotNullOrWhiteSpace()))
                 {
                     return;
                 }
 
-                if (!videos.Select((video, index) => Path.GetFileNameWithoutExtension(video).EndsWithIgnoreCase($".cd{index + 1}")).All(isPart => isPart))
-                {
-                    log(movie);
-                }
+                log(movie);
             });
     }
 
-    internal static void PrintVideosP(string directory, int level = 2, Action<string>? log = null) =>
+    internal static void PrintVideosP(string directory, int level = DefaultLevel, Action<string>? log = null) =>
         PrintVideos(directory, level, file => VideoFileInfo.Parse(file).IsP, log);
 
-    internal static void PrintVideosY(string directory, int level = 2, Action<string>? log = null) =>
+    internal static void PrintVideosY(string directory, int level = DefaultLevel, Action<string>? log = null) =>
         PrintVideos(directory, level, file => VideoFileInfo.Parse(file).IsY, log);
 
-    internal static void PrintVideosNotX(string directory, int level = 2, Action<string>? log = null) =>
+    internal static void PrintVideosNotX(string directory, int level = DefaultLevel, Action<string>? log = null) =>
         PrintVideos(directory, level, file => VideoFileInfo.Parse(file).IsX, log);
 
-    internal static void PrintVideosH(string directory, int level = 2, Action<string>? log = null) =>
+    internal static void PrintVideosH(string directory, int level = DefaultLevel, Action<string>? log = null) =>
         PrintVideos(directory, level, file => VideoFileInfo.Parse(file).IsH, log);
 
     private static void PrintVideos(string directory, int level, Func<string, bool> predicate, Action<string>? log = null)
@@ -107,21 +91,19 @@ internal static partial class Video
             .OrderBy(movie => movie)
             .ForEach(movie =>
             {
-                string[] files = Directory
-                    .GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
-                string[] videos = files
-                    .Where(file => file.IsCommonVideo() && predicate(file))
-                    .ToArray();
+                VideoFileInfo[] videos = VideoDirectoryInfo.GetVideos(movie).ToArray();
                 if (videos.Any())
                 {
-                    log(Path.GetFileNameWithoutExtension(files.Single(file => file.HasExtension(ImdbMetadataExtension))).Split(".")[0]);
-                    videos.ForEach(log);
+                    log(movie);
+                    Imdb.TryGet(movie, out string? imdbId, out _, out _, out _, out _);
+                    log(imdbId ?? string.Empty);
+                    videos.ForEach(video => log(video.Name));
                     log(string.Empty);
                 }
             });
     }
 
-    internal static void PrintMoviesWithNoSubtitle(string directory, int level = 2, Action<string>? log = null)
+    internal static void PrintMoviesWithNoSubtitle(string directory, int level = DefaultLevel, Action<string>? log = null)
     {
         log ??= TraceLog;
         EnumerateDirectories(directory, level)
@@ -129,7 +111,7 @@ internal static partial class Video
             .ForEach(log);
     }
 
-    internal static void PrintMoviesWithNoSubtitle(string directory, int level = 2, Action<string>? log = null, params string[] languages)
+    internal static void PrintMoviesWithNoSubtitle(string directory, int level = DefaultLevel, Action<string>? log = null, params string[] languages)
     {
         log ??= TraceLog;
         string[] searchPatterns = languages.SelectMany(language => AllSubtitleExtensions.Select(extension => $"*{language}*{extension}")).ToArray();
@@ -138,7 +120,7 @@ internal static partial class Video
             .ForEach(log);
     }
 
-    internal static void PrintMetadataByGroup(string directory, int level = 2, string field = "genre", Action<string>? log = null)
+    internal static void PrintMetadataByGroup(string directory, int level = DefaultLevel, string field = "genre", Action<string>? log = null)
     {
         log ??= TraceLog;
         EnumerateDirectories(directory, level)
@@ -158,7 +140,7 @@ internal static partial class Video
             .ForEach(group => group.ForEach(movie => log($"{movie.field} - {movie.metadata}")));
     }
 
-    internal static void PrintYears(string directory, int level = 2, Action<string>? log = null)
+    internal static void PrintYears(string directory, int level = DefaultLevel, Action<string>? log = null)
     {
         log ??= TraceLog;
         EnumerateDirectories(directory, level)
@@ -186,7 +168,7 @@ internal static partial class Video
             });
     }
 
-    internal static void PrintDirectoriesWithNonLatinOriginalTitle(string directory, int level = 2, Action<string>? log = null)
+    internal static void PrintDirectoriesWithNonLatinOriginalTitle(string directory, int level = DefaultLevel, Action<string>? log = null)
     {
         log ??= TraceLog;
         EnumerateDirectories(directory, level)
@@ -212,7 +194,7 @@ internal static partial class Video
 
     private static readonly char[] DirectorySpecialCharacters = "：@#(){}".ToCharArray();
 
-    internal static void PrintDirectoriesWithErrors(string directory, int level = 2, bool isLoadingVideo = false, bool isNoAudioAllowed = false, bool isTV = false, Action<string>? log = null)
+    internal static void PrintDirectoriesWithErrors(string directory, int level = DefaultLevel, bool isLoadingVideo = false, bool isNoAudioAllowed = false, bool isTV = false, Action<string>? log = null)
     {
         log ??= TraceLog;
         List<string>? allVideos = null;
@@ -547,7 +529,7 @@ internal static partial class Video
         }
     }
 
-    internal static void PrintTitlesWithDifferences(string directory, int level = 2, Action<string?>? log = null)
+    internal static void PrintTitlesWithDifferences(string directory, int level = DefaultLevel, Action<string?>? log = null)
     {
         log ??= TraceLog;
         EnumerateDirectories(directory, level)
@@ -1069,7 +1051,7 @@ internal static partial class Video
             });
     }
 
-    internal static void PrintDirectoryTitleMismatch(string directory, int level = 2, Action<string>? log = null)
+    internal static void PrintDirectoryTitleMismatch(string directory, int level = DefaultLevel, Action<string>? log = null)
     {
         log ??= TraceLog;
         EnumerateDirectories(directory, level)
@@ -1221,7 +1203,7 @@ internal static partial class Video
             });
     }
 
-    internal static void PrintDirectoryOriginalTitleMismatch(string directory, int level = 2, Action<string>? log = null)
+    internal static void PrintDirectoryOriginalTitleMismatch(string directory, int level = DefaultLevel, Action<string>? log = null)
     {
         log ??= TraceLog;
         EnumerateDirectories(directory, level)
@@ -1422,6 +1404,87 @@ internal static partial class Video
                     log(meta?.ImdbId ?? "-");
                     log(m);
                     log("");
+                }
+            });
+    }
+
+    internal static async Task PrintMovieImdbIdErrorsAsync(string x265JsonPath, string h264JsonPath, Action<string>? log = null, params (string Directory, int Level)[] directories)
+    {
+        log ??= TraceLog;
+        Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
+        Dictionary<string, RarbgMetadata[]> h264Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
+
+        Dictionary<string, string> x265TitlesImdbIds = x265Metadata
+            .SelectMany(pair => pair.Value)
+            .ToDictionary(metadata => metadata.Title, metadata => metadata.ImdbId);
+        Dictionary<string, string> h264TitlesImdbIds = h264Metadata
+            .Where(pair => pair.Key.IsNotNullOrWhiteSpace())
+            .SelectMany(pair => pair.Value)
+            .Where(metadata => !metadata.Title.EqualsIgnoreCase("Emma.1996.1080p.BluRay.H264.AAC-RARBG"))
+            .ToDictionary(metadata => metadata.Title, metadata => metadata.ImdbId);
+
+        directories
+            .SelectMany(directory => EnumerateDirectories(directory.Directory, directory.Level))
+            .ForEach(movie =>
+            {
+                if (!Imdb.TryGet(movie, out string? localImdbId, out _, out _, out _, out _))
+                {
+                    log($"-IMDB id is unavailable: {movie}");
+                    return;
+                }
+
+                VideoFileInfo[] videos = VideoDirectoryInfo.GetVideos(movie).ToArray();
+                if (!videos.Any())
+                {
+                    return;
+                }
+
+                VideoFileInfo? x265Video = videos.FirstOrDefault(video => video.IsX);
+                if (x265Video is not null)
+                {
+                    if (localImdbId.IsNullOrWhiteSpace() || localImdbId.EqualsOrdinal(SubtitleSeparator))
+                    {
+                        log($"!IMDB id is missing as x265: {movie}");
+                        return;
+                    }
+
+                    string? x265Title = x265TitlesImdbIds.Keys.FirstOrDefault(key => x265Video.Name.StartsWithIgnoreCase(key));
+                    if (x265Title.IsNullOrWhiteSpace())
+                    {
+                        log($"-Title is missing in x265: {movie}");
+                        return;
+                    }
+
+                    string remoteImdbId = x265TitlesImdbIds[x265Title];
+                    if (!remoteImdbId.EqualsIgnoreCase(localImdbId))
+                    {
+                        log($"!IMDB id {localImdbId} should be {remoteImdbId}: {movie}");
+                        return;
+                    }
+                }
+
+                VideoFileInfo? h264Video = videos.FirstOrDefault(video => video.IsH);
+                if (h264Video is not null)
+                {
+                    if (localImdbId.IsNullOrWhiteSpace() || localImdbId.EqualsOrdinal(SubtitleSeparator))
+                    {
+                        log($"!IMDB id is missing as H264: {movie}");
+                        return;
+                    }
+
+                    string? h264Title = h264TitlesImdbIds.Keys.FirstOrDefault(key => h264Video.Name.StartsWithIgnoreCase(key));
+                    if (h264Title.IsNullOrWhiteSpace())
+                    {
+                        log($"-Title is missing in H264: {movie}");
+                        return;
+                    }
+
+                    string remoteImdbId = h264TitlesImdbIds[h264Title];
+                    if (!remoteImdbId.EqualsIgnoreCase(localImdbId))
+                    {
+                        log($"!IMDB id {localImdbId} should be {remoteImdbId}: {movie}");
+                        return;
+                    }
                 }
             });
     }
