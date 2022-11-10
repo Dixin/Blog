@@ -4,8 +4,6 @@ using System.Runtime.Serialization.Formatters.Binary;
 
 using Examples.Runtime.Serialization;
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 [TestClass]
 public class SerializerTests
 {

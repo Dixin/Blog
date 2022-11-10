@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net7.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
 	<ImplicitUsings>enable</ImplicitUsings>
 	<IsPackable>false</IsPackable>
@@ -20,10 +20,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Examples\Examples.csproj" />
     <ProjectReference Include="..\Examples.Windows\Examples.Windows.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Properties\" />
   </ItemGroup>
 
 </Project>

@@ -3,7 +3,6 @@
 using Examples.Dynamic;
 
 using Microsoft.CSharp.RuntimeBinder;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 [TestClass]
 public class DynamicWrapperTest

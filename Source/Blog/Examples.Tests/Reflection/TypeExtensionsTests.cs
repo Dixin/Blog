@@ -2,8 +2,6 @@
 
 using System.Collections.ObjectModel;
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 [TestClass]
 public class TypeExtensionsTests
 {

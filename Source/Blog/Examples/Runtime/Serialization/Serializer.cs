@@ -18,12 +18,16 @@ public class Serializer
         serializable.NotNull();
 
         using MemoryStream stream = new();
+#pragma warning disable SYSLIB0011
         this.formatter.Serialize(stream, serializable);
+#pragma warning restore SYSLIB0011
         return Convert.ToBase64String(stream.ToArray());
     }
 
     public T Deserialize<T>(string base64) where T : class, ISerializable =>
+#pragma warning disable SYSLIB0011
         this.formatter.Deserialize(new MemoryStream(Convert.FromBase64String(base64.NotNullOrEmpty()))) is T result
+#pragma warning restore SYSLIB0011
             ? result
             : throw new SerializationException();
 }

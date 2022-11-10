@@ -2,8 +2,6 @@
 
 using Examples.Common;
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 [TestClass]
 public class Int32ExtensionsTests
 {
