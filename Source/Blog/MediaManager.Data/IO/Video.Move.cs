@@ -3,6 +3,7 @@
 using Examples.Common;
 using Examples.Net;
 using Examples.Text;
+using System.Linq;
 
 internal static partial class Video
 {
@@ -211,7 +212,7 @@ internal static partial class Video
             });
     }
 
-    internal static void RenameDirectoriesWithMetadata(string directory, int level = 2, bool additionalInfo = false, bool overwrite = false, bool isDryRun = false, string backupFlag = "backup", Action<string>? log = null)
+    internal static void RenameDirectoriesWithMetadata(string directory, int level = 2, bool additionalInfo = false, bool overwrite = false, bool isDryRun = false, string backupFlag = "backup", bool isTV = false, Action<string>? log = null)
     {
         log ??= TraceLog;
         EnumerateDirectories(directory, level)
@@ -227,15 +228,23 @@ internal static partial class Video
                 string[] nfos = files.Where(file => file.HasExtension(XmlMetadataExtension)).ToArray();
                 XDocument english;
                 XDocument? translated;
-                if (nfos.Any(nfo => nfo.EndsWithIgnoreCase($".{backupFlag}{XmlMetadataExtension}")) && nfos.Any(nfo => !nfo.EndsWithIgnoreCase($".{backupFlag}{XmlMetadataExtension}")))
+                if (isTV)
                 {
-                    english = XDocument.Load(nfos.First(nfo => nfo.EndsWithIgnoreCase($".{backupFlag}{XmlMetadataExtension}")));
-                    translated = XDocument.Load(nfos.First(nfo => !nfo.EndsWithIgnoreCase($".{backupFlag}{XmlMetadataExtension}")));
+                    english = XDocument.Load(nfos.Single(nfo => Path.GetFileName(nfo).EqualsIgnoreCase(TVShowMetadataFile)));
+                    translated = null;
                 }
                 else
                 {
-                    english = XDocument.Load(nfos.First());
-                    translated = null;
+                    if (nfos.Any(nfo => nfo.EndsWithIgnoreCase($".{backupFlag}{XmlMetadataExtension}")) && nfos.Any(nfo => !nfo.EndsWithIgnoreCase($".{backupFlag}{XmlMetadataExtension}")))
+                    {
+                        english = XDocument.Load(nfos.First(nfo => nfo.EndsWithIgnoreCase($".{backupFlag}{XmlMetadataExtension}")));
+                        translated = XDocument.Load(nfos.First(nfo => !nfo.EndsWithIgnoreCase($".{backupFlag}{XmlMetadataExtension}")));
+                    }
+                    else
+                    {
+                        english = XDocument.Load(nfos.First());
+                        translated = null;
+                    }
                 }
 
                 string json = files.Single(file => PathHelper.HasExtension(file, ImdbMetadataExtension));
@@ -251,7 +260,7 @@ internal static partial class Video
                     ? string.Empty
                     : $"={originalTitle}";
                 string year = imdbMetadata?.Year ?? english.Root?.Element("year")?.Value ?? throw new InvalidOperationException($"{movie} has no year.");
-                string? imdbId = english.Root?.Element("imdbid")?.Value;
+                string? imdbId = english.Root?.Element("imdbid")?.Value ?? english.Root?.Element("imdb_id")?.Value;
                 Debug.Assert(imdbId.IsNullOrWhiteSpace()
                     ? NotExistingFlag.EqualsOrdinal(Path.GetFileNameWithoutExtension(json))
                     : imdbId.EqualsIgnoreCase(Path.GetFileNameWithoutExtension(json).Split("-")[0]));
@@ -984,11 +993,31 @@ internal static partial class Video
             });
     }
 
-    internal static void ReplaceTV(string mediaDirectory, string metadataDirectory, string subtitleDirectory, Action<string>? log = null)
+    internal static void ReplaceTV(string mediaDirectory, string metadataDirectory, string subtitleDirectory = "", Func<string, string, string>? renameForTitle = null, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= TraceLog;
 
+        (string Path, string Name)[] tvs = Directory
+            .GetDirectories(mediaDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
+            .Where(tv => VideoDirectoryInfo.TryParse(tv, out _))
+            .Select(tv => (Path: tv, Name: Path.GetFileName(tv) ?? throw new InvalidOperationException(tv)))
+            .OrderBy(tv => tv.Name)
+            .ToArray();
 
+        string[] existingMetadataTVs = Directory
+            .GetDirectories(metadataDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
+            .ToArray();
+        tvs
+            .Select(tv => (tv.Path, tv.Name, Metadata: existingMetadataTVs.Single(existingTV => tv.Name.Equals(Path.GetFileName(existingTV)))))
+            .ForEach(match => RenameEpisodesWithTitle(match.Path, match.Metadata, renameForTitle, isDryRun, log));
 
+        string[] existingSubtitleTVs = subtitleDirectory.IsNullOrWhiteSpace()
+            ? existingMetadataTVs
+            : Directory
+                .GetDirectories(subtitleDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
+                .ToArray();
+        tvs
+            .Select(tv => (tv.Path, tv.Name, Subtitle: existingSubtitleTVs.Single(existingTV => tv.Name.Equals(Path.GetFileName(existingTV)))))
+            .ForEach(match => MoveSubtitlesForEpisodes(match.Path, match.Subtitle, isDryRun: isDryRun, log: log));
     }
 }
