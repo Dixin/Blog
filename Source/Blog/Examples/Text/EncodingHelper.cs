@@ -21,7 +21,7 @@ public static class EncodingHelper
 
     public static string Utf8ToGB2312(this string utf8Value) => Convert(utf8Value, Encoding.UTF8, Encoding.GetEncoding("gb2312"));
 
-    public static async Task Convert(Encoding from, Encoding to, string fromPath, string? toPath = null, byte[]? bom = null)
+    public static async Task ConvertAsync(Encoding from, Encoding to, string fromPath, string? toPath = null, byte[]? bom = null)
     {
         from.NotNull();
         to.NotNull();
@@ -32,10 +32,10 @@ public static class EncodingHelper
         await using FileStream fileStream = new(toPath ?? fromPath, FileMode.Create, FileAccess.Write, FileShare.Read);
         if (bom is not null && !bom.SequenceEqual(toBytes.Take(bom.Length)))
         {
-            await fileStream.WriteAsync(bom, 0, bom.Length);
+            await fileStream.WriteAsync(bom);
         }
 
-        await fileStream.WriteAsync(toBytes, 0, toBytes.Length);
+        await fileStream.WriteAsync(toBytes);
     }
 
     public static bool TryDetect(string file, [NotNullWhen(true)] out Encoding? encoding)

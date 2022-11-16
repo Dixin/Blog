@@ -344,4 +344,76 @@ public static partial class Chinese
         error = new ArgumentOutOfRangeException(argument, "Input is a single character but not Chinese.");
         return false;
     }
+
+    private const char HalfWidthSpace = ' '; // 32
+
+    private const char FullWidthSpace = '　'; // 12288
+
+    private const char HalfWidthExclamation = '!'; // 33
+
+    private const char FullWidthExclamation = '！'; // 65281
+
+    private const char HalfWidthTilde = '~'; // 126
+
+    private const char FullWidthTilde = '～'; // 65374
+
+    private const char FullHalfWidthDelta = (char)65248;
+
+    public static char ToHalfWidth(this char value) => value switch
+    {
+        FullWidthSpace => HalfWidthSpace,
+        >= FullWidthExclamation and <= FullWidthTilde => (char)(value - FullHalfWidthDelta),
+        _ => value
+    };
+
+    public static string ToHalfWidth(this string value)
+    {
+        char[] characters = value.ToCharArray();
+        for (int index = 0; index < characters.Length; index++)
+        {
+            characters[index] = characters[index].ToHalfWidth();
+        }
+        
+        return new string(characters);
+    }
+
+    public static string ToFullWidth(this string value)
+    {
+        char[] characters = value.ToCharArray();
+        for (int index = 0; index < characters.Length; index++)
+        {
+            characters[index] = characters[index] switch
+            {
+                HalfWidthSpace => FullWidthSpace,
+                >= HalfWidthExclamation and <= HalfWidthTilde => (char)(characters[index] + FullHalfWidthDelta),
+                _ => characters[index]
+            };
+        }
+
+        return new string(characters);
+    }
+
+    private const char FullWidthZero = '０';
+    
+    private const char FullWidthNine = '９';
+
+    private const char FullWidthUpperA = 'Ａ';
+
+    private const char FullWidthLowerZ = 'ｚ';
+
+    public static string ToHalfWidthLettersAndNumbers(this string value)
+    {
+        char[] characters = value.ToCharArray();
+        for (int index = 0; index < characters.Length; index++)
+        {
+            characters[index] = characters[index] switch
+            {
+                >= FullWidthZero and <= FullWidthNine => (char)(characters[index] - FullHalfWidthDelta),
+                >= FullWidthUpperA and <= FullWidthLowerZ => (char)(characters[index] - FullHalfWidthDelta),
+                _ => characters[index]
+            };
+        }
+
+        return new string(characters);
+    }
 }
