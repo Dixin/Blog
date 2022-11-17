@@ -12,7 +12,7 @@ public static class ClipboardHelper
         ThreadHelper.Sta(() => Clipboard.SetText(text, format));
 
     [SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
-    public static IDataObject GetData() => ThreadHelper.Sta(Clipboard.GetDataObject);
+    public static IDataObject? GetData() => ThreadHelper.Sta(Clipboard.GetDataObject);
 
     public static void SetDataObject(object data, bool copy = false) =>
         ThreadHelper.Sta(() => Clipboard.SetDataObject(data, copy));
