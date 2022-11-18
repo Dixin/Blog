@@ -5,90 +5,112 @@ using Examples.Common;
 public static partial class ProcessHelper
 {
     public static int StartAndWait(
-        string fileName, string arguments, Action<string?>? outputReceived = null, Action<string?>? errorReceived = null, Action<ProcessStartInfo>? initialize = null, int milliseconds = -1)
+        string fileName, string arguments, Action<string?>? outputReceived = null, Action<string?>? errorReceived = null, Action<ProcessStartInfo>? initialize = null, bool window = false, TimeSpan? timeout = null)
     {
+        bool redirectOutput = outputReceived is not null;
+        bool redirectError = errorReceived is not null;
         ProcessStartInfo startInfo = new ProcessStartInfo()
         {
             FileName = fileName.NotNullOrWhiteSpace(),
             Arguments = arguments,
-            CreateNoWindow = true,
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
+            CreateNoWindow = !window,
+            UseShellExecute = window,
+            RedirectStandardOutput = redirectOutput,
+            RedirectStandardError = redirectError,
         };
         initialize?.Invoke(startInfo);
 
-        using Process process = new()
-        {
-            StartInfo = startInfo
-        };
+        using Process process = new() { StartInfo = startInfo };
 
-        if (outputReceived is not null)
+        if (redirectOutput)
         {
-            process.OutputDataReceived += (sender, args) => outputReceived(args.Data);
+            process.OutputDataReceived += (sender, args) => outputReceived!(args.Data);
         }
 
-        if (errorReceived is not null)
+        if (redirectError)
         {
-            process.ErrorDataReceived += (sender, args) => errorReceived(args.Data);
+            process.ErrorDataReceived += (sender, args) => errorReceived!(args.Data);
         }
 
         process.Start();
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
-        process.WaitForExit(milliseconds);
+        if (redirectOutput)
+        {
+            process.BeginOutputReadLine();
+        }
+
+        if (redirectError)
+        {
+            process.BeginErrorReadLine();
+        }
+
+        if (timeout.HasValue)
+        {
+            process.WaitForExit(timeout.Value);
+        }
+        else
+        {
+            process.WaitForExit();
+        }
+
         return process.ExitCode;
     }
 
-    public static (int ExitCode, List<string?> Output, List<string?> Error) Run(string fileName, string arguments, int milliseconds = -1)
+    public static (int ExitCode, List<string?> Output, List<string?> Error) Run(string fileName, string arguments, bool window = false, TimeSpan? timeout = null)
     {
         List<string?> allOutput = new();
         List<string?> allErrors = new();
-        int exitCode = StartAndWait(fileName, arguments, output => allOutput.Add(output), error => allErrors.Add(error), null, milliseconds);
+        int exitCode = StartAndWait(fileName, arguments, output => allOutput.Add(output), error => allErrors.Add(error), null, window, timeout);
         return (exitCode, allOutput, allErrors);
     }
 
     public static async Task<int> StartAndWaitAsync(
-        string fileName, string arguments, Action<string?>? outputReceived = null, Action<string?>? errorReceived = null, Action<ProcessStartInfo>? initialize = null, CancellationToken cancellationToken = default)
+        string fileName, string arguments, Action<string?>? outputReceived = null, Action<string?>? errorReceived = null, Action<ProcessStartInfo>? initialize = null, bool window = false, CancellationToken cancellationToken = default)
     {
+        bool redirectOutput = outputReceived is not null;
+        bool redirectError = errorReceived is not null;
         ProcessStartInfo startInfo = new ProcessStartInfo()
         {
             FileName = fileName.NotNullOrWhiteSpace(),
             Arguments = arguments,
-            CreateNoWindow = true,
-            UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
+            CreateNoWindow = !window,
+            UseShellExecute = window,
+            RedirectStandardOutput = redirectOutput,
+            RedirectStandardError = redirectError,
         };
         initialize?.Invoke(startInfo);
 
-        using Process process = new()
-        {
-            StartInfo = startInfo
-        };
+        using Process process = new() { StartInfo = startInfo };
 
-        if (outputReceived is not null)
+        if (redirectOutput)
         {
-            process.OutputDataReceived += (sender, args) => outputReceived(args.Data);
+            process.OutputDataReceived += (sender, args) => outputReceived!(args.Data);
         }
 
-        if (errorReceived is not null)
+        if (redirectError)
         {
-            process.ErrorDataReceived += (sender, args) => errorReceived(args.Data);
+            process.ErrorDataReceived += (sender, args) => errorReceived!(args.Data);
         }
 
         process.Start();
-        process.BeginOutputReadLine();
-        process.BeginErrorReadLine();
+        if (redirectOutput)
+        {
+            process.BeginOutputReadLine();
+        }
+
+        if (redirectError)
+        {
+            process.BeginErrorReadLine();
+        }
+
         await process.WaitForExitAsync(cancellationToken);
         return process.ExitCode;
     }
 
-    public static async Task<(int ExitCode, List<string?> Output, List<string?> Error)> RunAsync(string fileName, string arguments, CancellationToken cancellationToken = default)
+    public static async Task<(int ExitCode, List<string?> Output, List<string?> Error)> RunAsync(string fileName, string arguments, bool window = false, CancellationToken cancellationToken = default)
     {
         List<string?> allOutput = new();
         List<string?> allErrors = new();
-        int exitCode = await StartAndWaitAsync(fileName, arguments, output => allOutput.Add(output), error => allErrors.Add(error), null, cancellationToken);
+        int exitCode = await StartAndWaitAsync(fileName, arguments, output => allOutput.Add(output), error => allErrors.Add(error), null, window, cancellationToken);
         return (exitCode, allOutput, allErrors);
     }
 }

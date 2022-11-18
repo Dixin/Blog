@@ -16,6 +16,7 @@ public static class Firewall
             output,
             error,
             null,
+            false,
             cancellationToken);
         if (exitCode != 0)
         {
@@ -31,6 +32,7 @@ public static class Firewall
             output,
             error,
             null,
+            false,
             cancellationToken);
         if (exitCode != 0)
         {
@@ -119,6 +121,7 @@ public static class Firewall
             output,
             error,
             null,
+            false,
             cancellationToken);
         if (exitCode != 0)
         {
@@ -134,6 +137,7 @@ public static class Firewall
             output,
             error,
             null,
+            false,
             cancellationToken);
         if (exitCode != 0)
         {
@@ -149,6 +153,7 @@ public static class Firewall
             output,
             error,
             null,
+            false,
             cancellationToken);
         if (exitCode != 0)
         {
