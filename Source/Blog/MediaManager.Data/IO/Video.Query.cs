@@ -1,8 +1,10 @@
 namespace Examples.IO;
 
+using System;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
 using Examples.Common;
+using Examples.Diagnostics;
 using Examples.Linq;
 using Examples.Net;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
@@ -13,60 +15,114 @@ using JsonReaderException = Newtonsoft.Json.JsonReaderException;
 
 internal static partial class Video
 {
-    private static IEnumerable<string> EnumerateVideos(string directory, Func<string, bool>? predicate = null)
-    {
-        return Directory.EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
+    private static IEnumerable<string> EnumerateVideos(string directory, Func<string, bool>? predicate = null) =>
+        Directory
+            .EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
             .Where(file => (predicate?.Invoke(file) ?? true) && file.HasAnyExtension(AllVideoExtensions));
+
+    internal static (int Width, int Height, int X, int Y) GetVideoCrop(string file, int frameCount = 30, bool estimate = false, Action<string>? log = null)
+    {
+        log ??= TraceLog;
+        IMediaInfo mediaInfo = FFmpeg.GetMediaInfo(file).Result;
+        TimeSpan[] timestamps = { mediaInfo.Duration / 4, mediaInfo.Duration / 2, mediaInfo.Duration - mediaInfo.Duration / 4 };
+        (string Width, string Height, string X, string Y)[] crops = timestamps
+            .Select(timestamp =>
+            {
+                string arguments = $"""-ss {timestamp.Hours:00}:{timestamp.Minutes:00}:{timestamp.Seconds:00} -i "{file}" -filter:v cropdetect -vframes {frameCount} -f null -max_muxing_queue_size 9999 NUL""";
+                (int exitCode, List<string?> output, List<string?> errors) = ProcessHelper.Run("ffmpeg", arguments);
+                if (exitCode != 0)
+                {
+                    throw new InvalidOperationException(file);
+                }
+
+                (string, string, string, string)[] timestampCrops = errors
+                    .Where(message => message.IsNotNullOrWhiteSpace())
+                    .Select(message => Regex.Match(message!, @" crop=([0-9]+):([0-9]+):([0-9]+):([0-9]+)$"))
+                    .Where(match => match.Success)
+                    .Select(match => (match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Value, match.Groups[4].Value))
+                    .ToArray();
+                Debug.Assert(timestampCrops.Length == frameCount - 1);
+                (string, string, string, string)[] distinctTimestampCrops = timestampCrops.Distinct().ToArray();
+                if (distinctTimestampCrops.Length != 1)
+                {
+                    log($"""
+                        ffmpeg {arguments}
+                        {string.Join(Environment.NewLine, timestampCrops)}
+                        """);
+                }
+
+                return timestampCrops;
+            })
+            .Concat()
+            .ToArray();
+        IGrouping<(int Width, int Height, int X, int Y), (string, string, string, string)>[] distinctCrops = crops
+            .GroupBy(crop => (int.Parse(crop.Width), int.Parse(crop.Height), int.Parse(crop.X), int.Parse(crop.Y)))
+            .OrderBy(group => group.Count())
+            .ToArray();
+        if (distinctCrops.Length == 1 || distinctCrops.First().Count() >= frameCount * 2)
+        {
+            return distinctCrops.First().Key;
+        }
+
+        if (estimate)
+        {
+            return (
+                distinctCrops.Select(group => group.Key.Width).Max(),
+                distinctCrops.Select(group => group.Key.Height).Max(),
+                distinctCrops.Select(group => group.Key.X).Min(),
+                distinctCrops.Select(group => group.Key.Y).Min()
+            );
+        }
+
+        throw new InvalidOperationException($"""
+            {file}
+            {string.Join(Environment.NewLine, crops)}
+            """);
     }
+
+    internal static Task<VideoMetadata> GetVideoMetadataAsync(string file, ImdbMetadata? imdbMetadata = null, string? relativePath = null, int retryCount = 10) =>
+        Retry.IncrementalAsync(
+            async () =>
+            {
+                IMediaInfo mediaInfo = await FFmpeg.GetMediaInfo(file);
+                IVideoStream videoStream = mediaInfo.VideoStreams.Single();
+                return new VideoMetadata()
+                {
+                    File = relativePath.IsNullOrWhiteSpace() ? file : Path.GetRelativePath(relativePath, file),
+                    Width = videoStream.Width,
+                    Height = videoStream.Height,
+                    Audio = mediaInfo.AudioStreams?.Count() ?? 0,
+                    Subtitle = mediaInfo.SubtitleStreams?.Count() ?? 0,
+                    AudioBitRates = mediaInfo.AudioStreams?.Select(audio => (int)audio.Bitrate).ToArray() ?? Array.Empty<int>(),
+                    TotalMilliseconds = mediaInfo.Duration.TotalMilliseconds,
+                    Imdb = imdbMetadata,
+                    FrameRate = videoStream.Framerate
+                };
+            },
+            retryCount,
+            exception => true);
 
     internal static bool TryGetVideoMetadata(string file, [NotNullWhen(true)] out VideoMetadata? videoMetadata, ImdbMetadata? imdbMetadata = null, string? relativePath = null, int retryCount = 10, Action<string>? log = null)
     {
         log ??= TraceLog;
-        Task<VideoMetadata?> task = Task.Run(() =>
+        Task<VideoMetadata> task = GetVideoMetadataAsync(file, imdbMetadata, relativePath, retryCount);
+        if (!task.Wait(TimeSpan.FromSeconds(30)))
         {
-            try
-            {
-                return Retry.Incremental(
-                    () =>
-                    {
-                        IMediaInfo mediaInfo = FFmpeg.GetMediaInfo(file).Result;
-                        IVideoStream videoStream = mediaInfo.VideoStreams.First();
-                        return new VideoMetadata()
-                        {
-                            File = relativePath.IsNullOrWhiteSpace() ? file : Path.GetRelativePath(relativePath, file),
-                            Width = videoStream.Width,
-                            Height = videoStream.Height,
-                            Audio = mediaInfo.AudioStreams?.Count() ?? 0,
-                            Subtitle = mediaInfo.SubtitleStreams?.Count() ?? 0,
-                            AudioBitRates = mediaInfo.AudioStreams?.Select(audio => (int)audio.Bitrate).ToArray() ?? Array.Empty<int>(),
-                            TotalMilliseconds = mediaInfo.Duration.TotalMilliseconds,
-                            Imdb = imdbMetadata,
-                            FrameRate = videoStream.Framerate
-                        };
-                    },
-                    retryCount,
-                    exception => true);
-            }
-            catch (Exception exception)
-            {
-                log($"!Fail {file} {exception}");
-                return null;
-            }
-        });
-        if (task.Wait(TimeSpan.FromSeconds(30)))
-        {
-            if ((videoMetadata = task.Result) is null)
-            {
-                return false;
-            }
-
-            log($"{videoMetadata.Width}x{videoMetadata.Height}, {videoMetadata.Audio} audio, {file}");
-            return true;
+            videoMetadata = null;
+            log($"!Timeout {file}");
+            return false;
         }
 
-        log($"!Timeout {file}");
-        videoMetadata = null;
-        return false;
+        if (task.Exception is not null)
+        {
+            videoMetadata = null;
+            log($"!Fail {file} {task.Exception}");
+            return false;
+        }
+
+        videoMetadata = task.Result;
+        log($"{videoMetadata.Width}x{videoMetadata.Height}, {videoMetadata.Audio} audio, {file}");
+        return true;
     }
 
     internal static int GetAudioMetadata(string file, Action<string>? log = null)
@@ -79,12 +135,12 @@ internal static partial class Video
                 IMediaInfo mediaInfo = FFmpeg.GetMediaInfo(file).Result;
                 return mediaInfo.AudioStreams.Count();
             }
-            catch (AggregateException exception) when (typeof(JsonReaderException) == exception.InnerException?.GetType())
+            catch (AggregateException exception) when (exception.InnerException is JsonReaderException and not null)
             {
                 log($"Fail {file} {exception}");
                 return -1;
             }
-            catch (AggregateException exception) when (typeof(ArgumentException) == exception.InnerException?.GetType())
+            catch (AggregateException exception) when (exception.InnerException is ArgumentException and not null)
             {
                 log($"Cannot read {file} {exception}");
                 return -1;
