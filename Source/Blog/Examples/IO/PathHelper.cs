@@ -89,6 +89,9 @@ public static class PathHelper
         return parent.IsNullOrWhiteSpace() ? newFileName : Path.Combine(parent, newFileName);
     }
 
+    public static string ReplaceFileName(string file, Func<string, string> replace) => 
+        ReplaceFileName(file, replace(Path.GetFileName(file)));
+
     public static string ReplaceFileNameWithoutExtension(string file, string newFileNameWithoutExtension) =>
         ReplaceFileName(file, $"{newFileNameWithoutExtension}{Path.GetExtension(file)}");
 
