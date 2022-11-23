@@ -6,7 +6,7 @@ internal static partial class Video
 
     private const string XmlMetadataExtension = ".nfo";
 
-    private const string VideoExtension = ".mp4";
+    internal const string VideoExtension = ".mp4";
 
     private const string ThumbExtension = ".jpg";
 
