@@ -52,15 +52,17 @@ internal static partial class Video
                     return;
                 }
 
-                XDocument metadata = XDocument.Parse(@"<?xml version=""1.0"" encoding=""utf-8"" standalone=""yes""?>
-<episodedetails>
-  <plot />
-  <outline />
-  <lockdata>false</lockdata>
-  <title></title>
-  <episode></episode>
-  <season></season>
-</episodedetails>");
+                XDocument metadata = XDocument.Parse("""
+                    <?xml version="1.0" encoding="utf-8" standalone="yes"?>
+                    <episodedetails>
+                      <plot />
+                      <outline />
+                      <lockdata>false</lockdata>
+                      <title></title>
+                      <episode></episode>
+                      <season></season>
+                    </episodedetails>
+                    """);
                 string title = getTitle?.Invoke(video) ?? string.Empty;
                 string episode = getEpisode?.Invoke(video, index) ?? string.Empty;
                 string season = getSeason?.Invoke(video) ?? string.Empty;

@@ -1,6 +1,7 @@
 namespace Examples.IO;
 
 using Examples.Common;
+using System.Linq;
 
 internal record VideoDirectoryInfo(
     string DefaultTitle1, string DefaultTitle2, string DefaultTitle3,
@@ -10,9 +11,9 @@ internal record VideoDirectoryInfo(
     string AggregateRating, string AggregateRatingCount,
     string ContentRating,
     string Resolution, string Source,
-    string Is3D, string Hdr)
+    string Is3D, string Hdr) : INaming, ISimpleParsable<VideoDirectoryInfo>
 {
-    private static readonly Regex NameRegex = new(@"^([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?((\=[^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?)?\.([0-9\-]{4})\.([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?\[([0-9]\.[0-9]|\-)-([0-9\.KM]+|\-)\]\[(\-|R|PG|PG13|Unrated|NA|TVPG|NC17|GP|G|Approved|TVMA|Passed|TV14|TVG|X|E|MPG|M|AO|NotRated)\](\[(2160|1080|720|480)(b|b[2-9]|f|f[2-9]|h|h[2-9]|n|n[2-9]|p|p[2-9]|x|x[2-9]|y|y[2-9])(\+)?\])?(\[3D\])?(\[HDR\])?$");
+    private static readonly Regex NameRegex = new(@"^([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?((\=[^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?)?\.([0-9\-]{4})\.([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?\[([0-9]\.[0-9]|\-)-([0-9\.KM]+|\-)\]\[(\-|AO|Approved|E|G|GP|M|MPG|NA|NC17|NotRated|Passed|PG|PG13|R|TV14|TVG|TVMA|TVPG|TVY7|Unrated|X)\](\[(2160|1080|720|480)(b|b[2-9]|f|f[2-9]|h|h[2-9]|n|n[2-9]|p|p[2-9]|x|x[2-9]|y|y[2-9])(\+)?\])?(\[3D\])?(\[HDR\])?$");
 
     internal string FormattedDefinition
     {
@@ -33,9 +34,9 @@ internal record VideoDirectoryInfo(
 
     public override string ToString() => this.Name;
 
-    internal string Name => $"{this.DefaultTitle1}{this.DefaultTitle2}{this.DefaultTitle3}{this.OriginalTitle1}{this.OriginalTitle2}{this.OriginalTitle3}.{this.Year}.{this.TranslatedTitle1}{this.TranslatedTitle2}{this.TranslatedTitle3}{this.TranslatedTitle4}[{this.AggregateRating}-{this.AggregateRatingCount}][{this.ContentRating}]{this.FormattedDefinition}{this.Is3D}{this.Hdr}";
+    public string Name => $"{this.DefaultTitle1}{this.DefaultTitle2}{this.DefaultTitle3}{this.OriginalTitle1}{this.OriginalTitle2}{this.OriginalTitle3}.{this.Year}.{this.TranslatedTitle1}{this.TranslatedTitle2}{this.TranslatedTitle3}{this.TranslatedTitle4}[{this.AggregateRating}-{this.AggregateRatingCount}][{this.ContentRating}]{this.FormattedDefinition}{this.Is3D}{this.Hdr}";
 
-    internal static bool TryParse(string value, [NotNullWhen(true)] out VideoDirectoryInfo? info)
+    public static bool TryParse([NotNullWhen(true)] string? value, [NotNullWhen(true)] out VideoDirectoryInfo? info)
     {
         if (Path.IsPathRooted(value))
         {
@@ -58,47 +59,72 @@ internal record VideoDirectoryInfo(
             ContentRating: match.Groups[15].Value,
             // FormatedDefinition: match.Groups[16].Value;
             Resolution: match.Groups[17].Value, Source: match.Groups[18].Value,
-            Is3D: match.Groups[19].Value, Hdr: match.Groups[21].Value);
+            Is3D: match.Groups[20].Value, Hdr: match.Groups[21].Value);
         return true;
     }
 
-    internal static VideoDirectoryInfo Parse(string value) =>
+    public static VideoDirectoryInfo Parse(string value) =>
         TryParse(value, out VideoDirectoryInfo? info) ? info : throw new ArgumentOutOfRangeException(nameof(value), value, "The input is invalid");
 
-    internal static IEnumerable<VideoFileInfo> GetVideos(string path) =>
+    internal static IEnumerable<VideoMovieFileInfo> GetVideos(string path) =>
         Directory
             .EnumerateFiles(path, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
             .Where(Video.IsVideo)
-            .Select(VideoFileInfo.Parse);
+            .Select(VideoMovieFileInfo.Parse);
 
-    internal static string GetResolution(VideoFileInfo[] videos) => 
-        videos switch
+    internal static IEnumerable<VideoEpisodeFileInfo> GetEpisodes(string path) =>
+        Directory
+            .EnumerateDirectories(path, "Season *", SearchOption.TopDirectoryOnly)
+            .SelectMany(season => Directory.EnumerateFiles(season, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly))
+            .Where(Video.IsVideo)
+            .Select(VideoEpisodeFileInfo.Parse);
+
+    internal static string GetResolution(VideoMovieFileInfo[] videos)
+    {
+        return videos.Select<IVideoFileInfo, DefinitionType>(video => video.DefinitionType).Max() switch
         {
-            _ when videos.Any(video => video.Is2160P) => "2160",
-            _ when videos.Any(video => video.Is1080P) => "1080",
-            _ when videos.Any(video => video.Is720P) => "720",
-            _ when videos.Any(video => video.Encoder.IsNotNullOrWhiteSpace()) => "480",
+            DefinitionType.P480 when videos.Any<IVideoFileInfo>(video => video.EncoderType is not EncoderType.P) => "480",
+            DefinitionType.P720 => "720",
+            DefinitionType.P1080 => "1080",
+            DefinitionType.P2160 => "2160",
             _ => string.Empty
         };
+    }
 
-    internal static string GetSource(VideoFileInfo[] videos)
+    internal static string GetResolution(VideoEpisodeFileInfo[] videos)
     {
-        VideoFileInfo[] hdVideos = videos.Where(video => video.IsHD).ToArray();
+        int total1080P = videos.Count<IVideoFileInfo>(video => video.DefinitionType is DefinitionType.P1080);
+        int total720P = videos.Count<IVideoFileInfo>(video => video.DefinitionType is DefinitionType.P720);
+        int total480PWithEncoder = videos.Count<IVideoFileInfo>(video => !video.IsHD && video.EncoderType is not EncoderType.P);
+        int total480P = videos.Count<IVideoFileInfo>(video => !video.IsHD && video.EncoderType is EncoderType.P);
+        int max = new int[] { total1080P, total720P, total480PWithEncoder, total480P }.Max();
+        return max switch
+        {
+            _ when max == total1080P => "1080",
+            _ when max == total720P => "720",
+            _ when max == total480PWithEncoder => "480",
+            _ => string.Empty
+        };
+    }
+
+    internal static string GetSource(VideoMovieFileInfo[] videos)
+    {
+        IVideoFileInfo[] hdVideos = videos.Where<IVideoFileInfo>(video => video.IsHD).ToArray();
         if (hdVideos.Any())
         {
-            VideoFileInfo[] xVideos = hdVideos.Where(video => video.IsX).ToArray();
+            IVideoFileInfo[] xVideos = hdVideos.Where(video => video.EncoderType is EncoderType.X).ToArray();
             if (xVideos.Any())
             {
                 return $"x{xVideos.Max(video => video.FormattedAudioCount)}";
             }
 
-            VideoFileInfo[] hVideos = hdVideos.Where(video => video.IsH).ToArray();
+            IVideoFileInfo[] hVideos = hdVideos.Where(video => video.EncoderType is EncoderType.H).ToArray();
             if (hVideos.Any())
             {
                 return $"h{hVideos.Max(video => video.FormattedAudioCount)}";
             }
 
-            VideoFileInfo[] yVideos = hdVideos.Where(video => video.IsY).ToArray();
+            IVideoFileInfo[] yVideos = hdVideos.Where(video => video.EncoderType is EncoderType.Y).ToArray();
             if (yVideos.Any())
             {
                 return $"y{yVideos.Max(video => video.FormattedAudioCount)}";
@@ -109,9 +135,9 @@ internal record VideoDirectoryInfo(
 
         return GetEncodedSource(videos) ?? string.Empty;
 
-        static string? GetEncodedSource(VideoFileInfo[] videos)
+        static string? GetEncodedSource(IVideoFileInfo[] videos)
         {
-            VideoFileInfo[] encodedVideos = videos.Where(video => video.Encoder.IsNotNullOrWhiteSpace()).ToArray();
+            IVideoFileInfo[] encodedVideos = videos.Where(video => video.Encoder.IsNotNullOrWhiteSpace()).ToArray();
             if (encodedVideos.Any())
             {
                 Debug.Assert(encodedVideos.Length == 1 || encodedVideos.Distinct(video => video.Encoder).Count() == 1);
@@ -123,5 +149,37 @@ internal record VideoDirectoryInfo(
 
             return null;
         }
+    }
+
+    internal static string GetSource(VideoEpisodeFileInfo[] videos)
+    {
+        IGrouping<EncoderType, IVideoFileInfo> maxGroup = videos
+            .GroupBy<IVideoFileInfo, EncoderType>(video => video.EncoderType)
+            .OrderByDescending(group => group.Count())
+            .ThenByDescending(group => group.Key)
+            .First();
+        string encoder = maxGroup.Key switch
+        {
+            EncoderType.X => "x",
+            EncoderType.H => "h",
+            EncoderType.Y => "y",
+            EncoderType.F => "f",
+            EncoderType.N => "n",
+            EncoderType.B => "b",
+            _ when maxGroup.GroupBy(video => video.IsHD).OrderByDescending(group => group.Count()).First().Key => "p",
+            _ => string.Empty
+        };
+
+        if (encoder.IsNullOrWhiteSpace())
+        {
+            return string.Empty;
+        }
+
+        string maxAudio = videos
+            .GroupBy<IVideoFileInfo, string>(video => video.FormattedAudioCount)
+            .OrderByDescending(group => group.Count())
+            .First()
+            .Key;
+        return $"{encoder}{maxAudio}";
     }
 }

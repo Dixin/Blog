@@ -10,7 +10,7 @@ internal static class Entry
 {
     internal static async Task DownloadMetadataAsync(
         string baseUrl, int startIndex, int count,
-        string entryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string libraryJsonPath,
+        string entryJsonPath, string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath,
         Action<string> log)
     {
         List<string> entryLinks = new();
@@ -26,7 +26,7 @@ internal static class Entry
                     CQ listCQ = html;
                     log($"Done {url}");
                     listCQ
-                        .Find("h1.entry-title a")
+                        .Find("h2.entry-title a")
                         .Select(entryLink => entryLink.GetAttribute("href"))
                         .ForEach(entryLinks.Add);
                 }
@@ -35,7 +35,7 @@ internal static class Entry
                     log(exception.ToString());
                 }
             });
-        ConcurrentDictionary<string, EntryMetadata> entryMetadata = new();
+        ConcurrentDictionary<string, EntryMetadata> entryMetadata = File.Exists(entryJsonPath) ? new(JsonSerializer.Deserialize<Dictionary<string, EntryMetadata>>(await File.ReadAllTextAsync(entryJsonPath))) : new();
         await entryLinks.ParallelForEachAsync(async entryLink =>
         {
             using WebClient webClient = new();
@@ -58,13 +58,14 @@ internal static class Entry
         string jsonString = JsonSerializer.Serialize(entryMetadata, new JsonSerializerOptions() { WriteIndented = true });
         await File.WriteAllTextAsync(entryJsonPath, jsonString);
 
+        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(libraryJsonPath))!;
         Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
         Dictionary<string, RarbgMetadata[]> h264Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
         Dictionary<string, YtsMetadata[]> ytsMetadata = JsonSerializer.Deserialize<Dictionary<string, YtsMetadata[]>>(await File.ReadAllTextAsync(ytsJsonPath))!;
-        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(libraryJsonPath))!;
+        Dictionary<string, RarbgMetadata[]> h264720PMetadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264720PJsonPath))!;
         entryMetadata
             .SelectMany(entry => Regex
-                .Matches(entry.Value.Content, "imdb.com/title/(tt[0-9]+)")
+                .Matches(entry.Value.Content, @"imdb\.com/title/(tt[0-9]+)")
                 .Where(match => match.Success)
                 .Select(match => (Link: entry.Key, match.Groups[1].Value)))
             .Distinct(imdbId => imdbId.Value)
@@ -72,8 +73,8 @@ internal static class Entry
             {
                 if (libraryMetadata.ContainsKey(imdbId.Value) && libraryMetadata[imdbId.Value].Any())
                 {
-                    libraryMetadata[imdbId.Value].ForEach(video => log(video.Key));
-                    log(string.Empty);
+                    //libraryMetadata[imdbId.Value].ForEach(video => log(video.Key));
+                    //log(string.Empty);
                     return;
                 }
 
@@ -97,6 +98,13 @@ internal static class Entry
                 {
                     log(imdbId.Link);
                     ytsMetadata[imdbId.Value].ForEach(metadata => log($"{metadata.Link} {metadata.Title}"));
+                    log(string.Empty);
+                }
+
+                if (h264720PMetadata.ContainsKey(imdbId.Value))
+                {
+                    log(imdbId.Link);
+                    h264720PMetadata[imdbId.Value].ForEach(metadata => log($"{metadata.Link} {metadata.Title}"));
                     log(string.Empty);
                 }
             });

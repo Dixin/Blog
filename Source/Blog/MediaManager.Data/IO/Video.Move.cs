@@ -212,7 +212,7 @@ internal static partial class Video
             });
     }
 
-    internal static void RenameDirectoriesWithMetadata(string directory, int level = 2, bool additionalInfo = false, bool overwrite = false, bool isDryRun = false, string backupFlag = "backup", bool isTV = false, Action<string>? log = null)
+    internal static void RenameDirectoriesWithMetadata(string directory, int level = 2, bool additionalInfo = false, bool overwrite = false, bool isDryRun = false, string backupFlag = "backup", bool isTV = false, bool skipRenamed = false, Action<string>? log = null)
     {
         log ??= TraceLog;
         EnumerateDirectories(directory, level)
@@ -220,6 +220,11 @@ internal static partial class Video
             .ForEach(movie =>
             {
                 if (!overwrite && Path.GetFileName(movie).ContainsOrdinal("{"))
+                {
+                    return;
+                }
+
+                if (skipRenamed && VideoDirectoryInfo.TryParse(movie, out _))
                 {
                     return;
                 }
@@ -268,12 +273,12 @@ internal static partial class Video
                 string ratingCount = imdbMetadata?.FormattedAggregateRatingCount ?? NotExistingFlag;
                 string[] videos = files.Where(IsVideo).ToArray();
                 string contentRating = imdbMetadata?.FormattedContentRating ?? NotExistingFlag;
-                VideoFileInfo[] videoFileInfos = videos.Select(VideoFileInfo.Parse).ToArray();
+                VideoMovieFileInfo[] videoFileInfos = videos.Select(VideoMovieFileInfo.Parse).ToArray();
                 VideoDirectoryInfo videoDirectoryInfo = new(
-                    DefaultTitle1: defaultTitle.FilterForFileSystem(), DefaultTitle2: string.Empty, DefaultTitle3: string.Empty,
+                    DefaultTitle1: defaultTitle.FilterForFileSystem().ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " "), DefaultTitle2: string.Empty, DefaultTitle3: string.Empty,
                     OriginalTitle1: originalTitle.FilterForFileSystem(), OriginalTitle2: string.Empty, OriginalTitle3: string.Empty,
                     Year: year,
-                    TranslatedTitle1: translatedTitle.FilterForFileSystem(), TranslatedTitle2: string.Empty, TranslatedTitle3: string.Empty, TranslatedTitle4: string.Empty,
+                    TranslatedTitle1: translatedTitle.FilterForFileSystem().ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " ").ReplaceIgnoreCase("：", "-"), TranslatedTitle2: string.Empty, TranslatedTitle3: string.Empty, TranslatedTitle4: string.Empty,
                     AggregateRating: rating, AggregateRatingCount: ratingCount,
                     ContentRating: contentRating,
                     Resolution: VideoDirectoryInfo.GetResolution(videoFileInfos),
@@ -336,7 +341,7 @@ internal static partial class Video
             });
     }
 
-    internal static void RenameDirectoriesWithImdbMetadata(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
+    internal static void RenameDirectoriesWithImdbMetadata(string directory, int level = 2, bool isTV = false, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= TraceLog;
         EnumerateDirectories(directory, level)
@@ -372,14 +377,28 @@ internal static partial class Video
                     }
                 }
 
-                VideoFileInfo[] videos = VideoDirectoryInfo.GetVideos(movie).ToArray();
-                parsed = parsed with
+                if (isTV)
                 {
-                    Resolution = VideoDirectoryInfo.GetResolution(videos),
-                    Source = VideoDirectoryInfo.GetSource(videos)
-                };
+                    VideoEpisodeFileInfo[] episodes = VideoDirectoryInfo.GetEpisodes(movie).ToArray();
+                    parsed = parsed with
+                    {
+                        Resolution = VideoDirectoryInfo.GetResolution(episodes),
+                        Source = VideoDirectoryInfo.GetSource(episodes)
+                    };
+                }
+                else
+                {
+                    VideoMovieFileInfo[] videos = VideoDirectoryInfo.GetVideos(movie).ToArray();
+                    parsed = parsed with
+                    {
+                        Resolution = VideoDirectoryInfo.GetResolution(videos),
+                        Source = VideoDirectoryInfo.GetSource(videos)
+                    };
+                }
+                
 
                 string newMovie = Path.Combine(Path.GetDirectoryName(movie) ?? throw new InvalidOperationException(movie), parsed.ToString());
+
                 if (movie.EqualsOrdinal(newMovie))
                 {
                     return;
@@ -459,7 +478,7 @@ internal static partial class Video
 
                 VideoMetadata toVideoMetadata = group.Single().Value;
                 toVideoMetadata = toVideoMetadata with { File = Path.Combine(Path.GetDirectoryName(toJsonPath) ?? throw new ArgumentException(toJsonPath), toVideoMetadata.File) };
-                if (VideoFileInfo.Parse(Path.GetFileNameWithoutExtension(toVideoMetadata.File)).IsX)
+                if (((IVideoFileInfo)VideoMovieFileInfo.Parse(Path.GetFileNameWithoutExtension(toVideoMetadata.File))).EncoderType is EncoderType.X)
                 {
                     log($"Video {toVideoMetadata.File} is x265.");
                     return;
@@ -471,8 +490,8 @@ internal static partial class Video
                     return;
                 }
 
-                if (VideoFileInfo.IsXOrH(Path.GetFileNameWithoutExtension(toVideoMetadata.File)) &&
-                    !VideoFileInfo.IsXOrH(Path.GetFileNameWithoutExtension(fromVideoMetadata.File)))
+                if (((IVideoFileInfo)VideoMovieFileInfo.Parse(Path.GetFileNameWithoutExtension(toVideoMetadata.File))).EncoderType is EncoderType.X or EncoderType.H
+                    && ((IVideoFileInfo)VideoMovieFileInfo.Parse(Path.GetFileNameWithoutExtension(fromVideoMetadata.File))).EncoderType is not EncoderType.X or EncoderType.H)
                 {
                     log($"Video {toVideoMetadata.File} is better version.");
                     return;
@@ -960,7 +979,7 @@ internal static partial class Video
             .ForEach(video =>
             {
                 log(video);
-                if (VideoEpisodeFileInfo.TryParse(video, out VideoEpisodeFileInfo? episode) && episode.IsX && episode.EpisodeTitle.IsNotNullOrWhiteSpace())
+                if (VideoEpisodeFileInfo.TryParse(video, out VideoEpisodeFileInfo? episode) && ((IVideoFileInfo)episode).EncoderType == EncoderType.X && episode.EpisodeTitle.IsNotNullOrWhiteSpace())
                 {
                     episode = episode with { EpisodeTitle = string.Empty };
                     if (!isDryRun)
@@ -993,7 +1012,7 @@ internal static partial class Video
             });
     }
 
-    internal static void ReplaceTV(string mediaDirectory, string metadataDirectory, string subtitleDirectory = "", Func<string, string, string>? renameForTitle = null, bool isDryRun = false, Action<string>? log = null)
+    internal static void FormatTV(string mediaDirectory, string metadataDirectory, string subtitleDirectory = "", Func<string, string, string>? renameForTitle = null, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= TraceLog;
 

@@ -69,37 +69,41 @@ public static class EnumerableExtensions
         await Task.WhenAll(source.Select(asyncAction).ToArray());
     }
 
-    public static async Task ParallelForEachAsync<T>(
-        this IEnumerable<T> source, Func<T, Task> asyncAction, int? maxDegreeOfParallelism = null)
+    public static Task ParallelForEachAsync<T>(
+        this IEnumerable<T> source, Func<T, ValueTask> asyncAction, int? maxDegreeOfParallelism = null)
     {
-        maxDegreeOfParallelism ??= DefaultMaxDegreeOfParallelism;
-        if (maxDegreeOfParallelism <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(maxDegreeOfParallelism));
-        }
+        return Parallel.ForEachAsync(
+            source, 
+            new ParallelOptions() { MaxDegreeOfParallelism = maxDegreeOfParallelism ??= DefaultMaxDegreeOfParallelism }, 
+            (value, cancellationToken) => asyncAction(value));
+        //maxDegreeOfParallelism ??= DefaultMaxDegreeOfParallelism;
+        //if (maxDegreeOfParallelism <= 0)
+        //{
+        //    throw new ArgumentOutOfRangeException(nameof(maxDegreeOfParallelism));
+        //}
 
-        if (maxDegreeOfParallelism == 1)
-        {
-            foreach (T value in source)
-            {
-                await asyncAction(value);
-            }
+        //if (maxDegreeOfParallelism == 1)
+        //{
+        //    foreach (T value in source)
+        //    {
+        //        await asyncAction(value);
+        //    }
 
-            return;
-        }
+        //    return;
+        //}
 
-        OrderablePartitioner<T> partitioner = source is IList<T> list
-            ? Partitioner.Create(list, loadBalance: true)
-            : Partitioner.Create(source, EnumerablePartitionerOptions.NoBuffering);
-        await Task.WhenAll(partitioner
-            .GetPartitions(maxDegreeOfParallelism.Value)
-            .Select(async partition =>
-            {
-                while (partition.MoveNext())
-                {
-                    await asyncAction(partition.Current);
-                }
-            }));
+        //OrderablePartitioner<T> partitioner = source is IList<T> list
+        //    ? Partitioner.Create(list, loadBalance: true)
+        //    : Partitioner.Create(source, EnumerablePartitionerOptions.NoBuffering);
+        //await Task.WhenAll(partitioner
+        //    .GetPartitions(maxDegreeOfParallelism.Value)
+        //    .Select(async partition =>
+        //    {
+        //        while (partition.MoveNext())
+        //        {
+        //            await asyncAction(partition.Current);
+        //        }
+        //    }));
     }
 
     public static IEnumerable<T> NotNull<T>(this IEnumerable<T?> source) where T : class

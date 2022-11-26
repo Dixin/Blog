@@ -52,7 +52,7 @@ internal static partial class Video
     {
         log ??= TraceLog;
         EnumerateDirectories(directory, level)
-            .Where(movie => !VideoDirectoryInfo.GetVideos(movie).Any(video => video.IsHD))
+            .Where(movie => !VideoDirectoryInfo.GetVideos(movie).Any<IVideoFileInfo>(video => video.IsHD))
             .ForEach(log);
     }
 
@@ -62,7 +62,7 @@ internal static partial class Video
         EnumerateDirectories(directory, level)
             .ForEach(movie =>
             {
-                VideoFileInfo[] videos = VideoDirectoryInfo.GetVideos(movie).ToArray();
+                VideoMovieFileInfo[] videos = VideoDirectoryInfo.GetVideos(movie).ToArray();
                 if (videos.Length <= 1 || videos.All(video => video.Part.IsNotNullOrWhiteSpace()))
                 {
                     return;
@@ -73,16 +73,16 @@ internal static partial class Video
     }
 
     internal static void PrintVideosP(string directory, int level = DefaultLevel, Action<string>? log = null) =>
-        PrintVideos(directory, level, file => VideoFileInfo.Parse(file).IsP, log);
+        PrintVideos(directory, level, file => ((IVideoFileInfo)VideoMovieFileInfo.Parse(file)).EncoderType is EncoderType.P, log);
 
     internal static void PrintVideosY(string directory, int level = DefaultLevel, Action<string>? log = null) =>
-        PrintVideos(directory, level, file => VideoFileInfo.Parse(file).IsY, log);
+        PrintVideos(directory, level, file => ((IVideoFileInfo)VideoMovieFileInfo.Parse(file)).EncoderType is EncoderType.Y, log);
 
     internal static void PrintVideosNotX(string directory, int level = DefaultLevel, Action<string>? log = null) =>
-        PrintVideos(directory, level, file => VideoFileInfo.Parse(file).IsX, log);
+        PrintVideos(directory, level, file => ((IVideoFileInfo)VideoMovieFileInfo.Parse(file)).EncoderType is EncoderType.X, log);
 
     internal static void PrintVideosH(string directory, int level = DefaultLevel, Action<string>? log = null) =>
-        PrintVideos(directory, level, file => VideoFileInfo.Parse(file).IsH, log);
+        PrintVideos(directory, level, file => ((IVideoFileInfo)VideoMovieFileInfo.Parse(file)).EncoderType is EncoderType.H, log);
 
     private static void PrintVideos(string directory, int level, Func<string, bool> predicate, Action<string>? log = null)
     {
@@ -91,7 +91,7 @@ internal static partial class Video
             .OrderBy(movie => movie)
             .ForEach(movie =>
             {
-                VideoFileInfo[] videos = VideoDirectoryInfo.GetVideos(movie).ToArray();
+                VideoMovieFileInfo[] videos = VideoDirectoryInfo.GetVideos(movie).ToArray();
                 if (videos.Any())
                 {
                     log(movie);
@@ -386,10 +386,10 @@ internal static partial class Video
                 }
 
                 string[] videos = topFiles.Where(IsCommonVideo).ToArray();
-                VideoFileInfo[] videoFileInfos = videos
+                VideoMovieFileInfo[] videoFileInfos = videos
                     .Select(video =>
                     {
-                        if (VideoFileInfo.TryParse(video, out VideoFileInfo? videoFileInfo))
+                        if (VideoMovieFileInfo.TryParse(video, out VideoMovieFileInfo? videoFileInfo))
                         {
                             return videoFileInfo;
                         }
@@ -401,32 +401,32 @@ internal static partial class Video
                 string[] metadataFiles = topFiles.Where(file => file.HasExtension(XmlMetadataExtension)).ToArray();
                 string[] otherFiles = topFiles.Except(videos).Except(subtitles).Except(metadataFiles).Except(imdbFiles).Except(cacheFiles).ToArray();
 
-                if (directoryInfo.Is2160P && !videoFileInfos.Any(video => video.Is2160P))
+                if (directoryInfo.Is2160P && !videoFileInfos.Any<IVideoFileInfo>(video => video.DefinitionType is DefinitionType.P2160))
                 {
                     log($"!Not 2160: {movie}");
                 }
 
-                if (!directoryInfo.Is2160P && videoFileInfos.Any(video => video.Is2160P))
+                if (!directoryInfo.Is2160P && videoFileInfos.Any<IVideoFileInfo>(video => video.DefinitionType is DefinitionType.P2160))
                 {
                     log($"!2160: {movie}");
                 }
 
-                if (directoryInfo.Is1080P && !videoFileInfos.Any(video => video.Is1080P))
+                if (directoryInfo.Is1080P && !videoFileInfos.Any<IVideoFileInfo>(video => video.DefinitionType is DefinitionType.P1080))
                 {
                     log($"!Not 1080: {movie}");
                 }
 
-                if (!directoryInfo.Is1080P && videoFileInfos.Any(video => video.Is1080P) && !videoFileInfos.Any(video => video.Is2160P))
+                if (!directoryInfo.Is1080P && videoFileInfos.Any<IVideoFileInfo>(video => video.DefinitionType is DefinitionType.P1080) && !videoFileInfos.Any<IVideoFileInfo>(video => video.DefinitionType is DefinitionType.P2160))
                 {
                     log($"!1080: {movie}");
                 }
 
-                if (directoryInfo.Is720P && !videoFileInfos.Any(video => video.Is720P))
+                if (directoryInfo.Is720P && !videoFileInfos.Any<IVideoFileInfo>(video => video.DefinitionType is DefinitionType.P720))
                 {
                     log($"!Not 720: {movie}");
                 }
 
-                if (!directoryInfo.Is720P && videoFileInfos.Any(video => video.Is720P) && !videoFileInfos.Any(video => video.Is1080P) && !videoFileInfos.Any(video => video.Is2160P))
+                if (!directoryInfo.Is720P && videoFileInfos.Any<IVideoFileInfo>(video => video.DefinitionType is DefinitionType.P720) && !videoFileInfos.Any<IVideoFileInfo>(video => video.DefinitionType is DefinitionType.P1080) && !videoFileInfos.Any<IVideoFileInfo>(video => video.DefinitionType is DefinitionType.P2160))
                 {
                     log($"!720: {movie}");
                 }
@@ -647,14 +647,23 @@ internal static partial class Video
                 }
 
                 string[] videos = files.Where(file => file.IsVideo()).ToArray();
-                if (videos.All(video => VideoFileInfo.TryParse(video, out VideoFileInfo? parsed) && parsed.Is2160P))
+                if (videos.All(video => VideoMovieFileInfo.TryParse(video, out VideoMovieFileInfo? parsed) && ((IVideoFileInfo)parsed).DefinitionType is DefinitionType.P2160))
                 {
                     return;
                 }
 
                 RarbgMetadata[] availableX265Metadata = x265Metadata.ContainsKey(imdbId)
                     ? x265Metadata[imdbId]
-                        .Where(metadata => VideoFileInfo.IsXOrH(metadata.Title))
+                        .Where(metadata =>
+                        {
+                            if (VideoMovieFileInfo.TryParse(metadata.Title, out VideoMovieFileInfo? video))
+                            {
+                                return ((IVideoFileInfo)video).EncoderType is EncoderType.X or EncoderType.H;
+                            }
+
+                            log($"!Fail to parse metadata {metadata.Title} {metadata.Link}");
+                            return false;
+                        })
                         .ToArray()
                     : Array.Empty<RarbgMetadata>();
                 if (availableX265Metadata.Any())
@@ -664,11 +673,11 @@ internal static partial class Video
                         .Where(metadata => !videos.Any(video =>
                         {
                             string videoName = Path.GetFileNameWithoutExtension(video);
-                            VideoFileInfo videoInfo = VideoFileInfo.Parse(videoName);
+                            VideoMovieFileInfo videoInfo = VideoMovieFileInfo.Parse(videoName);
                             string metadataTitle = metadata.Title;
                             string[] videoEditions = videoInfo.Edition.Split(".", StringSplitOptions.RemoveEmptyEntries);
                             // (Not any) Local is equal to or better than remote metadata.
-                            return videoInfo.IsX
+                            return ((IVideoFileInfo)videoInfo).EncoderType is EncoderType.X
                                 && (videoName.StartsWithIgnoreCase(metadata.Title)
                                     || videoInfo.Origin.ContainsIgnoreCase(".BluRay") && metadataTitle.ContainsIgnoreCase(".WEBRip.")
                                     || !videoInfo.Edition.ContainsIgnoreCase("PREVIEW") && metadataTitle.ContainsIgnoreCase(".PREVIEW.")
@@ -678,7 +687,7 @@ internal static partial class Video
                                     || videoInfo.Edition.ContainsIgnoreCase("EXTENDED") && !metadataTitle.ContainsIgnoreCase(".EXTENDED.")
                                     || videoInfo.Edition.IsNotNullOrWhiteSpace() && (videoInfo with { Edition = string.Empty }).Name.StartsWithIgnoreCase(metadataTitle)
                                     || videoInfo.Edition.ContainsIgnoreCase(".Part") && metadataTitle.ContainsIgnoreCase(".Part")
-                                    || VideoFileInfo.TryParse(metadataTitle, out VideoFileInfo? metadataInfo)
+                                    || VideoMovieFileInfo.TryParse(metadataTitle, out VideoMovieFileInfo? metadataInfo)
                                     && videoInfo.Origin.EqualsIgnoreCase(metadataInfo.Origin)
                                     && videoInfo.Edition.IsNotNullOrWhiteSpace()
                                     && metadataInfo
@@ -702,14 +711,23 @@ internal static partial class Video
                     return;
                 }
 
-                if (videos.Any(video => VideoFileInfo.TryParse(video, out VideoFileInfo? parsed) && parsed.IsX))
+                if (videos.Any(video => VideoMovieFileInfo.TryParse(video, out VideoMovieFileInfo? parsed) && ((IVideoFileInfo)parsed).EncoderType is EncoderType.X))
                 {
                     return;
                 }
 
                 RarbgMetadata[] availableH264Metadata = h264Metadata.ContainsKey(imdbId)
                     ? h264Metadata[imdbId]
-                        .Where(metadata => VideoFileInfo.IsXOrH(metadata.Title))
+                        .Where(metadata =>
+                        {
+                            if (VideoMovieFileInfo.TryParse(metadata.Title, out VideoMovieFileInfo? video))
+                            {
+                                return ((IVideoFileInfo)video).EncoderType is EncoderType.X or EncoderType.H;
+                            }
+
+                            log($"!Fail to parse metadata {metadata.Title} {metadata.Link}");
+                            return false;
+                        })
                         .ToArray()
                     : Array.Empty<RarbgMetadata>();
                 if (availableH264Metadata.Any())
@@ -719,11 +737,11 @@ internal static partial class Video
                         .Where(metadata => !videos.Any(video =>
                         {
                             string videoName = Path.GetFileNameWithoutExtension(video);
-                            VideoFileInfo videoInfo = VideoFileInfo.Parse(videoName);
+                            VideoMovieFileInfo videoInfo = VideoMovieFileInfo.Parse(videoName);
                             string metadataTitle = metadata.Title;
                             string[] videoEditions = videoInfo.Edition.Split(".", StringSplitOptions.RemoveEmptyEntries);
                             // (Not any) Local is equal to or better than remote metadata.
-                            return videoInfo.IsH
+                            return ((IVideoFileInfo)videoInfo).EncoderType is EncoderType.H
                                 && (videoName.StartsWithIgnoreCase(metadata.Title)
                                     || videoInfo.Origin.ContainsIgnoreCase(".BluRay") && metadataTitle.ContainsIgnoreCase(".WEBRip.")
                                     || !videoInfo.Edition.ContainsIgnoreCase("PREVIEW") && metadataTitle.ContainsIgnoreCase(".PREVIEW.")
@@ -733,7 +751,7 @@ internal static partial class Video
                                     || videoInfo.Edition.ContainsIgnoreCase("EXTENDED") && !metadataTitle.ContainsIgnoreCase(".EXTENDED.")
                                     || videoInfo.Edition.IsNotNullOrWhiteSpace() && (videoInfo with { Edition = string.Empty }).Name.StartsWithIgnoreCase(metadataTitle)
                                     || videoInfo.Edition.ContainsIgnoreCase(".Part") && metadataTitle.ContainsIgnoreCase(".Part")
-                                    || VideoFileInfo.TryParse(metadataTitle, out VideoFileInfo? metadataInfo)
+                                    || VideoMovieFileInfo.TryParse(metadataTitle, out VideoMovieFileInfo? metadataInfo)
                                     && videoInfo.Origin.EqualsIgnoreCase(metadataInfo.Origin)
                                     && videoInfo.Edition.IsNotNullOrWhiteSpace()
                                     && metadataInfo
@@ -757,7 +775,7 @@ internal static partial class Video
                     return;
                 }
 
-                if (videos.Any(video => VideoFileInfo.TryParse(video, out VideoFileInfo? parsed) && parsed.IsH))
+                if (videos.Any(video => VideoMovieFileInfo.TryParse(video, out VideoMovieFileInfo? parsed) && ((IVideoFileInfo)parsed).EncoderType is EncoderType.H))
                 {
                     return;
                 }
@@ -769,7 +787,7 @@ internal static partial class Video
                 {
                     string[] ytsVideos = videos
                         .Select(video => Path.GetFileNameWithoutExtension(video)!)
-                        .Where(video => VideoFileInfo.Parse(video).IsY)
+                        .Where(video => ((IVideoFileInfo)VideoMovieFileInfo.Parse(video)).EncoderType is EncoderType.Y)
                         .ToArray();
                     Debug.Assert(ytsVideos.Length <= 1);
                     (YtsMetadata metadata, KeyValuePair<string, string> version)[] otherYtsMetadata = availableYtsMetadata
@@ -820,7 +838,7 @@ internal static partial class Video
                 }
 
                 RarbgMetadata[] availableOtherMetadata = Array.Empty<RarbgMetadata>();
-                if (videos.Any(video => VideoFileInfo.TryParse(video, out VideoFileInfo? videoFileInfo) && videoFileInfo.Is1080P))
+                if (videos.Any(video => VideoMovieFileInfo.TryParse(video, out VideoMovieFileInfo? videoFileInfo) && ((IVideoFileInfo)videoFileInfo).DefinitionType is DefinitionType.P1080))
                 {
                     return;
                 }
@@ -845,7 +863,7 @@ internal static partial class Video
                     return;
                 }
 
-                if (videos.Any(video => VideoFileInfo.TryParse(video, out VideoFileInfo? videoFileInfo) && videoFileInfo.Is720P))
+                if (videos.Any(video => VideoMovieFileInfo.TryParse(video, out VideoMovieFileInfo? videoFileInfo) && ((IVideoFileInfo)videoFileInfo).DefinitionType is DefinitionType.P720))
                 {
                     return;
                 }
@@ -914,7 +932,7 @@ internal static partial class Video
                         && Directory
                             .EnumerateFiles(seasonDirectory)
                             .Where(IsCommonVideo)
-                            .All(episode => VideoEpisodeFileInfo.TryParse(episode, out VideoEpisodeFileInfo? parsed) && parsed.IsX && !(parsed.Origin.ContainsIgnoreCase("WEBRip") && seasonMetadata.Title.ContainsIgnoreCase("BluRay"))))
+                            .All(episode => VideoEpisodeFileInfo.TryParse(episode, out VideoEpisodeFileInfo? parsed) && ((IVideoFileInfo)parsed).EncoderType is EncoderType.X && !(parsed.Origin.ContainsIgnoreCase("WEBRip") && seasonMetadata.Title.ContainsIgnoreCase("BluRay"))))
                     {
                         return;
                     }
@@ -1433,13 +1451,13 @@ internal static partial class Video
                     return;
                 }
 
-                VideoFileInfo[] videos = VideoDirectoryInfo.GetVideos(movie).ToArray();
+                VideoMovieFileInfo[] videos = VideoDirectoryInfo.GetVideos(movie).ToArray();
                 if (!videos.Any())
                 {
                     return;
                 }
 
-                VideoFileInfo? x265Video = videos.FirstOrDefault(video => video.IsX);
+                IVideoFileInfo? x265Video = videos.FirstOrDefault<IVideoFileInfo>(video => video.EncoderType is EncoderType.X);
                 if (x265Video is not null)
                 {
                     if (localImdbId.IsNullOrWhiteSpace() || localImdbId.EqualsOrdinal(SubtitleSeparator))
@@ -1463,7 +1481,7 @@ internal static partial class Video
                     }
                 }
 
-                VideoFileInfo? h264Video = videos.FirstOrDefault(video => video.IsH);
+                IVideoFileInfo? h264Video = videos.FirstOrDefault<IVideoFileInfo>(video => video.EncoderType is EncoderType.H);
                 if (h264Video is not null)
                 {
                     if (localImdbId.IsNullOrWhiteSpace() || localImdbId.EqualsOrdinal(SubtitleSeparator))
@@ -1486,6 +1504,23 @@ internal static partial class Video
                         return;
                     }
                 }
+            });
+    }
+
+    internal static void PrintNikkatsu(Action<string>? log = null, params (string Directory, int Level)[] directories)
+    {
+        log ??= TraceLog;
+        directories.SelectMany(directory => EnumerateDirectories(directory.Directory, directory.Level))
+            .Where(movie => !Path.GetFileName(movie).StartsWithIgnoreCase("Nikkatsu") && !Path.GetFileName(movie).StartsWithIgnoreCase("Oniroku Dan") && !Path.GetFileName(movie).StartsWithIgnoreCase("Angel Guts"))
+            .Select(movie => (movie, XDocument.Load(Directory.EnumerateFiles(movie, "*.nfo").First())))
+            .Where(movie => movie.Item2.Root?.Elements("studio").Any(element => element.Value.ContainsIgnoreCase("Nikkatsu")) is true && movie.Item2.Root.Elements("tag").Any(element => element.Value.ContainsIgnoreCase("pink")))
+            .ForEach(movie =>
+            {
+                log(movie.Item1);
+                log(string.Join(", ", movie.Item2.Root!.Elements("studio").Select(element => element.Value)));
+                log(string.Join(", ", movie.Item2.Root.Elements("tag").Select(element => element.Value)));
+                // DirectoryHelper.AddPrefix(movie.Item1, "Nikkatsu Pink-");
+                log(string.Empty);
             });
     }
 }

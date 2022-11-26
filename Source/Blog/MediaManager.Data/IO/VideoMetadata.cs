@@ -29,5 +29,4 @@ public record VideoMetadata
     internal bool Is1080P => !this.Is2160P && (this.Width >= 1900 || this.Height >= 1070);
 
     internal bool Is720P => !this.Is2160P && !this.Is1080P && (this.Width >= 1280 || this.Height >= 720);
-
 }
