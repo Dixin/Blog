@@ -24,9 +24,12 @@ public record VideoMetadata
 
     internal TimeSpan Duration => TimeSpan.FromSeconds(this.TotalMilliseconds);
 
-    internal bool Is2160P => this.Width >= 3800 || this.Height >= 2150;
-
-    internal bool Is1080P => !this.Is2160P && (this.Width >= 1900 || this.Height >= 1070);
-
-    internal bool Is720P => !this.Is2160P && !this.Is1080P && (this.Width >= 1280 || this.Height >= 720);
+    internal DefinitionType DefinitionType =>
+        this.Width >= 3800 || this.Height >= 2150
+            ? DefinitionType.P2160
+            : this.Width >= 1900 || this.Height >= 1070
+                ? DefinitionType.P1080
+                : this.Width >= 1280 || this.Height >= 720
+                    ? DefinitionType.P720
+                    : DefinitionType.P480;
 }

@@ -39,7 +39,7 @@ internal static partial class Video
                 };
             },
             retryCount,
-            exception => true);
+            _ => true);
 
     internal static bool TryGetVideoMetadata(string file, [NotNullWhen(true)] out VideoMetadata? videoMetadata, ImdbMetadata? imdbMetadata = null, string? relativePath = null, int retryCount = 10, Action<string>? log = null)
     {
@@ -102,31 +102,31 @@ internal static partial class Video
             return ($"Failed {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.Audio}Audio {videoMetadata.File}", null);
         }
 
-        string fileName = Path.GetFileNameWithoutExtension(videoMetadata.File) ?? string.Empty;
+        string fileName = Path.GetFileNameWithoutExtension(videoMetadata.File);
         if (fileName.ContainsIgnoreCase("1080p"))
         {
-            if (!videoMetadata.Is1080P)
+            if (videoMetadata.DefinitionType is not DefinitionType.P1080)
             {
                 return ($"!Not 1080p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}", null);
             }
         }
         else
         {
-            if (videoMetadata.Is1080P)
+            if (videoMetadata.DefinitionType is DefinitionType.P1080)
             {
                 return ($"!1080p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}", is1080);
             }
 
             if (fileName.ContainsIgnoreCase("720p"))
             {
-                if (!videoMetadata.Is720P)
+                if (videoMetadata.DefinitionType is not DefinitionType.P720)
                 {
                     return ($"!Not 720p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}", null);
                 }
             }
             else
             {
-                if (videoMetadata.Is720P)
+                if (videoMetadata.DefinitionType is DefinitionType.P720)
                 {
                     return ($"!720p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}", is720);
                 }
@@ -190,15 +190,15 @@ internal static partial class Video
 
                 await partition.ForEachAsync(async movieWithIndex =>
                 {
-                    (long index, string movie) = movieWithIndex;
-                    await DownloadImdbMetadataAsync(movie, webDriver, overwrite, useCache, useBrowser, log);
+                    (long _, string movie) = movieWithIndex;
+                    await DownloadImdbMetadataAsync(movie, webDriver, overwrite, useCache, log);
                 });
             }))
             .ToArray();
         await Task.WhenAll(tasks);
     }
 
-    private static async Task DownloadImdbMetadataAsync(string directory, IWebDriver? webDriver, bool overwrite = false, bool useCache = false, bool useBrowser = false, Action<string>? log = null)
+    private static async Task DownloadImdbMetadataAsync(string directory, IWebDriver? webDriver, bool overwrite = false, bool useCache = false, Action<string>? log = null)
     {
         log ??= TraceLog;
         string[] files = Directory.GetFiles(directory, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
@@ -213,7 +213,6 @@ internal static partial class Video
                     File.Delete(jsonFile);
                 });
                 files = files.Except(jsonFiles).ToArray();
-                jsonFiles = Array.Empty<string>();
             }
             else
             {
@@ -290,7 +289,7 @@ internal static partial class Video
             log($"Saved to {parentFile}.");
         }
 
-        string jsonFile = Path.Combine(directory, $"{imdbId}{SubtitleSeparator}{imdbMetadata.Year}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Regions?.Select(value => value.Replace(SubtitleSeparator, string.Empty)).Take(5) ?? Array.Empty<string>())}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Languages?.Take(3).Select(value => value.Replace(SubtitleSeparator, string.Empty)) ?? Array.Empty<string>())}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Genres?.Take(5).Select(value => value.Replace(SubtitleSeparator, string.Empty)) ?? Array.Empty<string>())}{ImdbMetadataExtension}");
+        string jsonFile = Path.Combine(directory, $"{imdbId}{SubtitleSeparator}{imdbMetadata.Year}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Regions.Select(value => value.Replace(SubtitleSeparator, string.Empty)).Take(5))}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Languages.Take(3).Select(value => value.Replace(SubtitleSeparator, string.Empty)))}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Genres.Take(5).Select(value => value.Replace(SubtitleSeparator, string.Empty)))}{ImdbMetadataExtension}");
         log($"Merged {imdbUrl} and {releaseUrl} to {jsonFile}.");
         string jsonContent = JsonSerializer.Serialize(
             imdbMetadata,
@@ -322,7 +321,7 @@ internal static partial class Video
                 webDriver.Url = "https://www.imdb.com/";
             }
 
-            await movies.ForEachAsync(async movie => await DownloadImdbMetadataAsync(movie, webDriver, overwrite, useCache, useBrowser, log));
+            await movies.ForEachAsync(async movie => await DownloadImdbMetadataAsync(movie, webDriver, overwrite, useCache, log));
         }
     }
 
@@ -408,9 +407,8 @@ internal static partial class Video
 
                 throw new InvalidOperationException(video);
             })
-            .Where(metadata => metadata.Value is not null)
             .Distinct(metadata => metadata.ImdbId)
-            .ToDictionary(metadata => metadata.ImdbId, metadata => metadata.Value!);
+            .ToDictionary(metadata => metadata.ImdbId, metadata => metadata.Value);
 
         string mergedVideoMetadataJson = JsonSerializer.Serialize(allVideoMetadata, new JsonSerializerOptions() { WriteIndented = true });
         await File.WriteAllTextAsync(jsonPath, mergedVideoMetadataJson);

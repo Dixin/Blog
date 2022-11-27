@@ -252,7 +252,7 @@ internal static partial class Video
                     }
                 }
 
-                string json = files.Single(file => PathHelper.HasExtension(file, ImdbMetadataExtension));
+                string json = files.Single(file => file.HasExtension(ImdbMetadataExtension));
                 Imdb.TryLoad(json, out ImdbMetadata? imdbMetadata);
 
                 string defaultTitle = english.Root?.Element("title")?.Value ?? throw new InvalidOperationException($"{movie} has no default title.");
@@ -287,7 +287,7 @@ internal static partial class Video
                     Hdr: string.Empty
                 );
                 string additional = additionalInfo
-                    ? $"{{{string.Join(",", imdbMetadata?.Regions.Take(5) ?? Array.Empty<string>())};{string.Join(",", imdbMetadata?.Genres?.Take(3) ?? Array.Empty<string>())}}}"
+                    ? $"{{{string.Join(",", imdbMetadata?.Regions.Take(5) ?? Array.Empty<string>())};{string.Join(",", imdbMetadata?.Genres.Take(3) ?? Array.Empty<string>())}}}"
                     : string.Empty;
                 string newMovie = $"{videoDirectoryInfo}{additional}";
                 string newDirectory = Path.Combine(Path.GetDirectoryName(movie) ?? throw new InvalidOperationException(movie), newMovie);
@@ -418,10 +418,10 @@ internal static partial class Video
     internal static void RenameMovies(string destination, string directory, int level = 2, string field = "genre", string? value = null, bool isDryRun = false)
     {
         RenameMovies(
-            (movie, metadata) => Path.Combine(destination, Path.GetFileName(movie)),
+            (movie, _) => Path.Combine(destination, Path.GetFileName(movie)),
             directory,
             level,
-            (movie, metadata) => value.EqualsIgnoreCase(metadata.Root?.Element(field)?.Value),
+            (_, metadata) => value.EqualsIgnoreCase(metadata.Root?.Element(field)?.Value),
             isDryRun);
     }
 
@@ -726,14 +726,12 @@ internal static partial class Video
                             throw new InvalidOperationException(video);
                         }
 
-                        if (videoMetadata.Is1080P)
+                        prefix = videoMetadata.DefinitionType switch
                         {
-                            prefix = $"{prefix}1080p.";
-                        }
-                        else if (videoMetadata.Is720P)
-                        {
-                            prefix = $"{prefix}720p.";
-                        }
+                            DefinitionType.P1080 => $"{prefix}1080p.",
+                            DefinitionType.P720 => $"{prefix}720p.",
+                            _ => prefix
+                        };
 
                         log(video);
                         string newVideo = PathHelper.AddFilePrefix(
@@ -863,9 +861,9 @@ internal static partial class Video
                     .MaxBy(subtitle => new FileInfo(subtitle).Length);
                 if (!string.IsNullOrWhiteSpace(englishSubtitle))
                 {
-                    const string language = "eng";
+                    const string Language = "eng";
                     string englishSubtitleName = Path.GetFileNameWithoutExtension(englishSubtitle);
-                    string newEnglishSubtitle = Path.Combine(Path.GetDirectoryName(englishSubtitle)!, $"{englishSubtitleName.Substring(0, englishSubtitleName.LastIndexOf(".", StringComparison.Ordinal))}.{language}{Path.GetExtension(englishSubtitle)}");
+                    string newEnglishSubtitle = Path.Combine(Path.GetDirectoryName(englishSubtitle)!, $"{englishSubtitleName.Substring(0, englishSubtitleName.LastIndexOf(".", StringComparison.Ordinal))}.{Language}{Path.GetExtension(englishSubtitle)}");
                     log($"Move {englishSubtitle}");
                     if (!isDryRun)
                     {
@@ -906,9 +904,9 @@ internal static partial class Video
                                 .First();
                             chineseSubtitles = new string[] { chineseSubtitle };
 
-                            const string language = "chs";
+                            const string Language = "chs";
                             string chineseSubtitleName = Path.GetFileNameWithoutExtension(chineseSubtitle);
-                            string newChineseSubtitle = Path.Combine(Path.GetDirectoryName(chineseSubtitle)!, $"{chineseSubtitleName.Substring(0, chineseSubtitleName.LastIndexOf(".", StringComparison.Ordinal))}.{language}{Path.GetExtension(chineseSubtitle)}");
+                            string newChineseSubtitle = Path.Combine(Path.GetDirectoryName(chineseSubtitle)!, $"{chineseSubtitleName.Substring(0, chineseSubtitleName.LastIndexOf(".", StringComparison.Ordinal))}.{Language}{Path.GetExtension(chineseSubtitle)}");
                             log($"Move {chineseSubtitle}");
                             if (!isDryRun)
                             {

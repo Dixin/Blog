@@ -35,9 +35,9 @@ internal class FfmpegHelper
     {
         VideoMetadata videoMetadata = Video.GetVideoMetadataAsync(input, null, relativePath, retryCount).Result;
 
-        int bitRate = videoMetadata.Is1080P ? 2048 : 1280;
+        int bitRate = videoMetadata.DefinitionType is DefinitionType.P1080 ? 2048 : 1280;
         List<string> videoFilters = new();
-        if (!videoMetadata.Is1080P && !videoMetadata.Is720P)
+        if (videoMetadata.DefinitionType is DefinitionType.P480)
         {
             videoFilters.Add("bwdif=mode=send_field:parity=auto:deint=all");
         }
