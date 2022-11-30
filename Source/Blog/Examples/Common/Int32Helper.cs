@@ -66,6 +66,6 @@ public static class Int32Helper
             }
         }
 
-        throw new UnreachableException($"{max} is insufficient for {nth}.");
+        throw new InvalidOperationException($"{max} is insufficient for {nth}.");
     }
 }
