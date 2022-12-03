@@ -103,21 +103,32 @@ internal static partial class Video
             });
     }
 
-    internal static void PrintMoviesWithNoSubtitle(string directory, int level = DefaultLevel, Action<string>? log = null)
+    internal static void PrintMoviesWithoutSubtitle(string directory, int level = DefaultLevel, Action<string>? log = null, params string[] languages)
     {
         log ??= TraceLog;
-        EnumerateDirectories(directory, level)
-            .Where(movie => Directory.GetFiles(movie).All(video => AllSubtitleExtensions.All(extension => !video.EndsWithIgnoreCase(extension))))
-            .ForEach(log);
-    }
+        IEnumerable<string> moviesWithoutSubtitle;
+        if (languages.IsEmpty())
+        {
+            moviesWithoutSubtitle = EnumerateDirectories(directory, level)
+                .Where(movie => !Directory.GetFiles(movie).Any(IsSubtitle));
+        }
+        else
+        {
+            List<Regex>? searchPatterns = languages
+                .SelectMany(language => AllSubtitleExtensions.
+                    Select(extension => new Regex($@"\.{language}{extension}$", RegexOptions.IgnoreCase)))
+                .ToList();
+            if (languages.ContainsIgnoreCase("eng"))
+            {
+                searchPatterns.AddRange(AllSubtitleExtensions.Select(extension => new Regex($"{extension}$", RegexOptions.IgnoreCase)));
+            }
 
-    internal static void PrintMoviesWithNoSubtitle(string directory, int level = DefaultLevel, Action<string>? log = null, params string[] languages)
-    {
-        log ??= TraceLog;
-        string[] searchPatterns = languages.SelectMany(language => AllSubtitleExtensions.Select(extension => $"*{language}*{extension}")).ToArray();
-        EnumerateDirectories(directory, level)
-            .Where(movie => searchPatterns.All(searchPattern => !Directory.EnumerateFiles(movie, searchPattern, SearchOption.TopDirectoryOnly).Any()))
-            .ForEach(log);
+            moviesWithoutSubtitle = EnumerateDirectories(directory, level)
+                .Where(movie => !Directory.GetFiles(movie).Any(file => searchPatterns.Any(searchPattern => searchPattern.IsMatch(file))));
+        }
+
+        moviesWithoutSubtitle
+            .ForEach(movie => log($"{(Imdb.TryGet(movie, out string? imdbId, out _, out _, out _, out _) ? imdbId : "-")} {movie}"));
     }
 
     internal static void PrintMetadataByGroup(string directory, int level = DefaultLevel, string field = "genre", Action<string>? log = null)
