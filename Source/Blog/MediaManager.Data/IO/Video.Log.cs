@@ -106,11 +106,10 @@ internal static partial class Video
     internal static void PrintMoviesWithoutSubtitle(string directory, int level = DefaultLevel, Action<string>? log = null, params string[] languages)
     {
         log ??= TraceLog;
-        IEnumerable<string> moviesWithoutSubtitle;
+        Func<string, bool> noSubtitle;
         if (languages.IsEmpty())
         {
-            moviesWithoutSubtitle = EnumerateDirectories(directory, level)
-                .Where(movie => !Directory.GetFiles(movie).Any(IsSubtitle));
+            noSubtitle = movie => !Directory.GetFiles(movie).Any(IsSubtitle);
         }
         else
         {
@@ -123,11 +122,11 @@ internal static partial class Video
                 searchPatterns.AddRange(AllSubtitleExtensions.Select(extension => new Regex($"{extension}$", RegexOptions.IgnoreCase)));
             }
 
-            moviesWithoutSubtitle = EnumerateDirectories(directory, level)
-                .Where(movie => !Directory.GetFiles(movie).Any(file => searchPatterns.Any(searchPattern => searchPattern.IsMatch(file))));
+            noSubtitle = movie => !Directory.GetFiles(movie).Any(file => searchPatterns.Any(searchPattern => searchPattern.IsMatch(file)));
         }
 
-        moviesWithoutSubtitle
+        EnumerateDirectories(directory, level)
+            .Where(noSubtitle)
             .ForEach(movie => log($"{(Imdb.TryGet(movie, out string? imdbId, out _, out _, out _, out _) ? imdbId : "-")} {movie}"));
     }
 
@@ -621,7 +620,7 @@ internal static partial class Video
             });
     }
 
-    internal static async Task PrintMovieVersions(string x265JsonPath, string h264JsonPath, string h264720PJsonPath, string ytsJsonPath, string ignoreJsonPath, Action<string>? log = null, params (string Directory, int Level)[] directories)
+    internal static async Task PrintMovieVersions(string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, string ignoreJsonPath, Action<string>? log = null, params (string Directory, int Level)[] directories)
     {
         log ??= TraceLog;
         Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
