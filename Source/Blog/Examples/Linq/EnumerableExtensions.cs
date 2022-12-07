@@ -30,43 +30,56 @@ public static class EnumerableExtensions
 
     private static readonly int DefaultMaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 512);
 
-    public static async Task ParallelForEachAsync<T>(
-        this IEnumerable<T> source, Func<T, int, Task> asyncAction, int? maxDegreeOfParallelism = null)
+    public static Task ParallelForEachAsync<T>(
+        this IEnumerable<T> source, Func<T, int, ValueTask> asyncAction, int? maxDegreeOfParallelism = null)
     {
-        maxDegreeOfParallelism ??= DefaultMaxDegreeOfParallelism;
-        if (maxDegreeOfParallelism <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(maxDegreeOfParallelism));
-        }
-
         int index = -1;
-        if (maxDegreeOfParallelism == 1)
-        {
-            foreach (T value in source)
+        return Parallel.ForEachAsync(source,
+            new ParallelOptions() { MaxDegreeOfParallelism = maxDegreeOfParallelism ?? DefaultMaxDegreeOfParallelism },
+            (value, cancellationToken) =>
             {
-                await asyncAction(value, checked(++index));
-            }
-
-            return;
-        }
-
-        OrderablePartitioner<T> partitioner = source is IList<T> list
-            ? Partitioner.Create(list, loadBalance: true)
-            : Partitioner.Create(source, EnumerablePartitionerOptions.NoBuffering);
-        await Task.WhenAll(partitioner
-            .GetPartitions(maxDegreeOfParallelism.Value)
-            .Select(async partition =>
-            {
-                while (partition.MoveNext())
+                int currentIndex = Interlocked.Increment(ref index);
+                if (currentIndex < 0)
                 {
-                    await asyncAction(partition.Current, Interlocked.Increment(ref index));
+                    throw new OverflowException();
                 }
-            }));
+
+                return asyncAction(value, currentIndex);
+            });
+        //maxDegreeOfParallelism ??= DefaultMaxDegreeOfParallelism;
+        //if (maxDegreeOfParallelism <= 0)
+        //{
+        //    throw new ArgumentOutOfRangeException(nameof(maxDegreeOfParallelism));
+        //}
+
+        //int index = -1;
+        //if (maxDegreeOfParallelism == 1)
+        //{
+        //    foreach (T value in source)
+        //    {
+        //        await asyncAction(value, checked(++index));
+        //    }
+
+        //    return;
+        //}
+
+        //OrderablePartitioner<T> partitioner = source is IList<T> list
+        //    ? Partitioner.Create(list, loadBalance: true)
+        //    : Partitioner.Create(source, EnumerablePartitionerOptions.NoBuffering);
+        //await Task.WhenAll(partitioner
+        //    .GetPartitions(maxDegreeOfParallelism.Value)
+        //    .Select(async partition =>
+        //    {
+        //        while (partition.MoveNext())
+        //        {
+        //            await asyncAction(partition.Current, Interlocked.Increment(ref index));
+        //        }
+        //    }));
     }
 
-    public static async Task ForEachAsync<T>(this ParallelQuery<T> source, Func<T, Task> asyncAction)
+    public static Task ForEachAsync<T>(this ParallelQuery<T> source, Func<T, Task> asyncAction)
     {
-        await Task.WhenAll(source.Select(asyncAction).ToArray());
+        return Task.WhenAll(source.Select(asyncAction).ToArray());
     }
 
     public static Task ParallelForEachAsync<T>(
@@ -74,7 +87,7 @@ public static class EnumerableExtensions
     {
         return Parallel.ForEachAsync(
             source, 
-            new ParallelOptions() { MaxDegreeOfParallelism = maxDegreeOfParallelism ??= DefaultMaxDegreeOfParallelism }, 
+            new ParallelOptions() { MaxDegreeOfParallelism = maxDegreeOfParallelism ?? DefaultMaxDegreeOfParallelism }, 
             (value, cancellationToken) => asyncAction(value));
         //maxDegreeOfParallelism ??= DefaultMaxDegreeOfParallelism;
         //if (maxDegreeOfParallelism <= 0)
