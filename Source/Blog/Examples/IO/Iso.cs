@@ -1,5 +1,7 @@
 ﻿namespace Examples.IO;
 
+using Examples.Common;
+
 internal static class Iso
 {
     internal static void DirectoriesToIsos(string source, string destination)
@@ -17,14 +19,14 @@ internal static class Iso
                         truncated = Path.Combine(Path.GetDirectoryName(file) ?? throw new InvalidOperationException(file), Path.GetFileNameWithoutExtension(file).Substring(0, 110 - Path.GetExtension(file).Length) + Path.GetExtension(file));
                         File.Move(file, truncated);
                     }
-                    if (Path.GetFileNameWithoutExtension(truncated).Contains(";"))
+                    if (Path.GetFileNameWithoutExtension(truncated).ContainsOrdinal(";"))
                     {
                         File.Move(truncated, Path.Combine(Path.GetDirectoryName(truncated) ?? throw new InvalidOperationException(truncated), Path.GetFileNameWithoutExtension(truncated).Replace(";", "_") + Path.GetExtension(truncated)));
                     }
                 }))
             .Do(directory => Directory
                 .EnumerateDirectories(directory, "*", SearchOption.AllDirectories)
-                .Where(subDirectory => Path.GetFileName(subDirectory).Contains(";"))
+                .Where(subDirectory => Path.GetFileName(subDirectory).ContainsOrdinal(";"))
                 .ForEach(subDirectory => Directory.Move(subDirectory, Path.Combine(Path.GetDirectoryName(subDirectory) ?? throw new InvalidOperationException(subDirectory), subDirectory.Replace(";", "_")))))
             .Select(directory => $@" create -o ""{destination}\{Path.GetFileName(directory)}.iso"" -add ""{directory}"" ""/{Path.GetFileName(directory)}"" -label {Path.GetFileName(directory)} -disable-optimization")
             .Do(Console.WriteLine)

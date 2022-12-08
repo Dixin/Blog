@@ -12,8 +12,8 @@ public static class FileHelper
         File.Delete(file);
     }
 
-    public static bool Contains(string file, string find, Encoding? encoding = null) =>
-        File.ReadAllText(file.NotNullOrWhiteSpace(), encoding ?? Encoding.UTF8).Contains(find);
+    public static bool Contains(string file, string find, Encoding? encoding = null, StringComparison comparison = StringComparison.Ordinal) =>
+        File.ReadAllText(file.NotNullOrWhiteSpace(), encoding ?? Encoding.UTF8).Contains(find, comparison);
 
     public static void Replace(string file, string find, string? replace = null, Encoding? encoding = null)
     {

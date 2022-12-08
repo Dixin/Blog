@@ -224,7 +224,7 @@ internal static partial class Video
                 if (!isDryRun)
                 {
                     File.Move(subtitle, newSubtitle);
-                    if (!Directory.EnumerateFiles(subtitleDirectory).Any())
+                    if (Directory.EnumerateFiles(subtitleDirectory).IsEmpty())
                     {
                         Directory.Delete(subtitleDirectory);
                     }
@@ -281,7 +281,7 @@ internal static partial class Video
                         File.Move(subtitle, newSubtitle);
                     }
 
-                    if (!Directory.EnumerateFiles(subtitleDirectory).Any())
+                    if (Directory.EnumerateFiles(subtitleDirectory).IsEmpty())
                     {
                         Directory.Delete(subtitleDirectory);
                     }

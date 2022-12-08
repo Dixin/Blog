@@ -458,7 +458,7 @@ internal static partial class Video
                 string fromMovie = Path.GetDirectoryName(fromVideoMetadata.File) ?? throw new InvalidOperationException(fromVideoMetadata.File);
                 log($"Starting {fromMovie}");
 
-                if (!moviesMetadata.TryGetValue(externalVideo.Key, out Dictionary<string, VideoMetadata>? group) || !group.Any())
+                if (!moviesMetadata.TryGetValue(externalVideo.Key, out Dictionary<string, VideoMetadata>? group) || group.IsEmpty())
                 {
                     string newExternalMovie = Path.Combine(newDirectory, Path.GetFileName(fromMovie));
                     if (!isDryRun)

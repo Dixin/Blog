@@ -263,7 +263,7 @@ internal static partial class Video
             useCache ? releaseFile : string.Empty,
             webDriver);
         Debug.Assert(imdbHtml.IsNotNullOrWhiteSpace());
-        if (!imdbMetadata.Regions.Any())
+        if (imdbMetadata.Regions.IsEmpty())
         {
             log($"!Location is missing for {imdbId}: {directory}");
         }
@@ -385,11 +385,11 @@ internal static partial class Video
         existingMetadata
             .Keys
             .ToArray()
-            .Where(imdbId => !existingMetadata[imdbId].Any())
+            .Where(imdbId => existingMetadata[imdbId].IsEmpty())
             .ForEach(imdbId => existingMetadata.Remove(imdbId));
 
         string mergedVideoMetadataJson = JsonSerializer.Serialize(existingMetadata, new JsonSerializerOptions() { WriteIndented = true });
-        await File.WriteAllTextAsync(jsonPath, mergedVideoMetadataJson);
+        await FileHelper.SaveAndReplaceAsync(jsonPath, mergedVideoMetadataJson);
     }
 
     internal static async Task SaveExternalVideoMetadataAsync(string jsonPath, params string[] directories)

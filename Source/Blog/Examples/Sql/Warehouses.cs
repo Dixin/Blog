@@ -1,6 +1,7 @@
 ﻿namespace Examples.Sql;
 
 using System.Data.SqlClient;
+using Examples.Common;
 
 internal static class Warehouses
 {
@@ -239,7 +240,7 @@ internal static class Warehouses
                 if (groups.Count == 4)
                 {
                     string last = groups[3].Value;
-                    if (last.Contains("@"))
+                    if (last.ContainsOrdinal("@"))
                     {
                         string newLine = string.Join("\t", new[] { groups[1].Value.TrimEnd(), groups[2].Value, last });
                         writer.WriteLine(newLine);
@@ -254,7 +255,7 @@ internal static class Warehouses
                 {
                     string[] fields = Regex.Split(line, "[ ]{2,}");
                     string lastField = fields.Last();
-                    if (lastField.Contains("@"))
+                    if (lastField.ContainsOrdinal("@"))
                     {
                         string firstField = line.Substring(0, line.Length - lastField.Length).TrimEnd();
                         string newLine = string.Join("\t", new[] { firstField, lastField, string.Empty });
@@ -332,7 +333,7 @@ internal static class Warehouses
                 if (groups.Count == 4)
                 {
                     string last = groups[3].Value;
-                    if (last.Contains("@"))
+                    if (last.ContainsOrdinal("@"))
                     {
                         string newLine = string.Join("\t", new[] { groups[1].Value.TrimEnd(), groups[2].Value, last });
                         writer.WriteLine(newLine);
@@ -378,7 +379,7 @@ internal static class Warehouses
                 {
                     writer3.WriteLine(line); continue;
                 }
-                if (groups[3].Length > 100 || groups[3].Value.Contains(" "))
+                if (groups[3].Length > 100 || groups[3].Value.ContainsOrdinal(" "))
                 {
                     writer3.WriteLine(line); continue;
                 }

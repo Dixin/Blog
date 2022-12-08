@@ -42,7 +42,7 @@ internal static class Audio
 
             }
 
-            if (tag.AlbumArtists.Any(name => name.ContainsChineseCharacter() && !TraditionChineseException.Any(name.Contains)))
+            if (tag.AlbumArtists.Any(name => name.ContainsChineseCharacter() && !TraditionChineseException.Any(name.ContainsOrdinal)))
             {
                 string[] albumArtists = tag.AlbumArtists
                     .Select(name => ChineseConverter.Convert(name, ChineseConversionDirection.TraditionalToSimplified))

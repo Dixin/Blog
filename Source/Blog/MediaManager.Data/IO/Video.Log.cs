@@ -829,7 +829,7 @@ internal static partial class Video
 
                     if (otherYtsMetadata.Any())
                     {
-                        if (videos.Any(video => video.Contains("1080p")) && otherYtsMetadata.All(metadataVersion => metadataVersion.version.Key.ContainsIgnoreCase("720p")))
+                        if (videos.Any(video => video.ContainsIgnoreCase("1080p")) && otherYtsMetadata.All(metadataVersion => metadataVersion.version.Key.ContainsIgnoreCase("720p")))
                         {
                             return;
                         }
@@ -1108,7 +1108,7 @@ internal static partial class Video
                         .ToArray();
                 }
 
-                if (!releaseTitles.Any()
+                if (releaseTitles.IsEmpty()
                     && !imdbMetadata.Titles.TryGetValue("USA", out releaseTitles)
                     && !imdbMetadata.Titles.TryGetValue("USA (working title)", out releaseTitles)
                     && !imdbMetadata.Titles.TryGetValue("USA (informal English title)", out releaseTitles))
@@ -1119,7 +1119,7 @@ internal static partial class Video
                         .ToArray();
                 }
 
-                if (!releaseTitles.Any()
+                if (releaseTitles.IsEmpty()
                     && !imdbMetadata.Titles.TryGetValue("UK", out releaseTitles)
                     && !imdbMetadata.Titles.TryGetValue("UK (informal English title)", out releaseTitles))
                 {
@@ -1129,7 +1129,7 @@ internal static partial class Video
                         .ToArray();
                 }
 
-                if (!releaseTitles.Any()
+                if (releaseTitles.IsEmpty()
                     && !imdbMetadata.Titles.TryGetValue("Hong Kong (English title)", out releaseTitles))
                 {
                     releaseTitles = imdbMetadata.Titles
@@ -1462,7 +1462,7 @@ internal static partial class Video
                 }
 
                 VideoMovieFileInfo[] videos = VideoDirectoryInfo.GetVideos(movie).ToArray();
-                if (!videos.Any())
+                if (videos.IsEmpty())
                 {
                     return;
                 }

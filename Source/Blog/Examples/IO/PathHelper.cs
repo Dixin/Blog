@@ -48,7 +48,7 @@ public static class PathHelper
         }
 
         string[] datFiles = Directory.GetFiles(settingsDirectory, "*.dat");
-        if (!datFiles.Any())
+        if (datFiles.IsEmpty())
         {
             return false;
         }
