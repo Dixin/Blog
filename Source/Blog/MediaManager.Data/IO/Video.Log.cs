@@ -553,7 +553,7 @@ internal static partial class Video
                 if (Imdb.TryLoad(movie, out ImdbMetadata? jsonMetadata))
                 {
                     videoYear = jsonMetadata.Year;
-                    videoTitle = jsonMetadata.Name;
+                    videoTitle = jsonMetadata.Title;
                     Debug.Assert(videoYear.Length == 4);
                 }
 
@@ -1018,7 +1018,7 @@ internal static partial class Video
         Dictionary<string, RarbgMetadata[]> h264Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
         Dictionary<string, YtsMetadata[]> ytsDetails = JsonSerializer.Deserialize<Dictionary<string, YtsMetadata[]>>(await File.ReadAllTextAsync(ytsJsonPath))!;
 
-        Dictionary<string, Dictionary<string, IMetadata[]>> highRatings = new();
+        Dictionary<string, Dictionary<string, IImdbMetadata[]>> highRatings = new();
 
         x265Summaries
             .Where(summaries =>

@@ -259,7 +259,7 @@ internal static partial class Video
                 defaultTitle = defaultTitle.ReplaceOrdinal(" - ", "-");
                 string translatedTitle = translated?.Root?.Element("title")?.Value ?? string.Empty;
                 translatedTitle = translatedTitle.ReplaceOrdinal(" - ", "-");
-                string originalTitle = imdbMetadata?.Name ?? english.Root?.Element("originaltitle")?.Value ?? imdbMetadata?.Name ?? string.Empty;
+                string originalTitle = imdbMetadata?.OriginalTitle ?? english.Root?.Element("originaltitle")?.Value ?? imdbMetadata?.Name ?? string.Empty;
                 originalTitle = originalTitle.ReplaceOrdinal(" - ", "-");
                 originalTitle = originalTitle.EqualsIgnoreCase(defaultTitle) || originalTitle.IsNullOrWhiteSpace()
                     ? string.Empty

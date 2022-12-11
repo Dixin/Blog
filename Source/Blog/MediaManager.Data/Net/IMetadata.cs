@@ -1,6 +1,6 @@
 ﻿namespace Examples.Net;
 
-public interface IMetadata
+public interface IImdbMetadata
 {
     string Link { get; }
 
