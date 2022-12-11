@@ -16,7 +16,7 @@
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
         <PackageReference Include="Microsoft.VisualBasic" Version="10.3.0" />
         <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
-        <PackageReference Include="Selenium.WebDriver" Version="4.6.0" />
+        <PackageReference Include="Selenium.WebDriver" Version="4.7.0" />
         <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
         <PackageReference Include="System.Interactive" Version="6.0.1" />
         <PackageReference Include="System.Management" Version="7.0.0" />
