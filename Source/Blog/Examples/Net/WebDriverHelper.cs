@@ -29,7 +29,7 @@ public static class WebDriverHelper
 
     public static IWebDriver StartChrome(int index) => StartChrome(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(ChromeDriver)} {index:00}"));
 
-    public static IWebDriver StartEdge(string profile = "", bool isLoadingImages = false)
+    public static IWebDriver StartEdge(string profile = "", bool isLoadingAll = false)
     {
         if (string.IsNullOrWhiteSpace(profile))
         {
@@ -38,15 +38,23 @@ public static class WebDriverHelper
 
         EdgeOptions options = new();
         options.AddArguments($"user-data-dir={profile}");
-        if (!isLoadingImages)
+        if (!isLoadingAll)
         {
             options.AddUserProfilePreference("profile.managed_default_content_settings.images", 2);
+            options.AddUserProfilePreference("profile.default_content_setting_values.notifications", 2);
+            options.AddUserProfilePreference("profile.managed_default_content_settings.stylesheets", 2);
+            options.AddUserProfilePreference("profile.managed_default_content_settings.cookies", 2);
+            options.AddUserProfilePreference("profile.managed_default_content_settings.javascript", 1);
+            options.AddUserProfilePreference("profile.managed_default_content_settings.plugins", 1);
+            options.AddUserProfilePreference("profile.managed_default_content_settings.popups", 2);
+            options.AddUserProfilePreference("profile.managed_default_content_settings.geolocation", 2);
+            options.AddUserProfilePreference("profile.managed_default_content_settings.media_stream", 2);
         }
 
         EdgeDriver webDriver = new(options);
         return webDriver;
     }
 
-    public static IWebDriver StartEdge(int index, bool isLoadingImages = false) => 
-        StartEdge(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(EdgeDriver)} {index:00}"), isLoadingImages);
+    public static IWebDriver StartEdge(int index, bool isLoadingAll = false) => 
+        StartEdge(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(EdgeDriver)} {index:00}"), isLoadingAll);
 }

@@ -11,14 +11,15 @@ public record ImdbEntry(string Type)
 
 public record ImdbEntity(string Type, string Url, string Name) : ImdbEntry(Type)
 {
-    public string Name { get; set; } = Name;
 }
 
 public partial record ImdbMetadata(
     string Context, string Type, string Url, string Name, string AlternateName, string Image, string ContentRating,
     string[] Genres, ImdbEntity[] Actor, ImdbEntity[] Director, ImdbEntity[] Creator,
     string Description, string DatePublished, string Keywords, ImdbAggregateRating? AggregateRating,
-    string Duration, ImdbTrailer Trailer) : ImdbEntity(Type, Url, Name)
+    string Duration, ImdbTrailer Trailer,
+    string OriginalTitle, string Year, string[] Regions, string[] Languages, Dictionary<string, string[]> Titles, ImdbMetadata? Parent, string Title,
+    string[] AllKeywords, string MpaaRating, Dictionary<string, ImdbAdvisory[]> Advisories, string AlsoKnownAs) : ImdbEntity(Type, Url, Name)
 {
     [JsonPropertyName("@context")]
     public string Context { get; init; } = Context;
@@ -32,53 +33,22 @@ public partial record ImdbMetadata(
     [JsonConverter(typeof(EntityOrArrayConverter))]
     public ImdbEntity[] Creator { get; init; } = Creator;
 
-    public string OriginalTitle { get; set; } = string.Empty;
-
-    public string Year { get; set; } = string.Empty;
-
-    public string[] Regions { get; set; } = Array.Empty<string>();
-
-    public string[] Languages { get; set; } = Array.Empty<string>();
-
-    public Dictionary<string, string[]> Titles { get; set; } = new();
-
-    public ImdbMetadata? Parent { get; set; }
-
     [JsonIgnore]
     internal string YearOfLatestRelease => DateTime.Parse(this.DatePublished).Year.ToString(CultureInfo.InvariantCulture);
 
     [JsonIgnore]
-    internal string FormattedAggregateRating
-    {
-        get
-        {
-            string? rating = this.AggregateRating?.RatingValue;
-            return rating.IsNullOrWhiteSpace() ? "0.0" : rating;
-        }
-    }
+    internal string FormattedAggregateRating => this.AggregateRating?.RatingValue.IfNullOrWhiteSpace("0.0")!;
 
     [JsonIgnore]
-    internal string FormattedAggregateRatingCount
-    {
-        get
+    internal string FormattedAggregateRatingCount =>
+        this.AggregateRating switch
         {
-            switch (this.AggregateRating)
-            {
-                case null:
-                    return "0";
-                case { RatingCount: < 1_000 }:
-                    return this.AggregateRating.RatingCount.ToString();
-                case { RatingCount: >= 1_000_000 }:
-                    string mega = Math.Round(this.AggregateRating.RatingCount / 1_000_000d, 1).ToString();
-                    return $"{(mega.EndsWithOrdinal(".0") ? mega.ReplaceOrdinal(".0", string.Empty) : mega)}M";
-                case { RatingCount: >= 10_000 }:
-                    return $"{Math.Round(this.AggregateRating.RatingCount / 1000d)}K";
-                default:
-                    string kilo = Math.Round(this.AggregateRating.RatingCount / 1_000d, 1).ToString();
-                    return $"{(kilo.EndsWithOrdinal(".0") ? kilo.ReplaceOrdinal(".0", string.Empty) : kilo)}K";
-            }
-        }
-    }
+            null => "0",
+            { RatingCount: < 1_000 } => this.AggregateRating.RatingCount.ToString(),
+            { RatingCount: >= 1_000_000 } => $"{Regex.Replace(Math.Round(this.AggregateRating.RatingCount / 1_000_000d, 1).ToString(CultureInfo.InvariantCulture), @"\.0$", string.Empty)}M",
+            { RatingCount: >= 10_000 } => $"{Math.Round(this.AggregateRating.RatingCount / 1000d)}K",
+            _ => $"{Regex.Replace(Math.Round(this.AggregateRating.RatingCount / 1_000d, 1).ToString(CultureInfo.InvariantCulture), @"\.0$", string.Empty)}K"
+        };
 
     [JsonIgnore]
     internal string FormattedContentRating => this.ContentRating.IsNullOrWhiteSpace()
@@ -86,11 +56,9 @@ public partial record ImdbMetadata(
         : this.ContentRating.Replace("-", string.Empty).Replace(" ", string.Empty).Replace("/", string.Empty).Replace(":", string.Empty);
 }
 
-public partial record ImdbMetadata : IMetadata
+public partial record ImdbMetadata : IImdbMetadata
 {
     public string Link => $"https://www.imdb.com{this.Url}".AppendIfMissing("/");
-
-    public string Title { get; set; } = string.Empty;
 
     public string ImdbId => this.Url.Split("/", StringSplitOptions.RemoveEmptyEntries).Last();
 
@@ -125,6 +93,20 @@ public record ImdbAggregateRating(string Type, int RatingCount, string BestRatin
 }
 
 public record ImdbTrailer(string Type, string Name, string EmbedUrl, string ThumbnailUrl, string Description, DateTime UploadDate) : ImdbEntry(Type);
+
+public record ImdbAdvisory(string Category, string Severity, string[] Details)
+{
+    [JsonIgnore]
+    public ImdbAdvisorySeverity? FormattedSeverity => Enum.TryParse(this.Severity, out ImdbAdvisorySeverity severity) ? severity : null;
+}
+
+public enum ImdbAdvisorySeverity
+{
+    None = 0,
+    Mild,
+    Moderate,
+    Severe
+}
 
 public class StringOrArrayConverter : JsonConverter<string[]>
 {

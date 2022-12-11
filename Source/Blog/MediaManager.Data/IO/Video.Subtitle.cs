@@ -35,7 +35,7 @@ internal static partial class Video
                 CharsetDetector detector = new();
                 detector.Feed(fileStream);
                 detector.DataEnd();
-                return detector.Charset is not null ? (detector.Charset, Confidence: detector.Confidence, File: file) : (Charset: (string?)null, Confidence: (float?)null, File: file);
+                return detector.Charset is not null ? (detector.Charset, detector.Confidence, File: file) : (Charset: (string?)null, Confidence: (float?)null, File: file);
             })
             .OrderBy(result => result.Charset)
             .ThenByDescending(result => result.Confidence)

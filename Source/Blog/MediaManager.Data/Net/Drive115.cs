@@ -12,7 +12,7 @@ internal static class Drive115
 {
     internal static List<Drive115OfflineTask> DownloadOfflineTasks(string url, Action<string> log, Func<string, string, bool>? predicate = null, Action<string, string>? action = null)
     {
-        using IWebDriver parentFrame = WebDriverHelper.StartEdge(isLoadingImages: true);
+        using IWebDriver parentFrame = WebDriverHelper.StartEdge(isLoadingAll: true);
         parentFrame.Url = url;
 
         using IWebDriver? filesFrame = new WebDriverWait(parentFrame, WebDriverHelper.DefaultWait).Until(e => e.SwitchTo().Frame("wangpan"));
