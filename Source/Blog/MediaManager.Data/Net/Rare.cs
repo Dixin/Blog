@@ -69,12 +69,18 @@ internal static class Rare
         Dictionary<string, RarbgMetadata[]> h264720PMetadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264720PJsonPath))!;
 
         using IWebDriver webDriver = WebDriverHelper.StartEdge();
-        await rareMetadata
+        string[] cacheFiles = Directory.GetFiles(@"D:\Files\Library\ImdbCache");
+        string[] metadataFiles = Directory.GetFiles(@"D:\Files\Library\ImdbMetadata");
+        (string Link, string Title, string Value)[] imdbIds = rareMetadata
             .SelectMany(rare => Regex
                 .Matches(rare.Value.Content, @"imdb\.com/title/(tt[0-9]+)")
                 .Where(match => match.Success)
                 .Select(match => (Link: rare.Key, rare.Value.Title, match.Groups[1].Value)))
             .Distinct(imdbId => imdbId.Value)
+            .ToArray();
+        await imdbIds
+            .OrderBy(imdbId => imdbId.Value)
+            .Take(..(imdbIds.Length / 3))
             .ForEachAsync(async imdbId =>
             {
 
@@ -85,7 +91,7 @@ internal static class Rare
                     return;
                 }
 
-                await Video.DownloadImdbMetadataAsync(imdbId.Value, @"D:\Files\Library\ImdbCache", @"D:\Files\Library\ImdbMetadata", Directory.GetFiles(@"D:\Files\Library\ImdbCache"), Directory.GetFiles(@"D:\Files\Library\ImdbMetadata"), webDriver, false, true, log);
+                await Video.DownloadImdbMetadataAsync(imdbId.Value, @"D:\Files\Library\ImdbCache", @"D:\Files\Library\ImdbMetadata", cacheFiles, metadataFiles, webDriver, false, true, log);
 
                 if (x265Metadata.TryGetValue(imdbId.Value, out RarbgMetadata[]? x265Videos))
                 {
