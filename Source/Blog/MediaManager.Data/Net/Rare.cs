@@ -83,7 +83,6 @@ internal static class Rare
             .Take(..(imdbIds.Length / 3))
             .ForEachAsync(async imdbId =>
             {
-
                 if (libraryMetadata.TryGetValue(imdbId.Value, out Dictionary<string, VideoMetadata>? libraryVideos) && libraryVideos.Any())
                 {
                     libraryVideos.ForEach(video => log($"- {video.Key} {video.Value.File}"));
@@ -91,7 +90,18 @@ internal static class Rare
                     return;
                 }
 
-                await Video.DownloadImdbMetadataAsync(imdbId.Value, @"D:\Files\Library\ImdbCache", @"D:\Files\Library\ImdbMetadata", cacheFiles, metadataFiles, webDriver, false, true, log);
+                try
+                {
+                    await Video.DownloadImdbMetadataAsync(imdbId.Value, @"D:\Files\Library\ImdbCache", @"D:\Files\Library\ImdbMetadata", cacheFiles, metadataFiles, webDriver, false, true, log);
+                }
+                catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
+                {
+                    if (imdbId.Value.StartsWithIgnoreCase("tt0"))
+                    {
+                        imdbId = imdbId with { Value = imdbId.Value.ReplaceIgnoreCase("tt0", "tt") };
+                        await Video.DownloadImdbMetadataAsync(imdbId.Value, @"D:\Files\Library\ImdbCache", @"D:\Files\Library\ImdbMetadata", cacheFiles, metadataFiles, webDriver, false, true, log);
+                    }
+                }
 
                 if (x265Metadata.TryGetValue(imdbId.Value, out RarbgMetadata[]? x265Videos))
                 {

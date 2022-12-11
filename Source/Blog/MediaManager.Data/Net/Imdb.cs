@@ -35,6 +35,11 @@ internal static class Imdb
             }, retryCount: 10);
         CQ imdbCQ = imdbHtml;
         string json = imdbCQ.Find(@"script[type=""application/ld+json""]").Text();
+        if (imdbCQ.Find("title").Text().StartsWithIgnoreCase("404 Error"))
+        {
+            throw new ArgumentOutOfRangeException(nameof(imdbId));
+        }
+
         ImdbMetadata imdbMetadata = JsonSerializer.Deserialize<ImdbMetadata>(
             json,
             new JsonSerializerOptions() { PropertyNameCaseInsensitive = true }) ?? throw new InvalidOperationException(json);
@@ -381,6 +386,7 @@ internal static class Imdb
                 string[] details = sectionCQ.Find("li.ipl-zebra-list__item").Select(li => li.ChildNodes.First().NodeValue.Trim()).ToArray();
                 return new ImdbAdvisory(category, severity, details);
             })
+            .Where(advisory => advisory.Severity.IsNotNullOrWhiteSpace() || advisory.Details.Any())
             .ToArray();
 
         imdbMetadata = imdbMetadata with
