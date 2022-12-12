@@ -4,6 +4,7 @@ using System.Web;
 using CsQuery;
 using Examples.Common;
 using Examples.IO;
+using Examples.Linq;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using OpenQA.Selenium;
 
@@ -86,8 +87,8 @@ internal static class Imdb
             htmlYear = Regex.Match(htmlYear, "[0-9]{4}").Value;
         }
 
-        Debug.Assert(htmlYear.EqualsOrdinal(htmlTitleYear) || imdbMetadata.ImdbId is "tt0113147");
-        string year = imdbMetadata.Year;
+        Debug.Assert(htmlYear.EqualsOrdinal(htmlTitleYear) || parent is not null);
+        string year = imdbMetadata.Year ?? string.Empty;
         if (htmlYear.IsNotNullOrWhiteSpace())
         {
             year = htmlYear;
@@ -485,4 +486,42 @@ internal static class Imdb
         imdbMetadata = null;
         return false;
     }
+
+    internal static async Task DownloadAllAsync(string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, string cacheDirectory, string metadataDirectory, Action<string> log)
+    {
+        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(libraryJsonPath))!;
+        Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
+        Dictionary<string, RarbgMetadata[]> h264Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
+        Dictionary<string, YtsMetadata[]> ytsMetadata = JsonSerializer.Deserialize<Dictionary<string, YtsMetadata[]>>(await File.ReadAllTextAsync(ytsJsonPath))!;
+        Dictionary<string, RarbgMetadata[]> h264720PMetadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264720PJsonPath))!;
+
+        using IWebDriver webDriver = WebDriverHelper.StartEdge();
+        string[] cacheFiles = Directory.GetFiles(@cacheDirectory);
+        string[] metadataFiles = Directory.GetFiles(metadataDirectory);
+        string[] imdbIds = x265Metadata.Keys
+            .Concat(h264Metadata.Keys)
+            .Concat(ytsMetadata.Keys)
+            .Concat(h264720PMetadata.Keys)
+            .Distinct()
+            .Except(libraryMetadata.Keys)
+            .Except(metadataFiles.Select(file => Path.GetFileNameWithoutExtension(file).Split("-").First()))
+            .Order()
+            .ToArray();
+        int length = imdbIds.Length;
+        await imdbIds
+            .Take(..(length / 3))
+            .ForEachAsync(async (imdbId, index) =>
+            {
+                log($"{index * 100 / length}% - {index}/{length} - {imdbId}");
+                try
+                {
+                    await Video.DownloadImdbMetadataAsync(imdbId, cacheDirectory, metadataDirectory, cacheFiles, metadataFiles, webDriver, false, true, log);
+                }
+                catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
+                {
+                    log($"!!!{imdbId}");
+                }
+            });
+    }
+
 }

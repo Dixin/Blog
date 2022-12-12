@@ -78,11 +78,12 @@ internal static class Rare
                 .Select(match => (Link: rare.Key, rare.Value.Title, match.Groups[1].Value)))
             .Distinct(imdbId => imdbId.Value)
             .ToArray();
+        int length = imdbIds.Length;
         await imdbIds
             .OrderBy(imdbId => imdbId.Value)
-            .Take(..(imdbIds.Length / 3))
-            .ForEachAsync(async imdbId =>
+            .ForEachAsync(async (imdbId, index) =>
             {
+                log($"{index * 100 / length}% - {index}/{length} - {imdbId}");
                 if (libraryMetadata.TryGetValue(imdbId.Value, out Dictionary<string, VideoMetadata>? libraryVideos) && libraryVideos.Any())
                 {
                     libraryVideos.ForEach(video => log($"- {video.Key} {video.Value.File}"));
