@@ -54,13 +54,17 @@ internal static class Imdb
         string parentAdvisoriesUrl = string.Empty;
         string parentAdvisoriesHtml = string.Empty;
         string parentHref = imdbCQ.Find(@"div.titleParent a").FirstOrDefault()?.GetAttribute("href")
-            ?? imdbCQ.Find(@"div").FirstOrDefault(div => div.Classes.Any(@class => @class.StartsWithOrdinal("TitleBlock__SeriesParentLinkWrapper")))?.Cq().Find("a").Attr("href")
+            ?? imdbCQ.Find("div").FirstOrDefault(div => div.Classes.Any(@class => @class.StartsWithOrdinal("TitleBlock__SeriesParentLinkWrapper")))?.Cq().Find("a").Attr("href")
+            ?? imdbCQ.Find("section.ipc-page-section > div:first > a:first").FirstOrDefault()?.GetAttribute("href")
             ?? string.Empty;
         ImdbMetadata? parent = null;
         if (parentHref.IsNotNullOrWhiteSpace())
         {
             string parentImdbId = Regex.Match(parentHref, "tt[0-9]+").Value;
-            (parent, parentImdbUrl, parentImdbHtml, parentReleaseUrl, parentReleaseHtml, parentKeywordsUrl, parentKeywordsHtml, parentAdvisoriesUrl, parentAdvisoriesHtml, string _, string _, string _, string _, string _, string _, string _, string _) = await DownloadAsync(parentImdbId, parentImdbFile, parentReleaseFile, parentKeywordsFile, parentAdvisoriesFile, string.Empty, string.Empty, string.Empty, string.Empty);
+            if (!parentImdbId.EqualsIgnoreCase(imdbId))
+            {
+                (parent, parentImdbUrl, parentImdbHtml, parentReleaseUrl, parentReleaseHtml, parentKeywordsUrl, parentKeywordsHtml, parentAdvisoriesUrl, parentAdvisoriesHtml, string _, string _, string _, string _, string _, string _, string _, string _) = await DownloadAsync(parentImdbId, parentImdbFile, parentReleaseFile, parentKeywordsFile, parentAdvisoriesFile, string.Empty, string.Empty, string.Empty, string.Empty);
+            }
         }
 
         string htmlTitle = imdbCQ.Find(@"title").Text();
@@ -487,13 +491,14 @@ internal static class Imdb
         return false;
     }
 
-    internal static async Task DownloadAllAsync(string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, string cacheDirectory, string metadataDirectory, Action<string> log)
+    internal static async Task DownloadAllAsync(string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, string rareJsonPath, string cacheDirectory, string metadataDirectory, Action<string> log)
     {
         Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(libraryJsonPath))!;
         Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
         Dictionary<string, RarbgMetadata[]> h264Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
         Dictionary<string, YtsMetadata[]> ytsMetadata = JsonSerializer.Deserialize<Dictionary<string, YtsMetadata[]>>(await File.ReadAllTextAsync(ytsJsonPath))!;
         Dictionary<string, RarbgMetadata[]> h264720PMetadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264720PJsonPath))!;
+        Dictionary<string, RareMetadata> rareMetadata = JsonSerializer.Deserialize<Dictionary<string, RareMetadata>>(await File.ReadAllTextAsync(rareJsonPath))!;
 
         using IWebDriver webDriver = WebDriverHelper.StartEdge();
         string[] cacheFiles = Directory.GetFiles(@cacheDirectory);
@@ -505,11 +510,16 @@ internal static class Imdb
             .Distinct()
             .Except(libraryMetadata.Keys)
             .Except(metadataFiles.Select(file => Path.GetFileNameWithoutExtension(file).Split("-").First()))
+            .Except(rareMetadata
+                .SelectMany(rare => Regex
+                    .Matches(rare.Value.Content, @"imdb\.com/title/(tt[0-9]+)")
+                    .Where(match => match.Success)
+                    .Select(match => match.Groups[1].Value)))
             .Order()
             .ToArray();
+        imdbIds = imdbIds.Take(..(imdbIds.Length / 3)).ToArray();
         int length = imdbIds.Length;
         await imdbIds
-            .Take(..(length / 3))
             .ForEachAsync(async (imdbId, index) =>
             {
                 log($"{index * 100 / length}% - {index}/{length} - {imdbId}");

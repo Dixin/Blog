@@ -465,4 +465,4 @@ static void RenameFilesWithDuplicateTitle(
 //Parallel.ForEach(Directory.GetFiles(@"S:\Files\Library\Movies Controversial.非主流电影\French.法国\The Public Woman=La femme publique.1984.公共女人[6.5-1.5K][NA][480f2]\Featurettes", "*.mkv", SearchOption.AllDirectories), f => FfmpegHelper.Encode(f, estimateCrop: true, overwrite: true));
 //Video.PrintMoviesWithoutSubtitle(@"E:\Files\Movies", 2, null, "eng");
 //Video.MoveAllSubtitles(@"S:\Files\Library\Movies Temp", @"S:\Files\Library\Movies Temp.Subs");
-await Imdb.DownloadAllAsync(settings.MovieLibraryMetadata, settings.MovieRarbgX265Metadata, settings.MovieRarbgH264Metadata, settings.MovieYtsMetadata, settings.MovieRarbgH264720PMetadata, @"D:\Files\Library\ImdbCache", @"D:\Files\Library\ImdbMetadata", log);
+await Imdb.DownloadAllAsync(settings.MovieLibraryMetadata, settings.MovieRarbgX265Metadata, settings.MovieRarbgH264Metadata, settings.MovieYtsMetadata, settings.MovieRarbgH264720PMetadata, @"D:\Files\Library\Movie.RareMetadata.json", @"D:\Files\Library\ImdbCache", @"D:\Files\Library\ImdbMetadata", log);
