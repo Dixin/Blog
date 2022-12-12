@@ -509,7 +509,6 @@ internal static class Imdb
             .Concat(h264720PMetadata.Keys)
             .Distinct()
             .Except(libraryMetadata.Keys)
-            .Except(metadataFiles.Select(file => Path.GetFileNameWithoutExtension(file).Split("-").First()))
             .Except(rareMetadata
                 .SelectMany(rare => Regex
                     .Matches(rare.Value.Content, @"imdb\.com/title/(tt[0-9]+)")
@@ -520,6 +519,7 @@ internal static class Imdb
         imdbIds = imdbIds.Take(..(imdbIds.Length / 3)).ToArray();
         int length = imdbIds.Length;
         await imdbIds
+            .Except(metadataFiles.Select(file => Path.GetFileNameWithoutExtension(file).Split("-").First()))
             .ForEachAsync(async (imdbId, index) =>
             {
                 log($"{index * 100 / length}% - {index}/{length} - {imdbId}");
