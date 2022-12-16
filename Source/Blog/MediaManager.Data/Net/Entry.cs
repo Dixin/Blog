@@ -14,7 +14,7 @@ internal static class Entry
         Action<string> log)
     {
         List<string> entryLinks = new();
-        using WebClient webClient = new();
+        using HttpClient httpClient = new();
         await Enumerable
             .Range(startIndex, count)
             .Select(index => $"{baseUrl}/page/{index}/")
@@ -22,7 +22,7 @@ internal static class Entry
             {
                 try
                 {
-                    string html = await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(url));
+                    string html = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(url));
                     CQ listCQ = html;
                     log($"Done {url}");
                     listCQ
@@ -38,10 +38,10 @@ internal static class Entry
         ConcurrentDictionary<string, EntryMetadata> entryMetadata = File.Exists(entryJsonPath) ? new(JsonSerializer.Deserialize<Dictionary<string, EntryMetadata>>(await File.ReadAllTextAsync(entryJsonPath))) : new();
         await entryLinks.ParallelForEachAsync(async entryLink =>
         {
-            using WebClient webClient = new();
+            using HttpClient httpClient = new();
             try
             {
-                string html = await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(entryLink));
+                string html = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(entryLink));
                 CQ entryCQ = html;
                 string title = entryCQ.Find("h1.entry-title").Text().Trim();
                 log($"Done {title} {entryLink}");

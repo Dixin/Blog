@@ -17,12 +17,12 @@ internal static class Yts
             ? JsonSerializer.Deserialize<Dictionary<string, YtsSummary>>(await File.ReadAllTextAsync(jsonPath)) ?? throw new InvalidOperationException(jsonPath)
             : new();
         List<string> links = new();
-        using WebClient webClient = new WebClient().AddChromeHeaders();
+        using HttpClient httpClient = new HttpClient().AddEdgeHeaders();
         for (; @continue(index); index++)
         {
             string url = $"{baseUrl}/browse-movies?page={index}";
             log($"Start {url}");
-            string html = await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(url));
+            string html = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(url));
             CQ cq = new(html);
             if (cq[".browse-movie-wrap"].IsEmpty())
             {
@@ -89,11 +89,11 @@ internal static class Yts
             .ParallelForEachAsync(async (summary, index) =>
             {
                 log($"Start {index}:{summary.Link}");
-                using WebClient webClient = new WebClient().AddChromeHeaders();
+                using HttpClient webClient = new HttpClient().AddEdgeHeaders();
                 try
                 {
                     string html = await Retry.FixedIntervalAsync(
-                        async () => await webClient.DownloadStringTaskAsync(summary.Link),
+                        async () => await webClient.GetStringAsync(summary.Link),
                         isTransient: exception => exception is not WebException { Response: HttpWebResponse { StatusCode: HttpStatusCode.NotFound } });
                     CQ cq = new(html);
                     CQ info = cq.Find("#movie-info");

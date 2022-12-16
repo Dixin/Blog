@@ -1,6 +1,7 @@
 ﻿namespace Examples.Net;
 
 using System.IO.Compression;
+using Examples.Common;
 
 public static class WebClientExtensions
 {
@@ -32,7 +33,7 @@ public static class WebClientExtensions
         headers.Add("sec-fetch-user", "1");
         headers.Add("upgrade-insecure-requests", "1");
         headers.Add(HttpRequestHeader.UserAgent, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36");
-        if (!string.IsNullOrWhiteSpace(cookie))
+        if (cookie.IsNotNullOrWhiteSpace())
         {
             headers.Add(HttpRequestHeader.Cookie, cookie);
         }

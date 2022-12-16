@@ -19,8 +19,8 @@ internal static class Rare
         Action<string> log,
         int degreeOfParallelism = 4)
     {
-        using WebClient webClient = new();
-        string indexHtml = await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(indexUrl));
+        using HttpClient httpClient = new();
+        string indexHtml = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(indexUrl));
         CQ indexCQ = indexHtml;
         string[] links = indexCQ
             .Find("#content li.wsp-post a")
@@ -31,10 +31,10 @@ internal static class Rare
         ConcurrentDictionary<string, RareMetadata> rareMetadata = new();
         await links.ParallelForEachAsync(async (link, index) =>
         {
-            using WebClient webClient = new();
+            using HttpClient httpClient = new();
             try
             {
-                string html = await Retry.FixedIntervalAsync(async () => await webClient.DownloadStringTaskAsync(link));
+                string html = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(link));
                 CQ rareCQ = html;
                 CQ rareArticleCQ = rareCQ.Find("#content article");
                 string title = rareArticleCQ.Find("h1").Text().Trim();

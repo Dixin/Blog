@@ -3,6 +3,7 @@
 using CsQuery;
 using Examples.IO;
 using Examples.Linq;
+using Examples.Net;
 using Microsoft.Office.Interop.Word;
 
 using Task = System.Threading.Tasks.Task;
@@ -81,9 +82,9 @@ internal static class Program
                             string uri = image.GetAttribute("src");
                             string localPath = Path.Combine("images", string.Join("-", uri.Split('/').Reverse().Take(2).Reverse()));
                             image.SetAttribute("src", localPath);
-                            using WebClient webClient = new();
+                            using HttpClient httpClient = new();
                             Trace.WriteLine($"Downloading image {uri} to {localPath}.");
-                            await webClient.DownloadFileTaskAsync(uri, Path.Combine(htmlOutputDirectory, localPath));
+                            await httpClient.GetFileAsync(uri, Path.Combine(htmlOutputDirectory, localPath));
                         });
                     await SaveAsync(
                         section.TransformText(),
@@ -98,9 +99,7 @@ internal static class Program
         Trace.WriteLine(Invariant($"Saving HTML as {htmlFile}, {text.Length}."));
         try
         {
-            await using StreamWriter writer = new(new FileStream(
-                path: htmlFile, mode: FileMode.Create, access: FileAccess.Write, share: FileShare.Read, bufferSize: 4096, useAsync: true));
-            await writer.WriteAsync(text);
+            await File.WriteAllTextAsync(htmlFile, text);
         }
         catch (Exception exception)
         {
@@ -112,9 +111,9 @@ internal static class Program
 
     private static async Task<AllHtml> DownloadHtmlAsync(string indexUrl = @"http://weblogs.asp.net/dixin/linq-via-csharp")
     {
-        using WebClient indexClient = new() { Encoding = Encoding.UTF8 };
+        using HttpClient indexClient = new();
         Trace.WriteLine(Invariant($"Downloading {indexUrl}."));
-        CQ indexPageCq = await indexClient.DownloadStringTaskAsync(indexUrl);
+        CQ indexPageCq = await indexClient.GetStringAsync(indexUrl, Encoding.UTF8);
 
         CQ indexContentCq = indexPageCq["article.blog-post"];
         (string Title, List<(string Title, CQ Content)> Sections)[] chapters = await Task.WhenAll(indexContentCq
@@ -135,11 +134,11 @@ internal static class Program
                         string articleTitle = articleLinkCq.Text().Trim();
 
                         Trace.WriteLine(Invariant($"Downloading [{articleTitle}] {articleUri}."));
-                        using WebClient articleClient = new() { Encoding = Encoding.UTF8 };
+                        using HttpClient articleClient = new();
                         CQ articleCq;
                         try
                         {
-                            articleCq = await articleClient.DownloadStringTaskAsync(articleUri);
+                            articleCq = await articleClient.GetStringAsync(articleUri, Encoding.UTF8);
                         }
                         catch (Exception exception)
                         {

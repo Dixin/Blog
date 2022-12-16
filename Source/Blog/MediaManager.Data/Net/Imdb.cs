@@ -13,8 +13,8 @@ internal static class Imdb
     internal static async Task<(ImdbMetadata ImdbMetadata, string ImdbUrl, string ImdbHtml, string ReleaseUrl, string ReleaseHtml, string KeywordsUrl, string KeywordsHtml, string AdvisoriesUrl, string AdvisoriesHtml, string ParentImdbUrl, string ParentImdbHtml, string ParentReleaseUrl, string ParentReleaseHtml, string ParentKeywordsUrl, string parentKeywordsHtml, string ParentAdvisoriesUrl, string ParentAdvisoriesHtml)> DownloadAsync(
         string imdbId, string imdbFile, string releaseFile, string keywordsFile, string advisoriesFile, string parentImdbFile, string parentReleaseFile, string parentKeywordsFile, string parentAdvisoriesFile, IWebDriver? webDriver = null)
     {
-        using WebClient? webClient = webDriver is null ? new() { Encoding = Encoding.UTF8 } : null;
-        webClient?.AddChromeHeaders();
+        using HttpClient? httpClient = webDriver is null ? new() : null;
+        httpClient?.AddEdgeHeaders();
 
         string imdbUrl = $"https://www.imdb.com/title/{imdbId}/";
         string imdbHtml = File.Exists(imdbFile)
@@ -23,13 +23,12 @@ internal static class Imdb
             {
                 if (webDriver is not null)
                 {
-                    webDriver.Url = imdbUrl;
-                    return webDriver.PageSource;
+                    return await webDriver.GetStringAsync(imdbUrl);
                 }
 
-                if (webClient is not null)
+                if (httpClient is not null)
                 {
-                    return await webClient.DownloadCompressedStringAsync(imdbUrl);
+                    return await httpClient.GetStringAsync(imdbUrl);
                 }
 
                 throw new InvalidOperationException();
@@ -173,7 +172,7 @@ internal static class Imdb
         string releaseUrl = $"{imdbUrl}releaseinfo";
         string releaseHtml = File.Exists(releaseFile)
             ? await File.ReadAllTextAsync(releaseFile)
-            : await Retry.FixedIntervalAsync(async () => webDriver is not null ? await webDriver.DownloadStringAsync(releaseUrl) : await webClient!.DownloadStringTaskAsync(releaseUrl), retryCount: 10);
+            : await Retry.FixedIntervalAsync(async () => webDriver is not null ? await webDriver.GetStringAsync(releaseUrl) : await httpClient!.GetStringAsync(releaseUrl), retryCount: 10);
         CQ releaseCQ = releaseHtml;
         CQ allTitlesCQ = releaseCQ.Find("#akas").Next();
         (string TitleKey, string TitleValue)[] allTitles = allTitlesCQ
@@ -370,14 +369,14 @@ internal static class Imdb
         string keywordsUrl = $"{imdbUrl}keywords";
         string keywordsHtml = File.Exists(keywordsFile)
             ? await File.ReadAllTextAsync(keywordsFile)
-            : await Retry.FixedIntervalAsync(async () => webDriver is not null ? await webDriver.DownloadStringAsync(keywordsUrl) : await webClient!.DownloadStringTaskAsync(keywordsUrl), retryCount: 10);
+            : await Retry.FixedIntervalAsync(async () => webDriver is not null ? await webDriver.GetStringAsync(keywordsUrl) : await httpClient!.GetStringAsync(keywordsUrl), retryCount: 10);
         CQ keywordsCQ = keywordsHtml;
         string[] allKeywords = keywordsCQ.Find("#keywords_content table td div.sodatext a").Select(keyword => keyword.TextContent.Trim()).ToArray();
 
         string advisoriesUrl = $"{imdbUrl}parentalguide";
         string advisoriesHtml = File.Exists(advisoriesFile)
             ? await File.ReadAllTextAsync(advisoriesFile)
-            : await Retry.FixedIntervalAsync(async () => webDriver is not null ? await webDriver.DownloadStringAsync(advisoriesUrl) : await webClient!.DownloadStringTaskAsync(advisoriesUrl), retryCount: 10);
+            : await Retry.FixedIntervalAsync(async () => webDriver is not null ? await webDriver.GetStringAsync(advisoriesUrl) : await httpClient!.GetStringAsync(advisoriesUrl), retryCount: 10);
         CQ parentalGuideCQ = advisoriesHtml;
         string mpaaRating = parentalGuideCQ.Find("#mpaa-rating td").Last().Text().Trim();
         ImdbAdvisory[] advisories = parentalGuideCQ
@@ -457,7 +456,7 @@ internal static class Imdb
         return true;
     }
 
-    internal static bool TryGet(string path, [NotNullWhen(true)] out string? file)
+    internal static bool TryGet(string? path, [NotNullWhen(true)] out string? file)
     {
         if (Directory.Exists(path))
         {
@@ -466,7 +465,7 @@ internal static class Imdb
             return file.IsNotNullOrWhiteSpace();
         }
 
-        if (path.EndsWith(Video.ImdbMetadataExtension) && File.Exists(path))
+        if (path.IsNotNullOrWhiteSpace() && path.EndsWith(Video.ImdbMetadataExtension) && File.Exists(path))
         {
             file = path;
             Debug.Assert(file.IsNullOrWhiteSpace() || Path.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.SubtitleSeparator) || Path.GetFileNameWithoutExtension(file).Split(Video.SubtitleSeparator).Length == 5);
@@ -477,7 +476,7 @@ internal static class Imdb
         return false;
     }
 
-    internal static bool TryLoad(string path, [NotNullWhen(true)] out ImdbMetadata? imdbMetadata)
+    internal static bool TryLoad(string? path, [NotNullWhen(true)] out ImdbMetadata? imdbMetadata)
     {
         if (TryGet(path, out string? file) && !Path.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.NotExistingFlag))
         {
@@ -516,7 +515,6 @@ internal static class Imdb
                     .Select(match => match.Groups[1].Value)))
             .Order()
             .ToArray();
-        imdbIds = imdbIds.Take(..(imdbIds.Length / 3)).ToArray();
         int length = imdbIds.Length;
         await imdbIds
             .Except(metadataFiles.Select(file => Path.GetFileNameWithoutExtension(file).Split("-").First()))
@@ -533,5 +531,4 @@ internal static class Imdb
                 }
             });
     }
-
 }
