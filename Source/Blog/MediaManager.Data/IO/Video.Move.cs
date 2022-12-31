@@ -134,15 +134,13 @@ internal static partial class Video
             });
     }
 
-    internal static void RenameVideosWithDefinition(string directory, SearchOption searchOption = SearchOption.TopDirectoryOnly, bool isDryRun = false, Action<string>? log = null)
-    {
+    internal static void RenameVideosWithDefinition(string directory, SearchOption searchOption = SearchOption.TopDirectoryOnly, bool isDryRun = false, Action<string>? log = null) =>
         RenameVideosWithDefinition(
             Directory.GetFiles(directory, PathHelper.AllSearchPattern, searchOption)
                 .Where(file => AllVideoExtensions.Any(file.EndsWithIgnoreCase))
                 .ToArray(),
             isDryRun,
             log);
-    }
 
     internal static void RenameVideosWithDefinition(string[] files, bool isDryRun = false, Action<string>? log = null)
     {
@@ -281,8 +279,8 @@ internal static partial class Video
                     TranslatedTitle1: translatedTitle.FilterForFileSystem().ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " ").ReplaceIgnoreCase("：", "-"), TranslatedTitle2: string.Empty, TranslatedTitle3: string.Empty, TranslatedTitle4: string.Empty,
                     AggregateRating: rating, AggregateRatingCount: ratingCount,
                     ContentRating: contentRating,
-                    Resolution: VideoDirectoryInfo.GetResolution(videoFileInfos),
-                    Source: VideoDirectoryInfo.GetSource(videoFileInfos),
+                    Resolution: isTV ? string.Empty : VideoDirectoryInfo.GetResolution(videoFileInfos),
+                    Source: isTV ? string.Empty : VideoDirectoryInfo.GetSource(videoFileInfos),
                     Is3D: string.Empty,
                     Hdr: string.Empty
                 );

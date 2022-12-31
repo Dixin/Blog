@@ -30,6 +30,13 @@ public static class EnumerableExtensions
 
     private static readonly int DefaultMaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 512);
 
+    public static void ParallelForEach<T>(
+        this IEnumerable<T> source, Action<T, long> asyncAction, int? maxDegreeOfParallelism = null) =>
+        Parallel.ForEach(
+            source,
+            new ParallelOptions() { MaxDegreeOfParallelism = maxDegreeOfParallelism ?? DefaultMaxDegreeOfParallelism },
+            (value, _, index) => asyncAction(value, index));
+
     public static Task ParallelForEachAsync<T>(
         this IEnumerable<T> source, Func<T, int, ValueTask> asyncAction, int? maxDegreeOfParallelism = null)
     {

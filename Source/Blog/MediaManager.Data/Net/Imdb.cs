@@ -20,22 +20,16 @@ internal static class Imdb
         string imdbHtml = File.Exists(imdbFile)
             ? await File.ReadAllTextAsync(imdbFile)
             : await Retry.FixedIntervalAsync(async () =>
-            {
-                if (webDriver is not null)
-                {
-                    return await webDriver.GetStringAsync(imdbUrl);
-                }
-
-                if (httpClient is not null)
-                {
-                    return await httpClient.GetStringAsync(imdbUrl);
-                }
-
-                throw new InvalidOperationException();
-            }, retryCount: 10);
+                webDriver is not null ? await webDriver.GetStringAsync(imdbUrl) : await httpClient!.GetStringAsync(imdbUrl),
+                retryCount: 10);
         CQ imdbCQ = imdbHtml;
         string json = imdbCQ.Find(@"script[type=""application/ld+json""]").Text();
-        if (imdbCQ.Find("title").Text().StartsWithIgnoreCase("404 Error"))
+        if (imdbCQ.Find("title").Text().Trim().StartsWithIgnoreCase("500 Error"))
+        {
+            throw new ArgumentException(nameof(imdbId));
+        }
+
+        if (imdbCQ.Find("title").Text().Trim().StartsWithIgnoreCase("404 Error"))
         {
             throw new ArgumentOutOfRangeException(nameof(imdbId));
         }
@@ -490,7 +484,7 @@ internal static class Imdb
         return false;
     }
 
-    internal static async Task DownloadAllAsync(string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, string rareJsonPath, string cacheDirectory, string metadataDirectory, Action<string> log)
+    internal static async Task DownloadAllMoviesAsync(string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, string rareJsonPath, string cacheDirectory, string metadataDirectory, Action<string> log)
     {
         Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(libraryJsonPath))!;
         Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
@@ -526,6 +520,47 @@ internal static class Imdb
                     await Video.DownloadImdbMetadataAsync(imdbId, cacheDirectory, metadataDirectory, cacheFiles, metadataFiles, webDriver, false, true, log);
                 }
                 catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
+                {
+                    log($"!!!{imdbId}");
+                }
+                catch (ArgumentException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
+                {
+                    log($"!!!{imdbId}");
+                }
+            });
+    }
+
+    internal static async Task DownloadAllTVsAsync(string x265JsonPath, string tvDirectory, string cacheDirectory, string metadataDirectory, Action<string> log)
+    {
+        Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
+        string[] libraryImdbIds = Directory.EnumerateFiles(tvDirectory, Video.ImdbMetadataSearchPattern, SearchOption.AllDirectories)
+            .Select(file => TryGet(file, out string? imdbId, out _, out _, out _, out _) ? imdbId : string.Empty)
+            .Where(imdbId => imdbId.IsNotNullOrWhiteSpace())
+            .ToArray();
+
+        using IWebDriver webDriver = WebDriverHelper.StartEdge();
+        string[] cacheFiles = Directory.GetFiles(@cacheDirectory);
+        string[] metadataFiles = Directory.GetFiles(metadataDirectory);
+        string[] imdbIds = x265Metadata.Keys
+            .Distinct()
+            .Except(libraryImdbIds)
+            .Order()
+            .ToArray();
+        int length = imdbIds.Length;
+        await imdbIds
+            .Except(metadataFiles.Select(file => Path.GetFileNameWithoutExtension(file).Split("-").First()))
+            .ForEachAsync(async (imdbId, index) =>
+            {
+                log($"{index * 100 / length}% - {index}/{length} - {imdbId}");
+                try
+                {
+                    await Video.DownloadImdbMetadataAsync(imdbId, cacheDirectory, metadataDirectory, cacheFiles, metadataFiles, webDriver, false, true, log);
+                }
+                catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
+                {
+                    log($"!!!{imdbId}");
+                }
+                catch (ArgumentException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
                 {
                     log($"!!!{imdbId}");
                 }

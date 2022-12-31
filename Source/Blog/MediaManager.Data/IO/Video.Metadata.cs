@@ -5,11 +5,11 @@ using Examples.Net;
 
 internal static partial class Video
 {
-    internal static void BackupMetadata(string directory, string flag = DefaultBackupFlag)
+    internal static void BackupMetadata(string directory, string flag = DefaultBackupFlag, bool overwrite = false)
     {
         Directory
             .GetFiles(directory, XmlMetadataSearchPattern, SearchOption.AllDirectories)
-            .ForEach(metadata => File.Copy(metadata, PathHelper.AddFilePostfix(metadata, $"{Delimiter}{flag}")));
+            .ForEach(metadata => File.Copy(metadata, PathHelper.AddFilePostfix(metadata, $"{Delimiter}{flag}"), overwrite));
     }
 
     internal static void RestoreMetadata(string directory, string flag = DefaultBackupFlag)

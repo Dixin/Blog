@@ -27,7 +27,7 @@ internal static class Rare
             .Select(link => link.GetAttribute("href"))
             .ToArray();
         int linkCount = links.Length;
-
+        log($"Total: {linkCount}");
         ConcurrentDictionary<string, RareMetadata> rareMetadata = new();
         await links.ParallelForEachAsync(async (link, index) =>
         {
@@ -40,7 +40,7 @@ internal static class Rare
                 string title = rareArticleCQ.Find("h1").Text().Trim();
                 log($"{Math.Round((decimal)index * 100 / linkCount)}% {index}/{linkCount} {title} {link}");
                 rareMetadata[link] = new RareMetadata(title,
-                    rareArticleCQ.Find("div.entry-content").Html());
+                    rareArticleCQ.Html());
             }
             catch (Exception exception) when (exception.IsNotCritical())
             {
@@ -57,10 +57,10 @@ internal static class Rare
         string jsonString = JsonSerializer.Serialize(rareMetadata, new JsonSerializerOptions() { WriteIndented = true });
         await FileHelper.SaveAndReplaceAsync(rareJsonPath, jsonString, null, SaveJsonLock);
 
-        await PrintVersions(rareMetadata, libraryJsonPath, x265JsonPath, h264JsonPath, ytsJsonPath, h264720PJsonPath, log);
+        await PrintVersionsAsync(rareMetadata, libraryJsonPath, x265JsonPath, h264JsonPath, ytsJsonPath, h264720PJsonPath, log);
     }
 
-    internal static async Task PrintVersions(IDictionary<string, RareMetadata> rareMetadata, string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, Action<string> log)
+    internal static async Task PrintVersionsAsync(IDictionary<string, RareMetadata> rareMetadata, string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, Action<string> log, params string[] categories)
     {
         Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(libraryJsonPath))!;
         Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
@@ -68,17 +68,20 @@ internal static class Rare
         Dictionary<string, YtsMetadata[]> ytsMetadata = JsonSerializer.Deserialize<Dictionary<string, YtsMetadata[]>>(await File.ReadAllTextAsync(ytsJsonPath))!;
         Dictionary<string, RarbgMetadata[]> h264720PMetadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264720PJsonPath))!;
 
-        using IWebDriver webDriver = WebDriverHelper.StartEdge();
-        string[] cacheFiles = Directory.GetFiles(@"D:\Files\Library\ImdbCache");
-        string[] metadataFiles = Directory.GetFiles(@"D:\Files\Library\ImdbMetadata");
-        (string Link, string Title, string Value)[] imdbIds = rareMetadata
+        string[] cacheFiles = Directory.GetFiles(@"D:\Files\Library\MetadataCache");
+        string[] metadataFiles = Directory.GetFiles(@"D:\Files\Library\Metadata");
+        (string Link, string Title, string Value, string[] Categories)[] imdbIds = rareMetadata
+            .AsParallel()
             .SelectMany(rare => Regex
                 .Matches(rare.Value.Content, @"imdb\.com/title/(tt[0-9]+)")
                 .Where(match => match.Success)
-                .Select(match => (Link: rare.Key, rare.Value.Title, match.Groups[1].Value)))
+                .Select(match => (rare.Key, rare.Value.Title, match.Groups[1].Value, Categories: new CQ(rare.Value.Content).Find("span.bl_categ a").Select(category => category.Cq().Text().Trim()).ToArray())))
+            .Where(imdbId => imdbId.Value.IsNotNullOrWhiteSpace() && imdbId.Categories.Intersect(categories, StringComparer.OrdinalIgnoreCase).Any())
+            .AsSequential()
             .Distinct(imdbId => imdbId.Value)
             .ToArray();
         int length = imdbIds.Length;
+        using IWebDriver webDriver = WebDriverHelper.StartEdge();
         await imdbIds
             .OrderBy(imdbId => imdbId.Value)
             .ForEachAsync(async (imdbId, index) =>
@@ -265,9 +268,9 @@ internal static class Rare
             });
     }
 
-    internal static async Task PrintVersions(string rareJsonPath, string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, Action<string> log)
+    internal static async Task PrintVersionsAsync(string rareJsonPath, string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, Action<string> log)
     {
         Dictionary<string, RareMetadata> rareMetadata = JsonSerializer.Deserialize<Dictionary<string, RareMetadata>>(await File.ReadAllTextAsync(rareJsonPath))!;
-        await PrintVersions(rareMetadata, libraryJsonPath, x265JsonPath, h264JsonPath, ytsJsonPath, h264720PJsonPath, log);
+        await PrintVersionsAsync(rareMetadata, libraryJsonPath, x265JsonPath, h264JsonPath, ytsJsonPath, h264720PJsonPath, log);
     }
 }

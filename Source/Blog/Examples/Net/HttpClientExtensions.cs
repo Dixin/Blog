@@ -36,12 +36,9 @@ public static class HttpClientExtensions
 
         using HttpResponseMessage response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellation);
         response.EnsureSuccessStatusCode();
-        await using Stream stream = await response.Content.ReadAsStreamAsync(cancellation);
         await using FileStream fileStream = File.OpenWrite(file);
         await response.Content.CopyToAsync(fileStream, cancellation);
     }
-
-
 
     public static async Task<string> GetStringAsync(this HttpClient httpClient, string url, Encoding? encoding = null, CancellationToken cancellation = default)
     {

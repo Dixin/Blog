@@ -94,7 +94,7 @@ internal static class Yts
                 {
                     string html = await Retry.FixedIntervalAsync(
                         async () => await webClient.GetStringAsync(summary.Link),
-                        isTransient: exception => exception is not WebException { Response: HttpWebResponse { StatusCode: HttpStatusCode.NotFound } });
+                        isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound });
                     CQ cq = new(html);
                     CQ info = cq.Find("#movie-info");
                     YtsMetadata detail = new(
