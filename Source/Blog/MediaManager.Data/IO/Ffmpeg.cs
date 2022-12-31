@@ -65,14 +65,29 @@ internal class FfmpegHelper
             sampleDuration = string.Empty;
         }
 
-
         if (output.IsNullOrWhiteSpace())
         {
-            output = PathHelper.AddFilePostfix(input, ".ffmpeg");
+            output = input;
+            const string Postfix = ".ffmpeg";
+            if (!Path.GetFileNameWithoutExtension(output).EndsWithIgnoreCase(Postfix))
+            {
+                output = PathHelper.AddFilePostfix(output, Postfix);
+            }
+
             output = PathHelper.ReplaceExtension(output, Video.VideoExtension);
         }
 
-        string audio = videoMetadata.AudioBitRates.All(audioBitRate => audioBitRate > 260_000) ? "aac -ar 48000 -b:a 256k -ac" : "copy";
+        if (output.EqualsIgnoreCase(input))
+        {
+            throw new InvalidOperationException($"Input and output are the same: {input}.");
+        }
+
+        if (!overwrite && File.Exists(output))
+        {
+            throw new InvalidOperationException($"Output exists: {output}.");
+        }
+
+        string audio = videoMetadata.AudioBitRates.All(audioBitRate => audioBitRate > 260_000) ? "aac -ar 48000 -b:a 256k -ac 6" : "copy";
         string videoFilter = videoFilters.Any() ? $" -filter:v {string.Join(",", videoFilters)}" : string.Empty;
 
         ProcessHelper.StartAndWait(
