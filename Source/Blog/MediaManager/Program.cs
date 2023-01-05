@@ -1,6 +1,7 @@
 ﻿using Examples.Common;
 using Examples.IO;
 using Examples.Linq;
+using Examples.Net;
 using MediaManager;
 using Microsoft.Extensions.Configuration;
 using Xabe.FFmpeg;
@@ -17,9 +18,6 @@ AppDomainData.DataDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory
 //Trace.Listeners.Remove(traceListener);
 Trace.Listeners.Add(new ConsoleTraceListener());
 FFmpeg.SetExecutablesPath(settings.FfmpegDirectory);
-
-Action<string> log = x => Trace.WriteLine(x);
-log(typeof(Enumerable).Assembly.Location);
 
 //Video.PrintDirectoriesWithMultipleMedia(settings.MovieControversial.Directory);
 //Video.PrintDirectoriesWithMultipleMedia(settings.MovieMainstream.Directory);
@@ -171,12 +169,12 @@ log(typeof(Enumerable).Assembly.Location);
 //await Video.ConvertToUtf8Async(settings.LibraryDirectory);
 
 //Video.MoveSubtitleToParentDirectory(settings.MovieTemp.Directory);
-//await Video.SaveAllVideoMetadata(settings.MovieLibraryMetadata, null, 
-//    settings.MovieControversial.Directory, 
-//    settings.MovieMainstream.Directory, 
-//    settings.MovieMainstreamWithoutSubtitle.Directory, 
-//    settings.MovieMusical.Directory, 
-//    settings.MovieTemp.Directory, 
+//await Video.SaveAllVideoMetadata(settings.MovieLibraryMetadata, null,
+//    settings.MovieControversial.Directory,
+//    settings.MovieMainstream.Directory,
+//    settings.MovieMainstreamWithoutSubtitle.Directory,
+//    settings.MovieMusical.Directory,
+//    settings.MovieTemp.Directory,
 //    @"E:\Files\Movies",
 //    @"Q:\Files");
 //await Video.SaveExternalVideoMetadataAsync(settings.MovieExternalMetadata, settings.MovieTemp.Directory);
@@ -195,11 +193,11 @@ log(typeof(Enumerable).Assembly.Location);
 //Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(settings.TVRarbgX265Metadata))!;
 //x265Metadata.Values.SelectMany(values=>values).OrderByDescending(meta=>meta.ImdbRating).ThenBy(meta=>meta.ImdbRating)
 
-//await Rarbg.DownloadMetadataAsync(settings.MovieRarbgX265Url, settings.MovieRarbgX265Metadata, log, index => index <= 5);
-//await Rarbg.DownloadMetadataAsync(settings.MovieRarbgH264Url, settings.MovieRarbgH264Metadata, log, index => index <= 20);
-//await Rarbg.DownloadMetadataAsync(settings.MovieRarbgH264720PUrl, settings.MovieRarbgH264720PMetadata, log, index => index <= 10);
-//await Rarbg.DownloadMetadataAsync(settings.TVRarbgX265Url, settings.TVRarbgX265Metadata, log, index => index <= 5);
-//await Yts.DownloadMetadataAsync(settings.MovieYtsUrl, settings.MovieYtsSummary, settings.MovieYtsMetadata, log, index => index <= 10);
+//await Rarbg.DownloadMetadataAsync(settings.MovieRarbgX265Url, settings.MovieRarbgX265Metadata, index => index <= 5);
+//await Rarbg.DownloadMetadataAsync(settings.MovieRarbgH264Url, settings.MovieRarbgH264Metadata, index => index <= 20);
+//await Rarbg.DownloadMetadataAsync(settings.MovieRarbgH264720PUrl, settings.MovieRarbgH264720PMetadata, index => index <= 10);
+//await Rarbg.DownloadMetadataAsync(settings.TVRarbgX265Url, settings.TVRarbgX265Metadata, index => index <= 5);
+//await Yts.DownloadMetadataAsync(settings.MovieYtsUrl, settings.MovieYtsSummary, settings.MovieYtsMetadata, index => index <= 10);
 //await Video.PrintMovieVersions(settings.MovieRarbgX265Metadata, settings.MovieRarbgH264Metadata, settings.MovieYtsMetadata, settings.MovieRarbgH264720PMetadata, settings.MovieIgnoreMetadata, null,
 //    settings.MovieMainstream,
 //    settings.MovieControversial,
@@ -213,9 +211,11 @@ log(typeof(Enumerable).Assembly.Location);
 //    settings.TVControversial,
 //    settings.TVDocumentary,
 //    settings.TVMainstream,
-//    settings.TVTemp);
-//await Imdb.DownloadAllMoviesAsync(settings.MovieLibraryMetadata, settings.MovieRarbgX265Metadata, settings.MovieRarbgH264Metadata, settings.MovieYtsMetadata, settings.MovieRarbgH264720PMetadata, @"D:\Files\Library\Movie.RareMetadata.json", @"D:\Files\Library\MetadataCache", @"D:\Files\Library\Metadata", log);
-//await Imdb.DownloadAllTVsAsync(settings.TVRarbgX265Metadata, settings.TVMainstream.Directory, @"D:\Files\Library\TVMetadata", @"D:\Files\Library\TVMetadataCache", log);
+//    settings.TVTemp,
+//    (@"E:\Files\TV.Encode.480p", 1),
+//    (@"E:\Files\TV.Encode.1080p", 1));
+//await Imdb.DownloadAllMoviesAsync(settings.MovieLibraryMetadata, settings.MovieRarbgX265Metadata, settings.MovieRarbgH264Metadata, settings.MovieYtsMetadata, settings.MovieRarbgH264720PMetadata, @"D:\Files\Library\Movie.RareMetadata.json", @"D:\Files\Library\MetadataCache", @"D:\Files\Library\Metadata");
+//await Imdb.DownloadAllTVsAsync(settings.TVRarbgX265Metadata, settings.TVMainstream.Directory, @"D:\Files\Library\TVMetadata", @"D:\Files\Library\TVMetadataCache");
 //await Video.PrintTVLinks(settings.TVRarbgX265Metadata, settings.TVMainstream.Directory, @"D:\Files\Library\TVMetadata", @"D:\Files\Library\TVMetadataCache", true);
 
 //await Video.PrintLinksAsync(settings.MovieLibraryMetadata, settings.MovieRarbgX265Metadata, settings.MovieRarbgH264Metadata, settings.MovieYtsMetadata, settings.MovieRarbgH264720PMetadata, @"D:\Files\Library\Movie.RareMetadata.json", @"D:\Files\Library\MetadataCache", @"D:\Files\Library\Metadata", log);
@@ -302,11 +302,9 @@ log(typeof(Enumerable).Assembly.Location);
 
 //Video.PrintDirectoriesWithErrors(settings.MovieMusical.Directory);
 
-static void TraceLog(string? message) => Trace.WriteLine(message);
-
 static void RenameEpisode(string mediaDirectory, string metadataDirectory, bool isDryRun = false, Action<string>? log = null)
 {
-    log ??= TraceLog;
+    log ??= Logger.WriteLine;
 
     string[] tvs = Directory.EnumerateDirectories(mediaDirectory)
         .Where(tv => VideoDirectoryInfo.TryParse(tv, out _))
@@ -383,7 +381,7 @@ static void RenameEpisode(string mediaDirectory, string metadataDirectory, bool 
     //tvs.ForEach(tv => Video.MoveSubtitlesForEpisodes(tv, Path.Combine(metadataDirectory, Path.GetFileName(tv)), isDryRun: isDryRun, log: log));
 }
 
-//Video.MoveRarbgTVEpisodes(@"N:\Files\Library\Dubbed", @"E:\Files\TV.Subtitle");
+//Video.MoveRarbgTVEpisodes(@"E:\Files\Move\New folder", @"E:\Files\TV.Subtitle");
 //Video.FormatTV(
 //    @"N:\Files\Library\Delete",
 //    @"N:\Files\Library\Delete",
@@ -398,7 +396,7 @@ static void RenameFilesWithDuplicateTitle(
     bool isDryRun = false,
     Action<string>? log = null)
 {
-    log ??= TraceLog;
+    log ??= Logger.WriteLine;
 
     (string Path, string Number)[] files = Directory.GetFiles(directory, PathHelper.AllSearchPattern, searchOption)
         .Select(file => (file, Regex.Match(Path.GetFileNameWithoutExtension(file), @"\.S\d+E\d+")))
@@ -476,9 +474,12 @@ static void RenameFilesWithDuplicateTitle(
 //        log(string.Empty);
 //    });
 //await Entry.DownloadMetadataAsync("http://hotxshare.com", 1, 238, @"D:\Files\Library\Movie.EntryMetadata.json", settings.MovieLibraryMetadata, settings.MovieRarbgX265Metadata, settings.MovieRarbgH264Metadata, settings.MovieYtsMetadata, settings.MovieRarbgH264720PMetadata, log);
-Parallel.ForEach(
-    Directory.GetFiles(@"E:\Files\Movies\Encode.720p", "*", SearchOption.AllDirectories).Where(Video.IsVideo), 
-    f => FfmpegHelper.Encode(f, estimateCrop: null, overwrite: false));
+//Parallel.ForEach(
+//    Directory.EnumerateFiles(@"E:\Files\TV.Encode.480p\Co Ed Confidential.2007.男女机密[6.5-787][TVMA]", "*.mkv", SearchOption.AllDirectories)
+//        .Where(Video.IsVideo)
+//        .ToArray(),
+//    new ParallelOptions() { MaxDegreeOfParallelism = 4 },
+//    f => FfmpegHelper.Encode(f, estimateCrop: null, overwrite: false, log: log));
 //Video.PrintMoviesWithoutSubtitle(@"E:\Files\Movies", 2, null, "eng");
 //Video.MoveAllSubtitles(@"S:\Files\Library\Movies Temp", @"S:\Files\Library\Movies Temp.Subs");
 //string[] files = Directory.EnumerateFiles(@"D:\Files\Library\MetadataCache").Order().ToArray();
@@ -533,7 +534,7 @@ Parallel.ForEach(
 //    string name = Path.GetFileName(original).Replace(".POLISH.", ".DUBBED.");
 //    return Path.Combine(@"U:\Move\Glitter\Season 01", name);
 //}*/);
-//Video.RenameFiles(@"E:\Files\TV\Bordertown.2016.S01.FINNISH.1080p.BluRay.x264-BRAVERY[rartv]", (f, i) => f.Replace(".BluRay", ".BluRay-BRAVERY").Replace("bravery-bordertown.s", "Bordertown.S").Replace("e0", "E0"), isDryRun:false);
+//Video.RenameFiles(@"N:\Files\", (f, i) => f.Replace("-RARBG", "-RARBG.2Audio"), isDryRun: false);
 //await Rare.PrintVersionsAsync(@"D:\Files\Library\Movie.RareMetadata.json", settings.MovieLibraryMetadata, settings.MovieRarbgX265Metadata, settings.MovieRarbgH264720PMetadata, settings.MovieYtsMetadata, settings.MovieRarbgH264720PMetadata, log);
 //await Rare.DownloadMetadataAsync(
 //    "https://rarelust.com/movies-index/", 
