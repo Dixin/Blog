@@ -44,8 +44,8 @@ internal static class Music
                 }
             };
             // Redirect the output stream of the child process.
-            ffmpeg.OutputDataReceived += (sender, e) => Console.WriteLine(e.Data);
-            ffmpeg.ErrorDataReceived += (sender, e) => Console.WriteLine(e.Data);
+            ffmpeg.OutputDataReceived += (sender, e) => Logger.WriteLine(e.Data);
+            ffmpeg.ErrorDataReceived += (sender, e) => Logger.WriteLine(e.Data);
             ffmpeg.Start();
             ffmpeg.BeginErrorReadLine();
             ffmpeg.BeginOutputReadLine();
@@ -71,7 +71,7 @@ internal static class Music
                 }
                 catch (Exception exception)
                 {
-                    Console.WriteLine(album + " " + exception);
+                    Logger.WriteLine(album + " " + exception);
                 }
             });
     }
@@ -239,7 +239,7 @@ internal static class Music
             .Where(song => IsMusicFile(song.Extension) && IsNotFormatted(song.Name))
             .ForEach(song =>
             {
-                Trace.WriteLine(song.Name);
+                Logger.WriteLine(song.Name);
                 hasError = true;
             });
 
@@ -286,7 +286,7 @@ internal static class Music
             .Where(song => IsMusicFile(song.Extension) && IsNotFormatted(song.Name))
             .ForEach(song =>
             {
-                Trace.WriteLine(song.Name);
+                Logger.WriteLine(song.Name);
                 hasError = true;
             });
 
@@ -304,7 +304,7 @@ internal static class Music
                     .Where(song => IsMusicFile(song.Extension));
                 if (songs.IsEmpty())
                 {
-                    Trace.WriteLine(album.Name);
+                    Logger.WriteLine(album.Name);
                 }
                 else
                 {
@@ -315,7 +315,7 @@ internal static class Music
                     string genre = names[5];
                     if (albumName.IsNullOrWhiteSpace() || year.IsNullOrWhiteSpace() || artistName.IsNullOrWhiteSpace())
                     {
-                        Trace.WriteLine(album.Name);
+                        Logger.WriteLine(album.Name);
                     }
                     else
                     {

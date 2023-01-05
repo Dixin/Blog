@@ -10,8 +10,10 @@ internal static class Yts
 {
     private const int SaveFrequency = 100;
 
-    internal static async Task DownloadSummariesAsync(string baseUrl, string jsonPath, Action<string> log, Func<int, bool>? @continue = null, int index = 1)
+    internal static async Task DownloadSummariesAsync(string baseUrl, string jsonPath, Func<int, bool>? @continue = null, int index = 1, Action<string>? log = null)
     {
+        log ??= Logger.WriteLine;
+
         @continue ??= _ => true;
         Dictionary<string, YtsSummary> allSummaries = File.Exists(jsonPath)
             ? JsonSerializer.Deserialize<Dictionary<string, YtsSummary>>(await File.ReadAllTextAsync(jsonPath)) ?? throw new InvalidOperationException(jsonPath)
@@ -63,21 +65,23 @@ internal static class Yts
         await FileHelper.SaveAndReplaceAsync(jsonPath, finalJsonString, null, SaveJsonLock);
     }
 
-    internal static async Task DownloadMetadataAsync(string baseUrl, string summaryJsonPath, string metadataJsonPath, Action<string> log, Func<int, bool>? @continue = null, int index = 1, int degreeOfParallelism = 4)
+    internal static async Task DownloadMetadataAsync(string baseUrl, string summaryJsonPath, string metadataJsonPath, Func<int, bool>? @continue = null, int index = 1, int degreeOfParallelism = 4, Action<string>? log = null)
     {
-        await DownloadSummariesAsync(baseUrl, summaryJsonPath, log, @continue, index);
-        await DownloadMetadataAsync(summaryJsonPath, metadataJsonPath, log, degreeOfParallelism);
+        await DownloadSummariesAsync(baseUrl, summaryJsonPath, @continue, index, log);
+        await DownloadMetadataAsync(summaryJsonPath, metadataJsonPath, degreeOfParallelism, log);
     }
 
-    internal static async Task DownloadMetadataAsync(string summaryJsonPath, string metadataJsonPath, Action<string> log, int degreeOfParallelism = 4)
+    internal static async Task DownloadMetadataAsync(string summaryJsonPath, string metadataJsonPath, int degreeOfParallelism = 4, Action<string>? log = null)
     {
+        log ??= Logger.WriteLine;
+        
         string summaryJsonString = await File.ReadAllTextAsync(summaryJsonPath);
         Dictionary<string, YtsSummary> summaries = JsonSerializer.Deserialize<Dictionary<string, YtsSummary>>(summaryJsonString) ?? throw new InvalidOperationException(summaryJsonPath);
 
         ConcurrentDictionary<string, YtsMetadata[]> details = File.Exists(metadataJsonPath)
             ? new(JsonSerializer.Deserialize<Dictionary<string, YtsMetadata[]>>(await File.ReadAllTextAsync(metadataJsonPath)) ?? throw new InvalidOperationException(metadataJsonPath))
             : new();
-        Dictionary<string, YtsMetadata> existingMetadataByLink = details.Values.SelectMany(details => details).ToDictionary(detail => detail.Link, detail => detail);
+        Dictionary<string, YtsMetadata> existingMetadataByLink = details.Values.SelectMany(detailMetadata => detailMetadata).ToDictionary(detail => detail.Link, detail => detail);
 
         int count = 1;
         await summaries
@@ -159,7 +163,7 @@ internal static class Yts
                 {
                     try
                     {
-                        string imdbId = Path.GetFileName(uri?.LocalPath?.TrimEnd('/')) ?? string.Empty;
+                        string imdbId = Path.GetFileName(uri.LocalPath.TrimEnd('/'));
                         if (!Regex.IsMatch(imdbId, @"tt[0-9]+"))
                         {
                             log($"Invalid IMDB Id: {file}, {url}.");

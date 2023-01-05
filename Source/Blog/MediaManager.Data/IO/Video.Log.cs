@@ -26,7 +26,7 @@ internal static partial class Video
 
     private static void PrintVideosWithErrors(IEnumerable<string> files, bool isNoAudioAllowed = false, Action<string>? is720 = null, Action<string>? is1080 = null, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         files
             .ToArray()
             .AsParallel()
@@ -53,7 +53,7 @@ internal static partial class Video
 
     internal static void PrintDirectoriesWithLowDefinition(string directory, int level = DefaultLevel, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
             .Where(movie => !VideoDirectoryInfo.GetVideos(movie).Any<IVideoFileInfo>(video => video.IsHD))
             .ForEach(log);
@@ -61,7 +61,7 @@ internal static partial class Video
 
     internal static void PrintDirectoriesWithMultipleMedia(string directory, int level = DefaultLevel, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
             .ForEach(movie =>
             {
@@ -89,7 +89,7 @@ internal static partial class Video
 
     private static void PrintVideos(string directory, int level, Func<string, bool> predicate, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
             .OrderBy(movie => movie)
             .ForEach(movie =>
@@ -108,7 +108,7 @@ internal static partial class Video
 
     internal static void PrintMoviesWithoutSubtitle(string directory, int level = DefaultLevel, Action<string>? log = null, params string[] languages)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         Func<string, bool> noSubtitle;
         if (languages.IsEmpty())
         {
@@ -135,7 +135,7 @@ internal static partial class Video
 
     internal static void PrintMetadataByGroup(string directory, int level = DefaultLevel, string field = "genre", Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
             .Select(movie => (movie, metadata: XDocument.Load(Directory.GetFiles(movie, XmlMetadataSearchPattern, SearchOption.TopDirectoryOnly).First())))
             .Select(movie => (movie.movie, field: movie.metadata.Root?.Element(field)?.Value))
@@ -145,7 +145,7 @@ internal static partial class Video
 
     internal static void PrintMetadataByDuplication(string directory, string field = "imdbid", Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         Directory.GetFiles(directory, XmlMetadataSearchPattern, SearchOption.AllDirectories)
             .Select(metadata => (metadata, field: XDocument.Load(metadata).Root?.Element(field)?.Value))
             .GroupBy(movie => movie.field)
@@ -155,7 +155,7 @@ internal static partial class Video
 
     internal static void PrintYears(string directory, int level = DefaultLevel, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
             .ToArray()
             .ForEach(movie =>
@@ -183,7 +183,7 @@ internal static partial class Video
 
     internal static void PrintDirectoriesWithNonLatinOriginalTitle(string directory, int level = DefaultLevel, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
             .Where(movie => movie.ContainsOrdinal("="))
             .Where(movie => !Regex.IsMatch(movie.Split("=")[1], "^[a-z]{1}.", RegexOptions.IgnoreCase))
@@ -192,7 +192,7 @@ internal static partial class Video
 
     internal static void PrintDuplicateImdbId(Action<string>? log = null, params string[] directories)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         directories.SelectMany(directory => Directory.EnumerateFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories))
             .GroupBy(metadata => Path.GetFileNameWithoutExtension(metadata).Split(".")[0])
             .Where(group => group.Count() > 1)
@@ -209,7 +209,7 @@ internal static partial class Video
 
     internal static void PrintDirectoriesWithErrors(string directory, int level = DefaultLevel, bool isLoadingVideo = false, bool isNoAudioAllowed = false, bool isTV = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         List<string>? allVideos = null;
         if (isLoadingVideo)
         {
@@ -544,7 +544,7 @@ internal static partial class Video
 
     internal static void PrintTitlesWithDifferences(string directory, int level = DefaultLevel, Action<string?>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
             .ForEach(movie =>
             {
@@ -625,7 +625,7 @@ internal static partial class Video
 
     internal static async Task PrintMovieVersions(string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, string ignoreJsonPath, Action<string>? log = null, params (string Directory, int Level)[] directories)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
         Dictionary<string, RarbgMetadata[]> h264Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
         Dictionary<string, RarbgMetadata[]> h264720PMetadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264720PJsonPath))!;
@@ -900,7 +900,7 @@ internal static partial class Video
 
     internal static async Task PrintTVVersions(string x265JsonPath, Action<string>? log = null, params (string Directory, int Level)[] directories)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
 
         directories
@@ -960,7 +960,7 @@ internal static partial class Video
 
     internal static async Task PrintSpecialTitles(string specialJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         string[] specialImdbIds = JsonSerializer.Deserialize<string[]>(await File.ReadAllTextAsync(specialJsonPath))!;
         Dictionary<string, RarbgMetadata[]> x265Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
         Dictionary<string, RarbgMetadata[]> h264Summaries = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
@@ -1010,7 +1010,7 @@ internal static partial class Video
     internal static async Task PrintHighRatingAsync(string x265JsonPath, string h264JsonPath, string ytsJsonPath,
         string threshold = "8.0", string[]? excludedGenres = null, Action<string>? log = null, params string[] directories)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         HashSet<string> existingImdbIds = new(
             directories.SelectMany(directory => Directory
                 .EnumerateFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories)
@@ -1084,7 +1084,7 @@ internal static partial class Video
 
     internal static void PrintDirectoryTitleMismatch(string directory, int level = DefaultLevel, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
             .ToArray()
             .ForEach(movie =>
@@ -1236,7 +1236,7 @@ internal static partial class Video
 
     internal static void PrintDirectoryOriginalTitleMismatch(string directory, int level = DefaultLevel, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
             .ToArray()
             .ForEach(movie =>
@@ -1353,7 +1353,7 @@ internal static partial class Video
 
     internal static void PrintMovieByGenre(string directory, string genre, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         Directory
             .GetFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories)
             .Select(file => (File: file, Metadata: Imdb.TryLoad(file, out ImdbMetadata? imdbMetadata) ? imdbMetadata : null))
@@ -1363,7 +1363,7 @@ internal static partial class Video
 
     internal static void PrintMovieRegionsWithErrors(Dictionary<string, string[]> allLocalRegions, Action<string>? log = null, params (string Directory, int Level)[] directories)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         directories
             .SelectMany(directory => EnumerateDirectories(directory.Directory, directory.Level - 1))
             .OrderBy(localRegionDirectory => localRegionDirectory)
@@ -1423,7 +1423,7 @@ internal static partial class Video
 
     internal static void PrintMovieWithoutTextSubtitle(Action<string>? log = null, params (string Directory, int Level)[] directories)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         directories
             .SelectMany(directory => EnumerateDirectories(directory.Directory, directory.Level))
             .ForEach(m =>
@@ -1441,7 +1441,7 @@ internal static partial class Video
 
     internal static async Task PrintMovieImdbIdErrorsAsync(string x265JsonPath, string h264JsonPath, /*string ytsJsonPath, string h264720PJsonPath,*/ Action<string>? log = null, params (string Directory, int Level)[] directories)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
         Dictionary<string, RarbgMetadata[]> h264Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
         //Dictionary<string, YtsMetadata[]> ytsMetadata = JsonSerializer.Deserialize<Dictionary<string, YtsMetadata[]>>(await File.ReadAllTextAsync(ytsJsonPath))!;
@@ -1539,7 +1539,7 @@ internal static partial class Video
 
     internal static void PrintNikkatsu(Action<string>? log = null, params (string Directory, int Level)[] directories)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         directories.SelectMany(directory => EnumerateDirectories(directory.Directory, directory.Level))
             .Where(movie => !Path.GetFileName(movie).StartsWithIgnoreCase("Nikkatsu") && !Path.GetFileName(movie).StartsWithIgnoreCase("Oniroku Dan") && !Path.GetFileName(movie).StartsWithIgnoreCase("Angel Guts"))
             .Select(movie => (movie, XDocument.Load(Directory.EnumerateFiles(movie, "*.nfo").First())))
@@ -1839,7 +1839,7 @@ internal static partial class Video
     }
     internal static async Task PrintTVLinks(string x265JsonPath, string tvDirectory, string metadataDirectory, string cacheDirectory, string initialUrl, bool isDryRun = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
         string[] keywords = { "female full frontal nudity", "vagina" };
         Dictionary<string, string> metadataFiles = Directory.EnumerateFiles(metadataDirectory).ToDictionary(file => Path.GetFileName(file).Split("-").First());

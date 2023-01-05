@@ -43,7 +43,7 @@ internal static partial class Video
 
     internal static void DeleteSubtitle(string directory, bool isDryRun = false, Action<string>? log = null, params string[] encodings)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         GetSubtitles(directory)
             .Where(result => encodings.Any(encoding => encoding.EqualsIgnoreCase(result.Charset)))
             .ForEach(result =>
@@ -58,7 +58,7 @@ internal static partial class Video
 
     internal static async Task ConvertToUtf8Async(string directory, bool backup = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         await GetSubtitles(directory)
             .Where(result =>
             {
@@ -132,7 +132,7 @@ internal static partial class Video
 
     internal static void MoveSubtitlesForEpisodes(string mediaDirectory, string subtitleDirectory, string mediaExtension = VideoExtension, bool overwrite = false, Func<string, string, string>? rename = null, bool isDryRun = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
 
         Directory
             .EnumerateFiles(mediaDirectory, $"{PathHelper.AllSearchPattern}{mediaExtension}", SearchOption.AllDirectories)
@@ -207,7 +207,7 @@ internal static partial class Video
 
     internal static void MoveSubtitleToParentDirectory(string directory, bool isDryRun = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         Directory
             .EnumerateFiles(directory, "*.idx", SearchOption.AllDirectories)
             .Concat(Directory.EnumerateFiles(directory, "*.sub", SearchOption.AllDirectories))
@@ -291,7 +291,7 @@ internal static partial class Video
 
     internal static async Task RenameSubtitlesByLanguageAsync(string directory, bool isDryRun = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         await ConvertToUtf8Async(directory, log: log);
         Directory.GetFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
             .Where(IsTextSubtitle)
@@ -337,7 +337,7 @@ internal static partial class Video
 
     internal static void PrintSubtitlesWithErrors(string directory, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         Directory.GetFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
             .Where(IsTextSubtitle)
             .ForEach(subtitle =>

@@ -54,8 +54,6 @@ internal static partial class Video
 
     internal const string FakeDefinition = ".FAKE";
 
-    private static void TraceLog(string? message) => Trace.WriteLine(message);
-
     private static readonly int IOMaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4);
 
     internal static string FilterForFileSystem(this string value)
@@ -67,7 +65,7 @@ internal static partial class Video
 
     internal static void DeletePictures(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
             .ForEach(movie =>
             {
@@ -82,7 +80,7 @@ internal static partial class Video
                     .Select(attachment => Path.Combine(movie, attachment))
                     .Where(File.Exists)
                     .Do(log)
-                    .Where(attachment => !isDryRun)
+                    .Where(_ => !isDryRun)
                     .ForEach(File.Delete);
             });
     }

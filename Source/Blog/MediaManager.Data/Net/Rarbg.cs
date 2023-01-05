@@ -1,7 +1,6 @@
 ﻿namespace Examples.Net;
 
 using System.Collections.ObjectModel;
-
 using CsQuery;
 using Examples.Common;
 using Examples.IO;
@@ -13,22 +12,26 @@ internal static class Rarbg
 {
     private const int SaveFrequency = 50;
 
-    internal static async Task DownloadMetadataAsync(IEnumerable<string> urls, string jsonPath, Action<string> log, Func<int, bool>? @continue = null, int degreeOfParallelism = 4)
+    internal static async Task DownloadMetadataAsync(IEnumerable<string> urls, string jsonPath, Func<int, bool>? @continue = null, int degreeOfParallelism = 4, Action<string>? log = null)
     {
+        log ??= Logger.WriteLine;
+
         ConcurrentDictionary<string, RarbgMetadata[]> allSummaries = File.Exists(jsonPath)
             ? new(JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(jsonPath)) ?? throw new InvalidOperationException(jsonPath))
             : new();
-        await urls.ParallelForEachAsync(async (url, index) => await DownloadMetadataAsync(url, jsonPath, allSummaries, index + 1, log, @continue), degreeOfParallelism);
+        await urls.ParallelForEachAsync(async (url, index) => await DownloadMetadataAsync(url, jsonPath, allSummaries, index + 1, @continue, log), degreeOfParallelism);
         string jsonText = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
         await FileHelper.SaveAndReplaceAsync(jsonPath, jsonText, null, SaveJsonLock);
     }
 
-    internal static async Task DownloadMetadataAsync(string url, string jsonPath, Action<string> log, Func<int, bool>? @continue = null) => 
-        await DownloadMetadataAsync(new[] { url }, jsonPath, log, @continue, 1);
+    internal static async Task DownloadMetadataAsync(string url, string jsonPath, Func<int, bool>? @continue = null, Action<string>? log = null) =>
+        await DownloadMetadataAsync(new[] { url }, jsonPath, @continue, 1, log: log);
 
-    private static async Task DownloadMetadataAsync(string url, string jsonPath, ConcurrentDictionary<string, RarbgMetadata[]> allSummaries, int partitionIndex, Action<string> log, Func<int, bool>? @continue = null)
+    private static async Task DownloadMetadataAsync(string url, string jsonPath, ConcurrentDictionary<string, RarbgMetadata[]> allSummaries, int partitionIndex, Func<int, bool>? @continue = null, Action<string>? log = null)
     {
+        log ??= Logger.WriteLine;
         @continue ??= _ => true;
+
         try
         {
             using IWebDriver webDriver = WebDriverHelper.StartEdge(partitionIndex, true);

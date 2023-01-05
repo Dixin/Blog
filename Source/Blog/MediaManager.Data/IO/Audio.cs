@@ -15,11 +15,9 @@ internal static class Audio
 
     private const string AudioExtension = ".mp3";
 
-    private static void TraceLog(string? message) => Trace.WriteLine(message);
-
     internal static void ReplaceTraditionalChinese(string directory, bool isDryRun = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         GetTags(directory, (audio, tagFile, tag) =>
         {
             if (tag.Performers.Any(name => name.ContainsChineseCharacter() && !TraditionChineseException.Any(name.ContainsOrdinal)))
@@ -99,11 +97,11 @@ internal static class Audio
 
     internal static void ReplaceName(string directory, bool isDryRun = false, Action<string>? log = null, params (string from, string to)[] names)
     {
-        log ??= TraceLog;
-        GetTags(directory, (audio, tagFile, tag) => names.ForEach(name =>
+        log ??= Logger.WriteLine;
+        GetTags(directory, (_, tagFile, tag) => names.ForEach(name =>
         {
             (string from, string to) = name;
-            if (tag.Performers.Any(name => name.ContainsIgnoreCase(from)))
+            if (tag.Performers.Any(nameTag => nameTag.ContainsIgnoreCase(from)))
             {
                 tag.Performers = tag.Performers
                     .Select(name => name.ReplaceIgnoreCase(from, to))
@@ -116,7 +114,7 @@ internal static class Audio
                 }
             }
 
-            if (tag.AlbumArtists.Any(name => name.ContainsIgnoreCase(from)))
+            if (tag.AlbumArtists.Any(nameTag => nameTag.ContainsIgnoreCase(from)))
             {
                 tag.AlbumArtists = tag.AlbumArtists
                     .Select(name => name.ReplaceIgnoreCase(from, to))
@@ -133,7 +131,7 @@ internal static class Audio
 
     internal static void PrintTraditionalChinese(string directory, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         GetTags(directory, (audio, tagFile, tag) =>
         {
             if (tag.Performers.Any(name => name.ContainsChineseCharacter())
@@ -149,7 +147,7 @@ internal static class Audio
 
     internal static void PrintInvalidCharacters(string directory, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         GetTags(directory, (audio, tagFile, tag) =>
         {
             if (tag.Performers.Any(name => name.HasInvalidFileNameCharacter()))
@@ -221,7 +219,7 @@ internal static class Audio
 
     internal static void PrintDirectoriesWithErrors(string directory, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         Directory
             .GetDirectories(directory, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
             .ForEach(album =>

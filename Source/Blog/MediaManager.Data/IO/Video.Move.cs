@@ -9,7 +9,7 @@ internal static partial class Video
 {
     internal static void RenameFiles(string path, Func<string, int, string> rename, string? pattern = null, SearchOption? searchOption = null, Func<string, bool>? predicate = null, bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         Directory.EnumerateFiles(path, pattern ?? PathHelper.AllSearchPattern, searchOption ?? SearchOption.AllDirectories)
             .Where(file => predicate?.Invoke(file) ?? true)
             .OrderBy(file => file, StringComparer.CurrentCulture)
@@ -31,7 +31,7 @@ internal static partial class Video
 
     internal static void RenameDirectories(string path, Func<string, string> rename, string? pattern = null, SearchOption? searchOption = null, Func<string, bool>? predicate = null, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         Directory.GetDirectories(path, pattern ?? PathHelper.AllSearchPattern, searchOption ?? SearchOption.AllDirectories)
             .Where(directory => predicate?.Invoke(directory) ?? true)
             .ForEach(directory =>
@@ -100,7 +100,7 @@ internal static partial class Video
 
     internal static void RenameEpisodesWithTitle(string mediaDirectory, string metadataDirectory = "", Func<string, string, string>? rename = null, bool isDryRun = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         if (metadataDirectory.IsNullOrWhiteSpace())
         {
             metadataDirectory = mediaDirectory;
@@ -144,7 +144,7 @@ internal static partial class Video
 
     internal static void RenameVideosWithDefinition(string[] files, bool isDryRun = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         files.ForEach(file => Debug.Assert(Regex.IsMatch(file, @"^\!(720p|1080p)\: ([0-9]{2,4}x[0-9]{2,4} )?(.*)$")));
         files
             .Select(file =>
@@ -183,7 +183,7 @@ internal static partial class Video
 
     internal static void RenameDirectoriesWithAdditionalMetadata(string directory, int level = 2, bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
             .ToArray()
             .ForEach(movie =>
@@ -212,7 +212,7 @@ internal static partial class Video
 
     internal static void RenameDirectoriesWithMetadata(string directory, int level = 2, bool additionalInfo = false, bool overwrite = false, bool isDryRun = false, string backupFlag = "backup", bool isTV = false, bool skipRenamed = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
             .ToArray()
             .ForEach(movie =>
@@ -307,7 +307,7 @@ internal static partial class Video
 
     internal static void RenameDirectoriesWithoutAdditionalMetadata(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
             .ToArray()
             .ForEach(movie =>
@@ -341,7 +341,7 @@ internal static partial class Video
 
     internal static void RenameDirectoriesWithImdbMetadata(string directory, int level = 2, bool isTV = false, bool isDryRun = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
             .ToArray()
             .ForEach(movie =>
@@ -425,7 +425,7 @@ internal static partial class Video
 
     internal static void RenameMovies(Func<string, XDocument, string> rename, string directory, int level = 2, Func<string, XDocument, bool>? predicate = null, bool isDryRun = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
             .ToArray()
             .Select(movie => (Directory: movie, Metadata: XDocument.Load(Directory.GetFiles(movie, XmlMetadataSearchPattern, SearchOption.TopDirectoryOnly).First())))
@@ -444,7 +444,7 @@ internal static partial class Video
 
     internal static async Task CompareAndMoveAsync(string fromJsonPath, string toJsonPath, string newDirectory, string deletedDirectory, Action<string>? log = null, bool isDryRun = false, bool moveAllAttachment = true)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         Dictionary<string, VideoMetadata> externalMetadata = JsonSerializer.Deserialize<Dictionary<string, VideoMetadata>>(await File.ReadAllTextAsync(fromJsonPath)) ?? throw new InvalidOperationException(fromJsonPath);
         Dictionary<string, Dictionary<string, VideoMetadata>> moviesMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(toJsonPath)) ?? throw new InvalidOperationException(toJsonPath);
 
@@ -606,7 +606,7 @@ internal static partial class Video
 
     internal static void RenameTVAttachment(IEnumerable<string> videos, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         videos.ForEach(video =>
         {
             string match = Regex.Match(Path.GetFileNameWithoutExtension(video), @"s[\d]+e[\d]+", RegexOptions.IgnoreCase).Value.ToLowerInvariant();
@@ -619,7 +619,7 @@ internal static partial class Video
 
     internal static void RenameWithUpdatedRatings(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
             .ToArray()
             .ForEach(movie =>
@@ -645,7 +645,7 @@ internal static partial class Video
 
     internal static void RenameCollections(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
             .ToArray()
             .Select(movie =>
@@ -703,7 +703,7 @@ internal static partial class Video
 
     internal static void RenameEpisodes(string directory, string tvTitle, bool isDryRun = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
 
         Directory
             .EnumerateDirectories(directory)
@@ -751,7 +751,7 @@ internal static partial class Video
 
     internal static void MoveRarbgTVEpisodes(string directory, string subtitleBackupDirectory, bool isDryRun = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
 
         Directory
             .GetFiles(directory, "*.txt", SearchOption.AllDirectories)
@@ -939,7 +939,7 @@ internal static partial class Video
 
     internal static void MoveFanArt(string directory, int level = 2, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
 
         EnumerateDirectories(directory, level)
             .ForEach(movie =>
@@ -967,7 +967,7 @@ internal static partial class Video
 
     internal static void RenameEpisodeWithoutTitle(string directory, bool isDryRun = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
 
         string[] files = Directory.GetFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories);
         files
@@ -1010,7 +1010,7 @@ internal static partial class Video
 
     internal static void FormatTV(string mediaDirectory, string metadataDirectory, string subtitleDirectory = "", Func<string, string, string>? renameForTitle = null, bool isDryRun = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
 
         (string Path, string Name)[] tvs = Directory
             .GetDirectories(mediaDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)

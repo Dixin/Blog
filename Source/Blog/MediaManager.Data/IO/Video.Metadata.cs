@@ -23,7 +23,7 @@ internal static partial class Video
 
     internal static void DeleteFeaturettesMetadata(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
             .ForEach(movie =>
             {
@@ -103,9 +103,9 @@ internal static partial class Video
                     title = $"Episode {episode}";
                 }
 
-                metadata.Root!.Element("title"!)!.Value = title;
-                metadata.Root!.Element("episode"!)!.Value = episode;
-                metadata.Root!.Element("season"!)!.Value = season;
+                metadata.Root!.Element("title")!.Value = title;
+                metadata.Root!.Element("episode")!.Value = episode;
+                metadata.Root!.Element("season")!.Value = season;
                 metadata.Save(metadataPath);
             });
     }
@@ -121,7 +121,7 @@ internal static partial class Video
 
     internal static void SyncRating(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
             .ToArray()
             .ForEach(movie =>

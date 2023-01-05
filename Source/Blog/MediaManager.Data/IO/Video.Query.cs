@@ -43,7 +43,7 @@ internal static partial class Video
 
     internal static bool TryGetVideoMetadata(string file, [NotNullWhen(true)] out VideoMetadata? videoMetadata, ImdbMetadata? imdbMetadata = null, string? relativePath = null, int retryCount = 10, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         Task<VideoMetadata> task = GetVideoMetadataAsync(file, imdbMetadata, relativePath, retryCount);
         if (!task.Wait(TimeSpan.FromSeconds(30)))
         {
@@ -66,7 +66,7 @@ internal static partial class Video
 
     internal static int GetAudioMetadata(string file, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         Task<int> task = Task.Run(() =>
         {
             try
@@ -175,7 +175,7 @@ internal static partial class Video
 
     internal static async Task DownloadImdbMetadataAsync(string directory, int level = 2, bool overwrite = false, bool useCache = false, bool useBrowser = false, int? degreeOfParallelism = null, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         string[] movies = EnumerateDirectories(directory, level).ToArray();
         Task[] tasks = Partitioner
             .Create(movies, true)
@@ -200,7 +200,7 @@ internal static partial class Video
 
     private static async Task DownloadImdbMetadataAsync(string directory, IWebDriver? webDriver, bool overwrite = false, bool useCache = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         string[] files = Directory.GetFiles(directory, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
         string[] jsonFiles = files.Where(file => file.EndsWithIgnoreCase(ImdbMetadataExtension)).ToArray();
         //if (jsonFiles.Any())
@@ -236,7 +236,7 @@ internal static partial class Video
 
     internal static async Task DownloadImdbMetadataAsync(string imdbId, string cacheDirectory, string metadataDirectory, string[] cacheFiles, string[] metadataFiles, IWebDriver? webDriver, bool overwrite = false, bool useCache = false, Action<string>? log = null)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         string[] jsonFiles = metadataFiles.Where(file => file.EndsWithIgnoreCase(ImdbMetadataExtension)).ToArray();
         if (jsonFiles.Any(file => Path.GetFileName(file).StartsWithIgnoreCase(imdbId)))
         {
@@ -358,7 +358,7 @@ internal static partial class Video
 
     internal static async Task SaveAllVideoMetadata(string jsonPath, Action<string>? log = null, params string[] directories)
     {
-        log ??= TraceLog;
+        log ??= Logger.WriteLine;
         Dictionary<string, Dictionary<string, VideoMetadata>> existingMetadata = File.Exists(jsonPath)
             ? JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(jsonPath))
             ?? throw new InvalidOperationException(jsonPath)
