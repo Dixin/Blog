@@ -122,8 +122,10 @@ internal static class Rarbg
 
     private static readonly object AddItemLock = new();
 
-    private static bool HasNextPage(this IWebDriver webDriver, ref IWebElement pager, Action<string> log)
+    private static bool HasNextPage(this IWebDriver webDriver, ref IWebElement pager, Action<string>? log = null)
     {
+        log ??= Logger.WriteLine;
+
         ReadOnlyCollection<IWebElement> nextPage = pager.FindElements(By.CssSelector("a[title='next page']"));
         if (nextPage.Count <= 0)
         {

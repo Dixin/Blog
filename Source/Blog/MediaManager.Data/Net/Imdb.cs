@@ -484,8 +484,10 @@ internal static class Imdb
         return false;
     }
 
-    internal static async Task DownloadAllMoviesAsync(string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, string rareJsonPath, string cacheDirectory, string metadataDirectory, Action<string> log)
+    internal static async Task DownloadAllMoviesAsync(string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, string rareJsonPath, string cacheDirectory, string metadataDirectory, Action<string>? log = null)
     {
+        log ??= Logger.WriteLine;
+
         Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(libraryJsonPath))!;
         Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
         Dictionary<string, RarbgMetadata[]> h264Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
@@ -530,8 +532,10 @@ internal static class Imdb
             });
     }
 
-    internal static async Task DownloadAllTVsAsync(string x265JsonPath, string tvDirectory, string cacheDirectory, string metadataDirectory, Action<string> log)
+    internal static async Task DownloadAllTVsAsync(string x265JsonPath, string tvDirectory, string cacheDirectory, string metadataDirectory, Action<string>? log = null)
     {
+        log ??= Logger.WriteLine;
+
         Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
         string[] libraryImdbIds = Directory.EnumerateFiles(tvDirectory, Video.ImdbMetadataSearchPattern, SearchOption.AllDirectories)
             .Select(file => TryGet(file, out string? imdbId, out _, out _, out _, out _) ? imdbId : string.Empty)

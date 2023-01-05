@@ -10,8 +10,10 @@ using OpenQA.Selenium.Support.UI;
 
 internal static class Drive115
 {
-    internal static List<Drive115OfflineTask> DownloadOfflineTasks(string url, Action<string> log, Func<string, string, bool>? predicate = null, Action<string, string>? action = null)
+    internal static List<Drive115OfflineTask> DownloadOfflineTasks(string url, Func<string, string, bool>? predicate = null, Action<string, string>? action = null, Action<string>? log = null)
     {
+        log ??= Logger.WriteLine;
+
         using IWebDriver parentFrame = WebDriverHelper.StartEdge(isLoadingAll: true);
         parentFrame.Url = url;
 
@@ -81,9 +83,9 @@ internal static class Drive115
         }
     }
 
-    internal static async Task SaveOfflineTasksAsync(string url, string path, Action<string> log, string keyword = "")
+    internal static async Task SaveOfflineTasksAsync(string url, string path, string keyword = "", Action<string>? log = null)
     {
-        List<Drive115OfflineTask> tasks = DownloadOfflineTasks(url, log, (title, link) => title.ContainsIgnoreCase(keyword) || link.ContainsIgnoreCase(keyword), (_, _) => Debugger.Break());
+        List<Drive115OfflineTask> tasks = DownloadOfflineTasks(url, (title, link) => title.ContainsIgnoreCase(keyword) || link.ContainsIgnoreCase(keyword), (_, _) => Debugger.Break(), log);
         string jsonText = JsonSerializer.Serialize(tasks.ToArray(), new JsonSerializerOptions() { WriteIndented = true });
         await FileHelper.SaveAndReplaceAsync(path, jsonText);
     }

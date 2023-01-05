@@ -152,8 +152,10 @@ internal static class Yts
         await File.WriteAllTextAsync(jsonPath, jsonString);
     }
 
-    internal static async Task SaveYtsSpecialTitles(string directory, string jsonPath, Action<string> log)
+    internal static async Task SaveYtsSpecialTitles(string directory, string jsonPath, Action<string>? log = null)
     {
+        log ??= Logger.WriteLine;
+
         string[] titles = Directory
             .GetFiles(directory)
             .Select(file =>

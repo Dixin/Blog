@@ -1554,8 +1554,10 @@ internal static partial class Video
             });
     }
 
-    internal static async Task PrintMovieLinksAsync(string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, string rareJsonPath, string cacheDirectory, string metadataDirectory, Action<string> log, bool isDryRun = false, params string[] keywords)
+    internal static async Task PrintMovieLinksAsync(string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, string rareJsonPath, string cacheDirectory, string metadataDirectory, bool isDryRun = false, Action<string>? log = null, params string[] keywords)
     {
+        log ??= Logger.WriteLine;
+
         Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(libraryJsonPath))!;
         Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
         Dictionary<string, RarbgMetadata[]> h264Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
@@ -1572,11 +1574,11 @@ internal static partial class Video
             .Concat(h264720PMetadata.Keys)
             .Distinct()
             .Except(libraryMetadata.Keys)
-            .Intersect(rareMetadata
-                .SelectMany(rare => Regex
-                    .Matches(rare.Value.Content, @"imdb\.com/title/(tt[0-9]+)")
-                    .Where(match => match.Success)
-                    .Select(match => match.Groups[1].Value)))
+            //.Intersect(rareMetadata
+            //    .SelectMany(rare => Regex
+            //        .Matches(rare.Value.Content, @"imdb\.com/title/(tt[0-9]+)")
+            //        .Where(match => match.Success)
+            //        .Select(match => match.Groups[1].Value)))
             .Order()
             .Select(imdbId => metadataFiles.TryGetValue(imdbId, out string? file) && Imdb.TryLoad(file, out ImdbMetadata? imdbMetadata)
                 ? imdbMetadata
@@ -1586,16 +1588,12 @@ internal static partial class Video
                     .Where(advisory => advisory.Key.ContainsIgnoreCase("sex") || advisory.Key.ContainsIgnoreCase("nudity"))
                     .SelectMany(advisory => advisory.Value)
                     .Any(advisory => advisory.FormattedSeverity == ImdbAdvisorySeverity.Severe)
-                || imdbMetadata.AllKeywords.Intersect(keywords, StringComparer.OrdinalIgnoreCase).Any()))
+                && imdbMetadata.AllKeywords.Intersect(keywords, StringComparer.OrdinalIgnoreCase).Any()))
             .ToArray();
         int length = imdbIds.Length;
 
-        if (isDryRun)
-        {
-            log(length.ToString());
-            return;
-        }
-
+        log(length.ToString());
+        log(x265Metadata.Keys.Intersect(imdbIds.Select(metadata => metadata.ImdbId)).Count().ToString());
         using IWebDriver webDriver = WebDriverHelper.StartEdge(1, true);
         using HttpClient httpClient = new HttpClient().AddEdgeHeaders();
         webDriver.Url = "https://rarbg.to/torrents.php?category=54&page=1";
@@ -1660,9 +1658,13 @@ internal static partial class Video
                         string magnet = RarbgGetLink(html);
 
                         Debug.Assert(magnet.IsNotNullOrWhiteSpace());
-                        log($"{metadata.ImdbId}-{metadata.Title}");
+                        log($"{metadata.ImdbId}-{metadata.Title} {metadata.Link} {imdbMetadata.Link}");
+                        log($"{imdbMetadata.Link}keywords");
+                        log($"{imdbMetadata.Link}parentalguide");
                         log(magnet);
                         log(string.Empty);
+
+                        await Task.Yield();
                     });
 
                     return;

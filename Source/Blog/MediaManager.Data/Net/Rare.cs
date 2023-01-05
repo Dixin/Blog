@@ -16,9 +16,10 @@ internal static class Rare
     internal static async Task DownloadMetadataAsync(
         string indexUrl,
         string rareJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, string libraryJsonPath,
-        Action<string> log,
-        int degreeOfParallelism = 4)
+        int degreeOfParallelism = 4, Action<string>? log = null)
     {
+        log ??= Logger.WriteLine;
+
         using HttpClient httpClient = new();
         string indexHtml = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(indexUrl));
         CQ indexCQ = indexHtml;
@@ -60,8 +61,10 @@ internal static class Rare
         await PrintVersionsAsync(rareMetadata, libraryJsonPath, x265JsonPath, h264JsonPath, ytsJsonPath, h264720PJsonPath, log);
     }
 
-    internal static async Task PrintVersionsAsync(IDictionary<string, RareMetadata> rareMetadata, string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, Action<string> log, params string[] categories)
+    internal static async Task PrintVersionsAsync(IDictionary<string, RareMetadata> rareMetadata, string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, Action<string>? log = null, params string[] categories)
     {
+        log ??= Logger.WriteLine;
+
         Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(libraryJsonPath))!;
         Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
         Dictionary<string, RarbgMetadata[]> h264Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
@@ -268,7 +271,7 @@ internal static class Rare
             });
     }
 
-    internal static async Task PrintVersionsAsync(string rareJsonPath, string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, Action<string> log)
+    internal static async Task PrintVersionsAsync(string rareJsonPath, string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, Action<string>? log = null)
     {
         Dictionary<string, RareMetadata> rareMetadata = JsonSerializer.Deserialize<Dictionary<string, RareMetadata>>(await File.ReadAllTextAsync(rareJsonPath))!;
         await PrintVersionsAsync(rareMetadata, libraryJsonPath, x265JsonPath, h264JsonPath, ytsJsonPath, h264720PJsonPath, log);

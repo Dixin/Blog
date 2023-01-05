@@ -46,8 +46,10 @@ internal static partial class Video
             });
     }
 
-    internal static void RenameVideosWithMultipleAudio(IEnumerable<string> files, Action<string> log)
+    internal static void RenameVideosWithMultipleAudio(IEnumerable<string> files, Action<string>? log = null)
     {
+        log ??= Logger.WriteLine;
+
         files.ForEach(file =>
         {
             if (!File.Exists(file))
@@ -393,7 +395,7 @@ internal static partial class Video
                         Source = VideoDirectoryInfo.GetSource(videos)
                     };
                 }
-                
+
 
                 string newMovie = Path.Combine(Path.GetDirectoryName(movie) ?? throw new InvalidOperationException(movie), parsed.ToString());
 
