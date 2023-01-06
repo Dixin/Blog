@@ -41,6 +41,12 @@ public static class FileHelper
         File.Move(source, destination, overwrite);
     }
 
+    public static void MoveToDirectory(string source, string destinationDirectory, bool overwrite = false)
+    {
+        string destination = Path.Combine(destinationDirectory, Path.GetFileName(source));
+        Move(source, destination, overwrite);
+    }
+
     public static void Copy(string source, string destination, bool overwrite = false)
     {
         source.NotNullOrWhiteSpace();
@@ -135,7 +141,7 @@ public static class FileHelper
         FileSystem.DeleteFile(file, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
     }
 
-    public static void ReplaceFileName(string file, string newFileName, bool overwrite = false) => 
+    public static void ReplaceFileName(string file, string newFileName, bool overwrite = false) =>
         Move(file, PathHelper.ReplaceFileName(file, newFileName), overwrite);
 
     public static void ReplaceFileNameWithoutExtension(string file, string newFileNameWithoutExtension, bool overwrite = false) =>

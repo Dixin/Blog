@@ -162,4 +162,35 @@ internal static partial class Video
                 }
             });
     }
+
+    internal static void MoveMetadata(string directory, string cacheDirectory, string metadataDirectory, int level = 2)
+    {
+        string[] cacheFiles = Directory.GetFiles(cacheDirectory, ImdbCacheSearchPattern);
+        string[] metadataFiles = Directory.GetFiles(metadataDirectory, ImdbMetadataSearchPattern);
+
+        EnumerateDirectories(directory, level).ForEach(movie =>
+        {
+            string[] files = Directory.GetFiles(movie);
+            string jsonMetadata = files.FirstOrDefault(file => file.EndsWithIgnoreCase(ImdbMetadataExtension), string.Empty);
+            if (jsonMetadata.IsNotNullOrWhiteSpace())
+            {
+                return;
+            }
+
+            string xmlMetadata = files.First(file => file.EndsWithIgnoreCase(XmlMetadataExtension));
+            XDocument xmlDocument = XDocument.Load(xmlMetadata);
+            string imdbId = xmlDocument.Root?.Element("imdbid")?.Value ?? throw new InvalidOperationException(xmlMetadata);
+            cacheFiles
+                .Where(file =>
+                {
+                    string name = Path.GetFileNameWithoutExtension(file);
+                    return name.EqualsIgnoreCase(imdbId) || name.StartsWithIgnoreCase($"{imdbId}.");
+                })
+                .ForEach(file => FileHelper.MoveToDirectory(file, movie));
+
+            metadataFiles
+                .Where(file => Path.GetFileNameWithoutExtension(file).StartsWithIgnoreCase($"{imdbId}{SubtitleSeparator}"))
+                .ForEach(file => FileHelper.MoveToDirectory(file, movie));
+        });
+    }
 }
