@@ -546,8 +546,7 @@ internal static partial class Video
                         {
                             if (!isDryRun)
                             {
-                                new FileInfo(toAttachment).IsReadOnly = false;
-                                File.Delete(toAttachment);
+                                FileHelper.Delete(toAttachment);
                             }
 
                             log($"Delete attachment {toAttachment}");
@@ -562,8 +561,7 @@ internal static partial class Video
 
                 if (!isDryRun)
                 {
-                    new FileInfo(toVideoMetadata.File).IsReadOnly = false;
-                    File.Delete(toVideoMetadata.File);
+                    FileHelper.Delete(toVideoMetadata.File);
                 }
 
                 log($"Delete video {toVideoMetadata.File}");
@@ -578,8 +576,7 @@ internal static partial class Video
                         {
                             if (!isDryRun)
                             {
-                                new FileInfo(existingAttachment).IsReadOnly = false;
-                                File.Delete(existingAttachment);
+                                FileHelper.Delete(existingAttachment);
                             }
 
                             log($"Delete attachment {existingAttachment}");
@@ -762,7 +759,7 @@ internal static partial class Video
                 log($"Delete {textFile}");
                 if (!isDryRun)
                 {
-                    File.Delete(textFile);
+                    FileHelper.Delete(textFile);
                 }
             });
 
@@ -774,7 +771,7 @@ internal static partial class Video
                 log($"Delete {duplicateFile}");
                 if (!isDryRun)
                 {
-                    File.Delete(duplicateFile);
+                    FileHelper.Delete(duplicateFile);
                 }
             });
 

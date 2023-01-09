@@ -81,7 +81,7 @@ internal static partial class Video
                     .Where(File.Exists)
                     .Do(log)
                     .Where(_ => !isDryRun)
-                    .ForEach(File.Delete);
+                    .ForEach(FileHelper.Delete);
             });
     }
 }

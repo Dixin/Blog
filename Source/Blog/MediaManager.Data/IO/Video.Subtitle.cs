@@ -50,7 +50,7 @@ internal static partial class Video
             {
                 if (!isDryRun)
                 {
-                    File.Delete(result.File);
+                    FileHelper.Delete(result.File);
                 }
                 log($"Charset: {result.Charset}, confidence: {result.Confidence}, file {result.File}");
             });
@@ -261,14 +261,12 @@ internal static partial class Video
                             long newSubtitleSize = new FileInfo(newSubtitle).Length;
                             if (subtitleSize >= newSubtitleSize)
                             {
-                                new FileInfo(newSubtitle).IsReadOnly = false;
-                                File.Delete(newSubtitle);
+                                FileHelper.Delete(newSubtitle);
                                 File.Move(subtitle, newSubtitle);
                             }
                             else
                             {
-                                new FileInfo(subtitle).IsReadOnly = false;
-                                File.Delete(subtitle);
+                                FileHelper.Delete(subtitle);
                             }
                         }
                         else

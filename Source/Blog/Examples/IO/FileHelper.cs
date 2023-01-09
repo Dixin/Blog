@@ -8,6 +8,7 @@ public static class FileHelper
 {
     public static void Delete(string file)
     {
+        // new FileInfo(toAttachment).IsReadOnly = false;
         File.SetAttributes(file.NotNullOrWhiteSpace(), FileAttributes.Normal); // In case file is read only.
         File.Delete(file);
     }
@@ -113,7 +114,7 @@ public static class FileHelper
                 File.WriteAllText(tempFile, content, encoding);
                 if (File.Exists(file))
                 {
-                    File.Delete(file);
+                    Delete(file);
                 }
 
                 File.Move(tempFile, file);
@@ -124,7 +125,7 @@ public static class FileHelper
             await File.WriteAllTextAsync(tempFile, content, encoding);
             if (File.Exists(file))
             {
-                File.Delete(file);
+                Delete(file);
             }
 
             File.Move(tempFile, file);

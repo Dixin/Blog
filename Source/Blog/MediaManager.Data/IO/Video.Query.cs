@@ -245,7 +245,7 @@ internal static partial class Video
                 jsonFiles.ForEach(jsonFile =>
                 {
                     log($"Delete imdb metadata {jsonFile}.");
-                    File.Delete(jsonFile);
+                    FileHelper.Delete(jsonFile);
                 });
             }
             else

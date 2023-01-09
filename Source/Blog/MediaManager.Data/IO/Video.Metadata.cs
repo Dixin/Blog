@@ -33,8 +33,8 @@ internal static partial class Video
                     string[] metadataFiles = Directory.GetFiles(featurettes, XmlMetadataSearchPattern, SearchOption.AllDirectories);
                     metadataFiles
                         .Do(log)
-                        .Where(metadataFile => !isDryRun)
-                        .ForEach(File.Delete);
+                        .Where(_ => !isDryRun)
+                        .ForEach(FileHelper.Delete);
                     // TODO.
                 }
             });
