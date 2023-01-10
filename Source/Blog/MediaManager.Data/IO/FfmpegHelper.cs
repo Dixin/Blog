@@ -87,7 +87,8 @@ internal class FfmpegHelper
 
         if (!overwrite && File.Exists(output))
         {
-            throw new InvalidOperationException($"Output exists: {output}.");
+            log($"Output exists: {output}.");
+            return;
         }
 
         string audio = videoMetadata.AudioBitRates.All(audioBitRate => audioBitRate > 260_000) ? "aac -ar 48000 -b:a 256k -ac 6" : "copy";
