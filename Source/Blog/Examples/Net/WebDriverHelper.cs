@@ -38,7 +38,12 @@ public static class WebDriverHelper
 
         EdgeOptions options = new();
         options.AddArguments($"user-data-dir={profile}");
-        if (!isLoadingAll)
+        if (isLoadingAll)
+        {
+            options.AddUserProfilePreference("profile.default_content_setting_values.cookies", 1);
+            options.AddUserProfilePreference("profile.cookie_controls_mode", 0);
+        }
+        else
         {
             options.AddUserProfilePreference("profile.managed_default_content_settings.images", 2);
             options.AddUserProfilePreference("profile.default_content_setting_values.notifications", 2);

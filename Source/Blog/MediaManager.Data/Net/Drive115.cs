@@ -14,20 +14,10 @@ internal static class Drive115
     {
         log ??= Logger.WriteLine;
 
-        using IWebDriver parentFrame = WebDriverHelper.StartEdge(isLoadingAll: true);
+        using IWebDriver parentFrame = WebDriverHelper.StartEdge(1, isLoadingAll: true);
         parentFrame.Url = url;
 
-        using IWebDriver? filesFrame = new WebDriverWait(parentFrame, WebDriverHelper.DefaultWait).Until(e => e.SwitchTo().Frame("wangpan"));
-        IWebElement tasksElement = new WebDriverWait(filesFrame, WebDriverHelper.DefaultWait).Until(e => e.FindElement(By.Id("js_task_pupup_btn")));
-        Retry.Incremental(() => tasksElement.Click());
-
-        using IWebDriver parentFrame2 = filesFrame.SwitchTo().ParentFrame();
-        IWebElement offlineTasksTabElement = new WebDriverWait(parentFrame2, WebDriverHelper.DefaultWait).Until(e => e.FindElement(By.CssSelector("#fileDialogWrap a[tab='offline_task']")));
-        Retry.Incremental(() => offlineTasksTabElement.Click());
-
-        ReadOnlyCollection<IWebElement>? frames = new WebDriverWait(parentFrame2, WebDriverHelper.DefaultWait).Until(e => e.FindElements(By.TagName("iframe")));
-        IWebElement offlineTasksFrameElement = frames.Single(item => item.GetAttribute("src").EndsWithIgnoreCase("//115.com/?ct=index&ac=offline_new_tpl&offline=1&file_dialog_iframe=1"));
-        using IWebDriver offlineTasksFrame = parentFrame2.SwitchTo().Frame(offlineTasksFrameElement);
+        using IWebDriver? offlineTasksFrame = new WebDriverWait(parentFrame, WebDriverHelper.DefaultWait).Until(e => e.SwitchTo().Frame("wangpan"));
         List<Drive115OfflineTask> offlineTasks = new();
         string firstTask = string.Empty;
         for (int page = 1; ; page++)
@@ -55,7 +45,7 @@ internal static class Drive115
             offlineTasks.AddRange(listItemsCQ.Select(listItemDom =>
             {
                 CQ listItemCQ = listItemDom.Cq();
-                string link = listItemCQ.Find("div.file-operate a[task_popup='copy']").Attr("cp_href");
+                string link = listItemCQ.Find("div.file-operate a[task_popup='copy']").Attr("cp_href") ?? string.Empty;
                 string title = listItemCQ.Find("div.file-name").Text();
                 if (predicate is not null && predicate(title, link) && action is not null)
                 {
