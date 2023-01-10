@@ -356,7 +356,7 @@ internal static partial class Video
         }
     }
 
-    internal static async Task SaveAllVideoMetadata(string jsonPath, Action<string>? log = null, params string[] directories)
+    internal static async Task SaveLibraryMovieMetadata(string jsonPath, Action<string>? log = null, params string[] directories)
     {
         log ??= Logger.WriteLine;
         Dictionary<string, Dictionary<string, VideoMetadata>> existingMetadata = File.Exists(jsonPath)
