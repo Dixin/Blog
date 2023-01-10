@@ -1,5 +1,6 @@
 ﻿namespace Examples.Net;
 
+using Examples.Common;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Edge;
@@ -29,7 +30,7 @@ public static class WebDriverHelper
 
     public static IWebDriver StartChrome(int index) => StartChrome(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(ChromeDriver)} {index:00}"));
 
-    public static IWebDriver StartEdge(string profile = "", bool isLoadingAll = false)
+    public static IWebDriver StartEdge(string profile = "", bool isLoadingAll = false, string downloadDirectory = "")
     {
         if (string.IsNullOrWhiteSpace(profile))
         {
@@ -38,6 +39,10 @@ public static class WebDriverHelper
 
         EdgeOptions options = new();
         options.AddArguments($"user-data-dir={profile}");
+        options.AddUserProfilePreference("download.default_directory", downloadDirectory.IfNullOrWhiteSpace(TempDirectory));
+        options.AddUserProfilePreference("disable-popup-blocking", "true");
+        options.AddUserProfilePreference("download.prompt_for_download", "false");
+        options.AddUserProfilePreference("download.directory_upgrade", "true");
         if (isLoadingAll)
         {
             options.AddUserProfilePreference("profile.default_content_setting_values.cookies", 1);

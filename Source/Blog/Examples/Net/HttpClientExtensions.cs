@@ -3,6 +3,7 @@
 using System.IO.Compression;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Mime;
 using Examples.Common;
 
 public static class HttpClientExtensions
@@ -37,6 +38,41 @@ public static class HttpClientExtensions
         using HttpResponseMessage response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellation);
         response.EnsureSuccessStatusCode();
         await using FileStream fileStream = File.OpenWrite(file);
+        await response.Content.CopyToAsync(fileStream, cancellation);
+    }
+
+    public static async Task GetFileAsync(this HttpClient httpClient, string url, Func<string, string> getFilePath, CancellationToken cancellation = default)
+    {
+        using HttpRequestMessage request = new(HttpMethod.Get, url)
+        {
+            Version = httpClient.DefaultRequestVersion,
+            VersionPolicy = httpClient.DefaultVersionPolicy
+        };
+        httpClient.DefaultRequestHeaders.ForEach(header => request.Headers.Add(header.Key, header.Value));
+        
+        using HttpResponseMessage response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellation);
+        response.EnsureSuccessStatusCode();
+        string fileName;
+        if (response.Headers.TryGetValues("Content-Disposition", out IEnumerable<string>? contentDispositions))
+        {
+            string?[] headerFileNames = contentDispositions
+                .Select(contentDisposition => new ContentDisposition(contentDisposition).FileName)
+                .Where(headerFileName => headerFileName.IsNotNullOrWhiteSpace())
+                .ToArray();
+            fileName = headerFileNames.Length switch
+            {
+                0 => string.Empty,
+                1 => headerFileNames[0]!,
+                _ => throw new InvalidOperationException($"Ambiguous file names {string.Join(" ", headerFileNames)}")
+            };
+        }
+        else
+        {
+            fileName = string.Empty;
+        }
+
+        fileName = getFilePath(fileName);
+        await using FileStream fileStream = File.OpenWrite(fileName);
         await response.Content.CopyToAsync(fileStream, cancellation);
     }
 

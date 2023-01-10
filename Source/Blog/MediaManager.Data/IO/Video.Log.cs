@@ -1586,21 +1586,24 @@ internal static partial class Video
             .Select(imdbId => metadataFiles.TryGetValue(imdbId, out string? file) && Imdb.TryLoad(file, out ImdbMetadata? imdbMetadata)
                 ? imdbMetadata
                 : null)
-            .Where(imdbMetadata => imdbMetadata is not null
+            .Where(imdbMetadata => imdbMetadata?.Year is "2020"
                 && (imdbMetadata.Advisories
-                    .Where(advisory => advisory.Key.ContainsIgnoreCase("sex") || advisory.Key.ContainsIgnoreCase("nudity"))
-                    .SelectMany(advisory => advisory.Value)
-                    .Any(advisory => advisory.FormattedSeverity == ImdbAdvisorySeverity.Severe)
-                || imdbMetadata.AllKeywords.Intersect(keywords, StringComparer.OrdinalIgnoreCase).Any()))
+                        .Where(advisory => advisory.Key.ContainsIgnoreCase("sex") || advisory.Key.ContainsIgnoreCase("nudity"))
+                        .SelectMany(advisory => advisory.Value)
+                        .Any(advisory => advisory.FormattedSeverity == ImdbAdvisorySeverity.Severe)
+                    || imdbMetadata.AllKeywords.Intersect(keywords, StringComparer.OrdinalIgnoreCase).Any()))
             .ToArray();
         int length = imdbIds.Length;
-
         log(length.ToString());
         log(x265Metadata.Keys.Intersect(imdbIds.Select(metadata => metadata.ImdbId)).Count().ToString());
-        using IWebDriver webDriver = WebDriverHelper.StartEdge(1, true);
-        using HttpClient httpClient = new HttpClient().AddEdgeHeaders();
-        webDriver.Url = "https://rarbg.to/torrents.php?category=54&page=1";
-        new WebDriverWait(webDriver, WebDriverHelper.DefaultWait).Until(e => e.FindElement(By.Id("pager_links")));
+
+        using IWebDriver? webDriver = isDryRun ? null : WebDriverHelper.StartEdge(1, true);
+        using HttpClient? httpClient = isDryRun ? null : new HttpClient().AddEdgeHeaders();
+        if (!isDryRun)
+        {
+            webDriver!.Url = "https://rarbg.to/torrents.php?category=54&page=1";
+            new WebDriverWait(webDriver, WebDriverHelper.DefaultWait).Until(e => e.FindElement(By.Id("pager_links")));
+        }
         await imdbIds
             .ForEachAsync(async (imdbMetadata, index) =>
             {
@@ -1649,25 +1652,29 @@ internal static partial class Video
 
                     await x265Videos.ForEachAsync(async metadata =>
                     {
-                        //string file = Path.Combine(cacheDirectory, $"{metadata.ImdbId}-{metadata.Title}{ImdbCacheExtension}");
-                        //if (cacheFiles.ContainsIgnoreCase(file))
-                        //{
-                        //    return;
-                        //}
+                        if (isDryRun)
+                        {
+                            log($"{metadata.ImdbId}-{metadata.Title} {metadata.Link} {imdbMetadata.Link}");
+                            log($"{imdbMetadata.Link}keywords");
+                            log($"{imdbMetadata.Link}parentalguide");
+                            log(string.Empty);
+                            return;
+                        }
 
-                        //string html = await webDriver.GetStringAsync(metadata.Link, () => new WebDriverWait(webDriver, WebDriverHelper.DefaultWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))));
-                        //await Task.Delay(WebDriverHelper.DefaultDomWait);
-                        //await File.WriteAllTextAsync(file, html);
-                        //string magnet = RarbgGetLink(html);
+                        string file = Path.Combine(cacheDirectory, $"{metadata.ImdbId}-{metadata.Title}{ImdbCacheExtension}");
+                        if (cacheFiles.ContainsIgnoreCase(file))
+                        {
+                            return;
+                        }
 
-                        //Debug.Assert(magnet.IsNotNullOrWhiteSpace());
-                        log($"{metadata.ImdbId}-{metadata.Title} {metadata.Link} {imdbMetadata.Link}");
-                        log($"{imdbMetadata.Link}keywords");
-                        log($"{imdbMetadata.Link}parentalguide");
-                        //log(magnet);
-                        log(string.Empty);
+                        string html = await webDriver!.GetStringAsync(metadata.Link, () => new WebDriverWait(webDriver, WebDriverHelper.DefaultWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))));
+                        await Task.Delay(WebDriverHelper.DefaultDomWait);
+                        await File.WriteAllTextAsync(file, html);
+                        (string httpUrl, string fileName, string magnetUrl) = RarbgGetUrls(html, metadata.Link);
 
-                        await Task.Yield();
+                        //log(magnetUrl);
+                        webDriver!.Url = httpUrl;
+                        await Task.Delay(TimeSpan.FromSeconds(3));
                     });
 
                     return;
@@ -1726,7 +1733,7 @@ internal static partial class Video
                 //        string html = await webDriver.GetStringAsync(metadata.Link, () => new WebDriverWait(webDriver, WebDriverHelper.DefaultWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))));
                 //        await Task.Delay(WebDriverHelper.DefaultDomWait);
                 //        await File.WriteAllTextAsync(file, html);
-                //        string magnet = RarbgGetLink(html);
+                //        string magnet = RarbgGetMagnetLink(html);
 
                 //        Debug.Assert(magnet.IsNotNullOrWhiteSpace());
                 //        log($"{metadata.ImdbId}-{metadata.Title}");
@@ -1823,7 +1830,7 @@ internal static partial class Video
                 //        string html = await webDriver.GetStringAsync(metadata.Link, () => new WebDriverWait(webDriver, WebDriverHelper.DefaultWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))));
                 //        await Task.Delay(WebDriverHelper.DefaultDomWait);
                 //        await File.WriteAllTextAsync(file, html);
-                //        string magnet = RarbgGetLink(html);
+                //        string magnet = RarbgGetMagnetLink(html);
 
                 //        Debug.Assert(magnet.IsNotNullOrWhiteSpace());
                 //        log($"{metadata.ImdbId}-{metadata.Title}");
@@ -1836,12 +1843,19 @@ internal static partial class Video
             });
     }
 
-    internal static string RarbgGetLink(string html)
+    internal static (string HttpUrl, string FileName, string MagnetUrl) RarbgGetUrls(CQ pageCQ, string baseUrl)
     {
-        CQ pageCQ = html;
-        string magnet = pageCQ.Find("""img[src$="magnet.gif"]""").Parent().Attr("href");
-        return magnet;
+        CQ magnetCQ = pageCQ.Find("""img[src$="magnet.gif"]""").Parent();
+        string httpUrl = magnetCQ.Prev().Attr("href");
+        string magnetUrl = magnetCQ.Attr("href");
+        Debug.Assert(httpUrl.IsNotNullOrWhiteSpace());
+        Debug.Assert(magnetUrl.IsNotNullOrWhiteSpace());
+        Uri httpUri = new(new Uri(baseUrl), httpUrl);
+        httpUrl = httpUri.ToString();
+        string fileName = HttpUtility.ParseQueryString(httpUri.Query)["f"] ?? throw new InvalidOperationException(httpUrl);
+        return (httpUrl, fileName, magnetUrl);
     }
+
     internal static async Task PrintTVLinks(string x265JsonPath, string tvDirectory, string metadataDirectory, string cacheDirectory, string initialUrl, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
@@ -1927,24 +1941,29 @@ internal static partial class Video
 
                     await h265Videos.ForEachAsync(async metadata =>
                     {
+                        if (isDryRun)
+                        {
+                            log($"{metadata.ImdbId}-{metadata.Title} {metadata.Link} {imdbMetadata.Link}");
+                            log($"{imdbMetadata.Link}keywords");
+                            log($"{imdbMetadata.Link}parentalguide");
+                            log(string.Empty);
+                            return;
+                        }
+
                         string file = Path.Combine(cacheDirectory, $"{metadata.ImdbId}-{metadata.Title}{ImdbCacheExtension}");
                         if (cacheFiles.ContainsIgnoreCase(file))
                         {
                             return;
                         }
 
-                        string html = await webDriver.GetStringAsync(metadata.Link, () => new WebDriverWait(webDriver, WebDriverHelper.DefaultWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))));
+                        string html = await webDriver!.GetStringAsync(metadata.Link, () => new WebDriverWait(webDriver, WebDriverHelper.DefaultWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))));
                         await Task.Delay(WebDriverHelper.DefaultDomWait);
                         await File.WriteAllTextAsync(file, html);
-                        string magnet = RarbgGetLink(html);
+                        (string httpUrl, string fileName, string magnetUrl) = RarbgGetUrls(html, metadata.Link);
 
-                        Debug.Assert(magnet.IsNotNullOrWhiteSpace());
-                        log($"{metadata.ImdbId}-{metadata.Title}");
-                        log($"{metadata.Link}");
-                        log($"{metadata.Title}");
-                        log($"https://www.imdb.com/title/{metadata.ImdbId}/");
-                        log(magnet);
-                        log(string.Empty);
+                        //log(magnetUrl);
+                        webDriver!.Url = httpUrl;
+                        await Task.Delay(TimeSpan.FromSeconds(3));
                     });
 
                     return;
