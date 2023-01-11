@@ -8,7 +8,7 @@ using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 internal static class Yts
 {
-    private const int SaveFrequency = 100;
+    private const int WriteCount = 100;
 
     internal static async Task DownloadSummariesAsync(string baseUrl, string jsonPath, Func<int, bool>? @continue = null, int index = 1, Action<string>? log = null)
     {
@@ -50,10 +50,10 @@ internal static class Yts
             summaries.ForEach(summary => allSummaries[summary.Link] = summary);
             summaries.ForEach(summary => links.Add(summary.Link));
 
-            if (index % SaveFrequency == 0)
+            if (index % WriteCount == 0)
             {
                 string jsonString = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
-                await FileHelper.SaveAndReplaceAsync(jsonPath, jsonString, null, SaveJsonLock);
+                FileHelper.WriteText(jsonPath, jsonString, null, WriteJsonLock);
             }
 
             log($"End {url}");
@@ -62,7 +62,7 @@ internal static class Yts
         links.OrderBy(link => link).ForEach(log);
 
         string finalJsonString = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
-        await FileHelper.SaveAndReplaceAsync(jsonPath, finalJsonString, null, SaveJsonLock);
+        FileHelper.WriteText(jsonPath, finalJsonString, null, WriteJsonLock);
     }
 
     internal static async Task DownloadMetadataAsync(string baseUrl, string summaryJsonPath, string metadataJsonPath, Func<int, bool>? @continue = null, int index = 1, int degreeOfParallelism = 4, Action<string>? log = null)
@@ -111,7 +111,7 @@ internal static class Yts
                         Year: summary.Year,
                         Language: info.Find("h2 a span").Text().Trim().TrimStart('[').TrimEnd(']'),
                         Availabilities: info.Find("p.hidden-sm a[rel='nofollow']").ToDictionary(link => link.TextContent.Trim(), link => link.GetAttribute("href")));
-                    lock (AddItemLock)
+                    lock (AddDetailLock)
                     {
                         details[detail.ImdbId] = details.ContainsKey(detail.ImdbId)
                             ? details[detail.ImdbId].Where(item => !item.Link.EqualsIgnoreCase(detail.Link)).Append(detail).ToArray()
@@ -123,24 +123,24 @@ internal static class Yts
                     log($"{summary.Link} {exception}");
                 }
 
-                if (Interlocked.Increment(ref count) % SaveFrequency == 0)
+                if (Interlocked.Increment(ref count) % WriteCount == 0)
                 {
                     string jsonString = JsonSerializer.Serialize(details, new JsonSerializerOptions() { WriteIndented = true });
-                    await FileHelper.SaveAndReplaceAsync(metadataJsonPath, jsonString, null, SaveJsonLock);
+                    FileHelper.WriteText(metadataJsonPath, jsonString, null, WriteJsonLock);
                 }
 
                 log($"End {index}:{summary.Link}");
             }, degreeOfParallelism);
 
         string jsonString = JsonSerializer.Serialize(details, new JsonSerializerOptions() { WriteIndented = true });
-        await FileHelper.SaveAndReplaceAsync(metadataJsonPath, jsonString, null, SaveJsonLock);
+        FileHelper.WriteText(metadataJsonPath, jsonString, null, WriteJsonLock);
     }
 
-    private static readonly object SaveJsonLock = new();
+    private static readonly object WriteJsonLock = new();
 
-    private static readonly object AddItemLock = new();
+    private static readonly object AddDetailLock = new();
 
-    internal static async Task SaveImdbSpecialTitles(string imdbBasicsPath, string jsonPath)
+    internal static async Task WriteImdbSpecialTitles(string imdbBasicsPath, string jsonPath)
     {
         string[] specialTitles = File.ReadLines(imdbBasicsPath)
             .Skip(1)
@@ -152,7 +152,7 @@ internal static class Yts
         await File.WriteAllTextAsync(jsonPath, jsonString);
     }
 
-    internal static async Task SaveYtsSpecialTitles(string directory, string jsonPath, Action<string>? log = null)
+    internal static async Task WriteYtsSpecialTitles(string directory, string jsonPath, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 

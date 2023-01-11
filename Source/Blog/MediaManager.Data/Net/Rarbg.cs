@@ -10,7 +10,7 @@ using OpenQA.Selenium.Support.UI;
 
 internal static class Rarbg
 {
-    private const int SaveFrequency = 50;
+    private const int WriteCount = 50;
 
     internal static async Task DownloadMetadataAsync(IEnumerable<string> urls, string jsonPath, Func<int, bool>? @continue = null, int degreeOfParallelism = 4, Action<string>? log = null)
     {
@@ -21,7 +21,7 @@ internal static class Rarbg
             : new();
         await urls.ParallelForEachAsync(async (url, index) => await DownloadMetadataAsync(url, jsonPath, allSummaries, index + 1, @continue, log), degreeOfParallelism);
         string jsonText = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
-        await FileHelper.SaveAndReplaceAsync(jsonPath, jsonText, null, SaveJsonLock);
+        FileHelper.WriteText(jsonPath, jsonText, null, WriteJsonLock);
     }
 
     internal static async Task DownloadMetadataAsync(string url, string jsonPath, Func<int, bool>? @continue = null, Action<string>? log = null) =>
@@ -88,7 +88,7 @@ internal static class Rarbg
                     })
                     .ForEach(summary =>
                     {
-                        lock (AddItemLock)
+                        lock (AddSummaryLock)
                         {
                             allSummaries[summary.ImdbId] = allSummaries.ContainsKey(summary.ImdbId)
                                 ? allSummaries[summary.ImdbId].Where(existing => !existing.Title.EqualsIgnoreCase(summary.Title)).Append(summary).ToArray()
@@ -97,10 +97,10 @@ internal static class Rarbg
                     });
 
                 log($"{partitionIndex}:{pageIndex} End {webDriver.Url}");
-                if (pageIndex++ % SaveFrequency == 0)
+                if (pageIndex++ % WriteCount == 0)
                 {
                     string jsonText = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
-                    await FileHelper.SaveAndReplaceAsync(jsonPath, jsonText, null, SaveJsonLock);
+                    FileHelper.WriteText(jsonPath, jsonText, null, WriteJsonLock);
                 }
             } while (webDriver.HasNextPage(ref pager, log));
 
@@ -114,13 +114,13 @@ internal static class Rarbg
         finally
         {
             string jsonText = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
-            await FileHelper.SaveAndReplaceAsync(jsonPath, jsonText, null, SaveJsonLock);
+            FileHelper.WriteText(jsonPath, jsonText, null, WriteJsonLock);
         }
     }
 
-    private static readonly object SaveJsonLock = new();
+    private static readonly object WriteJsonLock = new();
 
-    private static readonly object AddItemLock = new();
+    private static readonly object AddSummaryLock = new();
 
     private static bool HasNextPage(this IWebDriver webDriver, ref IWebElement pager, Action<string>? log = null)
     {

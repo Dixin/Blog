@@ -58,7 +58,7 @@ internal static partial class Video
                 return;
             }
 
-            int audio = GetAudioMetadata(file, log);
+            int audio = ReadAudioMetadata(file, log);
             if (audio <= 1)
             {
                 log($"Audio {audio} {file}");
@@ -718,7 +718,7 @@ internal static partial class Video
                     .ForEach((video, index) =>
                     {
                         string prefix = $"{tvTitle}.S{seasonNumber}E{index + 1:00}.";
-                        if (!TryGetVideoMetadata(video, out VideoMetadata? videoMetadata))
+                        if (!TryReadVideoMetadata(video, out VideoMetadata? videoMetadata))
                         {
                             throw new InvalidOperationException(video);
                         }

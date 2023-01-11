@@ -233,7 +233,7 @@ internal static class Audio
             });
     }
 
-    public static void SavePicture(string tagFile, string pictureFile)
+    public static void WritePicture(string tagFile, string pictureFile)
     {
         using TagFile audioFile = TagFile.Create(tagFile);
         IPicture? picture = audioFile.Tag.Pictures.FirstOrDefault();

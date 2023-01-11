@@ -73,10 +73,10 @@ internal static class Drive115
         }
     }
 
-    internal static async Task SaveOfflineTasksAsync(string url, string path, string keyword = "", Action<string>? log = null)
+    internal static async Task WriteOfflineTasksAsync(string url, string path, string keyword = "", Action<string>? log = null)
     {
         List<Drive115OfflineTask> tasks = DownloadOfflineTasks(url, (title, link) => title.ContainsIgnoreCase(keyword) || link.ContainsIgnoreCase(keyword), (_, _) => Debugger.Break(), log);
         string jsonText = JsonSerializer.Serialize(tasks.ToArray(), new JsonSerializerOptions() { WriteIndented = true });
-        await FileHelper.SaveAndReplaceAsync(path, jsonText);
+        await FileHelper.WriteTextAsync(path, jsonText);
     }
 }

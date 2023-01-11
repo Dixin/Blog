@@ -103,26 +103,38 @@ public static class FileHelper
             .ToArray()
             .ForEach(subtitle => Copy(subtitle, subtitle.Replace(sourceDirectory, destinationDirectory, StringComparison.InvariantCulture), overwrite));
 
-    public static async Task SaveAndReplaceAsync(string file, string content, Encoding? encoding = null, object? @lock = null)
+    public static async Task WriteTextAsync(string file, string text, Encoding? encoding = null)
     {
         encoding ??= Encoding.UTF8;
         string tempFile = $"{file}.tmp";
-        if (@lock is not null)
-        {
-            lock (@lock)
-            {
-                File.WriteAllText(tempFile, content, encoding);
-                if (File.Exists(file))
-                {
-                    Delete(file);
-                }
 
-                File.Move(tempFile, file);
-            }
-        }
-        else
+        await File.WriteAllTextAsync(tempFile, text, encoding);
+        if (File.Exists(file))
         {
-            await File.WriteAllTextAsync(tempFile, content, encoding);
+            Delete(file);
+        }
+
+        File.Move(tempFile, file);
+    }
+
+    public static void WriteText(string file, string text, Encoding? encoding = null, object? @lock = null)
+    {
+        encoding ??= Encoding.UTF8;
+        string tempFile = $"{file}.tmp";
+        if (@lock is null)
+        {
+            WriteTextImplementation();
+            return;
+        }
+
+        lock (@lock)
+        {
+            WriteTextImplementation();
+        }
+
+        void WriteTextImplementation()
+        {
+            File.WriteAllText(tempFile, text, encoding);
             if (File.Exists(file))
             {
                 Delete(file);

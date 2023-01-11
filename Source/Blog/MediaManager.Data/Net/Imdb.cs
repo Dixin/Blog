@@ -421,7 +421,7 @@ internal static class Imdb
 
     internal const string TitleSeparator = "~";
 
-    internal static bool TryGet(string path, [NotNullWhen(true)] out string? imdbId, [NotNullWhen(true)] out string? year, [NotNullWhen(true)] out string[]? regions, [NotNullWhen(true)] out string[]? languages, [NotNullWhen(true)] out string[]? genres)
+    internal static bool TryRead(string path, [NotNullWhen(true)] out string? imdbId, [NotNullWhen(true)] out string? year, [NotNullWhen(true)] out string[]? regions, [NotNullWhen(true)] out string[]? languages, [NotNullWhen(true)] out string[]? genres)
     {
         imdbId = null;
         year = null;
@@ -429,7 +429,7 @@ internal static class Imdb
         languages = null;
         genres = null;
 
-        if (!TryGet(path, out string? file))
+        if (!TryRead(path, out string? file))
         {
             return false;
         }
@@ -450,7 +450,7 @@ internal static class Imdb
         return true;
     }
 
-    internal static bool TryGet(string? path, [NotNullWhen(true)] out string? file)
+    internal static bool TryRead(string? path, [NotNullWhen(true)] out string? file)
     {
         if (Directory.Exists(path))
         {
@@ -472,7 +472,7 @@ internal static class Imdb
 
     internal static bool TryLoad(string? path, [NotNullWhen(true)] out ImdbMetadata? imdbMetadata)
     {
-        if (TryGet(path, out string? file) && !Path.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.NotExistingFlag))
+        if (TryRead(path, out string? file) && !Path.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.NotExistingFlag))
         {
             imdbMetadata = JsonSerializer.Deserialize<ImdbMetadata>(
                 File.ReadAllText(file),
@@ -538,7 +538,7 @@ internal static class Imdb
 
         Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
         string[] libraryImdbIds = Directory.EnumerateFiles(tvDirectory, Video.ImdbMetadataSearchPattern, SearchOption.AllDirectories)
-            .Select(file => TryGet(file, out string? imdbId, out _, out _, out _, out _) ? imdbId : string.Empty)
+            .Select(file => TryRead(file, out string? imdbId, out _, out _, out _, out _) ? imdbId : string.Empty)
             .Where(imdbId => imdbId.IsNotNullOrWhiteSpace())
             .ToArray();
 

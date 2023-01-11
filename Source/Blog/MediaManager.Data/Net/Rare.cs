@@ -9,13 +9,14 @@ using OpenQA.Selenium;
 
 internal static class Rare
 {
-    private static readonly object SaveJsonLock = new();
+    private static readonly object WriteJsonLock = new();
 
-    private const int SaveFrequency = 100;
+    private const int WriteCount = 100;
 
     internal static async Task DownloadMetadataAsync(
         string indexUrl,
         string rareJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, string libraryJsonPath,
+        string metadataDirectory, string cacheDirectory, 
         int degreeOfParallelism = 4, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
@@ -48,20 +49,20 @@ internal static class Rare
                 log(exception.ToString());
             }
 
-            if (index % SaveFrequency == 0)
+            if (index % WriteCount == 0)
             {
                 string jsonString = JsonSerializer.Serialize(rareMetadata, new JsonSerializerOptions() { WriteIndented = true });
-                await FileHelper.SaveAndReplaceAsync(rareJsonPath, jsonString, null, SaveJsonLock);
+                FileHelper.WriteText(rareJsonPath, jsonString, null, WriteJsonLock);
             }
         }, degreeOfParallelism);
 
         string jsonString = JsonSerializer.Serialize(rareMetadata, new JsonSerializerOptions() { WriteIndented = true });
-        await FileHelper.SaveAndReplaceAsync(rareJsonPath, jsonString, null, SaveJsonLock);
+        FileHelper.WriteText(rareJsonPath, jsonString, null, WriteJsonLock);
 
-        await PrintVersionsAsync(rareMetadata, libraryJsonPath, x265JsonPath, h264JsonPath, ytsJsonPath, h264720PJsonPath, log);
+        await PrintVersionsAsync(rareMetadata, libraryJsonPath, x265JsonPath, h264JsonPath, ytsJsonPath, h264720PJsonPath, metadataDirectory, cacheDirectory, log);
     }
 
-    internal static async Task PrintVersionsAsync(IDictionary<string, RareMetadata> rareMetadata, string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, Action<string>? log = null, params string[] categories)
+    internal static async Task PrintVersionsAsync(IDictionary<string, RareMetadata> rareMetadata, string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, string metadataDirectory, string cacheDirectory, Action<string>? log = null, params string[] categories)
     {
         log ??= Logger.WriteLine;
 
@@ -71,8 +72,8 @@ internal static class Rare
         Dictionary<string, YtsMetadata[]> ytsMetadata = JsonSerializer.Deserialize<Dictionary<string, YtsMetadata[]>>(await File.ReadAllTextAsync(ytsJsonPath))!;
         Dictionary<string, RarbgMetadata[]> h264720PMetadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264720PJsonPath))!;
 
-        string[] cacheFiles = Directory.GetFiles(@"D:\Files\Library\MetadataCache");
-        string[] metadataFiles = Directory.GetFiles(@"D:\Files\Library\Metadata");
+        string[] cacheFiles = Directory.GetFiles(cacheDirectory);
+        string[] metadataFiles = Directory.GetFiles(metadataDirectory);
         (string Link, string Title, string Value, string[] Categories)[] imdbIds = rareMetadata
             .AsParallel()
             .SelectMany(rare => Regex
@@ -271,9 +272,9 @@ internal static class Rare
             });
     }
 
-    internal static async Task PrintVersionsAsync(string rareJsonPath, string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, Action<string>? log = null)
+    internal static async Task PrintVersionsAsync(string rareJsonPath, string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, string metadataDirectory, string cacheDirectory, Action<string>? log = null)
     {
         Dictionary<string, RareMetadata> rareMetadata = JsonSerializer.Deserialize<Dictionary<string, RareMetadata>>(await File.ReadAllTextAsync(rareJsonPath))!;
-        await PrintVersionsAsync(rareMetadata, libraryJsonPath, x265JsonPath, h264JsonPath, ytsJsonPath, h264720PJsonPath, log);
+        await PrintVersionsAsync(rareMetadata, libraryJsonPath, x265JsonPath, h264JsonPath, ytsJsonPath, h264720PJsonPath, metadataDirectory, cacheDirectory, log);
     }
 }

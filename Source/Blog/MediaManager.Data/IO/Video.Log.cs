@@ -32,7 +32,7 @@ internal static partial class Video
             .AsParallel()
             .Select((video, index) =>
             {
-                if (!TryGetVideoMetadata(video, out VideoMetadata? videoMetadata, log: message => log($"{index} {message}")))
+                if (!TryReadVideoMetadata(video, out VideoMetadata? videoMetadata, log: message => log($"{index} {message}")))
                 {
                     log($"!Failed {video}");
                 }
@@ -98,7 +98,7 @@ internal static partial class Video
                 if (videos.Any())
                 {
                     log(movie);
-                    Imdb.TryGet(movie, out string? imdbId, out _, out _, out _, out _);
+                    Imdb.TryRead(movie, out string? imdbId, out _, out _, out _, out _);
                     log(imdbId ?? string.Empty);
                     videos.ForEach(video => log(video.Name));
                     log(string.Empty);
@@ -130,7 +130,7 @@ internal static partial class Video
 
         EnumerateDirectories(directory, level)
             .Where(noSubtitle)
-            .ForEach(movie => log($"{(Imdb.TryGet(movie, out string? imdbId, out _, out _, out _, out _) ? imdbId : "-")} {movie}"));
+            .ForEach(movie => log($"{(Imdb.TryRead(movie, out string? imdbId, out _, out _, out _, out _) ? imdbId : "-")} {movie}"));
     }
 
     internal static void PrintMetadataByGroup(string directory, int level = DefaultLevel, string field = "genre", Action<string>? log = null)
@@ -1478,7 +1478,7 @@ internal static partial class Video
                     return;
                 }
 
-                if (Imdb.TryGet(movie, out string? jsonImdbId, out _, out _, out _, out _) && !localImdbId.EqualsIgnoreCase(jsonImdbId))
+                if (Imdb.TryRead(movie, out string? jsonImdbId, out _, out _, out _, out _) && !localImdbId.EqualsIgnoreCase(jsonImdbId))
                 {
                     log($"-IMDB id is inconsistent: {movie}");
                     return;
@@ -1583,15 +1583,17 @@ internal static partial class Video
             //        .Where(match => match.Success)
             //        .Select(match => match.Groups[1].Value)))
             .Order()
+            .AsParallel()
+            .WithDegreeOfParallelism(4)
             .Select(imdbId => metadataFiles.TryGetValue(imdbId, out string? file) && Imdb.TryLoad(file, out ImdbMetadata? imdbMetadata)
                 ? imdbMetadata
                 : null)
-            .Where(imdbMetadata => imdbMetadata?.Year is "2020"
-                && (imdbMetadata.Advisories
+            .Where(imdbMetadata => imdbMetadata?.Year is not null or "2021" or "2022"
+                && (/*imdbMetadata.Advisories
                         .Where(advisory => advisory.Key.ContainsIgnoreCase("sex") || advisory.Key.ContainsIgnoreCase("nudity"))
                         .SelectMany(advisory => advisory.Value)
                         .Any(advisory => advisory.FormattedSeverity == ImdbAdvisorySeverity.Severe)
-                    || imdbMetadata.AllKeywords.Intersect(keywords, StringComparer.OrdinalIgnoreCase).Any()))
+                    ||*/ imdbMetadata.AllKeywords.Intersect(keywords, StringComparer.OrdinalIgnoreCase).Any()))
             .ToArray();
         int length = imdbIds.Length;
         log(length.ToString());
@@ -1864,7 +1866,7 @@ internal static partial class Video
         Dictionary<string, string> metadataFiles = Directory.EnumerateFiles(metadataDirectory).ToDictionary(file => Path.GetFileName(file).Split("-").First());
         string[] cacheFiles = Directory.GetFiles(cacheDirectory);
         string[] libraryImdbIds = Directory.EnumerateFiles(tvDirectory, ImdbMetadataSearchPattern, SearchOption.AllDirectories)
-            .Select(file => Imdb.TryGet(file, out string? imdbId, out _, out _, out _, out _) ? imdbId : string.Empty)
+            .Select(file => Imdb.TryRead(file, out string? imdbId, out _, out _, out _, out _) ? imdbId : string.Empty)
             .Where(imdbId => imdbId.IsNotNullOrWhiteSpace())
             .ToArray();
 

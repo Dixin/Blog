@@ -22,7 +22,13 @@ public record Settings(
     string MovieRarbgH264720PMetadata,
     string MovieYtsSummary,
     string MovieYtsMetadata,
-    string TVRarbgX265Metadata)
+    string MovieRareMetadata,
+    string TVRarbgX265Metadata,
+    
+    string MovieMetadataDirectory,
+    string MovieMetadataCacheDirectory,
+    string TVMetadataDirectory,
+    string TVMetadataCacheDirectory)
 {
     public DirectorySettings Movie3D { get; init; }
 

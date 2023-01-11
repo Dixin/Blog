@@ -20,7 +20,13 @@
     "MovieRarbgH264720PMetadata": "D:\\Files\\Library\\Movie.RarbgMetadata.H264.720p.json",
     "MovieYtsSummary": "D:\\Files\\Library\\Movie.YtsSummary.json",
     "MovieYtsMetadata": "D:\\Files\\Library\\Movie.YtsMetadata.json",
+    "MovieRareMetadata": "D:\\Files\\Library\\Movie.RareMetadata.json",
     "TVRarbgX265Metadata": "D:\\Files\\Library\\TV.RarbgMetadata.x265.json",
+
+    "MovieMetadataDirectory": "D:\\Files\\Library\\MovieMetadata",
+    "MovieMetadataCacheDirectory": "D:\\Files\\Library\\MovieMetadataCache",
+    "TVMetadataDirectory": "D:\\Files\\Library\\TVMetadata",
+    "TVMetadataCacheDirectory": "D:\\Files\\Library\\TVMetadataCache",
 
     "Movie3D": {
         "Directory": "D:\\Files\\Library\\Movies 3D.立体电影",

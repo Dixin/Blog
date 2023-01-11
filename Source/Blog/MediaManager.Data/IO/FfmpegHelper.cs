@@ -34,7 +34,7 @@ internal class FfmpegHelper
     internal static void Encode(string input, string output = "", bool overwrite = false, bool? estimateCrop = null, bool sample = false, string? relativePath = null, int retryCount = 10, Action<string>? log = null, params TimeSpan[] cropTimestamps)
     {
         log ??= Logger.WriteLine;
-        VideoMetadata videoMetadata = Video.GetVideoMetadataAsync(input, null, relativePath, retryCount).Result;
+        VideoMetadata videoMetadata = Video.ReadVideoMetadataAsync(input, null, relativePath, retryCount).Result;
 
         string mapAudio = videoMetadata.Audio > 0 ? "-map 0:a " : string.Empty;
 
