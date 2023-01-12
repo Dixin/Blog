@@ -31,10 +31,13 @@ internal class FfmpegHelper
         });
     }
 
-    internal static void Encode(string input, string output = "", bool overwrite = false, bool? estimateCrop = null, bool sample = false, string? relativePath = null, int retryCount = 10, Action<string>? log = null, params TimeSpan[] cropTimestamps)
+    internal static async Task EncodeAsync(
+        string input, string output = "",
+        bool overwrite = false, bool? estimateCrop = null, bool sample = false,
+        string? relativePath = null, int retryCount = 10, Action<string>? log = null, params TimeSpan[] cropTimestamps)
     {
         log ??= Logger.WriteLine;
-        VideoMetadata videoMetadata = Video.ReadVideoMetadataAsync(input, null, relativePath, retryCount).Result;
+        VideoMetadata videoMetadata = await Video.ReadVideoMetadataAsync(input, null, relativePath, retryCount);
 
         string mapAudio = videoMetadata.Audio > 0 ? "-map 0:a " : string.Empty;
 
@@ -50,11 +53,11 @@ internal class FfmpegHelper
         {
             if (cropTimestamps.IsEmpty())
             {
-                duration = FFmpeg.GetMediaInfo(input).Result.Duration;
-                cropTimestamps = new [] { duration.Value / 4, duration.Value / 2, duration.Value - duration.Value / 4 };
+                duration = (await FFmpeg.GetMediaInfo(input)).Duration;
+                cropTimestamps = GetTimestamps(duration.Value).ToArray();
             }
 
-            (int width, int height, int x, int y) = GetVideoCrop(input, estimate: estimateCrop.Value, log: log, timestamps: cropTimestamps);
+            (int width, int height, int x, int y) = await GetVideoCropAsync(input, estimate: estimateCrop.Value, log: log, timestamps: cropTimestamps);
             if (width != videoMetadata.Width || height != videoMetadata.Height)
             {
                 videoFilters.Add($"crop={width}:{height}:{x}:{y}");
@@ -64,7 +67,7 @@ internal class FfmpegHelper
         string sampleDuration;
         if (sample)
         {
-            duration ??= FFmpeg.GetMediaInfo(input).Result.Duration;
+            duration ??= (await FFmpeg.GetMediaInfo(input)).Duration;
             TimeSpan sampleStart = duration.Value / 2;
             sampleDuration = $" -ss {sampleStart.Hours:00}:{sampleStart.Minutes:00}:{sampleStart.Seconds:00} -t 00:00:30";
         }
@@ -148,14 +151,23 @@ internal class FfmpegHelper
             window: true);
     }
 
-    internal static (int Width, int Height, int X, int Y) GetVideoCrop(string file, TimeSpan duration, int frameCount = 30, bool estimate = false, Action<string>? log = null) =>
-        GetVideoCrop(file, frameCount, estimate, log, duration / 4, duration / 2, duration - duration / 4);
+    private static IEnumerable<TimeSpan> GetTimestamps(TimeSpan duration, int timestampCount = 3)
+    {
+        TimeSpan timestamp = duration / (timestampCount + 1);
+        return Enumerable.Range(1, timestampCount).Select(index => timestamp * index);
+    }
 
-    internal static (int Width, int Height, int X, int Y) GetVideoCrop(string file, int frameCount = 30, bool estimate = false, Action<string>? log = null, params TimeSpan[] timestamps)
+    internal static async Task<(int Width, int Height, int X, int Y)> GetVideoCrop(string file, int frameCount = 30, bool estimate = false, Action<string>? log = null, int timestampCount = 3)
+    {
+        TimeSpan duration = (await FFmpeg.GetMediaInfo(file)).Duration;
+        return await GetVideoCropAsync(file, frameCount, estimate, log, GetTimestamps(duration, timestampCount).ToArray());
+    }
+
+    internal static async Task<(int Width, int Height, int X, int Y)> GetVideoCropAsync(string file, int frameCount = 30, bool estimate = false, Action<string>? log = null, params TimeSpan[] timestamps)
     {
         if (timestamps.IsEmpty())
         {
-            TimeSpan duration = FFmpeg.GetMediaInfo(file).Result.Duration;
+            TimeSpan duration = (await FFmpeg.GetMediaInfo(file)).Duration;
             timestamps = new[] { duration / 4, duration / 2, duration - duration / 4 };
         }
 
