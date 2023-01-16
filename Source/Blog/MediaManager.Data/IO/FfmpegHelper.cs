@@ -34,6 +34,35 @@ internal class FfmpegHelper
     internal static async Task EncodeAsync(
         string input, string output = "",
         bool overwrite = false, bool? estimateCrop = null, bool sample = false,
+        string? relativePath = null, int retryCount = 10, int? cropTimestampCount = default, Action<string>? log = null, params TimeSpan[] cropTimestamps)
+    {
+        TimeSpan? duration;
+        if (cropTimestamps.Any())
+        {
+            if (cropTimestampCount.HasValue && cropTimestampCount.Value != cropTimestamps.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(cropTimestampCount), cropTimestampCount, $"The value should be {cropTimestamps.Length}.");
+            }
+
+            duration = null;
+        }
+        else
+        {
+            if (cropTimestampCount is null or <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(cropTimestampCount), cropTimestampCount, $"The value should be positive.");
+            }
+
+            duration = (await FFmpeg.GetMediaInfo(input)).Duration;
+            cropTimestamps = GetTimestamps(duration.Value, cropTimestampCount.Value).ToArray();
+        }
+
+        await EncodeAsync(input, output, duration, overwrite, estimateCrop, sample, relativePath, retryCount, log, cropTimestamps);
+    }
+
+    private static async Task EncodeAsync(
+        string input, string output = "", TimeSpan? duration = null,
+        bool overwrite = false, bool? estimateCrop = null, bool sample = false,
         string? relativePath = null, int retryCount = 10, Action<string>? log = null, params TimeSpan[] cropTimestamps)
     {
         log ??= Logger.WriteLine;
@@ -48,12 +77,11 @@ internal class FfmpegHelper
             videoFilters.Add("bwdif=mode=send_field:parity=auto:deint=all");
         }
 
-        TimeSpan? duration = null;
         if (estimateCrop.HasValue)
         {
             if (cropTimestamps.IsEmpty())
             {
-                duration = (await FFmpeg.GetMediaInfo(input)).Duration;
+                duration ??= (await FFmpeg.GetMediaInfo(input)).Duration;
                 cropTimestamps = GetTimestamps(duration.Value).ToArray();
             }
 
