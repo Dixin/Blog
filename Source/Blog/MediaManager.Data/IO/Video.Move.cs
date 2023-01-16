@@ -1010,6 +1010,7 @@ internal static partial class Video
     internal static void FormatTV(string mediaDirectory, string metadataDirectory, string subtitleDirectory = "", Func<string, string, string>? renameForTitle = null, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
+        metadataDirectory = metadataDirectory.IfNullOrWhiteSpace(mediaDirectory);
 
         (string Path, string Name)[] tvs = Directory
             .GetDirectories(mediaDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
