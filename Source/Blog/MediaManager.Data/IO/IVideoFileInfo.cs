@@ -43,7 +43,7 @@ internal interface IVideoFileInfo : INaming
     }
 
     DefinitionType DefinitionType =>
-        this.Edition.EndsWithIgnoreCase(Video.FakeDefinition)
+        this.Edition.EndsWithIgnoreCase(Video.UpScaleDefinition)
             ? DefinitionType.P480
             : this.Definition switch
             {
@@ -54,7 +54,7 @@ internal interface IVideoFileInfo : INaming
             };
 
     bool IsHD =>
-        this.Definition is ".2160p" or ".1080p" or ".720p" && !this.Edition.EndsWithIgnoreCase(Video.FakeDefinition);
+        this.Definition is ".2160p" or ".1080p" or ".720p" && !this.Edition.EndsWithIgnoreCase(Video.UpScaleDefinition);
 }
 
 internal enum EncoderType

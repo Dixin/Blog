@@ -16,12 +16,23 @@ internal static class Rarbg
     {
         log ??= Logger.WriteLine;
 
-        ConcurrentDictionary<string, RarbgMetadata[]> allSummaries = File.Exists(jsonPath)
-            ? new(JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(jsonPath)) ?? throw new InvalidOperationException(jsonPath))
-            : new();
+        string jsonText;
+        ConcurrentDictionary<string, RarbgMetadata[]> allSummaries;
+        if (File.Exists(jsonPath))
+        {
+            jsonText = await File.ReadAllTextAsync(jsonPath);
+            allSummaries = jsonText.IsNullOrWhiteSpace()
+                ? new()
+                : new(JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(jsonText) ?? new Dictionary<string, RarbgMetadata[]>());
+        }
+        else
+        {
+            allSummaries = new();
+        }
+
         await urls.ParallelForEachAsync(async (url, index) => await DownloadMetadataAsync(url, jsonPath, allSummaries, index + 1, @continue, log), degreeOfParallelism);
-        string jsonText = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
-        FileHelper.WriteText(jsonPath, jsonText, null, WriteJsonLock);
+        jsonText = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
+        await FileHelper.WriteTextAsync(jsonPath, jsonText);
     }
 
     internal static async Task DownloadMetadataAsync(string url, string jsonPath, Func<int, bool>? @continue = null, Action<string>? log = null) =>

@@ -275,10 +275,10 @@ internal static partial class Video
                 string contentRating = imdbMetadata?.FormattedContentRating ?? NotExistingFlag;
                 VideoMovieFileInfo[] videoFileInfos = videos.Select(VideoMovieFileInfo.Parse).ToArray();
                 VideoDirectoryInfo videoDirectoryInfo = new(
-                    DefaultTitle1: defaultTitle.FilterForFileSystem().ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " "), DefaultTitle2: string.Empty, DefaultTitle3: string.Empty,
-                    OriginalTitle1: originalTitle.FilterForFileSystem(), OriginalTitle2: string.Empty, OriginalTitle3: string.Empty,
+                    DefaultTitle1: defaultTitle.FilterForFileSystem().ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " ").Trim(), DefaultTitle2: string.Empty, DefaultTitle3: string.Empty,
+                    OriginalTitle1: originalTitle.FilterForFileSystem().ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " ").Trim(), OriginalTitle2: string.Empty, OriginalTitle3: string.Empty,
                     Year: year,
-                    TranslatedTitle1: translatedTitle.FilterForFileSystem().ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " ").ReplaceIgnoreCase("：", "-"), TranslatedTitle2: string.Empty, TranslatedTitle3: string.Empty, TranslatedTitle4: string.Empty,
+                    TranslatedTitle1: translatedTitle.FilterForFileSystem().ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " ").ReplaceIgnoreCase("：", "-").Trim(), TranslatedTitle2: string.Empty, TranslatedTitle3: string.Empty, TranslatedTitle4: string.Empty,
                     AggregateRating: rating, AggregateRatingCount: ratingCount,
                     ContentRating: contentRating,
                     Resolution: isTV ? string.Empty : VideoDirectoryInfo.GetResolution(videoFileInfos),

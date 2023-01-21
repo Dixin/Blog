@@ -44,7 +44,7 @@ internal static partial class Video
 
     private const string ImdbCacheSearchPattern = PathHelper.AllSearchPattern + ImdbCacheExtension;
 
-    private static readonly string[] SubtitleLanguages = { "bul", "can", "chs", "cht", "dan", "dut", "eng", "fin", "fre", "hin", "ger", "ita", "jap", "kor", "nor", "pol", "por", "rus", "spa", "swe", "tam" };
+    private static readonly string[] SubtitleLanguages = { "bul", "can", "cat", "chs", "cht", "cze", "dan", "dut", "eng", "fin", "fre", "hin", "ger", "hun", "ita", "jap", "kor", "nor", "pol", "por", "rus", "spa", "swe", "tam" };
 
     internal const string NotExistingFlag = "-";
 
@@ -52,7 +52,7 @@ internal static partial class Video
 
     internal const string SubtitleSeparator = "-";
 
-    internal const string FakeDefinition = ".FAKE";
+    internal const string UpScaleDefinition = ".FAKE";
 
     private static readonly int IOMaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4);
 

@@ -188,12 +188,12 @@ internal static partial class Video
                 .Where(file =>
                 {
                     string name = Path.GetFileNameWithoutExtension(file);
-                    return name.EqualsIgnoreCase(imdbId) || name.StartsWithIgnoreCase($"{imdbId}.");
+                    return (name.EqualsIgnoreCase(imdbId) || name.StartsWithIgnoreCase($"{imdbId}.")) && File.Exists(file);
                 })
                 .ForEach(file => FileHelper.MoveToDirectory(file, movie));
 
             metadataFiles
-                .Where(file => Path.GetFileNameWithoutExtension(file).StartsWithIgnoreCase($"{imdbId}{SubtitleSeparator}"))
+                .Where(file => Path.GetFileNameWithoutExtension(file).StartsWithIgnoreCase($"{imdbId}{SubtitleSeparator}") && File.Exists(file))
                 .ForEach(file => FileHelper.MoveToDirectory(file, movie));
         });
     }
