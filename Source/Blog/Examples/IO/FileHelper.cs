@@ -42,9 +42,9 @@ public static class FileHelper
         File.Move(source, destination, overwrite);
     }
 
-    public static void MoveToDirectory(string source, string destinationDirectory, bool overwrite = false)
+    public static void MoveToDirectory(string source, string destinationParentDirectory, bool overwrite = false)
     {
-        string destination = Path.Combine(destinationDirectory, Path.GetFileName(source));
+        string destination = Path.Combine(destinationParentDirectory, Path.GetFileName(source));
         Move(source, destination, overwrite);
     }
 

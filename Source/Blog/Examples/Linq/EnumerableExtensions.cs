@@ -93,8 +93,8 @@ public static class EnumerableExtensions
         this IEnumerable<T> source, Func<T, ValueTask> asyncAction, int? maxDegreeOfParallelism = null)
     {
         return Parallel.ForEachAsync(
-            source, 
-            new ParallelOptions() { MaxDegreeOfParallelism = maxDegreeOfParallelism ?? DefaultMaxDegreeOfParallelism }, 
+            source,
+            new ParallelOptions() { MaxDegreeOfParallelism = maxDegreeOfParallelism ?? DefaultMaxDegreeOfParallelism },
             (value, cancellationToken) => asyncAction(value));
         //maxDegreeOfParallelism ??= DefaultMaxDegreeOfParallelism;
         //if (maxDegreeOfParallelism <= 0)
@@ -141,6 +141,17 @@ public static class EnumerableExtensions
         while (source.MoveNext())
         {
             action(source.Current);
+        }
+    }
+
+    public static void ForEach<T>(this IEnumerable<T> source, Func<T, bool> action)
+    {
+        foreach (T value in source)
+        {
+            if (!action(value))
+            {
+                break;
+            }
         }
     }
 

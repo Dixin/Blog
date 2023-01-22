@@ -56,6 +56,12 @@ public static class DirectoryHelper
         }
     }
 
+    public static void MoveToDirectory(string source, string destinationParentDirectory, bool overwrite = false)
+    {
+        string destination = Path.Combine(destinationParentDirectory, Path.GetFileName(source));
+        Move(source, destination, overwrite);
+    }
+
     public static void Empty(DirectoryInfo directory)
     {
         if (directory.NotNull().Exists)
