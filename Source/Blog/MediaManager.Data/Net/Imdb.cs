@@ -495,7 +495,7 @@ internal static class Imdb
         Dictionary<string, RarbgMetadata[]> h264720PMetadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264720PJsonPath))!;
         Dictionary<string, RareMetadata> rareMetadata = JsonSerializer.Deserialize<Dictionary<string, RareMetadata>>(await File.ReadAllTextAsync(rareJsonPath))!;
 
-        using IWebDriver webDriver = WebDriverHelper.StartEdge();
+        using IWebDriver webDriver = WebDriverHelper.StartEdge(1);
         string[] cacheFiles = Directory.GetFiles(@cacheDirectory);
         string[] metadataFiles = Directory.GetFiles(metadataDirectory);
         string[] imdbIds = x265Metadata.Keys
@@ -542,7 +542,7 @@ internal static class Imdb
             .Where(imdbId => imdbId.IsNotNullOrWhiteSpace())
             .ToArray();
 
-        using IWebDriver webDriver = WebDriverHelper.StartEdge();
+        using IWebDriver webDriver = WebDriverHelper.StartEdge(1);
         string[] cacheFiles = Directory.GetFiles(@cacheDirectory);
         string[] metadataFiles = Directory.GetFiles(metadataDirectory);
         string[] imdbIds = x265Metadata.Keys

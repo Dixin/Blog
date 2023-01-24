@@ -42,11 +42,11 @@ public static class FileHelper
         File.Move(source, destination, overwrite);
     }
 
-    public static void MoveToDirectory(string source, string destinationParentDirectory, bool overwrite = false)
-    {
-        string destination = Path.Combine(destinationParentDirectory, Path.GetFileName(source));
-        Move(source, destination, overwrite);
-    }
+    public static void MoveToDirectory(string source, string destinationParentDirectory, bool overwrite = false) => 
+        Move(source, Path.Combine(destinationParentDirectory, Path.GetFileName(source)), overwrite);
+
+    public static void CopyToDirectory(string source, string destinationParentDirectory, bool overwrite = false) => 
+        Copy(source, Path.Combine(destinationParentDirectory, Path.GetFileName(source)), overwrite);
 
     public static void Copy(string source, string destination, bool overwrite = false)
     {
