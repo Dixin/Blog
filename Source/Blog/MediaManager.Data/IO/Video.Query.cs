@@ -22,7 +22,7 @@ internal static partial class Video
             async () =>
             {
                 IMediaInfo mediaInfo = await FFmpeg.GetMediaInfo(file);
-                IVideoStream videoStream = mediaInfo.VideoStreams.Single(videoStream => !videoStream.Codec.EqualsIgnoreCase("mjpeg"));
+                IVideoStream videoStream = mediaInfo.VideoStreams.Single(videoStream => !videoStream.Codec.EqualsIgnoreCase("mjpeg") && !videoStream.Codec.EqualsIgnoreCase("png"));
                 return new VideoMetadata()
                 {
                     File = relativePath.IsNullOrWhiteSpace() ? file : Path.GetRelativePath(relativePath, file),
