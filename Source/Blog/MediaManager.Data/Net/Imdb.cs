@@ -26,7 +26,7 @@ internal static class Imdb
         string json = imdbCQ.Find(@"script[type=""application/ld+json""]").Text();
         if (imdbCQ.Find("title").Text().Trim().StartsWithIgnoreCase("500 Error"))
         {
-            throw new ArgumentException(nameof(imdbId));
+            throw new ArgumentException("Server side error.", nameof(imdbId));
         }
 
         if (imdbCQ.Find("title").Text().Trim().StartsWithIgnoreCase("404 Error"))

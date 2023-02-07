@@ -14,7 +14,7 @@ internal static class Drive115
     {
         log ??= Logger.WriteLine;
 
-        using IWebDriver parentFrame = WebDriverHelper.StartEdge(1, isLoadingAll: true);
+        using IWebDriver parentFrame = WebDriverHelper.StartEdge(0 + 2, isLoadingAll: true);
         parentFrame.Url = url;
 
         using IWebDriver? offlineTasksFrame = new WebDriverWait(parentFrame, WebDriverHelper.DefaultWait).Until(e => e.SwitchTo().Frame("wangpan"));
@@ -75,7 +75,13 @@ internal static class Drive115
 
     internal static async Task WriteOfflineTasksAsync(string url, string path, string keyword = "", Action<string>? log = null)
     {
-        List<Drive115OfflineTask> tasks = DownloadOfflineTasks(url, (title, link) => title.ContainsIgnoreCase(keyword) || link.ContainsIgnoreCase(keyword), (_, _) => Debugger.Break(), log);
+        List<Drive115OfflineTask> tasks = DownloadOfflineTasks(
+            url,
+            keyword.IsNullOrWhiteSpace()
+                ? (_, _) => false
+                : (title, link) => title.ContainsIgnoreCase(keyword) || link.ContainsIgnoreCase(keyword),
+            (_, _) => Debugger.Break(),
+            log);
         string jsonText = JsonSerializer.Serialize(tasks.ToArray(), new JsonSerializerOptions() { WriteIndented = true });
         await FileHelper.WriteTextAsync(path, jsonText);
     }
