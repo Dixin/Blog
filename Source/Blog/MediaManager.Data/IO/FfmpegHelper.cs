@@ -175,7 +175,7 @@ internal class FfmpegHelper
         return Enumerable.Range(1, timestampCount).Select(index => timestamp * index);
     }
 
-    internal static async Task<(int Width, int Height, int X, int Y)> GetVideoCrop(string file, int frameCount = 30, bool estimate = false, Action<string>? log = null, int timestampCount = 3)
+    internal static async Task<(int Width, int Height, int X, int Y)> GetVideoCropAsync(string file, int frameCount = 30, bool estimate = false, Action<string>? log = null, int timestampCount = 3)
     {
         TimeSpan duration = (await FFmpeg.GetMediaInfo(file)).Duration;
         return await GetVideoCropAsync(file, frameCount, estimate, log, GetTimestamps(duration, timestampCount).ToArray());
