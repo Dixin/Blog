@@ -29,20 +29,29 @@ internal static partial class Video
             });
     }
 
-    internal static void RenameDirectories(string path, Func<string, string> rename, string? pattern = null, SearchOption? searchOption = null, Func<string, bool>? predicate = null, Action<string>? log = null)
+    internal static void RenameDirectories(string path, Func<string, int, string> rename, string? pattern = null, SearchOption? searchOption = null, Func<string, bool>? predicate = null, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
-        Directory.GetDirectories(path, pattern ?? PathHelper.AllSearchPattern, searchOption ?? SearchOption.AllDirectories)
+
+        Directory.EnumerateDirectories(path, pattern ?? PathHelper.AllSearchPattern, searchOption ?? SearchOption.AllDirectories)
             .Where(directory => predicate?.Invoke(directory) ?? true)
-            .ForEach(directory =>
+            .Order()
+            .ToArray()
+            .ForEach((directory, index) =>
             {
-                string newDirectory = rename(directory);
-                if (!directory.EqualsOrdinal(newDirectory))
+                string newDirectory = rename(directory, index);
+                if (directory.EqualsIgnoreCase(newDirectory))
                 {
-                    log(directory);
-                    Directory.Move(directory, newDirectory);
-                    log(newDirectory);
+                    return;
                 }
+
+                log(directory);
+                if (!isDryRun)
+                {
+                    DirectoryHelper.Move(directory, newDirectory);
+                }
+
+                log(newDirectory);
             });
     }
 
@@ -110,11 +119,12 @@ internal static partial class Video
 
         rename ??= (file, title) => PathHelper.AddFilePostfix(file, $".{title}");
 
-        Directory.GetFiles(metadataDirectory, XmlMetadataSearchPattern, SearchOption.AllDirectories)
+        Directory
+            .GetFiles(metadataDirectory, XmlMetadataSearchPattern, SearchOption.AllDirectories)
             .ForEach(nfo =>
             {
                 string match = Regex.Match(Path.GetFileNameWithoutExtension(nfo) ?? throw new InvalidOperationException($"{nfo} is invalid."), @"S[\d]+E[\d]+", RegexOptions.IgnoreCase).Value.ToLowerInvariant();
-                if (match.IsNullOrWhiteSpace())
+                if (match.IsNullOrWhiteSpace() || !File.Exists(nfo))
                 {
                     return;
                 }
@@ -275,10 +285,10 @@ internal static partial class Video
                 string contentRating = imdbMetadata?.FormattedContentRating ?? NotExistingFlag;
                 VideoMovieFileInfo[] videoFileInfos = videos.Select(VideoMovieFileInfo.Parse).ToArray();
                 VideoDirectoryInfo videoDirectoryInfo = new(
-                    DefaultTitle1: defaultTitle.FilterForFileSystem().ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " ").Trim(), DefaultTitle2: string.Empty, DefaultTitle3: string.Empty,
-                    OriginalTitle1: originalTitle.FilterForFileSystem().ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " ").Trim(), OriginalTitle2: string.Empty, OriginalTitle3: string.Empty,
+                    DefaultTitle1: defaultTitle.ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " ").FilterForFileSystem().Trim(), DefaultTitle2: string.Empty, DefaultTitle3: string.Empty,
+                    OriginalTitle1: originalTitle.ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " ").FilterForFileSystem().Trim(), OriginalTitle2: string.Empty, OriginalTitle3: string.Empty,
                     Year: year,
-                    TranslatedTitle1: translatedTitle.FilterForFileSystem().ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " ").ReplaceIgnoreCase("：", "-").Trim(), TranslatedTitle2: string.Empty, TranslatedTitle3: string.Empty, TranslatedTitle4: string.Empty,
+                    TranslatedTitle1: translatedTitle.ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " ").ReplaceIgnoreCase("：", "-").FilterForFileSystem().Trim(), TranslatedTitle2: string.Empty, TranslatedTitle3: string.Empty, TranslatedTitle4: string.Empty,
                     AggregateRating: rating, AggregateRatingCount: ratingCount,
                     ContentRating: contentRating,
                     Resolution: isTV ? string.Empty : VideoDirectoryInfo.GetResolution(videoFileInfos),
@@ -759,19 +769,19 @@ internal static partial class Video
                 log($"Delete {textFile}");
                 if (!isDryRun)
                 {
-                    FileHelper.Delete(textFile);
+                    FileHelper.Recycle(textFile);
                 }
             });
 
         Directory
             .GetFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
-            .Where(file => Path.GetFileNameWithoutExtension(file).ContainsOrdinal(" (1)"))
+            .Where(file => Path.GetFileNameWithoutExtension(file).EndsWithOrdinal(" (1)") && File.Exists(PathHelper.ReplaceFileNameWithoutExtension(file, name => name[..^" (1)".Length])))
             .ForEach(duplicateFile =>
             {
                 log($"Delete {duplicateFile}");
                 if (!isDryRun)
                 {
-                    FileHelper.Delete(duplicateFile);
+                    FileHelper.Recycle(duplicateFile);
                 }
             });
 
@@ -791,7 +801,7 @@ internal static partial class Video
                             log($"Move {subtitle}");
                             if (!isDryRun)
                             {
-                                File.Move(subtitle, newSubtitle);
+                                FileHelper.Move(subtitle, newSubtitle);
                             }
 
                             log(newSubtitle);
@@ -813,12 +823,7 @@ internal static partial class Video
                 log($"Move {season}");
                 if (!isDryRun)
                 {
-                    if (!Directory.Exists(tv))
-                    {
-                        Directory.CreateDirectory(tv);
-                    }
-
-                    Directory.Move(season, newSeason);
+                    DirectoryHelper.Move(season, newSeason);
                 }
 
                 log(newSeason);
@@ -835,7 +840,7 @@ internal static partial class Video
                 log($"Delete {seasonSubtitleDirectory}");
                 if (!isDryRun && Directory.Exists(seasonSubtitleDirectory))
                 {
-                    DirectoryHelper.Delete(seasonSubtitleDirectory);
+                    DirectoryHelper.Recycle(seasonSubtitleDirectory);
                 }
             });
 
@@ -864,7 +869,7 @@ internal static partial class Video
                     log($"Move {englishSubtitle}");
                     if (!isDryRun)
                     {
-                        File.Move(englishSubtitle, newEnglishSubtitle);
+                        FileHelper.Move(englishSubtitle, newEnglishSubtitle);
                     }
 
                     log(newEnglishSubtitle);
@@ -886,7 +891,7 @@ internal static partial class Video
                             log($"Move {chineseSubtitle}");
                             if (!isDryRun)
                             {
-                                File.Move(chineseSubtitle, newChineseSubtitle);
+                                FileHelper.Move(chineseSubtitle, newChineseSubtitle);
                             }
 
                             log(newChineseSubtitle);
@@ -907,7 +912,7 @@ internal static partial class Video
                             log($"Move {chineseSubtitle}");
                             if (!isDryRun)
                             {
-                                File.Move(chineseSubtitle, newChineseSubtitle);
+                                FileHelper.Move(chineseSubtitle, newChineseSubtitle);
                             }
 
                             log(newChineseSubtitle);
@@ -923,7 +928,7 @@ internal static partial class Video
                         log($"Move {subtitle}");
                         if (!isDryRun)
                         {
-                            File.Move(subtitle, newSubtitle);
+                            FileHelper.Move(subtitle, newSubtitle);
                         }
 
                         log(newSubtitle);
@@ -933,7 +938,7 @@ internal static partial class Video
 
         Directory
             .GetFiles(directory, "*.eng.srt", SearchOption.AllDirectories)
-            .ForEach(f => File.Move(f, f.ReplaceIgnoreCase(".eng.srt", ".srt"), false));
+            .ForEach(f => FileHelper.Move(f, f.ReplaceIgnoreCase(".eng.srt", ".srt"), false));
     }
 
     internal static void MoveFanArt(string directory, int level = 2, Action<string>? log = null)
@@ -1010,6 +1015,7 @@ internal static partial class Video
     internal static void FormatTV(string mediaDirectory, string metadataDirectory, string subtitleDirectory = "", Func<string, string, string>? renameForTitle = null, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
+
         metadataDirectory = metadataDirectory.IfNullOrWhiteSpace(mediaDirectory);
 
         (string Path, string Name)[] tvs = Directory
@@ -1034,5 +1040,20 @@ internal static partial class Video
         tvs
             .Select(tv => (tv.Path, tv.Name, Subtitle: existingSubtitleTVs.Single(existingTV => tv.Name.Equals(Path.GetFileName(existingTV)))))
             .ForEach(match => MoveSubtitlesForEpisodes(match.Path, match.Subtitle, isDryRun: isDryRun, log: log));
+    }
+
+    internal static void RenameDirectoriesWithFormattedNumber(string directory, SearchOption? searchOption = null, bool isDryRun = false, Action<string>? log = null, params string[] titles)
+    {
+        log ??= Logger.WriteLine;
+
+        titles
+            .Select(title => title.Trim())
+            .Where(title => title.IsNotNullOrWhiteSpace())
+            .ForEach(keyword => RenameDirectories(
+                directory,
+                (f, i) => Regex.Replace(f, @$"(\\|\.){keyword}`([0-9]{{1}})(\-|\.|\[)", $"$1{keyword}`0$2$3"),
+                searchOption: searchOption,
+                isDryRun: isDryRun,
+                log: log));
     }
 }

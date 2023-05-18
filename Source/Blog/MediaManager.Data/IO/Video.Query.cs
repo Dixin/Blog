@@ -168,7 +168,7 @@ internal static partial class Video
             level--;
         }
 
-        return directories.OrderBy(movie => movie);
+        return directories.Order();
     }
 
     internal static async Task DownloadImdbMetadataAsync(string directory, int level = 2, bool overwrite = false, bool useCache = false, bool useBrowser = false, int? degreeOfParallelism = null, Action<string>? log = null)

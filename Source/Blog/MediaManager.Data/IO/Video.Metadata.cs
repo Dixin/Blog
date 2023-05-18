@@ -183,17 +183,24 @@ internal static partial class Video
 
             string xmlMetadata = files.First(file => file.EndsWithIgnoreCase(XmlMetadataExtension));
             XDocument xmlDocument = XDocument.Load(xmlMetadata);
-            string imdbId = xmlDocument.Root?.Element("imdbid")?.Value ?? throw new InvalidOperationException(xmlMetadata);
+            string? imdbId = xmlDocument.Root?.Element("imdbid")?.Value;
+            if (imdbId.IsNotNullOrWhiteSpace())
+            {
+                return;
+            }
+
             cacheFiles
                 .Where(file =>
                 {
                     string name = Path.GetFileNameWithoutExtension(file);
                     return (name.EqualsIgnoreCase(imdbId) || name.StartsWithIgnoreCase($"{imdbId}.")) && File.Exists(file);
                 })
+                .ToArray()
                 .ForEach(file => FileHelper.MoveToDirectory(file, movie));
 
             metadataFiles
                 .Where(file => Path.GetFileNameWithoutExtension(file).StartsWithIgnoreCase($"{imdbId}{SubtitleSeparator}") && File.Exists(file))
+                .ToArray()
                 .ForEach(file => FileHelper.MoveToDirectory(file, movie));
         });
     }
@@ -237,8 +244,8 @@ internal static partial class Video
     internal static async Task DownloadImdbMetadataAsync(string imdbId, string cacheDirectory, string metadataDirectory, string[] cacheFiles, string[] metadataFiles, IWebDriver? webDriver, bool overwrite = false, bool useCache = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
-        string[] jsonFiles = metadataFiles.Where(file => file.EndsWithIgnoreCase(ImdbMetadataExtension)).ToArray();
-        if (jsonFiles.Any(file => Path.GetFileName(file).StartsWithIgnoreCase(imdbId)))
+        string[] jsonFiles = metadataFiles.Where(file => file.EndsWithIgnoreCase(ImdbMetadataExtension) && Path.GetFileName(file).StartsWithIgnoreCase(imdbId)).ToArray();
+        if (jsonFiles.Any())
         {
             if (overwrite)
             {
@@ -285,14 +292,14 @@ internal static partial class Video
             string parentAdvisoriesUrl, string parentAdvisoriesHtml
         ) = await Imdb.DownloadAsync(
             imdbId,
-            useCache ? imdbFile : string.Empty,
-            useCache ? releaseFile : string.Empty,
-            useCache ? keywordsFile : string.Empty,
-            useCache ? advisoriesFile : string.Empty,
-            useCache ? parentImdbFile : string.Empty,
-            useCache ? parentReleaseFile : string.Empty,
-            useCache ? parentKeywordsFile : string.Empty,
-            useCache ? parentAdvisoriesFile : string.Empty,
+            useCache || File.Exists(imdbFile) && new FileInfo(imdbFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1) ? imdbFile : string.Empty,
+            useCache || File.Exists(releaseFile) && new FileInfo(releaseFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1) ? releaseFile : string.Empty,
+            useCache || File.Exists(keywordsFile) && new FileInfo(keywordsFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1) ? keywordsFile : string.Empty,
+            useCache || File.Exists(advisoriesFile) && new FileInfo(advisoriesFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1) ? advisoriesFile : string.Empty,
+            useCache || File.Exists(parentImdbFile) && new FileInfo(parentImdbFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1) ? parentImdbFile : string.Empty,
+            useCache || File.Exists(parentReleaseFile) && new FileInfo(parentReleaseFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1) ? parentReleaseFile : string.Empty,
+            useCache || File.Exists(parentKeywordsFile) && new FileInfo(parentKeywordsFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1) ? parentKeywordsFile : string.Empty,
+            useCache || File.Exists(parentAdvisoriesFile) && new FileInfo(parentAdvisoriesFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1) ? parentAdvisoriesFile : string.Empty,
             webDriver);
         Debug.Assert(imdbHtml.IsNotNullOrWhiteSpace());
         if (imdbMetadata.Regions.IsEmpty())

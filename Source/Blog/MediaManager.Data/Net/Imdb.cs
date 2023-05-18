@@ -7,6 +7,7 @@ using Examples.IO;
 using Examples.Linq;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.UI;
 
 internal static class Imdb
 {
@@ -181,9 +182,33 @@ internal static class Imdb
             }
         });
 
+        if (allTitles.IsEmpty())
+        {
+            CQ seeMoreButtonCQ = releaseCQ.Find("span.single-page-see-more-button-akas button.ipc-see-more__button:visible");
+            Debug.Assert(seeMoreButtonCQ.Length is 0 or 1);
+            if (seeMoreButtonCQ.Any() && webDriver is not null && webDriver.Url.EqualsIgnoreCase(releaseUrl))
+            {
+                int rowCount = webDriver.FindElements(By.CssSelector("div[data-testid='sub-section-akas']>ul>li")).Count;
+                IWebElement seeMoreButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultWait).Until(driver => driver.FindElement(By.CssSelector("span.single-page-see-more-button-akas button.ipc-see-more__button")));
+                await Task.Delay(WebDriverHelper.DefaultDomWait);
+                Retry.FixedInterval(() => seeMoreButton.Click(), retryCount: 10, exception => exception is ElementClickInterceptedException);
+                new WebDriverWait(webDriver, WebDriverHelper.DefaultWait).Until(driver => driver.FindElements(By.CssSelector("div[data-testid='sub-section-akas']>ul>li")).Count != rowCount);
+                releaseHtml = webDriver.PageSource;
+                releaseCQ = releaseHtml;
+            }
+
+            allTitlesCQ = releaseCQ.Find("#akas").Parent().Parent().Parent().Next().Children().Children();
+            allTitles = allTitlesCQ
+                .Select(row => row.Cq().Children())
+                .Select(cells => (TitleKey: cells.First(), TitleValues: cells.Last().Find("li")))
+                .SelectMany(row => row.TitleValues.Select(title => (TitleKey: HttpUtility.HtmlDecode(row.TitleKey.Text().Trim()), TitleValue: HttpUtility.HtmlDecode(title.TextContent.Trim()))))
+                .ToArray();
+        }
+
         Dictionary<string, string[]> titles = allTitles
             .ToLookup(row => row.TitleKey, row => row.TitleValue, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(group => group.Key, group => group.ToArray());
+
         //Debug.Assert(titles.Any()
         //    || allTitlesCQ.Text().ContainsIgnoreCase("It looks like we don't have any AKAs for this title yet.")
         //    || imdbId is "tt10562876" or "tt13734388" or "tt11485640" or "tt11127510" or "tt11127706" or "tt11423284" or "tt20855690");
@@ -201,7 +226,7 @@ internal static class Imdb
                 .Single() ?? string.Empty;
 
             title = imdbCQ
-                .Find("div.title_wrapper h1")
+                .Find("section.ipc-page-section--bp-xs h1")
                 .Find("#titleYear")
                 .Remove()
                 .End()
@@ -495,7 +520,7 @@ internal static class Imdb
         Dictionary<string, RarbgMetadata[]> h264720PMetadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264720PJsonPath))!;
         Dictionary<string, RareMetadata> rareMetadata = JsonSerializer.Deserialize<Dictionary<string, RareMetadata>>(await File.ReadAllTextAsync(rareJsonPath))!;
 
-        using IWebDriver webDriver = WebDriverHelper.StartEdge(1);
+        using IWebDriver webDriver = WebDriverHelper.StartEdge(2);
         string[] cacheFiles = Directory.GetFiles(@cacheDirectory);
         string[] metadataFiles = Directory.GetFiles(metadataDirectory);
         string[] imdbIds = x265Metadata.Keys
@@ -542,7 +567,7 @@ internal static class Imdb
             .Where(imdbId => imdbId.IsNotNullOrWhiteSpace())
             .ToArray();
 
-        using IWebDriver webDriver = WebDriverHelper.StartEdge(1);
+        using IWebDriver webDriver = WebDriverHelper.StartEdge(2);
         string[] cacheFiles = Directory.GetFiles(@cacheDirectory);
         string[] metadataFiles = Directory.GetFiles(metadataDirectory);
         string[] imdbIds = x265Metadata.Keys

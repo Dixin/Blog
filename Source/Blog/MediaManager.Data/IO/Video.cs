@@ -4,7 +4,7 @@ internal static partial class Video
 {
     private const int DefaultLevel = 2;
 
-    private const string XmlMetadataExtension = ".nfo";
+    internal const string XmlMetadataExtension = ".nfo";
 
     internal const string VideoExtension = ".mp4";
 

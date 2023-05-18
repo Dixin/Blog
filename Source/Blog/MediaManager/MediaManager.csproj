@@ -22,10 +22,10 @@
     </ItemGroup>
 
 	<ItemGroup>
-         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.2" />
+         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="7.0.4" />
          <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="7.0.0" />
          <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
-         <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="108.0.1462.76" /> 
+         <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="112.0.1722.39" /> 
     </ItemGroup>
 
     <ItemGroup>
