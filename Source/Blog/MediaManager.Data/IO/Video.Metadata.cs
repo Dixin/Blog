@@ -217,7 +217,7 @@ internal static partial class Video
         //        jsonFiles.ForEach(jsonFile =>
         //        {
         //            log($"Delete imdb metadata {jsonFile}.");
-        //            File.Delete(jsonFile);
+        //            FileHelper.Recycle(jsonFile);
         //        });
         //        files = files.Except(jsonFiles).ToArray();
         //    }
@@ -252,7 +252,7 @@ internal static partial class Video
                 jsonFiles.ForEach(jsonFile =>
                 {
                     log($"Delete imdb metadata {jsonFile}.");
-                    FileHelper.Delete(jsonFile);
+                    FileHelper.Recycle(jsonFile);
                 });
             }
             else
@@ -377,7 +377,7 @@ internal static partial class Video
                 .Keys
                 .ToArray()
                 .Where(video => !File.Exists(Path.IsPathRooted(video) ? video : Path.Combine(Path.GetDirectoryName(jsonPath) ?? string.Empty, video)))
-                .ForEach(video => group.Remove(video)));
+                .ForEach(group.Remove));
 
         Dictionary<string, string> existingVideos = existingMetadata
             .Values

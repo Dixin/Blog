@@ -556,14 +556,14 @@ internal static partial class Video
                         {
                             if (!isDryRun)
                             {
-                                FileHelper.Delete(toAttachment);
+                                FileHelper.Recycle(toAttachment);
                             }
 
                             log($"Delete attachment {toAttachment}");
                         }
                         if (!isDryRun)
                         {
-                            File.Move(fromAttachment, toAttachment);
+                            FileHelper.Move(fromAttachment, toAttachment);
                         }
 
                         log($"Move external attachment {fromAttachment} to {toAttachment}");
@@ -571,7 +571,7 @@ internal static partial class Video
 
                 if (!isDryRun)
                 {
-                    FileHelper.Delete(toVideoMetadata.File);
+                    FileHelper.Recycle(toVideoMetadata.File);
                 }
 
                 log($"Delete video {toVideoMetadata.File}");
@@ -586,7 +586,7 @@ internal static partial class Video
                         {
                             if (!isDryRun)
                             {
-                                FileHelper.Delete(existingAttachment);
+                                FileHelper.Recycle(existingAttachment);
                             }
 
                             log($"Delete attachment {existingAttachment}");
@@ -595,7 +595,7 @@ internal static partial class Video
                         {
                             if (!isDryRun)
                             {
-                                File.Move(existingAttachment, newExistingAttachment);
+                                FileHelper.Move(existingAttachment, newExistingAttachment);
                             }
 
                             log($"Move attachment {existingAttachment} to {newExistingAttachment}");
@@ -965,7 +965,7 @@ internal static partial class Video
                 File.Move(fanArt, newFanArt);
                 log(newFanArt);
 
-                Directory.Delete(fanArtDirectory);
+                DirectoryHelper.Recycle(fanArtDirectory);
             });
     }
 

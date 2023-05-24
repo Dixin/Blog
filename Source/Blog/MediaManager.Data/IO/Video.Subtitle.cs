@@ -50,7 +50,7 @@ internal static partial class Video
             {
                 if (!isDryRun)
                 {
-                    FileHelper.Delete(result.File);
+                    FileHelper.Recycle(result.File);
                 }
                 log($"Charset: {result.Charset}, confidence: {result.Confidence}, file {result.File}");
             });
@@ -211,8 +211,8 @@ internal static partial class Video
         Directory
             .EnumerateFiles(directory, "*.idx", SearchOption.AllDirectories)
             .Concat(Directory.EnumerateFiles(directory, "*.sub", SearchOption.AllDirectories))
-            .ToArray()
             .Where(subtitle => "Subs".EqualsIgnoreCase(Path.GetFileName(Path.GetDirectoryName(subtitle))))
+            .ToArray()
             .ForEach(subtitle =>
             {
                 string subtitleDirectory = Path.GetDirectoryName(subtitle)!;
@@ -226,14 +226,15 @@ internal static partial class Video
                     File.Move(subtitle, newSubtitle);
                     if (Directory.EnumerateFiles(subtitleDirectory).IsEmpty())
                     {
-                        Directory.Delete(subtitleDirectory);
+                        DirectoryHelper.Recycle(subtitleDirectory);
                     }
                 }
             });
 
         Directory
-            .GetFiles(directory, "*.srt", SearchOption.AllDirectories)
+            .EnumerateFiles(directory, "*.srt", SearchOption.AllDirectories)
             .Where(subtitle => "Subs".EqualsIgnoreCase(Path.GetFileName(Path.GetDirectoryName(subtitle))))
+            .ToArray()
             .ForEach(subtitle =>
             {
                 string subtitleDirectory = Path.GetDirectoryName(subtitle)!;
@@ -243,30 +244,54 @@ internal static partial class Video
                     ? videos[0]
                     : videos.OrderByDescending(video => new FileInfo(video).Length).First();
                 string language = Path.GetFileNameWithoutExtension(subtitle) ?? throw new InvalidOperationException(subtitle);
-                string suffix = language switch
+                string postfix = language switch
                 {
                     _ when language.ContainsIgnoreCase("eng") => string.Empty,
                     _ when language.ContainsIgnoreCase("chi") => ".chs",
                     _ => "." + language
                 };
-                string newSubtitle = Path.Combine(parent, $"{Path.GetFileNameWithoutExtension(mainVideo)}{suffix}.srt");
+                string newSubtitle = Path.Combine(parent, $"{Path.GetFileNameWithoutExtension(mainVideo)}{postfix}.srt");
                 log(subtitle);
                 if (!isDryRun)
                 {
                     if (File.Exists(newSubtitle))
                     {
-                        if (string.IsNullOrEmpty(suffix))
+                        if (string.IsNullOrEmpty(postfix)) // English.
                         {
                             long subtitleSize = new FileInfo(subtitle).Length;
                             long newSubtitleSize = new FileInfo(newSubtitle).Length;
                             if (subtitleSize >= newSubtitleSize)
                             {
-                                FileHelper.Delete(newSubtitle);
-                                File.Move(subtitle, newSubtitle);
+                                string newSecondarySubtitle = PathHelper.AddFilePostfix(newSubtitle, ".eng");
+                                if (File.Exists(newSecondarySubtitle))
+                                {
+                                    Debug.Assert(newSubtitleSize >= new FileInfo(newSecondarySubtitle).Length);
+                                    FileHelper.Recycle(newSecondarySubtitle);
+                                }
+
+                                FileHelper.Move(newSubtitle, newSecondarySubtitle); // smaller.srt => smaller.eng.srt
+                                FileHelper.Move(subtitle, newSubtitle); // larger.srt
                             }
                             else
                             {
-                                FileHelper.Delete(subtitle);
+                                newSubtitle = PathHelper.AddFilePostfix(newSubtitle, ".eng");
+                                if (File.Exists(newSubtitle))
+                                {
+                                    newSubtitleSize = new FileInfo(newSubtitle).Length;
+                                    if (subtitleSize >= newSubtitleSize)
+                                    {
+                                        FileHelper.Recycle(newSubtitle);
+                                        FileHelper.Move(subtitle, newSubtitle);
+                                    }
+                                    else
+                                    {
+                                        FileHelper.Recycle(subtitle);
+                                    }
+                                }
+                                else
+                                {
+                                    FileHelper.Move(subtitle, newSubtitle);
+                                }
                             }
                         }
                         else
@@ -276,12 +301,12 @@ internal static partial class Video
                     }
                     else
                     {
-                        File.Move(subtitle, newSubtitle);
+                        FileHelper.Move(subtitle, newSubtitle);
                     }
 
                     if (Directory.EnumerateFiles(subtitleDirectory).IsEmpty())
                     {
-                        Directory.Delete(subtitleDirectory);
+                        DirectoryHelper.Recycle(subtitleDirectory);
                     }
                 }
             });

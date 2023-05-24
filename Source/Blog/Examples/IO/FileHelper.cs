@@ -146,11 +146,13 @@ public static class FileHelper
 
     public static void Recycle(string file)
     {
-        if (!File.Exists(file))
+        if (!File.Exists(file.NotNullOrWhiteSpace()))
         {
             throw new ArgumentOutOfRangeException(nameof(file), file, "Not found.");
         }
 
+        // new FileInfo(toAttachment).IsReadOnly = false;
+        File.SetAttributes(file, FileAttributes.Normal); // In case file is read only.
         FileSystem.DeleteFile(file, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
     }
 
