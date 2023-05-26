@@ -666,13 +666,17 @@ internal static class Imdb
         return false;
     }
 
-    internal static async Task DownloadAllMoviesAsync(string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, string rareJsonPath, string cacheDirectory, string metadataDirectory, Action<string>? log = null)
+    internal static async Task DownloadAllMoviesAsync(string libraryJsonPath,
+        string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, string rareJsonPath, string x265XJsonPath, string h264XJsonPath,
+        string cacheDirectory, string metadataDirectory, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
         Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(libraryJsonPath))!;
         Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
+        Dictionary<string, RarbgMetadata[]> x265XMetadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265XJsonPath))!;
         Dictionary<string, RarbgMetadata[]> h264Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
+        Dictionary<string, RarbgMetadata[]> h264XMetadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264XJsonPath))!;
         Dictionary<string, YtsMetadata[]> ytsMetadata = JsonSerializer.Deserialize<Dictionary<string, YtsMetadata[]>>(await File.ReadAllTextAsync(ytsJsonPath))!;
         Dictionary<string, RarbgMetadata[]> h264720PMetadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264720PJsonPath))!;
         Dictionary<string, RareMetadata> rareMetadata = JsonSerializer.Deserialize<Dictionary<string, RareMetadata>>(await File.ReadAllTextAsync(rareJsonPath))!;
@@ -681,19 +685,22 @@ internal static class Imdb
         string[] cacheFiles = Directory.GetFiles(@cacheDirectory);
         string[] metadataFiles = Directory.GetFiles(metadataDirectory);
         string[] imdbIds = x265Metadata.Keys
+            .Concat(x265XMetadata.Keys)
             .Concat(h264Metadata.Keys)
+            .Concat(h264XMetadata.Keys)
             .Concat(ytsMetadata.Keys)
             .Concat(h264720PMetadata.Keys)
-            .Distinct()
             .Except(libraryMetadata.Keys)
-            .Except(rareMetadata
-                .SelectMany(rare => Regex
-                    .Matches(rare.Value.Content, @"imdb\.com/title/(tt[0-9]+)")
-                    .Where(match => match.Success)
-                    .Select(match => match.Groups[1].Value)))
+            //.Except(rareMetadata
+            //    .SelectMany(rare => Regex
+            //        .Matches(rare.Value.Content, @"imdb\.com/title/(tt[0-9]+)")
+            //        .Where(match => match.Success)
+            //        .Select(match => match.Groups[1].Value)))
+            .Distinct()
             .Order()
             .ToArray();
         int length = imdbIds.Length;
+        imdbIds = imdbIds.Take(0..(length / 4)).ToArray();
         await imdbIds
             .Except(metadataFiles.Select(file => Path.GetFileNameWithoutExtension(file).Split("-").First()))
             .ForEachAsync(async (imdbId, index) =>
@@ -701,7 +708,7 @@ internal static class Imdb
                 log($"{index * 100 / length}% - {index}/{length} - {imdbId}");
                 try
                 {
-                    await Video.DownloadImdbMetadataAsync(imdbId, cacheDirectory, metadataDirectory, cacheFiles, metadataFiles, webDriver, false, true, log);
+                    await Retry.FixedIntervalAsync(async () => await Video.DownloadImdbMetadataAsync(imdbId, cacheDirectory, metadataDirectory, cacheFiles, metadataFiles, webDriver, false, true, log), isTransient: exception => exception is not ArgumentOutOfRangeException && exception is not ArgumentException);
                 }
                 catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
                 {
