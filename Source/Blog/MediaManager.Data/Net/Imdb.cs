@@ -11,8 +11,20 @@ using OpenQA.Selenium.Support.UI;
 
 internal static class Imdb
 {
-    internal static async Task<(ImdbMetadata ImdbMetadata, string ImdbUrl, string ImdbHtml, string ReleaseUrl, string ReleaseHtml, string KeywordsUrl, string KeywordsHtml, string AdvisoriesUrl, string AdvisoriesHtml, string ParentImdbUrl, string ParentImdbHtml, string ParentReleaseUrl, string ParentReleaseHtml, string ParentKeywordsUrl, string parentKeywordsHtml, string ParentAdvisoriesUrl, string ParentAdvisoriesHtml)> DownloadAsync(
-        string imdbId, string imdbFile, string releaseFile, string keywordsFile, string advisoriesFile, string parentImdbFile, string parentReleaseFile, string parentKeywordsFile, string parentAdvisoriesFile, IWebDriver? webDriver = null)
+    internal static async Task<(
+        ImdbMetadata ImdbMetadata,
+        string ImdbUrl, string ImdbHtml,
+        string ReleaseUrl, string ReleaseHtml,
+        string KeywordsUrl, string KeywordsHtml,
+        string AdvisoriesUrl, string AdvisoriesHtml,
+        string ParentImdbUrl, string ParentImdbHtml,
+        string ParentReleaseUrl, string ParentReleaseHtml,
+        string ParentKeywordsUrl, string parentKeywordsHtml,
+        string ParentAdvisoriesUrl, string ParentAdvisoriesHtml)> DownloadAsync(
+        string imdbId,
+        string imdbFile, string releaseFile, string keywordsFile, string advisoriesFile,
+        string parentImdbFile, string parentReleaseFile, string parentKeywordsFile, string parentAdvisoriesFile,
+        IWebDriver? webDriver = null)
     {
         using HttpClient? httpClient = webDriver is null ? new() : null;
         httpClient?.AddEdgeHeaders();
@@ -51,13 +63,24 @@ internal static class Imdb
             ?? imdbCQ.Find("div").FirstOrDefault(div => div.Classes.Any(@class => @class.StartsWithOrdinal("TitleBlock__SeriesParentLinkWrapper")))?.Cq().Find("a").Attr("href")
             ?? imdbCQ.Find("section.ipc-page-section > div:first > a:first").FirstOrDefault()?.GetAttribute("href")
             ?? string.Empty;
-        ImdbMetadata? parent = null;
+        ImdbMetadata? parentMetadata = null;
         if (parentHref.IsNotNullOrWhiteSpace())
         {
             string parentImdbId = Regex.Match(parentHref, "tt[0-9]+").Value;
             if (!parentImdbId.EqualsIgnoreCase(imdbId))
             {
-                (parent, parentImdbUrl, parentImdbHtml, parentReleaseUrl, parentReleaseHtml, parentKeywordsUrl, parentKeywordsHtml, parentAdvisoriesUrl, parentAdvisoriesHtml, string _, string _, string _, string _, string _, string _, string _, string _) = await DownloadAsync(parentImdbId, parentImdbFile, parentReleaseFile, parentKeywordsFile, parentAdvisoriesFile, string.Empty, string.Empty, string.Empty, string.Empty);
+                (
+                    parentMetadata,
+                    parentImdbUrl, parentImdbHtml,
+                    parentReleaseUrl, parentReleaseHtml,
+                    parentKeywordsUrl, parentKeywordsHtml,
+                    parentAdvisoriesUrl, parentAdvisoriesHtml,
+                    string _, string _, string _, string _, string _, string _, string _, string _
+                ) = await DownloadAsync(
+                    parentImdbId,
+                    parentImdbFile, parentReleaseFile, parentKeywordsFile, parentAdvisoriesFile,
+                    string.Empty, string.Empty, string.Empty, string.Empty,
+                    webDriver);
             }
         }
 
@@ -66,7 +89,15 @@ internal static class Imdb
             ? htmlTitle[(htmlTitle.LastIndexOfOrdinal("(") + 1)..htmlTitle.LastIndexOfOrdinal(")")]
             : string.Empty;
         htmlTitleYear = Regex.Match(htmlTitleYear, "[0-9]{4}").Value;
-        string htmlYear = imdbCQ.Find(@"#titleYear a").Text().Trim();
+
+        string htmlYear = imdbCQ.Find(@"h1[data-testid='hero__pageTitle']").NextAll().Find("li:first").Text().Trim();
+        htmlYear = Regex.Match(htmlYear, "[0-9]{4}").Value;
+        if (!Regex.IsMatch(htmlYear, "[0-9]{4}"))
+        {
+            htmlYear = imdbCQ.Find(@"h1[data-testid='hero__pageTitle']").NextAll().Find("li:eq(1)").Text().Trim();
+            htmlYear = Regex.Match(htmlYear, "[0-9]{4}").Value;
+        }
+
         if (htmlYear.IsNullOrWhiteSpace())
         {
             htmlYear = imdbCQ.Find(@"div.title_wrapper div.subtext a[title=""See more release dates""]").Text();
@@ -79,13 +110,14 @@ internal static class Imdb
             htmlYear = Regex.Match(htmlYear, "[0-9]{4}").Value;
         }
 
-        if (htmlYear.IsNullOrWhiteSpace())
-        {
-            htmlYear = imdbCQ.Find(@$"ul.ipc-inline-list li").Text();
-            htmlYear = Regex.Match(htmlYear, "[0-9]{4}").Value;
-        }
+        //if (htmlYear.IsNullOrWhiteSpace())
+        //{
+        //    htmlYear = imdbCQ.Find(@$"ul.ipc-inline-list li").Text();
+        //    htmlYear = Regex.Match(htmlYear, "[0-9]{4}").Value;
+        //}
 
-        Debug.Assert(htmlYear.EqualsOrdinal(htmlTitleYear) || parent is not null);
+        Debug.Assert(htmlYear.EqualsOrdinal(htmlTitleYear) || parentMetadata is not null);
+
         string year = imdbMetadata.Year ?? string.Empty;
         if (htmlYear.IsNotNullOrWhiteSpace())
         {
@@ -95,8 +127,12 @@ internal static class Imdb
         {
             year = datePublished.Year.ToString(CultureInfo.InstalledUICulture);
         }
+        else if (imdbMetadata.YearOfLatestRelease.IsNotNullOrWhiteSpace())
+        {
+            year = imdbMetadata.YearOfLatestRelease;
+        }
 
-        // string aggregateRatingCountText = imdbCQ.Find("div[data-testid='hero-rating-bar__aggregate-rating__score']").Siblings().Last().Text
+        //Debug.Assert(year.IsNotNullOrWhiteSpace());
 
         string[] regions = imdbCQ
                 .Find("div[data-testid='title-details-section'] > ul > li")
@@ -118,9 +154,9 @@ internal static class Imdb
             regions = imdbCQ.Find(@"a[href^=""/search/title/?country_of_origin=""]").Select(link => link.TextContent.Trim()).DistinctOrdinal().ToArray();
         }
 
-        if (regions.IsEmpty() && parent is not null)
+        if (regions.IsEmpty() && parentMetadata is not null)
         {
-            regions = parent.Regions;
+            regions = parentMetadata.Regions;
         }
 
         regions = regions
@@ -154,21 +190,68 @@ internal static class Imdb
             languages = imdbCQ.Find(@"a[href^=""/search/title/?title_type=feature&primary_language=""]").Select(link => link.TextContent.Trim()).DistinctOrdinal().ToArray();
         }
 
-        if (languages.IsEmpty() && parent is not null)
+        if (languages.IsEmpty() && parentMetadata is not null)
         {
-            languages = parent.Languages;
+            languages = parentMetadata.Languages;
         }
 
-        //Debug.Assert(languages.Any() || imdbMetadata.ImdbId 
+        //Debug.Assert(languages.Any() || imdbMetadata.ImdbId
         //    is "tt0226895" or "tt0398936" or "tt6922816" or "tt3061100" or "tt3877124" or "tt0219913" or "tt0108361"
         //    or "tt0133065" or "tt0173797" or "tt2617008" or "tt1764627" or "tt0225882" or "tt10540298" or "tt0195707" or "tt3807900" or "tt2946498"
         //    or "tt9395794");
 
-        string releaseUrl = $"{imdbUrl}releaseinfo";
+        string releaseUrl = $"{imdbUrl}releaseinfo/";
         string releaseHtml = File.Exists(releaseFile)
             ? await File.ReadAllTextAsync(releaseFile)
             : await Retry.FixedIntervalAsync(async () => webDriver is not null ? await webDriver.GetStringAsync(releaseUrl) : await httpClient!.GetStringAsync(releaseUrl), retryCount: 10);
         CQ releaseCQ = releaseHtml;
+
+
+        if (webDriver is not null)
+        {
+            CQ seeAllDatesButtonCQ = releaseCQ.Find("span.chained-see-more-button-releases button.ipc-see-more__button:contains('All')  span.ipc-see-more__text:visible");
+            Debug.Assert(seeAllDatesButtonCQ.Length is 0 or 1);
+            if (seeAllDatesButtonCQ.Any() && webDriver.Url.EqualsIgnoreCase(releaseUrl))
+            {
+                int rowCount = webDriver.FindElements(By.CssSelector("div[data-testid='sub-section-releases']>ul>li")).Count;
+                IWebElement seeAllDatesButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElements(By.CssSelector("span.chained-see-more-button-releases button.ipc-see-more__button")).Last());
+                try
+                {
+                    Retry.FixedInterval(() => seeAllDatesButton.Click(), retryCount: 10, exception => exception is ElementClickInterceptedException);
+                }
+                catch (ElementNotInteractableException)
+                {
+                    seeAllDatesButtonCQ = releaseCQ.Find("span.single-page-see-more-button-releases button.ipc-see-more__button:contains('more')  span.ipc-see-more__text:visible");
+                    Debug.Assert(seeAllDatesButtonCQ.Length == 1);
+                    seeAllDatesButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElements(By.CssSelector("span.single-page-see-more-button-releases button.ipc-see-more__button")).Last());
+                    Retry.FixedInterval(() => seeAllDatesButton.Click(), retryCount: 10, exception => exception is ElementClickInterceptedException);
+                }
+
+                new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver =>
+                {
+                    releaseHtml = webDriver.PageSource;
+                    releaseCQ = releaseHtml;
+                    rowCount = releaseCQ.Find("div[data-testid='sub-section-releases']>ul>li").Length;
+                    Thread.Sleep(WebDriverHelper.DefaultNetworkWait);
+                    seeAllDatesButtonCQ = releaseCQ.Find("span.chained-see-more-button-releases button.ipc-see-more__button:visible span.ipc-see-more__text:contains('All')");
+                    return driver.FindElements(By.CssSelector("div[data-testid='sub-section-releases']>ul>li")).Count == rowCount && seeAllDatesButtonCQ.IsEmpty();
+                });
+            }
+
+            releaseHtml = webDriver.PageSource;
+        }
+
+        releaseCQ = releaseHtml;
+        CQ allDatesCQ = releaseCQ.Find("div[data-testid='sub-section-releases']>ul>li");
+        (string DateKey, string DateValue)[] allDates = allDatesCQ
+            .Select(row => row.Cq())
+            .Select(rowCQ => (Key: rowCQ.Children().Eq(0), Values: rowCQ.Children().Eq(1).Find("li")))
+            .SelectMany(row => row.Values.Select(value => (Key: HttpUtility.HtmlDecode(row.Key.Text().Trim()), Value: HttpUtility.HtmlDecode(value.TextContent.Trim()))))
+            .ToArray();
+        Dictionary<string, string[]> dates = allDates
+            .ToLookup(row => row.DateKey, row => row.DateValue, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.ToArray());
+
         CQ allTitlesCQ = releaseCQ.Find("#akas").Next();
         (string TitleKey, string TitleValue)[] allTitles = allTitlesCQ
             .Find("tr")
@@ -184,24 +267,46 @@ internal static class Imdb
 
         if (allTitles.IsEmpty())
         {
-            CQ seeMoreButtonCQ = releaseCQ.Find("span.single-page-see-more-button-akas button.ipc-see-more__button:visible");
-            Debug.Assert(seeMoreButtonCQ.Length is 0 or 1);
-            if (seeMoreButtonCQ.Any() && webDriver is not null && webDriver.Url.EqualsIgnoreCase(releaseUrl))
+            CQ seeAllAkaButtonCQ = releaseCQ.Find("span.chained-see-more-button-akas button.ipc-see-more__button:visible span.ipc-see-more__text:contains('All')");
+            Debug.Assert(seeAllAkaButtonCQ.Length is 0 or 1);
+            if (webDriver is not null)
             {
-                int rowCount = webDriver.FindElements(By.CssSelector("div[data-testid='sub-section-akas']>ul>li")).Count;
-                IWebElement seeMoreButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultWait).Until(driver => driver.FindElement(By.CssSelector("span.single-page-see-more-button-akas button.ipc-see-more__button")));
-                await Task.Delay(WebDriverHelper.DefaultDomWait);
-                Retry.FixedInterval(() => seeMoreButton.Click(), retryCount: 10, exception => exception is ElementClickInterceptedException);
-                new WebDriverWait(webDriver, WebDriverHelper.DefaultWait).Until(driver => driver.FindElements(By.CssSelector("div[data-testid='sub-section-akas']>ul>li")).Count != rowCount);
+                if (seeAllAkaButtonCQ.Any() && webDriver.Url.EqualsIgnoreCase(releaseUrl))
+                {
+                    int rowCount = webDriver.FindElements(By.CssSelector("div[data-testid='sub-section-akas']>ul>li")).Count;
+                    IWebElement seeAllAkaButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElements(By.CssSelector("span.chained-see-more-button-akas button.ipc-see-more__button")).Last());
+                    try
+                    {
+                        Retry.FixedInterval(() => seeAllAkaButton.Click(), retryCount: 10, exception => exception is ElementClickInterceptedException);
+                    }
+                    catch (ElementNotInteractableException)
+                    {
+                        seeAllAkaButtonCQ = releaseCQ.Find("span.single-page-see-more-button-akas button.ipc-see-more__button:contains('more')  span.ipc-see-more__text:visible");
+                        Debug.Assert(seeAllAkaButtonCQ.Length == 1);
+                        seeAllAkaButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElements(By.CssSelector("span.single-page-see-more-button-akas button.ipc-see-more__button")).Last());
+                        Retry.FixedInterval(() => seeAllAkaButton.Click(), retryCount: 10, exception => exception is ElementClickInterceptedException);
+                    }
+
+                    new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver =>
+                    {
+                        releaseHtml = webDriver.PageSource;
+                        releaseCQ = releaseHtml;
+                        rowCount = releaseCQ.Find("div[data-testid='sub-section-akas']>ul>li").Length;
+                        Thread.Sleep(WebDriverHelper.DefaultNetworkWait);
+                        seeAllAkaButtonCQ = releaseCQ.Find("span.chained-see-more-button-akas button.ipc-see-more__button:visible span.ipc-see-more__text:contains('All')");
+                        return driver.FindElements(By.CssSelector("div[data-testid='sub-section-akas']>ul>li")).Count == rowCount && seeAllAkaButtonCQ.IsEmpty();
+                    });
+                }
+
                 releaseHtml = webDriver.PageSource;
-                releaseCQ = releaseHtml;
             }
 
-            allTitlesCQ = releaseCQ.Find("#akas").Parent().Parent().Parent().Next().Children().Children();
+            releaseCQ = releaseHtml;
+            allTitlesCQ = releaseCQ.Find("div[data-testid='sub-section-akas']>ul>li");
             allTitles = allTitlesCQ
-                .Select(row => row.Cq().Children())
-                .Select(cells => (TitleKey: cells.First(), TitleValues: cells.Last().Find("li")))
-                .SelectMany(row => row.TitleValues.Select(title => (TitleKey: HttpUtility.HtmlDecode(row.TitleKey.Text().Trim()), TitleValue: HttpUtility.HtmlDecode(title.TextContent.Trim()))))
+                .Select(row => row.Cq())
+                .Select(rowCQ => (Key: rowCQ.Children().Eq(0), Values: rowCQ.Children().Eq(1).Find("li")))
+                .SelectMany(row => row.Values.Select(value => (Key: HttpUtility.HtmlDecode(row.Key.Text().Trim()), Value: HttpUtility.HtmlDecode(value.TextContent.Trim()))))
                 .ToArray();
         }
 
@@ -241,13 +346,22 @@ internal static class Imdb
                      .Trim();
             }
 
-            originalTitle = imdbCQ
-                .Find("div.originalTitle")
-                .Find("span")
-                .Remove()
-                .End()
-                .Text()
-                .Trim();
+            originalTitle = imdbCQ.Find(@"h1[data-testid='hero__pageTitle']").Next("div").Text().Trim();
+            if (originalTitle.StartsWithIgnoreCase("Original title: "))
+            {
+                originalTitle = originalTitle.Substring("Original title: ".Length).Trim();
+            }
+
+            if (originalTitle.IsNullOrWhiteSpace())
+            {
+                originalTitle = imdbCQ
+                    .Find("div.originalTitle")
+                    .Find("span")
+                    .Remove()
+                    .End()
+                    .Text()
+                    .Trim();
+            }
 
             if (originalTitle.IsNullOrWhiteSpace())
             {
@@ -391,6 +505,49 @@ internal static class Imdb
             : await Retry.FixedIntervalAsync(async () => webDriver is not null ? await webDriver.GetStringAsync(keywordsUrl) : await httpClient!.GetStringAsync(keywordsUrl), retryCount: 10);
         CQ keywordsCQ = keywordsHtml;
         string[] allKeywords = keywordsCQ.Find("#keywords_content table td div.sodatext a").Select(keyword => keyword.TextContent.Trim()).ToArray();
+        if (allKeywords.IsEmpty())
+        {
+            CQ seeAllButtonCQ = keywordsCQ.Find("span.chained-see-more-button button.ipc-see-more__button:visible span.ipc-see-more__text:contains('All')");
+            Debug.Assert(seeAllButtonCQ.Length is 0 or 1);
+            if (webDriver is not null)
+            {
+                if (seeAllButtonCQ.Any() && webDriver.Url.EqualsIgnoreCase(keywordsUrl))
+                {
+                    int rowCount = webDriver.FindElements(By.CssSelector("div[data-testid='sub-section']>ul>li")).Count;
+                    IWebElement seeAllButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElements(By.CssSelector("span.chained-see-more-button button.ipc-see-more__button")).Last());
+                    try
+                    {
+                        Retry.FixedInterval(() => seeAllButton.Click(), retryCount: 10, exception => exception is ElementClickInterceptedException);
+                    }
+                    catch (ElementNotInteractableException)
+                    {
+                        seeAllButtonCQ = keywordsCQ.Find("span.single-page-see-more-button button.ipc-see-more__button:contains('more') span.ipc-see-more__text:visible");
+                        Debug.Assert(seeAllButtonCQ.Length == 1);
+                        seeAllButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElements(By.CssSelector("span.single-page-see-more-button button.ipc-see-more__button")).Last());
+                        Retry.FixedInterval(() => seeAllButton.Click(), retryCount: 10, exception => exception is ElementClickInterceptedException);
+                    }
+
+                    new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver =>
+                    {
+                        keywordsHtml = webDriver.PageSource;
+                        keywordsCQ = keywordsHtml;
+                        rowCount = keywordsCQ.Find("div[data-testid='sub-section']>ul>li").Length;
+                        Thread.Sleep(WebDriverHelper.DefaultNetworkWait);
+                        seeAllButtonCQ = keywordsCQ.Find("span.single-page-see-more-button button.ipc-see-more__button:visible span.ipc-see-more__text:contains('All')");
+                        return driver.FindElements(By.CssSelector("div[data-testid='sub-section']>ul>li")).Count == rowCount && seeAllButtonCQ.IsEmpty();
+                    });
+                }
+
+                keywordsHtml = webDriver.PageSource;
+            }
+
+            keywordsCQ = keywordsHtml;
+            CQ allKeywordsCQ = keywordsCQ.Find("div[data-testid='sub-section']>ul>li");
+            allKeywords = allKeywordsCQ
+                .Select(row => row.Cq())
+                .Select(rowCQ => HttpUtility.HtmlDecode(rowCQ.Children().Eq(0).Text()))
+                .ToArray();
+        }
 
         string advisoriesUrl = $"{imdbUrl}parentalguide";
         string advisoriesHtml = File.Exists(advisoriesFile)
@@ -414,7 +571,7 @@ internal static class Imdb
 
         imdbMetadata = imdbMetadata with
         {
-            Parent = parent,
+            Parent = parentMetadata,
             Year = year,
             Regions = regions,
             Languages = languages,

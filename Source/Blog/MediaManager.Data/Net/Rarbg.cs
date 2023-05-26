@@ -47,7 +47,7 @@ internal static class Rarbg
         {
             using IWebDriver webDriver = WebDriverHelper.StartEdge(partitionIndex + 2, true);
             webDriver.Url = url;
-            new WebDriverWait(webDriver, WebDriverHelper.DefaultWait).Until(e => e.FindElement(By.Id("pager_links")));
+            new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(e => e.FindElement(By.Id("pager_links")));
             webDriver.Url = url;
             IWebElement pager = new WebDriverWait(webDriver, WebDriverHelper.DefaultDomWait).Until(e => e.FindElement(By.Id("pager_links")));
             int pageIndex = 1;
@@ -146,7 +146,7 @@ internal static class Rarbg
         webDriver.Url = nextPage[0].GetAttribute("href");
         try
         {
-            pager = new WebDriverWait(webDriver, WebDriverHelper.DefaultWait).Until(e => e.FindElement(By.Id("pager_links")));
+            pager = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(e => e.FindElement(By.Id("pager_links")));
             return true;
         }
         catch (NoSuchElementException exception)

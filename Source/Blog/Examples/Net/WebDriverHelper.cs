@@ -7,7 +7,9 @@ using OpenQA.Selenium.Edge;
 
 public static class WebDriverHelper
 {
-    public static readonly TimeSpan DefaultWait = TimeSpan.FromSeconds(200);
+    public static readonly TimeSpan DefaultManualWait = TimeSpan.FromSeconds(200);
+
+    public static readonly TimeSpan DefaultNetworkWait = TimeSpan.FromSeconds(1);
 
     public static readonly TimeSpan DefaultDomWait = TimeSpan.FromMilliseconds(100);
 

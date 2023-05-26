@@ -17,13 +17,13 @@ internal static class Drive115
         using IWebDriver parentFrame = WebDriverHelper.StartEdge(0 + 3, isLoadingAll: true);
         parentFrame.Url = url;
 
-        using IWebDriver? offlineTasksFrame = new WebDriverWait(parentFrame, WebDriverHelper.DefaultWait).Until(e => e.SwitchTo().Frame("wangpan"));
+        using IWebDriver? offlineTasksFrame = new WebDriverWait(parentFrame, WebDriverHelper.DefaultManualWait).Until(e => e.SwitchTo().Frame("wangpan"));
         List<Drive115OfflineTask> offlineTasks = new();
         string firstTask = string.Empty;
         for (int page = 1; ; page++)
         {
             log($"Start of page {page}.");
-            new WebDriverWait(offlineTasksFrame, WebDriverHelper.DefaultWait).Until(e =>
+            new WebDriverWait(offlineTasksFrame, WebDriverHelper.DefaultManualWait).Until(e =>
             {
                 ReadOnlyCollection<IWebElement> tasksElements = e.FindElements(By.CssSelector("#js-warp li"));
                 if (tasksElements.IsEmpty())
@@ -39,8 +39,8 @@ internal static class Drive115
                 firstTask = tasksElements.First().Text;
                 return true;
             });
-            IWebElement currentPageElement = new WebDriverWait(offlineTasksFrame, WebDriverHelper.DefaultWait).Until(e => e.FindElement(By.CssSelector("#js-page div.con span.current")));
-            IWebElement offlineTaskListElement = new WebDriverWait(offlineTasksFrame, WebDriverHelper.DefaultWait).Until(e => e.FindElement(By.Id("js-warp")));
+            IWebElement currentPageElement = new WebDriverWait(offlineTasksFrame, WebDriverHelper.DefaultManualWait).Until(e => e.FindElement(By.CssSelector("#js-page div.con span.current")));
+            IWebElement offlineTaskListElement = new WebDriverWait(offlineTasksFrame, WebDriverHelper.DefaultManualWait).Until(e => e.FindElement(By.Id("js-warp")));
             CQ listItemsCQ = offlineTaskListElement.GetAttribute("innerHTML");
             offlineTasks.AddRange(listItemsCQ.Select(listItemDom =>
             {
@@ -61,7 +61,7 @@ internal static class Drive115
             }));
 
             Debug.Assert(int.TryParse(currentPageElement.Text, out int currentPage) && currentPage == page);
-            ReadOnlyCollection<IWebElement> paginationElements = new WebDriverWait(offlineTasksFrame, WebDriverHelper.DefaultWait).Until(e => e.FindElements(By.CssSelector("#js-page div.page-links a")));
+            ReadOnlyCollection<IWebElement> paginationElements = new WebDriverWait(offlineTasksFrame, WebDriverHelper.DefaultManualWait).Until(e => e.FindElements(By.CssSelector("#js-page div.page-links a")));
             IWebElement? nextPageElement = paginationElements.SingleOrDefault(element => element.Text.EqualsOrdinal($"{page + 1}") && element.GetAttribute("start").EqualsOrdinal($"{30 * page}"));
             if (nextPageElement is null)
             {
