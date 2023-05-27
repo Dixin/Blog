@@ -1,6 +1,7 @@
 ﻿namespace Examples.Net;
 
 using Examples.Common;
+using Examples.Diagnostics;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Edge;
@@ -63,10 +64,41 @@ public static class WebDriverHelper
             options.AddUserProfilePreference("profile.managed_default_content_settings.media_stream", 2);
         }
 
+        ProcessHelper.StartAndWait("taskkill", "/F /IM msedgedriver.exe /T");
+
         EdgeDriver webDriver = new(options);
         return webDriver;
     }
 
-    public static IWebDriver StartEdge(int index, bool isLoadingAll = false) => 
+    public static IWebDriver StartEdge(int index, bool isLoadingAll = false) =>
         StartEdge(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(EdgeDriver)} {index:00}"), isLoadingAll);
+
+    public static string GetString(ref IWebDriver webDriver, string url, int retryCount = 10, Func<IWebDriver>? restart = null, Action? wait = null)
+    {
+        Exception? lastException = null;
+        for (int retry = 0; retry < retryCount; retry++)
+        {
+            try
+            {
+                webDriver.Url = url;
+                Thread.Sleep(DefaultDomWait);
+                wait?.Invoke();
+                return webDriver.PageSource;
+            }
+            catch (Exception exception) when (exception.IsNotCritical())
+            {
+                lastException = exception;
+                try
+                {
+                    webDriver.Dispose();
+                }
+                finally
+                {
+                    webDriver = restart?.Invoke() ?? StartEdge();
+                }
+            }
+        }
+
+        throw lastException!;
+    }
 }

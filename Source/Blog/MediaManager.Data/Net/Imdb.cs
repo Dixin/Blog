@@ -32,9 +32,9 @@ internal static class Imdb
         string imdbUrl = $"https://www.imdb.com/title/{imdbId}/";
         string imdbHtml = File.Exists(imdbFile)
             ? await File.ReadAllTextAsync(imdbFile)
-            : await Retry.FixedIntervalAsync(async () =>
-                webDriver is not null ? await webDriver.GetStringAsync(imdbUrl) : await httpClient!.GetStringAsync(imdbUrl),
-                retryCount: 10);
+            : webDriver is not null
+                ? WebDriverHelper.GetString(ref webDriver, imdbUrl)
+                : await Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(imdbUrl));
         CQ imdbCQ = imdbHtml;
         string json = imdbCQ.Find(@"script[type=""application/ld+json""]").Text();
         if (imdbCQ.Find("title").Text().Trim().StartsWithIgnoreCase("500 Error"))
@@ -301,7 +301,7 @@ internal static class Imdb
                             }
                             finally
                             {
-                                webDriver = WebDriverHelper.StartEdge(2);
+                                webDriver = WebDriverHelper.StartEdge();
                             }
 
                             releaseHtml = webDriver.GetString(releaseUrl);
@@ -708,7 +708,7 @@ internal static class Imdb
     internal static async Task DownloadAllMoviesAsync(
         string libraryJsonPath,
         string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, string rareJsonPath, string x265XJsonPath, string h264XJsonPath,
-        string cacheDirectory, string metadataDirectory, 
+        string cacheDirectory, string metadataDirectory,
         Func<int, Range>? getRange = null, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
@@ -722,7 +722,7 @@ internal static class Imdb
         Dictionary<string, RarbgMetadata[]> h264720PMetadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264720PJsonPath))!;
         Dictionary<string, RareMetadata> rareMetadata = JsonSerializer.Deserialize<Dictionary<string, RareMetadata>>(await File.ReadAllTextAsync(rareJsonPath))!;
 
-        using IWebDriver webDriver = WebDriverHelper.StartEdge(2);
+        using IWebDriver webDriver = WebDriverHelper.StartEdge();
         string[] cacheFiles = Directory.GetFiles(@cacheDirectory);
         string[] metadataFiles = Directory.GetFiles(metadataDirectory);
         string[] imdbIds = x265Metadata.Keys
@@ -745,7 +745,7 @@ internal static class Imdb
         {
             imdbIds = imdbIds.Take(getRange(length)).ToArray();
         }
-        
+
         imdbIds = imdbIds
             .Except(metadataFiles.Select(file => Path.GetFileNameWithoutExtension(file).Split("-").First()))
             .ToArray();
@@ -778,7 +778,7 @@ internal static class Imdb
             .Where(imdbId => imdbId.IsNotNullOrWhiteSpace())
             .ToArray();
 
-        using IWebDriver webDriver = WebDriverHelper.StartEdge(2);
+        using IWebDriver webDriver = WebDriverHelper.StartEdge();
         string[] cacheFiles = Directory.GetFiles(@cacheDirectory);
         string[] metadataFiles = Directory.GetFiles(metadataDirectory);
         string[] imdbIds = x265Metadata.Keys

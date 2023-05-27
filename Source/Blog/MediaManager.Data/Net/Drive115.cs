@@ -14,7 +14,7 @@ internal static class Drive115
     {
         log ??= Logger.WriteLine;
 
-        using IWebDriver parentFrame = WebDriverHelper.StartEdge(0 + 3, isLoadingAll: true);
+        using IWebDriver parentFrame = WebDriverHelper.StartEdge(isLoadingAll: true);
         parentFrame.Url = url;
 
         using IWebDriver? offlineTasksFrame = new WebDriverWait(parentFrame, WebDriverHelper.DefaultManualWait).Until(e => e.SwitchTo().Frame("wangpan"));

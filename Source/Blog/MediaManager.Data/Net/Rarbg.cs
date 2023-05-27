@@ -45,7 +45,7 @@ internal static class Rarbg
 
         try
         {
-            using IWebDriver webDriver = WebDriverHelper.StartEdge(partitionIndex + 2, true);
+            using IWebDriver webDriver = WebDriverHelper.StartEdge(partitionIndex, true);
             webDriver.Url = url;
             new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(e => e.FindElement(By.Id("pager_links")));
             webDriver.Url = url;
