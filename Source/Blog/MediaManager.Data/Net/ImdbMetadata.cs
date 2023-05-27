@@ -34,7 +34,7 @@ public partial record ImdbMetadata(
     public ImdbEntity[] Creator { get; init; } = Creator;
 
     [JsonIgnore]
-    internal string YearOfLatestRelease => DateTime.Parse(this.DatePublished).Year.ToString(CultureInfo.InvariantCulture);
+    internal string YearOfLatestRelease => DateTime.TryParse(this.DatePublished, out DateTime dateTime) ? dateTime.Year.ToString(CultureInfo.InvariantCulture) : string.Empty;
 
     [JsonIgnore]
     internal string FormattedAggregateRating => (this.AggregateRating?.RatingValue).IfNullOrWhiteSpace("0.0")!;

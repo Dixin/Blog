@@ -11,4 +11,12 @@ public static class WebDriverExtensions
         wait?.Invoke();
         return webDriver.PageSource;
     }
+
+    public static string GetString(this IWebDriver webDriver, string url, Action? wait = null)
+    {
+        webDriver.Url = url;
+        Thread.Sleep(WebDriverHelper.DefaultDomWait);
+        wait?.Invoke();
+        return webDriver.PageSource;
+    }
 }
