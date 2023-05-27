@@ -206,7 +206,6 @@ internal static class Imdb
             : await Retry.FixedIntervalAsync(async () => webDriver is not null ? await webDriver.GetStringAsync(releaseUrl) : await httpClient!.GetStringAsync(releaseUrl), retryCount: 10);
         CQ releaseCQ = releaseHtml;
 
-
         if (webDriver is not null)
         {
             CQ seeAllDatesButtonCQ = releaseCQ.Find("span.chained-see-more-button-releases button.ipc-see-more__button:contains('All')  span.ipc-see-more__text:visible");
@@ -214,18 +213,16 @@ internal static class Imdb
             if (seeAllDatesButtonCQ.Any() && webDriver.Url.EqualsIgnoreCase(releaseUrl))
             {
                 int rowCount = webDriver.FindElements(By.CssSelector("div[data-testid='sub-section-releases']>ul>li")).Count;
-                IWebElement seeAllDatesButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElements(By.CssSelector("span.chained-see-more-button-releases button.ipc-see-more__button")).Last());
-                try
+                IWebElement seeAllDatesButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("span.chained-see-more-button-releases button.ipc-see-more__button")));
+                if (!seeAllDatesButton.Displayed)
                 {
-                    Retry.FixedInterval(seeAllDatesButton.Click, isTransient:exception => exception is not ElementNotInteractableException);
+                    seeAllDatesButtonCQ = releaseCQ.Find("span.single-page-see-more-button-releases button.ipc-see-more__button:contains('more') span.ipc-see-more__text:visible");
+                    seeAllDatesButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("span.single-page-see-more-button-releases button.ipc-see-more__button")));
                 }
-                catch (ElementNotInteractableException)
-                {
-                    seeAllDatesButtonCQ = releaseCQ.Find("span.single-page-see-more-button-releases button.ipc-see-more__button:contains('more')  span.ipc-see-more__text:visible");
-                    Debug.Assert(seeAllDatesButtonCQ.Length == 1);
-                    seeAllDatesButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElements(By.CssSelector("span.single-page-see-more-button-releases button.ipc-see-more__button")).Last());
-                    Retry.FixedInterval(seeAllDatesButton.Click);
-                }
+
+                Debug.Assert(seeAllDatesButtonCQ.Length == 1);
+                Debug.Assert(seeAllDatesButton.Displayed);
+                Retry.FixedInterval(seeAllDatesButton.Click);
 
                 new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver =>
                 {
@@ -233,8 +230,9 @@ internal static class Imdb
                     releaseCQ = releaseHtml;
                     rowCount = releaseCQ.Find("div[data-testid='sub-section-releases']>ul>li").Length;
                     Thread.Sleep(WebDriverHelper.DefaultNetworkWait);
-                    seeAllDatesButtonCQ = releaseCQ.Find("span.chained-see-more-button-releases button.ipc-see-more__button:visible span.ipc-see-more__text:contains('All')");
-                    return driver.FindElements(By.CssSelector("div[data-testid='sub-section-releases']>ul>li")).Count == rowCount && seeAllDatesButtonCQ.IsEmpty();
+                    return driver.FindElements(By.CssSelector("div[data-testid='sub-section-releases']>ul>li")).Count == rowCount
+                        && releaseCQ.Find("span.chained-see-more-button-releases button.ipc-see-more__button:contains('All')  span.ipc-see-more__text:visible").IsEmpty()
+                        && releaseCQ.Find("span.single-page-see-more-button-releases button.ipc-see-more__button:contains('more') span.ipc-see-more__text:visible").IsEmpty();
                 });
             }
 
@@ -267,79 +265,23 @@ internal static class Imdb
 
         if (allTitles.IsEmpty())
         {
-            CQ seeAllAkaButtonCQ = releaseCQ.Find("span.chained-see-more-button-akas button.ipc-see-more__button:visible span.ipc-see-more__text:contains('All')");
+            CQ seeAllAkaButtonCQ = releaseCQ.Find("span.chained-see-more-button-akas button.ipc-see-more__button:contains('All') span.ipc-see-more__text:visible");
             Debug.Assert(seeAllAkaButtonCQ.Length is 0 or 1);
             if (webDriver is not null)
             {
                 if (seeAllAkaButtonCQ.Any() && webDriver.Url.EqualsIgnoreCase(releaseUrl))
                 {
                     int rowCount = webDriver.FindElements(By.CssSelector("div[data-testid='sub-section-akas']>ul>li")).Count;
-                    IWebElement seeAllAkaButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElements(By.CssSelector("span.chained-see-more-button-akas button.ipc-see-more__button")).Last());
-                    try
-                    {
-                        Retry.FixedInterval(seeAllAkaButton.Click, isTransient: exception => exception is not ElementNotInteractableException);
-                    }
-                    catch (ElementNotInteractableException)
+                    IWebElement seeAllAkaButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("span.chained-see-more-button-akas button.ipc-see-more__button")));
+                    if (!seeAllAkaButton.Displayed)
                     {
                         seeAllAkaButtonCQ = releaseCQ.Find("span.single-page-see-more-button-akas button.ipc-see-more__button:contains('more')  span.ipc-see-more__text:visible");
-                        Debug.Assert(seeAllAkaButtonCQ.Length == 1);
                         seeAllAkaButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElements(By.CssSelector("span.single-page-see-more-button-akas button.ipc-see-more__button")).Last());
-                        try
-                        {
-                            Retry.FixedInterval(seeAllAkaButton.Click);
-                        }
-                        catch (ElementClickInterceptedException)
-                        {
-                            await Retry.FixedIntervalAsync(async () =>
-                            {
-                                try
-                                {
-                                    webDriver.Dispose();
-                                }
-                                finally
-                                {
-                                    webDriver = WebDriverHelper.StartEdge(2);
-                                }
-
-                                releaseHtml = await webDriver.GetStringAsync(releaseUrl);
-                                releaseCQ = releaseHtml;
-                                CQ seeAllDatesButtonCQ = releaseCQ.Find("span.chained-see-more-button-releases button.ipc-see-more__button:contains('All')  span.ipc-see-more__text:visible");
-                                Debug.Assert(seeAllDatesButtonCQ.Length is 0 or 1);
-                                if (seeAllDatesButtonCQ.Any() && webDriver.Url.EqualsIgnoreCase(releaseUrl))
-                                {
-                                    rowCount = webDriver.FindElements(By.CssSelector("div[data-testid='sub-section-releases']>ul>li")).Count;
-                                    IWebElement seeAllDatesButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElements(By.CssSelector("span.chained-see-more-button-releases button.ipc-see-more__button")).Last());
-                                    try
-                                    {
-                                        seeAllDatesButton.Click();
-                                    }
-                                    catch (ElementNotInteractableException)
-                                    {
-                                        seeAllDatesButtonCQ = releaseCQ.Find("span.single-page-see-more-button-releases button.ipc-see-more__button:contains('more')  span.ipc-see-more__text:visible");
-                                        Debug.Assert(seeAllDatesButtonCQ.Length == 1);
-                                        seeAllDatesButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElements(By.CssSelector("span.single-page-see-more-button-releases button.ipc-see-more__button")).Last());
-                                        seeAllDatesButton.Click();
-                                    }
-
-                                    new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver =>
-                                    {
-                                        releaseHtml = webDriver.PageSource;
-                                        releaseCQ = releaseHtml;
-                                        rowCount = releaseCQ.Find("div[data-testid='sub-section-releases']>ul>li").Length;
-                                        Thread.Sleep(WebDriverHelper.DefaultNetworkWait);
-                                        seeAllDatesButtonCQ = releaseCQ.Find("span.chained-see-more-button-releases button.ipc-see-more__button:visible span.ipc-see-more__text:contains('All')");
-                                        return driver.FindElements(By.CssSelector("div[data-testid='sub-section-releases']>ul>li")).Count == rowCount && seeAllDatesButtonCQ.IsEmpty();
-                                    });
-                                }
-
-                                releaseCQ = releaseHtml;
-                                seeAllAkaButtonCQ = releaseCQ.Find("span.single-page-see-more-button-akas button.ipc-see-more__button:contains('more')  span.ipc-see-more__text:visible");
-                                Debug.Assert(seeAllAkaButtonCQ.Length == 1);
-                                seeAllAkaButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElements(By.CssSelector("span.single-page-see-more-button-akas button.ipc-see-more__button")).Last());
-                                seeAllAkaButton.Click();
-                            });
-                        }
                     }
+
+                    Debug.Assert(seeAllAkaButtonCQ.Length == 1);
+                    Debug.Assert(seeAllAkaButton.Displayed);
+                    Retry.FixedInterval(seeAllAkaButton.Click);
 
                     new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver =>
                     {
@@ -347,8 +289,9 @@ internal static class Imdb
                         releaseCQ = releaseHtml;
                         rowCount = releaseCQ.Find("div[data-testid='sub-section-akas']>ul>li").Length;
                         Thread.Sleep(WebDriverHelper.DefaultNetworkWait);
-                        seeAllAkaButtonCQ = releaseCQ.Find("span.chained-see-more-button-akas button.ipc-see-more__button:visible span.ipc-see-more__text:contains('All')");
-                        return driver.FindElements(By.CssSelector("div[data-testid='sub-section-akas']>ul>li")).Count == rowCount && seeAllAkaButtonCQ.IsEmpty();
+                        return driver.FindElements(By.CssSelector("div[data-testid='sub-section-akas']>ul>li")).Count == rowCount
+                            && releaseCQ.Find("span.chained-see-more-button-akas button.ipc-see-more__button:contains('All') span.ipc-see-more__text:visible").IsEmpty()
+                            && releaseCQ.Find("span.single-page-see-more-button-akas button.ipc-see-more__button:contains('more')  span.ipc-see-more__text:visible").IsEmpty();
                     });
                 }
 
@@ -561,7 +504,7 @@ internal static class Imdb
         string[] allKeywords = keywordsCQ.Find("#keywords_content table td div.sodatext a").Select(keyword => keyword.TextContent.Trim()).ToArray();
         if (allKeywords.IsEmpty())
         {
-            CQ seeAllButtonCQ = keywordsCQ.Find("span.chained-see-more-button button.ipc-see-more__button:visible span.ipc-see-more__text:contains('All')");
+            CQ seeAllButtonCQ = keywordsCQ.Find("span.chained-see-more-button button.ipc-see-more__button:contains('All') span.ipc-see-more__text:visible");
             Debug.Assert(seeAllButtonCQ.Length is 0 or 1);
             if (webDriver is not null)
             {
@@ -569,17 +512,15 @@ internal static class Imdb
                 {
                     int rowCount = webDriver.FindElements(By.CssSelector("div[data-testid='sub-section']>ul>li")).Count;
                     IWebElement seeAllButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElements(By.CssSelector("span.chained-see-more-button button.ipc-see-more__button")).Last());
-                    try
-                    {
-                        Retry.FixedInterval(seeAllButton.Click, isTransient: exception => exception is not ElementNotInteractableException);
-                    }
-                    catch (ElementNotInteractableException)
+                    if (!seeAllButton.Displayed)
                     {
                         seeAllButtonCQ = keywordsCQ.Find("span.single-page-see-more-button button.ipc-see-more__button:contains('more') span.ipc-see-more__text:visible");
-                        Debug.Assert(seeAllButtonCQ.Length == 1);
                         seeAllButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElements(By.CssSelector("span.single-page-see-more-button button.ipc-see-more__button")).Last());
-                        Retry.FixedInterval(seeAllButton.Click);
                     }
+
+                    Debug.Assert(seeAllButtonCQ.Length == 1);
+                    Debug.Assert(seeAllButton.Displayed);
+                    Retry.FixedInterval(seeAllButton.Click);
 
                     new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver =>
                     {
@@ -587,8 +528,9 @@ internal static class Imdb
                         keywordsCQ = keywordsHtml;
                         rowCount = keywordsCQ.Find("div[data-testid='sub-section']>ul>li").Length;
                         Thread.Sleep(WebDriverHelper.DefaultNetworkWait);
-                        seeAllButtonCQ = keywordsCQ.Find("span.single-page-see-more-button button.ipc-see-more__button:visible span.ipc-see-more__text:contains('All')");
-                        return driver.FindElements(By.CssSelector("div[data-testid='sub-section']>ul>li")).Count == rowCount && seeAllButtonCQ.IsEmpty();
+                        return driver.FindElements(By.CssSelector("div[data-testid='sub-section']>ul>li")).Count == rowCount
+                            && releaseCQ.Find("span.chained-see-more-button button.ipc-see-more__button:contains('All') span.ipc-see-more__text:visible").IsEmpty()
+                            && releaseCQ.Find("span.single-page-see-more-button button.ipc-see-more__button:contains('more') span.ipc-see-more__text:visible").IsEmpty();
                     });
                 }
 
