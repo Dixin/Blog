@@ -128,7 +128,7 @@ internal static class Imdb
             Debug.Assert(year.EqualsOrdinal(htmlYear));
         }
 
-        //Debug.Assert(year.IsNotNullOrWhiteSpace());
+        Debug.Assert(year.IsNullOrWhiteSpace() || Regex.IsMatch(htmlYear, "[0-9]{4}"));
 
         string[] regions = imdbCQ
                 .Find("div[data-testid='title-details-section'] > ul > li")
