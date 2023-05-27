@@ -696,12 +696,14 @@ internal static class Imdb
             .Order()
             .ToArray();
         int length = imdbIds.Length;
-        imdbIds = imdbIds.Take(0..(length / 4)).ToArray();
-        await imdbIds
+        imdbIds = imdbIds.Take(..(length / 4)).ToArray();
+        imdbIds = imdbIds
             .Except(metadataFiles.Select(file => Path.GetFileNameWithoutExtension(file).Split("-").First()))
-            .ForEachAsync(async (imdbId, index) =>
+            .ToArray();
+        int trimmedLength = imdbIds.Length;
+        await imdbIds.ForEachAsync(async (imdbId, index) =>
             {
-                log($"{index * 100 / (length / 4)}% - {index}/{length / 4} - {imdbId}");
+                log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
                 try
                 {
                     await Retry.FixedIntervalAsync(async () => await Video.DownloadImdbMetadataAsync(imdbId, cacheDirectory, metadataDirectory, cacheFiles, metadataFiles, webDriver, false, true, log));
