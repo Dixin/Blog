@@ -208,7 +208,7 @@ Trace.WriteLine("测试");
 //    settings.MovieMusical.Directory,
 //    settings.MovieTemp.Directory,
 //    @"L:\Files3\Movies",
-//    @"S:\Files\Library\New folder",
+//    @"E:\Files\Movies",
 //    @"T:\Files\Library\Movies Mainstream.Temp");
 //await Video.WriteExternalVideoMetadataAsync(settings.MovieExternalMetadata, settings.MovieTemp.Directory);
 //await Video.CompareAndMoveAsync(settings.MovieExternalMetadata, settings.MovieLibraryMetadata, settings.MovieExternalNew.Directory, settings.MovieExternalDelete.Directory, isDryRun: false);
@@ -261,7 +261,11 @@ Trace.WriteLine("测试");
 //    settings.TVMainstream,
 //    settings.TVTemp);
 
-await Imdb.DownloadAllMoviesAsync(settings.MovieLibraryMetadata, settings.MovieRarbgX265Metadata, settings.MovieRarbgH264Metadata, settings.MovieYtsMetadata, settings.MovieRarbgH264720PMetadata, settings.MovieRareMetadata, settings.MovieRarbgX265XMetadata, settings.MovieRarbgH264XMetadata, settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory);
+await Imdb.DownloadAllMoviesAsync(
+    settings.MovieLibraryMetadata,
+    settings.MovieRarbgX265Metadata, settings.MovieRarbgH264Metadata, settings.MovieYtsMetadata, settings.MovieRarbgH264720PMetadata, settings.MovieRareMetadata, settings.MovieRarbgX265XMetadata, settings.MovieRarbgH264XMetadata,
+    settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory,
+    count => ..(count / 4));
 //await Imdb.DownloadAllTVsAsync(settings.TVRarbgX265Metadata, settings.TVMainstream.Directory, settings.TVMetadataCacheDirectory, settings.TVMetadataDirectory);
 
 string[] keywords = { "female full frontal nudity", "female nudity", "female frontal nudity", /*"vagina",*/ "labia", "unsimulated sex" };

@@ -705,9 +705,11 @@ internal static class Imdb
         return false;
     }
 
-    internal static async Task DownloadAllMoviesAsync(string libraryJsonPath,
+    internal static async Task DownloadAllMoviesAsync(
+        string libraryJsonPath,
         string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, string rareJsonPath, string x265XJsonPath, string h264XJsonPath,
-        string cacheDirectory, string metadataDirectory, Action<string>? log = null)
+        string cacheDirectory, string metadataDirectory, 
+        Func<int, Range>? getRange = null, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
@@ -739,7 +741,11 @@ internal static class Imdb
             .Order()
             .ToArray();
         int length = imdbIds.Length;
-        imdbIds = imdbIds.Take(..(length / 4)).ToArray();
+        if (getRange is not null)
+        {
+            imdbIds = imdbIds.Take(getRange(length)).ToArray();
+        }
+        
         imdbIds = imdbIds
             .Except(metadataFiles.Select(file => Path.GetFileNameWithoutExtension(file).Split("-").First()))
             .ToArray();
