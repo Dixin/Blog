@@ -33,7 +33,7 @@ public static class WebDriverHelper
 
     public static IWebDriver StartChrome(int index) => StartChrome(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(ChromeDriver)} {index:00}"));
 
-    public static IWebDriver StartEdge(string profile = "", bool isLoadingAll = false, string downloadDirectory = "")
+    public static IWebDriver StartEdge(string profile = "", bool isLoadingAll = false, bool keepWindow = false, bool keepExisting = false, string downloadDirectory = "")
     {
         if (string.IsNullOrWhiteSpace(profile))
         {
@@ -64,11 +64,21 @@ public static class WebDriverHelper
             options.AddUserProfilePreference("profile.managed_default_content_settings.media_stream", 2);
         }
 
-        ProcessHelper.StartAndWait("taskkill", "/F /IM msedgedriver.exe /T");
+        if (!keepExisting)
+        {
+            DisposeAllEdge();
+        }
 
         EdgeDriver webDriver = new(options);
+        if (!keepWindow)
+        {
+            webDriver.Manage().Window.Minimize();
+        }
+
         return webDriver;
     }
+
+    public static void DisposeAllEdge() => ProcessHelper.StartAndWait("taskkill", "/F /IM msedgedriver.exe /T");
 
     public static IWebDriver StartEdge(int index, bool isLoadingAll = false) =>
         StartEdge(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(EdgeDriver)} {index:00}"), isLoadingAll);

@@ -199,7 +199,9 @@ internal static class Imdb
         string releaseUrl = $"{imdbUrl}releaseinfo/";
         string releaseHtml = File.Exists(releaseFile)
             ? await File.ReadAllTextAsync(releaseFile)
-            : await Retry.FixedIntervalAsync(async () => webDriver is not null ? await webDriver.GetStringAsync(releaseUrl) : await httpClient!.GetStringAsync(releaseUrl), retryCount: 10);
+            : webDriver is not null
+                ? WebDriverHelper.GetString(ref webDriver, releaseUrl)
+                : await Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(releaseUrl));
         CQ releaseCQ = releaseHtml;
 
         if (webDriver is not null)
@@ -208,28 +210,55 @@ internal static class Imdb
             Debug.Assert(seeAllDatesButtonCQ.Length is 0 or 1);
             if (seeAllDatesButtonCQ.Any() && webDriver.Url.EqualsIgnoreCase(releaseUrl))
             {
-                int rowCount = webDriver.FindElements(By.CssSelector("div[data-testid='sub-section-releases']>ul>li")).Count;
-                IWebElement seeAllDatesButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("span.chained-see-more-button-releases button.ipc-see-more__button")));
-                if (!seeAllDatesButton.Displayed)
-                {
-                    seeAllDatesButtonCQ = releaseCQ.Find("span.single-page-see-more-button-releases button.ipc-see-more__button:contains('more') span.ipc-see-more__text:visible");
-                    seeAllDatesButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("span.single-page-see-more-button-releases button.ipc-see-more__button")));
-                }
+                Retry.FixedInterval(
+                    action: () =>
+                    {
+                        int rowCount = webDriver.FindElements(By.CssSelector("div[data-testid='sub-section-releases']>ul>li")).Count;
+                        IWebElement seeAllDatesButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("span.chained-see-more-button-releases button.ipc-see-more__button")));
+                        if (!seeAllDatesButton.Displayed)
+                        {
+                            seeAllDatesButtonCQ = releaseCQ.Find("span.single-page-see-more-button-releases button.ipc-see-more__button:contains('more') span.ipc-see-more__text:visible");
+                            seeAllDatesButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("span.single-page-see-more-button-releases button.ipc-see-more__button")));
+                        }
 
-                Debug.Assert(seeAllDatesButtonCQ.Length == 1);
-                Debug.Assert(seeAllDatesButton.Displayed);
-                Retry.FixedInterval(seeAllDatesButton.Click);
+                        Debug.Assert(seeAllDatesButtonCQ.Length == 1);
+                        Debug.Assert(seeAllDatesButton.Displayed);
+                        try
+                        {
+                            seeAllDatesButton.Click();
+                        }
+                        catch (Exception exception) when (exception.IsNotCritical())
+                        {
+                            seeAllDatesButton.SendKeys(Keys.Space);
+                        }
 
-                new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver =>
-                {
-                    releaseHtml = webDriver.PageSource;
-                    releaseCQ = releaseHtml;
-                    rowCount = releaseCQ.Find("div[data-testid='sub-section-releases']>ul>li").Length;
-                    Thread.Sleep(WebDriverHelper.DefaultNetworkWait);
-                    return driver.FindElements(By.CssSelector("div[data-testid='sub-section-releases']>ul>li")).Count == rowCount
-                        && releaseCQ.Find("span.chained-see-more-button-releases button.ipc-see-more__button:contains('All')  span.ipc-see-more__text:visible").IsEmpty()
-                        && releaseCQ.Find("span.single-page-see-more-button-releases button.ipc-see-more__button:contains('more') span.ipc-see-more__text:visible").IsEmpty();
-                });
+                        new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver =>
+                        {
+                            releaseHtml = webDriver.PageSource;
+                            releaseCQ = releaseHtml;
+                            rowCount = releaseCQ.Find("div[data-testid='sub-section-releases']>ul>li").Length;
+                            Thread.Sleep(WebDriverHelper.DefaultNetworkWait);
+                            return driver.FindElements(By.CssSelector("div[data-testid='sub-section-releases']>ul>li")).Count == rowCount
+                                && releaseCQ.Find("span.chained-see-more-button-releases button.ipc-see-more__button:contains('All')  span.ipc-see-more__text:visible").IsEmpty()
+                                && releaseCQ.Find("span.single-page-see-more-button-releases button.ipc-see-more__button:contains('more') span.ipc-see-more__text:visible").IsEmpty();
+                        });
+                    },
+                    retryingHandler: (sender, arg) =>
+                    {
+                        try
+                        {
+                            webDriver.Dispose();
+                        }
+                        finally
+                        {
+                            webDriver = WebDriverHelper.StartEdge();
+                        }
+
+                        releaseHtml = webDriver.GetString(releaseUrl);
+                        releaseCQ = releaseHtml;
+                        seeAllDatesButtonCQ = releaseCQ.Find("span.chained-see-more-button-releases button.ipc-see-more__button:contains('All')  span.ipc-see-more__text:visible");
+                        Debug.Assert(seeAllDatesButtonCQ.Any());
+                    });
             }
 
             releaseHtml = webDriver.PageSource;
@@ -280,7 +309,14 @@ internal static class Imdb
 
                             Debug.Assert(seeAllAkaButtonCQ.Length == 1);
                             Debug.Assert(seeAllAkaButton.Displayed);
-                            Retry.FixedInterval(seeAllAkaButton.Click);
+                            try
+                            {
+                                seeAllAkaButton.Click();
+                            }
+                            catch (Exception exception) when (exception.IsNotCritical())
+                            {
+                                seeAllAkaButton.SendKeys(Keys.Space);
+                            }
 
                             new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver =>
                             {
@@ -320,7 +356,14 @@ internal static class Imdb
 
                                 Debug.Assert(seeAllDatesButtonCQ.Length == 1);
                                 Debug.Assert(seeAllDatesButton.Displayed);
-                                Retry.FixedInterval(seeAllDatesButton.Click);
+                                try
+                                {
+                                    seeAllDatesButton.Click();
+                                }
+                                catch (Exception exception) when (exception.IsNotCritical())
+                                {
+                                    seeAllDatesButton.SendKeys(Keys.Space);
+                                }
 
                                 new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver =>
                                 {
@@ -542,7 +585,9 @@ internal static class Imdb
         string keywordsUrl = $"{imdbUrl}keywords";
         string keywordsHtml = File.Exists(keywordsFile)
             ? await File.ReadAllTextAsync(keywordsFile)
-            : await Retry.FixedIntervalAsync(async () => webDriver is not null ? await webDriver.GetStringAsync(keywordsUrl) : await httpClient!.GetStringAsync(keywordsUrl), retryCount: 10);
+            : webDriver is not null
+                ? WebDriverHelper.GetString(ref webDriver, keywordsUrl)
+                : await Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(keywordsUrl));
         CQ keywordsCQ = keywordsHtml;
         string[] allKeywords = keywordsCQ.Find("#keywords_content table td div.sodatext a").Select(keyword => keyword.TextContent.Trim()).ToArray();
         if (allKeywords.IsEmpty())
@@ -563,7 +608,14 @@ internal static class Imdb
 
                     Debug.Assert(seeAllButtonCQ.Length == 1);
                     Debug.Assert(seeAllButton.Displayed);
-                    Retry.FixedInterval(seeAllButton.Click);
+                    try
+                    {
+                        Retry.FixedInterval(seeAllButton.Click);
+                    }
+                    catch (Exception exception) when (exception.IsNotCritical())
+                    {
+                        seeAllButton.SendKeys(Keys.Space);
+                    }
 
                     new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver =>
                     {
@@ -591,7 +643,9 @@ internal static class Imdb
         string advisoriesUrl = $"{imdbUrl}parentalguide";
         string advisoriesHtml = File.Exists(advisoriesFile)
             ? await File.ReadAllTextAsync(advisoriesFile)
-            : await Retry.FixedIntervalAsync(async () => webDriver is not null ? await webDriver.GetStringAsync(advisoriesUrl) : await httpClient!.GetStringAsync(advisoriesUrl), retryCount: 10);
+            : webDriver is not null
+                ? WebDriverHelper.GetString(ref webDriver, advisoriesUrl)
+                : await Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(advisoriesUrl));
         CQ parentalGuideCQ = advisoriesHtml;
         string mpaaRating = parentalGuideCQ.Find("#mpaa-rating td").Last().Text().Trim();
         ImdbAdvisory[] advisories = parentalGuideCQ
