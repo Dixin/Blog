@@ -274,7 +274,7 @@ public static partial class Chinese
     public static bool IsSingleChineseCharacter([NotNullWhen(true)] this string? value) =>
         IsSingleChineseCharacter(value, out _, out _, out _, out _);
 
-    public static bool IsSingleCharacter([NotNullWhen(true)] this string? value, out bool isSingleSurrogatePair, [NotNullWhen(false)] out Exception? error, [CallerArgumentExpression("value")] string argument = "")
+    public static bool IsSingleCharacter([NotNullWhen(true)] this string? value, out bool isSingleSurrogatePair, [NotNullWhen(false)] out Exception? error, [CallerArgumentExpression(nameof(value))] string argument = "")
     {
         // Equivalent to: !string.IsNullOrEmpty(text) && new StringInfo(text).LengthInTextElements == 1.
         if (string.IsNullOrEmpty(value))
@@ -326,7 +326,7 @@ public static partial class Chinese
         [NotNullWhen(true)] out string? unicodeBlockUri,
         [NotNullWhen(true)] out string? unicodeBlockChart,
         [NotNullWhen(false)] out Exception? error,
-        [CallerArgumentExpression("value")] string argument = "")
+        [CallerArgumentExpression(nameof(value))] string argument = "")
     {
         unicodeBlockName = null;
         unicodeBlockUri = null;
