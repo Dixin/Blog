@@ -822,30 +822,40 @@ internal static class Imdb
             });
     }
 
-    internal static async Task DownloadAllTVsAsync(string x265JsonPath, string tvDirectory, string cacheDirectory, string metadataDirectory, Action<string>? log = null)
+    internal static async Task DownloadAllTVsAsync(
+        string x265JsonPath,
+        string[] tvDirectories, string cacheDirectory, string metadataDirectory,
+        Func<int, Range>? getRange = null, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
         Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
-        string[] libraryImdbIds = Directory.EnumerateFiles(tvDirectory, Video.ImdbMetadataSearchPattern, SearchOption.AllDirectories)
+        string[] libraryImdbIds = tvDirectories.SelectMany(tvDirectory => Directory.EnumerateFiles(tvDirectory, Video.ImdbMetadataSearchPattern, SearchOption.AllDirectories))
             .Select(file => TryRead(file, out string? imdbId, out _, out _, out _, out _) ? imdbId : string.Empty)
             .Where(imdbId => imdbId.IsNotNullOrWhiteSpace())
             .ToArray();
 
         using IWebDriver webDriver = WebDriverHelper.StartEdge();
-        string[] cacheFiles = Directory.GetFiles(@cacheDirectory);
+        string[] cacheFiles = Directory.GetFiles(cacheDirectory);
         string[] metadataFiles = Directory.GetFiles(metadataDirectory);
         string[] imdbIds = x265Metadata.Keys
             .Distinct()
             .Except(libraryImdbIds)
             .Order()
             .ToArray();
-        int length = imdbIds.Length;
-        await imdbIds
+        if (getRange is not null)
+        {
+            int length = imdbIds.Length;
+            imdbIds = imdbIds.Take(getRange(length)).ToArray();
+        }
+
+        imdbIds = imdbIds
             .Except(metadataFiles.Select(file => Path.GetFileNameWithoutExtension(file).Split("-").First()))
-            .ForEachAsync(async (imdbId, index) =>
+            .ToArray();
+        int trimmedLength = imdbIds.Length;
+        await imdbIds.ForEachAsync(async (imdbId, index) =>
             {
-                log($"{index * 100 / length}% - {index}/{length} - {imdbId}");
+                log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
                 try
                 {
                     await Video.DownloadImdbMetadataAsync(imdbId, cacheDirectory, metadataDirectory, cacheFiles, metadataFiles, webDriver, false, true, log);
