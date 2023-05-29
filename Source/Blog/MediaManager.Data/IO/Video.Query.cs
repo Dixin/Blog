@@ -180,7 +180,7 @@ internal static partial class Video
             .GetOrderablePartitions(degreeOfParallelism ?? IOMaxDegreeOfParallelism)
             .Select((partition, partitionIndex) => Task.Run(async () =>
             {
-                using IWebDriver? webDriver = useBrowser ? WebDriverHelper.StartEdge(partitionIndex) : null;
+                using IWebDriver? webDriver = useBrowser ? WebDriverHelper.Start(partitionIndex) : null;
                 if (webDriver is not null)
                 {
                     webDriver.Url = "https://www.imdb.com/";

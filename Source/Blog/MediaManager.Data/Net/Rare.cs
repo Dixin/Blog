@@ -85,7 +85,7 @@ internal static class Rare
             .Distinct(imdbId => imdbId.Value)
             .ToArray();
         int length = imdbIds.Length;
-        using IWebDriver webDriver = WebDriverHelper.StartEdge();
+        using IWebDriver webDriver = WebDriverHelper.Start();
         await imdbIds
             .OrderBy(imdbId => imdbId.Value)
             .ForEachAsync(async (imdbId, index) =>

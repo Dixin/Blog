@@ -2,8 +2,11 @@
 
 using Examples.Common;
 using Examples.Diagnostics;
+using Examples.IO;
+using Examples.Management;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Chromium;
 using OpenQA.Selenium.Edge;
 
 public static class WebDriverHelper
@@ -18,30 +21,30 @@ public static class WebDriverHelper
 
     private const string ProfilePrefix = "Selenium Profile";
 
-    public static IWebDriver StartChrome(string profile = "")
+    private static readonly List<Win32Process> childProcesses = new();
+
+    //public static IWebDriver StartChrome(string profile = "", bool isLoadingAll = false, bool keepWindow = false, bool keepExisting = false, bool cleanProfile = false, string downloadDirectory = "") =>
+    //    StartChromium<ChromeOptions>(profile, isLoadingAll, keepWindow, keepExisting, cleanProfile, downloadDirectory);
+
+    //public static IWebDriver StartChrome(int index, bool isLoadingAll = false) =>
+    //    StartChrome(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(ChromeDriver)} {index:00}"), isLoadingAll);
+
+    //public static IWebDriver StartEdge(string profile = "", bool isLoadingAll = false, bool keepWindow = false, bool keepExisting = false, bool cleanProfile = false, string downloadDirectory = "") =>
+    //    StartChromium<EdgeOptions>(profile, isLoadingAll, keepWindow, keepExisting, cleanProfile, downloadDirectory);
+
+    //public static IWebDriver StartEdge(int index, bool isLoadingAll = false) =>
+    //    StartEdge(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(EdgeDriver)} {index:00}"), isLoadingAll);
+
+    public static IWebDriver Start(int index, bool isLoadingAll = false) =>
+        Start(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(EdgeDriver)} {index:00}"), isLoadingAll);
+
+    public static IWebDriver Start(string profile = "", bool isLoadingAll = false, bool keepWindow = false, bool keepExisting = false, bool keepProfile = false, string downloadDirectory = "") =>
+        StartChromium<EdgeOptions>(profile, isLoadingAll, keepWindow, keepExisting, keepProfile, downloadDirectory);
+
+    public static IWebDriver StartChromium<TOptions>(string profile = "", bool isLoadingAll = false, bool keepWindow = false, bool keepExisting = false, bool cleanProfile = false, string downloadDirectory = "")
+        where TOptions : ChromiumOptions, new()
     {
-        if (string.IsNullOrWhiteSpace(profile))
-        {
-            profile = Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(ChromeDriver)}");
-        }
-
-        ChromeOptions options = new();
-        options.AddArguments($"user-data-dir={profile}");
-        ChromeDriver webDriver = new(options);
-        return webDriver;
-    }
-
-    public static IWebDriver StartChrome(int index) => StartChrome(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(ChromeDriver)} {index:00}"));
-
-    public static IWebDriver StartEdge(string profile = "", bool isLoadingAll = false, bool keepWindow = false, bool keepExisting = false, string downloadDirectory = "")
-    {
-        if (string.IsNullOrWhiteSpace(profile))
-        {
-            profile = Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(EdgeDriver)}");
-        }
-
-        EdgeOptions options = new();
-        options.AddArguments($"user-data-dir={profile}");
+        TOptions options = new();
         options.AddUserProfilePreference("download.default_directory", downloadDirectory.IfNullOrWhiteSpace(TempDirectory));
         options.AddUserProfilePreference("disable-popup-blocking", "true");
         options.AddUserProfilePreference("download.prompt_for_download", "false");
@@ -64,12 +67,54 @@ public static class WebDriverHelper
             options.AddUserProfilePreference("profile.managed_default_content_settings.media_stream", 2);
         }
 
-        if (!keepExisting)
+        ChromiumDriver webDriver;
+        switch (options)
         {
-            DisposeAllEdge();
+            case EdgeOptions edgeOptions:
+                if (!keepExisting)
+                {
+                    DisposeAllEdge();
+                }
+
+                if (profile.IsNullOrWhiteSpace())
+                {
+                    profile = Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(EdgeDriver)}");
+                }
+
+                if (cleanProfile && Directory.Exists(profile))
+                {
+                    DirectoryHelper.Recycle(profile);
+                }
+
+                options.AddArguments($"user-data-dir={profile}");
+                webDriver = new EdgeDriver(edgeOptions);
+
+                break;
+
+            case ChromeOptions chromeOptions:
+                if (!keepExisting)
+                {
+                    DisposeAllChrome();
+                }
+
+                if (profile.IsNullOrWhiteSpace())
+                {
+                    profile = Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(ChromeDriver)}");
+                }
+
+                if (cleanProfile && Directory.Exists(profile))
+                {
+                    DirectoryHelper.Recycle(profile);
+                }
+
+                options.AddArguments($"user-data-dir={profile}");
+                webDriver = new ChromeDriver(chromeOptions);
+                break;
+
+            default:
+                throw new NotSupportedException(options.GetType().FullName);
         }
 
-        EdgeDriver webDriver = new(options);
         if (!keepWindow)
         {
             webDriver.Manage().Window.Minimize();
@@ -78,13 +123,22 @@ public static class WebDriverHelper
         return webDriver;
     }
 
-    public static void DisposeAllEdge() => ProcessHelper.StartAndWait("taskkill", "/F /IM msedgedriver.exe /T");
+    public static void DisposeAllEdge()
+    {
+        ProcessHelper.TryKillAll("msedgedriver.exe");
+        Win32ProcessHelper.TryKillAll("msedge.exe", " --test-type=webdriver ");
+    }
 
-    public static IWebDriver StartEdge(int index, bool isLoadingAll = false) =>
-        StartEdge(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(EdgeDriver)} {index:00}"), isLoadingAll);
+    public static void DisposeAllChrome()
+    {
+        ProcessHelper.TryKillAll("chromedriver.exe");
+        Win32ProcessHelper.TryKillAll("msedge.exe", " --test-type=webdriver ");
+    }
 
     public static string GetString(ref IWebDriver webDriver, string url, int retryCount = 10, Func<IWebDriver>? restart = null, Action? wait = null)
     {
+        webDriver.NotNull();
+
         Exception? lastException = null;
         for (int retry = 0; retry < retryCount; retry++)
         {
@@ -104,7 +158,7 @@ public static class WebDriverHelper
                 }
                 finally
                 {
-                    webDriver = restart?.Invoke() ?? StartEdge();
+                    webDriver = restart?.Invoke() ?? Start();
                 }
             }
         }

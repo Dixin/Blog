@@ -113,4 +113,7 @@ public static partial class ProcessHelper
         int exitCode = await StartAndWaitAsync(fileName, arguments, output => allOutput.Add(output), error => allErrors.Add(error), null, window, cancellationToken);
         return (exitCode, allOutput, allErrors);
     }
+
+    public static bool TryKillAll(string name) =>
+        Run("taskkill", $"/F /IM {name} /T").ExitCode == 0;
 }

@@ -67,4 +67,31 @@ public static partial class Win32ProcessHelper
             ? AllChildProcesses(process.ProcessId.Value, managementScope)
             : Enumerable.Empty<Win32Process>()));
     }
+
+    public static bool TryKillAll(string name, params string[] arguments)
+    {
+        string query = $"SELECT {nameof(Win32Process.ProcessId)} FROM {Win32Process.WmiClassName} WHERE {nameof(Win32Process.Name)} = '{name}'{string.Join(string.Empty, arguments.Select(argument => $" AND {nameof(Win32Process.CommandLine)} LIKE '%{argument}%'"))}";
+        uint?[] processesIds = Wmi
+            .Query(query)
+            .Select(process => (uint?)process[nameof(Win32Process.ProcessId)])
+            .ToArray();
+        processesIds.ForEach(processId =>
+        {
+            if (!processId.HasValue)
+            {
+                return;
+            }
+
+            try
+            {
+                Process.GetProcessById((int)processId.Value).Kill(true);
+            }
+            finally
+            {
+            }
+        });
+        return Wmi
+            .Query(query)
+            .IsEmpty();
+    }
 }

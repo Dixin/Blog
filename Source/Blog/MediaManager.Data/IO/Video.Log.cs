@@ -1640,7 +1640,7 @@ internal static partial class Video
 
         HashSet<string> downloadedTitles = new();
 
-        using IWebDriver? webDriver = isDryRun ? null : WebDriverHelper.StartEdge(isLoadingAll: true);
+        using IWebDriver? webDriver = isDryRun ? null : WebDriverHelper.Start(isLoadingAll: true);
         using HttpClient? httpClient = isDryRun ? null : new HttpClient().AddEdgeHeaders();
         if (!isDryRun)
         {
@@ -1988,7 +1988,7 @@ internal static partial class Video
             log(length.ToString());
         }
 
-        using IWebDriver webDriver = WebDriverHelper.StartEdge(isLoadingAll: true);
+        using IWebDriver webDriver = WebDriverHelper.Start(isLoadingAll: true);
         webDriver.Url = initialUrl;
         new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(e => e.FindElement(By.Id("pager_links")));
 

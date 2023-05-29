@@ -244,6 +244,8 @@ internal static partial class Video
     internal static async Task DownloadImdbMetadataAsync(string imdbId, string cacheDirectory, string metadataDirectory, string[] cacheFiles, string[] metadataFiles, IWebDriver? webDriver, bool overwrite = false, bool useCache = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
+
+        long startTime = Stopwatch.GetTimestamp();
         string[] jsonFiles = metadataFiles.Where(file => file.EndsWithIgnoreCase(ImdbMetadataExtension) && Path.GetFileName(file).StartsWithIgnoreCase(imdbId)).ToArray();
         if (jsonFiles.Any())
         {
@@ -339,6 +341,8 @@ internal static partial class Video
             });
         await File.WriteAllTextAsync(jsonFile, jsonContent);
         log($"Saved to {jsonFile}.");
+        TimeSpan elapsed = Stopwatch.GetElapsedTime(startTime);
+        log($"Elapsed {elapsed}");
     }
 
     internal const string ImdbMetadataSeparator = ",";
@@ -353,7 +357,7 @@ internal static partial class Video
             .ToArray();
         if (movies.Any())
         {
-            using IWebDriver? webDriver = useBrowser ? WebDriverHelper.StartEdge() : null;
+            using IWebDriver? webDriver = useBrowser ? WebDriverHelper.Start() : null;
             if (webDriver is not null)
             {
                 webDriver.Url = "https://www.imdb.com/";
