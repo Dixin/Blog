@@ -49,9 +49,8 @@ Trace.WriteLine("测试");
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp.Directory, 2, overwrite: false, useCache: true, useBrowser: true, 1);
 //await Video.DownloadImdbMetadataAsync(@"S:\Files\Library\New folder (2)", 1, overwrite: false, useCache: true, useBrowser: true, 1);
 //await Video.DownloadImdbMetadataAsync(@"T:\Files\Library\Movies Mainstream.Temp", 2, overwrite: false, useCache: true, useBrowser: true, 1);
-//await Video.DownloadImdbMetadataAsync(@"L:\Files3\Movies2", 2, overwrite: false, useCache: true, useBrowser: true, 1);
-//await Video.DownloadImdbMetadataAsync(@"S:\Files\Library\New folder", 2, overwrite: false, useCache: true, useBrowser: true, 1);
-//await Video.DownloadImdbMetadataAsync(@"E:\Files\Movies", 2, overwrite: false, useCache: true, useBrowser: true, 1);
+//await Video.DownloadImdbMetadataAsync(@"L:\Files3\Movies", 2, overwrite: false, useCache: true, useBrowser: true, 1);
+//await Video.DownloadImdbMetadataAsync(@"E:\Files\Movies2", 2, overwrite: false, useCache: true, useBrowser: true, 1);
 
 //await Video.DownloadImdbMetadataAsync(settings.TVControversial.Directory, 1, overwrite: false, useCache: true, useBrowser: true, 1);
 //await Video.DownloadImdbMetadataAsync(settings.TVDocumentary.Directory, 1, overwrite: false, useCache: true, useBrowser: true, 1);
@@ -192,7 +191,8 @@ Trace.WriteLine("测试");
 //    settings.MovieMusical.Directory,
 //    settings.MovieTemp.Directory,
 //    @"E:\Files\Movies",
-//    @"Q:\Files",
+//    @"E:\Files\Movies2",
+//    @"L:\Files3\Movies",
 //    @"T:\Files\Library\Movies Controversial.非主流电影[未抓取字幕]",
 //    @"T:\Files\Library\Movies Mainstream.Temp");
 
@@ -201,15 +201,15 @@ Trace.WriteLine("测试");
 //await Video.ConvertToUtf8Async(settings.LibraryDirectory);
 
 //Video.MoveSubtitleToParentDirectory(settings.MovieTemp.Directory);
-//await Video.WriteLibraryMovieMetadata(settings.MovieLibraryMetadata, null,
-//    settings.MovieControversial.Directory,
-//    settings.MovieMainstream.Directory,
-//    settings.MovieMainstreamWithoutSubtitle.Directory,
-//    settings.MovieMusical.Directory,
-//    settings.MovieTemp.Directory,
-//    @"L:\Files3\Movies",
-//    @"E:\Files\Movies",
-//    @"T:\Files\Library\Movies Mainstream.Temp");
+await Video.WriteLibraryMovieMetadata(settings.MovieLibraryMetadata, null,
+    settings.MovieControversial.Directory,
+    settings.MovieMainstream.Directory,
+    settings.MovieMainstreamWithoutSubtitle.Directory,
+    settings.MovieMusical.Directory,
+    settings.MovieTemp.Directory,
+    @"L:\Files3\Movies",
+    @"E:\Files\Movies",
+    @"T:\Files\Library\Movies Mainstream.Temp");
 //await Video.WriteExternalVideoMetadataAsync(settings.MovieExternalMetadata, settings.MovieTemp.Directory);
 //await Video.CompareAndMoveAsync(settings.MovieExternalMetadata, settings.MovieLibraryMetadata, settings.MovieExternalNew.Directory, settings.MovieExternalDelete.Directory, isDryRun: false);
 
@@ -251,7 +251,6 @@ Trace.WriteLine("测试");
 //    (@"T:\Files\Library\Movies Controversial.非主流电影[未抓取字幕]", 2),
 //    (@"E:\Files\Encode", 2),
 //    (@"E:\Files\Encoded", 2),
-//    (@"S:\Files\Library\New folder", 2),
 //    (@"L:\Files3\Movies", 2),
 //    (@"E:\Files\Movies", 2),
 //    (@"T:\Files\Library\Movies Mainstream.Temp", 2));
@@ -265,7 +264,7 @@ await Imdb.DownloadAllMoviesAsync(
     settings.MovieLibraryMetadata,
     settings.MovieRarbgX265Metadata, settings.MovieRarbgH264Metadata, settings.MovieYtsMetadata, settings.MovieRarbgH264720PMetadata, settings.MovieRareMetadata, settings.MovieRarbgX265XMetadata, settings.MovieRarbgH264XMetadata,
     settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory,
-    count => ..(count / 4));
+    count => ..(count / 8));
 //await Imdb.DownloadAllTVsAsync(settings.TVRarbgX265Metadata, settings.TVMainstream.Directory, settings.TVMetadataCacheDirectory, settings.TVMetadataDirectory);
 
 string[] keywords = { "female full frontal nudity", "female nudity", "female frontal nudity", /*"vagina",*/ "labia", "unsimulated sex" };

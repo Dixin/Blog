@@ -132,7 +132,7 @@ public static class WebDriverHelper
     public static void DisposeAllChrome()
     {
         ProcessHelper.TryKillAll("chromedriver.exe");
-        Win32ProcessHelper.TryKillAll("msedge.exe", " --test-type=webdriver ");
+        ProcessHelper.TryKillAll("chrome.exe");
     }
 
     public static string GetString(ref IWebDriver webDriver, string url, int retryCount = 10, Func<IWebDriver>? restart = null, Action? wait = null)
