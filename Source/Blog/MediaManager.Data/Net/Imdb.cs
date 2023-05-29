@@ -822,6 +822,50 @@ internal static class Imdb
             });
     }
 
+    internal static async Task DownloadAllLibraryMoviesAsync(
+        string libraryJsonPath,
+        string cacheDirectory, string metadataDirectory,
+        Func<IEnumerable<string>, IEnumerable<string>>? parttion = null, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+
+        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(libraryJsonPath))!;
+
+        using IWebDriver webDriver = WebDriverHelper.StartEdge();
+        string[] cacheFiles = Directory.GetFiles(@cacheDirectory);
+        string[] metadataFiles = Directory.GetFiles(metadataDirectory);
+        string[] imdbIds = libraryMetadata.Keys
+            .Where(imdbId => Regex.IsMatch(imdbId, "tt[0-9]+"))
+            .Order()
+            .ToArray();
+        int length = imdbIds.Length;
+        if (parttion is not null)
+        {
+            imdbIds = parttion(imdbIds).ToArray();
+        }
+
+        imdbIds = imdbIds
+            .Except(metadataFiles.Select(file => Path.GetFileNameWithoutExtension(file).Split("-").First()))
+            .ToArray();
+        int trimmedLength = imdbIds.Length;
+        await imdbIds.ForEachAsync(async (imdbId, index) =>
+            {
+                log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
+                try
+                {
+                    await Retry.FixedIntervalAsync(async () => await Video.DownloadImdbMetadataAsync(imdbId, cacheDirectory, metadataDirectory, cacheFiles, metadataFiles, webDriver, false, true, log));
+                }
+                catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
+                {
+                    log($"!!!{imdbId}");
+                }
+                catch (ArgumentException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
+                {
+                    log($"!!!{imdbId}");
+                }
+            });
+    }
+
     internal static async Task DownloadAllTVsAsync(
         string x265JsonPath,
         string[] tvDirectories, string cacheDirectory, string metadataDirectory,
