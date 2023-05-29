@@ -7,7 +7,7 @@ public static class Argument
 #if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             [NotNull]
 #endif
-        [ValidatedNotNull]this T value, [CallerArgumentExpression("value")] string name = "") =>
+        [ValidatedNotNull]this T value, [CallerArgumentExpression(nameof(value))] string name = "") =>
         value is null
             ? throw new ArgumentNullException(name)
             : value;
@@ -17,7 +17,7 @@ public static class Argument
 #if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             [NotNull]
 #endif
-        [ValidatedNotNull]this string value, [CallerArgumentExpression("value")] string name = "") =>
+        [ValidatedNotNull]this string value, [CallerArgumentExpression(nameof(value))] string name = "") =>
         string.IsNullOrWhiteSpace(value)
             ? throw new ArgumentNullException(name)
             : value;
@@ -27,7 +27,7 @@ public static class Argument
 #if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             [NotNull]
 #endif
-        [ValidatedNotNull]this string value, [CallerArgumentExpression("value")] string name = "") =>
+        [ValidatedNotNull]this string value, [CallerArgumentExpression(nameof(value))] string name = "") =>
         string.IsNullOrEmpty(value)
             ? throw new ArgumentNullException(name)
             : value;
@@ -37,7 +37,7 @@ public static class Argument
 #if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             [NotNull]
 #endif
-        [ValidatedNotNull]this IEnumerable<T> value, [CallerArgumentExpression("value")] string name = "")
+        [ValidatedNotNull]this IEnumerable<T> value, [CallerArgumentExpression(nameof(value))] string name = "")
     {
         if (value is null)
         {
