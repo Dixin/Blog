@@ -39,7 +39,7 @@ public static class WebDriverHelper
         Start(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(EdgeDriver)} {index:00}"), isLoadingAll);
 
     public static IWebDriver Start(string profile = "", bool isLoadingAll = false, bool keepWindow = false, bool keepExisting = false, bool keepProfile = false, string downloadDirectory = "") =>
-        StartChromium<EdgeOptions>(profile, isLoadingAll, keepWindow, keepExisting, keepProfile, downloadDirectory);
+        StartChromium<ChromeOptions>(profile, isLoadingAll, keepWindow, keepExisting, keepProfile, downloadDirectory);
 
     public static IWebDriver StartChromium<TOptions>(string profile = "", bool isLoadingAll = false, bool keepWindow = false, bool keepExisting = false, bool cleanProfile = false, string downloadDirectory = "")
         where TOptions : ChromiumOptions, new()
