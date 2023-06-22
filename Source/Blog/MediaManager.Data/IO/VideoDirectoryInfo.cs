@@ -13,7 +13,7 @@ internal record VideoDirectoryInfo(
     string Resolution, string Source,
     string Is3D, string Hdr) : INaming, ISimpleParsable<VideoDirectoryInfo>
 {
-    private static readonly Regex NameRegex = new(@"^([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?((\=[^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?)?\.([0-9\-]{4})\.([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?\[([0-9]\.[0-9]|\-)-([0-9\.KM]+|\-)\]\[(\-|13\+|16\+|AO|Approved|E|G|GP|M|MPG|NA|NC17|NotRated|Passed|PG|PG13|R|T|TV13|TV14|TVG|TVMA|TVPG|TVY7|Unrated|X)\](\[(2160|1080|720|480)(b|b[2-9]|f|f[2-9]|h|h[2-9]|n|n[2-9]|p|p[2-9]|x|x[2-9]|y|y[2-9])(\+)?\])?(\[3D\])?(\[HDR\])?$");
+    private static readonly Regex NameRegex = new(@"^([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?((\=[^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?)?\.([0-9\-]{4})\.([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?\[([0-9]\.[0-9]|\-)-([0-9\.KM]+|\-)\]\[(\-|13\+|16\+|AO|Approved|E|G|GP|M|MPG|NA|NC17|NotRated|Passed|PG|PG13|R|T|TV13|TV14|TVG|TVMA|TVPG|TVY7|Unrated|X)\](\[(2160|1080|720|480)(b|b[2-9]|f|f[2-9]|h|h[2-9]|n|n[2-9]|p|p[2-9]|x|x[2-9]|X|X[2-9]|y|y[2-9])(\+)?\])?(\[3D\])?(\[HDR\])?$");
 
     internal string FormattedDefinition
     {
@@ -112,42 +112,40 @@ internal record VideoDirectoryInfo(
         IVideoFileInfo[] hdVideos = videos.Where<IVideoFileInfo>(video => video.IsHD).ToArray();
         if (hdVideos.Any())
         {
-            IVideoFileInfo[] xVideos = hdVideos.Where(video => video.EncoderType is EncoderType.X).ToArray();
-            if (xVideos.Any())
+            IOrderedEnumerable<IGrouping<EncoderType, IVideoFileInfo>> videosByEncoder = hdVideos
+                .GroupBy(video => video.EncoderType)
+                .OrderByDescending(group => group.Key);
+            IGrouping<EncoderType, IVideoFileInfo> group = videosByEncoder.First();
+            string encoder = group.Key switch
             {
-                return $"x{xVideos.Max(video => video.FormattedAudioCount)}";
-            }
+                EncoderType.X => "x",
+                EncoderType.H => "h",
+                EncoderType.XY => "X",
+                EncoderType.Y => "y",
+                EncoderType.F => "f",
+                EncoderType.N => "n",
+                EncoderType.B => "b",
+                EncoderType.P => "p",
+                _ => throw new ArgumentOutOfRangeException(nameof(videos))
+            };
 
-            IVideoFileInfo[] hVideos = hdVideos.Where(video => video.EncoderType is EncoderType.H).ToArray();
-            if (hVideos.Any())
-            {
-                return $"h{hVideos.Max(video => video.FormattedAudioCount)}";
-            }
-
-            IVideoFileInfo[] yVideos = hdVideos.Where(video => video.EncoderType is EncoderType.Y).ToArray();
-            if (yVideos.Any())
-            {
-                return $"y{yVideos.Max(video => video.FormattedAudioCount)}";
-            }
-
-            return GetEncodedSource(hdVideos) ?? $"p{hdVideos.Max(video => video.FormattedAudioCount)}";
+            return $"{encoder}{videos.Max<IVideoFileInfo, string>(video => video.FormattedAudioCount)}";
         }
-
-        return GetEncodedSource(videos) ?? string.Empty;
-
-        static string? GetEncodedSource(IVideoFileInfo[] videos)
+        else
         {
-            IVideoFileInfo[] encodedVideos = videos.Where(video => video.Encoder.IsNotNullOrWhiteSpace()).ToArray();
-            if (encodedVideos.Any())
+            IOrderedEnumerable<IGrouping<EncoderType, IVideoFileInfo>> videosByEncoder = videos
+                .GroupBy<IVideoFileInfo, EncoderType>(video => video.EncoderType)
+                .OrderByDescending(group => group.Key);
+            IGrouping<EncoderType, IVideoFileInfo> group = videosByEncoder.First();
+            return group.Key switch
             {
-                Debug.Assert(encodedVideos.Length == 1 || encodedVideos.Distinct(video => video.Encoder).Count() == 1);
-                string encoder = encodedVideos.First().Encoder.TrimStart('.')[..1];
-                encoder = encoder is "h" ? "b" : encoder;
-                Debug.Assert(encoder is "b" or "f" or "n");
-                return $"{encoder}{encodedVideos.Max(video => video.FormattedAudioCount)}";
-            }
-
-            return null;
+                EncoderType.Y => $"y{videos.Max<IVideoFileInfo, string>(video => video.FormattedAudioCount)}",
+                EncoderType.F => $"f{videos.Max<IVideoFileInfo, string>(video => video.FormattedAudioCount)}",
+                EncoderType.N => $"n{videos.Max<IVideoFileInfo, string>(video => video.FormattedAudioCount)}",
+                EncoderType.B => $"b{videos.Max<IVideoFileInfo, string>(video => video.FormattedAudioCount)}",
+                EncoderType.P => string.Empty,
+                _ => throw new ArgumentOutOfRangeException(nameof(videos))
+            };
         }
     }
 

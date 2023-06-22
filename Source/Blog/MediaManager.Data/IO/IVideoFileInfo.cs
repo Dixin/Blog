@@ -29,7 +29,7 @@ internal interface IVideoFileInfo : INaming
 
             if (this.Version.EqualsIgnoreCase("YIFY") || this.Version.StartsWithIgnoreCase("[YTS."))
             {
-                return EncoderType.Y;
+                return this.VideoCodec.StartsWithOrdinal(".x265") ? EncoderType.XY : EncoderType.Y;
             }
 
             return this.Encoder.TrimStart('.') switch
@@ -64,6 +64,7 @@ internal enum EncoderType
     N,
     F,
     Y,
+    XY,
     H,
     X
 }
