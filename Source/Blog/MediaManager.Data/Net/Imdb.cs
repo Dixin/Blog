@@ -582,7 +582,7 @@ internal static class Imdb
 
         Debug.Assert(title.IsNotNullOrWhiteSpace());
 
-        string keywordsUrl = $"{imdbUrl}keywords";
+        string keywordsUrl = $"{imdbUrl}keywords/";
         string keywordsHtml = File.Exists(keywordsFile)
             ? await File.ReadAllTextAsync(keywordsFile)
             : webDriver is not null

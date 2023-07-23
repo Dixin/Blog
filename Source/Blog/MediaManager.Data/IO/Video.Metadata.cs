@@ -183,8 +183,8 @@ internal static partial class Video
 
             string xmlMetadata = files.First(file => file.EndsWithIgnoreCase(XmlMetadataExtension));
             XDocument xmlDocument = XDocument.Load(xmlMetadata);
-            string? imdbId = xmlDocument.Root?.Element("imdbid")?.Value;
-            if (imdbId.IsNotNullOrWhiteSpace())
+            string imdbId = xmlDocument.Root?.Element("imdbid")?.Value ?? string.Empty;
+            if (imdbId.IsNullOrWhiteSpace())
             {
                 return;
             }
