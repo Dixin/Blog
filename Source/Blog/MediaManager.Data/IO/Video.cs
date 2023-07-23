@@ -21,7 +21,7 @@ internal static partial class Video
     private const string Delimiter = ".";
 
     private static readonly string[] UncommonVideoExtensions = { ".avi", ".wmv", ".webm", ".mpg", ".mpeg", ".rmvb", ".rm", ".3gp", ".divx", ".m1v", ".mov", ".ts", ".vob", ".flv", ".m4v", ".mkv", ".dat" };
-    
+
     private const string DiskImageExtension = ".iso";
 
     private static readonly string[] CommonVideoExtensions = { ".avi", VideoExtension, ".mkv", DiskImageExtension };
@@ -34,7 +34,7 @@ internal static partial class Video
 
     private static readonly string[] Attachments = { "Introduction.txt", "Introduction.mht" };
 
-    private static readonly string[] AdaptiveAttachments = new[] { "banner.jpg", "box.jpg", "clearart.png", "clearlogo.png", "disc.jpg", "disc.png", "discart.png", "fanart.jpg", "landscape.jpg", "logo.png", "poster.jpg", "poster.png", "backdrop.jpg", "back.jpg" };
+    private static readonly string[] AdaptiveAttachments = new[] { "banner.jpg", "box.jpg", "clearart.png", "clearlogo.png", "disc.jpg", "disc.png", "discart.png", "fanart.jpg", "landscape.jpg", "landscape.png", "logo.png", "logo.svg", "poster.jpg", "poster.png", "backdrop.jpg", "back.jpg" };
 
     internal const string ImdbMetadataExtension = ".json";
 
@@ -44,7 +44,7 @@ internal static partial class Video
 
     private const string ImdbCacheSearchPattern = PathHelper.AllSearchPattern + ImdbCacheExtension;
 
-    private static readonly string[] SubtitleLanguages = { "bul", "can", "cat", "chs", "cht", "cze", "dan", "dut", "eng", "fin", "fre", "hin", "ger", "hun", "ita", "jap", "kor", "nor", "pol", "por", "rus", "spa", "swe", "tam" };
+    private static readonly string[] SubtitleLanguages = { "bul", "can", "cat", "chs", "cht", "cze", "dan", "dut", "eng", "fin", "fre", "hin", "ind", "ger", "hun", "ita", "jap", "kor", "nor", "pol", "por", "rom", "rus", "spa", "swe", "tam", "ukr" };
 
     internal const string NotExistingFlag = "-";
 
