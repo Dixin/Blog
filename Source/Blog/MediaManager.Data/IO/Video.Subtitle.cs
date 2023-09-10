@@ -166,7 +166,11 @@ internal static partial class Video
                         string language = subtitleBase.IsNotNullOrWhiteSpace() && subtitleName.StartsWithIgnoreCase(subtitleBase)
                             ? subtitleName.Substring(subtitleBase.Length).TrimStart('.')
                             : subtitleName.Split(".").Last();
-                        Debug.Assert(Regex.IsMatch(language, @"^([a-z]{3}(\&[a-z]{3})?(\-[a-z0-9]+)?)?$"));
+                        if (!Regex.IsMatch(language, @"^([a-z]{3}(\&[a-z]{3})?(\-[a-z0-9]+)?)?$"))
+                        {
+                            language = string.Empty;
+                        }
+                        
                         string newSubtitleName = $"{Path.GetFileNameWithoutExtension(video)}{(language.IsNullOrWhiteSpace() ? string.Empty : ".")}{language}{Path.GetExtension(subtitle)}";
                         string newSubtitle = Path.Combine(Path.GetDirectoryName(video) ?? throw new InvalidOperationException(video), newSubtitleName);
                         if (rename is not null)

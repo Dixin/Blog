@@ -58,8 +58,16 @@
         "Directory": "D:\\Files\\Library\\Movies Musical.音乐",
         "Level": 2
     },
-    "MovieTemp": {
-        "Directory": "S:\\Files\\Library\\Movies Mainstream.Temp",
+    "MovieTemp1": {
+        "Directory": "D:\\Files\\Library\\Movies Mainstream.主流电影1",
+        "Level": 2
+    },
+    "MovieTemp2": {
+        "Directory": "D:\\Files\\Library\\Movies Mainstream.主流电影2",
+        "Level": 2
+    },
+    "MovieTemp3": {
+        "Directory": "D:\\Files\\Library\\Movies Mainstream.主流电影3",
         "Level": 2
     },
 

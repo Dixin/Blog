@@ -48,7 +48,11 @@ public record Settings(
 
     public DirectorySettings MovieMusical { get; init; }
 
-    public DirectorySettings MovieTemp { get; init; }
+    public DirectorySettings MovieTemp1 { get; init; }
+
+    public DirectorySettings MovieTemp2 { get; init; }
+
+    public DirectorySettings MovieTemp3 { get; init; }
 
     public DirectorySettings MovieExternalNew { get; init; }
 
