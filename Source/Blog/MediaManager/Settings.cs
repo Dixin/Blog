@@ -42,11 +42,19 @@ public record Settings(
 
     public DirectorySettings MovieControversial { get; init; }
 
+    public DirectorySettings MovieControversialTemp { get; init; }
+
     public DirectorySettings MovieMainstream { get; init; }
 
     public DirectorySettings MovieMainstreamWithoutSubtitle { get; init; }
 
     public DirectorySettings MovieMusical { get; init; }
+
+    public DirectorySettings MovieTemp1 { get; init; }
+
+    public DirectorySettings MovieTemp2 { get; init; }
+
+    public DirectorySettings MovieTemp3 { get; init; }
 
     public DirectorySettings MovieTemp { get; init; }
 
