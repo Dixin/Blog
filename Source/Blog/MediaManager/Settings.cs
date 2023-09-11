@@ -42,6 +42,8 @@ public record Settings(
 
     public DirectorySettings MovieControversial { get; init; }
 
+    public DirectorySettings MovieControversialTemp { get; init; }
+
     public DirectorySettings MovieMainstream { get; init; }
 
     public DirectorySettings MovieMainstreamWithoutSubtitle { get; init; }
@@ -53,6 +55,8 @@ public record Settings(
     public DirectorySettings MovieTemp2 { get; init; }
 
     public DirectorySettings MovieTemp3 { get; init; }
+
+    public DirectorySettings MovieTemp { get; init; }
 
     public DirectorySettings MovieExternalNew { get; init; }
 
