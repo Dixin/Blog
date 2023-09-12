@@ -24,7 +24,7 @@ internal static partial class Video
 
     private const string DiskImageExtension = ".iso";
 
-    private static readonly string[] CommonVideoExtensions = { ".avi", VideoExtension, ".mkv", DiskImageExtension };
+    private static readonly string[] CommonVideoExtensions = { ".avi", VideoExtension, ".mkv", DiskImageExtension, ".wmv", ".mpg" };
 
     private static readonly string[] AllVideoExtensions = UncommonVideoExtensions.Union(CommonVideoExtensions).ToArray();
 
@@ -44,7 +44,7 @@ internal static partial class Video
 
     private const string ImdbCacheSearchPattern = PathHelper.AllSearchPattern + ImdbCacheExtension;
 
-    private static readonly string[] SubtitleLanguages = { "bul", "can", "cat", "chs", "cht", "cze", "dan", "dut", "eng", "fin", "fre", "hin", "ind", "ger", "hun", "ita", "jap", "kor", "nor", "pol", "por", "rom", "rus", "spa", "swe", "tam", "ukr" };
+    private static readonly string[] SubtitleLanguages = { "bul", "can", "cat", "chs", "cht", "cze", "dan", "dut", "eng", "fin", "fre", "hin", "ind", "ger", "hun", "ita", "jap", "kor", "nor", "pol", "por", "rom", "rum", "rus", "slo", "spa", "swe", "tam", "tha", "ukr" };
 
     internal const string NotExistingFlag = "-";
 
