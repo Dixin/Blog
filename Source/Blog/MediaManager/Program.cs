@@ -141,6 +141,7 @@ FFmpeg.SetExecutablesPath(settings.FfmpegDirectory);
 //Video.PrintDirectoriesWithErrors(settings.MovieMainstream.Directory);
 //Video.PrintDirectoriesWithErrors(settings.MovieMainstreamWithoutSubtitle.Directory);
 //Video.PrintDirectoriesWithErrors(settings.MovieMusical.Directory);
+//Video.PrintDirectoriesWithErrors(settings.MovieTemp.Directory);
 //Video.PrintDirectoriesWithErrors(settings.MovieTemp1.Directory);
 //Video.PrintDirectoriesWithErrors(settings.MovieTemp2.Directory);
 //Video.PrintDirectoriesWithErrors(settings.MovieTemp3.Directory);
