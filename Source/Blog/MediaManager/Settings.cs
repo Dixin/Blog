@@ -70,6 +70,8 @@ public record Settings(
 
     public DirectorySettings TVTutorial { get; init; }
 
+    public DirectorySettings TVMainstreamWithoutSubtitle { get; init; }
+
     public DirectorySettings TVTemp { get; init; }
 
     public DirectorySettings AudioControversial { get; init; }

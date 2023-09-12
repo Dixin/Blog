@@ -104,8 +104,12 @@
         "Directory": "D:\\Files\\Library\\TV Tutorial.教程",
         "Level": 1
     },
+    "TVMainstreamWithoutSubtitle": {
+        "Directory": "D:\\Files\\Library\\TV Mainstream.主流电视剧[未抓取字幕]",
+        "Level": 1
+    },
     "TVTemp": {
-        "Directory": "N:\\Files\\Library\\TV Mainstream.主流电视剧[未抓取字幕]",
+        "Directory": "D:\\Files\\Library\\TV Temp.电视剧",
         "Level": 1
     },
 

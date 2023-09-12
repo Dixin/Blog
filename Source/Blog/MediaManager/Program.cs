@@ -46,9 +46,8 @@ FFmpeg.SetExecutablesPath(settings.FfmpegDirectory);
 //await Video.DownloadImdbMetadataAsync(settings.TVControversial.Directory, 1, overwrite: false, useCache: true, useBrowser: true, 1);
 //await Video.DownloadImdbMetadataAsync(settings.TVDocumentary.Directory, 1, overwrite: false, useCache: true, useBrowser: true, 1);
 //await Video.DownloadImdbMetadataAsync(settings.TVMainstream.Directory, 1, overwrite: false, useCache: true, useBrowser: true, 1);
+//await Video.DownloadImdbMetadataAsync(settings.TVMainstreamWithoutSubtitle.Directory, 1, overwrite: false, useCache: true, useBrowser: true, 1);
 //await Video.DownloadImdbMetadataAsync(settings.TVTemp.Directory, 1, overwrite: false, useCache: true, useBrowser: true, 1);
-//await Video.DownloadImdbMetadataAsync(@"L:\Files3\TV", 1, overwrite: false, useCache: true, useBrowser: true, 1);
-//await Video.DownloadImdbMetadataAsync(@"L:\Files3\TV2", 1, overwrite: false, useCache: true, useBrowser: true, 1);
 
 //Video.MoveFanArt(settings.Movie3D.Directory, 2);
 //Video.MoveFanArt(settings.MovieHdr.Directory, 2);
@@ -112,7 +111,7 @@ FFmpeg.SetExecutablesPath(settings.FfmpegDirectory);
 //Video.RenameDirectoriesWithImdbMetadata(settings.TVControversial.Directory, level: 1, isTV: true, isDryRun: true);
 //Video.RenameDirectoriesWithImdbMetadata(settings.TVDocumentary.Directory, level: 1, isTV: true, isDryRun: true);
 //Video.RenameDirectoriesWithImdbMetadata(settings.TVMainstream.Directory, level: 1, isTV: true, isDryRun: true);
-//Video.RenameDirectoriesWithImdbMetadata(settings.TVTemp.Directory, level: 1, isTV: true, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings.TVMainstreamWithoutSubtitle.Directory, level: 1, isTV: true, isDryRun: true);
 
 //Video.WriteRating(settings.Movie3D.Directory);
 //Video.WriteRating(settings.MovieHdr.Directory);
@@ -150,7 +149,7 @@ FFmpeg.SetExecutablesPath(settings.FfmpegDirectory);
 //Video.PrintDirectoriesWithErrors(settings.TVDocumentary.Directory, 1, isTV: true);
 //Video.PrintDirectoriesWithErrors(settings.TVMainstream.Directory, 1, isTV: true);
 //Video.PrintDirectoriesWithErrors(settings.TVTutorial.Directory, 1, isTV: true);
-//Video.PrintDirectoriesWithErrors(settings.TVTemp.Directory, 1, isTV: true);
+//Video.PrintDirectoriesWithErrors(settings.TVMainstreamWithoutSubtitle.Directory, 1, isTV: true);
 
 //Video.PrintVideosWithErrors(settings.Movie3D.Directory, searchOption: SearchOption.AllDirectories);
 //Video.PrintVideosWithErrors(settings.MovieControversial.Directory, searchOption: SearchOption.AllDirectories);
@@ -254,7 +253,7 @@ FFmpeg.SetExecutablesPath(settings.FfmpegDirectory);
 //    settings.TVControversial,
 //    settings.TVDocumentary,
 //    settings.TVMainstream,
-//    settings.TVTemp);
+//    settings.TVMainstreamWithoutSubtitle);
 
 //await Imdb.UpdateAllMoviesAsync(
 //    settings.MovieLibraryMetadata,
@@ -265,7 +264,7 @@ FFmpeg.SetExecutablesPath(settings.FfmpegDirectory);
 
 string[] keywords = { "female full frontal nudity", "female nudity", "female frontal nudity", /*"vagina",*/ "labia", "unsimulated sex" };
 string[] genres = { "family", "animation", "documentary" };
-//await Video.PrintTVLinks(settings.TVRarbgX265Metadata, new string[] { settings.TVMainstream.Directory, settings.TVTemp.Directory }, @"D:\Files\Library\TVMetadata", @"D:\Files\Library\TVMetadataCache", "https://rarbg.to/torrents.php?search=x265.rarbg&category%5B%5D=41",
+//await Video.PrintTVLinks(settings.TVRarbgX265Metadata, new string[] { settings.TVMainstream.Directory, settings.TVMainstreamWithoutSubtitle.Directory }, @"D:\Files\Library\TVMetadata", @"D:\Files\Library\TVMetadataCache", "https://rarbg.to/torrents.php?search=x265.rarbg&category%5B%5D=41",
 //    imdbMetadata =>
 //        !imdbMetadata.AllKeywords.Intersect(new string[] { "test" }, StringComparer.OrdinalIgnoreCase).Any()
 //        && !imdbMetadata.Genres.Intersect(genres, StringComparer.OrdinalIgnoreCase).Any()
@@ -302,7 +301,7 @@ string[] genres = { "family", "animation", "documentary" };
 
 //Video.MoveAllSubtitles(settings.MovieTemp.Directory, settings.MovieSubtitleBackupDirectory);
 
-//Video.RenameDirectoriesWithMetadata(settings.TVTemp.Directory, 1, isTV: true);
+//Video.RenameDirectoriesWithMetadata(settings.TVTemp.Directory, 1, isTV: true, isDryRun: true);
 //Video.RenameDirectoriesWithAdditionalMetadata(settings.MovieTemp.Directory, 2);
 //Video.RenameDirectoriesWithoutMetadata(settings.MovieControversial.Directory, isDryRun: false);
 
