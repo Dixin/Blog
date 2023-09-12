@@ -200,6 +200,7 @@ FFmpeg.SetExecutablesPath(settings.FfmpegDirectory);
 //Video.MoveSubtitleToParentDirectory(settings.MovieTemp.Directory);
 //await Video.WriteLibraryMovieMetadata(settings.MovieLibraryMetadata, null,
 //    settings.MovieControversial.Directory,
+//    settings.MovieControversialTemp.Directory,
 //    settings.MovieMainstream.Directory,
 //    settings.MovieMainstreamWithoutSubtitle.Directory,
 //    settings.MovieMusical.Directory,
