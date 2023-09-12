@@ -216,17 +216,15 @@ FFmpeg.SetExecutablesPath(settings.FfmpegDirectory);
 //await Drive115.WriteOfflineTasksAsync(settings.Drive115Url, settings.Drive115Metadata, "Goto.Isle.of.Love.1969");
 
 //await Video.PrintMovieImdbIdErrorsAsync(settings.MovieRarbgX265Metadata, settings.MovieRarbgH264Metadata, settings.MovieRarbgX265XMetadata, settings.MovieRarbgH264XMetadata, /*settings.MovieRarbgH264720PMetadata, settings.MovieYtsMetadata,*/ null,
-//    //settings.MovieMainstream,
-//    //settings.MovieControversial,
-//    //settings.MovieMainstreamWithoutSubtitle,
-//    //settings.MovieMusical,
-//    //settings.MovieTemp,
-//    (@"L:\Files3\Movies", 2),
-//    (@"L:\Files3\Movies2", 2),
-//    (@"S:\Files\Library\Movies Mainstream.Temp", 2),
-//    (@"T:\Files\Library\Movies Mainstream.Temp", 2),
-//    (@"E:\Files\Movies", 2),
-//    (@"S:\Files\Library\New folder", 2));
+//    settings.MovieMainstream,
+//    settings.MovieControversial,
+//    settings.MovieControversialTemp,
+//    settings.MovieMainstreamWithoutSubtitle,
+//    settings.MovieMusical,
+//    settings.MovieTemp,
+//    settings.MovieTemp1,
+//    settings.MovieTemp2,
+//    settings.MovieTemp3);
 
 //Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(settings.TVRarbgX265Metadata))!;
 //x265Metadata.Values.SelectMany(values=>values).OrderByDescending(meta=>meta.ImdbRating).ThenBy(meta=>meta.ImdbRating)
