@@ -1736,7 +1736,7 @@ internal static partial class Video
                             if (rarbgMagnetUris.Contains(metadata.Title))
                             {
                                 string[] uris = rarbgMagnetUris[metadata.Title].ToArray();
-                                if (uris.Length > 1)
+                                if (uris.Length == 1)
                                 {
                                     uris.Take(1).ForEach(log);
                                 }
@@ -1828,7 +1828,7 @@ internal static partial class Video
                             if (rarbgMagnetUris.Contains(metadata.Title))
                             {
                                 string[] uris = rarbgMagnetUris[metadata.Title].ToArray();
-                                if (uris.Length > 1)
+                                if (uris.Length == 1)
                                 {
                                     uris.Take(1).ForEach(log);
                                 }

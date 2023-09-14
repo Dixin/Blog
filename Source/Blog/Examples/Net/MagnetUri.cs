@@ -4,7 +4,7 @@ using System.Collections.Immutable;
 using System.Web;
 using Examples.Common;
 
-public record MagnetUri(string ExactTopic, string DisplayName, IEnumerable<string> Trackers) : ISimpleParsable<MagnetUri>
+public record MagnetUri(string ExactTopic, string DisplayName, string[] Trackers) : ISimpleParsable<MagnetUri>
 {
     private const int HashLength = 40;
 
@@ -12,7 +12,7 @@ public record MagnetUri(string ExactTopic, string DisplayName, IEnumerable<strin
 
     private static readonly Regex TrackersRegex = new(@"&tr\=([^\&]+)", RegexOptions.IgnoreCase);
 
-    public override string ToString() => $"magnet:?xt=urn:btih:{this.ExactTopic}{(this.DisplayName.IsNullOrWhiteSpace() ? string.Empty : $"&dn={this.DisplayName}")}{this.Trackers.Select(tracker => $"&tr={HttpUtility.UrlEncode(tracker)}")}";
+    public override string ToString() => $"magnet:?xt=urn:btih:{this.ExactTopic}{(this.DisplayName.IsNullOrWhiteSpace() ? string.Empty : $"&dn={this.DisplayName}")}{string.Join(string.Empty, this.Trackers.Select(tracker => $"&tr={HttpUtility.UrlEncode(tracker)}"))}";
 
     public static MagnetUri Parse(string value) =>
         TryParse(value, out MagnetUri? result) ? result : throw new ArgumentOutOfRangeException(nameof(value), value, "Input is invalid.");
@@ -26,11 +26,12 @@ public record MagnetUri(string ExactTopic, string DisplayName, IEnumerable<strin
             return false;
         }
 
-        IEnumerable<string> trackers = TrackersRegex
+        string[] trackers = TrackersRegex
             .Matches(value)
             .Where(trackerMatch => trackerMatch.Success)
             .Select(trackerMatch => HttpUtility.UrlDecode(trackerMatch.Groups[1].Value))
-            .Distinct(StringComparer.OrdinalIgnoreCase);
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
         result = new(match.Groups[1].Value.ToUpperInvariant(), match.Groups[3].Value, trackers);
         return true;
     }
@@ -39,7 +40,10 @@ public record MagnetUri(string ExactTopic, string DisplayName, IEnumerable<strin
 
     public override int GetHashCode() => this.ExactTopic.GetHashCode();
 
-    public MagnetUri WithDefaultTrackers() => this with { Trackers = this.Trackers.Union(DefaultTrackers, StringComparer.OrdinalIgnoreCase) };
+    public MagnetUri WithDefaultTrackers() => this with
+    {
+        Trackers = this.Trackers.Union(DefaultTrackers, StringComparer.OrdinalIgnoreCase).ToArray()
+    };
 
     public static ImmutableArray<string> DefaultTrackers { get; } = ImmutableArray.Create(
         "https://1337.abcvg.info:443/announce",
@@ -47,6 +51,8 @@ public record MagnetUri(string ExactTopic, string DisplayName, IEnumerable<strin
         "udp://1c.premierzal.ru:6969/announce",
         "udp://6.pocketnet.app:6969/announce",
         "udp://6ahddutb1ucc3cp.ru:6969/announce",
+        "*udp://9.rarbg.me:2930/announce",
+        "*udp://9.rarbg.to:2980/announce",
         "udp://aarsen.me:6969/announce",
         "udp://acxx.de:6969/announce",
         "udp://aegir.sexy:6969/announce",
@@ -111,6 +117,7 @@ public record MagnetUri(string ExactTopic, string DisplayName, IEnumerable<strin
         "http://tracker.dler.org:6969/announce",
         "udp://tracker.dler.org:6969/announce",
         "https://tracker.expli.top:443/announce",
+        "*udp://tracker.fatkhoala.org:13760/announce",
         "http://tracker.files.fm:6969/announce",
         "https://tracker.gbitt.info:443/announce",
         "http://tracker.gbitt.info:80/announce",
@@ -131,11 +138,13 @@ public record MagnetUri(string ExactTopic, string DisplayName, IEnumerable<strin
         "http://tracker.renfei.net:8080/announce",
         "udp://tracker.srv00.com:6969/announce",
         "udp://tracker.swateam.org.uk:2710/announce",
+        "*udp://tracker.tallpenguin.org:15720/announce",
         "https://tracker.tamersunion.org:443/announce",
         "udp://tracker.theoks.net:6969/announce",
         "udp://tracker.therarbg.com:6969/announce",
         "udp://tracker.tiny-vps.com:6969/announce",
         "udp://tracker.torrent.eu.org:451/announce",
+        "udp://tracker.trackerfix.com:85/announce",
         "udp://tracker.t-rb.org:6969/announce",
         "http://tracker.zerobytes.xyz:1337/announce",
         "udp://tracker.zerobytes.xyz:1337/announce",

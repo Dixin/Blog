@@ -1,5 +1,10 @@
 ﻿namespace Examples.Net;
 
+using System;
+using System.Net.Http;
+using Examples.Common;
+using Examples.Linq;
+using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using MonoTorrent;
 using MonoTorrent.Client;
 
@@ -22,7 +27,7 @@ public class Torrent
     }
 
     public static async Task<IEnumerable<Task>> DownloadAllAsync(IEnumerable<string> magnetUrls, string torrentDirectory, Action<string>? logger = null, CancellationToken cancellationToken = default)
-    { ;
+    {
         EngineSettingsBuilder engineSettingsBuilder = new()
         {
             CacheDirectory = torrentDirectory
@@ -44,5 +49,35 @@ public class Torrent
                 logger?.Invoke(torrentPath);
                 await File.WriteAllBytesAsync(torrentPath, torrent, cancellationToken);
             });
+    }
+
+    public static async Task DownloadAllFromCacheAsync(IEnumerable<string> magnetUrls, string torrentDirectory, Action<string>? log = null, CancellationToken cancellationToken = default)
+    {
+        using HttpClient httpClient = new HttpClient().AddEdgeHeaders(referer: "https://magnet2torrent.com/");
+
+        await magnetUrls
+            .Select(MagnetUri.Parse)
+            .ParallelForEachAsync(async magnetUri =>
+            {
+                try
+                {
+                    await Retry.FixedIntervalAsync(
+                        async () => await httpClient.GetFileAsync(
+                            $"https://itorrents.org/torrent/{magnetUri.ExactTopic}.torrent",
+                            Path.Combine(torrentDirectory, $"{magnetUri.DisplayName}@{magnetUri.ExactTopic}.torrent"),
+                            cancellationToken),
+                        isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.Moved });
+                }
+                catch (Exception exception) when (exception.IsNotCritical())
+                {
+                    log?.Invoke(magnetUri.ToString());
+                    if (exception is not HttpRequestException { StatusCode: HttpStatusCode.Moved })
+                    {
+                        log?.Invoke(exception.ToString());
+                    }
+
+                    log?.Invoke(string.Empty);
+                }
+            }, 2);
     }
 }
