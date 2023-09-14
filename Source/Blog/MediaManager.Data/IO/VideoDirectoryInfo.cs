@@ -36,7 +36,7 @@ internal record VideoDirectoryInfo(
 
     public string Name => $"{this.DefaultTitle1}{this.DefaultTitle2}{this.DefaultTitle3}{this.OriginalTitle1}{this.OriginalTitle2}{this.OriginalTitle3}.{this.Year}.{this.TranslatedTitle1}{this.TranslatedTitle2}{this.TranslatedTitle3}{this.TranslatedTitle4}[{this.AggregateRating}-{this.AggregateRatingCount}][{this.ContentRating}]{this.FormattedDefinition}{this.Is3D}{this.Hdr}";
 
-    public static bool TryParse([NotNullWhen(true)] string? value, [NotNullWhen(true)] out VideoDirectoryInfo? info)
+    public static bool TryParse([NotNullWhen(true)] string? value, [NotNullWhen(true)] out VideoDirectoryInfo? result)
     {
         if (Path.IsPathRooted(value))
         {
@@ -46,11 +46,11 @@ internal record VideoDirectoryInfo(
         Match match = NameRegex.Match(value);
         if (!match.Success)
         {
-            info = null;
+            result = null;
             return false;
         }
 
-        info = new VideoDirectoryInfo(
+        result = new VideoDirectoryInfo(
             DefaultTitle1: match.Groups[1].Value, DefaultTitle2: match.Groups[2].Value, DefaultTitle3: match.Groups[3].Value,
             OriginalTitle1: match.Groups[5].Value, OriginalTitle2: match.Groups[6].Value, OriginalTitle3: match.Groups[7].Value,
             Year: match.Groups[8].Value,
@@ -64,7 +64,7 @@ internal record VideoDirectoryInfo(
     }
 
     public static VideoDirectoryInfo Parse(string value) =>
-        TryParse(value, out VideoDirectoryInfo? info) ? info : throw new ArgumentOutOfRangeException(nameof(value), value, "The input is invalid");
+        TryParse(value, out VideoDirectoryInfo? result) ? result : throw new ArgumentOutOfRangeException(nameof(value), value, "The input is invalid");
 
     internal static IEnumerable<VideoMovieFileInfo> GetVideos(string path) =>
         Directory

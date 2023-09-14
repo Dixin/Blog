@@ -457,15 +457,15 @@ internal static partial class Video
         log ??= Logger.WriteLine;
         Dictionary<string, Dictionary<string, VideoMetadata>> existingMetadata = File.Exists(jsonPath)
             ? JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(jsonPath))
-            ?? throw new InvalidOperationException(jsonPath)
+                ?? throw new InvalidOperationException(jsonPath)
             : new();
 
         existingMetadata
             .Values
             .ForEach(group => group
                 .Keys
-                .ToArray()
                 .Where(video => !File.Exists(Path.IsPathRooted(video) ? video : Path.Combine(Path.GetDirectoryName(jsonPath) ?? string.Empty, video)))
+                .ToArray()
                 .ForEach(group.Remove));
 
         Dictionary<string, string> existingVideos = existingMetadata
@@ -498,22 +498,21 @@ internal static partial class Video
             .ToLookup(videoMetadata => videoMetadata.Imdb?.ImdbId ?? string.Empty, metadata => metadata)
             .ToDictionary(group => group.Key, group => group.ToDictionary(videoMetadata => videoMetadata.File, videoMetadata => videoMetadata));
 
-        allVideoMetadata.ForEach(
-            group =>
+        allVideoMetadata.ForEach(group =>
+        {
+            if (!existingMetadata.ContainsKey(group.Key))
             {
-                if (!existingMetadata.ContainsKey(group.Key))
-                {
-                    existingMetadata[group.Key] = new();
-                }
+                existingMetadata[group.Key] = new Dictionary<string, VideoMetadata>();
+            }
 
-                group.Value.ForEach(pair => existingMetadata[group.Key][pair.Key] = pair.Value);
-            });
+            group.Value.ForEach(pair => existingMetadata[group.Key][pair.Key] = pair.Value);
+        });
 
         existingMetadata
             .Keys
-            .ToArray()
             .Where(imdbId => existingMetadata[imdbId].IsEmpty())
-            .ForEach(imdbId => existingMetadata.Remove(imdbId));
+            .ToArray()
+            .ForEach(existingMetadata.Remove);
 
         string mergedVideoMetadataJson = JsonSerializer.Serialize(existingMetadata, new JsonSerializerOptions() { WriteIndented = true });
         await FileHelper.WriteTextAsync(jsonPath, mergedVideoMetadataJson);
@@ -539,5 +538,43 @@ internal static partial class Video
 
         string mergedVideoMetadataJson = JsonSerializer.Serialize(allVideoMetadata, new JsonSerializerOptions() { WriteIndented = true });
         await File.WriteAllTextAsync(jsonPath, mergedVideoMetadataJson);
+    }
+
+    internal static async Task MergeMovieMetadataAsync(string metadataDirectory, string mergedMetadataPath)
+    {
+        ConcurrentDictionary<string, ImdbMetadata> mergedMetadata = File.Exists(mergedMetadataPath)
+            ? new(JsonSerializer.Deserialize<Dictionary<string, ImdbMetadata>>(await File.ReadAllTextAsync(mergedMetadataPath)) ?? throw new InvalidOperationException(mergedMetadataPath))
+            : new();
+
+        string[] movieMetadataFiles = Directory.GetFiles(metadataDirectory);
+        Dictionary<string, string> metadataFilesByImdbId = movieMetadataFiles
+            .ToDictionary(file => Path.GetFileName(file).Split("-").First());
+
+        mergedMetadata
+            .Keys
+            .Except(metadataFilesByImdbId.Keys, StringComparer.OrdinalIgnoreCase)
+            .ToArray()
+            .ForEach(imdbId => mergedMetadata.Remove(imdbId, out _));
+
+        metadataFilesByImdbId
+            .Keys
+            .Except(mergedMetadata.Keys, StringComparer.OrdinalIgnoreCase)
+            .AsParallel()
+            .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
+            .ForEach(imdbId =>
+            {
+                string file = metadataFilesByImdbId[imdbId];
+                if (Imdb.TryLoad(file, out ImdbMetadata? imdbMetadata))
+                {
+                    mergedMetadata[imdbId] = imdbMetadata;
+                }
+                else
+                {
+                    throw new InvalidOperationException(file);
+                }
+            });
+
+        string mergedMetadataJson = JsonSerializer.Serialize(mergedMetadata, new JsonSerializerOptions() { WriteIndented = true });
+        await FileHelper.WriteTextAsync(mergedMetadataPath, mergedMetadataJson);
     }
 }

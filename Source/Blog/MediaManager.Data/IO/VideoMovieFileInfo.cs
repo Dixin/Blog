@@ -21,7 +21,7 @@ internal record VideoMovieFileInfo(
 
     public string Name => $"{this.Title}.{this.Year}{this.ThreeD}{this.Edition}{this.Definition}{this.AdditionalEdition}{this.Origin}{this.VideoCodec}{this.AudioCodec}{(this.Version.IsNullOrWhiteSpace() ? string.Empty : $"-{this.Version}")}{this.MultipleAudio}{this.Watermark}{this.Encoder}{this.Subtitle}{this.Part}{this.Extension}";
 
-    public static bool TryParse([NotNullWhen(true)] string? value, [NotNullWhen(true)] out VideoMovieFileInfo? info)
+    public static bool TryParse([NotNullWhen(true)] string? value, [NotNullWhen(true)] out VideoMovieFileInfo? result)
     {
         if (Path.IsPathRooted(value))
         {
@@ -31,11 +31,11 @@ internal record VideoMovieFileInfo(
         Match match = NameRegex.Match(value);
         if (!match.Success)
         {
-            info = null;
+            result = null;
             return false;
         }
 
-        info = new(
+        result = new(
             Title: match.Groups[1].Value, Year: match.Groups[2].Value,
             ThreeD: match.Groups[3].Value, Edition: match.Groups[5].Value,
             Definition: match.Groups[9].Value, AdditionalEdition: match.Groups[10].Value,
@@ -51,5 +51,5 @@ internal record VideoMovieFileInfo(
     }
 
     public static VideoMovieFileInfo Parse(string value) =>
-        TryParse(value, out VideoMovieFileInfo? info) ? info : throw new ArgumentOutOfRangeException(nameof(value), value, "Input is invalid.");
+        TryParse(value, out VideoMovieFileInfo? result) ? result : throw new ArgumentOutOfRangeException(nameof(value), value, "Input is invalid.");
 }

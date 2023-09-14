@@ -7,6 +7,7 @@ using Examples.Linq;
 using Examples.Net;
 using OpenQA.Selenium.Support.UI;
 using OpenQA.Selenium;
+using System.Linq;
 
 internal static partial class Video
 {
@@ -805,7 +806,7 @@ internal static partial class Video
                         .Select(video => Path.GetFileNameWithoutExtension(video)!)
                         .Where(video => ((IVideoFileInfo)VideoMovieFileInfo.Parse(video)).EncoderType is EncoderType.Y)
                         .ToArray();
-                    Debug.Assert(ytsVideos.Length <= 1);
+                    //Debug.Assert(ytsVideos.Length <= 1);
                     (YtsMetadata metadata, KeyValuePair<string, string> version)[] otherYtsMetadata = availableYtsMetadata
                         .SelectMany(metadata => metadata.Availabilities, (metadata, version) => (metadata, version))
                         .ToArray();
@@ -1596,11 +1597,15 @@ internal static partial class Video
     }
 
     internal static async Task PrintMovieLinksAsync(
-        string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, string rareJsonPath, 
-        string cacheDirectory, string metadataDirectory, string initialUrl, 
+        string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, string rareJsonPath,
+        string rarbgMagnetPath,
+        string mergedJsonPath, string cacheDirectory, string metadataDirectory, string initialUrl,
         Func<ImdbMetadata, bool> predicate, bool updateMetadata = false, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
+
+        ILookup<string, string> rarbgMagnetUris = (await File.ReadAllLinesAsync(rarbgMagnetPath)).ToLookup(line => MagnetUri.Parse(line).DisplayName, StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, ImdbMetadata> mergedMetadata = JsonSerializer.Deserialize<Dictionary<string, ImdbMetadata>>(await File.ReadAllTextAsync(mergedJsonPath))!;
 
         Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(libraryJsonPath))!;
         Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
@@ -1608,14 +1613,13 @@ internal static partial class Video
         Dictionary<string, YtsMetadata[]> ytsMetadata = JsonSerializer.Deserialize<Dictionary<string, YtsMetadata[]>>(await File.ReadAllTextAsync(ytsJsonPath))!;
         //Dictionary<string, RarbgMetadata[]> h264720PMetadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264720PJsonPath))!;
         //Dictionary<string, RareMetadata> rareMetadata = JsonSerializer.Deserialize<Dictionary<string, RareMetadata>>(await File.ReadAllTextAsync(rareJsonPath))!;
-
         string[] metadataFiles = Directory.GetFiles(metadataDirectory);
         Dictionary<string, string> metadataFilesByImdbId = metadataFiles.ToDictionary(file => Path.GetFileName(file).Split("-").First());
         string[] cacheFiles = Directory.GetFiles(cacheDirectory);
 
-        ImdbMetadata?[] imdbIds = x265Metadata.Keys
+        ImdbMetadata[] imdbIds = x265Metadata.Keys
             .Concat(h264Metadata.Keys)
-            .Concat(ytsMetadata.Keys)
+            //.Concat(ytsMetadata.Keys)
             //.Concat(h264720PMetadata.Keys)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Except(libraryMetadata.Keys, StringComparer.OrdinalIgnoreCase)
@@ -1624,21 +1628,16 @@ internal static partial class Video
             //        .Matches(rare.Value.Content, @"imdb\.com/title/(tt[0-9]+)")
             //        .Where(match => match.Success)
             //        .Select(match => match.Groups[1].Value)))
-            .Order()
-            .AsParallel()
-            .WithDegreeOfParallelism(4)
-            .Select(imdbId => metadataFilesByImdbId.TryGetValue(imdbId, out string? file) && Imdb.TryLoad(file, out ImdbMetadata? imdbMetadata)
-                ? imdbMetadata
-                : null)
-            .Where(imdbMetadata => imdbMetadata is not null /*&& imdbMetadata.Year is not "2020" && imdbMetadata.Year is not "2021" && imdbMetadata.Year is not "2022"*/
-                && predicate(imdbMetadata))
-            .OrderBy(imdbId => imdbId!.ImdbId)
+            .Intersect(mergedMetadata.Keys)
+            .Select(imdbId => mergedMetadata[imdbId])
+            .Where(predicate)
+            .OrderBy(imdbMetadata => imdbMetadata.ImdbId)
             .ToArray();
         int length = imdbIds.Length;
         log(length.ToString());
         log(x265Metadata.Keys.Intersect(imdbIds.Select(metadata => metadata.ImdbId)).Count().ToString());
 
-        HashSet<string> downloadedTitles = new();
+        HashSet<string> downloadedTitles = new(Directory.GetDirectories(@"Q:\Files\Movies\Rarbg_"), StringComparer.OrdinalIgnoreCase);
 
         using IWebDriver? webDriver = isDryRun ? null : WebDriverHelper.Start(isLoadingAll: true);
         using HttpClient? httpClient = isDryRun ? null : new HttpClient().AddEdgeHeaders();
@@ -1673,7 +1672,7 @@ internal static partial class Video
         await imdbIds
             .ForEachAsync(async (imdbMetadata, index) =>
             {
-                log($"{index * 100 / length}% - {index}/{length} - {imdbMetadata!.ImdbId}");
+                //log($"{index * 100 / length}% - {index}/{length} - {imdbMetadata!.ImdbId}");
                 if (x265Metadata.TryGetValue(imdbMetadata.ImdbId, out RarbgMetadata[]? x265Videos))
                 {
                     List<RarbgMetadata> excluded = new();
@@ -1731,9 +1730,22 @@ internal static partial class Video
 
                         if (isDryRun)
                         {
-                            log($"{metadata.ImdbId}-{imdbMetadata.FormattedAggregateRating}-{imdbMetadata.FormattedAggregateRatingCount}-{metadata.Title} {metadata.Link} {imdbMetadata.Link}");
-                            log($"{imdbMetadata.Link}keywords");
-                            log($"{imdbMetadata.Link}parentalguide");
+                            //log($"{metadata.ImdbId}-{imdbMetadata.FormattedAggregateRating}-{imdbMetadata.FormattedAggregateRatingCount}-{metadata.Title} {metadata.Link} {imdbMetadata.Link}");
+                            //log($"{imdbMetadata.Link}keywords");
+                            //log($"{imdbMetadata.Link}parentalguide");
+                            if (rarbgMagnetUris.Contains(metadata.Title))
+                            {
+                                string[] uris = rarbgMagnetUris[metadata.Title].ToArray();
+                                if (uris.Length > 1)
+                                {
+                                    uris.Take(1).ForEach(log);
+                                }
+                            }
+                            else
+                            {
+                                //log($"!!! Cannot find magnet for title {metadata.Title}");
+                            }
+                            
                             log(string.Empty);
                             return;
                         }
@@ -1810,9 +1822,22 @@ internal static partial class Video
 
                         if (isDryRun)
                         {
-                            log($"{metadata.ImdbId}-{imdbMetadata.FormattedAggregateRating}-{imdbMetadata.FormattedAggregateRatingCount}-{metadata.Title} {metadata.Link} {imdbMetadata.Link}");
-                            log($"{imdbMetadata.Link}keywords");
-                            log($"{imdbMetadata.Link}parentalguide");
+                            //log($"{metadata.ImdbId}-{imdbMetadata.FormattedAggregateRating}-{imdbMetadata.FormattedAggregateRatingCount}-{metadata.Title} {metadata.Link} {imdbMetadata.Link}");
+                            //log($"{imdbMetadata.Link}keywords");
+                            //log($"{imdbMetadata.Link}parentalguide");
+                            if (rarbgMagnetUris.Contains(metadata.Title))
+                            {
+                                string[] uris = rarbgMagnetUris[metadata.Title].ToArray();
+                                if (uris.Length > 1)
+                                {
+                                    uris.Take(1).ForEach(log);
+                                }
+                            }
+                            else
+                            {
+                                //log($"!!! Cannot find magnet for title {metadata.Title}");
+                            }
+
                             log(string.Empty);
                             return;
                         }
@@ -1832,53 +1857,53 @@ internal static partial class Video
                     return;
                 }
 
-                if (ytsMetadata.TryGetValue(imdbMetadata.ImdbId, out YtsMetadata[]? ytsVideos))
-                {
-                    KeyValuePair<string, string>[] availabilities = ytsVideos.SelectMany(ytsVideo => ytsVideo.Availabilities).ToArray();
-                    KeyValuePair<string, string>[] videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("1080p.BluRay")).ToArray();
-                    if (videos.IsEmpty())
-                    {
-                        videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("1080p.WEB")).ToArray();
-                    }
+                //if (ytsMetadata.TryGetValue(imdbMetadata.ImdbId, out YtsMetadata[]? ytsVideos))
+                //{
+                //    KeyValuePair<string, string>[] availabilities = ytsVideos.SelectMany(ytsVideo => ytsVideo.Availabilities).ToArray();
+                //    KeyValuePair<string, string>[] videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("1080p.BluRay")).ToArray();
+                //    if (videos.IsEmpty())
+                //    {
+                //        videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("1080p.WEB")).ToArray();
+                //    }
 
-                    if (videos.IsEmpty())
-                    {
-                        videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("720p.BluRay")).ToArray();
-                    }
+                //    if (videos.IsEmpty())
+                //    {
+                //        videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("720p.BluRay")).ToArray();
+                //    }
 
-                    if (videos.IsEmpty())
-                    {
-                        videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("720p.WEB")).ToArray();
-                    }
+                //    if (videos.IsEmpty())
+                //    {
+                //        videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("720p.WEB")).ToArray();
+                //    }
 
-                    if (videos.IsEmpty())
-                    {
-                        videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("480p.DVD")).ToArray();
-                    }
+                //    if (videos.IsEmpty())
+                //    {
+                //        videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("480p.DVD")).ToArray();
+                //    }
 
-                    log($"{ytsVideos.First().ImdbId}-{imdbMetadata.FormattedAggregateRating}-{imdbMetadata.FormattedAggregateRatingCount}-{ytsVideos.First().Title} {ytsVideos.First().Link} {imdbMetadata.Link}");
-                    log($"{imdbMetadata.Link}keywords");
-                    log($"{imdbMetadata.Link}parentalguide");
-                    await videos.ForEachAsync(async video =>
-                    {
-                        log(string.Empty);
-                        log(video.Value);
-                        string file = Path.Combine(cacheDirectory, $"{ytsVideos.First().ImdbId}-{ytsVideos.First().Title}-{video.Key}.torrent".ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " ").ReplaceIgnoreCase("：", "-").FilterForFileSystem().Trim());
-                        if (httpClient is not null && !File.Exists(file))
-                        {
-                            try
-                            {
-                                await httpClient.GetFileAsync(video.Value, file);
-                            }
-                            catch (HttpRequestException exception)
-                            {
-                                log(exception.ToString());
-                            }
-                        }
+                //    log($"{ytsVideos.First().ImdbId}-{imdbMetadata.FormattedAggregateRating}-{imdbMetadata.FormattedAggregateRatingCount}-{ytsVideos.First().Title} {ytsVideos.First().Link} {imdbMetadata.Link}");
+                //    log($"{imdbMetadata.Link}keywords");
+                //    log($"{imdbMetadata.Link}parentalguide");
+                //    await videos.ForEachAsync(async video =>
+                //    {
+                //        log(string.Empty);
+                //        log(video.Value);
+                //        string file = Path.Combine(cacheDirectory, $"{ytsVideos.First().ImdbId}-{ytsVideos.First().Title}-{video.Key}.torrent".ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " ").ReplaceIgnoreCase("：", "-").FilterForFileSystem().Trim());
+                //        if (httpClient is not null && !File.Exists(file))
+                //        {
+                //            try
+                //            {
+                //                await httpClient.GetFileAsync(video.Value, file);
+                //            }
+                //            catch (HttpRequestException exception)
+                //            {
+                //                log(exception.ToString());
+                //            }
+                //        }
 
-                        log(string.Empty);
-                    });
-                }
+                //        log(string.Empty);
+                //    });
+                //}
 
                 //if (h264720PMetadata.TryGetValue(imdbMetadata.ImdbId, out RarbgMetadata[]? h264720PVideos))
                 //{
@@ -1960,7 +1985,7 @@ internal static partial class Video
     }
 
     internal static async Task PrintTVLinks(
-        string x265JsonPath, string[] tvDirectories, string metadataDirectory, string cacheDirectory, string initialUrl, Func<ImdbMetadata, bool> predicate, 
+        string x265JsonPath, string[] tvDirectories, string metadataDirectory, string cacheDirectory, string initialUrl, Func<ImdbMetadata, bool> predicate,
         bool isDryRun = false, bool updateMetadata = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;

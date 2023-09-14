@@ -22,7 +22,7 @@ internal record VideoEpisodeFileInfo(
 
     public string Name => $"{this.TVTitle}{(this.Year.IsNullOrWhiteSpace() ? string.Empty : $".{this.Year}")}.S{this.Season}E{this.Episode}{(this.AdditionalEpisode.IsNullOrWhiteSpace() ? string.Empty : $"E{this.AdditionalEpisode}")}{this.Edition}{this.Definition}{this.Origin}{this.VideoCodec}{this.AudioCodec}{(this.Version.IsNullOrWhiteSpace() ? string.Empty : $"-{this.Version}")}{this.MultipleAudio}{this.Watermark}{this.Encoder}{this.Subtitle}{(this.EpisodeTitle.IsNullOrWhiteSpace() ? string.Empty : $".{this.EpisodeTitle}")}{this.Extension}";
 
-    public static bool TryParse([NotNullWhen(true)] string? value, [NotNullWhen(true)] out VideoEpisodeFileInfo? info)
+    public static bool TryParse([NotNullWhen(true)] string? value, [NotNullWhen(true)] out VideoEpisodeFileInfo? result)
     {
         if (Path.IsPathRooted(value))
         {
@@ -32,11 +32,11 @@ internal record VideoEpisodeFileInfo(
         Match match = NameRegex.Match(value);
         if (!match.Success)
         {
-            info = null;
+            result = null;
             return false;
         }
 
-        info = new VideoEpisodeFileInfo(
+        result = new VideoEpisodeFileInfo(
             TVTitle: match.Groups[1].Value, Year: match.Groups[3].Value,
             Season: match.Groups[4].Value, Episode: match.Groups[5].Value, AdditionalEpisode: match.Groups[7].Value,
             Edition: match.Groups[8].Value,
@@ -53,5 +53,5 @@ internal record VideoEpisodeFileInfo(
     }
 
     public static VideoEpisodeFileInfo Parse(string value) =>
-        TryParse(value, out VideoEpisodeFileInfo? info) ? info : throw new ArgumentOutOfRangeException(nameof(value), value, "Input is invalid");
+        TryParse(value, out VideoEpisodeFileInfo? result) ? result : throw new ArgumentOutOfRangeException(nameof(value), value, "Input is invalid");
 }
