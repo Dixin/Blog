@@ -7,6 +7,8 @@ using Examples.Security;
 using Examples.Text;
 using MediaManager;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.VisualBasic.FileIO;
 using OpenQA.Selenium.DevTools;
 using Xabe.FFmpeg;
@@ -27,6 +29,10 @@ using ConsoleTraceListener consoleTraceListener = new();
 Trace.Listeners.Add(consoleTraceListener);
 
 FFmpeg.SetExecutablesPath(settings.FfmpegDirectory);
+
+HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
+builder.Services.AddHttpClient();
+using IHost host = builder.Build();
 
 //Video.PrintDirectoriesWithMultipleMedia(settings.MovieControversial.Directory);
 //Video.PrintDirectoriesWithMultipleMedia(settings.MovieMainstream.Directory);
@@ -261,8 +267,14 @@ FFmpeg.SetExecutablesPath(settings.FfmpegDirectory);
 //    settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory,
 //    count => ..(count / 8));
 //await Imdb.DownloadAllTVsAsync(settings.TVRarbgX265Metadata, settings.TVMainstream.Directory, settings.TVMetadataCacheDirectory, settings.TVMetadataDirectory);
-
-string[] keywords = { "female full frontal nudity", "female nudity", "female frontal nudity", /*"vagina",*/ "labia", "unsimulated sex" };
+string[] keywords =
+{
+    "female full frontal nudity", "female topless nudity", "female pubic hair", "female frontal nudity",
+    "erotica", "softcore", "female star appears nude",
+    "unsimulated sex", "vagina", "labia", "shaved labia","labia minora","labia majora","shaved vagina","spread vagina",
+    "spread eagle", "bottomless",
+    "lesbian sex","leg spreading"
+};
 string[] genres = { "family", "animation", "documentary" };
 //await Video.PrintTVLinks(settings.TVRarbgX265Metadata, new string[] { settings.TVMainstream.Directory, settings.TVMainstreamWithoutSubtitle.Directory }, @"D:\Files\Library\TVMetadata", @"D:\Files\Library\TVMetadataCache", "https://rarbg.to/torrents.php?search=x265.rarbg&category%5B%5D=41",
 //    imdbMetadata =>
@@ -274,19 +286,24 @@ string[] genres = { "family", "animation", "documentary" };
 //                .SelectMany(advisory => advisory.Value)
 //                .Any(advisory => advisory.FormattedSeverity == ImdbAdvisorySeverity.Severe)
 //    || imdbMetadata.AllKeywords.Intersect(keywords, StringComparer.OrdinalIgnoreCase).Any()), isDryRun: true);
-//await Video.PrintMovieLinksAsync(settings.MovieLibraryMetadata, settings.MovieRarbgX265Metadata, settings.MovieRarbgH264Metadata, settings.MovieYtsMetadata, settings.MovieRarbgH264720PMetadata, settings.MovieRareMetadata, settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory, "https://rarbg.to/torrents.php?category=54&page=1",
+
+//await Video.MergeMovieMetadataAsync(settings.MovieMetadataDirectory, @"D:\Files\Library\Movie.MergedMetadata.json");
+//await Video.PrintMovieLinksAsync(
+//    settings.MovieLibraryMetadata, settings.MovieRarbgX265Metadata, settings.MovieRarbgH264Metadata, settings.MovieYtsMetadata, settings.MovieRarbgH264720PMetadata, settings.MovieRareMetadata,
+//    @"D:\Files\Library\Rarbg.MagnetUris.txt",
+//    @"D:\Files\Library\Movie.MergedMetadata.json", settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory, string.Empty,
 //    imdbMetadata =>
-//    !imdbMetadata.AllKeywords.Intersect(new string[] { "test" }, StringComparer.OrdinalIgnoreCase).Any()
-//    && !imdbMetadata.Genres.Intersect(genres, StringComparer.OrdinalIgnoreCase).Any()
-//    && imdbMetadata.Genres.Intersect(new string[]{"action"}, StringComparer.OrdinalIgnoreCase).Any()
-//    //&& (imdbMetadata.Advisories
-//    //        .Where(advisory => advisory.Key.ContainsIgnoreCase("sex") || advisory.Key.ContainsIgnoreCase("nudity"))
-//    //        .SelectMany(advisory => advisory.Value)
-//    //        .Any(advisory => advisory.FormattedSeverity == ImdbAdvisorySeverity.Severe)
-//    //    || imdbMetadata.AllKeywords.Intersect(keywords, StringComparer.OrdinalIgnoreCase).Any())
+//    //imdbMetadata.AllKeywords.Intersect(new string[] { "gay" }, StringComparer.OrdinalIgnoreCase).IsEmpty()
+//    // &&imdbMetadata.Genres.Intersect(genres, StringComparer.OrdinalIgnoreCase).IsEmpty()
+//    //&& imdbMetadata.Genres.Intersect(new string[] { "action" }, StringComparer.OrdinalIgnoreCase).Any()
+//     (imdbMetadata.Advisories
+//            .Where(advisory => advisory.Key.ContainsIgnoreCase("sex") || advisory.Key.ContainsIgnoreCase("nudity"))
+//            .SelectMany(advisory => advisory.Value)
+//            .Any(advisory => advisory.FormattedSeverity == ImdbAdvisorySeverity.Severe)
+//        || imdbMetadata.AllKeywords.Intersect(keywords, StringComparer.OrdinalIgnoreCase).Any())
 //    //&& string.Compare(imdbMetadata.FormattedAggregateRating, "8.0", StringComparison.Ordinal) <= 0
-//    && string.Compare(imdbMetadata.FormattedAggregateRating, "7.0", StringComparison.Ordinal) >= 0
-//    && imdbMetadata.AggregateRating?.RatingCount >= 10_000
+//    //&& string.Compare(imdbMetadata.FormattedAggregateRating, "7.0", StringComparison.Ordinal) >= 0
+//    //&& imdbMetadata.AggregateRating?.RatingCount >= 10_000
 //    //&& imdbMetadata.AllKeywords.Intersect(keywords, StringComparer.OrdinalIgnoreCase).Any()
 //    ,
 //    isDryRun: true);
