@@ -1,15 +1,17 @@
 ﻿namespace Examples.Net;
 
 using System;
+using System.Linq;
 using System.Net.Http;
 using Examples.Common;
+using Examples.Diagnostics;
 using Examples.Linq;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using MonoTorrent;
 using MonoTorrent.Client;
 using OpenQA.Selenium;
 
-public class Torrent
+public class TorrentHelper
 {
     public static async Task DownloadAsync(string magnetUrl, string torrentDirectory, CancellationToken cancellationToken = default)
     {
@@ -102,4 +104,16 @@ public class Torrent
                 }
             });
     }
+
+    public static async Task AddDefaultTrackersAsync(string torrentDirectory, Action<string?>? log = null) =>
+        await MagnetUri
+            .DefaultTrackers
+            .SelectMany(tracker => Directory.GetFiles(@torrentDirectory), (tracker, torrent) => $"-a {tracker} {torrent}")
+            .AsParallel()
+            .WithDegreeOfParallelism(4)
+            .ForEachAsync(async command =>
+            {
+                int result = await ProcessHelper.StartAndWaitAsync("transmission-edit", command, log, log);
+                Debug.Assert(result == 0);
+            });
 }
