@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net.Http;
 using Examples.Common;
 using Examples.Diagnostics;
+using Examples.IO;
 using Examples.Linq;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using MonoTorrent;
@@ -13,6 +14,8 @@ using OpenQA.Selenium;
 
 public class TorrentHelper
 {
+    private const string TorrentExtension = ".torrent";
+
     public static async Task DownloadAsync(string magnetUrl, string torrentDirectory, CancellationToken cancellationToken = default)
     {
         MagnetUri magnetUri = MagnetUri.Parse(magnetUrl).WithDefaultTrackers();
@@ -25,7 +28,7 @@ public class TorrentHelper
         ClientEngine clientEngine = new(engineSettingsBuilder.ToSettings());
         //await clientEngine.StartAllAsync();
         byte[] torrent = await clientEngine.DownloadMetadataAsync(magnetLink, cancellationToken);
-        string torrentPath = Path.Combine(torrentDirectory, $"{magnetUri.DisplayName}@{magnetUri.ExactTopic}.torrent");
+        string torrentPath = Path.Combine(torrentDirectory, $"{magnetUri.DisplayName}@{magnetUri.ExactTopic}{TorrentExtension}");
         await File.WriteAllBytesAsync(torrentPath, torrent, cancellationToken);
     }
 
@@ -48,7 +51,7 @@ public class TorrentHelper
             .Select(async task =>
             {
                 byte[] torrent = await clientEngine.DownloadMetadataAsync(task.Item2, cancellationToken);
-                string torrentPath = Path.Combine(torrentDirectory, $"{task.magnetUri.DisplayName}@{task.magnetUri.ExactTopic}.torrent");
+                string torrentPath = Path.Combine(torrentDirectory, $"{task.magnetUri.DisplayName}@{task.magnetUri.ExactTopic}{TorrentExtension}");
                 logger?.Invoke(torrentPath);
                 await File.WriteAllBytesAsync(torrentPath, torrent, cancellationToken);
             });
@@ -66,7 +69,7 @@ public class TorrentHelper
             .Select(MagnetUri.Parse)
             .ForEachAsync(async magnetUri =>
             {
-                string torrentUrl = $"https://itorrents.org/torrent/{magnetUri.ExactTopic}.torrent";
+                string torrentUrl = $"https://itorrents.org/torrent/{magnetUri.ExactTopic}{TorrentExtension}";
                 if (httpClient is not null)
                 {
                     try
@@ -74,7 +77,7 @@ public class TorrentHelper
                         await Retry.FixedIntervalAsync(
                             async () => await httpClient.GetFileAsync(
                                 torrentUrl,
-                                Path.Combine(torrentDirectory, $"{magnetUri.DisplayName}@{magnetUri.ExactTopic}.torrent"),
+                                Path.Combine(torrentDirectory, $"{magnetUri.DisplayName}@{magnetUri.ExactTopic}{TorrentExtension}"),
                                 cancellationToken),
                             isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.Moved });
                     }
@@ -105,10 +108,18 @@ public class TorrentHelper
             });
     }
 
-    public static async Task AddDefaultTrackersAsync(string torrentDirectory, Action<string?>? log = null) =>
+    public static async Task AddDefaultTrackersAsync(string torrentDirectory, Action<string?>? log = null)
+    {
+        if (Environment.OSVersion.Platform != PlatformID.Unix)
+        {
+            throw new NotSupportedException("This is only supported on Unix.");
+        }
+
         await MagnetUri
             .DefaultTrackers
-            .SelectMany(tracker => Directory.GetFiles(@torrentDirectory), (tracker, torrent) => $"-a {tracker} {torrent}")
+            .SelectMany(
+                tracker => Directory.GetFiles(torrentDirectory, $"{PathHelper.AllSearchPattern}{TorrentExtension}", SearchOption.AllDirectories),
+                (tracker, torrent) => $"-a {tracker} {torrent}")
             .AsParallel()
             .WithDegreeOfParallelism(4)
             .ForEachAsync(async command =>
@@ -116,4 +127,5 @@ public class TorrentHelper
                 int result = await ProcessHelper.StartAndWaitAsync("transmission-edit", command, log, log);
                 Debug.Assert(result == 0);
             });
+    }
 }
