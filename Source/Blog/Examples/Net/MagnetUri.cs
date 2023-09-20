@@ -40,7 +40,7 @@ public record MagnetUri(string ExactTopic, string DisplayName, string[] Trackers
 
     public override int GetHashCode() => this.ExactTopic.GetHashCode();
 
-    public MagnetUri WithDefaultTrackers() => this with
+    public MagnetUri AddDefaultTrackers() => this with
     {
         Trackers = this.Trackers.Union(DefaultTrackers, StringComparer.OrdinalIgnoreCase).ToArray()
     };

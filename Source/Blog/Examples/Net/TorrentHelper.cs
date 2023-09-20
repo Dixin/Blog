@@ -18,7 +18,7 @@ public class TorrentHelper
 
     public static async Task DownloadAsync(string magnetUrl, string torrentDirectory, CancellationToken cancellationToken = default)
     {
-        MagnetUri magnetUri = MagnetUri.Parse(magnetUrl).WithDefaultTrackers();
+        MagnetUri magnetUri = MagnetUri.Parse(magnetUrl).AddDefaultTrackers();
         MagnetLink magnetLink = new(InfoHash.FromHex(magnetUri.ExactTopic), magnetUri.DisplayName, magnetUri.Trackers.ToArray());
         EngineSettingsBuilder engineSettingsBuilder = new()
         {
@@ -42,7 +42,7 @@ public class TorrentHelper
         ClientEngine clientEngine = new(engineSettingsBuilder.ToSettings());
         await clientEngine.StartAllAsync();
         return magnetUrls
-            .Select(magnetUrl => MagnetUri.Parse(magnetUrl).WithDefaultTrackers())
+            .Select(magnetUrl => MagnetUri.Parse(magnetUrl).AddDefaultTrackers())
             .Select(magnetUri =>
             (
                 magnetUri,
