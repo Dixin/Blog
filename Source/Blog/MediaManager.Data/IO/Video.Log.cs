@@ -804,9 +804,9 @@ internal static partial class Video
                 {
                     string[] ytsVideos = videos
                         .Select(video => Path.GetFileNameWithoutExtension(video)!)
-                        .Where(video => ((IVideoFileInfo)VideoMovieFileInfo.Parse(video)).EncoderType is EncoderType.Y)
+                        .Where(video => ((IVideoFileInfo)VideoMovieFileInfo.Parse(video)).EncoderType is EncoderType.Y or EncoderType.XY)
                         .ToArray();
-                    //Debug.Assert(ytsVideos.Length <= 1);
+                    Debug.Assert(ytsVideos.Length <= 1 || imdbId is "tt2208216");
                     (YtsMetadata metadata, KeyValuePair<string, string> version)[] otherYtsMetadata = availableYtsMetadata
                         .SelectMany(metadata => metadata.Availabilities, (metadata, version) => (metadata, version))
                         .ToArray();
@@ -818,12 +818,12 @@ internal static partial class Video
                         otherYtsMetadata = hdYtsMetadata;
                     }
 
-                    (YtsMetadata metadata, KeyValuePair<string, string> version)[] blueRayYtsMetadata = otherYtsMetadata
+                    (YtsMetadata metadata, KeyValuePair<string, string> version)[] blueRayHDYtsMetadata = otherYtsMetadata
                         .Where(metadataVersion => metadataVersion.version.Key.ContainsIgnoreCase("BluRay"))
                         .ToArray();
-                    if (blueRayYtsMetadata.Any())
+                    if (blueRayHDYtsMetadata.Any())
                     {
-                        otherYtsMetadata = blueRayYtsMetadata;
+                        otherYtsMetadata = blueRayHDYtsMetadata;
                     }
 
                     if (ytsVideos.Any())
@@ -836,11 +836,6 @@ internal static partial class Video
 
                     if (otherYtsMetadata.Any())
                     {
-                        if (videos.Any(video => video.ContainsIgnoreCase("1080p")) && otherYtsMetadata.All(metadataVersion => metadataVersion.version.Key.ContainsIgnoreCase("720p")))
-                        {
-                            return;
-                        }
-
                         log(movie);
                         videos.ForEach(file => log(Path.GetFileName(file)));
                         otherYtsMetadata.ForEach(metadataVersion =>
@@ -1610,7 +1605,7 @@ internal static partial class Video
         Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(libraryJsonPath))!;
         Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
         Dictionary<string, RarbgMetadata[]> h264Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
-        Dictionary<string, YtsMetadata[]> ytsMetadata = JsonSerializer.Deserialize<Dictionary<string, YtsMetadata[]>>(await File.ReadAllTextAsync(ytsJsonPath))!;
+        //Dictionary<string, YtsMetadata[]> ytsMetadata = JsonSerializer.Deserialize<Dictionary<string, YtsMetadata[]>>(await File.ReadAllTextAsync(ytsJsonPath))!;
         //Dictionary<string, RarbgMetadata[]> h264720PMetadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264720PJsonPath))!;
         //Dictionary<string, RareMetadata> rareMetadata = JsonSerializer.Deserialize<Dictionary<string, RareMetadata>>(await File.ReadAllTextAsync(rareJsonPath))!;
         string[] metadataFiles = Directory.GetFiles(metadataDirectory);
@@ -1638,7 +1633,7 @@ internal static partial class Video
         log(x265Metadata.Keys.Intersect(imdbIds.Select(metadata => metadata.ImdbId)).Count().ToString());
 
         HashSet<string> downloadedTitles = new(Directory.GetDirectories(@"Q:\Files\Movies\Rarbg_"), StringComparer.OrdinalIgnoreCase);
-
+        HashSet<string> downloadedTorrentHashes = new(Directory.GetFiles(@"E:\Files\MonoTorrent").Select(torrent => Path.GetFileNameWithoutExtension(torrent).Split("@").Last()), StringComparer.OrdinalIgnoreCase);
         using IWebDriver? webDriver = isDryRun ? null : WebDriverHelper.Start(isLoadingAll: true);
         using HttpClient? httpClient = isDryRun ? null : new HttpClient().AddEdgeHeaders();
         if (!isDryRun)
@@ -1738,6 +1733,10 @@ internal static partial class Video
                                 string[] uris = rarbgMagnetUris[metadata.Title].ToArray();
                                 if (uris.Length == 1)
                                 {
+                                    if (downloadedTorrentHashes.Contains(MagnetUri.Parse(uris.Single()).ExactTopic))
+                                    {
+                                        return;
+                                    }
                                     uris.Take(1).ForEach(log);
                                 }
                             }
@@ -1745,7 +1744,7 @@ internal static partial class Video
                             {
                                 //log($"!!! Cannot find magnet for title {metadata.Title}");
                             }
-                            
+
                             log(string.Empty);
                             return;
                         }
@@ -1830,6 +1829,11 @@ internal static partial class Video
                                 string[] uris = rarbgMagnetUris[metadata.Title].ToArray();
                                 if (uris.Length == 1)
                                 {
+                                    if (downloadedTorrentHashes.Contains(MagnetUri.Parse(uris.Single()).ExactTopic))
+                                    {
+                                        return;
+                                    }
+
                                     uris.Take(1).ForEach(log);
                                 }
                             }

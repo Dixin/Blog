@@ -44,6 +44,8 @@ public record Settings(
 
     public DirectorySettings MovieControversialTemp { get; init; }
 
+    public DirectorySettings MovieControversialTemp1 { get; init; }
+
     public DirectorySettings MovieMainstream { get; init; }
 
     public DirectorySettings MovieMainstreamWithoutSubtitle { get; init; }
