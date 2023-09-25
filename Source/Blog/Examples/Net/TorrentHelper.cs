@@ -103,23 +103,21 @@ public class TorrentHelper
             }, degreeOfParallelism);
     }
 
-    public static async Task AddDefaultTrackersAsync(string torrentDirectory, Action<string?>? log = null, int degreeOfParallelism = 4)
+    public static async Task AddDefaultTrackersAsync(string torrentDirectory, Action<string?>? log = null)
     {
-        if (Environment.OSVersion.Platform != PlatformID.Unix)
-        {
-            throw new NotSupportedException("This is only supported on Unix.");
-        }
-
-        await MagnetUri
-            .DefaultTrackers
-            .SelectMany(
-                tracker => Directory.GetFiles(torrentDirectory, $"{PathHelper.AllSearchPattern}{TorrentExtension}", SearchOption.AllDirectories),
-                (tracker, torrent) => $"-a {tracker} {torrent}")
-            .AsParallel()
-            .WithDegreeOfParallelism(degreeOfParallelism)
-            .ForEachAsync(async command =>
+        await Directory
+            .GetFiles(torrentDirectory, $"{PathHelper.AllSearchPattern}{TorrentExtension}", SearchOption.AllDirectories)
+            .Select(file => @$"""{Path.GetFileName(file)}""")
+            .Chunk(250)
+            .SelectMany(chunk => MagnetUri.DefaultTrackers, (chunk, uri) => (chunk, uri))
+            .ForEachAsync(async chunkUri =>
             {
-                int result = await ProcessHelper.StartAndWaitAsync("transmission-edit", command, log, log);
+                int result = await ProcessHelper.StartAndWaitAsync(
+                    @"""C:\Program Files\Transmission\transmission-edit.exe""", 
+                    $"-a {chunkUri.uri} {string.Join(" ", chunkUri.chunk)}", 
+                    log, 
+                    log, 
+                    startInfo => startInfo.WorkingDirectory = torrentDirectory);
                 Debug.Assert(result == 0);
             });
     }
