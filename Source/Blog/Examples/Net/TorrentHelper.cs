@@ -57,21 +57,18 @@ public class TorrentHelper
             });
     }
 
-    public static async Task DownloadAllFromCacheAsync(IEnumerable<string> magnetUrls, string torrentDirectory, bool useBrowser = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    public static async Task DownloadAllFromCacheAsync(IEnumerable<string> magnetUrls, string torrentDirectory, bool useBrowser = false, Action<string>? log = null, CancellationToken cancellationToken = default, int degreeOfParallelism = 4)
     {
         const string Referer = "https://magnet2torrent.com/";
-        using HttpClient? httpClient = useBrowser ? null : new HttpClient().AddEdgeHeaders(referer: Referer);
-
-        using IWebDriver? webDriver = useBrowser ? WebDriverHelper.Start(downloadDirectory: torrentDirectory) : null;
-        webDriver?.Navigate().GoToUrl(Referer);
 
         await magnetUrls
             .Select(MagnetUri.Parse)
-            .ForEachAsync(async magnetUri =>
+            .ParallelForEachAsync(async (magnetUri, index) =>
             {
                 string torrentUrl = $"https://itorrents.org/torrent/{magnetUri.ExactTopic}{TorrentExtension}";
-                if (httpClient is not null)
+                if (!useBrowser)
                 {
+                    using HttpClient? httpClient = useBrowser ? null : new HttpClient().AddEdgeHeaders(referer: Referer);
                     try
                     {
                         await Retry.FixedIntervalAsync(
@@ -84,16 +81,14 @@ public class TorrentHelper
                     catch (Exception exception) when (exception.IsNotCritical())
                     {
                         log?.Invoke(magnetUri.ToString());
-                        if (exception is not HttpRequestException { StatusCode: HttpStatusCode.Moved })
-                        {
-                            log?.Invoke(exception.ToString());
-                        }
-
+                        log?.Invoke(exception.ToString());
                         log?.Invoke(string.Empty);
                     }
                 }
-                else if (webDriver is not null)
+                else
                 {
+                    using IWebDriver? webDriver = useBrowser ? WebDriverHelper.Start(downloadDirectory: torrentDirectory) : null;
+                    webDriver?.Navigate().GoToUrl(Referer);
                     try
                     {
                         Retry.FixedInterval(() => webDriver.Url = torrentUrl);
@@ -105,10 +100,10 @@ public class TorrentHelper
                         log?.Invoke(string.Empty);
                     }
                 }
-            });
+            }, degreeOfParallelism);
     }
 
-    public static async Task AddDefaultTrackersAsync(string torrentDirectory, Action<string?>? log = null)
+    public static async Task AddDefaultTrackersAsync(string torrentDirectory, Action<string?>? log = null, int degreeOfParallelism = 4)
     {
         if (Environment.OSVersion.Platform != PlatformID.Unix)
         {
@@ -121,7 +116,7 @@ public class TorrentHelper
                 tracker => Directory.GetFiles(torrentDirectory, $"{PathHelper.AllSearchPattern}{TorrentExtension}", SearchOption.AllDirectories),
                 (tracker, torrent) => $"-a {tracker} {torrent}")
             .AsParallel()
-            .WithDegreeOfParallelism(4)
+            .WithDegreeOfParallelism(degreeOfParallelism)
             .ForEachAsync(async command =>
             {
                 int result = await ProcessHelper.StartAndWaitAsync("transmission-edit", command, log, log);

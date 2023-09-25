@@ -210,23 +210,23 @@ internal static partial class Video
         log ??= Logger.WriteLine;
         string[] files = Directory.GetFiles(directory, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
         string[] jsonFiles = files.Where(file => file.EndsWithIgnoreCase(ImdbMetadataExtension)).ToArray();
-        //if (jsonFiles.Any())
-        //{
-        //    if (overwrite)
-        //    {
-        //        jsonFiles.ForEach(jsonFile =>
-        //        {
-        //            log($"Delete imdb metadata {jsonFile}.");
-        //            FileHelper.Recycle(jsonFile);
-        //        });
-        //        files = files.Except(jsonFiles).ToArray();
-        //    }
-        //    else
-        //    {
-        //        log($"Skip {directory}.");
-        //        return;
-        //    }
-        //}
+        if (jsonFiles.Any())
+        {
+            if (overwrite)
+            {
+                jsonFiles.ForEach(jsonFile =>
+                {
+                    log($"Delete imdb metadata {jsonFile}.");
+                    FileHelper.Recycle(jsonFile);
+                });
+                files = files.Except(jsonFiles).ToArray();
+            }
+            else
+            {
+                log($"Skip {directory}.");
+                return;
+            }
+        }
 
         string nfo = files.FirstOrDefault(file => file.EndsWithIgnoreCase(XmlMetadataExtension), string.Empty);
         if (nfo.IsNullOrWhiteSpace())
