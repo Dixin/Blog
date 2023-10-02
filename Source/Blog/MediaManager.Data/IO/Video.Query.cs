@@ -133,7 +133,7 @@ internal static partial class Video
 
         if (Math.Abs(videoMetadata.FrameRate - 23.976) > 0.001)
         {
-            return ($"!Not 23.976fps: {videoMetadata.FrameRate} {videoMetadata.File}", null);
+            //return ($"!Not 23.976fps: {videoMetadata.FrameRate} {videoMetadata.File}", null);
         }
 
         if (Regex.IsMatch(fileName, "[1-9]Audio"))
@@ -153,7 +153,7 @@ internal static partial class Video
 
         if (videoMetadata.AudioBitRates.Any(bitRate => bitRate < 192000))
         {
-            return ($"!Bad audio: Bit rate is only {string.Join(',', videoMetadata.AudioBitRates)} {videoMetadata.File}", null);
+            //return ($"!Bad audio: Bit rate is only {string.Join(',', videoMetadata.AudioBitRates)} {videoMetadata.File}", null);
         }
 
         return (null, null);

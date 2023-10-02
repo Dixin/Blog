@@ -1683,7 +1683,7 @@ internal static partial class Video
         log(x265Metadata.Keys.Intersect(imdbIds.Select(metadata => metadata.ImdbId)).Count().ToString());
 
         HashSet<string> downloadedTitles = new(
-            new string[]{ @"Q:\Files\Movies\Rarbg_" , @"Q:\Files\Movies\Rarbg2_" }.SelectMany(Directory.GetDirectories), 
+            new string[]{ @"Q:\Files\Movies\Rarbg_" , @"Q:\Files\Movies\Rarbg2_" }.SelectMany(Directory.GetDirectories).Select(Path.GetFileName), 
             StringComparer.OrdinalIgnoreCase);
         HashSet<string> downloadedTorrentHashes = new(Directory.GetFiles(@"E:\Files\MonoTorrent").Select(torrent => Path.GetFileNameWithoutExtension(torrent).Split("@").Last()), StringComparer.OrdinalIgnoreCase);
         using IWebDriver? webDriver = isDryRun ? null : WebDriverHelper.Start(isLoadingAll: true);
@@ -1783,7 +1783,7 @@ internal static partial class Video
                             if (rarbgMagnetUris.Contains(metadata.Title))
                             {
                                 string[] uris = rarbgMagnetUris[metadata.Title].ToArray();
-                                if (uris.Length >= 1)
+                                if (uris.Length > 0)
                                 {
                                     if (downloadedTorrentHashes.Contains(MagnetUri.Parse(uris.First()).ExactTopic))
                                     {
@@ -1879,7 +1879,7 @@ internal static partial class Video
                             if (rarbgMagnetUris.Contains(metadata.Title))
                             {
                                 string[] uris = rarbgMagnetUris[metadata.Title].ToArray();
-                                if (uris.Length == 1)
+                                if (uris.Length > 0)
                                 {
                                     if (downloadedTorrentHashes.Contains(MagnetUri.Parse(uris.Single()).ExactTopic))
                                     {
