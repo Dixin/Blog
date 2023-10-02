@@ -191,14 +191,16 @@ using IHost host = builder.Build();
 
 //Video.PrintDuplicateImdbId(null,
 //   settings.MovieMainstream.Directory,
-//   settings.MovieControversial.Directory,
 //   settings.MovieMainstreamWithoutSubtitle.Directory,
 //   settings.MovieMusical.Directory,
 //   settings.MovieTemp1.Directory,
 //   settings.MovieTemp2.Directory,
 //   settings.MovieTemp3.Directory,
 //   settings.MovieTemp.Directory,
-//   settings.MovieControversialTemp.Directory);
+//   settings.MovieControversial.Directory,
+//   settings.MovieControversialTemp.Directory,
+//   settings.MovieControversialTemp1.Directory,
+//   @"Q:\Files\Movies.Raw");
 
 //Video.PrintDefinitionErrors(settings.LibraryDirectory);
 
@@ -254,7 +256,8 @@ using IHost host = builder.Build();
 //   settings.MovieTemp1,
 //   settings.MovieTemp2,
 //   settings.MovieTemp3,
-//   settings.MovieControversialTemp);
+//   settings.MovieControversialTemp,
+//   settings.MovieControversialTemp1);
 //await Video.PrintTVVersions(settings.TVRarbgX265Metadata, null,
 //    settings.TVControversial,
 //    settings.TVDocumentary,
@@ -269,7 +272,7 @@ using IHost host = builder.Build();
 //await Imdb.DownloadAllTVsAsync(settings.TVRarbgX265Metadata, settings.TVMainstream.Directory, settings.TVMetadataCacheDirectory, settings.TVMetadataDirectory);
 string[] keywords =
 {
-    "female full frontal nudity", "female topless nudity", "female pubic hair", "female frontal nudity",
+    "female full frontal nudity", "female topless nudity", "female pubic hair", "female frontal nudity", //"female nudity",
     "erotica", "softcore", "female star appears nude",
     "unsimulated sex", "vagina", "labia", "shaved labia","labia minora","labia majora","shaved vagina","spread vagina",
     "spread eagle", "bottomless",
@@ -293,7 +296,7 @@ string[] genres = { "family", "animation", "documentary" };
 //    @"D:\Files\Library\Rarbg.MagnetUris.txt",
 //    @"D:\Files\Library\Movie.MergedMetadata.json", settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory, string.Empty,
 //    imdbMetadata =>
-//    //imdbMetadata.AllKeywords.Intersect(new string[] { "gay" }, StringComparer.OrdinalIgnoreCase).IsEmpty()
+//    //imdbMetadata.AllKeywords.Intersect(new string[] { "test" }, StringComparer.OrdinalIgnoreCase).IsEmpty()
 //    // &&imdbMetadata.Genres.Intersect(genres, StringComparer.OrdinalIgnoreCase).IsEmpty()
 //    //&& imdbMetadata.Genres.Intersect(new string[] { "action" }, StringComparer.OrdinalIgnoreCase).Any()
 //     (imdbMetadata.Advisories
@@ -373,14 +376,11 @@ string[] genres = { "family", "animation", "documentary" };
 //});
 //Video.RestoreMetadata(settings.MovieTemp.Directory);
 //Video.MoveSubtitleToParentDirectory(@"L:\Files3\Movies2");
-//Video.BackupMetadata(@"L:\Files3\Movies2");
-//Video.BackupMetadata(@"S:\Files\Library\New folder");
-//Video.BackupMetadata(@"E:\Files\Movies");
-//Video.BackupMetadata(@"S:\Files\Library\Movies Mainstream.Temp");
-//Video.RenameDirectoriesWithMetadata(@"L:\Files3\Movies2", 2, isDryRun: false, isTV: false);
+//Video.BackupMetadata(@"Q:\Files\Movies.Raw");
+//Video.RenameDirectoriesWithMetadata(@"Q:\Files\Movies.Raw", 2, isDryRun: false, isTV: false);
 //Video.RenameDirectoriesWithMetadata(@"S:\Files\Library\New folder", 2, isDryRun: false, isTV: false);
 //Video.RenameDirectoriesWithMetadata(@"E:\Files\Movies", 2, isDryRun: false, isTV: false);
-//Video.RestoreMetadata(@"L:\Files3\Movies2");
+//Video.RestoreMetadata(@"Q:\Files\Movies.Raw2");
 //Video.RestoreMetadata(@"S:\Files\Library\New folder");
 //Video.RestoreMetadata(@"E:\Files\Movies");
 
@@ -822,8 +822,21 @@ static void RenameFilesWithDuplicateTitle(
 //});
 //Video.RenameDirectoriesWithFormattedNumber(@"D:\Files\Library", SearchOption.AllDirectories, false, null, "Fast & Furious", "速度与激情");
 
-//Video.RenameFiles(@"Q:\Files\Downloads\Erotica Manila.2023\Season 01",
+//Video.RenameFiles(@"Q:\Files\TV.Raw\Red Shoe Diaries.1992.[5.7-1.2K][TVMA]",
 //   (f, i) =>
-//       //Regex.Replace(f, @"\.S([0-9]{2})E([0-9]{2})\.", ".S$1E$2.1080p.SUBBED.WEBRip-QOQ.ffmpeg.eng.", RegexOptions.IgnoreCase)
-//       f.ReplaceIgnoreCase(" 720p WEB HEVC x265 HDKing", ".720p.WEBRip.x265-HDKing")
+//       Regex.Replace(f, @"S([0-9]{1})EP([0-9]{2}) Red Shoe Diaries ", "Red Shoe Diaries.S0$1E$2.", RegexOptions.IgnoreCase)
+//       //f.ReplaceIgnoreCase("-BDYS.", "-BDYS.watermark.")
+//   //Regex.Replace(f, @" [0-9]+GB", "")
 //       );
+
+
+HashSet<string> downloadedHashes = new HashSet<string>(Directory.GetFiles(@"E:\Files\MonoTorrentDownload").Select(f => Path.GetFileNameWithoutExtension(f).Split("@").Last()), StringComparer.OrdinalIgnoreCase);
+
+//await TorrentHelper.AddDefaultTrackersAsync(@"E:\Files\MonoTorrentDownload", Logger.WriteLine);
+
+//Directory.GetFiles(@"Q:\Files\Movies.Raw3\Korean")
+//    .ForEach(f=>FileHelper.MoveToDirectory(f, Path.Combine(@"Q:\Files\Movies.Raw3\Korean", Path.GetFileNameWithoutExtension(f))));
+
+HashSet<string> downloadedTitles = new(Directory.GetDirectories(@"Q:\Files\Movies\Rarbg_").Select(d => Path.GetFileName(d)), StringComparer.OrdinalIgnoreCase);
+//Directory.GetDirectories(@"E:\Files\Move").Where(d => downloaded.Contains(Path.GetFileName(d))).ToArray()
+//    .ForEach(d => DirectoryHelper.MoveToDirectory(d, @"E:\Files\Move.Delete"));
