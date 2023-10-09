@@ -14,7 +14,9 @@ using OpenQA.Selenium.DevTools;
 using Xabe.FFmpeg;
 using SearchOption = System.IO.SearchOption;
 
-Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
+HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
+builder.Services.AddHttpClient();
+using IHost host = builder.Build();
 
 IConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
     .AddJsonFile("Settings.json", optional: false, reloadOnChange: true)
@@ -28,11 +30,9 @@ Trace.Listeners.Add(textTraceListener);
 using ConsoleTraceListener consoleTraceListener = new();
 Trace.Listeners.Add(consoleTraceListener);
 
-FFmpeg.SetExecutablesPath(settings.FfmpegDirectory);
+Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
 
-HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
-builder.Services.AddHttpClient();
-using IHost host = builder.Build();
+FFmpeg.SetExecutablesPath(settings.FfmpegDirectory);
 
 //Video.PrintDirectoriesWithMultipleMedia(settings.MovieControversial.Directory);
 //Video.PrintDirectoriesWithMultipleMedia(settings.MovieMainstream.Directory);
@@ -837,6 +837,6 @@ HashSet<string> downloadedHashes = new HashSet<string>(Directory.GetFiles(@"E:\F
 //Directory.GetFiles(@"Q:\Files\Movies.Raw3\Korean")
 //    .ForEach(f=>FileHelper.MoveToDirectory(f, Path.Combine(@"Q:\Files\Movies.Raw3\Korean", Path.GetFileNameWithoutExtension(f))));
 
-HashSet<string> downloadedTitles = new(Directory.GetDirectories(@"Q:\Files\Movies\Rarbg_").Select(d => Path.GetFileName(d)), StringComparer.OrdinalIgnoreCase);
+HashSet<string> downloadedTitles = new(Directory.GetDirectories(@"Q:\Files\Movies\Rarbg_").Select(d => Path.GetFileName(d)!), StringComparer.OrdinalIgnoreCase);
 //Directory.GetDirectories(@"E:\Files\Move").Where(d => downloaded.Contains(Path.GetFileName(d))).ToArray()
 //    .ForEach(d => DirectoryHelper.MoveToDirectory(d, @"E:\Files\Move.Delete"));
