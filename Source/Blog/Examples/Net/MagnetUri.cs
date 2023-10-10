@@ -12,7 +12,7 @@ public record MagnetUri(string ExactTopic, string DisplayName, string[] Trackers
 
     private static readonly Regex TrackersRegex = new(@"&tr\=([^\&]+)", RegexOptions.IgnoreCase);
 
-    public override string ToString() => $"magnet:?xt=urn:btih:{this.ExactTopic}{(this.DisplayName.IsNullOrWhiteSpace() ? string.Empty : $"&dn={this.DisplayName}")}{string.Join(string.Empty, this.Trackers.Select(tracker => $"&tr={HttpUtility.UrlEncode(tracker)}"))}";
+    public override string ToString() => $"magnet:?xt=urn:btih:{this.ExactTopic}{(this.DisplayName.IsNullOrWhiteSpace() ? string.Empty : $"&dn={HttpUtility.UrlEncode(this.DisplayName)}")}{string.Join(string.Empty, this.Trackers.Select(tracker => $"&tr={HttpUtility.UrlEncode(tracker)}"))}";
 
     public static MagnetUri Parse(string value) =>
         TryParse(value, out MagnetUri? result) ? result : throw new ArgumentOutOfRangeException(nameof(value), value, "Input is invalid.");
@@ -32,7 +32,7 @@ public record MagnetUri(string ExactTopic, string DisplayName, string[] Trackers
             .Select(trackerMatch => HttpUtility.UrlDecode(trackerMatch.Groups[1].Value))
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
-        result = new(match.Groups[1].Value.ToUpperInvariant(), match.Groups[3].Value, trackers);
+        result = new(match.Groups[1].Value.ToUpperInvariant(),  HttpUtility.UrlDecode(match.Groups[3].Value), trackers);
         return true;
     }
 
