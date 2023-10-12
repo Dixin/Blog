@@ -42,8 +42,30 @@ public static class FileHelper
         File.Move(source, destination, overwrite);
     }
 
+    public static bool TryMove(string source, string destination, bool overwrite = false)
+    {
+        source.NotNullOrWhiteSpace();
+
+        if (!overwrite && File.Exists(destination))
+        {
+            return false;
+        }
+
+        string destinationDirectory = Path.GetDirectoryName(destination) ?? throw new InvalidOperationException(destination);
+        if (!Directory.Exists(destinationDirectory))
+        {
+            Directory.CreateDirectory(destinationDirectory);
+        }
+
+        File.Move(source, destination, overwrite);
+        return true;
+    }
+
     public static void MoveToDirectory(string source, string destinationParentDirectory, bool overwrite = false) => 
         Move(source, Path.Combine(destinationParentDirectory, Path.GetFileName(source)), overwrite);
+
+    public static bool TryMoveToDirectory(string source, string destinationParentDirectory, bool overwrite = false) =>
+        TryMove(source, Path.Combine(destinationParentDirectory, Path.GetFileName(source)), overwrite);
 
     public static void CopyToDirectory(string source, string destinationParentDirectory, bool overwrite = false) => 
         Copy(source, Path.Combine(destinationParentDirectory, Path.GetFileName(source)), overwrite);

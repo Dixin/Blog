@@ -8,8 +8,9 @@ internal class FfmpegHelper
 {
     private const int DefaultTimestampCount = 3;
 
-    internal static void MergeAllDubbed(string directory, string originalVideoSearchPattern = "", Func<string, string>? getDubbedVideo = null, Func<string, string>? renameSubtitle = null, bool overwrite = false, bool? isTV = null, bool isDryRun = false)
+    internal static void MergeAllDubbed(string directory, string originalVideoSearchPattern = "", Func<string, string>? getDubbedVideo = null, Func<string, string>? renameSubtitle = null, bool overwrite = false, bool? isTV = null, bool isDryRun = false, Action<string>? log = null)
     {
+        log ??= Logger.WriteLine;
         string[] originalVideos = originalVideoSearchPattern.IsNotNullOrWhiteSpace()
             ? Directory
                 .GetFiles(directory, originalVideoSearchPattern, SearchOption.AllDirectories)
@@ -20,7 +21,7 @@ internal class FfmpegHelper
         originalVideos.ForEach(originalVideo =>
         {
             string output = string.Empty;
-            MergeDubbed(originalVideo, ref output, getDubbedVideo is not null ? getDubbedVideo(originalVideo) : string.Empty, overwrite, isTV);
+            MergeDubbed(originalVideo, ref output, getDubbedVideo is not null ? getDubbedVideo(originalVideo) : string.Empty, overwrite, isTV, log: log);
             Directory
                 .EnumerateFiles(Path.GetDirectoryName(originalVideo) ?? throw new InvalidOperationException(originalVideo))
                 .Where(file => file.IsSubtitle() && Path.GetFileName(file).StartsWithIgnoreCase(Path.GetFileNameWithoutExtension(originalVideo)))
@@ -127,8 +128,9 @@ internal class FfmpegHelper
         ProcessHelper.StartAndWait("ffmpeg", arguments, window: true);
     }
 
-    internal static void MergeDubbed(string input, ref string output, string dubbed = "", bool overwrite = false, bool? isTV = null)
+    internal static void MergeDubbed(string input, ref string output, string dubbed = "", bool overwrite = false, bool? isTV = null, Action<string>? log = null)
     {
+        log ??= Logger.WriteLine;
         isTV ??= Regex.IsMatch(Path.GetFileNameWithoutExtension(input), @"(\.|\s)S[0-9]{2}E[0-9]{2}(\.|\s)", RegexOptions.IgnoreCase);
         if (isTV.Value)
         {
@@ -159,6 +161,13 @@ internal class FfmpegHelper
                 output = (inputVideo with { MultipleAudio = ".2Audio" }).Name;
                 output = PathHelper.ReplaceFileName(input, output);
             }
+        }
+
+        TimeSpan difference = Video.ReadVideoMetadataAsync(input).Result.Duration - Video.ReadVideoMetadataAsync(dubbed).Result.Duration;
+        if (difference > TimeSpan.FromSeconds(1) || difference < TimeSpan.Zero - TimeSpan.FromSeconds(1))
+        {
+            log($"The difference between the durations of {input} and {dubbed} is {difference}.");
+            return;
         }
 
         ProcessHelper.StartAndWait(

@@ -941,7 +941,7 @@ internal static partial class Video
             .ForEach(f => FileHelper.Move(f, f.ReplaceIgnoreCase(".eng.srt", ".srt"), false));
     }
 
-    internal static void MoveFanArt(string directory, int level = 2, Action<string>? log = null)
+    internal static void MoveFanArt(string directory, int level = 2, bool overwrite = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
@@ -959,10 +959,10 @@ internal static partial class Video
                 Debug.Assert(Path.GetExtension(fanArt).EqualsIgnoreCase(".jpg"));
 
                 string newFanArt = Path.Combine(movie, "fanart.jpg");
-                Debug.Assert(!File.Exists(newFanArt));
+                Debug.Assert(overwrite || !File.Exists(newFanArt));
 
                 log(fanArt);
-                File.Move(fanArt, newFanArt);
+                File.Move(fanArt, newFanArt, overwrite);
                 log(newFanArt);
 
                 DirectoryHelper.Recycle(fanArtDirectory);
