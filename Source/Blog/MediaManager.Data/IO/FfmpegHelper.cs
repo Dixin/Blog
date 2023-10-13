@@ -128,7 +128,7 @@ internal class FfmpegHelper
         ProcessHelper.StartAndWait("ffmpeg", arguments, window: true);
     }
 
-    internal static void MergeDubbed(string input, ref string output, string dubbed = "", bool overwrite = false, bool? isTV = null, Action<string>? log = null)
+    internal static void MergeDubbed(string input, ref string output, string dubbed = "", bool overwrite = false, bool? isTV = null, bool ignoreDurationDifference = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         isTV ??= Regex.IsMatch(Path.GetFileNameWithoutExtension(input), @"(\.|\s)S[0-9]{2}E[0-9]{2}(\.|\s)", RegexOptions.IgnoreCase);
@@ -163,11 +163,14 @@ internal class FfmpegHelper
             }
         }
 
-        TimeSpan difference = Video.ReadVideoMetadataAsync(input).Result.Duration - Video.ReadVideoMetadataAsync(dubbed).Result.Duration;
-        if (difference > TimeSpan.FromSeconds(1) || difference < TimeSpan.Zero - TimeSpan.FromSeconds(1))
+        if (!ignoreDurationDifference)
         {
-            log($"The difference between the durations of {input} and {dubbed} is {difference}.");
-            return;
+            TimeSpan difference = Video.ReadVideoMetadataAsync(input).Result.Duration - Video.ReadVideoMetadataAsync(dubbed).Result.Duration;
+            if (difference > TimeSpan.FromSeconds(1) || difference < TimeSpan.FromSeconds(-1))
+            {
+                log($"The difference between the durations of {input} and {dubbed} is {difference}.");
+                return;
+            }
         }
 
         ProcessHelper.StartAndWait(
