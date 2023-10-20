@@ -1528,7 +1528,7 @@ internal static partial class Video
                 string localImdbId = nfoDocument.Root?.Element("imdbid")?.Value ?? nfoDocument.Root?.Element("imdb_id")?.Value ?? string.Empty;
                 if (localImdbId.IsNullOrWhiteSpace())
                 {
-                    //log($"-IMDB id is unavailable: {movie}");
+                    log($"!!!IMDB id is unavailable: {movie}");
                     return;
                 }
 
@@ -1685,7 +1685,7 @@ internal static partial class Video
         HashSet<string> downloadedTitles = new(
             new string[]{ @"Q:\Files\Movies\Rarbg_" , @"Q:\Files\Movies\Rarbg2_" }.SelectMany(Directory.GetDirectories).Select(Path.GetFileName), 
             StringComparer.OrdinalIgnoreCase);
-        HashSet<string> downloadedTorrentHashes = new(Directory.GetFiles(@"E:\Files\MonoTorrent").Select(torrent => Path.GetFileNameWithoutExtension(torrent).Split("@").Last()), StringComparer.OrdinalIgnoreCase);
+        HashSet<string> downloadedTorrentHashes = new(Directory.GetFiles(@"E:\Files\MonoTorrent").Concat(Directory.GetFiles(@"E:\Files\MonoTorrentDownload")).Select(torrent => Path.GetFileNameWithoutExtension(torrent).Split("@").Last()), StringComparer.OrdinalIgnoreCase);
         using IWebDriver? webDriver = isDryRun ? null : WebDriverHelper.Start(isLoadingAll: true);
         using HttpClient? httpClient = isDryRun ? null : new HttpClient().AddEdgeHeaders();
         if (!isDryRun)
@@ -1783,12 +1783,13 @@ internal static partial class Video
                             if (rarbgMagnetUris.Contains(metadata.Title))
                             {
                                 string[] uris = rarbgMagnetUris[metadata.Title].ToArray();
-                                if (uris.Length > 0)
+                                if (uris.Length > 1)
                                 {
                                     if (downloadedTorrentHashes.Contains(MagnetUri.Parse(uris.First()).ExactTopic))
                                     {
                                         return;
                                     }
+
                                     uris.Take(1).ForEach(log);
                                 }
                             }
@@ -1879,9 +1880,9 @@ internal static partial class Video
                             if (rarbgMagnetUris.Contains(metadata.Title))
                             {
                                 string[] uris = rarbgMagnetUris[metadata.Title].ToArray();
-                                if (uris.Length > 0)
+                                if (uris.Length > 1)
                                 {
-                                    if (downloadedTorrentHashes.Contains(MagnetUri.Parse(uris.Single()).ExactTopic))
+                                    if (downloadedTorrentHashes.Contains(MagnetUri.Parse(uris.First()).ExactTopic))
                                     {
                                         return;
                                     }
