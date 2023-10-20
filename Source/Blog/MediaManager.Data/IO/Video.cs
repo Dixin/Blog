@@ -52,9 +52,27 @@ internal static partial class Video
 
     internal const string SubtitleSeparator = "-";
 
+    internal const string VersionSeparator = "-";
+
     internal const string UpScaleDefinition = ".FAKE";
 
     private static readonly int IOMaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4);
+
+    internal static string TopEnglishKeyword { get; set; } = string.Empty;
+
+    internal static string TopForeignKeyword { get; set; } = string.Empty;
+
+    internal static string PreferredOldKeyword { get; set; } = string.Empty;
+
+    internal static string PreferredNewKeyword { get; set; } = string.Empty;
+
+    internal static void Initialize(string topEnglishKeyword, string topForeignKeyword, string preferredOldKeyword, string preferredNewKeyword)
+    {
+        TopEnglishKeyword = topEnglishKeyword;
+        TopForeignKeyword = topForeignKeyword;
+        PreferredOldKeyword = preferredOldKeyword;
+        PreferredNewKeyword = preferredNewKeyword;
+    }
 
     internal static string FilterForFileSystem(this string value)
     {

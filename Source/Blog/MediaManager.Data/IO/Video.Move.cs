@@ -758,7 +758,7 @@ internal static partial class Video
             });
     }
 
-    internal static void MoveRarbgTVEpisodes(string directory, string subtitleBackupDirectory, bool isDryRun = false, Action<string>? log = null)
+    internal static void MoveTopTVEpisodes(string directory, string subtitleBackupDirectory, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
@@ -787,7 +787,7 @@ internal static partial class Video
 
         Directory
             .GetDirectories(directory)
-            .Where(season => season.EndsWithIgnoreCase("-RARBG"))
+            .Where(season => season.ContainsIgnoreCase($"{VersionSeparator}{TopEnglishKeyword}"))
             .ForEach(season =>
             {
                 string subtitleDirectory = Path.Combine(season, "Subs");
@@ -811,7 +811,7 @@ internal static partial class Video
 
         Directory
             .GetDirectories(directory)
-            .Where(season => season.EndsWithIgnoreCase("-RARBG"))
+            .Where(season => season.ContainsIgnoreCase($"{VersionSeparator}{TopEnglishKeyword}"))
             .ForEach(season =>
             {
                 Match match = Regex.Match(Path.GetFileName(season), @"^(.+)\.S([0-9]{2})(\.[A-Z]+)?\.1080p\.+");

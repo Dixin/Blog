@@ -15,7 +15,7 @@ internal static class Rare
 
     internal static async Task DownloadMetadataAsync(
         string indexUrl,
-        string rareJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, string libraryJsonPath,
+        string rareJsonPath, string x265JsonPath, string h264JsonPath, string preferredJsonPath, string h264720PJsonPath, string libraryJsonPath,
         string metadataDirectory, string cacheDirectory, 
         int degreeOfParallelism = 4, Action<string>? log = null)
     {
@@ -59,18 +59,18 @@ internal static class Rare
         string jsonString = JsonSerializer.Serialize(rareMetadata, new JsonSerializerOptions() { WriteIndented = true });
         FileHelper.WriteText(rareJsonPath, jsonString, null, WriteJsonLock);
 
-        await PrintVersionsAsync(rareMetadata, libraryJsonPath, x265JsonPath, h264JsonPath, ytsJsonPath, h264720PJsonPath, metadataDirectory, cacheDirectory, log);
+        await PrintVersionsAsync(rareMetadata, libraryJsonPath, x265JsonPath, h264JsonPath, preferredJsonPath, h264720PJsonPath, metadataDirectory, cacheDirectory, log);
     }
 
-    internal static async Task PrintVersionsAsync(IDictionary<string, RareMetadata> rareMetadata, string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, string metadataDirectory, string cacheDirectory, Action<string>? log = null, params string[] categories)
+    internal static async Task PrintVersionsAsync(IDictionary<string, RareMetadata> rareMetadata, string libraryJsonPath, string x265JsonPath, string h264JsonPath, string preferredJsonPath, string h264720PJsonPath, string metadataDirectory, string cacheDirectory, Action<string>? log = null, params string[] categories)
     {
         log ??= Logger.WriteLine;
 
         Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(libraryJsonPath))!;
-        Dictionary<string, RarbgMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
-        Dictionary<string, RarbgMetadata[]> h264Metadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
-        Dictionary<string, YtsMetadata[]> ytsMetadata = JsonSerializer.Deserialize<Dictionary<string, YtsMetadata[]>>(await File.ReadAllTextAsync(ytsJsonPath))!;
-        Dictionary<string, RarbgMetadata[]> h264720PMetadata = JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(await File.ReadAllTextAsync(h264720PJsonPath))!;
+        Dictionary<string, TopMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, TopMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
+        Dictionary<string, TopMetadata[]> h264Metadata = JsonSerializer.Deserialize<Dictionary<string, TopMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
+        Dictionary<string, PreferredMetadata[]> preferredMetadata = JsonSerializer.Deserialize<Dictionary<string, PreferredMetadata[]>>(await File.ReadAllTextAsync(preferredJsonPath))!;
+        Dictionary<string, TopMetadata[]> h264720PMetadata = JsonSerializer.Deserialize<Dictionary<string, TopMetadata[]>>(await File.ReadAllTextAsync(h264720PJsonPath))!;
 
         string[] cacheFiles = Directory.GetFiles(cacheDirectory);
         string[] metadataFiles = Directory.GetFiles(metadataDirectory);
@@ -111,9 +111,9 @@ internal static class Rare
                     }
                 }
 
-                if (x265Metadata.TryGetValue(imdbId.Value, out RarbgMetadata[]? x265Videos))
+                if (x265Metadata.TryGetValue(imdbId.Value, out TopMetadata[]? x265Videos))
                 {
-                    List<RarbgMetadata> excluded = new();
+                    List<TopMetadata> excluded = new();
                     if (x265Videos.Length > 1)
                     {
                         if (x265Videos.Any(video => video.Title.ContainsIgnoreCase("BluRay")) && x265Videos.Any(video => video.Title.ContainsIgnoreCase("WEBRip")))
@@ -155,19 +155,19 @@ internal static class Rare
                     return;
                 }
 
-                if (h264Metadata.TryGetValue(imdbId.Value, out RarbgMetadata[]? h264Videos))
+                if (h264Metadata.TryGetValue(imdbId.Value, out TopMetadata[]? h264Videos))
                 {
                     if (h264Videos.Length > 1)
                     {
-                        List<RarbgMetadata> excluded = new();
-                        excluded.AddRange(h264Videos.Where(video => !video.Title.EndsWith("-RARBG") && !video.Title.EndsWith("-VXT")));
+                        List<TopMetadata> excluded = new();
+                        excluded.AddRange(h264Videos.Where(video => !video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopEnglishKeyword}") && !video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopForeignKeyword}")));
                         if (excluded.Count == h264Videos.Length)
                         {
                             excluded.Clear();
                         }
                         else
                         {
-                            h264Videos = h264Videos.Where(video => video.Title.EndsWith("-RARBG") || video.Title.EndsWith("-VXT")).ToArray();
+                            h264Videos = h264Videos.Where(video => video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopEnglishKeyword}") || video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopForeignKeyword}")).ToArray();
                         }
 
                         if (h264Videos.Any(video => video.Title.ContainsIgnoreCase("BluRay")) && h264Videos.Any(video => video.Title.ContainsIgnoreCase("WEBRip")))
@@ -215,51 +215,51 @@ internal static class Rare
                     return;
                 }
 
-                if (ytsMetadata.TryGetValue(imdbId.Value, out YtsMetadata[]? ytsVideos))
+                if (preferredMetadata.TryGetValue(imdbId.Value, out PreferredMetadata[]? preferredVideos))
                 {
-                    YtsMetadata ytsVideo = ytsVideos.Single();
-                    if (ytsVideo.Availabilities.Count > 1)
+                    PreferredMetadata preferredVideo = preferredVideos.Single();
+                    if (preferredVideo.Availabilities.Count > 1)
                     {
-                        if (ytsVideo.Availabilities.Keys.Any(key => key.ContainsIgnoreCase("1080p")))
+                        if (preferredVideo.Availabilities.Keys.Any(key => key.ContainsIgnoreCase("1080p")))
                         {
-                            ytsVideo
+                            preferredVideo
                                 .Availabilities.Keys
                                 .Where(key => !key.ContainsIgnoreCase("1080p"))
                                 .ToArray()
-                                .ForEach(key => ytsVideo.Availabilities.Remove(key));
+                                .ForEach(key => preferredVideo.Availabilities.Remove(key));
                         }
 
-                        if (ytsVideo.Availabilities.Keys.Any(key => key.ContainsIgnoreCase("BluRay")) && ytsVideo.Availabilities.Keys.Any(key => !key.ContainsIgnoreCase("BluRay")))
+                        if (preferredVideo.Availabilities.Keys.Any(key => key.ContainsIgnoreCase("BluRay")) && preferredVideo.Availabilities.Keys.Any(key => !key.ContainsIgnoreCase("BluRay")))
                         {
-                            ytsVideo
+                            preferredVideo
                                 .Availabilities.Keys
                                 .Where(key => !key.ContainsIgnoreCase("BluRay"))
                                 .ToArray()
-                                .ForEach(key => ytsVideo.Availabilities.Remove(key));
+                                .ForEach(key => preferredVideo.Availabilities.Remove(key));
                         }
                     }
 
                     log($"https://www.imdb.com/title/{imdbId.Value}/");
                     log($"https://www.imdb.com/title/{imdbId.Value}/parentalguide");
                     log($"{imdbId.Value} {imdbId.Title} {imdbId.Link}");
-                    ytsVideo.Availabilities.ForEach(availability => log($"{availability.Value} {ytsVideo.Title} {availability.Key}"));
+                    preferredVideo.Availabilities.ForEach(availability => log($"{availability.Value} {preferredVideo.Title} {availability.Key}"));
                     log(string.Empty);
                     return;
                 }
 
-                if (h264720PMetadata.TryGetValue(imdbId.Value, out RarbgMetadata[]? h264720PVideos))
+                if (h264720PMetadata.TryGetValue(imdbId.Value, out TopMetadata[]? h264720PVideos))
                 {
                     if (h264720PVideos.Length > 1)
                     {
-                        List<RarbgMetadata> excluded = new();
-                        excluded.AddRange(h264720PVideos.Where(video => !video.Title.EndsWith("-RARBG") && !video.Title.EndsWith("-VXT")));
+                        List<TopMetadata> excluded = new();
+                        excluded.AddRange(h264720PVideos.Where(video => !video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopEnglishKeyword}") && !video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopForeignKeyword}")));
                         if (excluded.Count == h264720PVideos.Length)
                         {
                             excluded.Clear();
                         }
                         else
                         {
-                            h264720PVideos = h264720PVideos.Where(video => video.Title.EndsWith("-RARBG") || video.Title.EndsWith("-VXT")).ToArray();
+                            h264720PVideos = h264720PVideos.Where(video => video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopEnglishKeyword}") || video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopForeignKeyword}")).ToArray();
                         }
                     }
 
@@ -272,9 +272,9 @@ internal static class Rare
             });
     }
 
-    internal static async Task PrintVersionsAsync(string rareJsonPath, string libraryJsonPath, string x265JsonPath, string h264JsonPath, string ytsJsonPath, string h264720PJsonPath, string metadataDirectory, string cacheDirectory, Action<string>? log = null)
+    internal static async Task PrintVersionsAsync(string rareJsonPath, string libraryJsonPath, string x265JsonPath, string h264JsonPath, string preferredJsonPath, string h264720PJsonPath, string metadataDirectory, string cacheDirectory, Action<string>? log = null)
     {
         Dictionary<string, RareMetadata> rareMetadata = JsonSerializer.Deserialize<Dictionary<string, RareMetadata>>(await File.ReadAllTextAsync(rareJsonPath))!;
-        await PrintVersionsAsync(rareMetadata, libraryJsonPath, x265JsonPath, h264JsonPath, ytsJsonPath, h264720PJsonPath, metadataDirectory, cacheDirectory, log);
+        await PrintVersionsAsync(rareMetadata, libraryJsonPath, x265JsonPath, h264JsonPath, preferredJsonPath, h264720PJsonPath, metadataDirectory, cacheDirectory, log);
     }
 }

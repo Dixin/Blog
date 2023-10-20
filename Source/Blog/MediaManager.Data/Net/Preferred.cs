@@ -6,7 +6,7 @@ using Examples.IO;
 using Examples.Linq;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
-internal static class Yts
+internal static class Preferred
 {
     private const int WriteCount = 100;
 
@@ -15,8 +15,8 @@ internal static class Yts
         log ??= Logger.WriteLine;
 
         @continue ??= _ => true;
-        Dictionary<string, YtsSummary> allSummaries = File.Exists(jsonPath)
-            ? JsonSerializer.Deserialize<Dictionary<string, YtsSummary>>(await File.ReadAllTextAsync(jsonPath)) ?? throw new InvalidOperationException(jsonPath)
+        Dictionary<string, PreferredSummary> allSummaries = File.Exists(jsonPath)
+            ? JsonSerializer.Deserialize<Dictionary<string, PreferredSummary>>(await File.ReadAllTextAsync(jsonPath)) ?? throw new InvalidOperationException(jsonPath)
             : new();
         List<string> links = new();
         using HttpClient httpClient = new HttpClient().AddEdgeHeaders();
@@ -32,12 +32,12 @@ internal static class Yts
                 break;
             }
 
-            YtsSummary[] summaries = cq
+            PreferredSummary[] summaries = cq
                 .Find(".browse-movie-wrap")
                 .Select(dom =>
                 {
                     CQ cqMovie = new(dom);
-                    return new YtsSummary(
+                    return new PreferredSummary(
                         Link: cqMovie.Find(".browse-movie-title").Attr("href"),
                         Title: cqMovie.Find(".browse-movie-title").Text(),
                         ImdbRating: cqMovie.Find(".rating").Text().Replace(" / 10", string.Empty),
@@ -76,12 +76,12 @@ internal static class Yts
         log ??= Logger.WriteLine;
         
         string summaryJsonString = await File.ReadAllTextAsync(summaryJsonPath);
-        Dictionary<string, YtsSummary> summaries = JsonSerializer.Deserialize<Dictionary<string, YtsSummary>>(summaryJsonString) ?? throw new InvalidOperationException(summaryJsonPath);
+        Dictionary<string, PreferredSummary> summaries = JsonSerializer.Deserialize<Dictionary<string, PreferredSummary>>(summaryJsonString) ?? throw new InvalidOperationException(summaryJsonPath);
 
-        ConcurrentDictionary<string, YtsMetadata[]> details = File.Exists(metadataJsonPath)
-            ? new(JsonSerializer.Deserialize<Dictionary<string, YtsMetadata[]>>(await File.ReadAllTextAsync(metadataJsonPath)) ?? throw new InvalidOperationException(metadataJsonPath))
+        ConcurrentDictionary<string, PreferredMetadata[]> details = File.Exists(metadataJsonPath)
+            ? new(JsonSerializer.Deserialize<Dictionary<string, PreferredMetadata[]>>(await File.ReadAllTextAsync(metadataJsonPath)) ?? throw new InvalidOperationException(metadataJsonPath))
             : new();
-        Dictionary<string, YtsMetadata> existingMetadataByLink = details.Values.SelectMany(detailMetadata => detailMetadata).ToDictionary(detail => detail.Link, detail => detail);
+        Dictionary<string, PreferredMetadata> existingMetadataByLink = details.Values.SelectMany(detailMetadata => detailMetadata).ToDictionary(detail => detail.Link, detail => detail);
 
         int count = 1;
         await summaries
@@ -101,7 +101,7 @@ internal static class Yts
                         isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound });
                     CQ cq = new(html);
                     CQ info = cq.Find("#movie-info");
-                    YtsMetadata detail = new(
+                    PreferredMetadata detail = new(
                         Link: summary.Link,
                         Title: summary.Title,
                         ImdbId: info.Find("a.icon[title='IMDb Rating']").Attr("href").Replace("https://www.imdb.com/title/", string.Empty).Trim('/'),
@@ -152,7 +152,7 @@ internal static class Yts
         await File.WriteAllTextAsync(jsonPath, jsonString);
     }
 
-    internal static async Task WriteYtsSpecialTitles(string directory, string jsonPath, Action<string>? log = null)
+    internal static async Task WritePreferredSpecialTitles(string directory, string jsonPath, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 

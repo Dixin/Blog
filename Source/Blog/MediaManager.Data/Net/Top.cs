@@ -8,7 +8,7 @@ using Examples.Linq;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 
-internal static class Rarbg
+internal static class Top
 {
     private const int WriteCount = 50;
 
@@ -17,13 +17,13 @@ internal static class Rarbg
         log ??= Logger.WriteLine;
 
         string jsonText;
-        ConcurrentDictionary<string, RarbgMetadata[]> allSummaries;
+        ConcurrentDictionary<string, TopMetadata[]> allSummaries;
         if (File.Exists(jsonPath))
         {
             jsonText = await File.ReadAllTextAsync(jsonPath);
             allSummaries = jsonText.IsNullOrWhiteSpace()
                 ? new()
-                : new(JsonSerializer.Deserialize<Dictionary<string, RarbgMetadata[]>>(jsonText) ?? new Dictionary<string, RarbgMetadata[]>());
+                : new(JsonSerializer.Deserialize<Dictionary<string, TopMetadata[]>>(jsonText) ?? new Dictionary<string, TopMetadata[]>());
         }
         else
         {
@@ -38,7 +38,7 @@ internal static class Rarbg
     internal static async Task DownloadMetadataAsync(string url, string jsonPath, Func<int, bool>? @continue = null, Action<string>? log = null) =>
         await DownloadMetadataAsync(new[] { url }, jsonPath, @continue, 1, log: log);
 
-    private static async Task DownloadMetadataAsync(string url, string jsonPath, ConcurrentDictionary<string, RarbgMetadata[]> allSummaries, int partitionIndex, Func<int, bool>? @continue = null, Action<string>? log = null)
+    private static async Task DownloadMetadataAsync(string url, string jsonPath, ConcurrentDictionary<string, TopMetadata[]> allSummaries, int partitionIndex, Func<int, bool>? @continue = null, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         @continue ??= _ => true;
@@ -95,7 +95,7 @@ internal static class Rarbg
                         string image = links[0].GetAttribute("onmouseover")?.Replace(@"return overlib('<img src=\'", string.Empty).Replace(@"\' border=0>')", string.Empty) ?? string.Empty;
                         int seed = int.TryParse(cells.Eq(4).Text().Trim(), out int seedValue) ? seedValue : -1;
                         int leech = int.TryParse(cells.Eq(5).Text().Trim(), out int leechValue) ? leechValue : -1;
-                        return new RarbgMetadata(link, title, imdbId, imdbRating, genres, image, cells.Eq(2).Text().Trim(), cells.Eq(3).Text().Trim(), seed, leech, cells.Eq(7).Text().Trim());
+                        return new TopMetadata(link, title, imdbId, imdbRating, genres, image, cells.Eq(2).Text().Trim(), cells.Eq(3).Text().Trim(), seed, leech, cells.Eq(7).Text().Trim());
                     })
                     .ForEach(summary =>
                     {

@@ -22,12 +22,12 @@ internal interface IVideoFileInfo : INaming
     {
         get
         {
-            if (this.Version.EqualsOrdinal("RARBG") || this.Version.EqualsOrdinal("VXT"))
+            if (this.Version.EqualsOrdinal(Video.TopEnglishKeyword) || this.Version.EqualsOrdinal(Video.TopForeignKeyword))
             {
                 return this.VideoCodec.EqualsOrdinal(".x265") ? EncoderType.X : EncoderType.H;
             }
 
-            if (this.Version.EqualsIgnoreCase("YIFY") || this.Version.StartsWithIgnoreCase("[YTS."))
+            if (this.Version.EqualsIgnoreCase(Video.PreferredOldKeyword) || this.Version.StartsWithIgnoreCase($"[{Video.PreferredNewKeyword}."))
             {
                 return this.VideoCodec.StartsWithOrdinal(".x265") ? EncoderType.XY : EncoderType.Y;
             }
