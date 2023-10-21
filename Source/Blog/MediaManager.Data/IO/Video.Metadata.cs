@@ -5,6 +5,7 @@ using System.Text.Unicode;
 using Examples.Common;
 using Examples.Linq;
 using Examples.Net;
+using Examples.Text;
 using OpenQA.Selenium;
 
 internal static partial class Video
@@ -576,5 +577,51 @@ internal static partial class Video
 
         string mergedMetadataJson = JsonSerializer.Serialize(mergedMetadata, new JsonSerializerOptions() { WriteIndented = true });
         await FileHelper.WriteTextAsync(mergedMetadataPath, mergedMetadataJson);
+    }
+
+    internal static async Task DownloadMissingTitlesFromDoubanAsync(string directory, int level = 2, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+
+        using IWebDriver webDriver = WebDriverHelper.Start();
+
+        await EnumerateDirectories(directory, level).ForEachAsync(async movie =>
+        {
+            string[] metadataFiles = Directory.GetFiles(movie, XmlMetadataSearchPattern);
+            string backupMetadataFile = metadataFiles.First(file => file.EndsWithIgnoreCase($".{DefaultBackupFlag}{XmlMetadataExtension}"));
+            string metadataFile = metadataFiles.First(file => !file.EndsWithIgnoreCase($".{DefaultBackupFlag}{XmlMetadataExtension}"));
+            XDocument metadataDocument = XDocument.Load(metadataFile);
+            string translatedTitle = metadataDocument.Root!.Element("title")!.Value;
+            if (translatedTitle.ContainsChineseCharacter() || Regex.IsMatch(translatedTitle, @"[0-9 ]+"))
+            {
+                return;
+            }
+
+            log(movie);
+            log(translatedTitle);
+            string englishTitle = XDocument.Load(backupMetadataFile).Root?.Element("title")?.Value ?? string.Empty;
+            log(englishTitle);
+            string imdbId = XDocument.Load(backupMetadataFile).Root?.Element("imdbid")?.Value ?? string.Empty;
+            if (imdbId.IsNullOrWhiteSpace())
+            {
+                return;
+            }
+
+            string doubanTitle = await Douban.GetTitleAsync(webDriver, imdbId);
+            int lastIndex = doubanTitle.LastIndexOf(englishTitle, StringComparison.InvariantCultureIgnoreCase);
+            if (lastIndex >= 0)
+            {
+                doubanTitle = doubanTitle[..lastIndex].Trim();
+            }
+
+            log(doubanTitle);
+            if (!doubanTitle.EqualsIgnoreCase(translatedTitle))
+            {
+                metadataDocument.Root!.Element("title")!.Value = doubanTitle;
+                metadataDocument.Save(metadataFile);
+            }
+
+            log(string.Empty);
+        });
     }
 }

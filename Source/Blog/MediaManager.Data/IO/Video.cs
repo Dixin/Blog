@@ -58,13 +58,13 @@ internal static partial class Video
 
     private static readonly int IOMaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4);
 
-    internal static string TopEnglishKeyword { get; set; } = string.Empty;
+    internal static string TopEnglishKeyword { get; private set; } = string.Empty;
 
-    internal static string TopForeignKeyword { get; set; } = string.Empty;
+    internal static string TopForeignKeyword { get; private set; } = string.Empty;
 
-    internal static string PreferredOldKeyword { get; set; } = string.Empty;
+    internal static string PreferredOldKeyword { get; private set; } = string.Empty;
 
-    internal static string PreferredNewKeyword { get; set; } = string.Empty;
+    internal static string PreferredNewKeyword { get; private set; } = string.Empty;
 
     internal static void Initialize(string topEnglishKeyword, string topForeignKeyword, string preferredOldKeyword, string preferredNewKeyword)
     {
