@@ -266,11 +266,11 @@ Video.Initialize(settings.TopEnglishKeyword, settings.TopForeignKeyword, setting
 //    settings.TVMainstream,
 //    settings.TVMainstreamWithoutSubtitle);
 
-//await Imdb.UpdateAllMoviesAsync(
-//    settings.MovieLibraryMetadata,
-//    settings.MovieTopX265Metadata, settings.MovieTopH264Metadata, settings.MoviePreferredMetadata, settings.MovieTopH264720PMetadata, settings.MovieRareMetadata, settings.MovieTopX265XMetadata, settings.MovieTopH264XMetadata,
-//    settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory,
-//    count => ..(count / 8));
+await Imdb.UpdateAllMoviesAsync(
+    settings.MovieLibraryMetadata,
+    settings.MovieTopX265Metadata, settings.MovieTopH264Metadata, settings.MoviePreferredMetadata, settings.MovieTopH264720PMetadata, settings.MovieRareMetadata, settings.MovieTopX265XMetadata, settings.MovieTopH264XMetadata,
+    settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory,
+    count => ..(count / 5));
 //await Imdb.DownloadAllTVsAsync(settings.TVTopX265Metadata, settings.TVMainstream.Directory, settings.TVMetadataCacheDirectory, settings.TVMetadataDirectory);
 string[] keywords =
 {
@@ -947,46 +947,4 @@ HashSet<string> allDownloadedTitles = new(File.ReadAllLines(@"e:\AllDownloadedTi
 //                });
 //            });
 //    });
-
-Directory.GetDirectories(@"Q:\Files\Movies\Rarbg_")
-    .ForEach(d =>
-    {
-        string[] videos = Directory.GetFiles(d, "*.mp4");
-        if (videos.Length != 1)
-        {
-            videos.Prepend(d).Append("").ForEach(Logger.WriteLine);
-        }
-
-        //if (videos.Count(v => v.EndsWithIgnoreCase(".2Audio.mp4")) == 1 && videos.Count(v => !v.EndsWithIgnoreCase(".2Audio.mp4")) == 2 && videos.Count(v => v.ContainsIgnoreCase(".DUBBED.")) == 1)
-        //{
-        //    string input = videos.Single(v => !v.EndsWithIgnoreCase(".2Audio.mp4") && !v.ContainsIgnoreCase(".DUBBED."));
-        //    string dubbed = videos.Single(v => v.ContainsIgnoreCase(".DUBBED."));
-        //    string output = videos.Single(v => v.EndsWithIgnoreCase(".2Audio.mp4"));
-
-        //    TimeSpan difference = Video.ReadVideoMetadataAsync(input).Result.Duration - Video.ReadVideoMetadataAsync(input).Result.Duration;
-        //    if (difference < TimeSpan.FromSeconds(1) && difference > TimeSpan.FromSeconds(-1))
-        //    {
-        //        FileHelper.MoveToDirectory(input, @"Q:\Delete");
-        //        FileHelper.MoveToDirectory(dubbed, @"Q:\Delete");
-        //    }
-        //    else
-        //    {
-        //        Logger.WriteLine(d);
-        //    }
-        //}
-
-        //if (videos.Length != 3 || videos.Count(v => v.ContainsIgnoreCase(".DUBBED.")) != 1 || videos.Count(v => !v.ContainsIgnoreCase(".DUBBED.")) != 2 || videos.Count(v => !v.ContainsIgnoreCase(".2Audio.")) != 1)
-        //{
-        //    return;
-        //}
-
-        //string original = videos.Single(v => !v.ContainsIgnoreCase(".DUBBED.") && !v.ContainsIgnoreCase(".2Audio."));
-        //string dubbed = videos.Single(v => v.ContainsIgnoreCase(".DUBBED."));
-        //string output = videos.Single(v => v.ContainsIgnoreCase(".2Audio."));
-        //Logger.WriteLine(original);
-        //Logger.WriteLine(dubbed);
-        //Logger.WriteLine(output);
-        //Logger.WriteLine("");
-
-        //FfmpegHelper.MergeDubbed(original, ref output, dubbed);
-    });
+//await Video.DownloadMissingTitlesFromDoubanAsync(@"Q:\Files\Movies");

@@ -624,8 +624,8 @@ internal static class Imdb
                         rowCount = keywordsCQ.Find("div[data-testid='sub-section']>ul>li").Length;
                         Thread.Sleep(WebDriverHelper.DefaultNetworkWait);
                         return driver.FindElements(By.CssSelector("div[data-testid='sub-section']>ul>li")).Count == rowCount
-                            && releaseCQ.Find("span.chained-see-more-button button.ipc-see-more__button:contains('All') span.ipc-btn__text:visible").IsEmpty()
-                            && releaseCQ.Find("span.single-page-see-more-button button.ipc-see-more__button:contains('more') span.ipc-btn__text:visible").IsEmpty();
+                            && keywordsCQ.Find("span.chained-see-more-button button.ipc-see-more__button:contains('All') span.ipc-btn__text:visible").IsEmpty()
+                            && keywordsCQ.Find("span.single-page-see-more-button button.ipc-see-more__button:contains('more') span.ipc-btn__text:visible").IsEmpty();
                     });
                 }
 
@@ -830,61 +830,111 @@ internal static class Imdb
     {
         log ??= Logger.WriteLine;
 
-        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(libraryJsonPath))!;
-        Dictionary<string, TopMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, TopMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
-        Dictionary<string, TopMetadata[]> x265XMetadata = JsonSerializer.Deserialize<Dictionary<string, TopMetadata[]>>(await File.ReadAllTextAsync(x265XJsonPath))!;
-        Dictionary<string, TopMetadata[]> h264Metadata = JsonSerializer.Deserialize<Dictionary<string, TopMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
-        Dictionary<string, TopMetadata[]> h264XMetadata = JsonSerializer.Deserialize<Dictionary<string, TopMetadata[]>>(await File.ReadAllTextAsync(h264XJsonPath))!;
-        Dictionary<string, PreferredMetadata[]> preferredMetadata = JsonSerializer.Deserialize<Dictionary<string, PreferredMetadata[]>>(await File.ReadAllTextAsync(preferredJsonPath))!;
-        Dictionary<string, TopMetadata[]> h264720PMetadata = JsonSerializer.Deserialize<Dictionary<string, TopMetadata[]>>(await File.ReadAllTextAsync(h264720PJsonPath))!;
-        Dictionary<string, RareMetadata> rareMetadata = JsonSerializer.Deserialize<Dictionary<string, RareMetadata>>(await File.ReadAllTextAsync(rareJsonPath))!;
+        //Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(libraryJsonPath))!;
+        //Dictionary<string, TopMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, TopMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
+        //Dictionary<string, TopMetadata[]> x265XMetadata = JsonSerializer.Deserialize<Dictionary<string, TopMetadata[]>>(await File.ReadAllTextAsync(x265XJsonPath))!;
+        //Dictionary<string, TopMetadata[]> h264Metadata = JsonSerializer.Deserialize<Dictionary<string, TopMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
+        //Dictionary<string, TopMetadata[]> h264XMetadata = JsonSerializer.Deserialize<Dictionary<string, TopMetadata[]>>(await File.ReadAllTextAsync(h264XJsonPath))!;
+        //Dictionary<string, PreferredMetadata[]> preferredMetadata = JsonSerializer.Deserialize<Dictionary<string, PreferredMetadata[]>>(await File.ReadAllTextAsync(preferredJsonPath))!;
+        //Dictionary<string, TopMetadata[]> h264720PMetadata = JsonSerializer.Deserialize<Dictionary<string, TopMetadata[]>>(await File.ReadAllTextAsync(h264720PJsonPath))!;
+        //Dictionary<string, RareMetadata> rareMetadata = JsonSerializer.Deserialize<Dictionary<string, RareMetadata>>(await File.ReadAllTextAsync(rareJsonPath))!;
+        string[] cacheFiles = Directory.EnumerateFiles(cacheDirectory, "*.Keywords.bak.log").Order().ToArray();
 
-        using IWebDriver webDriver = WebDriverHelper.Start();
-        string[] cacheFiles = Directory.GetFiles(@cacheDirectory);
-        string[] metadataFiles = Directory.GetFiles(metadataDirectory);
-        string[] imdbIds = x265Metadata.Keys
-            .Concat(x265XMetadata.Keys)
-            .Concat(h264Metadata.Keys)
-            .Concat(h264XMetadata.Keys)
-            .Concat(preferredMetadata.Keys)
-            .Concat(h264720PMetadata.Keys)
-            .Except(libraryMetadata.Keys)
-            //.Except(rareMetadata
-            //    .SelectMany(rare => Regex
-            //        .Matches(rare.Value.Content, @"imdb\.com/title/(tt[0-9]+)")
-            //        .Where(match => match.Success)
-            //        .Select(match => match.Groups[1].Value)))
-            .Distinct()
-            .Order()
-            .ToArray();
-        int length = imdbIds.Length;
+        int length = cacheFiles.Length;
         if (getRange is not null)
         {
-            imdbIds = imdbIds.Take(getRange(length)).ToArray();
+            cacheFiles = cacheFiles.Take(getRange(length)).ToArray();
         }
 
-        //imdbIds = imdbIds
-        //    .Except(metadataFiles.Select(file => Path.GetFileNameWithoutExtension(file).Split("-").First()))
-        //    .ToArray();
-        RandomHelper.Shuffle(imdbIds.AsSpan());
-        imdbIds = RandomHelper.GetItems<string>(imdbIds.AsSpan(), 100);
-        int trimmedLength = imdbIds.Length;
-        await imdbIds.ForEachAsync(async (imdbId, index) =>
-        {
-            log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
-            try
+        int degree = 2;
+        IWebDriver[] webDrivers = Enumerable.Range(0, degree).Select(i => WebDriverHelper.Start(i, keepExisting: true)).ToArray();
+        webDrivers.ForEach(webDriver => webDriver.Url = "http://imdb.com");
+
+        int index = -1;
+        webDrivers
+            .ParallelForEach((webDriver, i) =>
             {
-                await Retry.FixedIntervalAsync(async () => await Video.UpdateImdbMetadataAsync(imdbId, cacheDirectory, metadataDirectory, cacheFiles, metadataFiles, webDriver, false, true, log));
-            }
-            catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
-            {
-                log($"!!!{imdbId}");
-            }
-            catch (ArgumentException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
-            {
-                log($"!!!{imdbId}");
-            }
-        });
+                int currentIndex = Interlocked.Increment(ref index);
+                while (currentIndex < cacheFiles.Length)
+                {
+                    string keyWordFile = cacheFiles[currentIndex].Replace(".Keywords.bak.log", ".Keywords.log");
+                    if (File.Exists(keyWordFile))
+                    {
+                        break;
+                    }
+
+                    string imdbId = Path.GetFileNameWithoutExtension(keyWordFile).Split(".").First();
+                    string imdbUrl = $"https://www.imdb.com/title/{imdbId}/";
+                    string keywordsUrl = $"{imdbUrl}keywords/";
+                    string keywordsHtml = WebDriverHelper.GetString(ref webDriver, keywordsUrl);
+                    CQ keywordsCQ = keywordsHtml;
+                    string[] allKeywords = keywordsCQ.Find("#keywords_content table td div.sodatext a").Select(keyword => keyword.TextContent.Trim()).ToArray();
+                    Debug.Assert(allKeywords.IsEmpty());
+                    if (true)
+                    {
+                        CQ seeAllButtonCQ = keywordsCQ.Find("span.chained-see-more-button button.ipc-see-more__button:contains('All') span.ipc-btn__text:visible");
+                        Debug.Assert(seeAllButtonCQ.Length is 0 or 1);
+                        if (true)
+                        {
+                            if (seeAllButtonCQ.Any() && webDriver.Url.EqualsIgnoreCase(keywordsUrl))
+                            {
+                                int rowCount = webDriver.FindElements(By.CssSelector("div[data-testid='sub-section']>ul>li")).Count;
+                                IWebElement seeAllButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElements(By.CssSelector("span.chained-see-more-button button.ipc-see-more__button")).Last());
+                                if (!seeAllButton.Displayed)
+                                {
+                                    seeAllButtonCQ = keywordsCQ.Find("span.single-page-see-more-button button.ipc-see-more__button:contains('more') span.ipc-btn__text:visible");
+                                    seeAllButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElements(By.CssSelector("span.single-page-see-more-button button.ipc-see-more__button")).Last());
+                                }
+
+                                Debug.Assert(seeAllButtonCQ.Length == 1);
+                                Debug.Assert(seeAllButton.Displayed);
+                                try
+                                {
+                                    Retry.FixedInterval(seeAllButton.Click);
+                                }
+                                catch (Exception exception) when (exception.IsNotCritical())
+                                {
+                                    seeAllButton.SendKeys(Keys.Space);
+                                }
+
+                                new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver =>
+                                {
+                                    keywordsHtml = webDriver.PageSource;
+                                    keywordsCQ = keywordsHtml;
+                                    rowCount = keywordsCQ.Find("div[data-testid='sub-section']>ul>li").Length;
+                                    Thread.Sleep(WebDriverHelper.DefaultNetworkWait);
+                                    return driver.FindElements(By.CssSelector("div[data-testid='sub-section']>ul>li")).Count == rowCount
+                                        && keywordsCQ.Find("span.chained-see-more-button button.ipc-see-more__button:contains('All') span.ipc-btn__text:visible").IsEmpty()
+                                        && keywordsCQ.Find("span.single-page-see-more-button button.ipc-see-more__button:contains('more') span.ipc-btn__text:visible").IsEmpty();
+                                });
+                            }
+
+                            keywordsHtml = webDriver.PageSource;
+                        }
+
+                        //keywordsCQ = keywordsHtml;
+                        //CQ allKeywordsCQ = keywordsCQ.Find("div[data-testid='sub-section']>ul>li");
+                        //allKeywords = allKeywordsCQ
+                        //    .Select(row => row.Cq())
+                        //    .Select(rowCQ => HttpUtility.HtmlDecode(rowCQ.Children().Eq(0).Text()))
+                        //    .ToArray();
+
+                        //CQ oldKeywordsCQ = File.ReadAllText(cacheFiles[currentIndex]);
+                        //string[] oldKeywords = oldKeywordsCQ
+                        //    .Select(row => row.Cq())
+                        //    .Select(rowCQ => HttpUtility.HtmlDecode(rowCQ.Children().Eq(0).Text()))
+                        //    .ToArray();
+
+                        //log($"{allKeywordsCQ.Length} - {oldKeywords.Length}");
+                    }
+
+                    File.WriteAllText(keyWordFile, keywordsHtml);
+                    File.WriteAllLines(keyWordFile + ".txt", allKeywords);
+                    currentIndex = Interlocked.Increment(ref index);
+                }
+            }, degree);
+
+        webDrivers.ForEach(webDriver => webDriver.Dispose());
     }
 
     internal static async Task DownloadAllLibraryMoviesAsync(

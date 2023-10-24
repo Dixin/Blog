@@ -35,8 +35,8 @@ public static class WebDriverHelper
     //public static IWebDriver StartEdge(int index, bool isLoadingAll = false) =>
     //    StartEdge(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(EdgeDriver)} {index:00}"), isLoadingAll);
 
-    public static IWebDriver Start(int index, bool isLoadingAll = false) =>
-        Start(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(EdgeDriver)} {index:00}"), isLoadingAll);
+    public static IWebDriver Start(int index, bool isLoadingAll = false, bool keepExisting = false) =>
+        Start(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(EdgeDriver)} {index:00}"), isLoadingAll, keepExisting: keepExisting);
 
     public static IWebDriver Start(string profile = "", bool isLoadingAll = false, bool keepWindow = false, bool keepExisting = false, bool keepProfile = false, string downloadDirectory = "") =>
         StartChromium<ChromeOptions>(profile, isLoadingAll, keepWindow, keepExisting, keepProfile, downloadDirectory);
