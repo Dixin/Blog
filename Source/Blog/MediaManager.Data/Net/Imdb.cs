@@ -857,9 +857,9 @@ internal static class Imdb
                 for (int currentIndex = Interlocked.Increment(ref index); currentIndex < cacheFiles.Length; currentIndex = Interlocked.Increment(ref index))
                 {
                     string keyWordFile = cacheFiles[currentIndex].Replace(".Keywords.bak.log", ".Keywords.log");
-                    if (File.Exists(keyWordFile))
+                    if (File.Exists(keyWordFile + ".txt"))
                     {
-                        break;
+                        continue;
                     }
 
                     string imdbId = Path.GetFileNameWithoutExtension(keyWordFile).Split(".").First();
@@ -911,12 +911,12 @@ internal static class Imdb
                             keywordsHtml = webDriver.PageSource;
                         }
 
-                        //keywordsCQ = keywordsHtml;
-                        //CQ allKeywordsCQ = keywordsCQ.Find("div[data-testid='sub-section']>ul>li");
-                        //allKeywords = allKeywordsCQ
-                        //    .Select(row => row.Cq())
-                        //    .Select(rowCQ => HttpUtility.HtmlDecode(rowCQ.Children().Eq(0).Text()))
-                        //    .ToArray();
+                        keywordsCQ = keywordsHtml;
+                        CQ allKeywordsCQ = keywordsCQ.Find("div[data-testid='sub-section']>ul>li");
+                        allKeywords = allKeywordsCQ
+                            .Select(row => row.Cq())
+                            .Select(rowCQ => HttpUtility.HtmlDecode(rowCQ.Children().Eq(0).Text()))
+                            .ToArray();
 
                         //CQ oldKeywordsCQ = File.ReadAllText(cacheFiles[currentIndex]);
                         //string[] oldKeywords = oldKeywordsCQ
