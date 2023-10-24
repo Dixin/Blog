@@ -854,8 +854,7 @@ internal static class Imdb
         webDrivers
             .ParallelForEach((webDriver, i) =>
             {
-                int currentIndex = Interlocked.Increment(ref index);
-                while (currentIndex < cacheFiles.Length)
+                for (int currentIndex = Interlocked.Increment(ref index); currentIndex < cacheFiles.Length; currentIndex = Interlocked.Increment(ref index))
                 {
                     string keyWordFile = cacheFiles[currentIndex].Replace(".Keywords.bak.log", ".Keywords.log");
                     if (File.Exists(keyWordFile))
@@ -930,7 +929,6 @@ internal static class Imdb
 
                     File.WriteAllText(keyWordFile, keywordsHtml);
                     File.WriteAllLines(keyWordFile + ".txt", allKeywords);
-                    currentIndex = Interlocked.Increment(ref index);
                 }
             }, degree);
 
