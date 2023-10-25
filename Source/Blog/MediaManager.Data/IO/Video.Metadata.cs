@@ -1,7 +1,5 @@
 ﻿namespace Examples.IO;
 
-using System.Text.Encodings.Web;
-using System.Text.Unicode;
 using Examples.Common;
 using Examples.Linq;
 using Examples.Net;
@@ -332,100 +330,7 @@ internal static partial class Video
 
         string jsonFile = Path.Combine(metadataDirectory, $"{imdbId}{SubtitleSeparator}{imdbMetadata.Year}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Regions.Select(value => value.Replace(SubtitleSeparator, string.Empty)).Take(5))}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Languages.Take(3).Select(value => value.Replace(SubtitleSeparator, string.Empty)))}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Genres.Take(5).Select(value => value.Replace(SubtitleSeparator, string.Empty)))}{ImdbMetadataExtension}");
         log($"Merged {imdbUrl}, {releaseUrl}, {keywordsUrl}, {advisoriesUrl} to {jsonFile}.");
-        string jsonContent = JsonSerializer.Serialize(
-            imdbMetadata,
-            new JsonSerializerOptions()
-            {
-                WriteIndented = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
-            });
-        await File.WriteAllTextAsync(jsonFile, jsonContent);
-        log($"Saved to {jsonFile}.");
-        TimeSpan elapsed = Stopwatch.GetElapsedTime(startTime);
-        log($"Elapsed {elapsed}");
-    }
-
-    internal static async Task UpdateImdbMetadataAsync(string imdbId, string cacheDirectory, string metadataDirectory, string[] cacheFiles, string[] metadataFiles, IWebDriver? webDriver, bool overwrite = false, bool useCache = false, Action<string>? log = null)
-    {
-        log ??= Logger.WriteLine;
-
-        long startTime = Stopwatch.GetTimestamp();
-        string originalJsonFile = metadataFiles.Single(file => file.EndsWithIgnoreCase(ImdbMetadataExtension) && Path.GetFileName(file).StartsWithIgnoreCase(imdbId));
-        ImdbMetadata originalImdbMetadata = JsonSerializer.Deserialize<ImdbMetadata>(
-            await File.ReadAllTextAsync(originalJsonFile),
-            new JsonSerializerOptions() { PropertyNameCaseInsensitive = true, IgnoreReadOnlyProperties = true }) ?? throw new InvalidOperationException(originalJsonFile);
-
-        string imdbFile = Path.Combine(cacheDirectory, $"{imdbId}{ImdbCacheExtension}");
-        string releaseFile = Path.Combine(cacheDirectory, $"{imdbId}.Release{ImdbCacheExtension}");
-        string keywordsFile = Path.Combine(cacheDirectory, $"{imdbId}.Keywords{ImdbCacheExtension}");
-        string advisoriesFile = Path.Combine(cacheDirectory, $"{imdbId}.Advisories{ImdbCacheExtension}");
-        Debug.Assert(!imdbId.EqualsOrdinal(NotExistingFlag));
-
-        string parentImdbFile = Path.Combine(cacheDirectory, $"{imdbId}.Parent{ImdbCacheExtension}");
-        string parentReleaseFile = Path.Combine(cacheDirectory, $"{imdbId}.Parent.Release{ImdbCacheExtension}");
-        string parentKeywordsFile = Path.Combine(cacheDirectory, $"{imdbId}.Parent.Keywords{ImdbCacheExtension}");
-        string parentAdvisoriesFile = Path.Combine(cacheDirectory, $"{imdbId}.Parent.Advisories{ImdbCacheExtension}");
-        (
-            ImdbMetadata imdbMetadata,
-
-            string imdbUrl, string imdbHtml,
-            string releaseUrl, string releaseHtml,
-            string keywordsUrl, string keywordsHtml,
-            string advisoriesUrl, string advisoriesHtml,
-
-            string parentImdbUrl, string parentImdbHtml,
-            string parentReleaseUrl, string parentReleaseHtml,
-            string parentKeywordsUrl, string parentKeywordsHtml,
-            string parentAdvisoriesUrl, string parentAdvisoriesHtml
-        ) = await Imdb.DownloadAsync(
-            imdbId,
-            imdbFile,
-            releaseFile,
-            string.Empty,
-            advisoriesFile,
-            parentImdbFile,
-            parentReleaseFile,
-            parentKeywordsFile,
-            parentAdvisoriesFile,
-            webDriver);
-        Debug.Assert(keywordsHtml.IsNotNullOrWhiteSpace());
-        if (imdbMetadata.Regions.IsEmpty())
-        {
-            log($"!Location is missing for {imdbId}: {cacheDirectory}");
-        }
-
-        string[] newKeywords = imdbMetadata.AllKeywords.Except(originalImdbMetadata.AllKeywords, StringComparer.OrdinalIgnoreCase).ToArray();
-        if (newKeywords.Any())
-        {
-            Trace.WriteLine($"!!!!!{string.Join(", ", newKeywords)}");
-
-            await new (string Url, string File, string Html)[]
-                {
-                    (keywordsUrl, keywordsFile, keywordsHtml),
-                }
-                .Where(data => data.Html.IsNotNullOrWhiteSpace() && !cacheFiles.Any(file => file.EqualsIgnoreCase(data.File)) || !useCache && overwrite)
-                .ForEachAsync(async data =>
-                {
-                    log($"Downloaded {data.Url} to {data.File}.");
-                    await File.WriteAllTextAsync(data.File, data.Html);
-                    log($"Saved to {data.File}.");
-                });
-
-            Debugger.Break();
-        }
-
-        string jsonFile = Path.Combine(metadataDirectory, $"{imdbId}{SubtitleSeparator}{imdbMetadata.Year}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Regions.Select(value => value.Replace(SubtitleSeparator, string.Empty)).Take(5))}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Languages.Take(3).Select(value => value.Replace(SubtitleSeparator, string.Empty)))}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Genres.Take(5).Select(value => value.Replace(SubtitleSeparator, string.Empty)))}{ImdbMetadataExtension}");
-        log($"Merged {imdbUrl}, {releaseUrl}, {keywordsUrl}, {advisoriesUrl} to {jsonFile}.");
-        string jsonContent = JsonSerializer.Serialize(
-            imdbMetadata,
-            new JsonSerializerOptions()
-            {
-                WriteIndented = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
-            });
-        //await File.WriteAllTextAsync(jsonFile, jsonContent);
+        await JsonHelper.SerializeToFileAsync(imdbMetadata, jsonFile);
         log($"Saved to {jsonFile}.");
         TimeSpan elapsed = Stopwatch.GetElapsedTime(startTime);
         log($"Elapsed {elapsed}");
@@ -457,8 +362,7 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
         Dictionary<string, Dictionary<string, VideoMetadata>> existingMetadata = File.Exists(jsonPath)
-            ? JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(jsonPath))
-                ?? throw new InvalidOperationException(jsonPath)
+            ? await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(jsonPath)
             : new();
 
         existingMetadata
@@ -515,8 +419,7 @@ internal static partial class Video
             .ToArray()
             .ForEach(existingMetadata.Remove);
 
-        string mergedVideoMetadataJson = JsonSerializer.Serialize(existingMetadata, new JsonSerializerOptions() { WriteIndented = true });
-        await FileHelper.WriteTextAsync(jsonPath, mergedVideoMetadataJson);
+        await JsonHelper.SerializeToFileAsync(existingMetadata, jsonPath);
     }
 
     internal static async Task WriteExternalVideoMetadataAsync(string jsonPath, params string[] directories)
@@ -537,14 +440,13 @@ internal static partial class Video
             .Distinct(metadata => metadata.ImdbId)
             .ToDictionary(metadata => metadata.ImdbId, metadata => metadata.Value);
 
-        string mergedVideoMetadataJson = JsonSerializer.Serialize(allVideoMetadata, new JsonSerializerOptions() { WriteIndented = true });
-        await File.WriteAllTextAsync(jsonPath, mergedVideoMetadataJson);
+        await JsonHelper.SerializeToFileAsync(allVideoMetadata, jsonPath);
     }
 
-    internal static async Task MergeMovieMetadataAsync(string metadataDirectory, string mergedMetadataPath)
+    internal static async Task UpdateMergedMovieMetadataAsync(string metadataDirectory, string mergedMetadataPath)
     {
         ConcurrentDictionary<string, ImdbMetadata> mergedMetadata = File.Exists(mergedMetadataPath)
-            ? new(JsonSerializer.Deserialize<Dictionary<string, ImdbMetadata>>(await File.ReadAllTextAsync(mergedMetadataPath)) ?? throw new InvalidOperationException(mergedMetadataPath))
+            ? new(await JsonHelper.DeserializeFromFileAsync<Dictionary<string, ImdbMetadata>>(mergedMetadataPath))
             : new();
 
         string[] movieMetadataFiles = Directory.GetFiles(metadataDirectory);
@@ -577,6 +479,34 @@ internal static partial class Video
 
         string mergedMetadataJson = JsonSerializer.Serialize(mergedMetadata, new JsonSerializerOptions() { WriteIndented = true });
         await FileHelper.WriteTextAsync(mergedMetadataPath, mergedMetadataJson);
+    }
+
+    internal static async Task MergeMovieMetadataAsync(string metadataDirectory, string mergedMetadataPath)
+    {
+        ConcurrentDictionary<string, ImdbMetadata> mergedMetadata = new();
+
+        string[] movieMetadataFiles = Directory.GetFiles(metadataDirectory);
+        Dictionary<string, string> metadataFilesByImdbId = movieMetadataFiles
+            .ToDictionary(file => Path.GetFileName(file).Split("-").First());
+
+        metadataFilesByImdbId
+            .Keys
+            .AsParallel()
+            .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
+            .ForEach(imdbId =>
+            {
+                string file = metadataFilesByImdbId[imdbId];
+                if (Imdb.TryLoad(file, out ImdbMetadata? imdbMetadata))
+                {
+                    mergedMetadata[imdbId] = imdbMetadata;
+                }
+                else
+                {
+                    throw new InvalidOperationException(file);
+                }
+            });
+
+        await JsonHelper.SerializeToFileAsync(mergedMetadata, mergedMetadataPath);
     }
 
     internal static async Task DownloadMissingTitlesFromDoubanAsync(string directory, int level = 2, Action<string>? log = null)

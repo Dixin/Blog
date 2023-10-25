@@ -17,22 +17,12 @@ internal static class Top
         log ??= Logger.WriteLine;
 
         string jsonText;
-        ConcurrentDictionary<string, TopMetadata[]> allSummaries;
-        if (File.Exists(jsonPath))
-        {
-            jsonText = await File.ReadAllTextAsync(jsonPath);
-            allSummaries = jsonText.IsNullOrWhiteSpace()
-                ? new()
-                : new(JsonSerializer.Deserialize<Dictionary<string, TopMetadata[]>>(jsonText) ?? new Dictionary<string, TopMetadata[]>());
-        }
-        else
-        {
-            allSummaries = new();
-        }
+        ConcurrentDictionary<string, TopMetadata[]> allSummaries = File.Exists(jsonPath)
+            ? new(await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(jsonPath))
+            : new();
 
         await urls.ParallelForEachAsync(async (url, index) => await DownloadMetadataAsync(url, jsonPath, allSummaries, index + 1, @continue, log), degreeOfParallelism);
-        jsonText = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
-        await FileHelper.WriteTextAsync(jsonPath, jsonText);
+        await JsonHelper.SerializeToFileAsync(allSummaries, jsonPath);
     }
 
     internal static async Task DownloadMetadataAsync(string url, string jsonPath, Func<int, bool>? @continue = null, Action<string>? log = null) =>
@@ -110,8 +100,7 @@ internal static class Top
                 log($"{partitionIndex}:{pageIndex} End {webDriver.Url}");
                 if (pageIndex++ % WriteCount == 0)
                 {
-                    string jsonText = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
-                    FileHelper.WriteText(jsonPath, jsonText, null, WriteJsonLock);
+                    JsonHelper.SerializeToFile(allSummaries, jsonPath, WriteJsonLock);
                 }
             } while (webDriver.HasNextPage(ref pager, log));
 
@@ -124,8 +113,7 @@ internal static class Top
         }
         finally
         {
-            string jsonText = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
-            FileHelper.WriteText(jsonPath, jsonText, null, WriteJsonLock);
+            JsonHelper.SerializeToFile(allSummaries, jsonPath, WriteJsonLock);
         }
     }
 

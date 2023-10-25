@@ -56,7 +56,7 @@ internal static class Drive115
                 bool isSuccessful = listItemCQ.Find("div.file-process i.ifst-success").Length > 0;
                 bool isBlocked = listItemCQ.Find("div.desc-tips").Css("display") is "block";
                 Drive115OfflineTask task = new(link, title, size, isSuccessful, isBlocked, page);
-                log(JsonSerializer.Serialize(task, new JsonSerializerOptions() { WriteIndented = true }));
+                log(JsonHelper.Serialize(task));
                 return task;
             }));
 
@@ -82,7 +82,6 @@ internal static class Drive115
                 : (title, link) => title.ContainsIgnoreCase(keyword) || link.ContainsIgnoreCase(keyword),
             (_, _) => Debugger.Break(),
             log);
-        string jsonText = JsonSerializer.Serialize(tasks.ToArray(), new JsonSerializerOptions() { WriteIndented = true });
-        await FileHelper.WriteTextAsync(path, jsonText);
+        await JsonHelper.SerializeToFileAsync(tasks.ToArray(), path);
     }
 }

@@ -16,7 +16,7 @@ internal static class Preferred
 
         @continue ??= _ => true;
         Dictionary<string, PreferredSummary> allSummaries = File.Exists(jsonPath)
-            ? JsonSerializer.Deserialize<Dictionary<string, PreferredSummary>>(await File.ReadAllTextAsync(jsonPath)) ?? throw new InvalidOperationException(jsonPath)
+            ? await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredSummary>>(jsonPath)
             : new();
         List<string> links = new();
         using HttpClient httpClient = new HttpClient().AddEdgeHeaders();
@@ -52,8 +52,7 @@ internal static class Preferred
 
             if (index % WriteCount == 0)
             {
-                string jsonString = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
-                FileHelper.WriteText(jsonPath, jsonString, null, WriteJsonLock);
+                await JsonHelper.SerializeToFileAsync(allSummaries, jsonPath);
             }
 
             log($"End {url}");
@@ -61,8 +60,7 @@ internal static class Preferred
 
         links.OrderBy(link => link).ForEach(log);
 
-        string finalJsonString = JsonSerializer.Serialize(allSummaries, new JsonSerializerOptions() { WriteIndented = true });
-        FileHelper.WriteText(jsonPath, finalJsonString, null, WriteJsonLock);
+        await JsonHelper.SerializeToFileAsync(allSummaries, jsonPath);
     }
 
     internal static async Task DownloadMetadataAsync(string baseUrl, string summaryJsonPath, string metadataJsonPath, Func<int, bool>? @continue = null, int index = 1, int degreeOfParallelism = 4, Action<string>? log = null)
@@ -75,11 +73,10 @@ internal static class Preferred
     {
         log ??= Logger.WriteLine;
         
-        string summaryJsonString = await File.ReadAllTextAsync(summaryJsonPath);
-        Dictionary<string, PreferredSummary> summaries = JsonSerializer.Deserialize<Dictionary<string, PreferredSummary>>(summaryJsonString) ?? throw new InvalidOperationException(summaryJsonPath);
+        Dictionary<string, PreferredSummary> summaries = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredSummary>>(summaryJsonPath);
 
         ConcurrentDictionary<string, PreferredMetadata[]> details = File.Exists(metadataJsonPath)
-            ? new(JsonSerializer.Deserialize<Dictionary<string, PreferredMetadata[]>>(await File.ReadAllTextAsync(metadataJsonPath)) ?? throw new InvalidOperationException(metadataJsonPath))
+            ? new(await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(metadataJsonPath))
             : new();
         Dictionary<string, PreferredMetadata> existingMetadataByLink = details.Values.SelectMany(detailMetadata => detailMetadata).ToDictionary(detail => detail.Link, detail => detail);
 
@@ -125,15 +122,13 @@ internal static class Preferred
 
                 if (Interlocked.Increment(ref count) % WriteCount == 0)
                 {
-                    string jsonString = JsonSerializer.Serialize(details, new JsonSerializerOptions() { WriteIndented = true });
-                    FileHelper.WriteText(metadataJsonPath, jsonString, null, WriteJsonLock);
+                    JsonHelper.SerializeToFile(details, metadataJsonPath, WriteJsonLock);
                 }
 
                 log($"End {index}:{summary.Link}");
             }, degreeOfParallelism);
 
-        string jsonString = JsonSerializer.Serialize(details, new JsonSerializerOptions() { WriteIndented = true });
-        FileHelper.WriteText(metadataJsonPath, jsonString, null, WriteJsonLock);
+        JsonHelper.SerializeToFile(details, metadataJsonPath, WriteJsonLock);
     }
 
     private static readonly object WriteJsonLock = new();
@@ -148,8 +143,7 @@ internal static class Preferred
             .Where(line => !"0".EqualsOrdinal(line.ElementAtOrDefault(4)))
             .Select(line => line[0])
             .ToArray();
-        string jsonString = JsonSerializer.Serialize(specialTitles, new JsonSerializerOptions() { WriteIndented = true });
-        await File.WriteAllTextAsync(jsonPath, jsonString);
+        await JsonHelper.SerializeToFileAsync(specialTitles, jsonPath);
     }
 
     internal static async Task WritePreferredSpecialTitles(string directory, string jsonPath, Action<string>? log = null)
@@ -185,7 +179,6 @@ internal static class Preferred
             })
             .Where(imdbId => imdbId.IsNotNullOrWhiteSpace())
             .ToArray();
-        string jsonString = JsonSerializer.Serialize(titles, new JsonSerializerOptions() { WriteIndented = true });
-        await File.WriteAllTextAsync(jsonPath, jsonString);
+        await JsonHelper.SerializeToFileAsync(titles, jsonPath);
     }
 }

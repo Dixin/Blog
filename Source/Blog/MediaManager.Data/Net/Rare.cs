@@ -51,13 +51,11 @@ internal static class Rare
 
             if (index % WriteCount == 0)
             {
-                string jsonString = JsonSerializer.Serialize(rareMetadata, new JsonSerializerOptions() { WriteIndented = true });
-                FileHelper.WriteText(rareJsonPath, jsonString, null, WriteJsonLock);
+                JsonHelper.SerializeToFile(rareMetadata, rareJsonPath, WriteJsonLock);
             }
         }, degreeOfParallelism);
 
-        string jsonString = JsonSerializer.Serialize(rareMetadata, new JsonSerializerOptions() { WriteIndented = true });
-        FileHelper.WriteText(rareJsonPath, jsonString, null, WriteJsonLock);
+        JsonHelper.SerializeToFile(rareMetadata, rareJsonPath, WriteJsonLock);
 
         await PrintVersionsAsync(rareMetadata, libraryJsonPath, x265JsonPath, h264JsonPath, preferredJsonPath, h264720PJsonPath, metadataDirectory, cacheDirectory, log);
     }
@@ -66,11 +64,11 @@ internal static class Rare
     {
         log ??= Logger.WriteLine;
 
-        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(libraryJsonPath))!;
-        Dictionary<string, TopMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, TopMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
-        Dictionary<string, TopMetadata[]> h264Metadata = JsonSerializer.Deserialize<Dictionary<string, TopMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
-        Dictionary<string, PreferredMetadata[]> preferredMetadata = JsonSerializer.Deserialize<Dictionary<string, PreferredMetadata[]>>(await File.ReadAllTextAsync(preferredJsonPath))!;
-        Dictionary<string, TopMetadata[]> h264720PMetadata = JsonSerializer.Deserialize<Dictionary<string, TopMetadata[]>>(await File.ReadAllTextAsync(h264720PJsonPath))!;
+        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(libraryJsonPath);
+        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(x265JsonPath);
+        Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264JsonPath);
+        Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(preferredJsonPath);
+        Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264720PJsonPath);
 
         string[] cacheFiles = Directory.GetFiles(cacheDirectory);
         string[] metadataFiles = Directory.GetFiles(metadataDirectory);
@@ -274,7 +272,7 @@ internal static class Rare
 
     internal static async Task PrintVersionsAsync(string rareJsonPath, string libraryJsonPath, string x265JsonPath, string h264JsonPath, string preferredJsonPath, string h264720PJsonPath, string metadataDirectory, string cacheDirectory, Action<string>? log = null)
     {
-        Dictionary<string, RareMetadata> rareMetadata = JsonSerializer.Deserialize<Dictionary<string, RareMetadata>>(await File.ReadAllTextAsync(rareJsonPath))!;
+        Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(rareJsonPath);
         await PrintVersionsAsync(rareMetadata, libraryJsonPath, x265JsonPath, h264JsonPath, preferredJsonPath, h264720PJsonPath, metadataDirectory, cacheDirectory, log);
     }
 }

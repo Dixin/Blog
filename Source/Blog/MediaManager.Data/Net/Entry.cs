@@ -37,7 +37,9 @@ internal static class Entry
                     log(exception.ToString());
                 }
             });
-        ConcurrentDictionary<string, EntryMetadata> entryMetadata = File.Exists(entryJsonPath) ? new(JsonSerializer.Deserialize<Dictionary<string, EntryMetadata>>(await File.ReadAllTextAsync(entryJsonPath))) : new();
+        ConcurrentDictionary<string, EntryMetadata> entryMetadata = File.Exists(entryJsonPath) 
+            ? new(await JsonHelper.DeserializeFromFileAsync<Dictionary<string, EntryMetadata>>(entryJsonPath)) 
+            : new();
         await entryLinks.ParallelForEachAsync(async entryLink =>
         {
             using HttpClient httpClient = new();
@@ -57,14 +59,13 @@ internal static class Entry
             }
         }, 4);
 
-        string jsonString = JsonSerializer.Serialize(entryMetadata, new JsonSerializerOptions() { WriteIndented = true });
-        await File.WriteAllTextAsync(entryJsonPath, jsonString);
+        await JsonHelper.SerializeToFileAsync(entryMetadata, entryJsonPath);
 
-        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, VideoMetadata>>>(await File.ReadAllTextAsync(libraryJsonPath))!;
-        Dictionary<string, TopMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, TopMetadata[]>>(await File.ReadAllTextAsync(x265JsonPath))!;
-        Dictionary<string, TopMetadata[]> h264Metadata = JsonSerializer.Deserialize<Dictionary<string, TopMetadata[]>>(await File.ReadAllTextAsync(h264JsonPath))!;
-        Dictionary<string, PreferredMetadata[]> preferredMetadata = JsonSerializer.Deserialize<Dictionary<string, PreferredMetadata[]>>(await File.ReadAllTextAsync(preferredJsonPath))!;
-        Dictionary<string, TopMetadata[]> h264720PMetadata = JsonSerializer.Deserialize<Dictionary<string, TopMetadata[]>>(await File.ReadAllTextAsync(h264720PJsonPath))!;
+        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(libraryJsonPath);
+        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(x265JsonPath);
+        Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264JsonPath);
+        Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(preferredJsonPath);
+        Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264720PJsonPath);
         entryMetadata
             .SelectMany(entry => Regex
                 .Matches(entry.Value.Content, @"imdb\.com/title/(tt[0-9]+)")
