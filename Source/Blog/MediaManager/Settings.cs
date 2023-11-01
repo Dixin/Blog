@@ -47,9 +47,9 @@ public record Settings(
 
     public DirectorySettings MovieControversial { get; init; }
 
-    public DirectorySettings MovieControversialTemp { get; init; }
+    public DirectorySettings MovieControversialWithoutSubtitle { get; init; }
 
-    public DirectorySettings MovieControversialTemp1 { get; init; }
+    public DirectorySettings MovieControversialTemp3 { get; init; }
 
     public DirectorySettings MovieMainstream { get; init; }
 
@@ -79,7 +79,7 @@ public record Settings(
 
     public DirectorySettings TVMainstreamWithoutSubtitle { get; init; }
 
-    public DirectorySettings TVTemp { get; init; }
+    public DirectorySettings TVTemp3 { get; init; }
 
     public DirectorySettings AudioControversial { get; init; }
 

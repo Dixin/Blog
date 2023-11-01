@@ -197,11 +197,7 @@ internal static partial class Video
         directories.SelectMany(directory => Directory.EnumerateFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories))
             .GroupBy(metadata => Path.GetFileNameWithoutExtension(metadata).Split(".")[0])
             .Where(group => group.Count() > 1)
-            .ForEach(group =>
-            {
-                group.OrderBy(metadata => metadata).ForEach(log);
-                log(string.Empty);
-            });
+            .ForEach(group => group.OrderBy(metadata => metadata).Append(string.Empty).ForEach(log));
     }
 
     private static readonly string[] TitlesWithNoTranslation = { "Beyond", "IMAX", "Paul & Wing", "Paul & Steve", "Paul", "Wing", "Steve", "GEM", "Metro", "TVB" };
@@ -1683,9 +1679,9 @@ internal static partial class Video
         log(x265Metadata.Keys.Intersect(imdbIds.Select(metadata => metadata.ImdbId)).Count().ToString());
 
         HashSet<string> downloadedTitles = new(
-            new string[] { @"Q:\Files\Movies\Rarbg_", @"Q:\Files\Movies\Rarbg2_" }.SelectMany(Directory.GetDirectories).Select(Path.GetFileName),
+            new string[] { }.SelectMany(Directory.GetDirectories).Select(Path.GetFileName)!,
             StringComparer.OrdinalIgnoreCase);
-        HashSet<string> downloadedTorrentHashes = new(Directory.GetFiles(@"E:\Files\MonoTorrent").Concat(Directory.GetFiles(@"E:\Files\MonoTorrentDownload")).Select(torrent => Path.GetFileNameWithoutExtension(torrent).Split("@").Last()), StringComparer.OrdinalIgnoreCase);
+        HashSet<string> downloadedTorrentHashes = new(/*Directory.GetFiles(@"E:\Files\MonoTorrent").Concat(Directory.GetFiles(@"E:\Files\MonoTorrentDownload")).Select(torrent => Path.GetFileNameWithoutExtension(torrent).Split("@").Last()), StringComparer.OrdinalIgnoreCase*/);
         using IWebDriver? webDriver = isDryRun ? null : WebDriverHelper.Start(isLoadingAll: true);
         using HttpClient? httpClient = isDryRun ? null : new HttpClient().AddEdgeHeaders();
         if (!isDryRun)
@@ -1790,7 +1786,7 @@ internal static partial class Video
                                         return;
                                     }
 
-                                    uris.Take(1).ForEach(log);
+                                    uris.Skip(3).Take(1).ForEach(log);
                                 }
                             }
                             else
@@ -1887,7 +1883,7 @@ internal static partial class Video
                                         return;
                                     }
 
-                                    uris.Take(1).ForEach(log);
+                                    uris.Skip(3).Take(1).ForEach(log);
                                 }
                             }
                             else
