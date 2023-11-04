@@ -193,7 +193,7 @@ internal static partial class Video
             });
     }
 
-    internal static void RenameDirectoriesWithAdditionalMetadata(string directory, int level = 2, bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
+    internal static void RenameDirectoriesWithAdditionalMetadata(string directory, int level = DefaultDirectoryLevel, bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
@@ -222,7 +222,7 @@ internal static partial class Video
             });
     }
 
-    internal static void RenameDirectoriesWithMetadata(string directory, int level = 2, bool additionalInfo = false, bool overwrite = false, bool isDryRun = false, string backupFlag = "backup", bool isTV = false, bool skipRenamed = false, Action<string>? log = null)
+    internal static void RenameDirectoriesWithMetadata(string directory, int level = DefaultDirectoryLevel, bool additionalInfo = false, bool overwrite = false, bool isDryRun = false, string backupFlag = "backup", bool isTV = false, bool skipRenamed = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
@@ -317,7 +317,7 @@ internal static partial class Video
             });
     }
 
-    internal static void RenameDirectoriesWithoutAdditionalMetadata(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
+    internal static void RenameDirectoriesWithoutAdditionalMetadata(string directory, int level = DefaultDirectoryLevel, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
@@ -351,7 +351,7 @@ internal static partial class Video
             });
     }
 
-    internal static void RenameDirectoriesWithImdbMetadata(string directory, int level = 2, bool isTV = false, bool isDryRun = false, Action<string>? log = null)
+    internal static void RenameDirectoriesWithImdbMetadata(string directory, int level = DefaultDirectoryLevel, bool isTV = false, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
@@ -425,7 +425,7 @@ internal static partial class Video
             });
     }
 
-    internal static void RenameMovies(string destination, string directory, int level = 2, string field = "genre", string? value = null, bool isDryRun = false)
+    internal static void RenameMovies(string destination, string directory, int level = DefaultDirectoryLevel, string field = "genre", string? value = null, bool isDryRun = false)
     {
         RenameMovies(
             (movie, _) => Path.Combine(destination, Path.GetFileName(movie)),
@@ -435,7 +435,7 @@ internal static partial class Video
             isDryRun);
     }
 
-    internal static void RenameMovies(Func<string, XDocument, string> rename, string directory, int level = 2, Func<string, XDocument, bool>? predicate = null, bool isDryRun = false, Action<string>? log = null)
+    internal static void RenameMovies(Func<string, XDocument, string> rename, string directory, int level = DefaultDirectoryLevel, Func<string, XDocument, bool>? predicate = null, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
@@ -626,7 +626,7 @@ internal static partial class Video
         });
     }
 
-    internal static void RenameWithUpdatedRatings(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
+    internal static void RenameWithUpdatedRatings(string directory, int level = DefaultDirectoryLevel, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
@@ -652,7 +652,7 @@ internal static partial class Video
             });
     }
 
-    internal static void RenameCollections(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
+    internal static void RenameCollections(string directory, int level = DefaultDirectoryLevel, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
@@ -941,7 +941,7 @@ internal static partial class Video
             .ForEach(f => FileHelper.Move(f, f.ReplaceIgnoreCase(".eng.srt", ".srt"), false));
     }
 
-    internal static void MoveFanArt(string directory, int level = 2, bool overwrite = false, Action<string>? log = null)
+    internal static void MoveFanArt(string directory, int level = DefaultDirectoryLevel, bool overwrite = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 

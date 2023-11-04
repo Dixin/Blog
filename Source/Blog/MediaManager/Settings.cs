@@ -1,5 +1,7 @@
 ﻿namespace MediaManager;
 
+using Examples.IO;
+
 public record Settings(
     string TopEnglishKeyword,
     string TopForeignKeyword,
@@ -101,4 +103,8 @@ public record struct DirectorySettings(string Directory, int Level)
     }
 
     public static implicit operator (string Directory, int Level)(DirectorySettings directorySettings) => (directorySettings.Directory, directorySettings.Level);
+
+    public static implicit operator string(DirectorySettings directorySettings) => directorySettings.Directory;
+
+    public static implicit operator DirectorySettings(string directory) => new (directory, Video.DefaultDirectoryLevel);
 }

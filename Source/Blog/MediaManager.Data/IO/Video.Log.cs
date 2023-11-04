@@ -52,7 +52,7 @@ internal static partial class Video
             });
     }
 
-    internal static void PrintDirectoriesWithLowDefinition(string directory, int level = DefaultLevel, Action<string>? log = null)
+    internal static void PrintDirectoriesWithLowDefinition(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
@@ -60,7 +60,7 @@ internal static partial class Video
             .ForEach(log);
     }
 
-    internal static void PrintDirectoriesWithMultipleMedia(string directory, int level = DefaultLevel, Action<string>? log = null)
+    internal static void PrintDirectoriesWithMultipleMedia(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
@@ -76,16 +76,16 @@ internal static partial class Video
             });
     }
 
-    internal static void PrintVideosP(string directory, int level = DefaultLevel, Action<string>? log = null) =>
+    internal static void PrintVideosP(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null) =>
         PrintVideos(directory, level, file => ((IVideoFileInfo)VideoMovieFileInfo.Parse(file)).EncoderType is EncoderType.P, log);
 
-    internal static void PrintVideosY(string directory, int level = DefaultLevel, Action<string>? log = null) =>
+    internal static void PrintVideosY(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null) =>
         PrintVideos(directory, level, file => ((IVideoFileInfo)VideoMovieFileInfo.Parse(file)).EncoderType is EncoderType.Y, log);
 
-    internal static void PrintVideosNotX(string directory, int level = DefaultLevel, Action<string>? log = null) =>
+    internal static void PrintVideosNotX(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null) =>
         PrintVideos(directory, level, file => ((IVideoFileInfo)VideoMovieFileInfo.Parse(file)).EncoderType is EncoderType.X, log);
 
-    internal static void PrintVideosH(string directory, int level = DefaultLevel, Action<string>? log = null) =>
+    internal static void PrintVideosH(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null) =>
         PrintVideos(directory, level, file => ((IVideoFileInfo)VideoMovieFileInfo.Parse(file)).EncoderType is EncoderType.H, log);
 
     private static void PrintVideos(string directory, int level, Func<string, bool> predicate, Action<string>? log = null)
@@ -107,7 +107,7 @@ internal static partial class Video
             });
     }
 
-    internal static void PrintMoviesWithoutSubtitle(string directory, int level = DefaultLevel, Action<string>? log = null, params string[] languages)
+    internal static void PrintMoviesWithoutSubtitle(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null, params string[] languages)
     {
         log ??= Logger.WriteLine;
         Func<string, bool> noSubtitle;
@@ -134,7 +134,7 @@ internal static partial class Video
             .ForEach(movie => log($"{(Imdb.TryRead(movie, out string? imdbId, out _, out _, out _, out _) ? imdbId : "-")} {movie}"));
     }
 
-    internal static void PrintMetadataByGroup(string directory, int level = DefaultLevel, string field = "genre", Action<string>? log = null)
+    internal static void PrintMetadataByGroup(string directory, int level = DefaultDirectoryLevel, string field = "genre", Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
@@ -154,7 +154,7 @@ internal static partial class Video
             .ForEach(group => group.ForEach(movie => log($"{movie.field} - {movie.metadata}")));
     }
 
-    internal static void PrintYears(string directory, int level = DefaultLevel, Action<string>? log = null)
+    internal static void PrintYears(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
@@ -182,7 +182,7 @@ internal static partial class Video
             });
     }
 
-    internal static void PrintDirectoriesWithNonLatinOriginalTitle(string directory, int level = DefaultLevel, Action<string>? log = null)
+    internal static void PrintDirectoriesWithNonLatinOriginalTitle(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
@@ -195,7 +195,7 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
         directories.SelectMany(directory => Directory.EnumerateFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories))
-            .GroupBy(metadata => Path.GetFileNameWithoutExtension(metadata).Split(".")[0])
+            .GroupBy(metadata => Path.GetFileNameWithoutExtension(metadata).Split("-")[0])
             .Where(group => group.Count() > 1)
             .ForEach(group => group.OrderBy(metadata => metadata).Append(string.Empty).ForEach(log));
     }
@@ -204,7 +204,7 @@ internal static partial class Video
 
     private static readonly char[] DirectorySpecialCharacters = "：@#(){}".ToCharArray();
 
-    internal static void PrintDirectoriesWithErrors(string directory, int level = DefaultLevel, bool isLoadingVideo = false, bool isNoAudioAllowed = false, bool isTV = false, Action<string>? log = null)
+    internal static void PrintDirectoriesWithErrors(string directory, int level = DefaultDirectoryLevel, bool isLoadingVideo = false, bool isNoAudioAllowed = false, bool isTV = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         List<string>? allVideos = null;
@@ -539,7 +539,7 @@ internal static partial class Video
         }
     }
 
-    internal static void PrintTitlesWithDifferences(string directory, int level = DefaultLevel, Action<string?>? log = null)
+    internal static void PrintTitlesWithDifferences(string directory, int level = DefaultDirectoryLevel, Action<string?>? log = null)
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
@@ -1127,7 +1127,7 @@ internal static partial class Video
             });
     }
 
-    internal static void PrintDirectoryTitleMismatch(string directory, int level = DefaultLevel, Action<string>? log = null)
+    internal static void PrintDirectoryTitleMismatch(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
@@ -1279,7 +1279,7 @@ internal static partial class Video
             });
     }
 
-    internal static void PrintDirectoryOriginalTitleMismatch(string directory, int level = DefaultLevel, Action<string>? log = null)
+    internal static void PrintDirectoryOriginalTitleMismatch(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
@@ -1669,7 +1669,7 @@ internal static partial class Video
             //        .Matches(rare.Value.Content, @"imdb\.com/title/(tt[0-9]+)")
             //        .Where(match => match.Success)
             //        .Select(match => match.Groups[1].Value)))
-            .Intersect(mergedMetadata.Keys)
+            //.Intersect(mergedMetadata.Keys)
             .Select(imdbId => mergedMetadata[imdbId])
             .Where(predicate)
             .OrderBy(imdbMetadata => imdbMetadata.ImdbId)
@@ -1786,7 +1786,7 @@ internal static partial class Video
                                         return;
                                     }
 
-                                    uris.Skip(3).Take(1).ForEach(log);
+                                    uris.Take(0..).ForEach(log);
                                 }
                             }
                             else
@@ -1883,7 +1883,7 @@ internal static partial class Video
                                         return;
                                     }
 
-                                    uris.Skip(3).Take(1).ForEach(log);
+                                    uris.Take(0..).ForEach(log);
                                 }
                             }
                             else

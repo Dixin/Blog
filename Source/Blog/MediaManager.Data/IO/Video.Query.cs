@@ -159,7 +159,7 @@ internal static partial class Video
         return (null, null);
     }
 
-    internal static IEnumerable<string> EnumerateDirectories(string directory, int level = 2)
+    internal static IEnumerable<string> EnumerateDirectories(string directory, int level = DefaultDirectoryLevel)
     {
         IEnumerable<string> directories = Directory.EnumerateDirectories(directory, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
         while (--level > 0)
@@ -171,7 +171,7 @@ internal static partial class Video
         return directories.Order();
     }
 
-    internal static async Task DownloadImdbMetadataAsync(string directory, int level = 2, bool overwrite = false, bool useCache = false, bool useBrowser = false, int? degreeOfParallelism = null, Action<string>? log = null)
+    internal static async Task DownloadImdbMetadataAsync(string directory, int level = DefaultDirectoryLevel, bool overwrite = false, bool useCache = false, bool useBrowser = false, int? degreeOfParallelism = null, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         string[] movies = EnumerateDirectories(directory, level).ToArray();

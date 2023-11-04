@@ -2,7 +2,7 @@
 
 internal static partial class Video
 {
-    private const int DefaultLevel = 2;
+    internal const int DefaultDirectoryLevel = 2;
 
     internal const string XmlMetadataExtension = ".nfo";
 
@@ -81,7 +81,7 @@ internal static partial class Video
         return value;
     }
 
-    internal static void DeletePictures(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
+    internal static void DeletePictures(string directory, int level = DefaultDirectoryLevel, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)

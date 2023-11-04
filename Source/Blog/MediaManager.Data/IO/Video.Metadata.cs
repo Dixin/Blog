@@ -24,7 +24,7 @@ internal static partial class Video
             .ForEach(nfo => FileHelper.Move(nfo, Path.Combine(Path.GetDirectoryName(nfo) ?? throw new InvalidOperationException(nfo), (Path.GetFileNameWithoutExtension(nfo) ?? throw new InvalidOperationException(nfo)).Replace($"{Delimiter}{flag}", string.Empty) + Path.GetExtension(nfo)), true));
     }
 
-    internal static void DeleteFeaturettesMetadata(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
+    internal static void DeleteFeaturettesMetadata(string directory, int level = DefaultDirectoryLevel, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
@@ -122,7 +122,7 @@ internal static partial class Video
             .ForEach(season => CreateSeasonEpisodeMetadata(season, getTitle, getEpisode, getSeason, overwrite));
     }
 
-    internal static void WriteRating(string directory, int level = 2, bool isDryRun = false, Action<string>? log = null)
+    internal static void WriteRating(string directory, int level = DefaultDirectoryLevel, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
@@ -166,7 +166,7 @@ internal static partial class Video
             });
     }
 
-    internal static void MoveMetadata(string directory, string cacheDirectory, string metadataDirectory, int level = 2)
+    internal static void MoveMetadata(string directory, string cacheDirectory, string metadataDirectory, int level = DefaultDirectoryLevel)
     {
         string[] cacheFiles = Directory.GetFiles(cacheDirectory, ImdbCacheSearchPattern);
         string[] metadataFiles = Directory.GetFiles(metadataDirectory, ImdbMetadataSearchPattern);
@@ -385,12 +385,19 @@ internal static partial class Video
             .SelectMany(movieJson =>
             {
                 string relativePath = Path.GetDirectoryName(jsonPath) ?? string.Empty;
-                Imdb.TryLoad(movieJson, out ImdbMetadata? imdbMetadata);
+                ImdbMetadata? imdbMetadata = null;
+                bool isLoaded = false;
                 return Directory
                     .GetFiles(Path.GetDirectoryName(movieJson) ?? string.Empty, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
                     .Where(video => video.IsCommonVideo() && !video.IsDiskImage() && !existingVideos.ContainsKey(Path.GetRelativePath(relativePath, video)))
                     .Select(video =>
                     {
+                        if (!isLoaded)
+                        {
+                            isLoaded = true;
+                            Imdb.TryLoad(movieJson, out imdbMetadata);
+                        }
+
                         if (!TryReadVideoMetadata(video, out VideoMetadata? videoMetadata, imdbMetadata, relativePath))
                         {
                             log($"!Fail: {video}");
@@ -443,15 +450,32 @@ internal static partial class Video
         await JsonHelper.SerializeToFileAsync(allVideoMetadata, jsonPath);
     }
 
-    internal static async Task UpdateMergedMovieMetadataAsync(string metadataDirectory, string mergedMetadataPath)
+    internal static async Task UpdateMergedMovieMetadataAsync(string metadataDirectory, string metadataCacheDirectory, string mergedMetadataPath, string libraryMetadataPath)
     {
+        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(libraryMetadataPath);
         ConcurrentDictionary<string, ImdbMetadata> mergedMetadata = File.Exists(mergedMetadataPath)
             ? new(await JsonHelper.DeserializeFromFileAsync<Dictionary<string, ImdbMetadata>>(mergedMetadataPath))
             : new();
-
-        string[] movieMetadataFiles = Directory.GetFiles(metadataDirectory);
-        Dictionary<string, string> metadataFilesByImdbId = movieMetadataFiles
+        ILookup<string, string> cacheFilesByImdbId = Directory.GetFiles(metadataCacheDirectory, ImdbCacheSearchPattern)
+            .ToLookup(file => Path.GetFileNameWithoutExtension(file).Split(".").First());
+        Dictionary<string, string> metadataFilesByImdbId = Directory.GetFiles(metadataDirectory, ImdbMetadataSearchPattern)
             .ToDictionary(file => Path.GetFileName(file).Split("-").First());
+
+        metadataFilesByImdbId
+            .Keys
+            .Intersect(libraryMetadata.Keys)
+            .ToArray()
+            .ForEach(imdbId =>
+            {
+                FileHelper.Recycle(metadataFilesByImdbId[imdbId]);
+                metadataFilesByImdbId.Remove(imdbId);
+            });
+
+        //cacheFilesByImdbId
+        //    .Select(group=>group.Key)
+        //    .Intersect(libraryMetadata.Keys)
+        //    .ToArray()
+        //    .ForEach(imdbId=> cacheFilesByImdbId[imdbId].ForEach(FileHelper.Delete));
 
         mergedMetadata
             .Keys
@@ -509,11 +533,13 @@ internal static partial class Video
         await JsonHelper.SerializeToFileAsync(mergedMetadata, mergedMetadataPath);
     }
 
-    internal static async Task DownloadMissingTitlesFromDoubanAsync(string directory, int level = 2, Action<string>? log = null)
+    internal static async Task DownloadMissingTitlesFromDoubanAsync(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
         using IWebDriver webDriver = WebDriverHelper.Start();
+
+        List<(string Title, string Year)> noTranslation = new();
 
         await EnumerateDirectories(directory, level).ForEachAsync(async movie =>
         {
@@ -522,7 +548,7 @@ internal static partial class Video
             string metadataFile = metadataFiles.First(file => !file.EndsWithIgnoreCase($".{DefaultBackupFlag}{XmlMetadataExtension}"));
             XDocument metadataDocument = XDocument.Load(metadataFile);
             string translatedTitle = metadataDocument.Root!.Element("title")!.Value;
-            if (translatedTitle.ContainsChineseCharacter() || Regex.IsMatch(translatedTitle, @"[0-9 ]+"))
+            if (translatedTitle.ContainsChineseCharacter() || Regex.IsMatch(translatedTitle, @"^[0-9]+$"))
             {
                 return;
             }
@@ -551,7 +577,14 @@ internal static partial class Video
                 metadataDocument.Save(metadataFile);
             }
 
+            if (!doubanTitle.ContainsChineseCharacter())
+            {
+                noTranslation.Add((englishTitle, metadataDocument.Root!.Element("year")?.Value ?? string.Empty));
+            }
+
             log(string.Empty);
         });
+
+        noTranslation.ForEach(movie=>log($"{movie.Title} ({movie.Year})"));
     }
 }
