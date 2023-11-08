@@ -92,6 +92,8 @@ public record Settings(
     public DirectorySettings AudioSoundtrack { get; init; }
 
     public Dictionary<string, string[]> MovieRegions { get; init; } = new();
+
+    public string[] Keywords { get; init; } = Array.Empty<string>();
 }
 
 public record struct DirectorySettings(string Directory, int Level)

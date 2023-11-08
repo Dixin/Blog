@@ -1056,4 +1056,16 @@ internal static partial class Video
                 isDryRun: isDryRun,
                 log: log));
     }
+
+    internal static void MoveDirectoriesWithMixedTranslation(string directory, int level, string destination) =>
+        EnumerateDirectories(directory, level)
+            .Where(d =>
+            {
+                string title = Path.GetFileName(d);
+                title = title[..title.IndexOf("[")];
+                string name = title[(title.LastIndexOf(".") + 1)..];
+                return string.IsNullOrWhiteSpace(name) || Regex.IsMatch(name, "[a-z]+");
+            })
+            .ToArray()
+            .ForEach(movie => DirectoryHelper.MoveToDirectory(movie, destination));
 }

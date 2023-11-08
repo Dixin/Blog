@@ -1651,11 +1651,15 @@ internal static partial class Video
         Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(libraryJsonPath);
         Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(x265JsonPath);
         Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264JsonPath);
-        //Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<string, PreferredMetadata[]>>(preferredJsonPath);
+        Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(preferredJsonPath);
         //Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync(h264720PJsonPath);
         //Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(rareJsonPath);
         string[] metadataFiles = Directory.GetFiles(metadataDirectory);
         Dictionary<string, string> metadataFilesByImdbId = metadataFiles.ToDictionary(file => Path.GetFileName(file).Split("-").First());
+        MagnetUri[] downloadingLinks = (await File.ReadAllLinesAsync(@"D:\Files\Library\Movie.Downloading.txt"))
+            .Select(line => (MagnetUri.TryParse(line, out MagnetUri? result), result))
+            .Where(result => result.Item1)
+            .Select(result => result.result!).ToArray();
         string[] cacheFiles = Directory.GetFiles(cacheDirectory);
 
         ImdbMetadata[] imdbIds = x265Metadata.Keys
@@ -1678,10 +1682,10 @@ internal static partial class Video
         log(length.ToString());
         log(x265Metadata.Keys.Intersect(imdbIds.Select(metadata => metadata.ImdbId)).Count().ToString());
 
-        HashSet<string> downloadedTitles = new(
-            new string[] { }.SelectMany(Directory.GetDirectories).Select(Path.GetFileName)!,
-            StringComparer.OrdinalIgnoreCase);
-        HashSet<string> downloadedTorrentHashes = new(/*Directory.GetFiles(@"E:\Files\MonoTorrent").Concat(Directory.GetFiles(@"E:\Files\MonoTorrentDownload")).Select(torrent => Path.GetFileNameWithoutExtension(torrent).Split("@").Last()), StringComparer.OrdinalIgnoreCase*/);
+        //HashSet<string> downloadedTitles = new(
+        //    new string[] { }.SelectMany(Directory.GetDirectories).Select(Path.GetFileName)!,
+        //    StringComparer.OrdinalIgnoreCase);
+        //HashSet<string> downloadedTorrentHashes = new(/*Directory.GetFiles(@"E:\Files\MonoTorrent").Concat(Directory.GetFiles(@"E:\Files\MonoTorrentDownload")).Select(torrent => Path.GetFileNameWithoutExtension(torrent).Split("@").Last()), StringComparer.OrdinalIgnoreCase*/);
         using IWebDriver? webDriver = isDryRun ? null : WebDriverHelper.Start(isLoadingAll: true);
         using HttpClient? httpClient = isDryRun ? null : new HttpClient().AddEdgeHeaders();
         if (!isDryRun)
@@ -1764,13 +1768,9 @@ internal static partial class Video
                         x265Videos = x265Videos.Where(video => video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopForeignKeyword}")).ToArray();
                     }
 
+                    bool hasDownload = false;
                     await x265Videos.ForEachAsync(async metadata =>
                     {
-                        if (downloadedTitles.Contains(metadata.Title))
-                        {
-                            return;
-                        }
-
                         if (isDryRun)
                         {
                             //log($"{metadata.ImdbId}-{imdbMetadata.FormattedAggregateRating}-{imdbMetadata.FormattedAggregateRatingCount}-{metadata.Title} {metadata.Link} {imdbMetadata.Link}");
@@ -1779,14 +1779,18 @@ internal static partial class Video
                             if (topMagnetUris.Contains(metadata.Title))
                             {
                                 string[] uris = topMagnetUris[metadata.Title].ToArray();
-                                if (uris.Length > 1)
+                                if (uris.Length > 0)
                                 {
-                                    if (downloadedTorrentHashes.Contains(MagnetUri.Parse(uris.First()).ExactTopic))
+                                    MagnetUri[] result = uris
+                                        .Take(0..)
+                                        .Select(MagnetUri.Parse)
+                                        .Where(uri => !downloadingLinks.Any(downloadingUri => downloadingUri.ExactTopic.EqualsIgnoreCase(uri.ExactTopic) || downloadingUri.DisplayName.EqualsIgnoreCase(uri.DisplayName)))
+                                        .ToArray();
+                                    if (result.Any())
                                     {
-                                        return;
+                                        hasDownload = true;
+                                        result.Select(uri => uri.ToString()).Append(string.Empty).ForEach(log);
                                     }
-
-                                    uris.Take(0..).ForEach(log);
                                 }
                             }
                             else
@@ -1794,7 +1798,6 @@ internal static partial class Video
                                 //log($"!!! Cannot find magnet for title {metadata.Title}");
                             }
 
-                            log(string.Empty);
                             return;
                         }
 
@@ -1810,7 +1813,10 @@ internal static partial class Video
                         //await Task.Delay(TimeSpan.FromSeconds(3));
                     });
 
-                    return;
+                    if (hasDownload)
+                    {
+                        return;
+                    }
                 }
 
                 if (h264Metadata.TryGetValue(imdbMetadata.ImdbId, out TopMetadata[]? h264Videos))
@@ -1861,13 +1867,9 @@ internal static partial class Video
                         h264Videos = h264Videos.Where(video => video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopForeignKeyword}")).ToArray();
                     }
 
+                    bool hasDownload = false;
                     await h264Videos.ForEachAsync(async metadata =>
                     {
-                        if (downloadedTitles.Contains(metadata.Title))
-                        {
-                            return;
-                        }
-
                         if (isDryRun)
                         {
                             //log($"{metadata.ImdbId}-{imdbMetadata.FormattedAggregateRating}-{imdbMetadata.FormattedAggregateRatingCount}-{metadata.Title} {metadata.Link} {imdbMetadata.Link}");
@@ -1876,14 +1878,18 @@ internal static partial class Video
                             if (topMagnetUris.Contains(metadata.Title))
                             {
                                 string[] uris = topMagnetUris[metadata.Title].ToArray();
-                                if (uris.Length > 1)
+                                if (uris.Length > 0)
                                 {
-                                    if (downloadedTorrentHashes.Contains(MagnetUri.Parse(uris.First()).ExactTopic))
+                                    MagnetUri[] result = uris
+                                        .Take(0..)
+                                        .Select(MagnetUri.Parse)
+                                        .Where(uri => !downloadingLinks.Any(downloadingUri => downloadingUri.ExactTopic.EqualsIgnoreCase(uri.ExactTopic) || downloadingUri.DisplayName.EqualsIgnoreCase(uri.DisplayName)))
+                                        .ToArray();
+                                    if (result.Any())
                                     {
-                                        return;
+                                        hasDownload = true;
+                                        result.Select(uri => uri.ToString()).Append(string.Empty).ForEach(log);
                                     }
-
-                                    uris.Take(0..).ForEach(log);
                                 }
                             }
                             else
@@ -1891,7 +1897,6 @@ internal static partial class Video
                                 //log($"!!! Cannot find magnet for title {metadata.Title}");
                             }
 
-                            log(string.Empty);
                             return;
                         }
 
@@ -1907,56 +1912,62 @@ internal static partial class Video
                         //await Task.Delay(TimeSpan.FromSeconds(3));
                     });
 
-                    return;
+                    if (hasDownload)
+                    {
+                        return;
+                    }
                 }
 
-                //if (preferredMetadata.TryGetValue(imdbMetadata.ImdbId, out PreferredMetadata[]? preferredVideos))
-                //{
-                //    KeyValuePair<string, string>[] availabilities = preferredVideos.SelectMany(preferredVideo => preferredVideo.Availabilities).ToArray();
-                //    KeyValuePair<string, string>[] videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("1080p.BluRay")).ToArray();
-                //    if (videos.IsEmpty())
-                //    {
-                //        videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("1080p.WEB")).ToArray();
-                //    }
+                if (preferredMetadata.TryGetValue(imdbMetadata.ImdbId, out PreferredMetadata[]? preferredVideos))
+                {
+                    KeyValuePair<string, string>[] availabilities = preferredVideos.SelectMany(preferredVideo => preferredVideo.Availabilities).ToArray();
+                    KeyValuePair<string, string>[] videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("1080p.BluRay")).ToArray();
+                    if (videos.IsEmpty())
+                    {
+                        videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("1080p.WEB")).ToArray();
+                    }
 
-                //    if (videos.IsEmpty())
-                //    {
-                //        videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("720p.BluRay")).ToArray();
-                //    }
+                    if (videos.IsEmpty())
+                    {
+                        videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("720p.BluRay")).ToArray();
+                    }
 
-                //    if (videos.IsEmpty())
-                //    {
-                //        videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("720p.WEB")).ToArray();
-                //    }
+                    if (videos.IsEmpty())
+                    {
+                        videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("720p.WEB")).ToArray();
+                    }
 
-                //    if (videos.IsEmpty())
-                //    {
-                //        videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("480p.DVD")).ToArray();
-                //    }
+                    if (videos.IsEmpty())
+                    {
+                        videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("480p.DVD")).ToArray();
+                    }
 
-                //    log($"{preferredVideos.First().ImdbId}-{imdbMetadata.FormattedAggregateRating}-{imdbMetadata.FormattedAggregateRatingCount}-{preferredVideos.First().Title} {preferredVideos.First().Link} {imdbMetadata.Link}");
-                //    log($"{imdbMetadata.Link}keywords");
-                //    log($"{imdbMetadata.Link}parentalguide");
-                //    await videos.ForEachAsync(async video =>
-                //    {
-                //        log(string.Empty);
-                //        log(video.Value);
-                //        string file = Path.Combine(cacheDirectory, $"{preferredVideos.First().ImdbId}-{preferredVideos.First().Title}-{video.Key}.torrent".ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " ").ReplaceIgnoreCase("：", "-").FilterForFileSystem().Trim());
-                //        if (httpClient is not null && !File.Exists(file))
-                //        {
-                //            try
-                //            {
-                //                await httpClient.GetFileAsync(video.Value, file);
-                //            }
-                //            catch (HttpRequestException exception)
-                //            {
-                //                log(exception.ToString());
-                //            }
-                //        }
+                    log($"{preferredVideos.First().ImdbId}-{imdbMetadata.FormattedAggregateRating}-{imdbMetadata.FormattedAggregateRatingCount}-{preferredVideos.First().Title} {preferredVideos.First().Link} {imdbMetadata.Link}");
+                    log($"{imdbMetadata.Link}keywords");
+                    log($"{imdbMetadata.Link}parentalguide");
+                    await videos.ForEachAsync(async video =>
+                    {
+                        log(string.Empty);
+                        log(video.Value);
+                        if (httpClient is not null)
+                        {
+                            string file = Path.Combine(cacheDirectory, $"{preferredVideos.First().ImdbId}-{preferredVideos.First().Title}-{video.Key}.torrent".ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " ").ReplaceIgnoreCase("：", "-").FilterForFileSystem().Trim());
+                            if (!File.Exists(file))
+                            {
+                                try
+                                {
+                                    await httpClient.GetFileAsync(video.Value, file);
+                                }
+                                catch (HttpRequestException exception)
+                                {
+                                    log(exception.ToString());
+                                }
+                            }
+                        }
 
-                //        log(string.Empty);
-                //    });
-                //}
+                        log(string.Empty);
+                    });
+                }
 
                 //if (h264720PMetadata.TryGetValue(imdbMetadata.ImdbId, out TopMetadata[]? h264720PVideos))
                 //{

@@ -1,5 +1,6 @@
 ﻿namespace Examples.Net;
 
+using System;
 using System.Web;
 using CsQuery;
 using Examples.Common;
@@ -11,6 +12,8 @@ using OpenQA.Selenium.Support.UI;
 
 internal static class Imdb
 {
+    private const int MaxDegreeOfParallelism = 2;
+
     internal static async Task<(
         ImdbMetadata ImdbMetadata,
         string ImdbUrl, string ImdbHtml,
@@ -674,7 +677,8 @@ internal static class Imdb
             MpaaRating = mpaaRating,
             Advisories = advisories.ToLookup(advisory => advisory.Category).ToDictionary(group => group.Key, group => group.ToArray()),
             AlsoKnownAs = alsoKnownAs,
-            Genres = imdbMetadata.Genres ?? Array.Empty<string>()
+            Genres = imdbMetadata.Genres ?? Array.Empty<string>(),
+            Releases = dates
         };
 
         return (
@@ -777,18 +781,17 @@ internal static class Imdb
         Dictionary<string, TopMetadata[]> x265XMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(x265XJsonPath);
         Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264JsonPath);
         Dictionary<string, TopMetadata[]> h264XMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264XJsonPath);
-        //Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(preferredJsonPath);
+        Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(preferredJsonPath);
         Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264720PJsonPath);
         //Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(rareJsonPath);
 
-        using IWebDriver webDriver = WebDriverHelper.Start();
         string[] cacheFiles = Directory.GetFiles(@cacheDirectory);
         string[] metadataFiles = Directory.GetFiles(metadataDirectory);
         string[] imdbIds = x265Metadata.Keys
             .Concat(x265XMetadata.Keys)
             .Concat(h264Metadata.Keys)
             .Concat(h264XMetadata.Keys)
-            //.Concat(preferredMetadata.Keys)
+            .Concat(preferredMetadata.Keys)
             .Concat(h264720PMetadata.Keys)
             .Concat(top.Select(group => group.Key))
             .Except(libraryMetadata.Keys)
@@ -810,22 +813,29 @@ internal static class Imdb
             .Except(metadataFiles.Select(file => Path.GetFileNameWithoutExtension(file).Split("-").First()))
             .ToArray();
         int trimmedLength = imdbIds.Length;
-        await imdbIds.ForEachAsync(async (imdbId, index) =>
+        ConcurrentQueue<string> imdbIdQueue = new(imdbIds);
+        await Enumerable.Repeat<Func<IWebDriver>>(() => WebDriverHelper.Start(keepExisting: true), MaxDegreeOfParallelism)
+            .Select(factory=>factory())
+            .ParallelForEachAsync(async webDriver =>
             {
-                log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
-                try
+                while (imdbIdQueue.TryDequeue(out string? imdbId))
                 {
-                    await Retry.FixedIntervalAsync(async () => await Video.DownloadImdbMetadataAsync(imdbId, cacheDirectory, metadataDirectory, cacheFiles, metadataFiles, webDriver, false, true, log));
+                    int index = trimmedLength - imdbIdQueue.Count;
+                    log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
+                    try
+                    {
+                        await Retry.FixedIntervalAsync(async () => await Video.DownloadImdbMetadataAsync(imdbId, cacheDirectory, metadataDirectory, cacheFiles, metadataFiles, webDriver, false, true, log));
+                    }
+                    catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
+                    {
+                        log($"!!!{imdbId}");
+                    }
+                    catch (ArgumentException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
+                    {
+                        log($"!!!{imdbId}");
+                    }
                 }
-                catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
-                {
-                    log($"!!!{imdbId}");
-                }
-                catch (ArgumentException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
-                {
-                    log($"!!!{imdbId}");
-                }
-            });
+            }, MaxDegreeOfParallelism);
     }
 
     internal static async Task UpdateAllMoviesKeywordsAsync(

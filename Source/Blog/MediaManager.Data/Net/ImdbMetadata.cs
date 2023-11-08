@@ -19,7 +19,7 @@ public partial record ImdbMetadata(
     string Description, string DatePublished, string Keywords, ImdbAggregateRating? AggregateRating,
     string Duration, ImdbTrailer Trailer,
     string OriginalTitle, string Year, string[] Regions, string[] Languages, Dictionary<string, string[]> Titles, ImdbMetadata? Parent, string Title,
-    string[] AllKeywords, string MpaaRating, Dictionary<string, ImdbAdvisory[]> Advisories, string AlsoKnownAs) : ImdbEntity(Type, Url, Name)
+    string[] AllKeywords, string MpaaRating, Dictionary<string, ImdbAdvisory[]> Advisories, Dictionary<string, string[]> Releases, string AlsoKnownAs) : ImdbEntity(Type, Url, Name)
 {
     [JsonPropertyName("@context")]
     public string Context { get; init; } = Context;
