@@ -1,5 +1,6 @@
 ﻿namespace Examples.Net;
 
+using System.Runtime.Versioning;
 using Examples.Common;
 using Examples.Diagnostics;
 using Examples.IO;
@@ -123,6 +124,7 @@ public static class WebDriverHelper
         return webDriver;
     }
 
+    [SupportedOSPlatform("windows")]
     public static void DisposeAllEdge()
     {
         ProcessHelper.TryKillAll("msedgedriver.exe");
