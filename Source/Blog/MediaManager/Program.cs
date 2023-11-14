@@ -248,7 +248,7 @@ Video.Initialize(settings.TopEnglishKeyword, settings.TopForeignKeyword, setting
 //await Top.DownloadMetadataAsync(settings.MovieTopH264Url, settings.MovieTopH264Metadata, index => index <= 20);
 //await Top.DownloadMetadataAsync(settings.MovieTopH264720PUrl, settings.MovieTopH264720PMetadata, index => index <= 10);
 //await Top.DownloadMetadataAsync(settings.TVTopX265Url, settings.TVTopX265Metadata, index => index <= 5);
-//await Preferred.DownloadMetadataAsync(settings.MoviePreferredUrl, settings.MoviePreferredSummary, settings.MoviePreferredMetadata, index => index <= 50);
+//await Preferred.DownloadMetadataAsync(settings.MoviePreferredUrl, settings.MoviePreferredSummary, settings.MoviePreferredMetadata, index => index <= 500);
 //await Video.PrintMovieVersions(settings.MovieTopX265Metadata, settings.MovieTopH264Metadata, settings.MoviePreferredMetadata, settings.MovieTopH264720PMetadata, settings.MovieIgnoreMetadata, null,
 //   settings.MovieMainstream,
 //   settings.MovieControversial,
@@ -272,14 +272,6 @@ Video.Initialize(settings.TopEnglishKeyword, settings.TopForeignKeyword, setting
 //    settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory,
 //    count => ..);
 //await Imdb.DownloadAllTVsAsync(settings.TVTopX265Metadata, settings.TVMainstream, settings.TVMetadataCacheDirectory, settings.TVMetadataDirectory);
-string[] keywords =
-{
-    "female full frontal nudity", "female topless nudity", "female pubic hair", "female frontal nudity", "female nudity",
-    "erotica", "softcore", "female star appears nude",
-    "unsimulated sex", "vagina", "labia", "shaved labia","labia minora","labia majora","shaved vagina","spread vagina",
-    "spread eagle", "bottomless",
-    "lesbian sex","leg spreading"
-};
 string[] genres = { "family", "animation", "documentary" };
 //await Video.PrintTVLinks(settings.TVTopX265Metadata, new string[] { settings.TVMainstream, settings.TVMainstreamWithoutSubtitle }, @"D:\Files\Library\TVMetadata", @"D:\Files\Library\TVMetadataCache", "https://rarbg.to/torrents.php?search=x265.rarbg&category%5B%5D=41",
 //    imdbMetadata =>
@@ -378,16 +370,19 @@ string[] genres = { "family", "animation", "documentary" };
 //    //rename: (f, t) => Regex.Replace(f, @"(\.S[0-9]{2}E[0-9]{2})", $"{"$1".ToUpperInvariant()}.{t}"),
 //    isDryRun: false);
 //});
-//Video.MoveSubtitleToParentDirectory(settings.MovieTemp);
-//Video.BackupMetadata(settings.MovieTemp);
-//await Video.DownloadMissingTitlesFromDoubanAsync(settings.MovieTemp);
-//Video.RenameDirectoriesWithMetadata(settings.MovieTemp, isDryRun: false);
-//Video.RestoreMetadata(settings.MovieTemp);
+
 //await Video.PrintMovieImdbIdErrorsAsync(
 //        settings.MovieTopX265Metadata, settings.MovieTopH264Metadata, settings.MovieTopX265XMetadata, settings.MovieTopH264XMetadata, /*settings.MovieTopH264720PMetadata, settings.MoviePreferredMetadata,*/ null,
 //        settings.MovieTemp);
-//Video.MoveMetadata(settings.MovieTemp, settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory, 2);
+//Video.MoveSubtitleToParentDirectory(settings.MovieTemp);
 //Video.MoveFanArt(settings.MovieTemp);
+//Video.MoveMetadata(settings.MovieTemp, settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory, 2);
+//Video.BackupMetadata(settings.MovieTemp);
+//await Video.DownloadImdbMetadataAsync(settings.MovieTemp, 2, overwrite: false, useCache: true, useBrowser: true, 1);
+//Video.PrintDuplicateImdbId(null, settings.MovieTemp);
+//await Video.DownloadMissingTitlesFromDoubanAsync(settings.MovieTemp);
+//Video.RenameDirectoriesWithMetadata(settings.MovieTemp, isDryRun: false);
+//Video.RestoreMetadata(settings.MovieTemp);
 //Video.PrintDirectoriesWithErrors(settings.MovieTemp);
 
 //Directory.GetFiles(@"D:\User\Downloads\New folder", "*", SearchOption.AllDirectories)
