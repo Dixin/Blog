@@ -1,4 +1,5 @@
-﻿namespace Examples.Runtime.Serialization;
+﻿#if !NET8_0_OR_GREATER
+namespace Examples.Runtime.Serialization;
 
 using System.Runtime.Serialization;
 
@@ -31,3 +32,4 @@ public class Serializer
             ? result
             : throw new SerializationException();
 }
+#endif

@@ -945,3 +945,81 @@ static void RenameFilesWithDuplicateTitle(
 //                });
 //            });
 //    });
+
+string[] links2 = @"magnet:?xt=urn:btih:FBD7D23248F9352EF1808900F2865243E9F3884C&dn=The.Big.Sleep.1946.1080p.BluRay.x265-RARBG
+magnet:?xt=urn:btih:B11403079D10E10BF82A64CEBE1292B3E0ADF451&dn=Peeping.Tom.1960.1080p.BluRay.x265-RARBG
+magnet:?xt=urn:btih:B94A41376FC6976C6857AF37D46B4CDE1EC8918A&dn=Zatoichi.Challenged.1967.JAPANESE.1080p.BluRay.H264.AAC-VXT
+magnet:?xt=urn:btih:E96E3E94A9A50967C34B6F370D955D5FD8589691&dn=No.Sex.Please.Were.British.1973.1080p.WEBRip.x265-RARBG
+magnet:?xt=urn:btih:272F0BDE4C7413EB2010F0E5F55CE8E0AA80188D&dn=Variety.1983.1080p.BluRay.x265-RARBG
+magnet:?xt=urn:btih:FBEBA54D756CCCD559C2B6F91EAAB37F24FAC834&dn=Absolute.Beginners.1986.1080p.BluRay.x265-RARBG
+magnet:?xt=urn:btih:6F1831AF054397CF607F1D29A8C1D401EC6A9433&dn=Parenthood.1989.1080p.BluRay.x265-RARBG
+magnet:?xt=urn:btih:8144EC67C3EC57012D6594440A0EB3D40A60C6C9&dn=Kids.In.The.Hall.Brain.Candy.1996.1080p.BluRay.x265-RARBG
+magnet:?xt=urn:btih:883A6D1840DDFF1C6EF690ED6710C38E6B60CC81&dn=The.Last.Days.of.Frankie.the.Fly.1996.1080p.WEBRip.x265-RARBG
+magnet:?xt=urn:btih:4B8A6D784A5B4E371FEEA2A68806DA5E0310ADDF&dn=The.Theory.Of.Flight.1998.1080p.WEBRip.x265-RARBG
+magnet:?xt=urn:btih:84D4C5C50F85D1CC424EACCEA286751664C7686C&dn=Teaching.Mrs.Tingle.1999.1080p.BluRay.x265-RARBG
+magnet:?xt=urn:btih:934A96B899BC14AF251690A0A9255C8933C0FAE3&dn=A.Sure.Thing.1999.GERMAN.1080p.BluRay.H264.AAC-VXT
+magnet:?xt=urn:btih:37025D823BD7198C27B966DC750A1F7BB610EC1D&dn=Late.Night.Shopping.2001.1080p.WEBRip.x265-RARBG
+magnet:?xt=urn:btih:5E4804420DDE063A5E1127EFA6D6E1E5231F17AA&dn=Capote.2005.1080p.BluRay.x265-RARBG
+magnet:?xt=urn:btih:F8912FCF6A4BE507D0FEB5C3EE98A7834F8DD8E3&dn=Hard.Candy.2005.1080p.BluRay.x265-RARBG
+magnet:?xt=urn:btih:D050D78862FF33BE86784194B205ADD920FCD215&dn=Boynton.Beach.Club.2005.1080p.WEBRip.x265-RARBG
+magnet:?xt=urn:btih:2519702D59AF78E6AAC9D97A3E2BDD4DE56BA9C9&dn=The.Flock.2007.1080p.BluRay.x265-RARBG
+magnet:?xt=urn:btih:D2A6307E9B3223D22D0C4D50E92EB8866AAA9780&dn=Weirdsville.2007.1080p.WEBRip.x265-RARBG
+magnet:?xt=urn:btih:C55CADD73FB373EA4FE5F07E57FE41AFC20C72F1&dn=Longford.2006.1080p.WEBRip.x265-RARBG
+magnet:?xt=urn:btih:C23D8100892F09DBF9FD5642654123E37B49CA7B&dn=I.Now.Pronounce.You.Chuck.and.Larry.2007.1080p.BluRay.x265-RARBG
+magnet:?xt=urn:btih:FBB9B6FBCFE1172368551A6289A439769254CE9A&dn=Horsemen.2009.1080p.BluRay.x265-RARBG
+magnet:?xt=urn:btih:65AF8317B7EECF7047C5B5AC827543DF90EFF99F&dn=One-Eyed.Monster.2008.1080p.BluRay.H264.AAC-RARBG
+magnet:?xt=urn:btih:89D9D100EF64D522FE9EF7C7D67A89EA48AEF34F&dn=The.Way.Back.2010.1080p.BluRay.x265-RARBG
+magnet:?xt=urn:btih:A641C098F542BE33D6E5DC1315187A62CE26E6B1&dn=The.Power.of.the.Dog.2021.1080p.BluRay.x265-RARBG
+magnet:?xt=urn:btih:80F6CD3533D1933EC8F08FA81EE35EB7A892EDB0&dn=Reckless.Behavior.Caught.On.Tape.2007.1080p.BluRay.H264.AAC-RARBG
+magnet:?xt=urn:btih:F1003DA51AAD04EF3907E130728EF08C16D58487&dn=Reckless.Behavior.Caught.On.Tape.2007.1080p.BluRay.H264.AAC-RARBG
+magnet:?xt=urn:btih:141DDA0BFC66B425FD2827420E31EC39AB2CF81D&dn=Doug.Stanhope.No.Refunds.2007.1080p.WEBRip.x264-RARBG
+magnet:?xt=urn:btih:1EACF89F32A2954BF5E1D37535C4CEF7B61B179B&dn=Ray.Jrs.Legit.Paper.2020.1080p.WEBRip.x264-RARBG
+magnet:?xt=urn:btih:40B936A5E2C716530D69C05ABD556DF03B160B75&dn=Fifty.Dead.Men.Walking.2008.1080p.BluRay.x265-RARBG
+magnet:?xt=urn:btih:366C0CD8763047B97E90CDF9E63E520613A0FDDB&dn=Mum.and.Dad.2008.1080p.BluRay.H264.AAC-RARBG
+magnet:?xt=urn:btih:966C91AA36E95C75888464937FE6A07D9829E7BA&dn=Stacys.Mom.2010.1080p.WEBRip.x265-RARBG
+magnet:?xt=urn:btih:05E5F678BCE8B5E1956F1FA57BAD94561BEDDA42&dn=Afterschool.2008.1080p.WEBRip.x265-RARBG
+magnet:?xt=urn:btih:CEA572E1E7E6F194B105A72A2C82155A3A6F46EF&dn=Hellsinki.2009.FINNISH.1080p.BluRay.x265-VXT
+magnet:?xt=urn:btih:1F1D30943BE79A2A7C5FC40C83161700E0429AFB&dn=Harry.Brown.2009.1080p.BluRay.x265-RARBG
+magnet:?xt=urn:btih:2B7AF0A209D6F93035AE1FA8DEF9E29CA04F173D&dn=Hey.Watch.This.2010.1080p.BluRay.x265-RARBG
+magnet:?xt=urn:btih:F266C6126BC9A1C0EB9A6DFAA1CAB26860CEFA4B&dn=Madsos.War.2010.1080p.WEBRip.x265-RARBG
+magnet:?xt=urn:btih:39A842F0E1F56C205C373D8DD17DB4D97C767D45&dn=Going.Down.in.LA-LA.Land.2011.1080p.BluRay.x265-RARBG
+magnet:?xt=urn:btih:2B2A61D0928187ACF8DB895EF9DE895E35D4E46F&dn=Pivot.Point.2011.1080p.WEBRip.x265-RARBG
+magnet:?xt=urn:btih:5BA77C273D0AB21637BD896083029BA7B28D09E2&dn=Date.And.Switch.2014.1080p.BluRay.x265-RARBG
+magnet:?xt=urn:btih:2E91233A6DDF4439607E2A2A7B5B1B4C56AE74AB&dn=Yossi.2012.HEBREW.ENSUBBED.1080p.WEBRip.x265-VXT
+magnet:?xt=urn:btih:5291A03B947BC2F01894C0FE478FA74B1D967E21&dn=Daddys.Little.Girl.2014.1080p.BluRay.x265-RARBG
+magnet:?xt=urn:btih:E62E525285196B9CE5A85D9292D4C99821170A6A&dn=Mr.Angel.2013.1080p.WEBRip.x265-RARBG
+magnet:?xt=urn:btih:30929C644CBC5A9B344E65EB8CDA63EEB6C70184&dn=Bros.Before.Hos.2013.DUTCH.1080p.BluRay.x265-VXT
+magnet:?xt=urn:btih:E8C3BBDB36C4A457AB42FD8C365D912AAACBC3F0&dn=Goddess.of.the.Fireflies.2020.FRENCH.1080p.WEBRip.x265-VXT
+magnet:?xt=urn:btih:1BF65245742CAB674FBCC34C012A76D3AB33DC27&dn=Pete.Holmes.Faces.and.Sounds.2016.1080p.WEBRip.x264-RARBG
+magnet:?xt=urn:btih:2C3B921D9DF966A88551109AA84BC655A662BE66&dn=Ashley.Madison.Sex.Lies.and.Cyber.Attacks.2016.1080p.WEBRip.x264-RARBG
+magnet:?xt=urn:btih:2E277CF8792CE7B5C97B81F1C780C5A8E2378F0E&dn=Skate.Kitchen.2018.1080p.BluRay.x265-RARBG
+magnet:?xt=urn:btih:07010540BC91B3C0EC7738C9B5152D95ACE54F0E&dn=Jonathan.Agassi.Saved.My.Life.2018.1080p.WEBRip.x265-RARBG
+magnet:?xt=urn:btih:05996A39CC64511E677F4E73DD76C9077A7CABA5&dn=Circus.of.Books.2019.1080p.WEBRip.x265-RARBG
+magnet:?xt=urn:btih:EDDCA70E31F3FCDEED4B3144E9A4A60F5A9A48F3&dn=Nevrland.2019.GERMAN.1080p.BluRay.H264.AAC-VXT
+magnet:?xt=urn:btih:CD00DA9CA99C01CBE6CA12186A0A86D9321A6D55&dn=Knucks.2021.1080p.WEBRip.x265-RARBG
+".Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+//await TorrentHelper.DownloadAllFromCacheAsync(links, @"E:\Files\Torrents");
+
+//HashSet<string> downloaded = new(Directory.GetFiles(@"E:\Files\Torrents").Select(f => Path.GetFileNameWithoutExtension(f).Split("@").Last()), StringComparer.OrdinalIgnoreCase);
+//IEnumerable<Task>? tasks = await TorrentHelper.DownloadAllAsync(links.Select(MagnetUri.Parse).Where(l => !downloaded.Contains(l.ExactTopic)).Select(l => l.AddDefaultTrackers().ToString()).Do(Logger.WriteLine), @"E:\Files\TorrentsMagnet");
+//await Task.WhenAll(tasks);
+
+//await TorrentHelper.AddDefaultTrackersAsync(@"E:\Files\Torrents");
+
+//Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(settings.MovieLibraryMetadata);
+//HashSet<string> titles = new(libraryMetadata.Values.AsParallel().SelectMany(d=>d.Keys).Select(f=>Path.GetFileNameWithoutExtension(f)!).Distinct(StringComparer.InvariantCultureIgnoreCase));
+//downloadedTitles.AsParallel().Where(downloadedTitle => titles.Any(t=>t.StartsWith(downloadedTitle, StringComparison.OrdinalIgnoreCase))).ForEach(Logger.WriteLine);
+//HashSet<string> xx = new(Directory.EnumerateDirectories(@"E:\Files\Delete").Select(Path.GetFileName), StringComparer.OrdinalIgnoreCase);
+//Directory.EnumerateDirectories(@"\\beyond-r\F\Files\Library\Movies Temp3.电影3\Yts_")
+//    .Where(d => xx.Contains(Path.GetFileName(d)))
+//    .ToArray()
+//    .ForEach(d => DirectoryHelper.MoveToDirectory(d, @"\\beyond-r\F\Files\Library\Movies Temp3.电影3\Rarbg_"));
+
+//Video.RenameFiles(@"\\beyond-r\E\New folder\Virgin`3=Jôô`3.2010.孃王`3[0.0-0][NA]\Season 01", (f,i)=>PathHelper.AddFilePostfix(f, ".SUBBED.watermark.chs"));
+
+//Video.EnumerateDirectories(@"\\Beyond-r\f\Files\Library\Movies Temp3.电影3")
+//    .Select(d => (d, Directory.EnumerateFiles(d, "*.nfo").Select(f => XDocument.Load(f).Root!.Element("tmdbid")?.Value ?? string.Empty).Distinct().Single()))
+//    .GroupBy(m => m.Item2)
+//    .Where(g => g.Count() > 1)
+//    .ForEach(g => g.Select(m => m.d).Order().Append(string.Empty).Prepend(g.Key).ForEach(Logger.WriteLine));

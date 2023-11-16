@@ -1,4 +1,5 @@
-﻿namespace Examples.Tests.Runtime.Serialization;
+﻿#if !NET8_0_OR_GREATER
+namespace Examples.Tests.Runtime.Serialization;
 
 using System.Runtime.Serialization.Formatters.Binary;
 
@@ -33,3 +34,4 @@ public class SerializerTests
         Assert.IsFalse(string.IsNullOrWhiteSpace(serializedException.Message));
     }
 }
+#endif
