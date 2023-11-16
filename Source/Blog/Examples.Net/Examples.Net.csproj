@@ -10,6 +10,7 @@
     <RootNamespace>Examples</RootNamespace>
     <AssemblyName>Examples.Net</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <LangVersion>preview</LangVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <Nullable>enable</Nullable>
