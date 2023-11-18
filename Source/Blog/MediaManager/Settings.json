@@ -4,8 +4,6 @@
     "PreferredOldKeyword": "YIFY",
     "PreferredNewKeyword": "YTS",
 
-    "FfmpegDirectory": "C:\\ProgramData\\chocolatey\\bin",
-
     "LibraryDirectory": "D:\\Files\\Library",
     "MovieSubtitleBackupDirectory": "D:\\Files\\Library\\Movies Subtitle",
 

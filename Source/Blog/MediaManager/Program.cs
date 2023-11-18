@@ -32,8 +32,6 @@ Trace.Listeners.Add(consoleTraceListener);
 
 Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
 
-FFmpeg.SetExecutablesPath(settings.FfmpegDirectory);
-
 Video.Initialize(settings.TopEnglishKeyword, settings.TopForeignKeyword, settings.PreferredOldKeyword, settings.PreferredNewKeyword);
 
 //Video.PrintDirectoriesWithMultipleMedia(settings.MovieControversial);
@@ -485,7 +483,7 @@ static void RenameEpisode(string mediaDirectory, string metadataDirectory, bool 
     //tvs.ForEach(tv => Video.MoveSubtitlesForEpisodes(tv, Path.Combine(metadataDirectory, Path.GetFileName(tv)), isDryRun: isDryRun, log: log));
 }
 
-//Video.MoveTopTVEpisodes(@"E:\Files\Move\TV", @"E:\Files\TV.Subtitle");
+//Video.MoveTopTVEpisodes(@"\\beyond-r\F\Files\Movie.Rarbg", @"\\beyond-r\F\Files\TV.Subtitles");
 //Video.FormatTV(
 //    @"E:\Files\TV",
 //    @"",

@@ -8,8 +8,6 @@ public record Settings(
     string PreferredOldKeyword,
     string PreferredNewKeyword,
 
-    string FfmpegDirectory,
-
     string LibraryDirectory,
     string MovieSubtitleBackupDirectory,
 
