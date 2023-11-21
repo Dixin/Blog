@@ -118,6 +118,7 @@ Video.Initialize(settings.TopEnglishKeyword, settings.TopForeignKeyword, setting
 //Video.RenameDirectoriesWithImdbMetadata(settings.TVDocumentary, level: 1, isTV: true, isDryRun: true);
 //Video.RenameDirectoriesWithImdbMetadata(settings.TVMainstream, level: 1, isTV: true, isDryRun: true);
 //Video.RenameDirectoriesWithImdbMetadata(settings.TVMainstreamWithoutSubtitle, level: 1, isTV: true, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings.TVTemp3, level: 1, isTV: true, isDryRun: false);
 
 //Video.WriteRating(settings.Movie3D);
 //Video.WriteRating(settings.MovieHdr);
@@ -349,10 +350,11 @@ string[] genres = { "family", "animation", "documentary" };
 //    });
 //Directory.GetDirectories(@"N:\Files\Library\New folder").ToArray().ForEach(d => { 
 //Video.RenameEpisodesWithTitle(
-//    @"N:\Files\Library\TV Mainstream.主流电视剧[未抓取字幕]\Slasher.2016.鲜血淋漓[6.7-15K][TV14]\Season 05",
+//    @"",
 //    @"",
 //    rename: (f, t) =>
 //    {
+//        //t = t.Substring(0, 1).ToUpper() + t.Substring(1);
 //        //string postfix = Path.GetFileNameWithoutExtension(f).EndsWithIgnoreCase($"{Video.VersionSeparator}{Video.TopEnglishKeyword}.2Audio") ? $"{Video.VersionSeparator}{Video.TopEnglishKeyword}.2Audio" : $"{Video.VersionSeparator}{Video.TopEnglishKeyword}";
 //        string postfix = $"{Video.VersionSeparator}{Video.TopEnglishKeyword}";
 //        //Debug.Assert(!f.IsVideo() || Path.GetFileNameWithoutExtension(f).EndsWithIgnoreCase(postfix));
