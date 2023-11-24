@@ -16,7 +16,7 @@ public record VideoMetadata
 
     public int Audio { get; init; }
 
-    public int[] AudioBitRates { get; init; } = Array.Empty<int>();
+    public int[] AudioBitRates { get; init; } = [];
 
     public double FrameRate { get; init; }
 

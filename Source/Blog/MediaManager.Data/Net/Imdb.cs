@@ -522,7 +522,7 @@ internal static class Imdb
                         && !titles.TryGetValue("Hong Kong (English title)", out titleValues)
                         && !titles.TryGetValue("(original title)", out titleValues))
                     {
-                        titleValues = Array.Empty<string>();
+                        titleValues = [];
                     }
 
                     Debug.Assert(titleValues.Any());
@@ -677,7 +677,7 @@ internal static class Imdb
             MpaaRating = mpaaRating,
             Advisories = advisories.ToLookup(advisory => advisory.Category).ToDictionary(group => group.Key, group => group.ToArray()),
             AlsoKnownAs = alsoKnownAs,
-            Genres = imdbMetadata.Genres ?? Array.Empty<string>(),
+            Genres = imdbMetadata.Genres ?? [],
             Releases = dates
         };
 

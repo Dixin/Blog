@@ -30,7 +30,7 @@ internal static partial class Video
                     Height = videoStream.Height,
                     Audio = mediaInfo.AudioStreams?.Count() ?? 0,
                     Subtitle = mediaInfo.SubtitleStreams?.Count() ?? 0,
-                    AudioBitRates = mediaInfo.AudioStreams?.Select(audio => (int)audio.Bitrate).ToArray() ?? Array.Empty<int>(),
+                    AudioBitRates = mediaInfo.AudioStreams?.Select(audio => (int)audio.Bitrate).ToArray() ?? [],
                     TotalMilliseconds = mediaInfo.Duration.TotalMilliseconds,
                     Imdb = imdbMetadata,
                     FrameRate = videoStream.Framerate

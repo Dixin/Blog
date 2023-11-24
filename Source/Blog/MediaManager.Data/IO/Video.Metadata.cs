@@ -1,5 +1,6 @@
 ﻿namespace Examples.IO;
 
+using CsQuery;
 using Examples.Common;
 using Examples.Linq;
 using Examples.Net;
@@ -585,6 +586,61 @@ internal static partial class Video
             log(string.Empty);
         });
 
-        noTranslation.ForEach(movie=>log($"{movie.Title} ({movie.Year})"));
+        noTranslation.ForEach(movie => log($"{movie.Title} ({movie.Year})"));
+    }
+
+    internal static async Task WriteNikkatsMetadataAsync(string cacheFile, string jsonFile)
+    {
+        const string wikipediaUri = "https://en.wikipedia.org";
+
+        CQ mainCQ = await File.ReadAllTextAsync(cacheFile);
+        WikipediaNikkatsu[] movies = mainCQ
+            .Find("table.wikitable > tbody > tr")
+            .Select(row => (row, cells: row.Cq().Find("td")))
+            .Where(row => row.cells.Length == 5)
+            .Select(row =>
+            {
+                CQ cells = row.cells;
+                string releaseDate = cells[0].TextContent.Trim();
+
+                string[] englishTitles = cells.Eq(1).Find("i > b").Select(dom => dom.TextContent).ToArray();
+                Debug.Assert(englishTitles.Length is 0 or 1 or 2);
+                string originalTitle = cells[1]
+                    .ChildNodes
+                    .Where(node => node.NodeType == NodeType.TEXT_NODE)
+                    .Select(node => node.ToString() ?? string.Empty)
+                    .FirstOrDefault(text => text.IsNotNullOrWhiteSpace(), string.Empty);
+                CQ translatedTitleCQ = cells.Eq(1).Find("i").Last();
+                string translatedTitle = translatedTitleCQ.Find("b").Any() ? string.Empty : translatedTitleCQ.Text();
+                CQ linkCQ = cells.Eq(1).Find("a");
+                Debug.Assert(linkCQ.Length is 0 or 1 or 2);
+                string[] links = linkCQ.Select(dom => $"{wikipediaUri}{dom.GetAttribute("href")}").ToArray();
+
+                string director = cells[2].TextContent.Trim();
+
+                string[] cast = cells[3]
+                    .ChildNodes
+                    .Select(node => node.NodeType switch
+                    {
+                        NodeType.TEXT_NODE => node.ToString()?.Trim() ?? string.Empty,
+                        _ => node.TextContent.Trim()
+                    })
+                    .Where(text => text.IsNotNullOrWhiteSpace())
+                    .Order()
+                    .ToArray();
+
+                string note = cells[4].TextContent.Trim();
+
+                return new WikipediaNikkatsu(releaseDate, originalTitle, translatedTitle, director, note)
+                {
+                    EnglishTitles = englishTitles,
+                    Links = links,
+                    Cast = cast,
+                };
+            })
+            .DistinctBy(movie => (movie.ReleaseDate, movie.OriginalTitle))
+            .ToArray();
+
+        await JsonHelper.SerializeToFileAsync(movies, jsonFile);
     }
 }

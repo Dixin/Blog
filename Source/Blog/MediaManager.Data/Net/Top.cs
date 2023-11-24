@@ -66,7 +66,7 @@ internal static class Top
                             ? links[1].GetAttribute("href").Replace("/torrents.php?imdb=", string.Empty).Trim()
                             : string.Empty;
 
-                        string[] genres = Array.Empty<string>();
+                        string[] genres = [];
                         string imdbRating = string.Empty;
                         if (texts.Length > 1)
                         {

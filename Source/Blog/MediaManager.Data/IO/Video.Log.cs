@@ -669,7 +669,7 @@ internal static partial class Video
                     ? preferredResult
                         .Where(metadata => !ignore.Contains(metadata.Link))
                         .ToArray()
-                    : Array.Empty<PreferredMetadata>();
+                    : [];
                 (PreferredMetadata Metadata, KeyValuePair<string, string> Version)[] otherPreferredMetadata = availablePreferredMetadata
                     .SelectMany(metadata => metadata.Availabilities, (metadata, version) => (metadata, version))
                     .Where(metadataVersion => !metadataVersion.version.Key.Contains("2160p"))
@@ -724,7 +724,7 @@ internal static partial class Video
                 }
                 else
                 {
-                    availableX265Metadata = Array.Empty<TopMetadata>();
+                    availableX265Metadata = [];
                 }
 
                 if (availableX265Metadata.Any())
@@ -807,7 +807,7 @@ internal static partial class Video
                             return false;
                         })
                         .ToArray()
-                    : Array.Empty<TopMetadata>();
+                    : [];
                 if (availableH264Metadata.Any())
                 {
                     TopMetadata[] otherH264Metadata = availableH264Metadata
@@ -895,7 +895,7 @@ internal static partial class Video
                     return;
                 }
 
-                TopMetadata[] availableOtherMetadata = Array.Empty<TopMetadata>();
+                TopMetadata[] availableOtherMetadata = [];
                 if (videos.Any(video => ((IVideoFileInfo)video.Info).DefinitionType is DefinitionType.P1080))
                 {
                     return;

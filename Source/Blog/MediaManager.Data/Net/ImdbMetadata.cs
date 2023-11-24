@@ -114,7 +114,7 @@ public class StringOrArrayConverter : JsonConverter<string[]>
         reader.TokenType switch
         {
             JsonTokenType.String => new[] { reader.GetString() ?? string.Empty },
-            JsonTokenType.StartArray => JsonSerializer.Deserialize<string[]>(ref reader, options) ?? Array.Empty<string>(),
+            JsonTokenType.StartArray => JsonSerializer.Deserialize<string[]>(ref reader, options) ?? [],
             _ => throw new InvalidOperationException($"The value should be either string or array. It is actually {reader.TokenType}.")
         };
 
@@ -140,7 +140,7 @@ public class EntityOrArrayConverter : JsonConverter<ImdbEntity[]>
         reader.TokenType switch
         {
             JsonTokenType.StartObject => new[] { JsonSerializer.Deserialize<ImdbEntity>(ref reader, options)! },
-            JsonTokenType.StartArray => JsonSerializer.Deserialize<ImdbEntity[]>(ref reader, options) ?? Array.Empty<ImdbEntity>(),
+            JsonTokenType.StartArray => JsonSerializer.Deserialize<ImdbEntity[]>(ref reader, options) ?? [],
             _ => throw new InvalidOperationException($"The value should be either string or array. It is actually {reader.TokenType}.")
         };
 

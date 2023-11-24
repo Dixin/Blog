@@ -207,7 +207,7 @@ internal static partial class Video
                 }
 
                 Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata);
-                string additional = $"@{string.Join(",", imdbMetadata?.Regions.Take(4) ?? Array.Empty<string>())}#{string.Join(",", imdbMetadata?.Languages.Take(3) ?? Array.Empty<string>())}";
+                string additional = $"@{string.Join(",", imdbMetadata?.Regions.Take(4) ?? [])}#{string.Join(",", imdbMetadata?.Languages.Take(3) ?? [])}";
                 string originalMovie = movieName.ContainsOrdinal("{")
                     ? PathHelper.ReplaceFileName(movie, movieName.Substring(0, movieName.IndexOfOrdinal("@")))
                     : movie;
@@ -297,7 +297,7 @@ internal static partial class Video
                     Hdr: string.Empty
                 );
                 string additional = additionalInfo
-                    ? $"{{{string.Join(",", imdbMetadata?.Regions.Take(5) ?? Array.Empty<string>())};{string.Join(",", imdbMetadata?.Genres.Take(3) ?? Array.Empty<string>())}}}"
+                    ? $"{{{string.Join(",", imdbMetadata?.Regions.Take(5) ?? [])};{string.Join(",", imdbMetadata?.Genres.Take(3) ?? [])}}}"
                     : string.Empty;
                 string newMovie = $"{videoDirectoryInfo}{additional}";
                 string newDirectory = Path.Combine(Path.GetDirectoryName(movie) ?? throw new InvalidOperationException(movie), newMovie);
