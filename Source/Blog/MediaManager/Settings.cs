@@ -63,7 +63,11 @@ public record Settings(
 
     public DirectorySettings MovieTemp3 { get; init; }
 
-    public DirectorySettings MovieTemp { get; init; }
+    public DirectorySettings MovieTemp31 { get; init; }
+
+    public DirectorySettings MovieTemp32 { get; init; }
+
+    public DirectorySettings MovieTemp3Encode { get; init; }
 
     public DirectorySettings MovieExternalNew { get; init; }
 
@@ -91,7 +95,7 @@ public record Settings(
 
     public Dictionary<string, string[]> MovieRegions { get; init; } = new();
 
-    public string[] Keywords { get; init; } = Array.Empty<string>();
+    public string[] ImdbKeywords { get; init; } = [];
 }
 
 public record struct DirectorySettings(string Directory, int Level)

@@ -1068,4 +1068,15 @@ internal static partial class Video
             })
             .ToArray()
             .ForEach(movie => DirectoryHelper.MoveToDirectory(movie, destination));
+
+    internal static void MoveVideosToDirectories(string directory, SearchOption searchOption = SearchOption.TopDirectoryOnly, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+
+        Directory
+            .EnumerateFiles(directory, PathHelper.AllSearchPattern, searchOption)
+            .Where(IsVideo)
+            .ToArray()
+            .ForEach(video => FileHelper.MoveToDirectory(video, Path.Combine(Path.GetDirectoryName(video), Path.GetFileNameWithoutExtension(video))));
+    }
 }

@@ -9,11 +9,17 @@ using OpenQA.Selenium;
 
 internal static partial class Video
 {
-    internal static void BackupMetadata(string directory, string flag = DefaultBackupFlag, bool overwrite = false)
+    internal static void BackupMetadata(string directory, string flag = DefaultBackupFlag, bool overwrite = false, Action<string>? log = null)
     {
+        log ??= Logger.WriteLine;
+
         Directory
             .GetFiles(directory, XmlMetadataSearchPattern, SearchOption.AllDirectories)
-            .ForEach(metadata => File.Copy(metadata, PathHelper.AddFilePostfix(metadata, $"{Delimiter}{flag}"), overwrite));
+            .Where(metadata => !Path.GetFileNameWithoutExtension(metadata).EndsWithIgnoreCase($"{Delimiter}{flag}"))
+            .Select(metadata => (Metadata: metadata, Backup: PathHelper.AddFilePostfix(metadata, $"{Delimiter}{flag}")))
+            .Where(metadata => overwrite || !File.Exists(metadata.Backup))
+            .Do(metadata => log(metadata.Backup))
+            .ForEach(metadata => File.Copy(metadata.Metadata, metadata.Backup, overwrite));
     }
 
     internal static void RestoreMetadata(string directory, string flag = DefaultBackupFlag)
@@ -561,6 +567,7 @@ internal static partial class Video
             string imdbId = XDocument.Load(backupMetadataFile).Root?.Element("imdbid")?.Value ?? string.Empty;
             if (imdbId.IsNullOrWhiteSpace())
             {
+                noTranslation.Add((englishTitle, metadataDocument.Root!.Element("year")?.Value ?? string.Empty));
                 return;
             }
 

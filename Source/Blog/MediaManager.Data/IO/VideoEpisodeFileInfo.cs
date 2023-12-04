@@ -16,7 +16,7 @@ internal record VideoEpisodeFileInfo(
     string EpisodeTitle,
     string Extension) : IVideoFileInfo, ISimpleParsable<VideoEpisodeFileInfo>
 {
-    private static readonly Regex NameRegex = new(@$"^(.+?)(\.([0-9]{{4}}))?\.S([0-9]{{2,4}})E([0-9]{{2,3}})(E([0-9]{{2,3}}))?(\.[A-Z\.\-]+?)?(\.2160p|\.1080p|\.720p|\.540p|\.480p|\.360p)?(\.WEBRip|\.BluRay|\.DVDRip|\.HDRip|\.HDTV|\.VHSRip|\.LDRip|\.DVD|\.LDVDRip|\.LDDVDRip|\.HQDVDRip|\.TV|\.VCD|\.VCDRip)?(\.H264|\.x264|\.x265|\.DivX|\.Xvid)?(\.AAC|\.AC3|\.MP3|\.AAC5\.1|\.DTS)?(\{Video.VersionSeparator}({Video.TopEnglishKeyword}|{Video.TopForeignKeyword}|\[{Video.PreferredNewKeyword}\.(MX|AM|AG|LT)\]|[a-zA-Z0-9@]+?))?(\.[2-9]Audio)?(\.watermark)?(\.ffmpeg|\.nvenc|\.handbrake)?(\.bul|\.chs|\.cht|\.cht&eng|\.chs&eng|\.dut|\.eng|\.fre|\.heb|\.jap|\.kor|\.pol|\.dut|\.spa|\.swe|\.por)?(\.(.+))?(\.mp4|\.avi)$");
+    private static readonly Regex NameRegex = new(@$"^(.+?)(\.([0-9]{{4}}))?\.S([0-9]{{2,4}})E([0-9]{{2,3}})(E([0-9]{{2,3}}))?(\.[A-Z\.\-]+?)?(\.2160p|\.1080p|\.720p|\.540p|\.480p|\.360p)?(\.WEBRip|\.BluRay|\.DVDRip|\.HDRip|\.HDTV|\.VHSRip|\.LDRip|\.DVD|\.LDVDRip|\.LDDVDRip|\.HQDVDRip|\.TV|\.VCD|\.VCDRip)?(\.H264|\.x264|\.x265|\.DivX|\.Xvid)?(\.AAC|\.AC3|\.MP3|\.AAC5\.1|\.DTS)?(\{Video.VersionSeparator}({Video.TopEnglishKeyword}|{Video.TopForeignKeyword}|\[{Video.PreferredNewKeyword}\.(MX|AM|AG|LT)\]|[a-zA-Z0-9@]+?))?(\.[2-9]Audio)?(\.watermark)?(\.ffmpeg|\.nvenc|\.handbrake)?(\.bul|\.chs|\.cht|\.cht&eng|\.chs&eng|\.dut|\.eng|\.fre|\.heb|\.jap|\.kor|\.pol|\.dut|\.spa|\.swe|\.por)?(\.(.+))?(\.mp4|\.avi|\.rmvb)$");
 
     public override string ToString() => this.Name;
 

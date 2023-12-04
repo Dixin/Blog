@@ -395,7 +395,7 @@ internal static partial class Video
                         break;
                 }
 
-                string[] videos = topFiles.Where(IsCommonVideo).ToArray();
+                string[] videos = topFiles.Where(IsVideo).ToArray();
                 VideoMovieFileInfo[] videoFileInfos = videos
                     .Select(video =>
                     {
@@ -1641,7 +1641,7 @@ internal static partial class Video
         string libraryJsonPath, string x265JsonPath, string h264JsonPath, string preferredJsonPath, string h264720PJsonPath, string rareJsonPath,
         string topMagnetPath,
         string mergedJsonPath, string cacheDirectory, string metadataDirectory, string initialUrl,
-        Func<ImdbMetadata, bool> predicate, bool updateMetadata = false, bool isDryRun = false, Action<string>? log = null)
+        Func<ImdbMetadata, bool> predicate, HashSet<string> keywords, bool updateMetadata = false, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
@@ -1651,7 +1651,7 @@ internal static partial class Video
         Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(libraryJsonPath);
         Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(x265JsonPath);
         Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264JsonPath);
-        Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(preferredJsonPath);
+        //Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(preferredJsonPath);
         //Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync(h264720PJsonPath);
         //Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(rareJsonPath);
         string[] metadataFiles = Directory.GetFiles(metadataDirectory);
@@ -1681,6 +1681,10 @@ internal static partial class Video
         int length = imdbIds.Length;
         log(length.ToString());
         log(x265Metadata.Keys.Intersect(imdbIds.Select(metadata => metadata.ImdbId)).Count().ToString());
+
+        keywords.Select(keyword => (keyword, imdbIds.Count(imdbId => imdbId.AllKeywords.ContainsIgnoreCase(keyword))))
+            .OrderByDescending(keyword => keyword.Item2)
+            .ForEach(keyword => log($"{keyword.Item2} - {keyword}"));
 
         //HashSet<string> downloadedTitles = new(
         //    new string[] { }.SelectMany(Directory.GetDirectories).Select(Path.GetFileName)!,
@@ -1918,56 +1922,56 @@ internal static partial class Video
                     }
                 }
 
-                if (preferredMetadata.TryGetValue(imdbMetadata.ImdbId, out PreferredMetadata[]? preferredVideos))
-                {
-                    KeyValuePair<string, string>[] availabilities = preferredVideos.SelectMany(preferredVideo => preferredVideo.Availabilities).ToArray();
-                    KeyValuePair<string, string>[] videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("1080p.BluRay")).ToArray();
-                    if (videos.IsEmpty())
-                    {
-                        videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("1080p.WEB")).ToArray();
-                    }
+                //if (preferredMetadata.TryGetValue(imdbMetadata.ImdbId, out PreferredMetadata[]? preferredVideos))
+                //{
+                //    KeyValuePair<string, string>[] availabilities = preferredVideos.SelectMany(preferredVideo => preferredVideo.Availabilities).ToArray();
+                //    KeyValuePair<string, string>[] videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("1080p.BluRay")).ToArray();
+                //    if (videos.IsEmpty())
+                //    {
+                //        videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("1080p.WEB")).ToArray();
+                //    }
 
-                    if (videos.IsEmpty())
-                    {
-                        videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("720p.BluRay")).ToArray();
-                    }
+                //    if (videos.IsEmpty())
+                //    {
+                //        videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("720p.BluRay")).ToArray();
+                //    }
 
-                    if (videos.IsEmpty())
-                    {
-                        videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("720p.WEB")).ToArray();
-                    }
+                //    if (videos.IsEmpty())
+                //    {
+                //        videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("720p.WEB")).ToArray();
+                //    }
 
-                    if (videos.IsEmpty())
-                    {
-                        videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("480p.DVD")).ToArray();
-                    }
+                //    if (videos.IsEmpty())
+                //    {
+                //        videos = availabilities.Where(availability => availability.Key.ContainsIgnoreCase("480p.DVD")).ToArray();
+                //    }
 
-                    log($"{preferredVideos.First().ImdbId}-{imdbMetadata.FormattedAggregateRating}-{imdbMetadata.FormattedAggregateRatingCount}-{preferredVideos.First().Title} {preferredVideos.First().Link} {imdbMetadata.Link}");
-                    log($"{imdbMetadata.Link}keywords");
-                    log($"{imdbMetadata.Link}parentalguide");
-                    await videos.ForEachAsync(async video =>
-                    {
-                        log(string.Empty);
-                        log(video.Value);
-                        if (httpClient is not null)
-                        {
-                            string file = Path.Combine(cacheDirectory, $"{preferredVideos.First().ImdbId}-{preferredVideos.First().Title}-{video.Key}.torrent".ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " ").ReplaceIgnoreCase("：", "-").FilterForFileSystem().Trim());
-                            if (!File.Exists(file))
-                            {
-                                try
-                                {
-                                    await httpClient.GetFileAsync(video.Value, file);
-                                }
-                                catch (HttpRequestException exception)
-                                {
-                                    log(exception.ToString());
-                                }
-                            }
-                        }
+                //    log($"{preferredVideos.First().ImdbId}-{imdbMetadata.FormattedAggregateRating}-{imdbMetadata.FormattedAggregateRatingCount}-{preferredVideos.First().Title} {preferredVideos.First().Link} {imdbMetadata.Link}");
+                //    log($"{imdbMetadata.Link}keywords");
+                //    log($"{imdbMetadata.Link}parentalguide");
+                //    await videos.ForEachAsync(async video =>
+                //    {
+                //        log(string.Empty);
+                //        log(video.Value);
+                //        if (httpClient is not null)
+                //        {
+                //            string file = Path.Combine(cacheDirectory, $"{preferredVideos.First().ImdbId}-{preferredVideos.First().Title}-{video.Key}.torrent".ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " ").ReplaceIgnoreCase("：", "-").FilterForFileSystem().Trim());
+                //            if (!File.Exists(file))
+                //            {
+                //                try
+                //                {
+                //                    await httpClient.GetFileAsync(video.Value, file);
+                //                }
+                //                catch (HttpRequestException exception)
+                //                {
+                //                    log(exception.ToString());
+                //                }
+                //            }
+                //        }
 
-                        log(string.Empty);
-                    });
-                }
+                //        log(string.Empty);
+                //    });
+                //}
 
                 //if (h264720PMetadata.TryGetValue(imdbMetadata.ImdbId, out TopMetadata[]? h264720PVideos))
                 //{

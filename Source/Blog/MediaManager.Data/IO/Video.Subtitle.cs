@@ -170,7 +170,7 @@ internal static partial class Video
                         {
                             language = string.Empty;
                         }
-                        
+
                         string newSubtitleName = $"{Path.GetFileNameWithoutExtension(video)}{(language.IsNullOrWhiteSpace() ? string.Empty : ".")}{language}{Path.GetExtension(subtitle)}";
                         string newSubtitle = Path.Combine(Path.GetDirectoryName(video) ?? throw new InvalidOperationException(video), newSubtitleName);
                         if (rename is not null)
@@ -399,6 +399,27 @@ internal static partial class Video
                     {
                         log($"!Chinese {subtitle}");
                     }
+                }
+            });
+    }
+
+    internal static void RemoveSubtitleSuffix(string directory, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+        Directory
+            .EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
+            .Where(file => Video.IsSubtitle(file) && Regex.IsMatch(Path.GetFileNameWithoutExtension(file).Split(".").Last(), @"^[a-z]{3}\-[0-9]{1,2}$"))
+            .ToArray()
+            .ForEach(subtitle =>
+            {
+                string newSubtitle = Regex.Replace(subtitle, @"(\.[a-z]{3})\-[0-9]{1,2}(\.[a-zA-Z]{3})$", "$1$2");
+                if (File.Exists(newSubtitle))
+                {
+                    Logger.WriteLine(subtitle);
+                }
+                else
+                {
+                    FileHelper.Move(subtitle, newSubtitle);
                 }
             });
     }
