@@ -8,7 +8,7 @@ internal class FfmpegHelper
 {
     private const int DefaultTimestampCount = 3;
 
-    internal static void MergeAllDubbed(string directory, string originalVideoSearchPattern = "", Func<string, string>? getDubbedVideo = null, Func<string, string>? renameSubtitle = null, bool overwrite = false, bool? isTV = null, bool isDryRun = false, Action<string>? log = null)
+    internal static void MergeAllDubbed(string directory, string originalVideoSearchPattern = "", Func<string, string>? getDubbedVideo = null, Func<string, string>? getOutputVideo = null, Func<string, string>? renameAttachment = null, bool overwrite = false, bool? isTV = null, bool isDryRun = false, bool ignoreDurationDifference = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         string[] originalVideos = originalVideoSearchPattern.IsNotNullOrWhiteSpace()
@@ -18,18 +18,33 @@ internal class FfmpegHelper
                 .EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
                 .Where(file => file.IsVideo() && !Path.GetFileNameWithoutExtension(file).ContainsIgnoreCase(".DUBBED."))
                 .ToArray();
+
         originalVideos.ForEach(originalVideo =>
         {
-            string output = string.Empty;
-            MergeDubbed(originalVideo, ref output, getDubbedVideo is not null ? getDubbedVideo(originalVideo) : string.Empty, overwrite, isTV, log: log);
+            string output = getOutputVideo is not null ? getOutputVideo(originalVideo) : string.Empty;
+            MergeDubbed(originalVideo, ref output, getDubbedVideo is not null ? getDubbedVideo(originalVideo) : string.Empty, overwrite, isTV, ignoreDurationDifference, isDryRun, log);
+
+            string originalVideoName = Path.GetFileNameWithoutExtension(originalVideo);
             Directory
-                .EnumerateFiles(Path.GetDirectoryName(originalVideo) ?? throw new InvalidOperationException(originalVideo))
-                .Where(file => file.IsSubtitle() && Path.GetFileName(file).StartsWithIgnoreCase(Path.GetFileNameWithoutExtension(originalVideo)))
-                .ToArray()
-                .ForEach(subtitle =>
+                .GetFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
+                .ForEach(attachment =>
                 {
-                    string renamedSubtitle = PathHelper.ReplaceFileNameWithoutExtension(subtitle, subtitleName => subtitleName.ReplaceIgnoreCase(Path.GetFileNameWithoutExtension(originalVideo), Path.GetFileNameWithoutExtension(output)));
-                    FileHelper.Move(subtitle, renamedSubtitle);
+                    string renamedAttachment = renameAttachment is not null
+                        ? renameAttachment(attachment)
+                        : (Path.GetFileName(attachment).StartsWithIgnoreCase(originalVideoName)
+                            ? PathHelper.ReplaceFileNameWithoutExtension(attachment, attachmentName => attachmentName.ReplaceIgnoreCase(originalVideoName, Path.GetFileNameWithoutExtension(output)))
+                            : attachment);
+                    if (attachment.EqualsIgnoreCase(renamedAttachment))
+                    {
+                        return;
+                    }
+
+                    log(attachment);
+                    if (!isDryRun)
+                    {
+                        FileHelper.Move(attachment, renamedAttachment);
+                    }
+                    log(renamedAttachment);
                 });
         });
     }
@@ -128,7 +143,7 @@ internal class FfmpegHelper
         ProcessHelper.StartAndWait("ffmpeg", arguments, window: true);
     }
 
-    internal static void MergeDubbed(string input, ref string output, string dubbed = "", bool overwrite = false, bool? isTV = null, bool ignoreDurationDifference = false, Action<string>? log = null)
+    internal static void MergeDubbed(string input, ref string output, string dubbed = "", bool overwrite = false, bool? isTV = null, bool ignoreDurationDifference = false, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         isTV ??= Regex.IsMatch(Path.GetFileNameWithoutExtension(input), @"(\.|\s)S[0-9]{2}E[0-9]{2}(\.|\s)", RegexOptions.IgnoreCase);
@@ -173,12 +188,19 @@ internal class FfmpegHelper
             }
         }
 
-        ProcessHelper.StartAndWait(
-            "ffmpeg",
-            $"""
-                -i "{input}" -i "{dubbed}" -c copy -map_metadata 0 -map 0 -map 1:a "{output}" -{(overwrite ? "y" : "n")}
-                """,
-            window: true);
+        log(input);
+        log(dubbed);
+        if (!isDryRun)
+        {
+            ProcessHelper.StartAndWait(
+                "ffmpeg",
+                $"""
+                    -i "{input}" -i "{dubbed}" -c copy -map_metadata 0 -map 0 -map 1:a "{output}" -{(overwrite ? "y" : "n")}
+                    """,
+                window: true);
+        }
+
+        log(output);
     }
 
     private static IEnumerable<TimeSpan> GetTimestamps(TimeSpan duration, int timestampCount = DefaultTimestampCount)
