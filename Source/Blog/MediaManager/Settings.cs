@@ -1,8 +1,9 @@
 ﻿namespace MediaManager;
 
+using Examples.Common;
 using Examples.IO;
 
-public record Settings(
+public partial record Settings(
     string TopEnglishKeyword,
     string TopForeignKeyword,
     string PreferredOldKeyword,
@@ -35,7 +36,7 @@ public record Settings(
     string MoviePreferredMetadata,
     string MovieRareMetadata,
     string TVTopX265Metadata,
-    
+
     string MovieMetadataDirectory,
     string MovieMetadataCacheDirectory,
     string TVMetadataDirectory,
@@ -110,5 +111,18 @@ public record struct DirectorySettings(string Directory, int Level)
 
     public static implicit operator string(DirectorySettings directorySettings) => directorySettings.Directory;
 
-    public static implicit operator DirectorySettings(string directory) => new (directory, Video.DefaultDirectoryLevel);
+    public static implicit operator DirectorySettings(string directory) => new(directory, Video.DefaultDirectoryLevel);
+}
+
+public partial record Settings
+{
+    internal static void FormatImdbKeywords(string keywords) =>
+        keywords
+            .Split(Environment.NewLine, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .Select(keyword => keyword.Trim().Trim(',').Trim('"').ToLowerInvariant().Replace("-", " "))
+            .Select(keyword => keyword.StartsWithOrdinal(@"//""") ? (IsComment: true, Value: keyword.Substring(@"//""".Length)) : (IsComment: false, Value: keyword))
+            .OrderBy(keyword => keyword.Value)
+            .DistinctBy(keyword => keyword.Value)
+            .Select(keyword => keyword.IsComment ? @$"//""{keyword.Value}""," : @$"""{keyword.Value}"",")
+            .ForEach(Logger.WriteLine);
 }

@@ -81,8 +81,16 @@
         "Directory": "D:\\Files\\Library\\Movies Musical.音乐",
         "Level": 2
     },
-    "MovieTemp": {
+    "MovieTemp31": {
         "Directory": "D:\\Files\\Library\\Movies Temp3.电影3",
+        "Level": 2
+    },
+    "MovieTemp32": {
+        "Directory": "D:\\Files\\Library\\Movies Temp3.2.电影3.2",
+        "Level": 2
+    },
+    "MovieTemp3Encode": {
+        "Directory": "D:\\Files\\Library\\Movies Encode3.电影3",
         "Level": 2
     },
 
@@ -189,29 +197,6 @@
         "Yugoslavian": [ "Bosnia and Herzegovina", "Federal Republic of Yugoslavia", "Serbia", "Slovenian", "Yugoslavia" ]
     },
 
-    "Keywords": [
-        "female full frontal nudity",
-        "female topless nudity",
-        "female pubic hair",
-        "female frontal nudity",
-        "female nudity",
-        "erotica",
-        "softcore",
-        "female star appears nude",
-        "hardcore",
-        "pornography",
-        "explicit sex",
-        "unsimulated sex",
-        "vagina",
-        "labia",
-        "shaved labia",
-        "labia minora",
-        "labia majora",
-        "shaved vagina",
-        "spread vagina",
-        "spread eagle",
-        "bottomless",
-        "lesbian sex",
-        "leg spreading"
+    "ImdbKeywords": [
     ]
 }
