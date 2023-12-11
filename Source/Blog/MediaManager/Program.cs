@@ -8,9 +8,7 @@ using MediaManager;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.VisualBasic.FileIO;
 using OpenQA.Selenium.DevTools;
-using Xabe.FFmpeg;
 using SearchOption = System.IO.SearchOption;
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
@@ -19,11 +17,13 @@ using IHost host = builder.Build();
 
 IConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
     .AddJsonFile("Settings.json", optional: false, reloadOnChange: true)
+    .AddJsonFile("Settings.Debug.json", optional: true, reloadOnChange: true)
     .AddEnvironmentVariables();
 IConfigurationRoot? configuration = configurationBuilder.Build();
 Settings settings = configuration.Get<Settings>() ?? throw new InvalidOperationException();
 
 AppDomainData.DataDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory!, @"..\..\..\Data");
+
 using TextWriterTraceListener textTraceListener = new(Path.Combine(Path.GetTempPath(), "Trace.txt"));
 Trace.Listeners.Add(textTraceListener);
 using ConsoleTraceListener consoleTraceListener = new();

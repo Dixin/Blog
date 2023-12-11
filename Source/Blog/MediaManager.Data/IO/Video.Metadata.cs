@@ -396,7 +396,7 @@ internal static partial class Video
                 bool isLoaded = false;
                 return Directory
                     .GetFiles(Path.GetDirectoryName(movieJson) ?? string.Empty, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
-                    .Where(video => video.IsCommonVideo() && !video.IsDiskImage() && !existingVideos.ContainsKey(Path.GetRelativePath(relativePath, video)))
+                    .Where(video => video.IsVideo() && !video.IsDiskImage() && !existingVideos.ContainsKey(Path.GetRelativePath(relativePath, video)))
                     .Select(video =>
                     {
                         if (!isLoaded)
