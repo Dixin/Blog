@@ -1,7 +1,7 @@
 ﻿namespace MediaManager;
 
 using Examples.Common;
-using Examples.IO;
+using MediaManager.IO;
 
 public partial record Settings(
     string TopEnglishKeyword,
@@ -97,24 +97,11 @@ public partial record Settings(
     public Dictionary<string, string[]> MovieRegions { get; init; } = new();
 
     public string[] ImdbKeywords { get; init; } = [];
+
+    public string[] MovieTopDuplications { get; init; } = [];
 }
 
-public record struct DirectorySettings(string Directory, int Level)
-{
-    public void Deconstruct(out string directory, out int level)
-    {
-        directory = this.Directory;
-        level = this.Level;
-    }
-
-    public static implicit operator (string Directory, int Level)(DirectorySettings directorySettings) => (directorySettings.Directory, directorySettings.Level);
-
-    public static implicit operator string(DirectorySettings directorySettings) => directorySettings.Directory;
-
-    public static implicit operator DirectorySettings(string directory) => new(directory, Video.DefaultDirectoryLevel);
-}
-
-public partial record Settings
+public partial record Settings : ISettings
 {
     internal static void FormatImdbKeywords(string keywords) =>
         keywords

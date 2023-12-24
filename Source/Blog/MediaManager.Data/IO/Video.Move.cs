@@ -1,9 +1,10 @@
-﻿namespace Examples.IO;
+﻿namespace MediaManager.IO;
 
-using Examples.Common;
-using Examples.Net;
-using Examples.Text;
 using System.Linq;
+using Examples.Common;
+using Examples.IO;
+using Examples.Text;
+using MediaManager.Net;
 
 internal static partial class Video
 {
@@ -1078,5 +1079,120 @@ internal static partial class Video
             .Where(IsVideo)
             .ToArray()
             .ForEach(video => FileHelper.MoveToDirectory(video, Path.Combine(Path.GetDirectoryName(video), Path.GetFileNameWithoutExtension(video))));
+    }
+
+    internal static void FormatVideoFileNames(string directory, SearchOption searchOption = SearchOption.TopDirectoryOnly, bool isDryRun = false, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+
+        List<string> videosWithErros = [];
+
+        Directory
+            .EnumerateFiles(directory, PathHelper.AllSearchPattern, searchOption)
+            .Where(IsVideo)
+            .ToArray()
+            .ForEach(video =>
+            {
+                string videoName = Path.GetFileNameWithoutExtension(video);
+
+                string newVideoName = Regex.Replace(videoName, "[ ]+", " ", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]{0,}[\-]{1,}[ \.]{0,}", "-", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]{0,}[\(\[]{0,}([0-9]{4})[\)\]]{0,}", ".$1", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}(HD)?1080p[\)\]]{0,}", ".1080p", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}(HD)?720p[\)\]]{0,}", ".720p", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}[X|H][\.]?264[\)\]]{0,}", ".H264", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}(WEB[\-]?DL|WEBRip)[\)\]]{0,}", ".WEBRip", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}(Amazon\.WEBRip|AMZN\.WEBRip)[\)\]]{0,}", ".WEBRip", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}Xvid[\)\]]{0,}", ".Xvid", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}DivX[\)\]]{0,}", ".DivX", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}UNCUT[\)\]]{0,}", ".UNCUT", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}NTSC[\)\]]{0,}", ".UNCUT", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}DVD[0-9][\)\]]{0,}", ".DVDRip", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}DVDRip[\)\]]{0,}", ".DVDRip", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}VHSRip[\)\]]{0,}", ".VHSRip", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}LDRip[\)\]]{0,}", ".LDRip", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}HDRip[\)\]]{0,}", ".HDRip", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}2Audio[s]{0,}[\)\]]{0,}", ".2Audio", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}(BluRay|BDRip)[\)\]]{0,}", ".BluRay", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}DD[0-9]\.[0-9][\)\]]{0,}", ".DD", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}DDP[0-9]\.[0-9][\)\]]{0,}", ".DDP", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}FLAC\.[0-9]\.[0-9][\)\]]{0,}", "", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}[1-9]AC3[\)\]]{0,}", ".AC3", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}[1-9]AAC[\)\]]{0,}", ".AAC", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}cd1[\)\]]{0,}", ".cd1", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}cd2[\)\]]{0,}", ".cd2", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}mkv[\)\]]{0,}", "", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}mp4[\)\]]{0,}", "", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]*[\(\[]{0,}18\+[\)\]]{0,}", "", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]*[\(\[]{0,}\+18[\)\]]{0,}", "", RegexOptions.IgnoreCase);
+                //newVideoName = Regex.Replace(newVideoName, @"\-([^\-]+)[ \-]([^\-]+)", "-$1@$2", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]{1,}[\(\[]{0,}DVD[\)\]]{0,}[ \.]]{1,}", ".DVDRip.", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"(.+)\.([0-9]{4})[ \.]aka[ \.](.+)", "$1.Aka.$3.$2", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+([12-9])Audio\-([a-zA-Z]+)", "-$2.$1Audio", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]+cd([12-9])\-([a-zA-Z]+)", "-$2.cd$1", RegexOptions.IgnoreCase);
+                newVideoName = newVideoName
+                    .ReplaceIgnoreCase("：", "-")
+                    .ReplaceIgnoreCase(".BluRay.1080p", ".1080p.BluRay")
+                    .ReplaceIgnoreCase(".WEBRip.1080p", ".1080p.WEBRip")
+                    .ReplaceIgnoreCase(".AC3.H264", ".H264.AC3")
+                    .ReplaceIgnoreCase(".DD.H264", ".H264.DD")
+                    .ReplaceIgnoreCase(".DDP.H264", ".H264.DDP")
+                    .ReplaceIgnoreCase(" DVD.", ".DVDRip.")
+                    .ReplaceIgnoreCase(".D9.", ".DVDRip.")
+                    .ReplaceIgnoreCase(".WEB.", ".WEBRip.")
+                    .ReplaceIgnoreCase(".MiniSD-TLF", "-MiniSD@TLF")
+                    .Trim();
+
+                if (videoName.Equals(newVideoName))
+                {
+                    return;
+                }
+
+                log(video);
+                string newVideo = PathHelper.ReplaceFileNameWithoutExtension(video, newVideoName);
+                if(!VideoMovieFileInfo.TryParse(newVideo, out _))
+                {
+                    videosWithErros.Add(newVideo);
+                }
+
+                if (!isDryRun)
+                {
+                    FileHelper.Move(video, newVideo);
+                }
+
+                log(newVideo);
+                log(string.Empty);
+
+                Directory.EnumerateFiles(Path.GetDirectoryName(video)!)
+                    .Where(file => !file.IsVideo() && Path.GetFileNameWithoutExtension(file).StartsWith(videoName))
+                    .ToArray()
+                    .ForEach(file =>
+                    {
+                        log(file);
+                        string newFile = PathHelper.ReplaceFileNameWithoutExtension(file, fileName => fileName.ReplaceIgnoreCase(videoName, newVideoName));
+                        if (!isDryRun)
+                        {
+                            FileHelper.Move(file, newFile);
+                        }
+
+                        log(newFile);
+                        log(string.Empty);
+                    });
+            });
+
+        videosWithErros.Prepend(string.Empty).ForEach(log);
+    }
+
+    internal static void FormatDirectories(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+
+        EnumerateDirectories(directory, level)
+            .ToArray()
+            .ForEach(movie =>
+            {
+                string video = Directory.EnumerateFiles(movie).First(IsVideo);
+                DirectoryHelper.ReplaceDirectoryName(movie, Path.GetFileNameWithoutExtension(video));
+            });
     }
 }

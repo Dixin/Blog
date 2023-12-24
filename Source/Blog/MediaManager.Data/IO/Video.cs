@@ -1,4 +1,6 @@
-﻿namespace Examples.IO;
+﻿namespace MediaManager.IO;
+
+using Examples.IO;
 
 internal static partial class Video
 {

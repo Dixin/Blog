@@ -1,4 +1,4 @@
-﻿namespace Examples.Net;
+﻿namespace MediaManager.Net;
 
 public interface IImdbMetadata
 {

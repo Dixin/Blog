@@ -1,4 +1,4 @@
-﻿namespace Examples.Net;
+﻿namespace MediaManager.Net;
 
 using System.Text.Json.Serialization;
 using Examples.Common;

@@ -1,14 +1,16 @@
-﻿namespace Examples.Net;
+﻿namespace MediaManager.Net;
 
 using System;
 using System.Web;
 using CsQuery;
 using Examples.Common;
-using Examples.IO;
 using Examples.Linq;
+using Examples.Net;
+using MediaManager.IO;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
+using Video = MediaManager.IO.Video;
 
 internal static class Imdb
 {

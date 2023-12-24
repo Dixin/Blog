@@ -1,13 +1,14 @@
-namespace Examples.IO;
+namespace MediaManager.IO;
 
 using System;
 using Examples.Common;
+using Examples.IO;
 using Examples.Linq;
 using Examples.Net;
+using MediaManager.Net;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using OpenQA.Selenium;
 using Xabe.FFmpeg;
-
 using JsonReaderException = Newtonsoft.Json.JsonReaderException;
 
 internal static partial class Video

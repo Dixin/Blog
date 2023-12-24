@@ -1,6 +1,6 @@
-﻿using System.Text.Json.Serialization;
+﻿namespace MediaManager.Net;
 
-namespace Examples.Net;
+using System.Text.Json.Serialization;
 
 public record WikipediaNikkatsu(string ReleaseDate, string OriginalTitle, string TranslatedTitle, string Director, string Note)
 {

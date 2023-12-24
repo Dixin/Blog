@@ -1,9 +1,10 @@
-﻿namespace Examples.Net;
+﻿namespace MediaManager.Net;
 
 using CsQuery;
 using Examples.Common;
-using Examples.IO;
 using Examples.Linq;
+using Examples.Net;
+using MediaManager.IO;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 internal static class Preferred

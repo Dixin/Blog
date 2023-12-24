@@ -1,4 +1,4 @@
-﻿namespace Examples.Database;
+﻿namespace MediaManager.Database;
 
 internal static class Jellyfin
 {

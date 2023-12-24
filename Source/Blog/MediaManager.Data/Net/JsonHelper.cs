@@ -1,8 +1,8 @@
-﻿namespace Examples.Net;
+﻿namespace MediaManager.Net;
 
-using Examples.IO;
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
+using Examples.IO;
 
 internal class JsonHelper
 {

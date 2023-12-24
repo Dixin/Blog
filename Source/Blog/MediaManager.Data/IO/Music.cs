@@ -1,6 +1,7 @@
-﻿namespace Examples.IO;
+﻿namespace MediaManager.IO;
 
 using Examples.Common;
+using Examples.IO;
 
 internal static class Music
 {

@@ -1,6 +1,6 @@
-﻿namespace Examples.IO;
+﻿namespace MediaManager.IO;
 
-using Examples.Net;
+using MediaManager.Net;
 
 public record VideoMetadata
 {

@@ -1,4 +1,4 @@
-﻿namespace Examples.Net;
+﻿namespace MediaManager.Net;
 
 public record PreferredSummary(string Link, string Title, string ImdbRating, string[] Genres, string Image, int Year);
 

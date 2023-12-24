@@ -1,13 +1,15 @@
-﻿namespace Examples.IO;
+﻿namespace MediaManager.IO;
 
+using System.Linq;
 using System.Web;
 using CsQuery;
 using Examples.Common;
+using Examples.IO;
 using Examples.Linq;
 using Examples.Net;
-using OpenQA.Selenium.Support.UI;
+using MediaManager.Net;
 using OpenQA.Selenium;
-using System.Linq;
+using OpenQA.Selenium.Support.UI;
 
 internal static partial class Video
 {
@@ -1484,7 +1486,7 @@ internal static partial class Video
             });
     }
 
-    internal static async Task PrintMovieImdbIdErrorsAsync(string x265JsonPath, string h264JsonPath, string x265XJsonPath, string h264XJsonPath, /*string preferredJsonPath, string h264720PJsonPath,*/ Action<string>? log = null, params (string Directory, int Level)[] directories)
+    internal static async Task PrintMovieImdbIdErrorsAsync(string x265JsonPath, string h264JsonPath, string x265XJsonPath, string h264XJsonPath, HashSet<string> topDuplications, /*string preferredJsonPath, string h264720PJsonPath,*/ Action<string>? log = null, params (string Directory, int Level)[] directories)
     {
         log ??= Logger.WriteLine;
         Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(x265JsonPath);
@@ -1503,7 +1505,7 @@ internal static partial class Video
         Dictionary<string, string> h264TitlesImdbIds = h264Metadata
             .Where(pair => pair.Key.IsNotNullOrWhiteSpace())
             .SelectMany(pair => pair.Value)
-            .Where(metadata => !metadata.Title.EqualsIgnoreCase("Emma.1996.1080p.BluRay.H264.AAC-RARBG"))
+            .Where(metadata => !topDuplications.Contains(metadata.Title))
             .ToDictionary(metadata => metadata.Title, metadata => metadata.ImdbId);
         Dictionary<string, string> h264XTitlesImdbIds = h264XMetadata
             .SelectMany(pair => pair.Value)

@@ -1,6 +1,7 @@
-namespace Examples.IO;
+namespace MediaManager.IO;
 
 using Examples.Common;
+using Examples.IO;
 using Examples.Linq;
 using Examples.Text;
 using Ude;
@@ -408,7 +409,7 @@ internal static partial class Video
         log ??= Logger.WriteLine;
         Directory
             .EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
-            .Where(file => Video.IsSubtitle(file) && Regex.IsMatch(Path.GetFileNameWithoutExtension(file).Split(".").Last(), @"^[a-z]{3}\-[0-9]{1,2}$"))
+            .Where(file => IsSubtitle(file) && Regex.IsMatch(Path.GetFileNameWithoutExtension(file).Split(".").Last(), @"^[a-z]{3}\-[0-9]{1,2}$"))
             .ToArray()
             .ForEach(subtitle =>
             {

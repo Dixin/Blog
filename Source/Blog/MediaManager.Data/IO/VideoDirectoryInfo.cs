@@ -1,7 +1,8 @@
-namespace Examples.IO;
+namespace MediaManager.IO;
 
-using Examples.Common;
 using System.Linq;
+using Examples.Common;
+using Examples.IO;
 
 internal record VideoDirectoryInfo(
     string DefaultTitle1, string DefaultTitle2, string DefaultTitle3,

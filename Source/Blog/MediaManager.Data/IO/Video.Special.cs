@@ -1,6 +1,7 @@
-﻿using Examples.Common;
+﻿namespace MediaManager.IO;
 
-namespace Examples.IO;
+using Examples.Common;
+using Examples.IO;
 
 internal static partial class Video
 {
@@ -31,7 +32,7 @@ internal static partial class Video
             return;
         }
 
-        string metadata = Directory.GetFiles(directory, Video.XmlMetadataSearchPattern).FirstOrDefault(string.Empty);
+        string metadata = Directory.GetFiles(directory, XmlMetadataSearchPattern).FirstOrDefault(string.Empty);
         if (metadata.IsNullOrWhiteSpace())
         {
             return;

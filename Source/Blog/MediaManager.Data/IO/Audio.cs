@@ -1,7 +1,8 @@
-﻿namespace Examples.IO;
+﻿namespace MediaManager.IO;
 
 using System.Drawing;
 using Examples.Common;
+using Examples.IO;
 using Examples.Text;
 using Microsoft.International.Converters.TraditionalChineseToSimplifiedConverter;
 using TagLib;

@@ -1,7 +1,8 @@
-﻿namespace Examples.IO;
+﻿namespace MediaManager.IO;
 
 using Examples.Common;
 using Examples.Diagnostics;
+using Examples.IO;
 using Xabe.FFmpeg;
 
 internal class FfmpegHelper

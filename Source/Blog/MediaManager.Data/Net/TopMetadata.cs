@@ -1,4 +1,4 @@
-﻿namespace Examples.Net;
+﻿namespace MediaManager.Net;
 
 internal record TopMetadata(string Link, string Title, string ImdbId, string ImdbRating, string[] Genres, string Image, string DateAdded, string Size, int Seed, int Leech, string Uploader)
     : IImdbMetadata;

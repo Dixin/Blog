@@ -1,10 +1,12 @@
-﻿namespace Examples.IO;
+﻿namespace MediaManager.IO;
 
 using CsQuery;
 using Examples.Common;
+using Examples.IO;
 using Examples.Linq;
 using Examples.Net;
 using Examples.Text;
+using MediaManager.Net;
 using OpenQA.Selenium;
 
 internal static partial class Video

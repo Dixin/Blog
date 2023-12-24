@@ -1,3 +1,3 @@
-﻿namespace Examples.Net;
+﻿namespace MediaManager.Net;
 
 public record EntryMetadata(string Title, string Content);

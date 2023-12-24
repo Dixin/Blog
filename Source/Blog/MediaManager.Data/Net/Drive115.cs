@@ -1,9 +1,10 @@
-﻿namespace Examples.Net;
+﻿namespace MediaManager.Net;
 
 using System.Collections.ObjectModel;
 using CsQuery;
 using Examples.Common;
-using Examples.IO;
+using Examples.Net;
+using MediaManager.IO;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
@@ -23,20 +24,21 @@ internal static class Drive115
         for (int page = 1; ; page++)
         {
             log($"Start of page {page}.");
-            new WebDriverWait(offlineTasksFrame, WebDriverHelper.DefaultManualWait).Until(e =>
+            new WebDriverWait(offlineTasksFrame, WebDriverHelper.DefaultManualWait).Until(driver =>
             {
-                ReadOnlyCollection<IWebElement> tasksElements = e.FindElements(By.CssSelector("#js-warp li"));
-                if (tasksElements.IsEmpty())
+                ReadOnlyCollection<IWebElement> tasksElements = driver.FindElements(By.CssSelector("#js-warp li"));
+                if (driver.FindElements(By.CssSelector("#js-warp li")).IsEmpty())
                 {
                     return false;
                 }
 
-                if (firstTask.Equals(tasksElements.First().Text)) // StaleElementException.
+                string elementText = Retry.FixedInterval(() => driver.FindElements(By.CssSelector("#js-warp li")).First().Text);
+                if (firstTask.Equals(elementText)) // StaleElementException.
                 {
                     return false;
                 }
 
-                firstTask = tasksElements.First().Text;
+                firstTask = elementText;
                 return true;
             });
             IWebElement currentPageElement = new WebDriverWait(offlineTasksFrame, WebDriverHelper.DefaultManualWait).Until(e => e.FindElement(By.CssSelector("#js-page div.con span.current")));
@@ -73,13 +75,15 @@ internal static class Drive115
         }
     }
 
-    internal static async Task WriteOfflineTasksAsync(string url, string path, string keyword = "", Action<string>? log = null)
+    internal static async Task WriteOfflineTasksAsync(string url, string path, Action<string>? log = null, params string[] keywords)
     {
+        log ??= Logger.WriteLine;
+
         List<Drive115OfflineTask> tasks = DownloadOfflineTasks(
             url,
-            keyword.IsNullOrWhiteSpace()
+            keywords.IsEmpty()
                 ? (_, _) => false
-                : (title, link) => title.ContainsIgnoreCase(keyword) || link.ContainsIgnoreCase(keyword),
+                : (title, link) => keywords.Any(keyword => title.ContainsIgnoreCase(keyword) || link.ContainsIgnoreCase(keyword)),
             (_, _) => Debugger.Break(),
             log);
         await JsonHelper.SerializeToFileAsync(tasks.ToArray(), path);

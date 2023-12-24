@@ -1,7 +1,8 @@
-﻿namespace Examples.Net;
+﻿namespace MediaManager.Net;
 
 using System.Web;
 using CsQuery;
+using Examples.Net;
 using OpenQA.Selenium;
 
 internal static class Douban
