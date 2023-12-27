@@ -1,15 +1,12 @@
 ﻿using Examples.Common;
 using Examples.IO;
-using Examples.Linq;
-using Examples.Net;
-using Examples.Security;
-using Examples.Text;
 using MediaManager;
+using MediaManager.IO;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using OpenQA.Selenium.DevTools;
 using SearchOption = System.IO.SearchOption;
+using Video = MediaManager.IO.Video;
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddHttpClient();
@@ -17,12 +14,16 @@ using IHost host = builder.Build();
 
 IConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
     .AddJsonFile("Settings.json", optional: false, reloadOnChange: true)
+#if DEBUG
     .AddJsonFile("Settings.Debug.json", optional: true, reloadOnChange: true)
+#endif
     .AddEnvironmentVariables();
 IConfigurationRoot? configuration = configurationBuilder.Build();
 Settings settings = configuration.Get<Settings>() ?? throw new InvalidOperationException();
+VideoMovieFileInfo.Settings = settings;
+VideoEpisodeFileInfo.Settings = settings;
 
-AppDomainData.DataDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory!, @"..\..\..\Data");
+AppDomainData.DataDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\Data");
 
 using TextWriterTraceListener textTraceListener = new(Path.Combine(Path.GetTempPath(), "Trace.txt"));
 Trace.Listeners.Add(textTraceListener);
@@ -31,7 +32,7 @@ Trace.Listeners.Add(consoleTraceListener);
 
 Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
 
-Video.Initialize(settings.TopEnglishKeyword, settings.TopForeignKeyword, settings.PreferredOldKeyword, settings.PreferredNewKeyword);
+
 
 //Video.PrintDirectoriesWithMultipleMedia(settings.MovieControversial);
 //Video.PrintDirectoriesWithMultipleMedia(settings.MovieMainstream);
@@ -278,7 +279,7 @@ Video.Initialize(settings.TopEnglishKeyword, settings.TopForeignKeyword, setting
 //    count => ..);
 //await Imdb.DownloadAllTVsAsync(settings.TVTopX265Metadata, settings.TVMainstream, settings.TVMetadataCacheDirectory, settings.TVMetadataDirectory);
 string[] genres = { "family", "animation", "documentary" };
-//await Video.PrintTVLinks(settings.TVTopX265Metadata, new string[] { settings.TVMainstream, settings.TVMainstreamWithoutSubtitle }, @"D:\Files\Library\TVMetadata", @"D:\Files\Library\TVMetadataCache", "https://rarbg.to/torrents.php?search=x265.rarbg&category%5B%5D=41",
+//await Video.PrintTVLinks(settings.TVTopX265Metadata, new string[] { settings.TVMainstream, settings.TVMainstreamWithoutSubtitle }, @"D:\Files\Library\TVMetadata", @"D:\Files\Library\TVMetadataCache", settings.TVTopX265Url,
 //    imdbMetadata =>
 //        !imdbMetadata.AllKeywords.Intersect(new string[] { "test" }, StringComparer.OrdinalIgnoreCase).Any()
 //        && !imdbMetadata.Genres.Intersect(genres, StringComparer.OrdinalIgnoreCase).Any()
@@ -416,7 +417,7 @@ string[] genres = { "family", "animation", "documentary" };
 
 //Video.CreateTVEpisodeMetadata(@"H:\Downloads7\New folder (6)\阅读\_1", f => Path.GetFileNameWithoutExtension(f).Split(".").Last());
 
-static void RenameEpisode(string mediaDirectory, string metadataDirectory, bool isDryRun = false, Action<string>? log = null)
+static void RenameEpisode(ISettings settings, string mediaDirectory, string metadataDirectory, bool isDryRun = false, Action<string>? log = null)
 {
     log ??= Logger.WriteLine;
 
@@ -489,7 +490,7 @@ static void RenameEpisode(string mediaDirectory, string metadataDirectory, bool 
     tvs.ForEach(tv => Video.RenameEpisodesWithTitle(
         tv,
         Path.Combine(metadataDirectory, Path.GetFileName(tv)),
-        (file, title) => Path.GetFileNameWithoutExtension(file).ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopEnglishKeyword}") ? file.ReplaceIgnoreCase($"{Video.VersionSeparator}{Video.TopEnglishKeyword}", $"{Video.VersionSeparator}{Video.TopEnglishKeyword}.{title}") : file.ReplaceIgnoreCase($"{Video.VersionSeparator}{Video.TopForeignKeyword}", $"{Video.VersionSeparator}{Video.TopForeignKeyword}.{title}"),
+        (file, title) => Path.GetFileNameWithoutExtension(file).ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") ? file.ReplaceIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}", $"{Video.VersionSeparator}{settings.TopEnglishKeyword}.{title}") : file.ReplaceIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}", $"{Video.VersionSeparator}{settings.TopForeignKeyword}.{title}"),
         isDryRun,
         log));
     //tvs.ForEach(tv => Video.MoveSubtitlesForEpisodes(tv, Path.Combine(metadataDirectory, Path.GetFileName(tv)), isDryRun: isDryRun, log: log));
@@ -626,10 +627,7 @@ static void RenameFilesWithDuplicateTitle(
 //        }
 //    }
 //}, 4);
-//Video.RenameFiles(@"E:\Files\Move\TV",
-//    (f, i) => f
-//        .Replace(".2160p.UHD.BluRay.x265.10bit.HDR.DDP5.1.Atmos-RARBG", ".ATMOS.HDR.2160p.BluRay.x265.DDP-RARBG")
-//        .Replace(".2160p.UHD.BluRay.x265.10bit.HDR.DDP5.1-RARBG", ".HDR.2160p.BluRay.x265.DDP-RARBG"));
+
 //Directory.GetDirectories(@"U:\Move\New folder").ForEach(d => DirectoryHelper.AddPostfix(d, "[HDR]"));
 //Directory.GetDirectories(@"U:\Move\New folder").ForEach(d=>DirectoryHelper.ReplaceDirectoryName(d,n=>n.Replace("[1080x]","[2160x]")));
 //Directory.GetDirectories(@"U:\Move\New folder").ForEach(d => Directory.CreateDirectory(Path.Combine(@"T:\Move\New folder", Path.GetFileName(d))));
@@ -654,11 +652,6 @@ static void RenameFilesWithDuplicateTitle(
 //            .ForEach(f => File.Copy(f, Path.Combine(destinationDirectory, Path.GetFileName(f)), true));
 //    });
 
-//FfmpegHelper.MergeAllDubbed(@"L:\Files3\New folder (3)\DOM.2021"/*, "*.POLISH.1080p.WEBRip.x265-RARBG.mp4", original =>
-//{
-//    string name = Path.GetFileName(original).Replace(".POLISH.", ".DUBBED.");
-//    return Path.Combine(@"U:\Move\Glitter\Season 01", name);
-//}*/);
 //Video.RenameFiles(@"E:\Files\Move\TV\Black.Sails", (f, i) => f.Replace("..", "."), isDryRun: false);
 //await Rare.PrintVersionsAsync(settings.MovieRareMetadata, settings.MovieLibraryMetadata, settings.MovieTopX265Metadata, settings.MovieTopH264720PMetadata, settings.MoviePreferredMetadata, settings.MovieTopH264720PMetadata, log);
 //await Rare.DownloadMetadataAsync(
@@ -883,13 +876,6 @@ static void RenameFilesWithDuplicateTitle(
 
 //HashSet<string> allDownloadedTitles = new(File.ReadAllLines(@"e:\AllDownloadedTitles.txt"), StringComparer.OrdinalIgnoreCase);
 
-//HashSet<string> downloadedTitles = new(Directory.GetDirectories(@"Q:\Files\Movies\Rarbg_")
-//    .Concat(Directory.GetDirectories(@"Q:\Files\Movies\Rarbg_.Dubbed"))
-//    .Concat(Directory.GetDirectories(@"Q:\Files\Movies\Rarbg_.Dubbed2"))
-//    .Concat(Directory.GetDirectories(@"Q:\Files\Movies\Rarbg2_"))
-//    .Select(d => Path.GetFileName(d)!), StringComparer.OrdinalIgnoreCase);
-//Debug.Assert(Directory.GetDirectories(@"Q:\Files\Movies\Rarbg_").All(d => Directory.EnumerateFiles(d).Any(Video.IsVideo)));
-
 //Directory.GetDirectories(@"\\beyond-x\E\Files\Downloading")
 //    .Where(d => allDownloadedTitles.Contains(Path.GetFileName(d)))
 //    .ToArray()
@@ -901,9 +887,7 @@ static void RenameFilesWithDuplicateTitle(
 //Directory.GetDirectories(@"E:\Files\Move").Where(d => downloaded.Contains(Path.GetFileName(d))).ToArray()
 //    .ForEach(d => DirectoryHelper.MoveToDirectory(d, @"E:\Files\Move.Delete"));
 
-//Directory.GetDirectories(@"Q:\Files\Movies\Rarbg_").Where(d=>Directory.EnumerateFiles(d, "*.json").Count()!=1).ForEach(Logger.WriteLine);
-
-//Video.EnumerateDirectories(@"Q:\Files\Movies\Rarbg_", 1)
+//Video.EnumerateDirectories(@"Q:\Files\Movies\_", 1)
 //    .GroupBy(d => XDocument.Load(Directory.EnumerateFiles(d, Video.XmlMetadataSearchPattern).First(f => f.EndsWithIgnoreCase(".backup.nfo"))).Root!.Element("imdbid")!.Value)
 //    .Where(group => group.Count() > 1)
 //    .ToArray()
@@ -971,10 +955,7 @@ string[] links2 = @"
 //HashSet<string> titles = new(libraryMetadata.Values.AsParallel().SelectMany(d=>d.Keys).Select(f=>Path.GetFileNameWithoutExtension(f)!).Distinct(StringComparer.InvariantCultureIgnoreCase));
 //downloadedTitles.AsParallel().Where(downloadedTitle => titles.Any(t=>t.StartsWith(downloadedTitle, StringComparison.OrdinalIgnoreCase))).ForEach(Logger.WriteLine);
 //HashSet<string> xx = new(Directory.EnumerateDirectories(@"E:\Files\Delete").Select(Path.GetFileName), StringComparer.OrdinalIgnoreCase);
-//Directory.EnumerateDirectories(@"\\beyond-r\F\Files\Library\Movies Temp3.电影3\Yts_")
-//    .Where(d => xx.Contains(Path.GetFileName(d)))
-//    .ToArray()
-//    .ForEach(d => DirectoryHelper.MoveToDirectory(d, @"\\beyond-r\F\Files\Library\Movies Temp3.电影3\Rarbg_"));
+
 
 //Video.RenameFiles(@"\\beyond-r\E\New folder\Virgin`3=Jôô`3.2010.孃王`3[0.0-0][NA]\Season 01", (f,i)=>PathHelper.AddFilePostfix(f, ".SUBBED.watermark.chs"));
 
