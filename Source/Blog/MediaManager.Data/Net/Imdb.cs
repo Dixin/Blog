@@ -761,34 +761,30 @@ internal static class Imdb
         return false;
     }
 
-    internal static async Task DownloadAllMoviesAsync(
-        string libraryJsonPath,
-        string x265JsonPath, string h264JsonPath, string preferredJsonPath, string h264720PJsonPath, string rareJsonPath, string x265XJsonPath, string h264XJsonPath,
-        string cacheDirectory, string metadataDirectory,
-        Func<int, Range>? getRange = null, Action<string>? log = null)
+    internal static async Task DownloadAllMoviesAsync(ISettings settings, Func<int, Range>? getRange = null, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
         ILookup<string, string> top = (await File.ReadAllLinesAsync(@"D:\Files\Library\Top.Database.txt"))
             .AsParallel()
             .Where(line => (line.ContainsIgnoreCase("|movies_x265|") || line.ContainsIgnoreCase("|movies|"))
-                && (line.ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopEnglishKeyword}") || line.ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopForeignKeyword}")))
+                && (line.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") || line.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}")))
             .Select(line => line.Split('|'))
             .Do(cells => Debug.Assert(string.IsNullOrEmpty(cells[^2]) || Regex.IsMatch(cells[^2], "tt[0-9]+")))
-            .Do(cells => Debug.Assert(cells[1].ContainsIgnoreCase($"-{Video.TopEnglishKeyword}") || cells[1].ContainsIgnoreCase($"-{Video.TopForeignKeyword}")))
+            .Do(cells => Debug.Assert(cells[1].ContainsIgnoreCase($"-{settings.TopEnglishKeyword}") || cells[1].ContainsIgnoreCase($"-{settings.TopForeignKeyword}")))
             .ToLookup(cells => cells[^2], cells => cells[1]);
 
-        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(libraryJsonPath);
-        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(x265JsonPath);
-        Dictionary<string, TopMetadata[]> x265XMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(x265XJsonPath);
-        Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264JsonPath);
-        Dictionary<string, TopMetadata[]> h264XMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264XJsonPath);
-        Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(preferredJsonPath);
-        Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264720PJsonPath);
+        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(settings.MovieLibraryMetadata);
+        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265Metadata);
+        Dictionary<string, TopMetadata[]> x265XMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265XMetadata);
+        Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264Metadata);
+        Dictionary<string, TopMetadata[]> h264XMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264XMetadata);
+        Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(settings.MoviePreferredMetadata);
+        Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264720PMetadata);
         //Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(rareJsonPath);
 
-        string[] cacheFiles = Directory.GetFiles(@cacheDirectory);
-        string[] metadataFiles = Directory.GetFiles(metadataDirectory);
+        string[] cacheFiles = Directory.GetFiles(settings.MovieMetadataCacheDirectory);
+        string[] metadataFiles = Directory.GetFiles(settings.MovieMetadataDirectory);
         string[] imdbIds = x265Metadata.Keys
             .Concat(x265XMetadata.Keys)
             .Concat(h264Metadata.Keys)
@@ -817,7 +813,7 @@ internal static class Imdb
         int trimmedLength = imdbIds.Length;
         ConcurrentQueue<string> imdbIdQueue = new(imdbIds);
         await Enumerable.Repeat<Func<IWebDriver>>(() => WebDriverHelper.Start(keepExisting: true), MaxDegreeOfParallelism)
-            .Select(factory=>factory())
+            .Select(factory => factory())
             .ParallelForEachAsync(async webDriver =>
             {
                 while (imdbIdQueue.TryDequeue(out string? imdbId))
@@ -826,7 +822,7 @@ internal static class Imdb
                     log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
                     try
                     {
-                        await Retry.FixedIntervalAsync(async () => await Video.DownloadImdbMetadataAsync(imdbId, cacheDirectory, metadataDirectory, cacheFiles, metadataFiles, webDriver, false, true, log));
+                        await Retry.FixedIntervalAsync(async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataCacheDirectory, settings.TVMetadataDirectory, cacheFiles, metadataFiles, webDriver, false, true, log));
                     }
                     catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
                     {

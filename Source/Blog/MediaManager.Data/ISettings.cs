@@ -1,12 +1,10 @@
-﻿using Examples.IO;
-
-namespace MediaManager;
+﻿namespace MediaManager;
 
 using MediaManager.IO;
 
 public record struct DirectorySettings(string Directory, int Level)
 {
-    public void Deconstruct(out string directory, out int level)
+    public readonly void Deconstruct(out string directory, out int level)
     {
         directory = this.Directory;
         level = this.Level;
@@ -135,6 +133,10 @@ public interface ISettings
 
     string MovieRareMetadata { get; init; }
 
+    string MovieImdbSpecialMetadata { get; init; }
+
+    string MovieMergedMetadata { get; init; }
+
     string TVTopX265Metadata { get; init; }
 
     string MovieMetadataDirectory { get; init; }
@@ -144,4 +146,6 @@ public interface ISettings
     string TVMetadataDirectory { get; init; }
 
     string TVMetadataCacheDirectory { get; init; }
+
+    string TopMagnetUrls { get; init; }
 }

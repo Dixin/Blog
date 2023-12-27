@@ -58,7 +58,7 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
-            .Where(movie => !VideoDirectoryInfo.GetVideos(movie).Any<IVideoFileInfo>(video => video.IsHD))
+            .Where(movie => !VideoDirectoryInfo.GetVideos(movie).Any(video => video.IsHD()))
             .ForEach(log);
     }
 
@@ -79,16 +79,16 @@ internal static partial class Video
     }
 
     internal static void PrintVideosP(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null) =>
-        PrintVideos(directory, level, file => ((IVideoFileInfo)VideoMovieFileInfo.Parse(file)).EncoderType is EncoderType.P, log);
+        PrintVideos(directory, level, file => VideoMovieFileInfo.Parse(file).GetEncoderType() is EncoderType.P, log);
 
     internal static void PrintVideosY(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null) =>
-        PrintVideos(directory, level, file => ((IVideoFileInfo)VideoMovieFileInfo.Parse(file)).EncoderType is EncoderType.Y, log);
+        PrintVideos(directory, level, file => VideoMovieFileInfo.Parse(file).GetEncoderType() is EncoderType.Y, log);
 
     internal static void PrintVideosNotX(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null) =>
-        PrintVideos(directory, level, file => ((IVideoFileInfo)VideoMovieFileInfo.Parse(file)).EncoderType is EncoderType.X, log);
+        PrintVideos(directory, level, file => VideoMovieFileInfo.Parse(file).GetEncoderType() is EncoderType.X, log);
 
     internal static void PrintVideosH(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null) =>
-        PrintVideos(directory, level, file => ((IVideoFileInfo)VideoMovieFileInfo.Parse(file)).EncoderType is EncoderType.H, log);
+        PrintVideos(directory, level, file => VideoMovieFileInfo.Parse(file).GetEncoderType() is EncoderType.H, log);
 
     private static void PrintVideos(string directory, int level, Func<string, bool> predicate, Action<string>? log = null)
     {
@@ -206,7 +206,7 @@ internal static partial class Video
 
     private static readonly char[] DirectorySpecialCharacters = "：@#(){}".ToCharArray();
 
-    internal static void PrintDirectoriesWithErrors(string directory, int level = DefaultDirectoryLevel, bool isLoadingVideo = false, bool isNoAudioAllowed = false, bool isTV = false, Action<string>? log = null)
+    internal static void PrintDirectoriesWithErrors(ISettings settings, string directory, int level = DefaultDirectoryLevel, bool isLoadingVideo = false, bool isNoAudioAllowed = false, bool isTV = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         List<string>? allVideos = null;
@@ -413,32 +413,32 @@ internal static partial class Video
                 string[] metadataFiles = topFiles.Where(file => file.HasExtension(XmlMetadataExtension)).ToArray();
                 string[] otherFiles = topFiles.Except(videos).Except(subtitles).Except(metadataFiles).Except(imdbFiles).Except(cacheFiles).ToArray();
 
-                if (directoryInfo.Is2160P && !videoFileInfos.Any<IVideoFileInfo>(video => video.DefinitionType is DefinitionType.P2160))
+                if (directoryInfo.Is2160P && !videoFileInfos.Any(video => video.GetDefinitionType() is DefinitionType.P2160))
                 {
                     log($"!Not 2160: {movie}");
                 }
 
-                if (!directoryInfo.Is2160P && videoFileInfos.Any<IVideoFileInfo>(video => video.DefinitionType is DefinitionType.P2160))
+                if (!directoryInfo.Is2160P && videoFileInfos.Any(video => video.GetDefinitionType() is DefinitionType.P2160))
                 {
                     log($"!2160: {movie}");
                 }
 
-                if (directoryInfo.Is1080P && !videoFileInfos.Any<IVideoFileInfo>(video => video.DefinitionType is DefinitionType.P1080))
+                if (directoryInfo.Is1080P && !videoFileInfos.Any(video => video.GetDefinitionType() is DefinitionType.P1080))
                 {
                     log($"!Not 1080: {movie}");
                 }
 
-                if (!directoryInfo.Is1080P && videoFileInfos.Any<IVideoFileInfo>(video => video.DefinitionType is DefinitionType.P1080) && !videoFileInfos.Any<IVideoFileInfo>(video => video.DefinitionType is DefinitionType.P2160))
+                if (!directoryInfo.Is1080P && videoFileInfos.Any(video => video.GetDefinitionType() is DefinitionType.P1080) && !videoFileInfos.Any(video => video.GetDefinitionType() is DefinitionType.P2160))
                 {
                     log($"!1080: {movie}");
                 }
 
-                if (directoryInfo.Is720P && !videoFileInfos.Any<IVideoFileInfo>(video => video.DefinitionType is DefinitionType.P720))
+                if (directoryInfo.Is720P && !videoFileInfos.Any(video => video.GetDefinitionType() is DefinitionType.P720))
                 {
                     log($"!Not 720: {movie}");
                 }
 
-                if (!directoryInfo.Is720P && videoFileInfos.Any<IVideoFileInfo>(video => video.DefinitionType is DefinitionType.P720) && !videoFileInfos.Any<IVideoFileInfo>(video => video.DefinitionType is DefinitionType.P1080) && !videoFileInfos.Any<IVideoFileInfo>(video => video.DefinitionType is DefinitionType.P2160))
+                if (!directoryInfo.Is720P && videoFileInfos.Any(video => video.GetDefinitionType() is DefinitionType.P720) && !videoFileInfos.Any(video => video.GetDefinitionType() is DefinitionType.P1080) && !videoFileInfos.Any(video => video.GetDefinitionType() is DefinitionType.P2160))
                 {
                     log($"!720: {movie}");
                 }
@@ -465,7 +465,7 @@ internal static partial class Video
                         .ForEach(file => log($"!Attachment: {Path.Combine(movie, file)}"));
                 }
 
-                string source = VideoDirectoryInfo.GetSource(videoFileInfos);
+                string source = VideoDirectoryInfo.GetSource(videoFileInfos, settings);
                 if (!source.EqualsOrdinal(directoryInfo.Source))
                 {
                     log($"!Source {directoryInfo.Source} should be {source}: {movie}");
@@ -541,9 +541,10 @@ internal static partial class Video
         }
     }
 
-    internal static void PrintTitlesWithDifferences(string directory, int level = DefaultDirectoryLevel, Action<string?>? log = null)
+    internal static void PrintTitlesWithDifferences(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
+
         EnumerateDirectories(directory, level)
             .ForEach(movie =>
             {
@@ -622,14 +623,14 @@ internal static partial class Video
             });
     }
 
-    internal static async Task PrintMovieVersions(string x265JsonPath, string h264JsonPath, string preferredJsonPath, string h264720PJsonPath, string ignoreJsonPath, Action<string>? log = null, params (string Directory, int Level)[] directories)
+    internal static async Task PrintMovieVersions(ISettings settings, Action<string>? log = null, params (string Directory, int Level)[] directories)
     {
         log ??= Logger.WriteLine;
-        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(x265JsonPath);
-        Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264JsonPath);
-        Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264720PJsonPath);
-        Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(preferredJsonPath);
-        HashSet<string> ignore = new(await JsonHelper.DeserializeFromFileAsync<string[]>(ignoreJsonPath));
+        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265Metadata);
+        Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264Metadata);
+        Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264720PMetadata);
+        Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(settings.MoviePreferredMetadata);
+        HashSet<string> ignore = new(await JsonHelper.DeserializeFromFileAsync<string[]>(settings.MovieIgnoreMetadata));
 
         directories
             .SelectMany(directory => EnumerateDirectories(directory.Directory, directory.Level))
@@ -663,7 +664,7 @@ internal static partial class Video
                     .Select(file => (file, Path.GetFileNameWithoutExtension(file) ?? throw new InvalidOperationException(file), VideoMovieFileInfo.Parse(file)))
                     .ToArray();
                 (string File, string Name, VideoMovieFileInfo Info)[] preferredVideos = videos
-                    .Where(video => ((IVideoFileInfo)video.Info).EncoderType is EncoderType.Y or EncoderType.XY)
+                    .Where(video => video.Info.GetEncoderType() is EncoderType.Y or EncoderType.XY)
                     .ToArray();
 
                 PreferredMetadata[] availablePreferredMetadata = preferredMetadata
@@ -704,7 +705,7 @@ internal static partial class Video
                         .ToArray();
                 }
 
-                if (videos.All(video => ((IVideoFileInfo)video.Info).DefinitionType is DefinitionType.P2160))
+                if (videos.All(video => video.Info.GetDefinitionType() is DefinitionType.P2160))
                 {
                     return;
                 }
@@ -716,7 +717,7 @@ internal static partial class Video
                         {
                             if (VideoMovieFileInfo.TryParse(metadata.Title, out VideoMovieFileInfo? video))
                             {
-                                return ((IVideoFileInfo)video).EncoderType is EncoderType.X or EncoderType.H;
+                                return video.GetEncoderType() is EncoderType.X or EncoderType.H;
                             }
 
                             log($"!Fail to parse metadata {metadata.Title} {metadata.Link}");
@@ -738,7 +739,7 @@ internal static partial class Video
                             string metadataTitle = metadata.Title;
                             string[] videoEditions = video.Info.Edition.Split(".", StringSplitOptions.RemoveEmptyEntries);
                             // (Not any) Local is equal to or better than remote metadata.
-                            return ((IVideoFileInfo)video.Info).EncoderType is EncoderType.X
+                            return video.Info.GetEncoderType() is EncoderType.X
                                 && (video.Name.StartsWithIgnoreCase(metadata.Title)
                                     || video.Info.Origin.ContainsIgnoreCase(".BluRay") && metadataTitle.ContainsIgnoreCase(".WEBRip.")
                                     || !video.Info.Edition.ContainsIgnoreCase("PREVIEW") && metadataTitle.ContainsIgnoreCase(".PREVIEW.")
@@ -760,7 +761,7 @@ internal static partial class Video
                     if (otherX265Metadata.Any())
                     {
                         if (otherX265Metadata.All(metadata => metadata.Title.Contains(".WEBRip."))
-                            && preferredVideos.Any(video => ((IVideoFileInfo)video.Info).DefinitionType == DefinitionType.P1080 && video.Info.Origin.ContainsIgnoreCase("BluRay")))
+                            && preferredVideos.Any(video => video.Info.GetDefinitionType() == DefinitionType.P1080 && video.Info.Origin.ContainsIgnoreCase("BluRay")))
                         {
 
                         }
@@ -780,7 +781,7 @@ internal static partial class Video
                     return;
                 }
 
-                if (videos.Any(video => ((IVideoFileInfo)video.Info).EncoderType is EncoderType.X))
+                if (videos.Any(video => video.Info.GetEncoderType() is EncoderType.X))
                 {
                     if (videos.All(video => !video.Info.Origin.ContainsIgnoreCase("BluRay")) && bluRayPreferredMetadata.Any())
                     {
@@ -802,7 +803,7 @@ internal static partial class Video
                         {
                             if (VideoMovieFileInfo.TryParse(metadata.Title, out VideoMovieFileInfo? video))
                             {
-                                return ((IVideoFileInfo)video).EncoderType is EncoderType.X or EncoderType.H;
+                                return video.GetEncoderType() is EncoderType.X or EncoderType.H;
                             }
 
                             log($"!Fail to parse metadata {metadata.Title} {metadata.Link}");
@@ -819,7 +820,7 @@ internal static partial class Video
                             string metadataTitle = metadata.Title;
                             string[] videoEditions = video.Info.Edition.Split(".", StringSplitOptions.RemoveEmptyEntries);
                             // (Not any) Local is equal to or better than remote metadata.
-                            return ((IVideoFileInfo)video.Info).EncoderType is EncoderType.H
+                            return video.Info.GetEncoderType() is EncoderType.H
                                 && (video.Name.StartsWithIgnoreCase(metadata.Title)
                                     || video.Info.Origin.ContainsIgnoreCase(".BluRay") && metadataTitle.ContainsIgnoreCase(".WEBRip.")
                                     || !video.Info.Edition.ContainsIgnoreCase("PREVIEW") && metadataTitle.ContainsIgnoreCase(".PREVIEW.")
@@ -841,7 +842,7 @@ internal static partial class Video
                     if (otherH264Metadata.Any())
                     {
                         if (otherH264Metadata.All(metadata => metadata.Title.Contains(".WEBRip."))
-                            && preferredVideos.Any(video => ((IVideoFileInfo)video.Info).DefinitionType == DefinitionType.P1080 && video.Info.Origin.ContainsIgnoreCase("BluRay")))
+                            && preferredVideos.Any(video => video.Info.GetDefinitionType() == DefinitionType.P1080 && video.Info.Origin.ContainsIgnoreCase("BluRay")))
                         {
 
                         }
@@ -861,7 +862,7 @@ internal static partial class Video
                     return;
                 }
 
-                if (videos.Any(video => ((IVideoFileInfo)video.Info).EncoderType is EncoderType.H))
+                if (videos.Any(video => video.Info.GetEncoderType() is EncoderType.H))
                 {
                     if (videos.All(video => !video.Info.Origin.ContainsIgnoreCase("BluRay")) && bluRayPreferredMetadata.Any())
                     {
@@ -898,7 +899,7 @@ internal static partial class Video
                 }
 
                 TopMetadata[] availableOtherMetadata = [];
-                if (videos.Any(video => ((IVideoFileInfo)video.Info).DefinitionType is DefinitionType.P1080))
+                if (videos.Any(video => video.Info.GetDefinitionType() is DefinitionType.P1080))
                 {
                     return;
                 }
@@ -923,7 +924,7 @@ internal static partial class Video
                     return;
                 }
 
-                if (videos.Any(video => ((IVideoFileInfo)video.Info).DefinitionType is DefinitionType.P720))
+                if (videos.Any(video => video.Info.GetDefinitionType() is DefinitionType.P720))
                 {
                     return;
                 }
@@ -945,10 +946,10 @@ internal static partial class Video
             });
     }
 
-    internal static async Task PrintTVVersions(string x265JsonPath, Action<string>? log = null, params (string Directory, int Level)[] directories)
+    internal static async Task PrintTVVersions(ISettings settings, Action<string>? log = null, params (string Directory, int Level)[] directories)
     {
         log ??= Logger.WriteLine;
-        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(x265JsonPath);
+        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.TVTopX265Metadata);
 
         directories
             .SelectMany(directory => EnumerateDirectories(directory.Directory, directory.Level))
@@ -992,7 +993,7 @@ internal static partial class Video
                         && Directory
                             .EnumerateFiles(seasonDirectory)
                             .Where(IsCommonVideo)
-                            .All(episode => VideoEpisodeFileInfo.TryParse(episode, out VideoEpisodeFileInfo? parsed) && ((IVideoFileInfo)parsed).EncoderType is EncoderType.X && !(parsed.Origin.ContainsIgnoreCase("WEBRip") && seasonMetadata.Title.ContainsIgnoreCase("BluRay"))))
+                            .All(episode => VideoEpisodeFileInfo.TryParse(episode, out VideoEpisodeFileInfo? parsed) && parsed.GetEncoderType() is EncoderType.X && !(parsed.Origin.ContainsIgnoreCase("WEBRip") && seasonMetadata.Title.ContainsIgnoreCase("BluRay"))))
                     {
                         return;
                     }
@@ -1005,13 +1006,13 @@ internal static partial class Video
             });
     }
 
-    internal static async Task PrintSpecialTitles(string specialJsonPath, string x265JsonPath, string h264JsonPath, string preferredJsonPath, Action<string>? log = null)
+    internal static async Task PrintSpecialTitles(ISettings settings, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
-        string[] specialImdbIds = await JsonHelper.DeserializeFromFileAsync<string[]>(specialJsonPath);
-        Dictionary<string, TopMetadata[]> x265Summaries = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(x265JsonPath);
-        Dictionary<string, TopMetadata[]> h264Summaries = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264JsonPath);
-        Dictionary<string, PreferredMetadata[]> preferredDetails = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(preferredJsonPath);
+        string[] specialImdbIds = await JsonHelper.DeserializeFromFileAsync<string[]>(settings.MovieImdbSpecialMetadata);
+        Dictionary<string, TopMetadata[]> x265Summaries = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265Metadata);
+        Dictionary<string, TopMetadata[]> h264Summaries = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264Metadata);
+        Dictionary<string, PreferredMetadata[]> preferredDetails = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(settings.MoviePreferredMetadata);
 
         specialImdbIds = specialImdbIds
             .Where(imdbId => x265Summaries.ContainsKey(imdbId))
@@ -1054,8 +1055,7 @@ internal static partial class Video
         });
     }
 
-    internal static async Task PrintHighRatingAsync(string x265JsonPath, string h264JsonPath, string preferredJsonPath,
-        string threshold = "8.0", string[]? excludedGenres = null, Action<string>? log = null, params string[] directories)
+    internal static async Task PrintHighRatingAsync(ISettings settings, string threshold = "8.0", string[]? excludedGenres = null, Action<string>? log = null, params string[] directories)
     {
         log ??= Logger.WriteLine;
         HashSet<string> existingImdbIds = new(
@@ -1064,9 +1064,9 @@ internal static partial class Video
                 .Select(file => Path.GetFileNameWithoutExtension(file).Split(".").First())
                 .Where(imdbId => imdbId != NotExistingFlag)),
             StringComparer.OrdinalIgnoreCase);
-        Dictionary<string, TopMetadata[]> x265Summaries = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(x265JsonPath);
-        Dictionary<string, TopMetadata[]> h264Summaries = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264JsonPath);
-        Dictionary<string, PreferredMetadata[]> preferredDetails = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(preferredJsonPath);
+        Dictionary<string, TopMetadata[]> x265Summaries = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265Metadata);
+        Dictionary<string, TopMetadata[]> h264Summaries = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264Metadata);
+        Dictionary<string, PreferredMetadata[]> preferredDetails = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(settings.MoviePreferredMetadata);
 
         Dictionary<string, Dictionary<string, IImdbMetadata[]>> highRatings = new();
 
@@ -1486,15 +1486,16 @@ internal static partial class Video
             });
     }
 
-    internal static async Task PrintMovieImdbIdErrorsAsync(string x265JsonPath, string h264JsonPath, string x265XJsonPath, string h264XJsonPath, HashSet<string> topDuplications, /*string preferredJsonPath, string h264720PJsonPath,*/ Action<string>? log = null, params (string Directory, int Level)[] directories)
+    internal static async Task PrintMovieImdbIdErrorsAsync(ISettings settings, Action<string>? log = null, params (string Directory, int Level)[] directories)
     {
         log ??= Logger.WriteLine;
-        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(x265JsonPath);
-        Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264JsonPath);
-        Dictionary<string, TopMetadata[]> x265XMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(x265XJsonPath);
-        Dictionary<string, TopMetadata[]> h264XMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264XJsonPath);
+        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265Metadata);
+        Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264Metadata);
+        Dictionary<string, TopMetadata[]> x265XMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265XMetadata);
+        Dictionary<string, TopMetadata[]> h264XMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264XMetadata);
         //Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(preferredJsonPath);
         //Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264720PJsonPath);
+        HashSet<string> topDuplications = new(settings.MovieTopDuplications, StringComparer.OrdinalIgnoreCase);
 
         Dictionary<string, string> x265TitlesImdbIds = x265Metadata
             .SelectMany(pair => pair.Value)
@@ -1542,7 +1543,7 @@ internal static partial class Video
                     return;
                 }
 
-                IVideoFileInfo[] x265Videos = videos.Where<IVideoFileInfo>(video => video.EncoderType is EncoderType.X).ToArray();
+                VideoMovieFileInfo[] x265Videos = videos.Where(video => video.GetEncoderType() is EncoderType.X).ToArray();
                 if (x265Videos.Any())
                 {
                     if (localImdbId.IsNullOrWhiteSpace() || localImdbId.EqualsOrdinal(SubtitleSeparator))
@@ -1581,7 +1582,7 @@ internal static partial class Video
                     });
                 }
 
-                IVideoFileInfo[] h264Videos = videos.Where<IVideoFileInfo>(video => video.EncoderType is EncoderType.H && video.DefinitionType == DefinitionType.P1080).ToArray();
+                VideoMovieFileInfo[] h264Videos = videos.Where(video => video.GetEncoderType() is EncoderType.H && video.GetDefinitionType() == DefinitionType.P1080).ToArray();
                 if (h264Videos.Any())
                 {
                     if (localImdbId.IsNullOrWhiteSpace() || localImdbId.EqualsOrdinal(SubtitleSeparator))
@@ -1640,29 +1641,26 @@ internal static partial class Video
     }
 
     internal static async Task PrintMovieLinksAsync(
-        string libraryJsonPath, string x265JsonPath, string h264JsonPath, string preferredJsonPath, string h264720PJsonPath, string rareJsonPath,
-        string topMagnetPath,
-        string mergedJsonPath, string cacheDirectory, string metadataDirectory, string initialUrl,
-        Func<ImdbMetadata, bool> predicate, HashSet<string> keywords, bool updateMetadata = false, bool isDryRun = false, Action<string>? log = null)
+        ISettings settings, string initialUrl, Func<ImdbMetadata, bool> predicate, HashSet<string> keywords, bool updateMetadata = false, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
-        ILookup<string, string> topMagnetUris = (await File.ReadAllLinesAsync(topMagnetPath)).ToLookup(line => MagnetUri.Parse(line).DisplayName, StringComparer.OrdinalIgnoreCase);
-        Dictionary<string, ImdbMetadata> mergedMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, ImdbMetadata>>(mergedJsonPath);
+        ILookup<string, string> topMagnetUris = (await File.ReadAllLinesAsync(settings.TopMagnetUrls)).ToLookup(line => MagnetUri.Parse(line).DisplayName, StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, ImdbMetadata> mergedMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, ImdbMetadata>>(settings.MovieMergedMetadata);
 
-        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(libraryJsonPath);
-        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(x265JsonPath);
-        Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264JsonPath);
+        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(settings.MovieLibraryMetadata);
+        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265Metadata);
+        Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264Metadata);
         //Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(preferredJsonPath);
         //Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync(h264720PJsonPath);
         //Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(rareJsonPath);
-        string[] metadataFiles = Directory.GetFiles(metadataDirectory);
+        string[] metadataFiles = Directory.GetFiles(settings.MovieMetadataDirectory);
         Dictionary<string, string> metadataFilesByImdbId = metadataFiles.ToDictionary(file => Path.GetFileName(file).Split("-").First());
         MagnetUri[] downloadingLinks = (await File.ReadAllLinesAsync(@"D:\Files\Library\Movie.Downloading.txt"))
             .Select(line => (MagnetUri.TryParse(line, out MagnetUri? result), result))
             .Where(result => result.Item1)
             .Select(result => result.result!).ToArray();
-        string[] cacheFiles = Directory.GetFiles(cacheDirectory);
+        string[] cacheFiles = Directory.GetFiles(settings.MovieMetadataCacheDirectory);
 
         ImdbMetadata[] imdbIds = x265Metadata.Keys
             .Concat(h264Metadata.Keys)
@@ -1709,7 +1707,7 @@ internal static partial class Video
                     log($"{index * 100 / length}% - {index}/{length} - {imdbId}");
                     try
                     {
-                        await DownloadImdbMetadataAsync(imdbId, cacheDirectory, metadataDirectory, cacheFiles, metadataFiles, webDriver, true, false, log);
+                        await DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory, cacheFiles, metadataFiles, webDriver, true, false, log);
                     }
                     catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
                     {
@@ -1731,10 +1729,10 @@ internal static partial class Video
                     List<TopMetadata> excluded = new();
                     if (x265Videos.Length > 1)
                     {
-                        if (x265Videos.Any(video => video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopForeignKeyword}")) && x265Videos.Any(video => !(video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopForeignKeyword}"))))
+                        if (x265Videos.Any(video => video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}")) && x265Videos.Any(video => !(video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}"))))
                         {
-                            excluded.AddRange(x265Videos.Where(video => !(video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopForeignKeyword}"))));
-                            x265Videos = x265Videos.Where(video => video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopForeignKeyword}")).ToArray();
+                            excluded.AddRange(x265Videos.Where(video => !(video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}"))));
+                            x265Videos = x265Videos.Where(video => video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}")).ToArray();
                         }
 
                         if (x265Videos.Any(video => video.Title.ContainsIgnoreCase("BluRay")) && x265Videos.Any(video => video.Title.ContainsIgnoreCase("WEBRip")))
@@ -1768,10 +1766,10 @@ internal static partial class Video
                         }
                     }
 
-                    if (x265Videos.Any(video => !video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopEnglishKeyword}") && !video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopForeignKeyword}")))
+                    if (x265Videos.Any(video => !video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") && !video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}")))
                     {
-                        excluded.AddRange(x265Videos.Where(video => !video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopEnglishKeyword}") && !video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopForeignKeyword}")));
-                        x265Videos = x265Videos.Where(video => video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopForeignKeyword}")).ToArray();
+                        excluded.AddRange(x265Videos.Where(video => !video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") && !video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}")));
+                        x265Videos = x265Videos.Where(video => video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}")).ToArray();
                     }
 
                     bool hasDownload = false;
@@ -1807,7 +1805,7 @@ internal static partial class Video
                             return;
                         }
 
-                        string cacheFile = Path.Combine(cacheDirectory, $"{metadata.ImdbId}-{metadata.Title}{ImdbCacheExtension}");
+                        string cacheFile = Path.Combine(settings.MovieMetadataCacheDirectory, $"{metadata.ImdbId}-{metadata.Title}{ImdbCacheExtension}");
                         string html = cacheFiles.ContainsIgnoreCase(cacheFile) && new FileInfo(cacheFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1)
                             ? await File.ReadAllTextAsync(cacheFile)
                             : await webDriver!.GetStringAsync(metadata.Link, () => new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))));
@@ -1830,10 +1828,10 @@ internal static partial class Video
                     List<TopMetadata> excluded = new();
                     if (h264Videos.Length > 1)
                     {
-                        if (h264Videos.Any(video => video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopForeignKeyword}")) && h264Videos.Any(video => !(video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopForeignKeyword}"))))
+                        if (h264Videos.Any(video => video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}")) && h264Videos.Any(video => !(video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}"))))
                         {
-                            excluded.AddRange(h264Videos.Where(video => !(video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopForeignKeyword}"))));
-                            h264Videos = h264Videos.Where(video => video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopForeignKeyword}")).ToArray();
+                            excluded.AddRange(h264Videos.Where(video => !(video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}"))));
+                            h264Videos = h264Videos.Where(video => video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}")).ToArray();
                         }
 
                         if (h264Videos.Any(video => video.Title.ContainsIgnoreCase("BluRay")) && h264Videos.Any(video => video.Title.ContainsIgnoreCase("WEBRip")))
@@ -1867,10 +1865,10 @@ internal static partial class Video
                         }
                     }
 
-                    if (h264Videos.Any(video => !video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopEnglishKeyword}") && !video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopForeignKeyword}")))
+                    if (h264Videos.Any(video => !video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") && !video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}")))
                     {
-                        excluded.AddRange(h264Videos.Where(video => !video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopEnglishKeyword}") && !video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopForeignKeyword}")));
-                        h264Videos = h264Videos.Where(video => video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopForeignKeyword}")).ToArray();
+                        excluded.AddRange(h264Videos.Where(video => !video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") && !video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}")));
+                        h264Videos = h264Videos.Where(video => video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}")).ToArray();
                     }
 
                     bool hasDownload = false;
@@ -1906,7 +1904,7 @@ internal static partial class Video
                             return;
                         }
 
-                        string cacheFile = Path.Combine(cacheDirectory, $"{metadata.ImdbId}-{metadata.Title}{ImdbCacheExtension}");
+                        string cacheFile = Path.Combine(settings.MovieMetadataCacheDirectory, $"{metadata.ImdbId}-{metadata.Title}{ImdbCacheExtension}");
                         string html = cacheFiles.ContainsIgnoreCase(cacheFile) && new FileInfo(cacheFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1)
                             ? await File.ReadAllTextAsync(cacheFile)
                             : await webDriver!.GetStringAsync(metadata.Link, () => new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))));
@@ -2055,13 +2053,13 @@ internal static partial class Video
     }
 
     internal static async Task PrintTVLinks(
-        string x265JsonPath, string[] tvDirectories, string metadataDirectory, string cacheDirectory, string initialUrl, Func<ImdbMetadata, bool> predicate,
+        ISettings settings, string[] tvDirectories, string initialUrl, Func<ImdbMetadata, bool> predicate,
         bool isDryRun = false, bool updateMetadata = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
-        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(x265JsonPath);
-        Dictionary<string, string> metadataFiles = Directory.EnumerateFiles(metadataDirectory).ToDictionary(file => Path.GetFileName(file).Split("-").First());
-        string[] cacheFiles = Directory.GetFiles(cacheDirectory);
+        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.TVTopX265Metadata);
+        Dictionary<string, string> metadataFiles = Directory.EnumerateFiles(settings.TVMetadataDirectory).ToDictionary(file => Path.GetFileName(file).Split("-").First());
+        string[] cacheFiles = Directory.GetFiles(settings.TVMetadataCacheDirectory);
         string[] libraryImdbIds = tvDirectories.SelectMany(tvDirectory => Directory.EnumerateFiles(tvDirectory, ImdbMetadataSearchPattern, SearchOption.AllDirectories))
             .Select(file => Imdb.TryRead(file, out string? imdbId, out _, out _, out _, out _) ? imdbId : string.Empty)
             .Where(imdbId => imdbId.IsNotNullOrWhiteSpace())
@@ -2095,7 +2093,7 @@ internal static partial class Video
                 log($"{index * 100 / length}% - {index}/{length} - {imdbMetadata.ImdbId}");
                 try
                 {
-                    await DownloadImdbMetadataAsync(imdbMetadata.ImdbId, cacheDirectory, metadataDirectory, cacheFiles, metadataFiles.Values.ToArray(), webDriver, true, false, log);
+                    await DownloadImdbMetadataAsync(imdbMetadata.ImdbId, settings.TVMetadataCacheDirectory, settings.TVMetadataDirectory, cacheFiles, metadataFiles.Values.ToArray(), webDriver, true, false, log);
                 }
                 catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
                 {
@@ -2121,10 +2119,10 @@ internal static partial class Video
                     List<TopMetadata> excluded = new();
                     if (h265Videos.Length > 1)
                     {
-                        if (h265Videos.Any(video => video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopForeignKeyword}")) && h265Videos.Any(video => !(video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopForeignKeyword}"))))
+                        if (h265Videos.Any(video => video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}")) && h265Videos.Any(video => !(video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}"))))
                         {
-                            excluded.AddRange(h265Videos.Where(video => !(video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopForeignKeyword}"))));
-                            h265Videos = h265Videos.Where(video => video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{TopForeignKeyword}")).ToArray();
+                            excluded.AddRange(h265Videos.Where(video => !(video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}"))));
+                            h265Videos = h265Videos.Where(video => video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}")).ToArray();
                         }
 
                         if (h265Videos.Any(video => video.Title.ContainsIgnoreCase("BluRay")) && h265Videos.Any(video => video.Title.ContainsIgnoreCase("WEBRip")))
@@ -2169,7 +2167,7 @@ internal static partial class Video
                             return;
                         }
 
-                        string file = Path.Combine(cacheDirectory, $"{metadata.ImdbId}-{metadata.Title}{ImdbCacheExtension}");
+                        string file = Path.Combine(settings.TVMetadataCacheDirectory, $"{metadata.ImdbId}-{metadata.Title}{ImdbCacheExtension}");
                         string html;
                         bool isCached = cacheFiles.ContainsIgnoreCase(file);
                         if (isCached)

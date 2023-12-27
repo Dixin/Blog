@@ -80,11 +80,11 @@ internal record VideoDirectoryInfo(
             .Where(Video.IsVideo)
             .Select(VideoEpisodeFileInfo.Parse);
 
-    internal static string GetResolution(VideoMovieFileInfo[] videos)
+    internal static string GetResolution(VideoMovieFileInfo[] videos, ISettings settings)
     {
-        return videos.Select<IVideoFileInfo, DefinitionType>(video => video.DefinitionType).Max() switch
+        return videos.Select(video => video.GetDefinitionType()).Max() switch
         {
-            DefinitionType.P480 when videos.Any<IVideoFileInfo>(video => video.EncoderType is not EncoderType.P) => "480",
+            DefinitionType.P480 when videos.Any(video => video.GetEncoderType() is not EncoderType.P) => "480",
             DefinitionType.P720 => "720",
             DefinitionType.P1080 => "1080",
             DefinitionType.P2160 => "2160",
@@ -92,12 +92,12 @@ internal record VideoDirectoryInfo(
         };
     }
 
-    internal static string GetResolution(VideoEpisodeFileInfo[] videos)
+    internal static string GetResolution(VideoEpisodeFileInfo[] videos, ISettings settings)
     {
-        int total1080P = videos.Count<IVideoFileInfo>(video => video.DefinitionType is DefinitionType.P1080);
-        int total720P = videos.Count<IVideoFileInfo>(video => video.DefinitionType is DefinitionType.P720);
-        int total480PWithEncoder = videos.Count<IVideoFileInfo>(video => !video.IsHD && video.EncoderType is not EncoderType.P);
-        int total480P = videos.Count<IVideoFileInfo>(video => !video.IsHD && video.EncoderType is EncoderType.P);
+        int total1080P = videos.Count(video => video.GetDefinitionType() is DefinitionType.P1080);
+        int total720P = videos.Count(video => video.GetDefinitionType() is DefinitionType.P720);
+        int total480PWithEncoder = videos.Count(video => !video.IsHD() && video.GetEncoderType() is not EncoderType.P);
+        int total480P = videos.Count(video => !video.IsHD() && video.GetEncoderType() is EncoderType.P);
         int max = new int[] { total1080P, total720P, total480PWithEncoder, total480P }.Max();
         return max switch
         {
@@ -108,15 +108,15 @@ internal record VideoDirectoryInfo(
         };
     }
 
-    internal static string GetSource(VideoMovieFileInfo[] videos)
+    internal static string GetSource(VideoMovieFileInfo[] videos, ISettings settings)
     {
-        IVideoFileInfo[] hdVideos = videos.Where<IVideoFileInfo>(video => video.IsHD).ToArray();
+        VideoMovieFileInfo[] hdVideos = videos.Where(video => video.IsHD()).ToArray();
         if (hdVideos.Any())
         {
-            IOrderedEnumerable<IGrouping<EncoderType, IVideoFileInfo>> videosByEncoder = hdVideos
-                .GroupBy(video => video.EncoderType)
+            IOrderedEnumerable<IGrouping<EncoderType, VideoMovieFileInfo>> videosByEncoder = hdVideos
+                .GroupBy(video => video.GetEncoderType())
                 .OrderByDescending(group => group.Key);
-            IGrouping<EncoderType, IVideoFileInfo> group = videosByEncoder.First();
+            IGrouping<EncoderType, VideoMovieFileInfo> group = videosByEncoder.First();
             string encoder = group.Key switch
             {
                 EncoderType.X => "x",
@@ -130,30 +130,30 @@ internal record VideoDirectoryInfo(
                 _ => throw new ArgumentOutOfRangeException(nameof(videos))
             };
 
-            return $"{encoder}{videos.Max<IVideoFileInfo, string>(video => video.FormattedAudioCount)}";
+            return $"{encoder}{videos.Max(video => video.FormatAudioCount())}";
         }
         else
         {
-            IOrderedEnumerable<IGrouping<EncoderType, IVideoFileInfo>> videosByEncoder = videos
-                .GroupBy<IVideoFileInfo, EncoderType>(video => video.EncoderType)
+            IOrderedEnumerable<IGrouping<EncoderType, VideoMovieFileInfo>> videosByEncoder = videos
+                .GroupBy(video => video.GetEncoderType())
                 .OrderByDescending(group => group.Key);
-            IGrouping<EncoderType, IVideoFileInfo> group = videosByEncoder.First();
+            IGrouping<EncoderType, VideoMovieFileInfo> group = videosByEncoder.First();
             return group.Key switch
             {
-                EncoderType.Y => $"y{videos.Max<IVideoFileInfo, string>(video => video.FormattedAudioCount)}",
-                EncoderType.F => $"f{videos.Max<IVideoFileInfo, string>(video => video.FormattedAudioCount)}",
-                EncoderType.N => $"n{videos.Max<IVideoFileInfo, string>(video => video.FormattedAudioCount)}",
-                EncoderType.B => $"b{videos.Max<IVideoFileInfo, string>(video => video.FormattedAudioCount)}",
+                EncoderType.Y => $"y{videos.Max(video => video.FormatAudioCount())}",
+                EncoderType.F => $"f{videos.Max(video => video.FormatAudioCount())}",
+                EncoderType.N => $"n{videos.Max(video => video.FormatAudioCount())}",
+                EncoderType.B => $"b{videos.Max(video => video.FormatAudioCount())}",
                 EncoderType.P => string.Empty,
                 _ => throw new ArgumentOutOfRangeException(nameof(videos))
             };
         }
     }
 
-    internal static string GetSource(VideoEpisodeFileInfo[] videos)
+    internal static string GetSource(VideoEpisodeFileInfo[] videos, ISettings settings)
     {
-        IGrouping<EncoderType, IVideoFileInfo> maxGroup = videos
-            .GroupBy<IVideoFileInfo, EncoderType>(video => video.EncoderType)
+        IGrouping<EncoderType, VideoEpisodeFileInfo> maxGroup = videos
+            .GroupBy(video => video.GetEncoderType())
             .OrderByDescending(group => group.Count())
             .ThenByDescending(group => group.Key)
             .First();
@@ -165,7 +165,7 @@ internal record VideoDirectoryInfo(
             EncoderType.F => "f",
             EncoderType.N => "n",
             EncoderType.B => "b",
-            _ when maxGroup.GroupBy(video => video.IsHD).OrderByDescending(group => group.Count()).First().Key => "p",
+            _ when maxGroup.GroupBy(video => video.IsHD()).OrderByDescending(group => group.Count()).First().Key => "p",
             _ => string.Empty
         };
 
@@ -175,7 +175,7 @@ internal record VideoDirectoryInfo(
         }
 
         string maxAudio = videos
-            .GroupBy<IVideoFileInfo, string>(video => video.FormattedAudioCount)
+            .GroupBy(video => video.FormatAudioCount())
             .OrderByDescending(group => group.Count())
             .First()
             .Key;

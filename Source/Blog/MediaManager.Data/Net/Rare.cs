@@ -14,12 +14,9 @@ internal static class Rare
 
     private const int WriteCount = 100;
 
-    internal static async Task DownloadMetadataAsync(
-        string indexUrl,
-        string rareJsonPath, string x265JsonPath, string h264JsonPath, string preferredJsonPath, string h264720PJsonPath, string libraryJsonPath,
-        string metadataDirectory, string cacheDirectory, 
-        int degreeOfParallelism = 4, Action<string>? log = null)
+    internal static async Task DownloadMetadataAsync(ISettings settings, string indexUrl, int? degreeOfParallelism = null, Action<string>? log = null)
     {
+        degreeOfParallelism ??= Video.IOMaxDegreeOfParallelism;
         log ??= Logger.WriteLine;
 
         using HttpClient httpClient = new();
@@ -52,27 +49,27 @@ internal static class Rare
 
             if (index % WriteCount == 0)
             {
-                JsonHelper.SerializeToFile(rareMetadata, rareJsonPath, WriteJsonLock);
+                JsonHelper.SerializeToFile(rareMetadata, settings.MovieRareMetadata, WriteJsonLock);
             }
         }, degreeOfParallelism);
 
-        JsonHelper.SerializeToFile(rareMetadata, rareJsonPath, WriteJsonLock);
+        JsonHelper.SerializeToFile(rareMetadata, settings.MovieRareMetadata, WriteJsonLock);
 
-        await PrintVersionsAsync(rareMetadata, libraryJsonPath, x265JsonPath, h264JsonPath, preferredJsonPath, h264720PJsonPath, metadataDirectory, cacheDirectory, log);
+        await PrintVersionsAsync(settings, rareMetadata, log);
     }
 
-    internal static async Task PrintVersionsAsync(IDictionary<string, RareMetadata> rareMetadata, string libraryJsonPath, string x265JsonPath, string h264JsonPath, string preferredJsonPath, string h264720PJsonPath, string metadataDirectory, string cacheDirectory, Action<string>? log = null, params string[] categories)
+    internal static async Task PrintVersionsAsync(ISettings settings, IDictionary<string, RareMetadata> rareMetadata, Action<string>? log = null, params string[] categories)
     {
         log ??= Logger.WriteLine;
 
-        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(libraryJsonPath);
-        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(x265JsonPath);
-        Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264JsonPath);
-        Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(preferredJsonPath);
-        Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264720PJsonPath);
+        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(settings.MovieLibraryMetadata);
+        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265Metadata);
+        Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264Metadata);
+        Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(settings.MoviePreferredMetadata);
+        Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264720PMetadata);
 
-        string[] cacheFiles = Directory.GetFiles(cacheDirectory);
-        string[] metadataFiles = Directory.GetFiles(metadataDirectory);
+        string[] cacheFiles = Directory.GetFiles(settings.MovieMetadataCacheDirectory);
+        string[] metadataFiles = Directory.GetFiles(settings.MovieMetadataDirectory);
         (string Link, string Title, string Value, string[] Categories)[] imdbIds = rareMetadata
             .AsParallel()
             .SelectMany(rare => Regex
@@ -159,14 +156,14 @@ internal static class Rare
                     if (h264Videos.Length > 1)
                     {
                         List<TopMetadata> excluded = new();
-                        excluded.AddRange(h264Videos.Where(video => !video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopEnglishKeyword}") && !video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopForeignKeyword}")));
+                        excluded.AddRange(h264Videos.Where(video => !video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") && !video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}")));
                         if (excluded.Count == h264Videos.Length)
                         {
                             excluded.Clear();
                         }
                         else
                         {
-                            h264Videos = h264Videos.Where(video => video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopEnglishKeyword}") || video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopForeignKeyword}")).ToArray();
+                            h264Videos = h264Videos.Where(video => video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") || video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}")).ToArray();
                         }
 
                         if (h264Videos.Any(video => video.Title.ContainsIgnoreCase("BluRay")) && h264Videos.Any(video => video.Title.ContainsIgnoreCase("WEBRip")))
@@ -251,14 +248,14 @@ internal static class Rare
                     if (h264720PVideos.Length > 1)
                     {
                         List<TopMetadata> excluded = new();
-                        excluded.AddRange(h264720PVideos.Where(video => !video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopEnglishKeyword}") && !video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopForeignKeyword}")));
+                        excluded.AddRange(h264720PVideos.Where(video => !video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") && !video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}")));
                         if (excluded.Count == h264720PVideos.Length)
                         {
                             excluded.Clear();
                         }
                         else
                         {
-                            h264720PVideos = h264720PVideos.Where(video => video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopEnglishKeyword}") || video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopForeignKeyword}")).ToArray();
+                            h264720PVideos = h264720PVideos.Where(video => video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") || video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}")).ToArray();
                         }
                     }
 
@@ -271,9 +268,9 @@ internal static class Rare
             });
     }
 
-    internal static async Task PrintVersionsAsync(string rareJsonPath, string libraryJsonPath, string x265JsonPath, string h264JsonPath, string preferredJsonPath, string h264720PJsonPath, string metadataDirectory, string cacheDirectory, Action<string>? log = null)
+    internal static async Task PrintVersionsAsync(ISettings settings, Action<string>? log = null)
     {
-        Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(rareJsonPath);
-        await PrintVersionsAsync(rareMetadata, libraryJsonPath, x265JsonPath, h264JsonPath, preferredJsonPath, h264720PJsonPath, metadataDirectory, cacheDirectory, log);
+        Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(settings.MovieRareMetadata);
+        await PrintVersionsAsync(settings, rareMetadata, log);
     }
 }

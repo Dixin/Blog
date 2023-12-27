@@ -58,23 +58,7 @@ internal static partial class Video
 
     internal const string UpScaleDefinition = ".FAKE";
 
-    private static readonly int IOMaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4);
-
-    internal static string TopEnglishKeyword { get; private set; } = string.Empty;
-
-    internal static string TopForeignKeyword { get; private set; } = string.Empty;
-
-    internal static string PreferredOldKeyword { get; private set; } = string.Empty;
-
-    internal static string PreferredNewKeyword { get; private set; } = string.Empty;
-
-    internal static void Initialize(string topEnglishKeyword, string topForeignKeyword, string preferredOldKeyword, string preferredNewKeyword)
-    {
-        TopEnglishKeyword = topEnglishKeyword;
-        TopForeignKeyword = topForeignKeyword;
-        PreferredOldKeyword = preferredOldKeyword;
-        PreferredNewKeyword = preferredNewKeyword;
-    }
+    internal static readonly int IOMaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4);
 
     internal static string FilterForFileSystem(this string value)
     {

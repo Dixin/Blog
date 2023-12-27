@@ -14,9 +14,11 @@ internal record VideoEpisodeFileInfo(
     string Encoder,
     string Subtitle,
     string EpisodeTitle,
-    string Extension) : IVideoFileInfo, ISimpleParsable<VideoEpisodeFileInfo>
+    string Extension) : IVideoFileInfo, ISimpleParsable<VideoEpisodeFileInfo>, IDefaultSettings
 {
-    private static readonly Regex NameRegex = new(@$"^(.+?)(\.([0-9]{{4}}))?\.S([0-9]{{2,4}})E([0-9]{{2,3}})(E([0-9]{{2,3}}))?(\.[A-Z\.\-]+?)?(\.2160p|\.1080p|\.720p|\.540p|\.480p|\.360p)?(\.WEBRip|\.BluRay|\.DVDRip|\.HDRip|\.HDTV|\.VHSRip|\.LDRip|\.DVD|\.LDVDRip|\.LDDVDRip|\.HQDVDRip|\.TV|\.VCD|\.VCDRip)?(\.H264|\.x264|\.x265|\.DivX|\.Xvid)?(\.AAC|\.AC3|\.MP3|\.AAC5\.1|\.DTS)?(\{Video.VersionSeparator}({Video.TopEnglishKeyword}|{Video.TopForeignKeyword}|\[{Video.PreferredNewKeyword}\.(MX|AM|AG|LT)\]|[a-zA-Z0-9@]+?))?(\.[2-9]Audio)?(\.watermark)?(\.ffmpeg|\.nvenc|\.handbrake)?(\.bul|\.chs|\.cht|\.cht&eng|\.chs&eng|\.dut|\.eng|\.fre|\.heb|\.jap|\.kor|\.pol|\.dut|\.spa|\.swe|\.por)?(\.(.+))?(\.mp4|\.avi|\.rmvb)$");
+    private static ISettings? settings;
+
+    private static Regex? nameRegex;
 
     public override string ToString() => this.Name;
 
@@ -24,12 +26,19 @@ internal record VideoEpisodeFileInfo(
 
     public static bool TryParse([NotNullWhen(true)] string? value, [NotNullWhen(true)] out VideoEpisodeFileInfo? result)
     {
+        if (value.IsNullOrWhiteSpace())
+        {
+            result = null;
+            return false;
+        }
+
         if (Path.IsPathRooted(value))
         {
             value = Path.GetFileName(value);
         }
 
-        Match match = NameRegex.Match(value);
+        nameRegex ??= new Regex(@$"^(.+?)(\.([0-9]{{4}}))?\.S([0-9]{{2,4}})E([0-9]{{2,3}})(E([0-9]{{2,3}}))?(\.[A-Z\.\-]+?)?(\.2160p|\.1080p|\.720p|\.540p|\.480p|\.360p)?(\.WEBRip|\.BluRay|\.DVDRip|\.HDRip|\.HDTV|\.VHSRip|\.LDRip|\.DVD|\.LDVDRip|\.LDDVDRip|\.HQDVDRip|\.TV|\.VCD|\.VCDRip)?(\.H264|\.x264|\.x265|\.DivX|\.Xvid)?(\.AAC|\.AC3|\.MP3|\.AAC5\.1|\.DTS)?(\{Video.VersionSeparator}({Settings.TopEnglishKeyword}|{Settings.TopForeignKeyword}|\[{Settings.PreferredNewKeyword}\.(MX|AM|AG|LT)\]|[a-zA-Z0-9@]+?))?(\.[2-9]Audio)?(\.watermark)?(\.ffmpeg|\.nvenc|\.handbrake)?(\.bul|\.chs|\.cht|\.cht&eng|\.chs&eng|\.dut|\.eng|\.fre|\.heb|\.jap|\.kor|\.pol|\.dut|\.spa|\.swe|\.por)?(\.(.+))?(\.mp4|\.avi|\.rmvb)$");
+        Match match = nameRegex.Match(value);
         if (!match.Success)
         {
             result = null;
@@ -53,5 +62,11 @@ internal record VideoEpisodeFileInfo(
     }
 
     public static VideoEpisodeFileInfo Parse(string value) =>
-        TryParse(value, out VideoEpisodeFileInfo? result) ? result : throw new ArgumentOutOfRangeException(nameof(value), value, "Input is invalid");
+        TryParse(value, out VideoEpisodeFileInfo? result) ? result : throw new ArgumentOutOfRangeException(nameof(value), value, "Input is invalid.");
+
+    public static ISettings Settings
+    {
+        get => settings ?? throw new InvalidOperationException();
+        set => settings = value;
+    }
 }

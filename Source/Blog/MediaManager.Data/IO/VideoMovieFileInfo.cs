@@ -13,9 +13,11 @@ internal record VideoMovieFileInfo(
     string Encoder,
     string Subtitle,
     string Part,
-    string Extension) : IVideoFileInfo, ISimpleParsable<VideoMovieFileInfo>
+    string Extension) : IVideoFileInfo, ISimpleParsable<VideoMovieFileInfo>, IDefaultSettings
 {
-    private static readonly Regex NameRegex = new(@$"^(.+?)\.([0-9\-]{{4}})(\.3D(\.HSBS)?)?((\.Part[1-9])?(\.[A-Z\.\-]+?)?(\.Part[\.]{{0,1}}[1-9])?|\.RE\-EDIT|\.S[0-9]{{2}}E[0-9]{{2}}\.[a-zA-Z\.]+?)?(\.2160p|\.1080p|\.720p|\.540p|\.480p|\.360p)?(\.BOOTLEG|\.US)?(\.WEBRip|\.BluRay|\.DVDRip|\.HDRip|\.HDTV|\.VHSRip|\.LDRip|\.DVD|\.LDVDRip|\.LDDVDRip|\.HQDVDRip|\.TV|\.VCD|\.VCDRip|\.TS)?(\.H264|\.x264|\.x265|\.x265\.10bit|\.DivX|\.Xvid)?(\.AAC|\.AAC5\.1|\.AC3|\.DD|\.DDP|\.DTS|\.MP3)?(\{Video.VersionSeparator}({Video.TopEnglishKeyword}|{Video.TopForeignKeyword}|\[{Video.PreferredNewKeyword}\.(MX|AM|AG|LT)\]|[a-zA-Z0-9@]+?))?(\.[2-9]Audio)?(\.watermark)?(\.ffmpeg|\.nvenc|\.handbrake)?(\.bul|\.chs|\.cht|\.cht&eng|\.chs&eng|\.dut|\.eng|\.eng&cht|\.fre|\.heb|\.jap|\.kor|\.pol|\.por|\.rus|\.spa|\.swe)?(\.cd[0-9]{{1,2}})?(\.mp4|\.avi|\.iso|\.m2ts|\.mkv|\.mpg|\.rmvb|\.wmv)?$");
+    private static ISettings? settings;
+
+    private static Regex? nameRegex;
 
     public override string ToString() => this.Name;
 
@@ -23,12 +25,19 @@ internal record VideoMovieFileInfo(
 
     public static bool TryParse([NotNullWhen(true)] string? value, [NotNullWhen(true)] out VideoMovieFileInfo? result)
     {
+        if (value.IsNullOrWhiteSpace())
+        {
+            result = null;
+            return false;
+        }
+
         if (Path.IsPathRooted(value))
         {
             value = Path.GetFileName(value);
         }
 
-        Match match = NameRegex.Match(value);
+        nameRegex ??= new Regex(@$"^(.+?)\.([0-9\-]{{4}})(\.3D(\.HSBS)?)?((\.Part[1-9])?(\.[A-Z\.\-]+?)?(\.Part[\.]{{0,1}}[1-9])?|\.RE\-EDIT|\.S[0-9]{{2}}E[0-9]{{2}}\.[a-zA-Z\.]+?)?(\.2160p|\.1080p|\.720p|\.540p|\.480p|\.360p)?(\.BOOTLEG|\.US)?(\.WEBRip|\.BluRay|\.DVDRip|\.HDRip|\.HDTV|\.VHSRip|\.LDRip|\.DVD|\.LDVDRip|\.LDDVDRip|\.HQDVDRip|\.TV|\.VCD|\.VCDRip|\.TS)?(\.H264|\.x264|\.x265|\.x265\.10bit|\.DivX|\.Xvid)?(\.AAC|\.AAC5\.1|\.AC3|\.DD|\.DDP|\.DTS|\.MP3)?(\{Video.VersionSeparator}({Settings.TopEnglishKeyword}|{Settings.TopForeignKeyword}|\[{Settings.PreferredNewKeyword}\.(MX|AM|AG|LT)\]|[a-zA-Z0-9@]+?))?(\.[2-9]Audio)?(\.watermark)?(\.ffmpeg|\.nvenc|\.handbrake)?(\.bul|\.chs|\.cht|\.cht&eng|\.chs&eng|\.dut|\.eng|\.eng&cht|\.fre|\.heb|\.jap|\.kor|\.pol|\.por|\.rus|\.spa|\.swe)?(\.cd[0-9]{{1,2}})?(\.mp4|\.avi|\.iso|\.m2ts|\.mkv|\.mpg|\.rmvb|\.wmv)?$");
+        Match match = nameRegex.Match(value);
         if (!match.Success)
         {
             result = null;
@@ -52,4 +61,10 @@ internal record VideoMovieFileInfo(
 
     public static VideoMovieFileInfo Parse(string value) =>
         TryParse(value, out VideoMovieFileInfo? result) ? result : throw new ArgumentOutOfRangeException(nameof(value), value, "Input is invalid.");
+
+    public static ISettings Settings
+    {
+        get => settings ?? throw new InvalidOperationException();
+        set => settings = value;
+    }
 }

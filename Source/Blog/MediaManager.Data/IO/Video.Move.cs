@@ -223,7 +223,7 @@ internal static partial class Video
             });
     }
 
-    internal static void RenameDirectoriesWithMetadata(string directory, int level = DefaultDirectoryLevel, bool additionalInfo = false, bool overwrite = false, bool isDryRun = false, string backupFlag = "backup", bool isTV = false, bool skipRenamed = false, Action<string>? log = null)
+    internal static void RenameDirectoriesWithMetadata(ISettings settings, string directory, int level = DefaultDirectoryLevel, bool additionalInfo = false, bool overwrite = false, bool isDryRun = false, string backupFlag = "backup", bool isTV = false, bool skipRenamed = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
@@ -292,8 +292,8 @@ internal static partial class Video
                     TranslatedTitle1: translatedTitle.ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " ").ReplaceIgnoreCase("：", "-").FilterForFileSystem().Trim(), TranslatedTitle2: string.Empty, TranslatedTitle3: string.Empty, TranslatedTitle4: string.Empty,
                     AggregateRating: rating, AggregateRatingCount: ratingCount,
                     ContentRating: contentRating,
-                    Resolution: isTV ? string.Empty : VideoDirectoryInfo.GetResolution(videoFileInfos),
-                    Source: isTV ? string.Empty : VideoDirectoryInfo.GetSource(videoFileInfos),
+                    Resolution: isTV ? string.Empty : VideoDirectoryInfo.GetResolution(videoFileInfos, settings),
+                    Source: isTV ? string.Empty : VideoDirectoryInfo.GetSource(videoFileInfos, settings),
                     Is3D: string.Empty,
                     Hdr: string.Empty
                 );
@@ -352,7 +352,7 @@ internal static partial class Video
             });
     }
 
-    internal static void RenameDirectoriesWithImdbMetadata(string directory, int level = DefaultDirectoryLevel, bool isTV = false, bool isDryRun = false, Action<string>? log = null)
+    internal static void RenameDirectoriesWithImdbMetadata(ISettings settings, string directory, int level = DefaultDirectoryLevel, bool isTV = false, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
@@ -393,8 +393,8 @@ internal static partial class Video
                     VideoEpisodeFileInfo[] episodes = VideoDirectoryInfo.GetEpisodes(movie).ToArray();
                     parsed = parsed with
                     {
-                        Resolution = VideoDirectoryInfo.GetResolution(episodes),
-                        Source = VideoDirectoryInfo.GetSource(episodes)
+                        Resolution = VideoDirectoryInfo.GetResolution(episodes, settings),
+                        Source = VideoDirectoryInfo.GetSource(episodes, settings)
                     };
                 }
                 else
@@ -402,8 +402,8 @@ internal static partial class Video
                     VideoMovieFileInfo[] videos = VideoDirectoryInfo.GetVideos(movie).ToArray();
                     parsed = parsed with
                     {
-                        Resolution = VideoDirectoryInfo.GetResolution(videos),
-                        Source = VideoDirectoryInfo.GetSource(videos)
+                        Resolution = VideoDirectoryInfo.GetResolution(videos, settings),
+                        Source = VideoDirectoryInfo.GetSource(videos, settings)
                     };
                 }
 
@@ -455,7 +455,7 @@ internal static partial class Video
             });
     }
 
-    internal static async Task CompareAndMoveAsync(string fromJsonPath, string toJsonPath, string newDirectory, string deletedDirectory, Action<string>? log = null, bool isDryRun = false, bool moveAllAttachment = true)
+    internal static async Task CompareAndMoveAsync(ISettings settings, string fromJsonPath, string toJsonPath, string newDirectory, string deletedDirectory, Action<string>? log = null, bool isDryRun = false, bool moveAllAttachment = true)
     {
         log ??= Logger.WriteLine;
         Dictionary<string, VideoMetadata> externalMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, VideoMetadata>>(fromJsonPath);
@@ -489,7 +489,7 @@ internal static partial class Video
 
                 VideoMetadata toVideoMetadata = group.Single().Value;
                 toVideoMetadata = toVideoMetadata with { File = Path.Combine(Path.GetDirectoryName(toJsonPath) ?? throw new ArgumentException(toJsonPath), toVideoMetadata.File) };
-                if (((IVideoFileInfo)VideoMovieFileInfo.Parse(Path.GetFileNameWithoutExtension(toVideoMetadata.File))).EncoderType is EncoderType.X)
+                if (VideoMovieFileInfo.Parse(Path.GetFileNameWithoutExtension(toVideoMetadata.File)).GetEncoderType() is EncoderType.X)
                 {
                     log($"Video {toVideoMetadata.File} is x265.");
                     return;
@@ -501,8 +501,8 @@ internal static partial class Video
                     return;
                 }
 
-                if (((IVideoFileInfo)VideoMovieFileInfo.Parse(Path.GetFileNameWithoutExtension(toVideoMetadata.File))).EncoderType is EncoderType.X or EncoderType.H
-                    && ((IVideoFileInfo)VideoMovieFileInfo.Parse(Path.GetFileNameWithoutExtension(fromVideoMetadata.File))).EncoderType is not EncoderType.X or EncoderType.H)
+                if (VideoMovieFileInfo.Parse(Path.GetFileNameWithoutExtension(toVideoMetadata.File)).GetEncoderType() is EncoderType.X or EncoderType.H
+                    && VideoMovieFileInfo.Parse(Path.GetFileNameWithoutExtension(fromVideoMetadata.File)).GetEncoderType() is not EncoderType.X or EncoderType.H)
                 {
                     log($"Video {toVideoMetadata.File} is better version.");
                     return;
@@ -759,7 +759,7 @@ internal static partial class Video
             });
     }
 
-    internal static void MoveTopTVEpisodes(string directory, string subtitleBackupDirectory, bool isDryRun = false, Action<string>? log = null)
+    internal static void MoveTopTVEpisodes(ISettings settings, string directory, string subtitleBackupDirectory, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
@@ -788,7 +788,7 @@ internal static partial class Video
 
         Directory
             .GetDirectories(directory)
-            .Where(season => season.ContainsIgnoreCase($"{VersionSeparator}{TopEnglishKeyword}"))
+            .Where(season => season.ContainsIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}"))
             .ForEach(season =>
             {
                 string subtitleDirectory = Path.Combine(season, "Subs");
@@ -812,7 +812,7 @@ internal static partial class Video
 
         Directory
             .GetDirectories(directory)
-            .Where(season => season.ContainsIgnoreCase($"{VersionSeparator}{TopEnglishKeyword}"))
+            .Where(season => season.ContainsIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}"))
             .ForEach(season =>
             {
                 Match match = Regex.Match(Path.GetFileName(season), @"^(.+)\.S([0-9]{2})(\.[A-Z]+)?\.1080p\.+");
@@ -970,7 +970,7 @@ internal static partial class Video
             });
     }
 
-    internal static void RenameEpisodeWithoutTitle(string directory, bool isDryRun = false, Action<string>? log = null)
+    internal static void RenameEpisodeWithoutTitle(ISettings settings, string directory, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
@@ -980,7 +980,7 @@ internal static partial class Video
             .ForEach(video =>
             {
                 log(video);
-                if (VideoEpisodeFileInfo.TryParse(video, out VideoEpisodeFileInfo? episode) && ((IVideoFileInfo)episode).EncoderType == EncoderType.X && episode.EpisodeTitle.IsNotNullOrWhiteSpace())
+                if (VideoEpisodeFileInfo.TryParse(video, out VideoEpisodeFileInfo? episode) && episode.GetEncoderType() == EncoderType.X && episode.EpisodeTitle.IsNotNullOrWhiteSpace())
                 {
                     episode = episode with { EpisodeTitle = string.Empty };
                     if (!isDryRun)
@@ -1085,7 +1085,7 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
 
-        List<string> videosWithErros = [];
+        List<string> videosWithErrors = [];
 
         Directory
             .EnumerateFiles(directory, PathHelper.AllSearchPattern, searchOption)
@@ -1150,9 +1150,9 @@ internal static partial class Video
 
                 log(video);
                 string newVideo = PathHelper.ReplaceFileNameWithoutExtension(video, newVideoName);
-                if(!VideoMovieFileInfo.TryParse(newVideo, out _))
+                if (!VideoMovieFileInfo.TryParse(newVideo, out _))
                 {
-                    videosWithErros.Add(newVideo);
+                    videosWithErrors.Add(newVideo);
                 }
 
                 if (!isDryRun)
@@ -1180,7 +1180,7 @@ internal static partial class Video
                     });
             });
 
-        videosWithErros.Prepend(string.Empty).ForEach(log);
+        videosWithErrors.Prepend(string.Empty).ForEach(log);
     }
 
     internal static void FormatDirectories(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null)

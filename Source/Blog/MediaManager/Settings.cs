@@ -35,12 +35,16 @@ public partial record Settings(
     string MoviePreferredSummary,
     string MoviePreferredMetadata,
     string MovieRareMetadata,
+    string MovieImdbSpecialMetadata,
+    string MovieMergedMetadata,
     string TVTopX265Metadata,
 
     string MovieMetadataDirectory,
     string MovieMetadataCacheDirectory,
     string TVMetadataDirectory,
-    string TVMetadataCacheDirectory)
+    string TVMetadataCacheDirectory,
+
+    string TopMagnetUrls)
 {
     public DirectorySettings Movie3D { get; init; }
 
