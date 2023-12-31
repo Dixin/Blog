@@ -2,6 +2,7 @@
 using Examples.IO;
 using MediaManager;
 using MediaManager.IO;
+using MediaManager.Net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -31,8 +32,6 @@ using ConsoleTraceListener consoleTraceListener = new();
 Trace.Listeners.Add(consoleTraceListener);
 
 Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
-
-
 
 //Video.PrintDirectoriesWithMultipleMedia(settings.MovieControversial);
 //Video.PrintDirectoriesWithMultipleMedia(settings.MovieMainstream);
@@ -252,8 +251,8 @@ Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
 //await Top.DownloadMetadataAsync(settings.MovieTopH264Url, settings.MovieTopH264Metadata, index => index <= 20);
 //await Top.DownloadMetadataAsync(settings.MovieTopH264720PUrl, settings.MovieTopH264720PMetadata, index => index <= 10);
 //await Top.DownloadMetadataAsync(settings.TVTopX265Url, settings.TVTopX265Metadata, index => index <= 5);
-//await Preferred.DownloadMetadataAsync(settings.MoviePreferredUrl, settings.MoviePreferredSummary, settings.MoviePreferredMetadata, index => index <= 50);
-//await Video.PrintMovieVersions(settings.MovieTopX265Metadata, settings.MovieTopH264Metadata, settings.MoviePreferredMetadata, settings.MovieTopH264720PMetadata, settings.MovieIgnoreMetadata, null,
+//await Preferred.DownloadMetadataAsync(settings, index => index <= 250);
+//await Video.PrintMovieVersions(settings, null,
 //   settings.MovieMainstream,
 //   settings.MovieControversial,
 //   settings.MovieMainstreamWithoutSubtitle,
@@ -389,7 +388,7 @@ string[] genres = { "family", "animation", "documentary" };
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp, 2, overwrite: false, useCache: true, useBrowser: true, 1);
 //Video.PrintDuplicateImdbId(null, settings.MovieTemp);
 //await Video.DownloadMissingTitlesFromDoubanAsync(settings.MovieTemp);
-//Video.PrintVideosWithErrors(settings.MovieTemp, searchOption: SearchOption.AllDirectories);
+//Video.PrintVideosWithErrors(settings.MovieTemp32, searchOption: SearchOption.AllDirectories);
 //Video.RenameDirectoriesWithMetadata(settings.MovieTemp, isDryRun: false);
 //Video.RestoreMetadata(settings.MovieTemp);
 //Video.PrintDirectoriesWithErrors(settings.MovieTemp);

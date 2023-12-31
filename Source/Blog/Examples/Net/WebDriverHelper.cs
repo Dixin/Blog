@@ -4,11 +4,11 @@ using System.Runtime.Versioning;
 using Examples.Common;
 using Examples.Diagnostics;
 using Examples.IO;
-using Examples.Management;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Chromium;
 using OpenQA.Selenium.Edge;
+using OpenQA.Selenium.Firefox;
 
 public static class WebDriverHelper
 {
@@ -21,20 +21,6 @@ public static class WebDriverHelper
     private const string TempDirectory = @"D:\Temp";
 
     private const string ProfilePrefix = "Selenium Profile";
-
-    private static readonly List<Win32Process> childProcesses = new();
-
-    //public static IWebDriver StartChrome(string profile = "", bool isLoadingAll = false, bool keepWindow = false, bool keepExisting = false, bool cleanProfile = false, string downloadDirectory = "") =>
-    //    StartChromium<ChromeOptions>(profile, isLoadingAll, keepWindow, keepExisting, cleanProfile, downloadDirectory);
-
-    //public static IWebDriver StartChrome(int index, bool isLoadingAll = false) =>
-    //    StartChrome(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(ChromeDriver)} {index:00}"), isLoadingAll);
-
-    //public static IWebDriver StartEdge(string profile = "", bool isLoadingAll = false, bool keepWindow = false, bool keepExisting = false, bool cleanProfile = false, string downloadDirectory = "") =>
-    //    StartChromium<EdgeOptions>(profile, isLoadingAll, keepWindow, keepExisting, cleanProfile, downloadDirectory);
-
-    //public static IWebDriver StartEdge(int index, bool isLoadingAll = false) =>
-    //    StartEdge(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(EdgeDriver)} {index:00}"), isLoadingAll);
 
     public static IWebDriver Start(int index, bool isLoadingAll = false, bool keepExisting = false) =>
         Start(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(EdgeDriver)} {index:00}"), isLoadingAll, keepExisting: keepExisting);
@@ -58,14 +44,41 @@ public static class WebDriverHelper
         else
         {
             options.AddUserProfilePreference("profile.managed_default_content_settings.images", 2);
-            options.AddUserProfilePreference("profile.default_content_setting_values.notifications", 2);
             options.AddUserProfilePreference("profile.managed_default_content_settings.stylesheets", 2);
             options.AddUserProfilePreference("profile.managed_default_content_settings.cookies", 2);
-            options.AddUserProfilePreference("profile.managed_default_content_settings.javascript", 1);
-            options.AddUserProfilePreference("profile.managed_default_content_settings.plugins", 1);
+            //options.AddUserProfilePreference("profile.managed_default_content_settings.javascript", 1);
+            //options.AddUserProfilePreference("profile.managed_default_content_settings.plugins", 1);
             options.AddUserProfilePreference("profile.managed_default_content_settings.popups", 2);
             options.AddUserProfilePreference("profile.managed_default_content_settings.geolocation", 2);
             options.AddUserProfilePreference("profile.managed_default_content_settings.media_stream", 2);
+
+            """
+            cookies
+            images
+            plugins
+            popups
+            geolocation
+            notifications
+            auto_select_certificate
+            fullscreen
+            mouselock
+            media_stream
+            media_stream_mic
+            media_stream_camera
+            protocol_handlers
+            ppapi_broker
+            automatic_downloads
+            midi_sysex
+            push_messaging
+            ssl_cert_decisions
+            metro_switch_to_desktop
+            protected_media_identifier
+            app_banner
+            site_engagement
+            durable_storage
+            """
+                .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries|StringSplitOptions.TrimEntries)
+                .ForEach(option=> options.AddUserProfilePreference($"profile.default_content_setting_values.{option}", 2));
         }
 
         ChromiumDriver webDriver;
@@ -124,6 +137,51 @@ public static class WebDriverHelper
         return webDriver;
     }
 
+    public static IWebDriver StartFirefox(string profile = "", bool isLoadingAll = false, bool keepWindow = false, bool keepExisting = false, bool cleanProfile = false, string downloadDirectory = "")
+    {
+        FirefoxOptions options = new();
+        //options.AddUserProfilePreference("download.default_directory", downloadDirectory.IfNullOrWhiteSpace(TempDirectory));
+        //options.AddUserProfilePreference("disable-popup-blocking", "true");
+        //options.AddUserProfilePreference("download.prompt_for_download", "false");
+        //options.AddUserProfilePreference("download.directory_upgrade", "true");
+        if (isLoadingAll)
+        {
+            //options.AddUserProfilePreference("profile.default_content_setting_values.cookies", 1);
+            //options.AddUserProfilePreference("profile.cookie_controls_mode", 0);
+        }
+        else
+        {
+            options.AddAdditionalFirefoxOption("permissions.default.stylesheet", 2);
+            options.AddAdditionalFirefoxOption("permissions.default.image", 2);
+            options.AddAdditionalFirefoxOption("dom.ipc.plugins.enabled.libflashplayer.so", "false");
+        }
+
+        if (!keepExisting)
+        {
+            DisposeAllFirefox();
+        }
+
+        if (profile.IsNullOrWhiteSpace())
+        {
+            profile = Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(FirefoxDriver)}");
+        }
+
+        if (cleanProfile && Directory.Exists(profile))
+        {
+            DirectoryHelper.Recycle(profile);
+        }
+
+        options.AddArguments($"user-data-dir={profile}");
+        FirefoxDriver webDriver = new(options);
+
+        if (!keepWindow)
+        {
+            webDriver.Manage().Window.Minimize();
+        }
+
+        return webDriver;
+    }
+
     [SupportedOSPlatform("windows")]
     public static void DisposeAllEdge()
     {
@@ -135,6 +193,12 @@ public static class WebDriverHelper
     {
         ProcessHelper.TryKillAll("chromedriver.exe");
         ProcessHelper.TryKillAll("chrome.exe");
+    }
+
+    public static void DisposeAllFirefox()
+    {
+        ProcessHelper.TryKillAll("firefoxdriver.exe");
+        ProcessHelper.TryKillAll("firefox.exe");
     }
 
     public static string GetString(ref IWebDriver webDriver, string url, int retryCount = 10, Func<IWebDriver>? restart = null, Action? wait = null)

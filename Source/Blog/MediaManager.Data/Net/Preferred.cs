@@ -11,19 +11,19 @@ internal static class Preferred
 {
     private const int WriteCount = 100;
 
-    internal static async Task DownloadSummariesAsync(string baseUrl, string jsonPath, Func<int, bool>? @continue = null, int index = 1, Action<string>? log = null)
+    internal static async Task<Dictionary<string, PreferredSummary>> DownloadSummariesAsync(ISettings settings, Func<int, bool>? @continue = null, int index = 1, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
         @continue ??= _ => true;
-        Dictionary<string, PreferredSummary> allSummaries = File.Exists(jsonPath)
-            ? await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredSummary>>(jsonPath)
+        Dictionary<string, PreferredSummary> allSummaries = File.Exists(settings.MoviePreferredSummary)
+            ? await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredSummary>>(settings.MoviePreferredSummary)
             : new();
         List<string> links = new();
         using HttpClient httpClient = new HttpClient().AddEdgeHeaders();
         for (; @continue(index); index++)
         {
-            string url = $"{baseUrl}/browse-movies?page={index}";
+            string url = $"{settings.MoviePreferredUrl}/browse-movies?page={index}";
             log($"Start {url}");
             string html = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(url));
             CQ cq = new(html);
@@ -53,7 +53,7 @@ internal static class Preferred
 
             if (index % WriteCount == 0)
             {
-                await JsonHelper.SerializeToFileAsync(allSummaries, jsonPath);
+                await JsonHelper.SerializeToFileAsync(allSummaries, settings.MoviePreferredSummary);
             }
 
             log($"End {url}");
@@ -61,30 +61,31 @@ internal static class Preferred
 
         links.OrderBy(link => link).ForEach(log);
 
-        await JsonHelper.SerializeToFileAsync(allSummaries, jsonPath);
+        await JsonHelper.SerializeToFileAsync(allSummaries, settings.MoviePreferredSummary);
+        return allSummaries;
     }
 
-    internal static async Task DownloadMetadataAsync(string baseUrl, string summaryJsonPath, string metadataJsonPath, Func<int, bool>? @continue = null, int index = 1, int degreeOfParallelism = 4, Action<string>? log = null)
+    internal static async Task DownloadMetadataAsync(ISettings settings, Func<int, bool>? @continue = null, int index = 1, int degreeOfParallelism = 4, Action<string>? log = null)
     {
-        await DownloadSummariesAsync(baseUrl, summaryJsonPath, @continue, index, log);
-        await DownloadMetadataAsync(summaryJsonPath, metadataJsonPath, degreeOfParallelism, log);
+        Dictionary<string, PreferredSummary> allSummaries = await DownloadSummariesAsync(settings, @continue, index, log);
+        await DownloadMetadataAsync(settings, allSummaries, degreeOfParallelism, log);
     }
 
-    internal static async Task DownloadMetadataAsync(string summaryJsonPath, string metadataJsonPath, int degreeOfParallelism = 4, Action<string>? log = null)
+    internal static async Task DownloadMetadataAsync(ISettings settings, Dictionary<string, PreferredSummary>? summaries = null, int degreeOfParallelism = 4, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
-        
-        Dictionary<string, PreferredSummary> summaries = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredSummary>>(summaryJsonPath);
 
-        ConcurrentDictionary<string, PreferredMetadata[]> details = File.Exists(metadataJsonPath)
-            ? new(await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(metadataJsonPath))
+        summaries ??= await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredSummary>>(settings.MoviePreferredSummary);
+
+        ConcurrentDictionary<string, PreferredMetadata[]> details = File.Exists(settings.MoviePreferredMetadata)
+            ? new(await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(settings.MoviePreferredMetadata))
             : new();
-        Dictionary<string, PreferredMetadata> existingMetadataByLink = details.Values.SelectMany(detailMetadata => detailMetadata).ToDictionary(detail => detail.Link, detail => detail);
+        HashSet<string> existingLinks = new(details.Values.SelectMany(detailMetadata => detailMetadata).Select(detail => detail.Link), StringComparer.OrdinalIgnoreCase);
 
         int count = 1;
         await summaries
             .Values
-            .Where(summary => !existingMetadataByLink.ContainsKey(summary.Link))
+            .Where(summary => !existingLinks.Contains(summary.Link))
             .OrderBy(summary => summary.Link)
             .Do(summary => log(summary.Link))
             .ToArray()
@@ -123,13 +124,13 @@ internal static class Preferred
 
                 if (Interlocked.Increment(ref count) % WriteCount == 0)
                 {
-                    JsonHelper.SerializeToFile(details, metadataJsonPath, WriteJsonLock);
+                    JsonHelper.SerializeToFile(details, settings.MoviePreferredMetadata, WriteJsonLock);
                 }
 
                 log($"End {index}:{summary.Link}");
             }, degreeOfParallelism);
 
-        JsonHelper.SerializeToFile(details, metadataJsonPath, WriteJsonLock);
+        JsonHelper.SerializeToFile(details, settings.MoviePreferredMetadata, WriteJsonLock);
     }
 
     private static readonly object WriteJsonLock = new();
