@@ -363,7 +363,7 @@ string[] genres = { "family", "animation", "documentary" };
 //    {
 //        //t = t.Substring(0, 1).ToUpper() + t.Substring(1);
 //        //string postfix = Path.GetFileNameWithoutExtension(f).EndsWithIgnoreCase($"{Video.VersionSeparator}{Video.TopEnglishKeyword}.2Audio") ? $"{Video.VersionSeparator}{Video.TopEnglishKeyword}.2Audio" : $"{Video.VersionSeparator}{Video.TopEnglishKeyword}";
-//        string postfix = $"{Video.VersionSeparator}{Video.TopEnglishKeyword}";
+//        string postfix = $"{Video.VersionSeparator}{settings.TopEnglishKeyword}";
 //        //Debug.Assert(!f.IsVideo() || Path.GetFileNameWithoutExtension(f).EndsWithIgnoreCase(postfix));
 //        string name = Path.GetFileNameWithoutExtension(f);
 //        return name.EndsWithOrdinal(postfix) || name.EndsWithOrdinal($"{postfix}-thumb") || Regex.IsMatch(name, $@"{postfix.Replace(".", @"\.").Replace("-", @"\-")}\.[a-z]{{3}}(&[a-z]{{3}})?$")
@@ -495,7 +495,7 @@ static void RenameEpisode(ISettings settings, string mediaDirectory, string meta
     //tvs.ForEach(tv => Video.MoveSubtitlesForEpisodes(tv, Path.Combine(metadataDirectory, Path.GetFileName(tv)), isDryRun: isDryRun, log: log));
 }
 
-//Video.MoveTopTVEpisodes(@"\\beyond-r\F\Files\Library\TV", @"\\beyond-r\F\Files\TV.Subtitles");
+//Video.MoveTopTVEpisodes(settings, @"\\beyond-r\F\Files\Library\TV", @"\\beyond-r\F\Files\TV.Subtitles", isDryRun: false);
 //Video.FormatTV(
 //    @"E:\Files\TV",
 //    @"",
