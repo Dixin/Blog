@@ -297,7 +297,9 @@ internal static class Program
         document.Sections.Cast<Section>().ForEach(section =>
         {
             range = section.Headers[WdHeaderFooterIndex.wdHeaderFooterPrimary].Range;
-            range.Fields.Add(range, WdFieldType.wdFieldStyleRef, @"""Heading 1""", true);
+            range.Fields.Add(range, WdFieldType.wdFieldStyleRef, """
+                 "Heading 1"
+                 """, true);
 
             section.Footers[WdHeaderFooterIndex.wdHeaderFooterPrimary].PageNumbers.Add(
                 WdPageNumberAlignment.wdAlignPageNumberCenter);

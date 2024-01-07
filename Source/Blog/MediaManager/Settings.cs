@@ -44,7 +44,8 @@ public partial record Settings(
     string TVMetadataDirectory,
     string TVMetadataCacheDirectory,
 
-    string TopMagnetUrls)
+    string TopMagnetUrls,
+    string TopDatabase)
 {
     public DirectorySettings Movie3D { get; init; }
 
@@ -102,6 +103,8 @@ public partial record Settings(
 
     public string[] ImdbKeywords { get; init; } = [];
 
+    public string[] AllImdbKeywords { get; init; } = [];
+
     public string[] MovieTopDuplications { get; init; } = [];
 }
 
@@ -114,6 +117,8 @@ public partial record Settings : ISettings
             .Select(keyword => keyword.StartsWithOrdinal(@"//""") ? (IsComment: true, Value: keyword.Substring(@"//""".Length)) : (IsComment: false, Value: keyword))
             .OrderBy(keyword => keyword.Value)
             .DistinctBy(keyword => keyword.Value)
-            .Select(keyword => keyword.IsComment ? @$"//""{keyword.Value}""," : @$"""{keyword.Value}"",")
+            .Select(keyword => keyword.IsComment ? $"""//"{keyword.Value}",""" : $"""
+                "{keyword.Value}",
+                """)
             .ForEach(Logger.WriteLine);
 }

@@ -10,7 +10,6 @@ using MediaManager.IO;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using Video = MediaManager.IO.Video;
 
 internal static class Imdb
 {
@@ -41,7 +40,7 @@ internal static class Imdb
                 ? WebDriverHelper.GetString(ref webDriver, imdbUrl)
                 : await Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(imdbUrl));
         CQ imdbCQ = imdbHtml;
-        string json = imdbCQ.Find(@"script[type=""application/ld+json""]").Text();
+        string json = imdbCQ.Find("""script[type="application/ld+json"]""").Text();
         if (imdbCQ.Find("title").Text().Trim().StartsWithIgnoreCase("500 Error"))
         {
             throw new ArgumentException("Server side error.", nameof(imdbId));
@@ -103,13 +102,13 @@ internal static class Imdb
 
         if (htmlYear.IsNullOrWhiteSpace())
         {
-            htmlYear = imdbCQ.Find(@"div.title_wrapper div.subtext a[title=""See more release dates""]").Text();
+            htmlYear = imdbCQ.Find("""div.title_wrapper div.subtext a[title="See more release dates"]""").Text();
             htmlYear = Regex.Match(htmlYear, "[0-9]{4}").Value;
         }
 
         if (htmlYear.IsNullOrWhiteSpace())
         {
-            htmlYear = imdbCQ.Find(@$"ul.ipc-inline-list li a[href=""/title/{imdbId}/releaseinfo?ref_=tt_ov_rdat#releases""]").Text();
+            htmlYear = imdbCQ.Find($"""ul.ipc-inline-list li a[href="/title/{imdbId}/releaseinfo?ref_=tt_ov_rdat#releases"]""").Text();
             htmlYear = Regex.Match(htmlYear, "[0-9]{4}").Value;
         }
 
@@ -140,17 +139,17 @@ internal static class Imdb
                 .Select(region => region.TextContent.Trim())
                 .ToArray()
             ?? imdbCQ
-                .Find(@"ul.ipc-metadata-list li[data-testid=""title-details-origin""] ul li")
+                .Find("""ul.ipc-metadata-list li[data-testid="title-details-origin"] ul li""")
                 .Select(element => new CQ(element).Text().Trim())
                 .ToArray();
         if (regions.IsEmpty())
         {
-            regions = imdbCQ.Find(@"a[href^=""/search/title?country_of_origin=""]").Select(link => link.TextContent.Trim()).DistinctOrdinal().ToArray();
+            regions = imdbCQ.Find("""a[href^="/search/title?country_of_origin="]""").Select(link => link.TextContent.Trim()).DistinctOrdinal().ToArray();
         }
 
         if (regions.IsEmpty())
         {
-            regions = imdbCQ.Find(@"a[href^=""/search/title/?country_of_origin=""]").Select(link => link.TextContent.Trim()).DistinctOrdinal().ToArray();
+            regions = imdbCQ.Find("""a[href^="/search/title/?country_of_origin="]""").Select(link => link.TextContent.Trim()).DistinctOrdinal().ToArray();
         }
 
         if (regions.IsEmpty() && parentMetadata is not null)
@@ -176,17 +175,17 @@ internal static class Imdb
                 .Select(region => region.TextContent.Trim())
                 .ToArray()
             ?? imdbCQ
-                .Find(@"ul.ipc-metadata-list li[data-testid=""title-details-languages""] ul li")
+                .Find("""ul.ipc-metadata-list li[data-testid="title-details-languages"] ul li""")
                 .Select(element => new CQ(element).Text().Trim())
                 .ToArray();
         if (languages.IsEmpty())
         {
-            languages = imdbCQ.Find(@"a[href^=""/search/title?title_type=feature&primary_language=""]").Select(link => link.TextContent.Trim()).DistinctOrdinal().ToArray();
+            languages = imdbCQ.Find("""a[href^="/search/title?title_type=feature&primary_language="]""").Select(link => link.TextContent.Trim()).DistinctOrdinal().ToArray();
         }
 
         if (languages.IsEmpty())
         {
-            languages = imdbCQ.Find(@"a[href^=""/search/title/?title_type=feature&primary_language=""]").Select(link => link.TextContent.Trim()).DistinctOrdinal().ToArray();
+            languages = imdbCQ.Find("""a[href^="/search/title/?title_type=feature&primary_language="]""").Select(link => link.TextContent.Trim()).DistinctOrdinal().ToArray();
         }
 
         if (languages.IsEmpty() && parentMetadata is not null)
@@ -427,7 +426,7 @@ internal static class Imdb
             if (title.IsNullOrWhiteSpace())
             {
                 title = imdbCQ
-                     .Find(@"h1[data-testid=""hero-title-block__title""]")
+                     .Find("""h1[data-testid="hero-title-block__title"]""")
                      .Text()
                      .Trim();
             }
@@ -452,7 +451,7 @@ internal static class Imdb
             if (originalTitle.IsNullOrWhiteSpace())
             {
                 originalTitle = imdbCQ
-                    .Find(@"div[data-testid=""hero-title-block__original-title""]")
+                    .Find("""div[data-testid="hero-title-block__original-title"]""")
                     .Text()
                     .Trim()
                     .Replace("Original title: ", string.Empty);
@@ -562,7 +561,7 @@ internal static class Imdb
                     if (title.IsNullOrWhiteSpace())
                     {
                         title = imdbCQ
-                            .Find(@"h1[data-testid=""hero-title-block__title""]")
+                            .Find("""h1[data-testid="hero-title-block__title"]""")
                             .Find("#titleYear")
                             .Remove()
                             .End()
@@ -765,7 +764,7 @@ internal static class Imdb
     {
         log ??= Logger.WriteLine;
 
-        ILookup<string, string> top = (await File.ReadAllLinesAsync(@"D:\Files\Library\Top.Database.txt"))
+        ILookup<string, string> top = (await File.ReadAllLinesAsync(settings.TopDatabase))
             .AsParallel()
             .Where(line => (line.ContainsIgnoreCase("|movies_x265|") || line.ContainsIgnoreCase("|movies|"))
                 && (line.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") || line.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}")))
@@ -833,6 +832,8 @@ internal static class Imdb
                         log($"!!!{imdbId}");
                     }
                 }
+
+                webDriver.Dispose();
             }, MaxDegreeOfParallelism);
     }
 

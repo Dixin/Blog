@@ -95,7 +95,9 @@ public class SevenZip
         $"Start extracting {archive} to {destination}".LogWith(logger);
         ProcessHelper.StartAndWait(
             this.sevenZ,
-            $@"x ""{archive}"" -y -r -o""{destination}""",
+            $"""
+             x "{archive}" -y -r -o"{destination}"
+             """,
             message => message.LogWith(logger),
             message => message.LogWith(logger));
         $"End extracting {archive} to {destination}".LogWith(logger);
@@ -181,7 +183,7 @@ public class SevenZip
         $"Start creating {zip} from {source}".LogWith(logger);
         ProcessHelper.StartAndWait(
             this.sevenZ,
-            $@"a ""{zip}"" ""{source}""  -tzip -r -mx={level} -mmt={ProcessorCount} {passwordArgument}",
+            $"""a "{zip}" "{source}"  -tzip -r -mx={level} -mmt={ProcessorCount} {passwordArgument}""",
             message => message.LogWith(logger),
             message => message.LogWith(logger));
         $"End creating {zip} from {source}".LogWith(logger);

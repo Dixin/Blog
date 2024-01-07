@@ -75,6 +75,8 @@ public interface ISettings
 
     string[] ImdbKeywords { get; init; }
 
+    string[] AllImdbKeywords { get; init; }
+
     string[] MovieTopDuplications { get; init; }
 
     string TopEnglishKeyword { get; init; }
@@ -148,4 +150,6 @@ public interface ISettings
     string TVMetadataCacheDirectory { get; init; }
 
     string TopMagnetUrls { get; init; }
+
+    string TopDatabase { get; init; }
 }

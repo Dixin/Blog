@@ -42,7 +42,7 @@ internal static class Preferred
                         Link: cqMovie.Find(".browse-movie-title").Attr("href"),
                         Title: cqMovie.Find(".browse-movie-title").Text(),
                         ImdbRating: cqMovie.Find(".rating").Text().Replace(" / 10", string.Empty),
-                        Genres: cqMovie.Find(@"h4[class!=""rating""]").Select(genre => genre.TextContent).ToArray(),
+                        Genres: cqMovie.Find("""h4[class!="rating"]""").Select(genre => genre.TextContent).ToArray(),
                         Year: int.TryParse(cqMovie.Find(".browse-movie-year").Text(), out int year) ? year : -1,
                         Image: cqMovie.Find(".img-responsive").Data<string>("cfsrc"));
                 })
@@ -156,7 +156,7 @@ internal static class Preferred
             .GetFiles(directory)
             .Select(file =>
             {
-                string url = CQ.CreateDocumentFromFile(file)?.Find(@"a.icon[title=""IMDb Rating""]")?.Attr<string>("href")?.Replace("../../external.html?link=", string.Empty) ?? string.Empty;
+                string url = CQ.CreateDocumentFromFile(file)?.Find("""a.icon[title="IMDb Rating"]""")?.Attr<string>("href")?.Replace("../../external.html?link=", string.Empty) ?? string.Empty;
                 if (Uri.TryCreate(url, UriKind.Absolute, out Uri? uri))
                 {
                     try

@@ -28,7 +28,7 @@ internal static class Iso
                 .EnumerateDirectories(directory, "*", SearchOption.AllDirectories)
                 .Where(subDirectory => Path.GetFileName(subDirectory).ContainsOrdinal(";"))
                 .ForEach(subDirectory => Directory.Move(subDirectory, Path.Combine(Path.GetDirectoryName(subDirectory) ?? throw new InvalidOperationException(subDirectory), subDirectory.Replace(";", "_")))))
-            .Select(directory => $@" create -o ""{destination}\{Path.GetFileName(directory)}.iso"" -add ""{directory}"" ""/{Path.GetFileName(directory)}"" -label {Path.GetFileName(directory)} -disable-optimization")
+            .Select(directory => $""" create -o "{destination}\{Path.GetFileName(directory)}.iso" -add "{directory}" "/{Path.GetFileName(directory)}" -label {Path.GetFileName(directory)} -disable-optimization""")
             .Do(Console.WriteLine)
             .ForEach(argument =>
             {
@@ -39,7 +39,9 @@ internal static class Iso
                         UseShellExecute = true,
                         CreateNoWindow = false,
                         WindowStyle = ProcessWindowStyle.Minimized,
-                        FileName = @"""C:\Program Files\PowerISO\piso.exe""",
+                        FileName = """
+                            "C:\Program Files\PowerISO\piso.exe"
+                            """,
                         Arguments = argument
                     }
                 };

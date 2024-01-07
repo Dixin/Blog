@@ -37,6 +37,7 @@
     "MovieMergedMetadata": "D:\\Files\\Library\\Movie.MergedMetadata.json",
     "TVTopX265Metadata": "D:\\Files\\Library\\TV.TopMetadata.x265.json",
     "TopMagnetUrls": "D:\\Files\\Library\\Top.MagnetUrls.txt",
+    "TopDatabase": "D:\\Files\\Library\\Top.Database.txt",
 
     "MovieMetadataDirectory": "D:\\Files\\Library\\MovieMetadata",
     "MovieMetadataCacheDirectory": "D:\\Files\\Library\\MovieMetadataCache",
@@ -203,5 +204,7 @@
         "Yugoslavian": [ "Bosnia and Herzegovina", "Federal Republic of Yugoslavia", "Serbia", "Slovenian", "Yugoslavia" ]
     },
 
-    "ImdbKeywords": []
+    "ImdbKeywords": [],
+
+    "AllImdbKeywords": []
 }

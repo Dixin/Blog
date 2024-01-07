@@ -126,9 +126,13 @@ public static class PathHelper
     public static string ToWsl(string path, bool forceAbsolute = false)
     {
         (int exitCode, List<string?> output, List<string?> error) = OperatingSystem.IsLinux()
-            ? ProcessHelper.Run("wslpath", $@"{(forceAbsolute ? "-a " : string.Empty)}""{path.ReplaceOrdinal("'", @"\'")}""")
+            ? ProcessHelper.Run("wslpath", $"""
+                {(forceAbsolute ? "-a " : string.Empty)}"{path.ReplaceOrdinal("'", @"\'")}"
+                """)
             : OperatingSystem.IsWindows()
-                ? ProcessHelper.Run("wsl", $@"wslpath {(forceAbsolute ? "-a " : string.Empty)}""{path.ReplaceOrdinal("'", @"\'")}""")
+                ? ProcessHelper.Run("wsl", $"""
+                    wslpath {(forceAbsolute ? "-a " : string.Empty)}"{path.ReplaceOrdinal("'", @"\'")}"
+                    """)
                 : throw new NotSupportedException(Environment.OSVersion.ToString());
         if (exitCode is 0)
         {
@@ -145,9 +149,13 @@ public static class PathHelper
     public static string FromWsl(string path, bool forwardSlash = false)
     {
         (int exitCode, List<string?> output, List<string?> error) = OperatingSystem.IsLinux()
-            ? ProcessHelper.Run("wslpath", $@"-{(forwardSlash ? "w" : "m")} ""{path.ReplaceOrdinal("'", @"\'")}""")
+            ? ProcessHelper.Run("wslpath", $"""
+                -{(forwardSlash ? "w" : "m")} "{path.ReplaceOrdinal("'", @"\'")}"
+                """)
             : OperatingSystem.IsWindows()
-                ? ProcessHelper.Run("wsl", $@"wslpath -{(forwardSlash ? "w" : "m")} ""{path.ReplaceOrdinal("'", @"\'")}""")
+                ? ProcessHelper.Run("wsl", $"""
+                    wslpath -{(forwardSlash ? "w" : "m")} "{path.ReplaceOrdinal("'", @"\'")}"
+                    """)
                 : throw new NotSupportedException(Environment.OSVersion.ToString());
         if (exitCode is 0)
         {

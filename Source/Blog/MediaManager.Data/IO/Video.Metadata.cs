@@ -652,4 +652,10 @@ internal static partial class Video
 
         await JsonHelper.SerializeToFileAsync(movies, jsonFile);
     }
+
+    internal static bool IsLatestVersion(string metadata) => 
+        File.ReadLines(metadata).Any(line => line.StartsWithIgnoreCase("""  "releases": {"""));
+
+    internal static ValueTask<bool> IsLatestVersionAsync(string metadata) => 
+        File.ReadLinesAsync(metadata).AnyAsync(line => line.StartsWithIgnoreCase("""  "releases": {"""));
 }

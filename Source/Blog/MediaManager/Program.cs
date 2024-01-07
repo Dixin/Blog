@@ -1,5 +1,6 @@
 ﻿using Examples.Common;
 using Examples.IO;
+using Examples.Net;
 using MediaManager;
 using MediaManager.IO;
 using MediaManager.Net;
@@ -272,9 +273,7 @@ Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
 //    settings.TVMainstreamWithoutSubtitle);
 
 //await Imdb.DownloadAllMoviesAsync(
-//    settings.MovieLibraryMetadata,
-//    settings.MovieTopX265Metadata, settings.MovieTopH264Metadata, settings.MoviePreferredMetadata, settings.MovieTopH264720PMetadata, settings.MovieRareMetadata, settings.MovieTopX265XMetadata, settings.MovieTopH264XMetadata,
-//    settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory,
+//    settings, 
 //    count => ..);
 //await Imdb.DownloadAllTVsAsync(settings.TVTopX265Metadata, settings.TVMainstream, settings.TVMetadataCacheDirectory, settings.TVMetadataDirectory);
 string[] genres = { "family", "animation", "documentary" };
@@ -292,11 +291,9 @@ string[] genres = { "family", "animation", "documentary" };
 //await Video.MergeMovieMetadataAsync(settings.MovieMetadataDirectory, @"D:\Files\Library\Movie.MergedMetadata.json");
 //await Video.UpdateMergedMovieMetadataAsync(settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, @"D:\Files\Library\Movie.MergedMetadata.json", settings.MovieLibraryMetadata);
 //await Video.MergeMovieMetadataAsync(settings.MovieMetadataDirectory, @"D:\Files\Library\Movie.MergedMetadata.json");
-//HashSet<string> keywords = new HashSet<string>(settings.ImdbKeywords, StringComparer.OrdinalIgnoreCase);
+//HashSet<string> keywords = new(settings.AllImdbKeywords, StringComparer.OrdinalIgnoreCase);
 //await Video.PrintMovieLinksAsync(
-//    settings.MovieLibraryMetadata, settings.MovieTopX265Metadata, settings.MovieTopH264Metadata, settings.MoviePreferredMetadata, settings.MovieTopH264720PMetadata, settings.MovieRareMetadata,
-//    @"D:\Files\Library\Top.MagnetUris.txt",
-//    @"D:\Files\Library\Movie.MergedMetadata.json", settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory, string.Empty,
+//    settings,
 //    imdbMetadata =>
 //    //imdbMetadata.AllKeywords.Intersect(new string[] { "test" }, StringComparer.OrdinalIgnoreCase).IsEmpty()
 //    // &&imdbMetadata.Genres.Intersect(genres, StringComparer.OrdinalIgnoreCase).IsEmpty()
@@ -939,16 +936,11 @@ static void RenameFilesWithDuplicateTitle(
 //            });
 //    });
 
-string[] links2 = @"
-".Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-
-//await TorrentHelper.DownloadAllFromCacheAsync(links, @"E:\Files\Torrents");
-
-//HashSet<string> downloaded = new(Directory.GetFiles(@"E:\Files\Torrents").Select(f => Path.GetFileNameWithoutExtension(f).Split("@").Last()), StringComparer.OrdinalIgnoreCase);
-//IEnumerable<Task>? tasks = await TorrentHelper.DownloadAllAsync(links.Select(MagnetUri.Parse).Where(l => !downloaded.Contains(l.ExactTopic)).Select(l => l.AddDefaultTrackers().ToString()).Do(Logger.WriteLine), @"E:\Files\TorrentsMagnet");
-//await Task.WhenAll(tasks);
-
-//await TorrentHelper.AddDefaultTrackersAsync(@"E:\Files\Torrents");
+//await TorrentHelper.DownloadAllFromCacheAsync(@"D:\User\Downloads\ToDownload.txt", @"E:\Files\Torrents", log: Logger.WriteLine);
+//await TorrentHelper.DownloadAllFromCache2Async(@"D:\User\Downloads\ToDownload.txt", @"E:\Files\Torrents", "EBF23D9F32EBE73317A927E57C39A5FF23FE4297", Logger.WriteLine);
+//await TorrentHelper.DownloadAllFromCache3Async(@"D:\User\Downloads\ToDownload.txt", @"E:\Files\Torrents", Logger.WriteLine);
+//await TorrentHelper.DownloadAllAsync(@"D:\User\Downloads\ToDownload.txt", @"E:\Files\Torrents", log: Logger.WriteLine);
+//await TorrentHelper.PrintNotDownloadedAsync(@"D:\User\Downloads\ToDownload.txt", @"E:\Files\Torrents", log: Logger.WriteLine);
 
 //Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(settings.MovieLibraryMetadata);
 //HashSet<string> titles = new(libraryMetadata.Values.AsParallel().SelectMany(d=>d.Keys).Select(f=>Path.GetFileNameWithoutExtension(f)!).Distinct(StringComparer.InvariantCultureIgnoreCase));

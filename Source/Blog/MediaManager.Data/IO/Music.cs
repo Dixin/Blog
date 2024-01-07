@@ -29,8 +29,9 @@ internal static class Music
             .Select(line => (start: line.Split("@".ToCharArray()).Last().Trim(), name: line.Split("@".ToCharArray()).First().Trim()))
             .ToArray();
         IEnumerable<string> arguments = tracks
-            .Select((track, index) => 
-                $@" -i ""{video}"" -c:a libmp3lame -ar 48000 -b:a 320k -ss {track.start} {(index == tracks.Length - 1 ? string.Empty : $"-to {tracks[index + 1].start}")} ""{Path.GetDirectoryName(video)}\{index + 1}. {track.name}.mp3""");
+            .Select((track, index) => $"""
+                -i "{video}" -c:a libmp3lame -ar 48000 -b:a 320k -ss {track.start} {(index == tracks.Length - 1 ? string.Empty : $"-to {tracks[index + 1].start}")} "{Path.GetDirectoryName(video)}\{index + 1}. {track.name}.mp3"
+                """);
         arguments.ForEach(argument =>
         {
             using Process ffmpeg = new()

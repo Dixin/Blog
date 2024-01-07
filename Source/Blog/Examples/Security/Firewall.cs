@@ -12,7 +12,7 @@ public static class Firewall
     {
         int exitCode = await ProcessHelper.StartAndWaitAsync(
             "netsh",
-            @$"advfirewall firewall add rule name=""{ruleName}"" dir=in action=block program=""{path}"" enable=yes profile=any",
+            $"""advfirewall firewall add rule name="{ruleName}" dir=in action=block program="{path}" enable=yes profile=any""",
             output,
             error,
             null,
@@ -28,7 +28,7 @@ public static class Firewall
     {
         int exitCode = await ProcessHelper.StartAndWaitAsync(
             "netsh",
-            @$"advfirewall firewall add rule name=""{ruleName}"" dir=out action=block program=""{path}"" enable=yes profile=any",
+            $"""advfirewall firewall add rule name="{ruleName}" dir=out action=block program="{path}" enable=yes profile=any""",
             output,
             error,
             null,
@@ -117,7 +117,7 @@ public static class Firewall
     {
         int exitCode = await ProcessHelper.StartAndWaitAsync(
             "netsh",
-            @$"advfirewall firewall delete rule name=""{ruleName}"" dir=in profile=any",
+            $"""advfirewall firewall delete rule name="{ruleName}" dir=in profile=any""",
             output,
             error,
             null,
@@ -133,7 +133,7 @@ public static class Firewall
     {
         int exitCode = await ProcessHelper.StartAndWaitAsync(
             "netsh",
-            @$"advfirewall firewall delete rule name=""{ruleName}"" dir=out profile=any",
+            $"""advfirewall firewall delete rule name="{ruleName}" dir=out profile=any""",
             output,
             error,
             null,
@@ -149,7 +149,7 @@ public static class Firewall
     {
         int exitCode = await ProcessHelper.StartAndWaitAsync(
             "netsh",
-            @$"advfirewall firewall delete rule name=""{ruleName}"" profile=any",
+            $"""advfirewall firewall delete rule name="{ruleName}" profile=any""",
             output,
             error,
             null,

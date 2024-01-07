@@ -1641,7 +1641,7 @@ internal static partial class Video
     }
 
     internal static async Task PrintMovieLinksAsync(
-        ISettings settings, string initialUrl, Func<ImdbMetadata, bool> predicate, HashSet<string> keywords, bool updateMetadata = false, bool isDryRun = false, Action<string>? log = null)
+        ISettings settings, Func<ImdbMetadata, bool> predicate, HashSet<string> keywords, string initialUrl = "", bool updateMetadata = false, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
@@ -1692,7 +1692,7 @@ internal static partial class Video
         //HashSet<string> downloadedTorrentHashes = new(/*Directory.GetFiles(@"E:\Files\MonoTorrent").Concat(Directory.GetFiles(@"E:\Files\MonoTorrentDownload")).Select(torrent => Path.GetFileNameWithoutExtension(torrent).Split("@").Last()), StringComparer.OrdinalIgnoreCase*/);
         using IWebDriver? webDriver = isDryRun ? null : WebDriverHelper.Start(isLoadingAll: true);
         using HttpClient? httpClient = isDryRun ? null : new HttpClient().AddEdgeHeaders();
-        if (!isDryRun)
+        if (!isDryRun && initialUrl.IsNotNullOrWhiteSpace())
         {
             webDriver!.Url = initialUrl;
             new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(e => e.FindElement(By.Id("pager_links")));

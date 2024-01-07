@@ -25,7 +25,9 @@ public static class WebClientExtensions
         headers.Add(HttpRequestHeader.AcceptLanguage, "en-US,en;q=0.9");
         headers.Add(HttpRequestHeader.CacheControl, "max-age=0");
         headers.Add("dnt", "1");
-        headers.Add("sec-ch-ua", @""" Not A;Brand"";v=""99"", ""Chromium"";v=""90"", ""Google Chrome"";v=""90""");
+        headers.Add("sec-ch-ua", """
+             " Not A;Brand";v="99", "Chromium";v="90", "Google Chrome";v="90"
+             """);
         headers.Add("sec-ch-ua-mobile", "?0");
         headers.Add("sec-fetch-dest", "document");
         headers.Add("sec-fetch-mode", "navigate");
