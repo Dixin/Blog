@@ -113,7 +113,7 @@ public class StringOrArrayConverter : JsonConverter<string[]>
     public override string[] Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
         reader.TokenType switch
         {
-            JsonTokenType.String => new[] { reader.GetString() ?? string.Empty },
+            JsonTokenType.String => [reader.GetString() ?? string.Empty],
             JsonTokenType.StartArray => JsonSerializer.Deserialize<string[]>(ref reader, options) ?? [],
             _ => throw new InvalidOperationException($"The value should be either string or array. It is actually {reader.TokenType}.")
         };
@@ -139,7 +139,7 @@ public class EntityOrArrayConverter : JsonConverter<ImdbEntity[]>
     public override ImdbEntity[] Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
         reader.TokenType switch
         {
-            JsonTokenType.StartObject => new[] { JsonSerializer.Deserialize<ImdbEntity>(ref reader, options)! },
+            JsonTokenType.StartObject => [JsonSerializer.Deserialize<ImdbEntity>(ref reader, options)!],
             JsonTokenType.StartArray => JsonSerializer.Deserialize<ImdbEntity[]>(ref reader, options) ?? [],
             _ => throw new InvalidOperationException($"The value should be either string or array. It is actually {reader.TokenType}.")
         };

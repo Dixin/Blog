@@ -57,8 +57,8 @@ public static partial class ProcessHelper
 
     public static (int ExitCode, List<string?> Output, List<string?> Error) Run(string fileName, string arguments, bool window = false, TimeSpan? timeout = null)
     {
-        List<string?> allOutput = new();
-        List<string?> allErrors = new();
+        List<string?> allOutput = [];
+        List<string?> allErrors = [];
         int exitCode = StartAndWait(fileName, arguments, output => allOutput.Add(output), error => allErrors.Add(error), null, window, timeout);
         return (exitCode, allOutput, allErrors);
     }
@@ -108,8 +108,8 @@ public static partial class ProcessHelper
 
     public static async Task<(int ExitCode, List<string?> Output, List<string?> Error)> RunAsync(string fileName, string arguments, bool window = false, CancellationToken cancellationToken = default)
     {
-        List<string?> allOutput = new();
-        List<string?> allErrors = new();
+        List<string?> allOutput = [];
+        List<string?> allErrors = [];
         int exitCode = await StartAndWaitAsync(fileName, arguments, output => allOutput.Add(output), error => allErrors.Add(error), null, window, cancellationToken);
         return (exitCode, allOutput, allErrors);
     }

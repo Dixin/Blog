@@ -548,7 +548,7 @@ internal static partial class Video
 
         using IWebDriver webDriver = WebDriverHelper.Start();
 
-        List<(string Title, string Year)> noTranslation = new();
+        List<(string Title, string Year)> noTranslation = [];
 
         await EnumerateDirectories(directory, level).ForEachAsync(async movie =>
         {

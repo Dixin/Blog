@@ -19,7 +19,7 @@ internal static class Preferred
         Dictionary<string, PreferredSummary> allSummaries = File.Exists(settings.MoviePreferredSummary)
             ? await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredSummary>>(settings.MoviePreferredSummary)
             : new();
-        List<string> links = new();
+        List<string> links = [];
         using HttpClient httpClient = new HttpClient().AddEdgeHeaders();
         for (; @continue(index); index++)
         {
@@ -114,7 +114,7 @@ internal static class Preferred
                     {
                         details[detail.ImdbId] = details.ContainsKey(detail.ImdbId)
                             ? details[detail.ImdbId].Where(item => !item.Link.EqualsIgnoreCase(detail.Link)).Append(detail).ToArray()
-                            : new[] { detail };
+                            : [detail];
                     }
                 }
                 catch (Exception exception)

@@ -109,7 +109,7 @@ internal static class Rare
 
                 if (x265Metadata.TryGetValue(imdbId.Value, out TopMetadata[]? x265Videos))
                 {
-                    List<TopMetadata> excluded = new();
+                    List<TopMetadata> excluded = [];
                     if (x265Videos.Length > 1)
                     {
                         if (x265Videos.Any(video => video.Title.ContainsIgnoreCase("BluRay")) && x265Videos.Any(video => video.Title.ContainsIgnoreCase("WEBRip")))
@@ -155,7 +155,7 @@ internal static class Rare
                 {
                     if (h264Videos.Length > 1)
                     {
-                        List<TopMetadata> excluded = new();
+                        List<TopMetadata> excluded = [];
                         excluded.AddRange(h264Videos.Where(video => !video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") && !video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}")));
                         if (excluded.Count == h264Videos.Length)
                         {
@@ -247,7 +247,7 @@ internal static class Rare
                 {
                     if (h264720PVideos.Length > 1)
                     {
-                        List<TopMetadata> excluded = new();
+                        List<TopMetadata> excluded = [];
                         excluded.AddRange(h264720PVideos.Where(video => !video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") && !video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}")));
                         if (excluded.Count == h264720PVideos.Length)
                         {

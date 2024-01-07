@@ -22,11 +22,11 @@ internal static partial class Video
 
     private const string Delimiter = ".";
 
-    private static readonly string[] UncommonVideoExtensions = { ".3gp", ".dat", ".divx", ".flv", ".m1v", ".m2ts", ".m4v", ".mkv", ".mov", ".mpeg", ".mpg", ".rm", ".rmvb", ".ts", ".vob", ".webm", ".wmv" };
+    private static readonly string[] UncommonVideoExtensions = [".3gp", ".dat", ".divx", ".flv", ".m1v", ".m2ts", ".m4v", ".mkv", ".mov", ".mpeg", ".mpg", ".rm", ".rmvb", ".ts", ".vob", ".webm", ".wmv"];
 
     private const string DiskImageExtension = ".iso";
 
-    private static readonly string[] CommonVideoExtensions = { ".avi", DiskImageExtension, ".mkv", ".mpg", VideoExtension, ".wmv" };
+    private static readonly string[] CommonVideoExtensions = [".avi", DiskImageExtension, ".mkv", ".mpg", VideoExtension, ".wmv"];
 
     private static readonly string[] AllVideoExtensions = UncommonVideoExtensions.Union(CommonVideoExtensions).ToArray();
 
@@ -34,9 +34,9 @@ internal static partial class Video
 
     private static readonly string TVSeasonMetadataFile = $"season{XmlMetadataExtension}";
 
-    private static readonly string[] Attachments = { "Introduction.txt", "Introduction.mht" };
+    private static readonly string[] Attachments = ["Introduction.txt", "Introduction.mht"];
 
-    private static readonly string[] AdaptiveAttachments = new[] { "banner.jpg", "box.jpg", "clearart.png", "clearlogo.png", "disc.jpg", "disc.png", "discart.png", "fanart.jpg", "landscape.jpg", "landscape.png", "logo.png", "logo.svg", "poster.jpg", "poster.png", "backdrop.jpg", "back.jpg" };
+    private static readonly string[] AdaptiveAttachments = ["banner.jpg", "box.jpg", "clearart.png", "clearlogo.png", "disc.jpg", "disc.png", "discart.png", "fanart.jpg", "landscape.jpg", "landscape.png", "logo.png", "logo.svg", "poster.jpg", "poster.png", "backdrop.jpg", "back.jpg"];
 
     internal const string ImdbMetadataExtension = ".json";
 
@@ -46,7 +46,7 @@ internal static partial class Video
 
     private const string ImdbCacheSearchPattern = PathHelper.AllSearchPattern + ImdbCacheExtension;
 
-    private static readonly string[] SubtitleLanguages = { "bul", "can", "cat", "chs", "cht", "cze", "dan", "dut", "eng", "fil", "fin", "fre", "gre", "heb", "hin", "ind", "ger", "hun", "ita", "jap", "kor", "mal", "nor", "pol", "por", "rom", "rum", "rus", "slo", "spa", "swe", "tam", "tha", "tur", "ukr" };
+    private static readonly string[] SubtitleLanguages = ["bul", "can", "cat", "chs", "cht", "cze", "dan", "dut", "eng", "fil", "fin", "fre", "gre", "heb", "hin", "ind", "ger", "hun", "ita", "jap", "kor", "mal", "nor", "pol", "por", "rom", "rum", "rus", "slo", "spa", "swe", "tam", "tha", "tur", "ukr"];
 
     internal const string NotExistingFlag = "-";
 

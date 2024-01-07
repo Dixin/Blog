@@ -84,7 +84,7 @@ internal class FfmpegHelper
         string mapAudio = videoMetadata.Audio > 0 ? "-map 0:a " : string.Empty;
 
         int bitRate = videoMetadata.DefinitionType is DefinitionType.P1080 ? 2048 : 1280;
-        List<string> videoFilters = new();
+        List<string> videoFilters = [];
         if (videoMetadata.DefinitionType is DefinitionType.P480)
         {
             videoFilters.Add("bwdif=mode=send_field:parity=auto:deint=all");

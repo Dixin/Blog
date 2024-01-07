@@ -216,7 +216,7 @@ public class DynamicWrapper<T> : DynamicObject
         if (!this.isValueType)
         {
             MethodInfo? method = this.type.GetInterfaceMethod(string.Concat("set_", binder.Name), value);
-            method?.Invoke(this.value, new[] { value });
+            method?.Invoke(this.value, [value]);
 
             PropertyInfo? property = this.type.GetBaseProperty(binder.Name);
             if (property is not null)

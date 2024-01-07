@@ -202,7 +202,7 @@ internal static partial class Video
             .ForEach(group => group.OrderBy(metadata => metadata).Append(string.Empty).ForEach(log));
     }
 
-    private static readonly string[] TitlesWithNoTranslation = { "Beyond", "IMAX", "Paul & Wing", "Paul & Steve", "Paul", "Wing", "Steve", "GEM", "Metro", "TVB" };
+    private static readonly string[] TitlesWithNoTranslation = ["Beyond", "IMAX", "Paul & Wing", "Paul & Steve", "Paul", "Wing", "Steve", "GEM", "Metro", "TVB"];
 
     private static readonly char[] DirectorySpecialCharacters = "：@#(){}".ToCharArray();
 
@@ -212,7 +212,7 @@ internal static partial class Video
         List<string>? allVideos = null;
         if (isLoadingVideo)
         {
-            allVideos = new();
+            allVideos = [];
         }
 
         EnumerateDirectories(directory, level)
@@ -236,13 +236,13 @@ internal static partial class Video
                 }
 
                 string[] allPaths = Directory.GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.AllDirectories);
-                string[] translations = { directoryInfo.TranslatedTitle1, directoryInfo.TranslatedTitle2, directoryInfo.TranslatedTitle3 };
+                string[] translations = [directoryInfo.TranslatedTitle1, directoryInfo.TranslatedTitle2, directoryInfo.TranslatedTitle3];
                 string[] titles =
-                {
+                [
                     directoryInfo.DefaultTitle1, directoryInfo.DefaultTitle2.TrimStart('-'), directoryInfo.DefaultTitle3.TrimStart('-'),
                     directoryInfo.OriginalTitle1.TrimStart('='), directoryInfo.OriginalTitle2.TrimStart('-'), directoryInfo.OriginalTitle3.TrimStart('-'),
                     directoryInfo.TranslatedTitle1, directoryInfo.TranslatedTitle2.TrimStart('-'), directoryInfo.TranslatedTitle3.TrimStart('-')
-                };
+                ];
 
                 if (Regex.IsMatch(trimmedMovie, @"·[0-9]"))
                 {
@@ -630,7 +630,7 @@ internal static partial class Video
         Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264Metadata);
         Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264720PMetadata);
         Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(settings.MoviePreferredMetadata);
-        HashSet<string> ignore = new(await JsonHelper.DeserializeFromFileAsync<string[]>(settings.MovieIgnoreMetadata));
+        HashSet<string> ignore = new(await JsonHelper.DeserializeFromFileAsync<string[]>(settings.MovieIgnoreMetadata), StringComparer.OrdinalIgnoreCase);
 
         directories
             .SelectMany(directory => EnumerateDirectories(directory.Directory, directory.Level))
@@ -1233,8 +1233,8 @@ internal static partial class Video
                         $"XXX {imdbTitle.Replace(" XXX", string.Empty)}"
                     })
                     .ToArray();
-                List<string> localTitles = new()
-                {
+                List<string> localTitles =
+                [
                     parsed.DefaultTitle1,
                     parsed.DefaultTitle1.Replace(InstallmentSeparator, " "),
                     parsed.DefaultTitle1.Replace(InstallmentSeparator, "-"),
@@ -1254,8 +1254,8 @@ internal static partial class Video
                     parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Replace(InstallmentSeparator, "-"),
                     parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Split(InstallmentSeparator).First(),
                     $"{parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Split(InstallmentSeparator).First()}{parsed.DefaultTitle3.Split(InstallmentSeparator).First()}",
-                    $"{parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Split(InstallmentSeparator).First()}{parsed.DefaultTitle3.Split(InstallmentSeparator).First()}".Replace(SubtitleSeparator, " "),
-                };
+                    $"{parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Split(InstallmentSeparator).First()}{parsed.DefaultTitle3.Split(InstallmentSeparator).First()}".Replace(SubtitleSeparator, " ")
+                ];
                 if (parsed.DefaultTitle2.IsNotNullOrWhiteSpace())
                 {
                     localTitles.Add($"{parsed.DefaultTitle1} {parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()).ToLowerInvariant()[0]}{parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray())[1..]}");
@@ -1350,8 +1350,8 @@ internal static partial class Video
                         $"XXX {imdbTitle.Replace(" XXX", string.Empty)}"
                     })
                     .ToArray();
-                List<string> localTitles = new()
-                {
+                List<string> localTitles =
+                [
                     parsed.DefaultTitle1,
                     parsed.OriginalTitle1.Replace(InstallmentSeparator, " "),
                     parsed.OriginalTitle1.Replace(InstallmentSeparator, "-"),
@@ -1371,8 +1371,8 @@ internal static partial class Video
                     parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Replace(InstallmentSeparator, "-"),
                     parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Split(InstallmentSeparator).First(),
                     $"{parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Split(InstallmentSeparator).First()}{parsed.OriginalTitle3.Split(InstallmentSeparator).First()}",
-                    $"{parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Split(InstallmentSeparator).First()}{parsed.OriginalTitle3.Split(InstallmentSeparator).First()}".Replace(SubtitleSeparator, " "),
-                };
+                    $"{parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Split(InstallmentSeparator).First()}{parsed.OriginalTitle3.Split(InstallmentSeparator).First()}".Replace(SubtitleSeparator, " ")
+                ];
                 if (parsed.OriginalTitle2.IsNotNullOrWhiteSpace())
                 {
                     localTitles.Add($"{parsed.OriginalTitle1} {parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()).ToLowerInvariant()[0]}{parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray())[1..]}");
@@ -1433,12 +1433,12 @@ internal static partial class Video
                         }
                         else
                         {
-                            currentLocalRegion = new[] { localRegionText };
+                            currentLocalRegion = [localRegionText];
                         }
                     }
                     else
                     {
-                        currentLocalRegion = new[] { localRegionText };
+                        currentLocalRegion = [localRegionText];
                     }
                 }
 
@@ -1726,7 +1726,7 @@ internal static partial class Video
                 //log($"{index * 100 / length}% - {index}/{length} - {imdbMetadata!.ImdbId}");
                 if (x265Metadata.TryGetValue(imdbMetadata.ImdbId, out TopMetadata[]? x265Videos))
                 {
-                    List<TopMetadata> excluded = new();
+                    List<TopMetadata> excluded = [];
                     if (x265Videos.Length > 1)
                     {
                         if (x265Videos.Any(video => video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}")) && x265Videos.Any(video => !(video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}"))))
@@ -1825,7 +1825,7 @@ internal static partial class Video
 
                 if (h264Metadata.TryGetValue(imdbMetadata.ImdbId, out TopMetadata[]? h264Videos))
                 {
-                    List<TopMetadata> excluded = new();
+                    List<TopMetadata> excluded = [];
                     if (h264Videos.Length > 1)
                     {
                         if (h264Videos.Any(video => video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}")) && h264Videos.Any(video => !(video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}"))))
@@ -2116,7 +2116,7 @@ internal static partial class Video
                         return;
                     }
 
-                    List<TopMetadata> excluded = new();
+                    List<TopMetadata> excluded = [];
                     if (h265Videos.Length > 1)
                     {
                         if (h265Videos.Any(video => video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}")) && h265Videos.Any(video => !(video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || video.Title.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}"))))

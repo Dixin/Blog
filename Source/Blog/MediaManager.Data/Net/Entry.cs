@@ -15,7 +15,7 @@ internal static class Entry
     {
         log ??= Logger.WriteLine;
 
-        List<string> entryLinks = new();
+        List<string> entryLinks = [];
         using HttpClient httpClient = new();
         await Enumerable
             .Range(startIndex, count)

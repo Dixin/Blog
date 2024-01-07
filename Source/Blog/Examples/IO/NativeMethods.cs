@@ -304,7 +304,7 @@ internal static class FileSystem
     {
         Debug.Assert(sourcePath != "" && Path.IsPathRooted(sourcePath), "Invalid SourcePath!!!");
 
-        return GetShellOperationInfo(operationType, operationFlags, new string[] { sourcePath }, targetPath);
+        return GetShellOperationInfo(operationType, operationFlags, [sourcePath], targetPath);
     }
 
     private static Shfileopstruct GetShellOperationInfo(ShFileOperationType operationType, ShFileOperationFlags operationFlags, string[] sourcePaths, string? targetPath = null)
@@ -345,7 +345,7 @@ internal static class FileSystem
     {
         Debug.Assert(fullPath != "" && Path.IsPathRooted(fullPath), "Must be full path!!!");
 
-        return GetShellPath(new string[] { fullPath });
+        return GetShellPath([fullPath]);
     }
 
     private static string GetShellPath(string[] fullPaths)

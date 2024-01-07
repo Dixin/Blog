@@ -94,7 +94,7 @@ internal static class Top
                         {
                             allSummaries[summary.ImdbId] = allSummaries.ContainsKey(summary.ImdbId)
                                 ? allSummaries[summary.ImdbId].Where(existing => !existing.Title.EqualsIgnoreCase(summary.Title)).Append(summary).ToArray()
-                                : new[] { summary };
+                                : [summary];
                         }
                     });
 

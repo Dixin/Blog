@@ -4,7 +4,7 @@ public static partial class Chinese
 {
     // https://en.wikipedia.org/wiki/List_of_Unicode_characters#East_Asian_writing_systems
     public static (char Min, char Max, string Name, string Uri)[] BasicBlocks { get; } =
-    {
+    [
         // ⺀
         ('\u2E80', '\u2EFF', "CJK Radicals Supplement", "https://en.wikipedia.org/wiki/CJK_Radicals_Supplement"),   
         
@@ -76,11 +76,11 @@ public static partial class Chinese
         ('\uFE50', '\uFE6F', "Small Form Variants", "https://en.wikipedia.org/wiki/Small_Form_Variants"),
 
         // ｬ
-        ('\uFF00', '\uFFEF', "Half width and Full width Forms", "https://en.wikipedia.org/wiki/Halfwidth_and_Fullwidth_Forms_(Unicode_block)"),
-    };
+        ('\uFF00', '\uFFEF', "Half width and Full width Forms", "https://en.wikipedia.org/wiki/Halfwidth_and_Fullwidth_Forms_(Unicode_block)")
+    ];
 
     public static (int Min, int Max, string Name, string Uri)[] SurrogatePairBlocks { get; } =
-    {
+    [
         // 𖿡
         (0x16FE0, 0x16FFF, "Ideographic Symbols and Punctuation", "https://en.wikipedia.org/wiki/Ideographic_Symbols_and_Punctuation"),
 
@@ -139,8 +139,8 @@ public static partial class Chinese
         (0x2F800, 0x2FA1F, "CJK Comparability Ideographs Supplement", "https://en.wikipedia.org/wiki/CJK_Compatibility_Ideographs_Supplement"),
 
         // 𰀃
-        (0x30000, 0x3134F, "CJK Ideographs Extension G", "https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_Extension_G"),
-    };
+        (0x30000, 0x3134F, "CJK Ideographs Extension G", "https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_Extension_G")
+    ];
 
     public static IEnumerable<(int Index, int Length)> GetTextElements(this string value)
     {

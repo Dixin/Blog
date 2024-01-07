@@ -10,9 +10,9 @@ using TagFile = TagLib.File;
 
 internal static class Audio
 {
-    private static readonly string[] TraditionChineseException = { "黄霑" };
+    private static readonly string[] TraditionChineseException = ["黄霑"];
 
-    private static readonly string[] Attachments = { "cover", "clearart", "cdart", "back", "Introduction", "booklet", "box" };
+    private static readonly string[] Attachments = ["cover", "clearart", "cdart", "back", "Introduction", "booklet", "box"];
 
     private const string AudioExtension = ".mp3";
 

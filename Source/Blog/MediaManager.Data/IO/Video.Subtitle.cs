@@ -14,17 +14,17 @@ internal static partial class Video
 
     private static readonly byte[] Utf8Bom = Utf8Encoding.GetPreamble();
 
-    private static readonly string[] TextSubtitleExtensions = { ".srt", ".ass", ".ssa", ".vtt", ".smi" };
+    private static readonly string[] TextSubtitleExtensions = [".srt", ".ass", ".ssa", ".vtt", ".smi"];
 
-    private static readonly string[] BinarySubtitleExtensions = { ".idx", ".sub", ".sup" };
+    private static readonly string[] BinarySubtitleExtensions = [".idx", ".sub", ".sup"];
 
     private static readonly string[] TextExtensions = TextSubtitleExtensions.Append(".txt").ToArray();
 
     private static readonly string[] AllSubtitleExtensions = TextSubtitleExtensions.Concat(BinarySubtitleExtensions).ToArray();
 
-    private static readonly string[] CommonChinese = { "的", "是" };
+    private static readonly string[] CommonChinese = ["的", "是"];
 
-    private static readonly string[] CommonEnglish = { " of ", " is " };
+    private static readonly string[] CommonEnglish = [" of ", " is "];
 
     internal static (string? Charset, float? Confidence, string File)[] GetSubtitles(string directory) =>
         Directory
@@ -327,7 +327,7 @@ internal static partial class Video
             .ForEach(file =>
             {
                 string content = File.ReadAllText(file);
-                List<string> languages = new();
+                List<string> languages = [];
                 if (CommonChinese.All(chinese => content.ContainsOrdinal(chinese)))
                 {
                     languages.Add("chs");

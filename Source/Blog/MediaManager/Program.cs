@@ -276,7 +276,7 @@ Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
 //    settings, 
 //    count => ..);
 //await Imdb.DownloadAllTVsAsync(settings.TVTopX265Metadata, settings.TVMainstream, settings.TVMetadataCacheDirectory, settings.TVMetadataDirectory);
-string[] genres = { "family", "animation", "documentary" };
+string[] genres = ["family", "animation", "documentary"];
 //await Video.PrintTVLinks(settings.TVTopX265Metadata, new string[] { settings.TVMainstream, settings.TVMainstreamWithoutSubtitle }, @"D:\Files\Library\TVMetadata", @"D:\Files\Library\TVMetadataCache", settings.TVTopX265Url,
 //    imdbMetadata =>
 //        !imdbMetadata.AllKeywords.Intersect(new string[] { "test" }, StringComparer.OrdinalIgnoreCase).Any()

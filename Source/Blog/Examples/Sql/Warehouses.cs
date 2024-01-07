@@ -63,7 +63,7 @@ internal static class Warehouses
                 using SqlConnection connection = new($"Server=.;Database={databaseName};Trusted_Connection=True;");
                 connection.Open();
 
-                List<(string, string)> primaryKeys = new();
+                List<(string, string)> primaryKeys = [];
                 using SqlCommand command1 = connection.CreateCommand();
                 command1.CommandText = $"select name, OBJECT_NAME(OBJECT_ID) from sys.indexes where is_primary_key = 1 and OBJECT_NAME(OBJECT_ID) like 'Group%'";
                 using SqlDataReader reader1 = command1.ExecuteReader();
@@ -82,7 +82,7 @@ internal static class Warehouses
                         command.ExecuteNonQuery();
                     });
 
-                List<(string, string)> indexes = new();
+                List<(string, string)> indexes = [];
                 using SqlCommand command2 = connection.CreateCommand();
                 command2.CommandText = $"select name, OBJECT_NAME(object_ID) from sys.indexes where OBJECT_NAME(object_ID) like 'Group%' and name is not null;";
                 using SqlDataReader reader2 = command2.ExecuteReader();
@@ -146,7 +146,7 @@ internal static class Warehouses
                 using SqlConnection connection = new($"Server=.;Database={databaseName};Trusted_Connection=True;");
                 connection.Open();
 
-                List<(string, string)> primaryKeys = new();
+                List<(string, string)> primaryKeys = [];
                 using SqlCommand command1 = connection.CreateCommand();
                 command1.CommandText = $"select name, OBJECT_NAME(OBJECT_ID) from sys.indexes where is_primary_key = 1 and OBJECT_NAME(OBJECT_ID) like 'qunlist%'";
                 using SqlDataReader reader1 = command1.ExecuteReader();
@@ -165,7 +165,7 @@ internal static class Warehouses
                         command.ExecuteNonQuery();
                     });
 
-                List<(string, string)> indexes = new();
+                List<(string, string)> indexes = [];
                 using SqlCommand command2 = connection.CreateCommand();
                 command2.CommandText = $"select name, OBJECT_NAME(object_ID) from sys.indexes where OBJECT_NAME(object_ID) like 'qunlist%' and name is not null;";
                 using SqlDataReader reader2 = command2.ExecuteReader();
@@ -242,12 +242,12 @@ internal static class Warehouses
                     string last = groups[3].Value;
                     if (last.ContainsOrdinal("@"))
                     {
-                        string newLine = string.Join("\t", new[] { groups[1].Value.TrimEnd(), groups[2].Value, last });
+                        string newLine = string.Join("\t", [groups[1].Value.TrimEnd(), groups[2].Value, last]);
                         writer.WriteLine(newLine);
                     }
                     else
                     {
-                        string newLine = string.Join("\t", new[] { groups[1].Value.TrimEnd(), groups[2].Value, string.Empty });
+                        string newLine = string.Join("\t", [groups[1].Value.TrimEnd(), groups[2].Value, string.Empty]);
                         writer.WriteLine(newLine);
                     }
                 }
@@ -258,17 +258,17 @@ internal static class Warehouses
                     if (lastField.ContainsOrdinal("@"))
                     {
                         string firstField = line.Substring(0, line.Length - lastField.Length).TrimEnd();
-                        string newLine = string.Join("\t", new[] { firstField, lastField, string.Empty });
+                        string newLine = string.Join("\t", [firstField, lastField, string.Empty]);
                         writer.WriteLine(newLine);
                     }
                     else if (lastField == fields[0])
                     {
-                        string newLine = string.Join("\t", new[] { lastField, string.Empty, string.Empty });
+                        string newLine = string.Join("\t", [lastField, string.Empty, string.Empty]);
                         writer.WriteLine(newLine);
                     }
                     else
                     {
-                        string newLine = string.Join("\t", new[] { line.TrimEnd(), string.Empty, string.Empty });
+                        string newLine = string.Join("\t", [line.TrimEnd(), string.Empty, string.Empty]);
                         writer.WriteLine(newLine);
                     }
                 }
@@ -335,12 +335,12 @@ internal static class Warehouses
                     string last = groups[3].Value;
                     if (last.ContainsOrdinal("@"))
                     {
-                        string newLine = string.Join("\t", new[] { groups[1].Value.TrimEnd(), groups[2].Value, last });
+                        string newLine = string.Join("\t", [groups[1].Value.TrimEnd(), groups[2].Value, last]);
                         writer.WriteLine(newLine);
                     }
                     else
                     {
-                        string newLine = string.Join("\t", new[] { groups[1].Value.TrimEnd(), groups[2].Value, string.Empty });
+                        string newLine = string.Join("\t", [groups[1].Value.TrimEnd(), groups[2].Value, string.Empty]);
                         writer.WriteLine(newLine);
                     }
                 }

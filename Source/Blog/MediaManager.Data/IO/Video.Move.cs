@@ -905,7 +905,7 @@ internal static partial class Video
                                 .Where(subtitle => EncodingHelper.TryRead(subtitle, out string? content, out _) && !"為們說無當嗎這".Any(content.ContainsOrdinal))
                                 .OrderByDescending(subtitle => new FileInfo(subtitle).Length)
                                 .First();
-                            chineseSubtitles = new string[] { chineseSubtitle };
+                            chineseSubtitles = [chineseSubtitle];
 
                             const string Language = "chs";
                             string chineseSubtitleName = Path.GetFileNameWithoutExtension(chineseSubtitle);
