@@ -811,8 +811,9 @@ internal static class Imdb
             .ToArray();
         int trimmedLength = imdbIds.Length;
         ConcurrentQueue<string> imdbIdQueue = new(imdbIds);
-        await Enumerable.Repeat<Func<IWebDriver>>(() => WebDriverHelper.Start(keepExisting: true), MaxDegreeOfParallelism)
-            .Select(factory => factory())
+        WebDriverHelper.DisposeAllChrome();
+        await Enumerable.Range(0, MaxDegreeOfParallelism)
+            .Select(index => WebDriverHelper.Start(index, keepExisting: true))
             .ParallelForEachAsync(async webDriver =>
             {
                 while (imdbIdQueue.TryDequeue(out string? imdbId))
@@ -821,7 +822,7 @@ internal static class Imdb
                     log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
                     try
                     {
-                        await Retry.FixedIntervalAsync(async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataCacheDirectory, settings.TVMetadataDirectory, cacheFiles, metadataFiles, webDriver, false, true, log));
+                        await Retry.FixedIntervalAsync(async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory, cacheFiles, metadataFiles, webDriver, false, true, log));
                     }
                     catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
                     {

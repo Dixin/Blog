@@ -22,8 +22,8 @@ public static class WebDriverHelper
 
     private const string ProfilePrefix = "Selenium Profile";
 
-    public static IWebDriver Start(int index, bool isLoadingAll = false, bool keepExisting = false) =>
-        Start(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(EdgeDriver)} {index:00}"), isLoadingAll, keepExisting: keepExisting);
+    public static IWebDriver Start(int index, bool isLoadingAll = false, bool keepWindow = false, bool keepExisting = false, bool keepProfile = false, string downloadDirectory = "") =>
+        StartChromium<ChromeOptions>(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(ChromeDriver)} {index:00}"), isLoadingAll, keepWindow, keepExisting, keepProfile, downloadDirectory);
 
     public static IWebDriver Start(string profile = "", bool isLoadingAll = false, bool keepWindow = false, bool keepExisting = false, bool keepProfile = false, string downloadDirectory = "") =>
         StartChromium<ChromeOptions>(profile, isLoadingAll, keepWindow, keepExisting, keepProfile, downloadDirectory);
