@@ -249,7 +249,7 @@ internal static partial class Video
         await DownloadImdbMetadataAsync(imdbId, directory, directory, jsonFiles, files, webDriver: webDriver, restart: null, overwrite: overwrite, useCache: useCache, log: log);
     }
 
-    internal static async Task DownloadImdbMetadataAsync(string imdbId, string metadataDirectory, string cacheDirectory, string[] metadataFiles, string[] cacheFiles, IWebDriver? webDriver, Func<IWebDriver>? restart = null, bool overwrite = false, bool useCache = false, Action<string>? log = null)
+    internal static async Task<IWebDriver?> DownloadImdbMetadataAsync(string imdbId, string metadataDirectory, string cacheDirectory, string[] metadataFiles, string[] cacheFiles, IWebDriver? webDriver, Func<IWebDriver>? restart = null, bool overwrite = false, bool useCache = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
@@ -268,7 +268,7 @@ internal static partial class Video
             else
             {
                 log($"Skip {imdbId}.");
-                return;
+                return webDriver;
             }
         }
 
@@ -281,7 +281,7 @@ internal static partial class Video
             await new string[] { imdbFile, releaseFile, keywordsFile, advisoriesFile, Path.Combine(cacheDirectory, $"{imdbId}{ImdbMetadataExtension}") }
                 .Where(fileToWrite => !cacheFiles.Any(file => file.EqualsIgnoreCase(fileToWrite)) || overwrite)
                 .ForEachAsync(async fileToWrite => await File.WriteAllTextAsync(Path.Combine(cacheDirectory, fileToWrite), string.Empty));
-            return;
+            return webDriver;
         }
 
         string parentImdbFile = Path.Combine(cacheDirectory, $"{imdbId}.Parent{ImdbCacheExtension}");
@@ -299,7 +299,8 @@ internal static partial class Video
             string parentImdbUrl, string parentImdbHtml,
             string parentReleaseUrl, string parentReleaseHtml,
             string parentKeywordsUrl, string parentKeywordsHtml,
-            string parentAdvisoriesUrl, string parentAdvisoriesHtml
+            string parentAdvisoriesUrl, string parentAdvisoriesHtml,
+            webDriver
         ) = await Imdb.DownloadAsync(
             imdbId,
             useCache || File.Exists(imdbFile) && new FileInfo(imdbFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1) ? imdbFile : string.Empty,
@@ -343,6 +344,8 @@ internal static partial class Video
         log($"Saved to {jsonFile}.");
         TimeSpan elapsed = Stopwatch.GetElapsedTime(startTime);
         log($"Elapsed {elapsed}");
+
+        return webDriver;
     }
 
     internal const string ImdbMetadataSeparator = ",";

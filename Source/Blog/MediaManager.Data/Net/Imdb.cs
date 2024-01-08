@@ -24,7 +24,8 @@ internal static class Imdb
         string ParentImdbUrl, string ParentImdbHtml,
         string ParentReleaseUrl, string ParentReleaseHtml,
         string ParentKeywordsUrl, string parentKeywordsHtml,
-        string ParentAdvisoriesUrl, string ParentAdvisoriesHtml)> DownloadAsync(
+        string ParentAdvisoriesUrl, string ParentAdvisoriesHtml,
+        IWebDriver? WebDriver)> DownloadAsync(
         string imdbId,
         string imdbFile, string releaseFile, string keywordsFile, string advisoriesFile,
         string parentImdbFile, string parentReleaseFile, string parentKeywordsFile, string parentAdvisoriesFile,
@@ -78,12 +79,13 @@ internal static class Imdb
                     parentReleaseUrl, parentReleaseHtml,
                     parentKeywordsUrl, parentKeywordsHtml,
                     parentAdvisoriesUrl, parentAdvisoriesHtml,
-                    string _, string _, string _, string _, string _, string _, string _, string _
+                    string _, string _, string _, string _, string _, string _, string _, string _,
+                    webDriver
                 ) = await DownloadAsync(
                     parentImdbId,
                     parentImdbFile, parentReleaseFile, parentKeywordsFile, parentAdvisoriesFile,
                     string.Empty, string.Empty, string.Empty, string.Empty,
-                    webDriver);
+                    webDriver, restart);
             }
         }
 
@@ -250,7 +252,7 @@ internal static class Imdb
                     {
                         try
                         {
-                            webDriver.Dispose();
+                            webDriver?.Dispose();
                         }
                         finally
                         {
@@ -694,7 +696,8 @@ internal static class Imdb
             parentImdbUrl, parentImdbHtml,
             parentReleaseUrl, parentReleaseHtml,
             parentKeywordsUrl, parentKeywordsHtml,
-            parentAdvisoriesUrl, parentAdvisoriesHtml
+            parentAdvisoriesUrl, parentAdvisoriesHtml,
+            webDriver
         );
     }
 
@@ -818,7 +821,7 @@ internal static class Imdb
             .ToArray();
         int trimmedLength = imdbIds.Length;
         ConcurrentQueue<string> imdbIdQueue = new(imdbIds);
-        Func<int, IWebDriver> startWebDriver = index => WebDriverHelper.Start(index, keepExisting: true, cleanProfile: true);
+        Func<int, IWebDriver> startWebDriver = index => WebDriverHelper.Start(index, keepExisting: true, cleanProfile: false);
         await Enumerable.Range(0, MaxDegreeOfParallelism)
             .Select(index => (WebDriver: startWebDriver(index), Index: index))
             .ParallelForEachAsync(async webDriver =>
@@ -829,7 +832,7 @@ internal static class Imdb
                     log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
                     try
                     {
-                        await Retry.FixedIntervalAsync(async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver: webDriver.WebDriver, restart: () => startWebDriver(webDriver.Index), overwrite: false, useCache: true, log: log));
+                        webDriver.WebDriver = await Retry.FixedIntervalAsync(async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver: webDriver.WebDriver, restart: () => startWebDriver(webDriver.Index), overwrite: false, useCache: true, log: log))!;
                     }
                     catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
                     {
@@ -841,7 +844,7 @@ internal static class Imdb
                     }
                 }
 
-                webDriver.WebDriver.Dispose();
+                webDriver.WebDriver?.Dispose();
             }, MaxDegreeOfParallelism);
     }
 
