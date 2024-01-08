@@ -310,7 +310,7 @@ internal static partial class Video
             useCache || File.Exists(parentReleaseFile) && new FileInfo(parentReleaseFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1) ? parentReleaseFile : string.Empty,
             useCache || File.Exists(parentKeywordsFile) && new FileInfo(parentKeywordsFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1) ? parentKeywordsFile : string.Empty,
             useCache || File.Exists(parentAdvisoriesFile) && new FileInfo(parentAdvisoriesFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1) ? parentAdvisoriesFile : string.Empty,
-            webDriver);
+            webDriver, restart);
         Debug.Assert(imdbHtml.IsNotNullOrWhiteSpace());
         if (imdbMetadata.Regions.IsEmpty())
         {
