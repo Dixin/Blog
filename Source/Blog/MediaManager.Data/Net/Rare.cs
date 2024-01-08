@@ -96,14 +96,14 @@ internal static class Rare
 
                 try
                 {
-                    await Video.DownloadImdbMetadataAsync(imdbId.Value, @"D:\Files\Library\ImdbCache", @"D:\Files\Library\ImdbMetadata", cacheFiles, metadataFiles, webDriver, false, true, log);
+                    await Video.DownloadImdbMetadataAsync(imdbId.Value, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver: webDriver, restart: null, overwrite: false, useCache: true, log: log);
                 }
                 catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
                 {
                     if (imdbId.Value.StartsWithIgnoreCase("tt0"))
                     {
                         imdbId = imdbId with { Value = imdbId.Value.ReplaceIgnoreCase("tt0", "tt") };
-                        await Video.DownloadImdbMetadataAsync(imdbId.Value, @"D:\Files\Library\ImdbCache", @"D:\Files\Library\ImdbMetadata", cacheFiles, metadataFiles, webDriver, false, true, log);
+                        await Video.DownloadImdbMetadataAsync(imdbId.Value, @settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver: webDriver, restart: null, overwrite: false, useCache: true, log: log);
                     }
                 }
 

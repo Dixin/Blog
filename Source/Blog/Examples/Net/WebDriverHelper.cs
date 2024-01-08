@@ -22,13 +22,19 @@ public static class WebDriverHelper
 
     private const string ProfilePrefix = "Selenium Profile";
 
+    private const bool IsEdgeDefault = true;
+
     public static IWebDriver Start(int index, bool isLoadingAll = false, bool keepWindow = false, bool keepExisting = false, bool keepProfile = false, string downloadDirectory = "") =>
-        StartChromium<ChromeOptions>(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(ChromeDriver)} {index:00}"), isLoadingAll, keepWindow, keepExisting, keepProfile, downloadDirectory);
+        IsEdgeDefault
+         ? StartChromium<EdgeOptions>(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(EdgeDriver)} {index:00}"), isLoadingAll, keepWindow, keepExisting, keepProfile, downloadDirectory)
+         : StartChromium<ChromeOptions>(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(EdgeDriver)} {index:00}"), isLoadingAll, keepWindow, keepExisting, keepProfile, downloadDirectory);
 
     public static IWebDriver Start(string profile = "", bool isLoadingAll = false, bool keepWindow = false, bool keepExisting = false, bool keepProfile = false, string downloadDirectory = "") =>
-        StartChromium<ChromeOptions>(profile, isLoadingAll, keepWindow, keepExisting, keepProfile, downloadDirectory);
+        IsEdgeDefault
+            ? StartChromium<EdgeOptions>(profile, isLoadingAll, keepWindow, keepExisting, keepProfile, downloadDirectory)
+            : StartChromium<ChromeOptions>(profile, isLoadingAll, keepWindow, keepExisting, keepProfile, downloadDirectory);
 
-    public static IWebDriver StartChromium<TOptions>(string profile = "", bool isLoadingAll = false, bool keepWindow = false, bool keepExisting = false, bool cleanProfile = false, string downloadDirectory = "")
+    private static IWebDriver StartChromium<TOptions>(string profile = "", bool isLoadingAll = false, bool keepWindow = false, bool keepExisting = false, bool cleanProfile = false, string downloadDirectory = "")
         where TOptions : ChromiumOptions, new()
     {
         TOptions options = new();
@@ -77,8 +83,8 @@ public static class WebDriverHelper
             site_engagement
             durable_storage
             """
-                .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries|StringSplitOptions.TrimEntries)
-                .ForEach(option=> options.AddUserProfilePreference($"profile.default_content_setting_values.{option}", 2));
+                .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .ForEach(option => options.AddUserProfilePreference($"profile.default_content_setting_values.{option}", 2));
         }
 
         ChromiumDriver webDriver;
@@ -182,14 +188,27 @@ public static class WebDriverHelper
         return webDriver;
     }
 
+    public static void DisposeAll()
+    {
+        if (IsEdgeDefault)
+        {
+            DisposeAllEdge();
+
+        }
+        else
+        {
+            DisposeAllChrome();
+        }
+    }
+
     [SupportedOSPlatform("windows")]
-    public static void DisposeAllEdge()
+    private static void DisposeAllEdge()
     {
         ProcessHelper.TryKillAll("msedgedriver.exe");
         Win32ProcessHelper.TryKillAll("msedge.exe", " --test-type=webdriver ");
     }
 
-    public static void DisposeAllChrome()
+    private static void DisposeAllChrome()
     {
         ProcessHelper.TryKillAll("chromedriver.exe");
         ProcessHelper.TryKillAll("chrome.exe");

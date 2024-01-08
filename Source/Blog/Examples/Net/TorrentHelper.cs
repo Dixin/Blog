@@ -181,8 +181,8 @@ public class TorrentHelper
             .ToDictionary(magnetUri => magnetUri.Uri.ExactTopic, magnetUri => magnetUri.Index, StringComparer.OrdinalIgnoreCase);
         int lastIndex = downloadedHashes.Select(hash => allMagnetUris[hash]).Max();
 
-        WebDriverHelper.DisposeAllEdge();
-        using IWebDriver webDriver = WebDriverHelper.StartChromium<EdgeOptions>(downloadDirectory: torrentDirectory, isLoadingAll: true, keepExisting: true);
+        WebDriverHelper.DisposeAll();
+        using IWebDriver webDriver = WebDriverHelper.Start(downloadDirectory: torrentDirectory, isLoadingAll: true, keepExisting: true);
         await magnetUrls
             .Skip(lastIndex)
             .Select(MagnetUri.Parse)
@@ -241,8 +241,8 @@ public class TorrentHelper
             .Select(torrent => Path.GetFileNameWithoutExtension(torrent)!)
             .Where(fileName => !fileName.ContainsOrdinal(HashSeparator));
 
-        WebDriverHelper.DisposeAllEdge();
-        using IWebDriver webDriver = WebDriverHelper.StartChromium<EdgeOptions>(downloadDirectory: torrentDirectory, isLoadingAll: true, keepExisting: true);
+        WebDriverHelper.DisposeAll();
+        using IWebDriver webDriver = WebDriverHelper.Start(downloadDirectory: torrentDirectory, isLoadingAll: true, keepExisting: true);
         await magnetUrls
             .Select(MagnetUri.Parse)
             .ExceptBy(allDownloadedHashes, uri => uri.ExactTopic, StringComparer.OrdinalIgnoreCase)

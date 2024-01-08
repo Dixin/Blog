@@ -272,9 +272,9 @@ Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
 //    settings.TVMainstream,
 //    settings.TVMainstreamWithoutSubtitle);
 
-//await Imdb.DownloadAllMoviesAsync(
-//    settings, 
-//    count => ..);
+await Imdb.DownloadAllMoviesAsync(
+    settings,
+    count => ..);
 //await Imdb.DownloadAllTVsAsync(settings.TVTopX265Metadata, settings.TVMainstream, settings.TVMetadataCacheDirectory, settings.TVMetadataDirectory);
 string[] genres = ["family", "animation", "documentary"];
 //await Video.PrintTVLinks(settings.TVTopX265Metadata, new string[] { settings.TVMainstream, settings.TVMainstreamWithoutSubtitle }, @"D:\Files\Library\TVMetadata", @"D:\Files\Library\TVMetadataCache", settings.TVTopX265Url,

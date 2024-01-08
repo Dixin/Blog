@@ -1707,7 +1707,7 @@ internal static partial class Video
                     log($"{index * 100 / length}% - {index}/{length} - {imdbId}");
                     try
                     {
-                        await DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory, cacheFiles, metadataFiles, webDriver, true, false, log);
+                        await DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver: webDriver, restart: null, overwrite: true, useCache: false, log: log);
                     }
                     catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
                     {
@@ -2093,7 +2093,7 @@ internal static partial class Video
                 log($"{index * 100 / length}% - {index}/{length} - {imdbMetadata.ImdbId}");
                 try
                 {
-                    await DownloadImdbMetadataAsync(imdbMetadata.ImdbId, settings.TVMetadataCacheDirectory, settings.TVMetadataDirectory, cacheFiles, metadataFiles.Values.ToArray(), webDriver, true, false, log);
+                    await DownloadImdbMetadataAsync(imdbMetadata.ImdbId, settings.TVMetadataDirectory, settings.TVMetadataCacheDirectory, metadataFiles.Values.ToArray(), cacheFiles, webDriver: webDriver, restart: null, overwrite: true, useCache: false, log: log);
                 }
                 catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
                 {

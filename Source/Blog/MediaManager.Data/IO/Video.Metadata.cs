@@ -246,10 +246,10 @@ internal static partial class Video
         XElement? root = XDocument.Load(nfo).Root;
         string imdbId = (root?.Element("imdbid") ?? root?.Element("imdb_id"))?.Value ?? NotExistingFlag;
         log($"Start {directory}");
-        await DownloadImdbMetadataAsync(imdbId, directory, directory, files, jsonFiles, webDriver, overwrite, useCache, log);
+        await DownloadImdbMetadataAsync(imdbId, directory, directory, jsonFiles, files, webDriver: webDriver, restart: null, overwrite: overwrite, useCache: useCache, log: log);
     }
 
-    internal static async Task DownloadImdbMetadataAsync(string imdbId, string cacheDirectory, string metadataDirectory, string[] cacheFiles, string[] metadataFiles, IWebDriver? webDriver, bool overwrite = false, bool useCache = false, Action<string>? log = null)
+    internal static async Task DownloadImdbMetadataAsync(string imdbId, string metadataDirectory, string cacheDirectory, string[] metadataFiles, string[] cacheFiles, IWebDriver? webDriver, Func<IWebDriver>? restart = null, bool overwrite = false, bool useCache = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 

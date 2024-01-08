@@ -28,8 +28,9 @@ internal static class Imdb
         string imdbId,
         string imdbFile, string releaseFile, string keywordsFile, string advisoriesFile,
         string parentImdbFile, string parentReleaseFile, string parentKeywordsFile, string parentAdvisoriesFile,
-        IWebDriver? webDriver = null)
+        IWebDriver? webDriver = null, Func<IWebDriver>? restart = null)
     {
+        restart ??= () => WebDriverHelper.Start();
         using HttpClient? httpClient = webDriver is null ? new() : null;
         httpClient?.AddEdgeHeaders();
 
@@ -37,7 +38,7 @@ internal static class Imdb
         string imdbHtml = File.Exists(imdbFile)
             ? await File.ReadAllTextAsync(imdbFile)
             : webDriver is not null
-                ? WebDriverHelper.GetString(ref webDriver, imdbUrl)
+                ? WebDriverHelper.GetString(ref webDriver, imdbUrl, restart: restart)
                 : await Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(imdbUrl));
         CQ imdbCQ = imdbHtml;
         string json = imdbCQ.Find("""script[type="application/ld+json"]""").Text();
@@ -202,7 +203,7 @@ internal static class Imdb
         string releaseHtml = File.Exists(releaseFile)
             ? await File.ReadAllTextAsync(releaseFile)
             : webDriver is not null
-                ? WebDriverHelper.GetString(ref webDriver, releaseUrl)
+                ? WebDriverHelper.GetString(ref webDriver, releaseUrl, restart: restart)
                 : await Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(releaseUrl));
         CQ releaseCQ = releaseHtml;
 
@@ -253,7 +254,7 @@ internal static class Imdb
                         }
                         finally
                         {
-                            webDriver = WebDriverHelper.Start();
+                            webDriver = restart();
                         }
 
                         releaseHtml = webDriver.GetString(releaseUrl);
@@ -339,7 +340,7 @@ internal static class Imdb
                             }
                             finally
                             {
-                                webDriver = WebDriverHelper.Start();
+                                webDriver = restart();
                             }
 
                             releaseHtml = webDriver.GetString(releaseUrl);
@@ -588,7 +589,7 @@ internal static class Imdb
         string keywordsHtml = File.Exists(keywordsFile)
             ? await File.ReadAllTextAsync(keywordsFile)
             : webDriver is not null
-                ? WebDriverHelper.GetString(ref webDriver, keywordsUrl)
+                ? WebDriverHelper.GetString(ref webDriver, keywordsUrl, restart: restart)
                 : await Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(keywordsUrl));
         CQ keywordsCQ = keywordsHtml;
         string[] allKeywords = keywordsCQ.Find("#keywords_content table td div.sodatext a").Select(keyword => keyword.TextContent.Trim()).ToArray();
@@ -646,7 +647,7 @@ internal static class Imdb
         string advisoriesHtml = File.Exists(advisoriesFile)
             ? await File.ReadAllTextAsync(advisoriesFile)
             : webDriver is not null
-                ? WebDriverHelper.GetString(ref webDriver, advisoriesUrl)
+                ? WebDriverHelper.GetString(ref webDriver, advisoriesUrl, restart: restart)
                 : await Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(advisoriesUrl));
         CQ parentalGuideCQ = advisoriesHtml;
         string mpaaRating = parentalGuideCQ.Find("#mpaa-rating td").Last().Text().Trim();
@@ -782,8 +783,12 @@ internal static class Imdb
         Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264720PMetadata);
         //Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(rareJsonPath);
 
-        string[] cacheFiles = Directory.GetFiles(settings.MovieMetadataCacheDirectory);
-        string[] metadataFiles = Directory.GetFiles(settings.MovieMetadataDirectory);
+        string[] cacheFiles = Directory.GetFiles(settings.MovieMetadataCacheDirectory)
+            .Concat(Directory.EnumerateFiles(@"\\Beyond-r\f\Files\Library\MovieMetadataCache"))
+            .ToArray();
+        string[] metadataFiles = Directory.GetFiles(settings.MovieMetadataDirectory)
+            .Concat(Directory.EnumerateFiles(@"\\Beyond-r\f\Files\Library\MovieMetadata"))
+            .ToArray();
         string[] imdbIds = x265Metadata.Keys
             .Concat(x265XMetadata.Keys)
             .Concat(h264Metadata.Keys)
@@ -811,9 +816,9 @@ internal static class Imdb
             .ToArray();
         int trimmedLength = imdbIds.Length;
         ConcurrentQueue<string> imdbIdQueue = new(imdbIds);
-        WebDriverHelper.DisposeAllChrome();
+        WebDriverHelper.DisposeAll();
         await Enumerable.Range(0, MaxDegreeOfParallelism)
-            .Select(index => WebDriverHelper.Start(index, keepExisting: true))
+            .Select(index => (WebDriver: WebDriverHelper.Start(index, keepExisting: true), Index: index))
             .ParallelForEachAsync(async webDriver =>
             {
                 while (imdbIdQueue.TryDequeue(out string? imdbId))
@@ -822,7 +827,7 @@ internal static class Imdb
                     log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
                     try
                     {
-                        await Retry.FixedIntervalAsync(async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory, cacheFiles, metadataFiles, webDriver, false, true, log));
+                        await Retry.FixedIntervalAsync(async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver: webDriver.WebDriver, restart: () => WebDriverHelper.Start(webDriver.Index), overwrite: false, useCache: true, log: log));
                     }
                     catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
                     {
@@ -834,7 +839,7 @@ internal static class Imdb
                     }
                 }
 
-                webDriver.Dispose();
+                webDriver.WebDriver.Dispose();
             }, MaxDegreeOfParallelism);
     }
 
@@ -855,7 +860,7 @@ internal static class Imdb
         }
 
         int degree = 2;
-        IWebDriver[] webDrivers = Enumerable.Range(0, degree).Select(i => WebDriverHelper.Start(i, keepExisting: true)).ToArray();
+        IWebDriver[] webDrivers = Enumerable.Range(0, degree).Select(index => WebDriverHelper.Start(index, keepExisting: true)).ToArray();
         webDrivers.ForEach(webDriver => webDriver.Url = "http://imdb.com");
 
         int index = -1;
@@ -974,7 +979,7 @@ internal static class Imdb
                 log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
                 try
                 {
-                    await Video.DownloadImdbMetadataAsync(imdbId, cacheDirectory, metadataDirectory, cacheFiles, metadataFiles, webDriver, false, true, log);
+                    await Video.DownloadImdbMetadataAsync(imdbId, metadataDirectory, cacheDirectory, metadataFiles, cacheFiles, webDriver: webDriver, restart: null, overwrite: false, useCache: true, log: log);
                 }
                 catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
                 {
@@ -1023,7 +1028,7 @@ internal static class Imdb
                 log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
                 try
                 {
-                    await Video.DownloadImdbMetadataAsync(imdbId, cacheDirectory, metadataDirectory, cacheFiles, metadataFiles, webDriver, false, true, log);
+                    await Video.DownloadImdbMetadataAsync(imdbId, metadataDirectory, cacheDirectory, metadataFiles, cacheFiles, webDriver: webDriver, restart: null, overwrite: false, useCache: true, log: log);
                 }
                 catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
                 {
