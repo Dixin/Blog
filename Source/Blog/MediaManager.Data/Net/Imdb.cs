@@ -171,7 +171,7 @@ internal static class Imdb
 
         string[] languages = imdbCQ
                 .Find("div[data-testid='title-details-section'] > ul > li")
-                .FirstOrDefault(listItem => listItem.TextContent.ContainsIgnoreCase("Language"))
+                .FirstOrDefault(listItem => listItem.TextContent.Trim().StartsWithIgnoreCase("Language"))
                 ?.Cq().Find("ul li")
                 .Select(region => region.TextContent.Trim())
                 .ToArray()
@@ -765,6 +765,8 @@ internal static class Imdb
     {
         log ??= Logger.WriteLine;
 
+        WebDriverHelper.DisposeAll();
+
         ILookup<string, string> top = (await File.ReadAllLinesAsync(settings.TopDatabase))
             .AsParallel()
             .Where(line => (line.ContainsIgnoreCase("|movies_x265|") || line.ContainsIgnoreCase("|movies|"))
@@ -816,9 +818,9 @@ internal static class Imdb
             .ToArray();
         int trimmedLength = imdbIds.Length;
         ConcurrentQueue<string> imdbIdQueue = new(imdbIds);
-        WebDriverHelper.DisposeAll();
+        Func<int, IWebDriver> startWebDriver = index => WebDriverHelper.Start(index, keepExisting: true, cleanProfile: true);
         await Enumerable.Range(0, MaxDegreeOfParallelism)
-            .Select(index => (WebDriver: WebDriverHelper.Start(index, keepExisting: true), Index: index))
+            .Select(index => (WebDriver: startWebDriver(index), Index: index))
             .ParallelForEachAsync(async webDriver =>
             {
                 while (imdbIdQueue.TryDequeue(out string? imdbId))
@@ -827,7 +829,7 @@ internal static class Imdb
                     log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
                     try
                     {
-                        await Retry.FixedIntervalAsync(async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver: webDriver.WebDriver, restart: () => WebDriverHelper.Start(webDriver.Index), overwrite: false, useCache: true, log: log));
+                        await Retry.FixedIntervalAsync(async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver: webDriver.WebDriver, restart: () => startWebDriver(webDriver.Index), overwrite: false, useCache: true, log: log));
                     }
                     catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
                     {

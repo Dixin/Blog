@@ -24,15 +24,15 @@ public static class WebDriverHelper
 
     private const bool IsEdgeDefault = true;
 
-    public static IWebDriver Start(int index, bool isLoadingAll = false, bool keepWindow = false, bool keepExisting = false, bool keepProfile = false, string downloadDirectory = "") =>
+    public static IWebDriver Start(int index, bool isLoadingAll = false, bool keepWindow = false, bool keepExisting = false, bool cleanProfile = false, string downloadDirectory = "") =>
         IsEdgeDefault
-         ? StartChromium<EdgeOptions>(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(EdgeDriver)} {index:00}"), isLoadingAll, keepWindow, keepExisting, keepProfile, downloadDirectory)
-         : StartChromium<ChromeOptions>(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(EdgeDriver)} {index:00}"), isLoadingAll, keepWindow, keepExisting, keepProfile, downloadDirectory);
+         ? StartChromium<EdgeOptions>(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(EdgeDriver)} {index:00}"), isLoadingAll, keepWindow, keepExisting, cleanProfile, downloadDirectory)
+         : StartChromium<ChromeOptions>(Path.Combine(TempDirectory, $"{ProfilePrefix} {nameof(EdgeDriver)} {index:00}"), isLoadingAll, keepWindow, keepExisting, cleanProfile, downloadDirectory);
 
-    public static IWebDriver Start(string profile = "", bool isLoadingAll = false, bool keepWindow = false, bool keepExisting = false, bool keepProfile = false, string downloadDirectory = "") =>
+    public static IWebDriver Start(string profile = "", bool isLoadingAll = false, bool keepWindow = false, bool keepExisting = false, bool cleanProfile = false, string downloadDirectory = "") =>
         IsEdgeDefault
-            ? StartChromium<EdgeOptions>(profile, isLoadingAll, keepWindow, keepExisting, keepProfile, downloadDirectory)
-            : StartChromium<ChromeOptions>(profile, isLoadingAll, keepWindow, keepExisting, keepProfile, downloadDirectory);
+            ? StartChromium<EdgeOptions>(profile, isLoadingAll, keepWindow, keepExisting, cleanProfile, downloadDirectory)
+            : StartChromium<ChromeOptions>(profile, isLoadingAll, keepWindow, keepExisting, cleanProfile, downloadDirectory);
 
     private static IWebDriver StartChromium<TOptions>(string profile = "", bool isLoadingAll = false, bool keepWindow = false, bool keepExisting = false, bool cleanProfile = false, string downloadDirectory = "")
         where TOptions : ChromiumOptions, new()
