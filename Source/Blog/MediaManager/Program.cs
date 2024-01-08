@@ -941,6 +941,7 @@ static void RenameFilesWithDuplicateTitle(
 //await TorrentHelper.DownloadAllFromCache3Async(@"D:\User\Downloads\ToDownload.txt", @"E:\Files\Torrents", Logger.WriteLine);
 //await TorrentHelper.DownloadAllAsync(@"D:\User\Downloads\ToDownload.txt", @"E:\Files\Torrents", log: Logger.WriteLine);
 //await TorrentHelper.PrintNotDownloadedAsync(@"D:\User\Downloads\ToDownload.txt", @"E:\Files\Torrents", addTrackers: true, log: Logger.WriteLine);
+//await TorrentHelper.AddDefaultTrackersAsync(@"E:\Files\Torrents", log: Logger.WriteLine);
 
 //Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(settings.MovieLibraryMetadata);
 //HashSet<string> titles = new(libraryMetadata.Values.AsParallel().SelectMany(d=>d.Keys).Select(f=>Path.GetFileNameWithoutExtension(f)!).Distinct(StringComparer.InvariantCultureIgnoreCase));
