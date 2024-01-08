@@ -12,7 +12,6 @@ using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using MonoTorrent;
 using MonoTorrent.Client;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Edge;
 
 public class TorrentHelper
 {
@@ -57,7 +56,7 @@ public class TorrentHelper
         }
 
         IEnumerable<string> downloadedHashes = Directory
-            .EnumerateFiles(torrentDirectory, TorrentSearchPattern)
+            .EnumerateFiles(torrentDirectory, TorrentSearchPattern, SearchOption.AllDirectories)
             .Select(torrent => Path.GetFileNameWithoutExtension(torrent).Split(HashSeparator).Last());
 
         EngineSettingsBuilder engineSettingsBuilder = new()
@@ -102,7 +101,7 @@ public class TorrentHelper
         }
 
         IEnumerable<string> downloadedHashes = Directory
-            .EnumerateFiles(torrentDirectory, TorrentSearchPattern)
+            .EnumerateFiles(torrentDirectory, TorrentSearchPattern, SearchOption.AllDirectories)
             .Select(torrent => Path.GetFileNameWithoutExtension(torrent).Split(HashSeparator).Last());
 
         await magnetUrls
@@ -164,11 +163,11 @@ public class TorrentHelper
         }
 
         IEnumerable<string> allDownloadedHashes = Directory
-            .EnumerateFiles(torrentDirectory, TorrentSearchPattern)
+            .EnumerateFiles(torrentDirectory, TorrentSearchPattern, SearchOption.AllDirectories)
             .Select(torrent => Path.GetFileNameWithoutExtension(torrent).Split(HashSeparator).Last());
 
         IEnumerable<string> downloadedHashes = Directory
-            .EnumerateFiles(torrentDirectory, TorrentSearchPattern)
+            .EnumerateFiles(torrentDirectory, TorrentSearchPattern, SearchOption.AllDirectories)
             .Select(torrent => Path.GetFileNameWithoutExtension(torrent)!)
             .Where(fileName => !fileName.ContainsOrdinal(HashSeparator));
         if (lastHash.IsNotNullOrWhiteSpace())
@@ -233,11 +232,11 @@ public class TorrentHelper
         }
 
         IEnumerable<string> allDownloadedHashes = Directory
-            .EnumerateFiles(torrentDirectory, TorrentSearchPattern)
+            .EnumerateFiles(torrentDirectory, TorrentSearchPattern, SearchOption.AllDirectories)
             .Select(torrent => Path.GetFileNameWithoutExtension(torrent).Split(HashSeparator).Last());
 
         IEnumerable<string> downloadedHashes = Directory
-            .EnumerateFiles(torrentDirectory, TorrentSearchPattern)
+            .EnumerateFiles(torrentDirectory, TorrentSearchPattern, SearchOption.AllDirectories)
             .Select(torrent => Path.GetFileNameWithoutExtension(torrent)!)
             .Where(fileName => !fileName.ContainsOrdinal(HashSeparator));
 
@@ -297,11 +296,11 @@ public class TorrentHelper
             });
     }
 
-    public static async Task PrintNotDownloadedAsync(string magnetUrlPath, string torrentDirectory, Action<string>? log = null, CancellationToken cancellationToken = default)
+    public static async Task PrintNotDownloadedAsync(string magnetUrlPath, string torrentDirectory, bool addTrackers = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         HashSet<string> downloadedHashes = new(
             Directory
-                .EnumerateFiles(torrentDirectory, TorrentSearchPattern)
+                .EnumerateFiles(torrentDirectory, TorrentSearchPattern, SearchOption.AllDirectories)
                 .Select(torrent => Path.GetFileNameWithoutExtension(torrent).Split(HashSeparator).Last()),
             StringComparer.OrdinalIgnoreCase);
 
@@ -311,6 +310,6 @@ public class TorrentHelper
             .GroupBy(magnetUri => magnetUri.DisplayName, StringComparer.OrdinalIgnoreCase)
             .Where(group => !group.Select(magnetUri => magnetUri.ExactTopic).Any(downloadedHashes.Contains))
             .SelectMany(group => group)
-            .ForEach(magnetUri => log?.Invoke(magnetUri.ToString()));
+            .ForEach(magnetUri => log?.Invoke((addTrackers ? magnetUri.AddDefaultTrackers() : magnetUri).ToString()));
     }
 }

@@ -272,9 +272,9 @@ Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
 //    settings.TVMainstream,
 //    settings.TVMainstreamWithoutSubtitle);
 
-await Imdb.DownloadAllMoviesAsync(
-    settings,
-    count => ..);
+//await Imdb.DownloadAllMoviesAsync(
+//    settings,
+//    count => ..);
 //await Imdb.DownloadAllTVsAsync(settings.TVTopX265Metadata, settings.TVMainstream, settings.TVMetadataCacheDirectory, settings.TVMetadataDirectory);
 string[] genres = ["family", "animation", "documentary"];
 //await Video.PrintTVLinks(settings.TVTopX265Metadata, new string[] { settings.TVMainstream, settings.TVMainstreamWithoutSubtitle }, @"D:\Files\Library\TVMetadata", @"D:\Files\Library\TVMetadataCache", settings.TVTopX265Url,
@@ -940,7 +940,7 @@ static void RenameFilesWithDuplicateTitle(
 //await TorrentHelper.DownloadAllFromCache2Async(@"D:\User\Downloads\ToDownload.txt", @"E:\Files\Torrents", "EBF23D9F32EBE73317A927E57C39A5FF23FE4297", Logger.WriteLine);
 //await TorrentHelper.DownloadAllFromCache3Async(@"D:\User\Downloads\ToDownload.txt", @"E:\Files\Torrents", Logger.WriteLine);
 //await TorrentHelper.DownloadAllAsync(@"D:\User\Downloads\ToDownload.txt", @"E:\Files\Torrents", log: Logger.WriteLine);
-//await TorrentHelper.PrintNotDownloadedAsync(@"D:\User\Downloads\ToDownload.txt", @"E:\Files\Torrents", log: Logger.WriteLine);
+//await TorrentHelper.PrintNotDownloadedAsync(@"D:\User\Downloads\ToDownload.txt", @"E:\Files\Torrents", addTrackers: true, log: Logger.WriteLine);
 
 //Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(settings.MovieLibraryMetadata);
 //HashSet<string> titles = new(libraryMetadata.Values.AsParallel().SelectMany(d=>d.Keys).Select(f=>Path.GetFileNameWithoutExtension(f)!).Distinct(StringComparer.InvariantCultureIgnoreCase));
