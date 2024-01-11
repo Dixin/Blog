@@ -949,22 +949,29 @@ internal static partial class Video
         EnumerateDirectories(directory, level)
             .ForEach(movie =>
             {
+                Directory
+                    .GetFiles(movie, "*fanart1.jpg", SearchOption.AllDirectories)
+                    .ForEach(file => FileHelper.Move(file, Regex.Replace(file, @"fanart1\.jpg$", "fanart.jpg")));
+
                 string fanArtDirectory = Path.Combine(movie, "extrafanart");
                 if (!Directory.Exists(fanArtDirectory))
                 {
                     return;
                 }
 
-                string fanArt = Directory.GetFiles(fanArtDirectory).Single();
-                Debug.Assert(Path.GetFileNameWithoutExtension(fanArt).StartsWithIgnoreCase("fanart"));
-                Debug.Assert(Path.GetExtension(fanArt).EqualsIgnoreCase(".jpg"));
+                string fanArt = Directory.GetFiles(fanArtDirectory).SingleOrDefault(string.Empty);
+                if (fanArt.IsNotNullOrWhiteSpace())
+                {
+                    Debug.Assert(Path.GetFileNameWithoutExtension(fanArt).StartsWithIgnoreCase("fanart"));
+                    Debug.Assert(Path.GetExtension(fanArt).EqualsIgnoreCase(".jpg"));
 
-                string newFanArt = Path.Combine(movie, "fanart.jpg");
-                Debug.Assert(overwrite || !File.Exists(newFanArt));
+                    string newFanArt = Path.Combine(movie, "fanart.jpg");
+                    Debug.Assert(overwrite || !File.Exists(newFanArt));
 
-                log(fanArt);
-                File.Move(fanArt, newFanArt, overwrite);
-                log(newFanArt);
+                    log(fanArt);
+                    File.Move(fanArt, newFanArt, overwrite);
+                    log(newFanArt);
+                }
 
                 DirectoryHelper.Recycle(fanArtDirectory);
             });
