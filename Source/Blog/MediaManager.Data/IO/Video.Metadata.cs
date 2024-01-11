@@ -213,40 +213,41 @@ internal static partial class Video
         });
     }
 
-    private static async Task DownloadImdbMetadataAsync(string directory, IWebDriver? webDriver, bool overwrite = false, bool useCache = false, Action<string>? log = null)
+    private static async Task<IWebDriver?> DownloadImdbMetadataAsync(string directory, IWebDriver? webDriver, Func<IWebDriver>? restart = null, bool overwrite = false, bool useCache = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
+
         string[] files = Directory.GetFiles(directory, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
-        string[] jsonFiles = files.Where(file => file.EndsWithIgnoreCase(ImdbMetadataExtension)).ToArray();
-        if (jsonFiles.Any())
+        string jsonFile = files.Where(file => file.EndsWithIgnoreCase(ImdbMetadataExtension)).SingleOrDefault(string.Empty);
+        string imdbId;
+        if (jsonFile.IsNotNullOrWhiteSpace())
         {
-            if (overwrite)
+            string name = Path.GetFileNameWithoutExtension(jsonFile);
+            if (name.EqualsOrdinal(NotExistingFlag))
             {
-                jsonFiles.ForEach(jsonFile =>
-                {
-                    log($"Delete imdb metadata {jsonFile}.");
-                    FileHelper.Recycle(jsonFile);
-                });
-                files = files.Except(jsonFiles).ToArray();
+                imdbId = NotExistingFlag;
             }
             else
             {
-                log($"Skip {directory}.");
-                return;
+                imdbId = name.Split("-").First();
+                Debug.Assert(Regex.IsMatch(imdbId, "^tt[0-9]+$"));
             }
         }
-
-        string nfo = files.FirstOrDefault(file => file.EndsWithIgnoreCase(XmlMetadataExtension), string.Empty);
-        if (nfo.IsNullOrWhiteSpace())
+        else
         {
-            log($"!Missing metadata {directory}.");
-            return;
+            string nfo = files.FirstOrDefault(file => file.EndsWithIgnoreCase(XmlMetadataExtension), string.Empty);
+            if (nfo.IsNullOrWhiteSpace())
+            {
+                log($"!Missing metadata {directory}.");
+                return webDriver;
+            }
+
+            XElement? root = XDocument.Load(nfo).Root;
+            imdbId = (root?.Element("imdbid") ?? root?.Element("imdb_id"))?.Value ?? NotExistingFlag;
         }
 
-        XElement? root = XDocument.Load(nfo).Root;
-        string imdbId = (root?.Element("imdbid") ?? root?.Element("imdb_id"))?.Value ?? NotExistingFlag;
         log($"Start {directory}");
-        await DownloadImdbMetadataAsync(imdbId, directory, directory, jsonFiles, files, webDriver: webDriver, restart: null, overwrite: overwrite, useCache: useCache, log: log);
+        return await DownloadImdbMetadataAsync(imdbId, directory, directory, [jsonFile], files, webDriver, restart, overwrite, useCache, log: log);
     }
 
     internal static async Task<IWebDriver?> DownloadImdbMetadataAsync(string imdbId, string metadataDirectory, string cacheDirectory, string[] metadataFiles, string[] cacheFiles, IWebDriver? webDriver, Func<IWebDriver>? restart = null, bool overwrite = false, bool useCache = false, Action<string>? log = null)
@@ -254,33 +255,31 @@ internal static partial class Video
         log ??= Logger.WriteLine;
 
         long startTime = Stopwatch.GetTimestamp();
-        string[] jsonFiles = metadataFiles.Where(file => file.EndsWithIgnoreCase(ImdbMetadataExtension) && Path.GetFileName(file).StartsWithIgnoreCase(imdbId)).ToArray();
-        if (jsonFiles.Any())
+        if (metadataFiles.Select(file => Path.GetFileName(file)!).SequenceEqual(["-.json"], StringComparer.OrdinalIgnoreCase))
         {
-            if (overwrite)
-            {
-                jsonFiles.ForEach(jsonFile =>
-                {
-                    log($"Delete imdb metadata {jsonFile}.");
-                    FileHelper.Recycle(jsonFile);
-                });
-            }
-            else
-            {
-                log($"Skip {imdbId}.");
-                return webDriver;
-            }
+            Debug.Assert(imdbId.EqualsOrdinal(NotExistingFlag));
+            log($"Skip {imdbId}.");
+            return webDriver;
         }
 
         string imdbFile = Path.Combine(cacheDirectory, $"{imdbId}{ImdbCacheExtension}");
         string releaseFile = Path.Combine(cacheDirectory, $"{imdbId}.Release{ImdbCacheExtension}");
         string keywordsFile = Path.Combine(cacheDirectory, $"{imdbId}.Keywords{ImdbCacheExtension}");
         string advisoriesFile = Path.Combine(cacheDirectory, $"{imdbId}.Advisories{ImdbCacheExtension}");
+
         if (imdbId.EqualsOrdinal(NotExistingFlag))
         {
-            await new string[] { imdbFile, releaseFile, keywordsFile, advisoriesFile, Path.Combine(cacheDirectory, $"{imdbId}{ImdbMetadataExtension}") }
-                .Where(fileToWrite => !cacheFiles.Any(file => file.EqualsIgnoreCase(fileToWrite)) || overwrite)
-                .ForEachAsync(async fileToWrite => await File.WriteAllTextAsync(Path.Combine(cacheDirectory, fileToWrite), string.Empty));
+            await new string[] { imdbFile, releaseFile, keywordsFile, advisoriesFile }
+                .Select(file => Path.Combine(cacheDirectory, file))
+                .Where(file => !cacheFiles.ContainsIgnoreCase(file))
+                .ForEachAsync(async file => await File.WriteAllTextAsync(file, string.Empty));
+            return webDriver;
+        }
+
+        string jsonFile = metadataFiles.SingleOrDefault(file => file.EndsWithIgnoreCase(ImdbMetadataExtension) && Path.GetFileName(file).Split("-").First().EqualsIgnoreCase(imdbId), string.Empty);
+        if (jsonFile.IsNotNullOrWhiteSpace() && (!overwrite || await IsLatestVersionAsync(jsonFile)))
+        {
+            log($"Skip {imdbId}.");
             return webDriver;
         }
 
@@ -303,14 +302,14 @@ internal static partial class Video
             webDriver
         ) = await Imdb.DownloadAsync(
             imdbId,
-            useCache || File.Exists(imdbFile) && new FileInfo(imdbFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1) ? imdbFile : string.Empty,
-            useCache || File.Exists(releaseFile) && new FileInfo(releaseFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1) ? releaseFile : string.Empty,
-            useCache || File.Exists(keywordsFile) && new FileInfo(keywordsFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1) ? keywordsFile : string.Empty,
-            useCache || File.Exists(advisoriesFile) && new FileInfo(advisoriesFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1) ? advisoriesFile : string.Empty,
-            useCache || File.Exists(parentImdbFile) && new FileInfo(parentImdbFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1) ? parentImdbFile : string.Empty,
-            useCache || File.Exists(parentReleaseFile) && new FileInfo(parentReleaseFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1) ? parentReleaseFile : string.Empty,
-            useCache || File.Exists(parentKeywordsFile) && new FileInfo(parentKeywordsFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1) ? parentKeywordsFile : string.Empty,
-            useCache || File.Exists(parentAdvisoriesFile) && new FileInfo(parentAdvisoriesFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1) ? parentAdvisoriesFile : string.Empty,
+            useCache ? imdbFile : string.Empty,
+            useCache ? releaseFile : string.Empty,
+            useCache ? keywordsFile : string.Empty,
+            useCache ? advisoriesFile : string.Empty,
+            useCache ? parentImdbFile : string.Empty,
+            useCache ? parentReleaseFile : string.Empty,
+            useCache ? parentKeywordsFile : string.Empty,
+            useCache ? parentAdvisoriesFile : string.Empty,
             webDriver, restart);
         Debug.Assert(imdbHtml.IsNotNullOrWhiteSpace());
         if (imdbMetadata.Regions.IsEmpty())
@@ -330,7 +329,7 @@ internal static partial class Video
                 (parentKeywordsUrl, parentKeywordsFile, parentKeywordsHtml),
                 (parentAdvisoriesUrl, parentAdvisoriesFile, parentAdvisoriesHtml),
             }
-            .Where(data => data.Html.IsNotNullOrWhiteSpace() && !cacheFiles.Any(file => file.EqualsIgnoreCase(data.File)) || !useCache && overwrite)
+            .Where(data => data.Html.IsNotNullOrWhiteSpace() && (!useCache && overwrite || !cacheFiles.Any(file => file.EqualsIgnoreCase(data.File))))
             .ForEachAsync(async data =>
             {
                 log($"Downloaded {data.Url} to {data.File}.");
@@ -338,10 +337,15 @@ internal static partial class Video
                 log($"Saved to {data.File}.");
             });
 
-        string jsonFile = Path.Combine(metadataDirectory, $"{imdbId}{SubtitleSeparator}{imdbMetadata.Year}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Regions.Select(value => value.Replace(SubtitleSeparator, string.Empty)).Take(5))}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Languages.Take(3).Select(value => value.Replace(SubtitleSeparator, string.Empty)))}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Genres.Take(5).Select(value => value.Replace(SubtitleSeparator, string.Empty)))}{ImdbMetadataExtension}");
-        log($"Merged {imdbUrl}, {releaseUrl}, {keywordsUrl}, {advisoriesUrl} to {jsonFile}.");
-        await JsonHelper.SerializeToFileAsync(imdbMetadata, jsonFile);
-        log($"Saved to {jsonFile}.");
+        string newJsonFile = Path.Combine(metadataDirectory, $"{imdbId}{SubtitleSeparator}{imdbMetadata.Year}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Regions.Select(value => value.Replace(SubtitleSeparator, string.Empty)).Take(5))}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Languages.Take(3).Select(value => value.Replace(SubtitleSeparator, string.Empty)))}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Genres.Take(5).Select(value => value.Replace(SubtitleSeparator, string.Empty)))}{ImdbMetadataExtension}");
+        if (!jsonFile.EqualsIgnoreCase(newJsonFile))
+        {
+            FileHelper.Move(jsonFile, $"{jsonFile}.del");
+        }
+
+        log($"Merged {imdbUrl}, {releaseUrl}, {keywordsUrl}, {advisoriesUrl} to {newJsonFile}.");
+        await JsonHelper.SerializeToFileAsync(imdbMetadata, newJsonFile);
+        log($"Saved to {newJsonFile}.");
         TimeSpan elapsed = Stopwatch.GetElapsedTime(startTime);
         log($"Elapsed {elapsed}");
 
@@ -366,7 +370,7 @@ internal static partial class Video
                 webDriver.Url = "https://www.imdb.com/";
             }
 
-            await movies.ForEachAsync(async movie => await DownloadImdbMetadataAsync(movie, webDriver, overwrite, useCache, log));
+            await movies.ForEachAsync(async movie => await DownloadImdbMetadataAsync(movie, webDriver, null, overwrite, useCache, log));
         }
     }
 
@@ -656,9 +660,11 @@ internal static partial class Video
         await JsonHelper.SerializeToFileAsync(movies, jsonFile);
     }
 
-    internal static bool IsLatestVersion(string metadata) => 
-        File.ReadLines(metadata).Any(line => line.StartsWithIgnoreCase("""  "releases": {"""));
+    private static readonly DateTime VersionDateTime = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-    internal static ValueTask<bool> IsLatestVersionAsync(string metadata) => 
-        File.ReadLinesAsync(metadata).AnyAsync(line => line.StartsWithIgnoreCase("""  "releases": {"""));
+    internal static bool IsLatestVersion(string metadata) =>
+        new FileInfo(metadata).LastWriteTimeUtc > VersionDateTime && File.ReadLines(metadata).Any(line => line.StartsWithIgnoreCase("""  "releases": {"""));
+
+    internal static async Task<bool> IsLatestVersionAsync(string metadata) =>
+        new FileInfo(metadata).LastWriteTimeUtc > VersionDateTime && await File.ReadLinesAsync(metadata).AnyAsync(line => line.StartsWithIgnoreCase("""  "releases": {"""));
 }

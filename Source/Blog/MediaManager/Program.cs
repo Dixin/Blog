@@ -64,7 +64,9 @@ Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
 //Video.MoveFanArt(settings.MovieMainstream, 2);
 //Video.MoveFanArt(settings.MovieMainstreamWithoutSubtitle, 2);
 //Video.MoveFanArt(settings.MovieMusical, 2);
-//Video.MoveFanArt(settings.MovieTemp, 2);
+//Video.MoveFanArt(settings.MovieTemp31, 2);
+//Video.MoveFanArt(settings.MovieTemp32, 2);
+//Video.MoveFanArt(settings.MovieTemp3Encode, 2);
 //Video.MoveFanArt(settings.MovieTemp1, 2);
 //Video.MoveFanArt(settings.MovieTemp2, 2);
 //Video.MoveFanArt(settings.MovieTemp3, 2);
@@ -388,7 +390,7 @@ string[] genres = ["family", "animation", "documentary"];
 //Video.PrintVideosWithErrors(settings.MovieTemp32, searchOption: SearchOption.AllDirectories);
 //Video.RenameDirectoriesWithMetadata(settings.MovieTemp, isDryRun: false);
 //Video.RestoreMetadata(settings.MovieTemp);
-//Video.PrintDirectoriesWithErrors(settings.MovieTemp);
+//Video.PrintDirectoriesWithErrors(settings, settings.MovieMainstream);
 //Video.RenameDirectoriesWithImdbMetadata(settings.MovieTemp, isDryRun: false);
 //Video.RemoveSubtitleSuffix(settings.MovieTemp31);
 

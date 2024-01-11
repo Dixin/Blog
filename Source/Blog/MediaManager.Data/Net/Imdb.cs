@@ -13,7 +13,7 @@ using OpenQA.Selenium.Support.UI;
 
 internal static class Imdb
 {
-    private const int MaxDegreeOfParallelism = 2;
+    internal const int MaxDegreeOfParallelism = 2;
 
     internal static async Task<(
         ImdbMetadata ImdbMetadata,

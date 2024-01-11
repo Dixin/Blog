@@ -3,7 +3,6 @@ namespace MediaManager.IO;
 using System;
 using Examples.Common;
 using Examples.IO;
-using Examples.Linq;
 using Examples.Net;
 using MediaManager.Net;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
@@ -172,29 +171,43 @@ internal static partial class Video
         return directories.Order();
     }
 
-    internal static async Task DownloadImdbMetadataAsync(string directory, int level = DefaultDirectoryLevel, bool overwrite = false, bool useCache = false, bool useBrowser = false, int? degreeOfParallelism = null, Action<string>? log = null)
+    internal static async Task DownloadImdbMetadataAsync(string directory, int level = DefaultDirectoryLevel, bool overwrite = false, bool useCache = false, bool useBrowser = false, int degreeOfParallelism = Imdb.MaxDegreeOfParallelism, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
-        string[] movies = EnumerateDirectories(directory, level).ToArray();
-        Task[] tasks = Partitioner
-            .Create(movies, true)
-            .GetOrderablePartitions(degreeOfParallelism ?? IOMaxDegreeOfParallelism)
-            .Select((partition, partitionIndex) => Task.Run(async () =>
+
+        WebDriverHelper.DisposeAll();
+
+        ConcurrentQueue<string> movies = new(EnumerateDirectories(directory, level));
+        int movieTotalCount = movies.Count;
+        Func<int, IWebDriver> startWebDriver = index => WebDriverHelper.Start(index, keepExisting: true, cleanProfile: false);
+        await Parallel.ForEachAsync(
+            Enumerable.Range(0, degreeOfParallelism),
+            new ParallelOptions() { MaxDegreeOfParallelism = degreeOfParallelism },
+            async (webDriverIndex, token) =>
             {
-                using IWebDriver? webDriver = useBrowser ? WebDriverHelper.Start(partitionIndex) : null;
-                if (webDriver is not null)
+                IWebDriver? webDriver = null;
+                if (useBrowser)
                 {
+                    webDriver = startWebDriver(webDriverIndex);
                     webDriver.Url = "https://www.imdb.com/";
                 }
 
-                await partition.ForEachAsync(async movieWithIndex =>
+                while (movies.TryDequeue(out string? movie))
                 {
-                    (long _, string movie) = movieWithIndex;
-                    await DownloadImdbMetadataAsync(movie, webDriver, overwrite, useCache, log);
-                });
-            }))
-            .ToArray();
-        await Task.WhenAll(tasks);
+                    int movieIndex = movieTotalCount - movies.Count;
+                    log($"{movieIndex * 100 / movieTotalCount}% - {movieIndex}/{movieTotalCount} - {movie}");
+
+                    webDriver = await DownloadImdbMetadataAsync(movie, webDriver, () => startWebDriver(webDriverIndex), overwrite, useCache, log);
+                }
+
+                try
+                {
+                    webDriver?.Dispose();
+                }
+                finally
+                {
+                }
+            });
     }
 
     internal static bool IsCommonVideo(this string file) => file.HasAnyExtension(CommonVideoExtensions);
