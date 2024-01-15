@@ -2,28 +2,31 @@
 
 public static class EnumerableExtensions
 {
-    public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> asyncAction)
+    public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> asyncAction, CancellationToken cancellationToken = default)
     {
         foreach (T value in source)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             await asyncAction(value);
         }
     }
 
-    public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, int, Task> asyncAction)
+    public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, int, Task> asyncAction, CancellationToken cancellationToken = default)
     {
         int index = -1;
         foreach (T value in source)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             await asyncAction(value, checked(++index));
         }
     }
 
-    public static async Task ForEachAsync<T>(this IEnumerator<T> iterator, Func<T, int, Task> asyncAction)
+    public static async Task ForEachAsync<T>(this IEnumerator<T> iterator, Func<T, int, Task> asyncAction, CancellationToken cancellationToken = default)
     {
         int index = -1;
         while (iterator.MoveNext())
         {
+            cancellationToken.ThrowIfCancellationRequested();
             await asyncAction(iterator.Current, checked(++index));
         }
     }
@@ -31,19 +34,19 @@ public static class EnumerableExtensions
     private static readonly int DefaultMaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 512);
 
     public static void ParallelForEach<T>(
-        this IEnumerable<T> source, Action<T, long> asyncAction, int? maxDegreeOfParallelism = null) =>
+        this IEnumerable<T> source, Action<T, long> asyncAction, int? maxDegreeOfParallelism = null, CancellationToken cancellationToken = default) =>
         Parallel.ForEach(
             source,
-            new ParallelOptions() { MaxDegreeOfParallelism = maxDegreeOfParallelism ?? DefaultMaxDegreeOfParallelism },
+            new ParallelOptions() { MaxDegreeOfParallelism = maxDegreeOfParallelism ?? DefaultMaxDegreeOfParallelism, CancellationToken = cancellationToken },
             (value, _, index) => asyncAction(value, index));
 
     public static Task ParallelForEachAsync<T>(
-        this IEnumerable<T> source, Func<T, int, ValueTask> asyncAction, int? maxDegreeOfParallelism = null)
+        this IEnumerable<T> source, Func<T, int, ValueTask> asyncAction, int? maxDegreeOfParallelism = null, CancellationToken cancellationToken = default)
     {
         int index = -1;
         return Parallel.ForEachAsync(source,
-            new ParallelOptions() { MaxDegreeOfParallelism = maxDegreeOfParallelism ?? DefaultMaxDegreeOfParallelism },
-            (value, cancellationToken) =>
+            new ParallelOptions() { MaxDegreeOfParallelism = maxDegreeOfParallelism ?? DefaultMaxDegreeOfParallelism, CancellationToken = cancellationToken },
+            (value, _) =>
             {
                 int currentIndex = Interlocked.Increment(ref index);
                 if (currentIndex < 0)
@@ -90,11 +93,11 @@ public static class EnumerableExtensions
     }
 
     public static Task ParallelForEachAsync<T>(
-        this IEnumerable<T> source, Func<T, ValueTask> asyncAction, int? maxDegreeOfParallelism = null)
+        this IEnumerable<T> source, Func<T, ValueTask> asyncAction, int? maxDegreeOfParallelism = null, CancellationToken cancellationToken = default)
     {
         return Parallel.ForEachAsync(
             source,
-            new ParallelOptions() { MaxDegreeOfParallelism = maxDegreeOfParallelism ?? DefaultMaxDegreeOfParallelism },
+            new ParallelOptions() { MaxDegreeOfParallelism = maxDegreeOfParallelism ?? DefaultMaxDegreeOfParallelism, CancellationToken = cancellationToken },
             (value, cancellationToken) => asyncAction(value));
         //maxDegreeOfParallelism ??= DefaultMaxDegreeOfParallelism;
         //if (maxDegreeOfParallelism <= 0)
@@ -155,10 +158,11 @@ public static class EnumerableExtensions
         }
     }
 
-    public static async Task ForEachAsync<T>(this IEnumerator<T> source, Func<T, Task> asyncAction)
+    public static async Task ForEachAsync<T>(this IEnumerator<T> source, Func<T, Task> asyncAction, CancellationToken cancellationToken = default)
     {
         while (source.MoveNext())
         {
+            cancellationToken.ThrowIfCancellationRequested();
             await asyncAction(source.Current);
         }
     }

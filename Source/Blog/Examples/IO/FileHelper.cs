@@ -125,12 +125,12 @@ public static class FileHelper
             .ToArray()
             .ForEach(subtitle => Copy(subtitle, subtitle.Replace(sourceDirectory, destinationDirectory, StringComparison.InvariantCulture), overwrite));
 
-    public static async Task WriteTextAsync(string file, string text, Encoding? encoding = null)
+    public static async Task WriteTextAsync(string file, string text, Encoding? encoding = null, CancellationToken cancellationToken = default)
     {
         encoding ??= Encoding.UTF8;
         string tempFile = $"{file}.tmp";
 
-        await File.WriteAllTextAsync(tempFile, text, encoding);
+        await File.WriteAllTextAsync(tempFile, text, encoding, cancellationToken);
         if (File.Exists(file))
         {
             Delete(file);

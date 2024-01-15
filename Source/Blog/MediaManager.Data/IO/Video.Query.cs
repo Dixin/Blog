@@ -197,7 +197,11 @@ internal static partial class Video
                     int movieIndex = movieTotalCount - movies.Count;
                     log($"{movieIndex * 100 / movieTotalCount}% - {movieIndex}/{movieTotalCount} - {movie}");
 
-                    webDriver = await DownloadImdbMetadataAsync(movie, webDriver, () => startWebDriver(webDriverIndex), overwrite, useCache, log);
+                    (webDriver, bool isDownloaded) = await DownloadImdbMetadataAsync(movie, webDriver, () => startWebDriver(webDriverIndex), overwrite, useCache, log);
+                    if (!isDownloaded)
+                    {
+                        Interlocked.Decrement(ref movieTotalCount);
+                    }
                 }
 
                 try

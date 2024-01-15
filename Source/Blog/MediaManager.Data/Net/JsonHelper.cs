@@ -34,9 +34,9 @@ internal class JsonHelper
         return Deserialize<TValue>(jsonContent);
     }
 
-    public static async Task<TValue> DeserializeFromFileAsync<TValue>(string file)
+    public static async Task<TValue> DeserializeFromFileAsync<TValue>(string file, CancellationToken cancellationToken = default)
     {
-        string jsonContent = await File.ReadAllTextAsync(file);
+        string jsonContent = await File.ReadAllTextAsync(file, cancellationToken);
         return Deserialize<TValue>(jsonContent);
     }
 
@@ -49,9 +49,9 @@ internal class JsonHelper
         FileHelper.WriteText(file, jsonContent, @lock: @lock);
     }
 
-    public static async Task SerializeToFileAsync<TValue>(TValue value, string file)
+    public static async Task SerializeToFileAsync<TValue>(TValue value, string file, CancellationToken cancellationToken = default)
     {
         string jsonContent = Serialize(value);
-        await FileHelper.WriteTextAsync(file, jsonContent);
+        await FileHelper.WriteTextAsync(file, jsonContent, cancellationToken: cancellationToken);
     }
 }
