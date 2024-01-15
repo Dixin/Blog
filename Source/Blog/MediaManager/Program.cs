@@ -377,9 +377,7 @@ string[] genres = ["family", "animation", "documentary"];
 //    isDryRun: false);
 //});
 
-//await Video.PrintMovieImdbIdErrorsAsync(
-//        settings.MovieTopX265Metadata, settings.MovieTopH264Metadata, settings.MovieTopX265XMetadata, settings.MovieTopH264XMetadata, /*settings.MovieTopH264720PMetadata, settings.MoviePreferredMetadata,*/ null,
-//        settings.MovieTemp);
+//await Video.PrintMovieImdbIdErrorsAsync(settings, null, settings.MovieTemp31);
 //Video.MoveSubtitleToParentDirectory(settings.MovieTemp);
 //Video.MoveFanArt(settings.MovieTemp);
 //Video.MoveMetadata(settings.MovieTemp, settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory, 2);
@@ -950,9 +948,6 @@ static void RenameFilesWithDuplicateTitle(
 //downloadedTitles.AsParallel().Where(downloadedTitle => titles.Any(t=>t.StartsWith(downloadedTitle, StringComparison.OrdinalIgnoreCase))).ForEach(Logger.WriteLine);
 //HashSet<string> xx = new(Directory.EnumerateDirectories(@"E:\Files\Delete").Select(Path.GetFileName), StringComparer.OrdinalIgnoreCase);
 
-
-//Video.RenameFiles(@"\\beyond-r\E\New folder\Virgin`3=Jôô`3.2010.孃王`3[0.0-0][NA]\Season 01", (f,i)=>PathHelper.AddFilePostfix(f, ".SUBBED.watermark.chs"));
-
 //Video.EnumerateDirectories(@"\\Beyond-r\f\Files\Library\Movies Temp3.电影3")
 //    .Select(d => (d, Directory.EnumerateFiles(d, "*.nfo").Select(f => XDocument.Load(f).Root!.Element("tmdbid")?.Value ?? string.Empty).Distinct().Single()))
 //    .GroupBy(m => m.Item2)
@@ -1003,3 +998,5 @@ static void RenameFilesWithDuplicateTitle(
 //                FileHelper.ReplaceFileNameWithoutExtension(f, n => n.Replace(name, newName));
 //            });
 //    });
+
+//Video.FormatVideoFileNames(@"\\beyond-r\F\Files\Library\Movies", SearchOption.AllDirectories, isDryRun: true);
