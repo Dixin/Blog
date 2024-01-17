@@ -1,6 +1,7 @@
 ﻿namespace MediaManager.IO;
 
 using System.Drawing;
+using System.Runtime.Versioning;
 using Examples.Common;
 using Examples.IO;
 using Examples.Text;
@@ -214,7 +215,7 @@ internal static class Audio
                     })
                     .ToArray();
                 action(allMetadata);
-                allMetadata.ForEach(metadata => metadata.tagFile?.Dispose());
+                allMetadata.ForEach(metadata => metadata.tagFile.Dispose());
             });
     }
 
@@ -234,6 +235,7 @@ internal static class Audio
             });
     }
 
+    [SupportedOSPlatform("windows")]
     public static void WritePicture(string tagFile, string pictureFile)
     {
         using TagFile audioFile = TagFile.Create(tagFile);

@@ -119,7 +119,7 @@ internal static partial class Video
         }
         else
         {
-            List<Regex>? searchPatterns = languages
+            List<Regex> searchPatterns = languages
                 .SelectMany(language => AllSubtitleExtensions.
                     Select(extension => new Regex($@"\.{language}{extension}$", RegexOptions.IgnoreCase)))
                 .ToList();
@@ -567,7 +567,7 @@ internal static partial class Video
                         .Select(metadata =>
                         {
                             XElement root = XDocument.Load(metadata).Root ?? throw new InvalidOperationException(metadata);
-                            return (Title: root.Element("title"!)?.Value, Year: root.Element("year"!)?.Value);
+                            return (Title: root.Element("title")?.Value, Year: root.Element("year")?.Value);
                         })
                         .Distinct()
                         .Single();
@@ -598,7 +598,7 @@ internal static partial class Video
                 {
                     log(movie);
                     log(movieYear);
-                    log(videoYear);
+                    log(videoYear ?? string.Empty);
                 }
 
                 videoTitle = videoTitle?.Replace(Delimiter, string.Empty).Replace(":", string.Empty);
@@ -617,7 +617,7 @@ internal static partial class Video
                 {
                     log(movie);
                     log(movieTitle);
-                    log(videoTitle);
+                    log(videoTitle ?? string.Empty);
                     log(Environment.NewLine);
                 }
             });
@@ -2201,8 +2201,6 @@ internal static partial class Video
                             await Task.Delay(TimeSpan.FromSeconds(3));
                         }
                     });
-
-                    return;
                 }
             });
     }

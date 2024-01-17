@@ -32,9 +32,9 @@ internal class FfmpegHelper
                 {
                     string renamedAttachment = renameAttachment is not null
                         ? renameAttachment(attachment)
-                        : (Path.GetFileName(attachment).StartsWithIgnoreCase(originalVideoName)
+                        : Path.GetFileName(attachment).StartsWithIgnoreCase(originalVideoName)
                             ? PathHelper.ReplaceFileNameWithoutExtension(attachment, attachmentName => attachmentName.ReplaceIgnoreCase(originalVideoName, Path.GetFileNameWithoutExtension(output)))
-                            : attachment);
+                            : attachment;
                     if (attachment.EqualsIgnoreCase(renamedAttachment))
                     {
                         return;

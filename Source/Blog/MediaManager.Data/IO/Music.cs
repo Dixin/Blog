@@ -46,8 +46,8 @@ internal static class Music
                 }
             };
             // Redirect the output stream of the child process.
-            ffmpeg.OutputDataReceived += (sender, e) => Logger.WriteLine(e.Data);
-            ffmpeg.ErrorDataReceived += (sender, e) => Logger.WriteLine(e.Data);
+            ffmpeg.OutputDataReceived += (sender, e) => Logger.WriteLine(e.Data ?? string.Empty);
+            ffmpeg.ErrorDataReceived += (sender, e) => Logger.WriteLine(e.Data ?? string.Empty);
             ffmpeg.Start();
             ffmpeg.BeginErrorReadLine();
             ffmpeg.BeginOutputReadLine();
@@ -302,8 +302,9 @@ internal static class Music
             .SelectMany(artist => artist.EnumerateDirectories())
             .ForEach(album =>
             {
-                IEnumerable<FileInfo> songs = album.EnumerateFiles()
-                    .Where(song => IsMusicFile(song.Extension));
+                FileInfo[] songs = album.EnumerateFiles()
+                    .Where(song => IsMusicFile(song.Extension))
+                    .ToArray();
                 if (songs.IsEmpty())
                 {
                     Logger.WriteLine(album.Name);
