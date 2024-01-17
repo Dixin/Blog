@@ -85,7 +85,7 @@ internal static class Imdb
                     parentImdbId,
                     parentImdbFile, parentReleaseFile, parentKeywordsFile, parentAdvisoriesFile,
                     string.Empty, string.Empty, string.Empty, string.Empty,
-                    webDriver, restart);
+                    webDriver, restart, cancellationToken);
             }
         }
 

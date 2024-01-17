@@ -144,7 +144,7 @@ public class TorrentHelper
                         log?.Invoke(string.Empty);
                     }
                 }
-            }, degreeOfParallelism);
+            }, degreeOfParallelism, cancellationToken);
     }
 
     public static async Task DownloadAllFromCache2Async(string magnetUrlPath, string torrentDirectory, string lastHash = "", Action<string>? log = null, CancellationToken cancellationToken = default)
@@ -269,7 +269,7 @@ public class TorrentHelper
                     log?.Invoke(exception.ToString());
                     log?.Invoke(string.Empty);
                 }
-            });
+            }, cancellationToken);
     }
 
     public static async Task AddDefaultTrackersAsync(string torrentDirectory, Action<string>? log = null, CancellationToken cancellationToken = default)
@@ -293,7 +293,7 @@ public class TorrentHelper
                     startInfo => startInfo.WorkingDirectory = torrentDirectory,
                     cancellationToken: cancellationToken);
                 Debug.Assert(result == 0);
-            });
+            }, cancellationToken);
     }
 
     public static async Task PrintNotDownloadedAsync(string magnetUrlPath, string torrentDirectory, bool addTrackers = false, Action<string>? log = null, CancellationToken cancellationToken = default)
