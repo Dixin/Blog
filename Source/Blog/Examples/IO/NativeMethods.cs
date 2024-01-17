@@ -181,14 +181,14 @@ internal static class FileSystem
             DirectoryInfo directoryInfo = new(GetParentPath(fullPath));
             if (File.Exists(fullPath))
             {
-                Debug.Assert(directoryInfo.GetFiles(Path.GetFileName(fullPath)).Length == 1, "Must found exactly 1!!!");
-                return directoryInfo.GetFiles(Path.GetFileName(fullPath))[0].FullName;
+                Debug.Assert(directoryInfo.GetFiles(PathHelper.GetFileName(fullPath)).Length == 1, "Must found exactly 1!!!");
+                return directoryInfo.GetFiles(PathHelper.GetFileName(fullPath))[0].FullName;
             }
 
             if (Directory.Exists(fullPath))
             {
-                Debug.Assert(directoryInfo.GetDirectories(Path.GetFileName(fullPath)).Length == 1, "Must found exactly 1!!!");
-                return directoryInfo.GetDirectories(Path.GetFileName(fullPath))[0].FullName;
+                Debug.Assert(directoryInfo.GetDirectories(PathHelper.GetFileName(fullPath)).Length == 1, "Must found exactly 1!!!");
+                return directoryInfo.GetDirectories(PathHelper.GetFileName(fullPath))[0].FullName;
             }
 
             return fullPath;
@@ -230,7 +230,7 @@ internal static class FileSystem
         {
             throw new ArgumentException($"Could not get parent path since the given path is a root directory: '{path}'.", nameof(path));
         }
-        return Path.GetDirectoryName(path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+        return PathHelper.GetDirectoryName(path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
     }
 
     private static UIOptionInternal ToUIOptionInternal(UIOption showUI)

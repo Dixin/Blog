@@ -33,7 +33,7 @@ public static class FileHelper
     {
         source.NotNullOrWhiteSpace();
 
-        string destinationDirectory = Path.GetDirectoryName(destination) ?? throw new InvalidOperationException(destination);
+        string destinationDirectory = PathHelper.GetDirectoryName(destination);
         if (!Directory.Exists(destinationDirectory))
         {
             Directory.CreateDirectory(destinationDirectory);
@@ -51,7 +51,7 @@ public static class FileHelper
             return false;
         }
 
-        string destinationDirectory = Path.GetDirectoryName(destination) ?? throw new InvalidOperationException(destination);
+        string destinationDirectory = PathHelper.GetDirectoryName(destination);
         if (!Directory.Exists(destinationDirectory))
         {
             Directory.CreateDirectory(destinationDirectory);
@@ -74,7 +74,7 @@ public static class FileHelper
     {
         source.NotNullOrWhiteSpace();
 
-        string destinationDirectory = Path.GetDirectoryName(destination) ?? throw new InvalidOperationException(destination);
+        string destinationDirectory = PathHelper.GetDirectoryName(destination);
         if (!Directory.Exists(destinationDirectory))
         {
             Directory.CreateDirectory(destinationDirectory);

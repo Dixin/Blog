@@ -100,7 +100,7 @@ internal static partial class Video
             return ($"Failed {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.Audio}Audio {videoMetadata.File}", null);
         }
 
-        string fileName = Path.GetFileNameWithoutExtension(videoMetadata.File);
+        string fileName = PathHelper.GetFileNameWithoutExtension(videoMetadata.File);
         if (fileName.ContainsIgnoreCase("1080p"))
         {
             if (videoMetadata.DefinitionType is not DefinitionType.P1080)

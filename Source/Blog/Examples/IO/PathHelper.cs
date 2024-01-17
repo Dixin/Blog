@@ -1,4 +1,3 @@
-#nullable enable
 namespace Examples.IO;
 
 using System.Runtime.Versioning;
@@ -27,7 +26,7 @@ public static class PathHelper
          Assembly.GetExecutingAssembly().Location;
 
     public static string ExecutingDirectory() =>
-        Path.GetDirectoryName(ExecutingAssembly()) ?? string.Empty;
+        GetDirectoryName(ExecutingAssembly());
 
     [SupportedOSPlatform("windows")]
     public static bool TryGetOneDriveRoot([NotNullWhen(true)] out string? oneDrive)
@@ -90,13 +89,13 @@ public static class PathHelper
     }
 
     public static string ReplaceFileName(string file, Func<string, string> replace) => 
-        ReplaceFileName(file, replace(Path.GetFileName(file)));
+        ReplaceFileName(file, replace(GetFileName(file)));
 
     public static string ReplaceFileNameWithoutExtension(string file, string newFileNameWithoutExtension) =>
-        ReplaceFileName(file, $"{newFileNameWithoutExtension}{Path.GetExtension(file)}");
+        ReplaceFileName(file, $"{newFileNameWithoutExtension}{GetExtension(file)}");
 
     public static string ReplaceFileNameWithoutExtension(string file, Func<string, string> replace) =>
-        ReplaceFileNameWithoutExtension(file, replace(Path.GetFileNameWithoutExtension(file)));
+        ReplaceFileNameWithoutExtension(file, replace(GetFileNameWithoutExtension(file)));
 
     public static string ReplaceDirectoryName(string directory, string newName)
     {
@@ -105,12 +104,12 @@ public static class PathHelper
     }
 
     public static string ReplaceDirectoryName(string directory, Func<string, string> replace) =>
-        ReplaceDirectoryName(directory, replace(Path.GetFileName(directory)));
+        ReplaceDirectoryName(directory, replace(GetFileName(directory)));
 
     public static string ReplaceExtension(string file, string newExtension)
     {
         string? directory = Path.GetDirectoryName(file);
-        string newFile = $"{Path.GetFileNameWithoutExtension(file)}{newExtension}";
+        string newFile = $"{GetFileNameWithoutExtension(file)}{newExtension}";
         return string.IsNullOrEmpty(directory) ? newFile : Path.Combine(directory, newFile);
     }
 
@@ -168,4 +167,13 @@ public static class PathHelper
 
         throw new InvalidOperationException(string.Join(Environment.NewLine, error.Concat(output)));
     }
+
+    public static string GetDirectoryName(string path) => Path.GetDirectoryName(path) ?? throw new ArgumentOutOfRangeException(nameof(path), path, null);
+
+    public static string GetFileName(string path) => Path.GetFileName(path) ?? throw new ArgumentOutOfRangeException(nameof(path), path, null);
+
+    public static string GetFileNameWithoutExtension(string path) => Path.GetFileNameWithoutExtension(path) ?? throw new ArgumentOutOfRangeException(nameof(path), path, null);
+
+    public static string GetExtension(string path) => Path.GetExtension(path) ?? throw new ArgumentOutOfRangeException(nameof(path), path, null);
+
 }

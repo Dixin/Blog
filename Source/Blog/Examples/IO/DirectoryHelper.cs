@@ -58,7 +58,7 @@ public static class DirectoryHelper
 
     public static void MoveToDirectory(string source, string destinationParentDirectory, bool overwrite = false)
     {
-        string destination = Path.Combine(destinationParentDirectory, Path.GetFileName(source));
+        string destination = Path.Combine(destinationParentDirectory, PathHelper.GetFileName(source));
         Move(source, destination, overwrite);
     }
 
@@ -84,7 +84,7 @@ public static class DirectoryHelper
             .GetFiles(directory, "*", SearchOption.AllDirectories)
             .Where(file => Regex.IsMatch(Path.GetExtension(file), @"[A-Z]+"))
             .ToArray()
-            .ForEach(file => File.Move(file, PathHelper.ReplaceFileName(file, Path.GetExtension(file).ToLowerInvariant())));
+            .ForEach(file => File.Move(file, PathHelper.ReplaceFileName(file, PathHelper.GetExtension(file).ToLowerInvariant())));
 
     public static void MoveFiles(string sourceDirectory, string destinationDirectory, string searchPattern = "*", SearchOption searchOption = SearchOption.AllDirectories) =>
         Directory
@@ -92,7 +92,7 @@ public static class DirectoryHelper
             .ForEach(sourceFile =>
             {
                 string destinationFile = Path.Combine(destinationDirectory, Path.GetRelativePath(sourceDirectory, sourceFile));
-                string newDirectory = Path.GetDirectoryName(destinationFile) ?? throw new ArgumentException(nameof(destinationDirectory));
+                string newDirectory = PathHelper.GetDirectoryName(destinationFile);
                 if (!Directory.Exists(newDirectory))
                 {
                     Directory.CreateDirectory(newDirectory);

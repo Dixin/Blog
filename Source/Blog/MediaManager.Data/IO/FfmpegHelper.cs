@@ -17,7 +17,7 @@ internal class FfmpegHelper
                 .GetFiles(directory, originalVideoSearchPattern, SearchOption.AllDirectories)
             : Directory
                 .EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
-                .Where(file => file.IsVideo() && !Path.GetFileNameWithoutExtension(file).ContainsIgnoreCase(".DUBBED."))
+                .Where(file => file.IsVideo() && !PathHelper.GetFileNameWithoutExtension(file).ContainsIgnoreCase(".DUBBED."))
                 .ToArray();
 
         originalVideos.ForEach(originalVideo =>
@@ -25,15 +25,15 @@ internal class FfmpegHelper
             string output = getOutputVideo is not null ? getOutputVideo(originalVideo) : string.Empty;
             MergeDubbed(originalVideo, ref output, getDubbedVideo is not null ? getDubbedVideo(originalVideo) : string.Empty, overwrite, isTV, ignoreDurationDifference, isDryRun, log);
 
-            string originalVideoName = Path.GetFileNameWithoutExtension(originalVideo);
+            string originalVideoName = PathHelper.GetFileNameWithoutExtension(originalVideo);
             Directory
                 .GetFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
                 .ForEach(attachment =>
                 {
                     string renamedAttachment = renameAttachment is not null
                         ? renameAttachment(attachment)
-                        : Path.GetFileName(attachment).StartsWithIgnoreCase(originalVideoName)
-                            ? PathHelper.ReplaceFileNameWithoutExtension(attachment, attachmentName => attachmentName.ReplaceIgnoreCase(originalVideoName, Path.GetFileNameWithoutExtension(output)))
+                        : PathHelper.GetFileName(attachment).StartsWithIgnoreCase(originalVideoName)
+                            ? PathHelper.ReplaceFileNameWithoutExtension(attachment, attachmentName => attachmentName.ReplaceIgnoreCase(originalVideoName, PathHelper.GetFileNameWithoutExtension(output)))
                             : attachment;
                     if (attachment.EqualsIgnoreCase(renamedAttachment))
                     {
@@ -115,7 +115,7 @@ internal class FfmpegHelper
         {
             output = input;
             const string Postfix = ".ffmpeg";
-            if (!Path.GetFileNameWithoutExtension(output).ContainsIgnoreCase(Postfix))
+            if (!PathHelper.GetFileNameWithoutExtension(output).ContainsIgnoreCase(Postfix))
             {
                 output = PathHelper.AddFilePostfix(output, Postfix);
             }
@@ -147,7 +147,7 @@ internal class FfmpegHelper
     internal static void MergeDubbed(string input, ref string output, string dubbed = "", bool overwrite = false, bool? isTV = null, bool ignoreDurationDifference = false, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
-        isTV ??= Regex.IsMatch(Path.GetFileNameWithoutExtension(input), @"(\.|\s)S[0-9]{2}E[0-9]{2}(\.|\s)", RegexOptions.IgnoreCase);
+        isTV ??= Regex.IsMatch(PathHelper.GetFileNameWithoutExtension(input), @"(\.|\s)S[0-9]{2}E[0-9]{2}(\.|\s)", RegexOptions.IgnoreCase);
         if (isTV.Value)
         {
             VideoEpisodeFileInfo inputVideo = VideoEpisodeFileInfo.Parse(input);

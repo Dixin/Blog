@@ -73,12 +73,12 @@ internal static partial class Video
         EnumerateDirectories(directory, level)
             .ForEach(movie =>
             {
-                string[] files = Directory.GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly).Select(file => Path.GetFileName(file) ?? throw new InvalidOperationException(file)).ToArray();
+                string[] files = Directory.GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly).Select(PathHelper.GetFileName).ToArray();
                 string[] videos = files.Where(IsCommonVideo).ToArray();
                 string[] allowedAttachments = videos.Length == 1 || videos.All(video => Regex.IsMatch(video, "cd[1-9]", RegexOptions.IgnoreCase))
                     ? AdaptiveAttachments.ToArray()
                     : videos
-                        .SelectMany(video => AdaptiveAttachments.Select(attachment => $"{Path.GetFileNameWithoutExtension(video)}-{attachment}"))
+                        .SelectMany(video => AdaptiveAttachments.Select(attachment => $"{PathHelper.GetFileNameWithoutExtension(video)}-{attachment}"))
                         .ToArray();
                 allowedAttachments
                     .Select(attachment => Path.Combine(movie, attachment))

@@ -27,7 +27,7 @@ internal static partial class Video
 
     internal static void AddPrefix(string directory)
     {
-        if (!Regex.IsMatch(Path.GetFileName(directory), @"^[0-9\-_]+(-C)?$", RegexOptions.IgnoreCase))
+        if (!Regex.IsMatch(PathHelper.GetFileName(directory), @"^[0-9\-_]+(-C)?$", RegexOptions.IgnoreCase))
         {
             return;
         }

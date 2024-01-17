@@ -4,6 +4,7 @@ using System;
 using System.Web;
 using CsQuery;
 using Examples.Common;
+using Examples.IO;
 using Examples.Linq;
 using Examples.Net;
 using MediaManager.IO;
@@ -716,7 +717,7 @@ internal static class Imdb
             return false;
         }
 
-        string name = Path.GetFileNameWithoutExtension(file);
+        string name = PathHelper.GetFileNameWithoutExtension(file);
         if (name.EqualsOrdinal(Video.NotExistingFlag))
         {
             return false;
@@ -737,14 +738,14 @@ internal static class Imdb
         if (Directory.Exists(path))
         {
             file = Directory.GetFiles(path, Video.ImdbMetadataSearchPattern, SearchOption.TopDirectoryOnly).SingleOrDefault();
-            Debug.Assert(file.IsNullOrWhiteSpace() || Path.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.SubtitleSeparator) || Path.GetFileNameWithoutExtension(file).Split(Video.SubtitleSeparator).Length == 5);
+            Debug.Assert(file.IsNullOrWhiteSpace() || PathHelper.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.SubtitleSeparator) || PathHelper.GetFileNameWithoutExtension(file).Split(Video.SubtitleSeparator).Length == 5);
             return file.IsNotNullOrWhiteSpace();
         }
 
         if (path.IsNotNullOrWhiteSpace() && path.EndsWith(Video.ImdbMetadataExtension) && File.Exists(path))
         {
             file = path;
-            Debug.Assert(file.IsNullOrWhiteSpace() || Path.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.SubtitleSeparator) || Path.GetFileNameWithoutExtension(file).Split(Video.SubtitleSeparator).Length == 5);
+            Debug.Assert(file.IsNullOrWhiteSpace() || PathHelper.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.SubtitleSeparator) || PathHelper.GetFileNameWithoutExtension(file).Split(Video.SubtitleSeparator).Length == 5);
             return true;
         }
 
@@ -754,7 +755,7 @@ internal static class Imdb
 
     internal static bool TryLoad(string? path, [NotNullWhen(true)] out ImdbMetadata? imdbMetadata)
     {
-        if (TryRead(path, out string? file) && !Path.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.NotExistingFlag))
+        if (TryRead(path, out string? file) && !PathHelper.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.NotExistingFlag))
         {
             imdbMetadata = JsonHelper.DeserializeFromFile<ImdbMetadata>(file);
             return true;
@@ -817,7 +818,7 @@ internal static class Imdb
         }
 
         imdbIds = imdbIds
-            .Except(metadataFiles.Select(file => Path.GetFileNameWithoutExtension(file).Split("-").First()))
+            .Except(metadataFiles.Select(file => PathHelper.GetFileNameWithoutExtension(file).Split("-").First()))
             .ToArray();
         int trimmedLength = imdbIds.Length;
         ConcurrentQueue<string> imdbIdQueue = new(imdbIds);
@@ -880,7 +881,7 @@ internal static class Imdb
                         continue;
                     }
 
-                    string imdbId = Path.GetFileNameWithoutExtension(keywordFile).Split(".").First();
+                    string imdbId = PathHelper.GetFileNameWithoutExtension(keywordFile).Split(".").First();
                     string imdbUrl = $"https://www.imdb.com/title/{imdbId}/";
                     string keywordsUrl = $"{imdbUrl}keywords/";
                     string keywordsHtml = WebDriverHelper.GetString(ref webDriver, keywordsUrl);
@@ -976,7 +977,7 @@ internal static class Imdb
         }
 
         imdbIds = imdbIds
-            .Except(metadataFiles.Select(file => Path.GetFileNameWithoutExtension(file).Split("-").First()))
+            .Except(metadataFiles.Select(file => PathHelper.GetFileNameWithoutExtension(file).Split("-").First()))
             .ToArray();
         int trimmedLength = imdbIds.Length;
         await imdbIds.ForEachAsync(async (imdbId, index) =>
@@ -1025,7 +1026,7 @@ internal static class Imdb
         }
 
         imdbIds = imdbIds
-            .Except(metadataFiles.Select(file => Path.GetFileNameWithoutExtension(file).Split("-").First()))
+            .Except(metadataFiles.Select(file => PathHelper.GetFileNameWithoutExtension(file).Split("-").First()))
             .ToArray();
         int trimmedLength = imdbIds.Length;
         await imdbIds.ForEachAsync(async (imdbId, index) =>

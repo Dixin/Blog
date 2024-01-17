@@ -56,7 +56,7 @@ public class SevenZip
         int level = DefaultCompressionLevel)
     {
         Directory.EnumerateFiles(directory.NotNullOrWhiteSpace())
-            .Where(file => archiveExtensions.Contains(Path.GetExtension(file), StringComparer.OrdinalIgnoreCase))
+            .Where(file => archiveExtensions.Contains(PathHelper.GetExtension(file), StringComparer.OrdinalIgnoreCase))
             .ForEach(archive => this.ToZip(archive, zipFile?.Invoke(archive), deleteArchive, logger, level));
 
         if (isRecursive)
@@ -91,7 +91,7 @@ public class SevenZip
 
         destination = !string.IsNullOrWhiteSpace(destination)
             ? destination
-            : Path.Combine(Path.GetDirectoryName(archive) ?? throw new ArgumentOutOfRangeException(nameof(archive)), Path.GetFileNameWithoutExtension(archive));
+            : Path.Combine(PathHelper.GetDirectoryName(archive), PathHelper.GetFileNameWithoutExtension(archive));
         $"Start extracting {archive} to {destination}".LogWith(logger);
         ProcessHelper.StartAndWait(
             this.sevenZ,
@@ -120,7 +120,7 @@ public class SevenZip
 
         Directory
             .EnumerateFiles(directory.NotNullOrWhiteSpace())
-            .Where(file => archiveExtensions.Contains(Path.GetExtension(file), StringComparer.OrdinalIgnoreCase))
+            .Where(file => archiveExtensions.Contains(PathHelper.GetExtension(file), StringComparer.OrdinalIgnoreCase))
             .ForEach(archive =>
                 this.Extract(archive, destinationDirectory?.Invoke(archive), deleteArchive, logger));
 

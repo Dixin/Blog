@@ -2,6 +2,7 @@
 
 using CsQuery;
 using Examples.Common;
+using Examples.IO;
 using Examples.Linq;
 using Examples.Net;
 using MediaManager.IO;
@@ -161,7 +162,7 @@ internal static class Preferred
                 {
                     try
                     {
-                        string imdbId = Path.GetFileName(uri.LocalPath.TrimEnd('/'));
+                        string imdbId = PathHelper.GetFileName(uri.LocalPath.TrimEnd('/'));
                         if (!Regex.IsMatch(imdbId, @"tt[0-9]+"))
                         {
                             log($"Invalid IMDB Id: {file}, {url}.");

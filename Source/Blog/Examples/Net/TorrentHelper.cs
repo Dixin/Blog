@@ -57,7 +57,7 @@ public class TorrentHelper
 
         IEnumerable<string> downloadedHashes = Directory
             .EnumerateFiles(torrentDirectory, TorrentSearchPattern, SearchOption.AllDirectories)
-            .Select(torrent => Path.GetFileNameWithoutExtension(torrent).Split(HashSeparator).Last());
+            .Select(torrent => PathHelper.GetFileNameWithoutExtension(torrent).Split(HashSeparator).Last());
 
         EngineSettingsBuilder engineSettingsBuilder = new()
         {
@@ -102,7 +102,7 @@ public class TorrentHelper
 
         IEnumerable<string> downloadedHashes = Directory
             .EnumerateFiles(torrentDirectory, TorrentSearchPattern, SearchOption.AllDirectories)
-            .Select(torrent => Path.GetFileNameWithoutExtension(torrent).Split(HashSeparator).Last());
+            .Select(torrent => PathHelper.GetFileNameWithoutExtension(torrent).Split(HashSeparator).Last());
 
         await magnetUrls
             .Select(MagnetUri.Parse)
@@ -164,11 +164,11 @@ public class TorrentHelper
 
         IEnumerable<string> allDownloadedHashes = Directory
             .EnumerateFiles(torrentDirectory, TorrentSearchPattern, SearchOption.AllDirectories)
-            .Select(torrent => Path.GetFileNameWithoutExtension(torrent).Split(HashSeparator).Last());
+            .Select(torrent => PathHelper.GetFileNameWithoutExtension(torrent).Split(HashSeparator).Last());
 
         IEnumerable<string> downloadedHashes = Directory
             .EnumerateFiles(torrentDirectory, TorrentSearchPattern, SearchOption.AllDirectories)
-            .Select(torrent => Path.GetFileNameWithoutExtension(torrent)!)
+            .Select(PathHelper.GetFileNameWithoutExtension)
             .Where(fileName => !fileName.ContainsOrdinal(HashSeparator));
         if (lastHash.IsNotNullOrWhiteSpace())
         {
@@ -233,11 +233,11 @@ public class TorrentHelper
 
         IEnumerable<string> allDownloadedHashes = Directory
             .EnumerateFiles(torrentDirectory, TorrentSearchPattern, SearchOption.AllDirectories)
-            .Select(torrent => Path.GetFileNameWithoutExtension(torrent).Split(HashSeparator).Last());
+            .Select(torrent => PathHelper.GetFileNameWithoutExtension(torrent).Split(HashSeparator).Last());
 
         IEnumerable<string> downloadedHashes = Directory
             .EnumerateFiles(torrentDirectory, TorrentSearchPattern, SearchOption.AllDirectories)
-            .Select(torrent => Path.GetFileNameWithoutExtension(torrent)!)
+            .Select(PathHelper.GetFileNameWithoutExtension)
             .Where(fileName => !fileName.ContainsOrdinal(HashSeparator));
 
         WebDriverHelper.DisposeAll();
@@ -277,7 +277,7 @@ public class TorrentHelper
         await Directory
             .EnumerateFiles(torrentDirectory, TorrentSearchPattern, SearchOption.AllDirectories)
             .Select(file => $"""
-                 "{Path.GetFileName(file)}"
+                 "{PathHelper.GetFileName(file)}"
                  """)
             .Chunk(250)
             .SelectMany(chunk => MagnetUri.DefaultTrackers, (chunk, uri) => (chunk, uri))
@@ -301,7 +301,7 @@ public class TorrentHelper
         HashSet<string> downloadedHashes = new(
             Directory
                 .EnumerateFiles(torrentDirectory, TorrentSearchPattern, SearchOption.AllDirectories)
-                .Select(torrent => Path.GetFileNameWithoutExtension(torrent).Split(HashSeparator).Last()),
+                .Select(torrent => PathHelper.GetFileNameWithoutExtension(torrent).Split(HashSeparator).Last()),
             StringComparer.OrdinalIgnoreCase);
 
         (await File.ReadAllTextAsync(magnetUrlPath, cancellationToken))

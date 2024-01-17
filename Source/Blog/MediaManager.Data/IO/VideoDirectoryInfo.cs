@@ -41,7 +41,7 @@ internal record VideoDirectoryInfo(
     {
         if (Path.IsPathRooted(value))
         {
-            value = Path.GetFileName(value);
+            value = PathHelper.GetFileName(value);
         }
 
         Match match = NameRegex.Match(value);

@@ -30,7 +30,7 @@ internal static class Music
             .ToArray();
         IEnumerable<string> arguments = tracks
             .Select((track, index) => $"""
-                -i "{video}" -c:a libmp3lame -ar 48000 -b:a 320k -ss {track.start} {(index == tracks.Length - 1 ? string.Empty : $"-to {tracks[index + 1].start}")} "{Path.GetDirectoryName(video)}\{index + 1}. {track.name}.mp3"
+                -i "{video}" -c:a libmp3lame -ar 48000 -b:a 320k -ss {track.start} {(index == tracks.Length - 1 ? string.Empty : $"-to {tracks[index + 1].start}")} "{PathHelper.GetDirectoryName(video)}\{index + 1}. {track.name}.mp3"
                 """);
         arguments.ForEach(argument =>
         {
@@ -62,14 +62,14 @@ internal static class Music
             .ForEach(album =>
             {
                 string song = Directory.EnumerateFiles(album, "*.mp3").First();
-                string[] info = Path.GetFileNameWithoutExtension(song).Split(Separator.ToCharArray());
+                string[] info = PathHelper.GetFileNameWithoutExtension(song).Split(Separator.ToCharArray());
                 string genre = info[0];
                 string year = info[1];
                 string albumName = info[2];
                 string artist = info[4];
                 try
                 {
-                    Directory.Move(album, Path.Combine(Path.GetDirectoryName(album)!, $"{genre}.{artist}.{year}.{albumName}"));
+                    Directory.Move(album, Path.Combine(PathHelper.GetDirectoryName(album), $"{genre}.{artist}.{year}.{albumName}"));
                 }
                 catch (Exception exception)
                 {
@@ -337,7 +337,7 @@ internal static class Music
 
     internal static void Translate(string music) => Directory.EnumerateFileSystemEntries(music).ForEach(songOrAlbum =>
     {
-        string[] names = Path.GetFileName(songOrAlbum)
+        string[] names = PathHelper.GetFileName(songOrAlbum)
             .Split(Separator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
         for (int index = 0; index < names.Length; index++)
         {
@@ -351,7 +351,7 @@ internal static class Music
                 }
             }
         }
-        FileSystemHelper.Move(songOrAlbum, Path.Combine(Path.GetDirectoryName(songOrAlbum)!, string.Join(Separator, names)));
+        FileSystemHelper.Move(songOrAlbum, Path.Combine(PathHelper.GetDirectoryName(songOrAlbum), string.Join(Separator, names)));
     });
 
     private static bool IsMusicFile(string extension) => Extensions.ContainsIgnoreCase(extension);
