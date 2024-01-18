@@ -36,7 +36,7 @@ internal static partial class Video
 
     private static readonly string[] Attachments = ["Introduction.txt", "Introduction.mht"];
 
-    private static readonly string[] AdaptiveAttachments = ["banner.jpg", "box.jpg", "clearart.png", "clearlogo.png", "disc.jpg", "disc.png", "discart.png", "fanart.jpg", "landscape.jpg", "landscape.png", "logo.png", "logo.svg", "poster.jpg", "poster.png", "backdrop.jpg", "back.jpg"];
+    private static readonly string[] AdaptiveAttachments = ["banner.jpg", "banner.png", "box.jpg", "clearart.png", "clearlogo.png", "disc.jpg", "disc.png", "discart.png", "fanart.jpg", "landscape.jpg", "landscape.png", "logo.png", "logo.svg", "poster.jpg", "poster.png", "backdrop.jpg", "back.jpg"];
 
     internal const string ImdbMetadataExtension = ".json";
 
