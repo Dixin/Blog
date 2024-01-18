@@ -664,10 +664,10 @@ internal static partial class Video
         await JsonHelper.SerializeToFileAsync(movies, jsonFile);
     }
 
-    private static readonly DateTime VersionDateTime = new DateTime(2024, 1, 18, 0, 0, 0, DateTimeKind.Utc);
+    private static readonly DateTime VersionDateTimeUtc = new(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
     internal static bool IsLatestVersion(string metadata) =>
-        new FileInfo(metadata).LastWriteTimeUtc > VersionDateTime;
+        new FileInfo(metadata).LastWriteTimeUtc > VersionDateTimeUtc;
 
     internal static void UpdateMetadata(string directory)
     {
