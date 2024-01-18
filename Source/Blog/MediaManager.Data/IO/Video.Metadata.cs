@@ -669,10 +669,10 @@ internal static partial class Video
     internal static bool IsLatestVersion(string metadata) =>
         new FileInfo(metadata).LastWriteTimeUtc > VersionDateTime;
 
-    internal static void UpdateMetadata(string direcotry)
+    internal static void UpdateMetadata(string directory)
     {
         Directory
-            .EnumerateFiles(direcotry, ImdbMetadataSearchPattern, SearchOption.AllDirectories)
+            .EnumerateFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories)
             .Select(metadata => (metadata, ImdbId: PathHelper.GetFileNameWithoutExtension(metadata).Split("-").First()))
             .Where(metadata =>
             {
@@ -741,7 +741,7 @@ internal static partial class Video
                     Companies = data.companies.Distinct().ToLookup(item => item.Text, item => item.Url).ToDictionary(group => group.Key, group => group.ToArray())
                 };
 
-                //JsonHelper.SerializeToFile(imdbMetadata, data.metadata);
+                JsonHelper.SerializeToFile(imdbMetadata, data.metadata);
             });
     }
 }

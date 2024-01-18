@@ -49,7 +49,7 @@ Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
 //await Video.DownloadImdbMetadataAsync(settings.MovieControversialWithoutSubtitle, 2, overwrite: false, useCache: true, useBrowser: true, 2);
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp31, 2, overwrite: false, useCache: true, useBrowser: true, 1);
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp32, 2, overwrite: false, useCache: true, useBrowser: true, 1);
-//await Video.DownloadImdbMetadataAsync(settings.MovieTemp3Encode, 2, overwrite: false, useCache: true, useBrowser: true, 1);
+//await Video.DownloadImdbMetadataAsync(settings.MovieTemp3Encode, 2, overwrite: false, useCache: true, useBrowser: true, 2);
 
 //await Video.DownloadImdbMetadataAsync(settings.TVControversial, 1, overwrite: false, useCache: true, useBrowser: true, 1);
 //await Video.DownloadImdbMetadataAsync(settings.TVDocumentary, 1, overwrite: false, useCache: true, useBrowser: true, 1);
@@ -77,7 +77,7 @@ Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
 
 //await Video.DownloadImdbMetadataAsync(
 //    new (string Directory, int Level)[]
-//    {`
+//    {
 //        settings.Movie3D,
 //        settings.MovieHdr,
 //        settings.MovieControversial,
@@ -145,23 +145,23 @@ Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
 //Video.BackupMetadata(settings.TVDocumentary);
 //Video.BackupMetadata(settings.TVMainstream);
 
-//Video.PrintDirectoriesWithErrors(settings.Movie3D);
-//Video.PrintDirectoriesWithErrors(settings.MovieHdr);
-//Video.PrintDirectoriesWithErrors(settings.MovieControversial);
-//Video.PrintDirectoriesWithErrors(settings.MovieControversialWithoutSubtitle);
-//Video.PrintDirectoriesWithErrors(settings.MovieMainstream);
-//Video.PrintDirectoriesWithErrors(settings.MovieMainstreamWithoutSubtitle);
-//Video.PrintDirectoriesWithErrors(settings.MovieMusical);
-//Video.PrintDirectoriesWithErrors(settings.MovieTemp);
-//Video.PrintDirectoriesWithErrors(settings.MovieTemp1);
-//Video.PrintDirectoriesWithErrors(settings.MovieTemp2);
-//Video.PrintDirectoriesWithErrors(settings.MovieTemp3);
+//Video.PrintDirectoriesWithErrors(settings, settings.Movie3D);
+//Video.PrintDirectoriesWithErrors(settings, settings.MovieHdr);
+//Video.PrintDirectoriesWithErrors(settings, settings.MovieControversial);
+//Video.PrintDirectoriesWithErrors(settings, settings.MovieControversialWithoutSubtitle);
+//Video.PrintDirectoriesWithErrors(settings, settings.MovieMainstream);
+//Video.PrintDirectoriesWithErrors(settings, settings.MovieMainstreamWithoutSubtitle);
+//Video.PrintDirectoriesWithErrors(settings, settings.MovieMusical);
+//Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp);
+//Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp1);
+//Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp2);
+//Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp3);
 
-//Video.PrintDirectoriesWithErrors(settings.TVControversial, 1, isTV: true);
-//Video.PrintDirectoriesWithErrors(settings.TVDocumentary, 1, isTV: true);
-//Video.PrintDirectoriesWithErrors(settings.TVMainstream, 1, isTV: true);
-//Video.PrintDirectoriesWithErrors(settings.TVTutorial, 1, isTV: true);
-//Video.PrintDirectoriesWithErrors(settings.TVMainstreamWithoutSubtitle, 1, isTV: true);
+//Video.PrintDirectoriesWithErrors(settings, settings.TVControversial, 1, isTV: true);
+//Video.PrintDirectoriesWithErrors(settings, settings.TVDocumentary, 1, isTV: true);
+//Video.PrintDirectoriesWithErrors(settings, settings.TVMainstream, 1, isTV: true);
+//Video.PrintDirectoriesWithErrors(settings, settings.TVTutorial, 1, isTV: true);
+//Video.PrintDirectoriesWithErrors(settings, settings.TVMainstreamWithoutSubtitle, 1, isTV: true);
 
 //Video.PrintVideosWithErrors(settings.Movie3D, searchOption: SearchOption.AllDirectories);
 //Video.PrintVideosWithErrors(settings.MovieControversial, searchOption: SearchOption.AllDirectories);
@@ -361,10 +361,10 @@ string[] genres = ["family", "animation", "documentary"];
 //    rename: (f, t) =>
 //    {
 //        //t = t.Substring(0, 1).ToUpper() + t.Substring(1);
-//        //string postfix = Path.GetFileNameWithoutExtension(f).EndsWithIgnoreCase($"{Video.VersionSeparator}{Video.TopEnglishKeyword}.2Audio") ? $"{Video.VersionSeparator}{Video.TopEnglishKeyword}.2Audio" : $"{Video.VersionSeparator}{Video.TopEnglishKeyword}";
+//        //string postfix = PathHelper.GetFileNameWithoutExtension(f).EndsWithIgnoreCase($"{Video.VersionSeparator}{Video.TopEnglishKeyword}.2Audio") ? $"{Video.VersionSeparator}{Video.TopEnglishKeyword}.2Audio" : $"{Video.VersionSeparator}{Video.TopEnglishKeyword}";
 //        string postfix = $"{Video.VersionSeparator}{settings.TopEnglishKeyword}";
-//        //Debug.Assert(!f.IsVideo() || Path.GetFileNameWithoutExtension(f).EndsWithIgnoreCase(postfix));
-//        string name = Path.GetFileNameWithoutExtension(f);
+//        //Debug.Assert(!f.IsVideo() || PathHelper.GetFileNameWithoutExtension(f).EndsWithIgnoreCase(postfix));
+//        string name = PathHelper.GetFileNameWithoutExtension(f);
 //        return name.EndsWithOrdinal(postfix) || name.EndsWithOrdinal($"{postfix}-thumb") || Regex.IsMatch(name, $@"{postfix.Replace(".", @"\.").Replace("-", @"\-")}\.[a-z]{{3}}(&[a-z]{{3}})?$")
 //            ? f.Replace(postfix, $"{postfix}.{t}")
 //            : f;
@@ -411,7 +411,7 @@ string[] genres = ["family", "animation", "documentary"];
 //    //".mkv",
 //    overwrite: false);
 
-//Video.CreateTVEpisodeMetadata(@"H:\Downloads7\New folder (6)\阅读\_1", f => Path.GetFileNameWithoutExtension(f).Split(".").Last());
+//Video.CreateTVEpisodeMetadata(@"H:\Downloads7\New folder (6)\阅读\_1", f => PathHelper.GetFileNameWithoutExtension(f).Split(".").Last());
 
 static void RenameEpisode(ISettings settings, string mediaDirectory, string metadataDirectory, bool isDryRun = false, Action<string>? log = null)
 {
@@ -422,7 +422,7 @@ static void RenameEpisode(ISettings settings, string mediaDirectory, string meta
         .ToArray();
     tvs.ForEach(tv =>
     {
-        string metadataTV = Path.Combine(metadataDirectory, Path.GetFileName(tv));
+        string metadataTV = Path.Combine(metadataDirectory, PathHelper.GetFileName(tv));
         if (!Directory.Exists(metadataTV))
         {
             log($"Not exist {metadataTV}");
@@ -438,8 +438,8 @@ static void RenameEpisode(ISettings settings, string mediaDirectory, string meta
             .OrderBy(season => season)
             .ToArray();
 
-        string[] seasonNames = seasons.Select(season => Path.GetFileName(season)!).ToArray();
-        string[] metadataSeasonNames = metadataSeasons.Select(season => Path.GetFileName(season)!).ToArray();
+        string[] seasonNames = seasons.Select(PathHelper.GetFileName).ToArray();
+        string[] metadataSeasonNames = metadataSeasons.Select(PathHelper.GetFileName).ToArray();
         string[] seasonMismatches = seasonNames.Except(metadataSeasonNames).ToArray();
         if (seasonMismatches.Any())
         {
@@ -457,13 +457,13 @@ static void RenameEpisode(ISettings settings, string mediaDirectory, string meta
         string[] episodeNumbers = seasons
             .SelectMany(Directory.EnumerateFiles)
             .Where(Video.IsVideo)
-            .Select(episode => Regex.Match(Path.GetFileNameWithoutExtension(episode), @"\.(S[0-9]{2}E[0-9]{2}(E[0-9]{2})?)\.").Groups[1].Value)
+            .Select(episode => Regex.Match(PathHelper.GetFileNameWithoutExtension(episode), @"\.(S[0-9]{2}E[0-9]{2}(E[0-9]{2})?)\.").Groups[1].Value)
             .OrderBy(number => number)
             .ToArray();
         string[] metadataEpisodeNumbers = metadataSeasons
             .SelectMany(Directory.EnumerateFiles)
             .Where(Video.IsVideo)
-            .Select(episode => Regex.Match(Path.GetFileNameWithoutExtension(episode), @"\.(S[0-9]{2}E[0-9]{2}(E[0-9]{2})?)\.").Groups[1].Value)
+            .Select(episode => Regex.Match(PathHelper.GetFileNameWithoutExtension(episode), @"\.(S[0-9]{2}E[0-9]{2}(E[0-9]{2})?)\.").Groups[1].Value)
             .OrderBy(number => number)
             .ToArray();
         string[] episodeMismatches = episodeNumbers.Except(metadataEpisodeNumbers).ToArray();
@@ -485,11 +485,11 @@ static void RenameEpisode(ISettings settings, string mediaDirectory, string meta
 
     tvs.ForEach(tv => Video.RenameEpisodesWithTitle(
         tv,
-        Path.Combine(metadataDirectory, Path.GetFileName(tv)),
-        (file, title) => Path.GetFileNameWithoutExtension(file).ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") ? file.ReplaceIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}", $"{Video.VersionSeparator}{settings.TopEnglishKeyword}.{title}") : file.ReplaceIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}", $"{Video.VersionSeparator}{settings.TopForeignKeyword}.{title}"),
+        Path.Combine(metadataDirectory, PathHelper.GetFileName(tv)),
+        (file, title) => PathHelper.GetFileNameWithoutExtension(file).ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") ? file.ReplaceIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}", $"{Video.VersionSeparator}{settings.TopEnglishKeyword}.{title}") : file.ReplaceIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}", $"{Video.VersionSeparator}{settings.TopForeignKeyword}.{title}"),
         isDryRun,
         log));
-    //tvs.ForEach(tv => Video.MoveSubtitlesForEpisodes(tv, Path.Combine(metadataDirectory, Path.GetFileName(tv)), isDryRun: isDryRun, log: log));
+    //tvs.ForEach(tv => Video.MoveSubtitlesForEpisodes(tv, Path.Combine(metadataDirectory, PathHelper.GetFileName(tv)), isDryRun: isDryRun, log: log));
 }
 
 //Video.MoveTopTVEpisodes(settings, @"\\beyond-r\F\Files\Library\TV", @"\\beyond-r\F\Files\TV.Subtitles", isDryRun: false);
@@ -509,7 +509,7 @@ static void RenameFilesWithDuplicateTitle(
     log ??= Logger.WriteLine;
 
     (string Path, string Number)[] files = Directory.GetFiles(directory, PathHelper.AllSearchPattern, searchOption)
-        .Select(file => (file, Regex.Match(Path.GetFileNameWithoutExtension(file), @"\.S\d+E\d+")))
+        .Select(file => (file, Regex.Match(PathHelper.GetFileNameWithoutExtension(file), @"\.S\d+E\d+")))
         .Where(file => file.Item2.Success)
         .Select(file => (file.Item1, file.Item2.Value))
         .OrderBy(file => file.Item1)
@@ -520,7 +520,7 @@ static void RenameFilesWithDuplicateTitle(
         .ToArray()
         .ForEach(video =>
         {
-            string videoName = Path.GetFileNameWithoutExtension(video.Path);
+            string videoName = PathHelper.GetFileNameWithoutExtension(video.Path);
             string title = videoName[(videoName.LastIndexOfOrdinal(titleFlag) + titleFlag.Length)..];
             if (title.IsNotNullOrWhiteSpace() && title.Length % 2 == 0 && title[..(title.Length / 2)].EqualsIgnoreCase(title[(title.Length / 2)..]))
             {
@@ -530,7 +530,7 @@ static void RenameFilesWithDuplicateTitle(
                     .ToArray()
                     .ForEach(episodeFile =>
                     {
-                        string newEpisodeFile = Path.Combine(Path.GetDirectoryName(episodeFile.Path)!, $"{Path.GetFileNameWithoutExtension(episodeFile.Path).ReplaceIgnoreCase(title, newTitle)}{Path.GetExtension(episodeFile.Path)}");
+                        string newEpisodeFile = Path.Combine(PathHelper.GetDirectoryName(episodeFile.Path), $"{PathHelper.GetFileNameWithoutExtension(episodeFile.Path).ReplaceIgnoreCase(title, newTitle)}{PathHelper.GetExtension(episodeFile.Path)}");
                         if (!title.EqualsOrdinal(newTitle))
                         {
                             log(episodeFile.Path);
@@ -571,13 +571,13 @@ static void RenameFilesWithDuplicateTitle(
 //Directory.GetFiles(@"F:\AV\Movie Japan Leak", "*", SearchOption.TopDirectoryOnly)
 //    .ForEach(f =>
 //    {
-//        string d = Path.GetDirectoryName(f);
-//        string name = Path.GetFileNameWithoutExtension(f).Trim();
+//        string d = PathHelper.GetDirectoryName(f);
+//        string name = PathHelper.GetFileNameWithoutExtension(f).Trim();
 //        string idWithCD = Regex.Match(name, @"^[A-Z\-]+(\-| )?[0-9]+(\-c|\-leak|\-patched)?(-cd[0-9]+)?", RegexOptions.IgnoreCase).Value;
 //        Debug.Assert(idWithCD.IsNotNullOrWhiteSpace());
 //        string id = Regex.Match(name, @"^[A-Z\-]+(\-| )?[0-9]+(\-c|\-leak|\-patched)?", RegexOptions.IgnoreCase).Value;
 
-//        string newFile = Path.Combine(d, id, $"{idWithCD}{Path.GetExtension(f).ToLowerInvariant()}");
+//        string newFile = Path.Combine(d, id, $"{idWithCD}{PathHelper.GetExtension(f).ToLowerInvariant()}");
 //        FileHelper.Move(f, newFile);
 //        log(f);
 //        log(newFile);
@@ -595,7 +595,7 @@ static void RenameFilesWithDuplicateTitle(
 //    {
 //        try
 //        {
-//            await FfmpegHelper.EncodeAsync(f, Path.Combine(@"E:\", Path.GetFileName(f)), estimateCrop: true);
+//            await FfmpegHelper.EncodeAsync(f, Path.Combine(@"E:\", PathHelper.GetFileName(f)), estimateCrop: true);
 //        }
 //        catch (Exception e)
 //        {
@@ -626,26 +626,26 @@ static void RenameFilesWithDuplicateTitle(
 
 //Directory.GetDirectories(@"U:\Move\New folder").ForEach(d => DirectoryHelper.AddPostfix(d, "[HDR]"));
 //Directory.GetDirectories(@"U:\Move\New folder").ForEach(d=>DirectoryHelper.ReplaceDirectoryName(d,n=>n.Replace("[1080x]","[2160x]")));
-//Directory.GetDirectories(@"U:\Move\New folder").ForEach(d => Directory.CreateDirectory(Path.Combine(@"T:\Move\New folder", Path.GetFileName(d))));
+//Directory.GetDirectories(@"U:\Move\New folder").ForEach(d => Directory.CreateDirectory(Path.Combine(@"T:\Move\New folder", PathHelper.GetFileName(d))));
 //string[] sourceDirectories = Directory.GetDirectories(@"S:\Files\Library\Movies Mainstream.主流电影\American Fiction.美国科幻");
 //string[] destinationDirectories = Directory.GetDirectories(@"T:\Files\Library\Movies 4K HDR.高动态范围电影\American Fiction.美国科幻");
 //Enumerable.Range(1, 29).Select(index => $"Marvel`{index}-")
 //    .ForEach(prefix =>
 //    {
-//        string sourceDirectory = sourceDirectories.Single(d => Path.GetFileName(d).StartsWithOrdinal(prefix));
-//        string destinationDirectory = destinationDirectories.Single(d => Path.GetFileName(d).StartsWithOrdinal(prefix));
+//        string sourceDirectory = sourceDirectories.Single(d => PathHelper.GetFileName(d).StartsWithOrdinal(prefix));
+//        string destinationDirectory = destinationDirectories.Single(d => PathHelper.GetFileName(d).StartsWithOrdinal(prefix));
 //        string sourceNfo = Directory.EnumerateFiles(sourceDirectory).First(f => f.EndsWithOrdinal(".nfo"));
 //        string destinationVideo = Directory.EnumerateFiles(destinationDirectory).Single(f => f.EndsWithOrdinal(".mp4"));
-//        string destinationName = Path.GetFileNameWithoutExtension(destinationVideo);
+//        string destinationName = PathHelper.GetFileNameWithoutExtension(destinationVideo);
 //        string destinationNfo = Path.Combine(destinationDirectory, $"{destinationName}.nfo");
 //        File.Copy(sourceNfo, destinationNfo, true);
 
 //        string sourceJson = Directory.EnumerateFiles(sourceDirectory).Single(f => f.EndsWithOrdinal(".json"));
-//        string destinationJson = Path.Combine(destinationDirectory, Path.GetFileName(sourceJson));
+//        string destinationJson = Path.Combine(destinationDirectory, PathHelper.GetFileName(sourceJson));
 //        File.Copy(sourceJson, destinationJson, true);
 
 //        Directory.EnumerateFiles(sourceDirectory, "*.log")
-//            .ForEach(f => File.Copy(f, Path.Combine(destinationDirectory, Path.GetFileName(f)), true));
+//            .ForEach(f => File.Copy(f, Path.Combine(destinationDirectory, PathHelper.GetFileName(f)), true));
 //    });
 
 //Video.RenameFiles(@"E:\Files\Move\TV\Black.Sails", (f, i) => f.Replace("..", "."), isDryRun: false);
@@ -682,7 +682,7 @@ static void RenameFilesWithDuplicateTitle(
 //Directory.GetDirectories(@"T:\Files\Library\Movies Mainstream.Temp")
 //    .Where(d =>
 //    {
-//        string name = Path.GetFileName(d);
+//        string name = PathHelper.GetFileName(d);
 //        return !name.StartsWith("_") && !name.ContainsIgnoreCase(".");
 //    })
 //    .ForEach(d => Directory.GetDirectories(d).ForEach(m =>
@@ -706,8 +706,8 @@ static void RenameFilesWithDuplicateTitle(
 //    .ForEach(m =>
 //    {
 //        string video = Directory.EnumerateFiles(m).First(f => f.EndsWithIgnoreCase(".mp4"));
-//        string name = Path.GetFileName(m);
-//        string source = sources.First(d => Path.GetFileName(d).EqualsIgnoreCase(name));
+//        string name = PathHelper.GetFileName(m);
+//        string source = sources.First(d => PathHelper.GetFileName(d).EqualsIgnoreCase(name));
 //        Directory.GetFiles(source).ForEach(f =>
 //        {
 //            if (f.EndsWithIgnoreCase(".mp4"))
@@ -736,9 +736,9 @@ static void RenameFilesWithDuplicateTitle(
 //                return;
 //            }
 
-//            if (Path.GetFileNameWithoutExtension(f).EndsWithIgnoreCase(".chs&eng"))
+//            if (PathHelper.GetFileNameWithoutExtension(f).EndsWithIgnoreCase(".chs&eng"))
 //            {
-//                string destination = PathHelper.ReplaceExtension(video, $".chs&eng{Path.GetExtension(f)}");
+//                string destination = PathHelper.ReplaceExtension(video, $".chs&eng{PathHelper.GetExtension(f)}");
 //                if (!File.Exists(destination))
 //                {
 //                    FileHelper.Copy(f, destination);
@@ -761,18 +761,18 @@ static void RenameFilesWithDuplicateTitle(
 //    string video = files.Single(Video.IsVideo);
 //    string xml = files.Single(f => f.HasExtension(Video.XmlMetadataExtension));
 //    string metadata = files.Single(f => f.HasExtension(Video.ImdbMetadataExtension));
-//    if (Regex.IsMatch(Path.GetFileName(d).Split(".").First(), $" [0-9]+"))
+//    if (Regex.IsMatch(PathHelper.GetFileName(d).Split(".").First(), $" [0-9]+"))
 //    {
-//        //string p = Path.GetFileNameWithoutExtension(video).Split("-").First()+"-";
+//        //string p = PathHelper.GetFileNameWithoutExtension(video).Split("-").First()+"-";
 //        //DirectoryHelper.ReplaceDirectoryName(d,n=>n.Replace("Private Gold ", "Private Gold`"));
 //        //Logger.WriteLine(d);
 //    }
 
-//    string[] a = Path.GetFileName(d).Split(".");
+//    string[] a = PathHelper.GetFileName(d).Split(".");
 //    string title = a[0].Replace("  ", " ");
 //    string year = a[1];
 //    string tailTitle = title[(title.IndexOf("-") + 1)..];
-//    string metadata2 = Path.GetFileName(d)[Path.GetFileName(d).IndexOf("[")..];
+//    string metadata2 = PathHelper.GetFileName(d)[PathHelper.GetFileName(d).IndexOf("[")..];
 //    int index = tailTitle.IndexOfOrdinal("`");
 //    string postfix = string.Empty;
 //    if (index > 0)
@@ -785,7 +785,7 @@ static void RenameFilesWithDuplicateTitle(
 //    //DirectoryHelper.ReplaceDirectoryName(d, nt);
 //    //if (Imdb.TryLoad(metadata, out ImdbMetadata? imdbMetadata))
 //    //{
-//    //    string series = Path.GetFileNameWithoutExtension(video).Split("-").First();
+//    //    string series = PathHelper.GetFileNameWithoutExtension(video).Split("-").First();
 //    //    Logger.WriteLine(series);
 //    //    if (
 //    //        !(imdbMetadata.Title.StartsWithIgnoreCase(series) || imdbMetadata.Title.StartsWithIgnoreCase(series.ReplaceOrdinal(" 0", " ")))
@@ -829,12 +829,12 @@ static void RenameFilesWithDuplicateTitle(
 //       );
 
 
-//HashSet<string> downloadedHashes = new HashSet<string>(Directory.GetFiles(@"E:\Files\MonoTorrentDownload").Select(f => Path.GetFileNameWithoutExtension(f).Split("@").Last()), StringComparer.OrdinalIgnoreCase);
+//HashSet<string> downloadedHashes = new HashSet<string>(Directory.GetFiles(@"E:\Files\MonoTorrentDownload").Select(f => PathHelper.GetFileNameWithoutExtension(f).Split("@").Last()), StringComparer.OrdinalIgnoreCase);
 
 //await TorrentHelper.AddDefaultTrackersAsync(@"E:\Files\MonoTorrentDownload", Logger.WriteLine);
 
 //Directory.GetFiles(@"Q:\Files\Movies.Raw3\Korean")
-//    .ForEach(f=>FileHelper.MoveToDirectory(f, Path.Combine(@"Q:\Files\Movies.Raw3\Korean", Path.GetFileNameWithoutExtension(f))));
+//    .ForEach(f=>FileHelper.MoveToDirectory(f, Path.Combine(@"Q:\Files\Movies.Raw3\Korean", PathHelper.GetFileNameWithoutExtension(f))));
 
 //string[] allDownloadedTitles = new string[]
 //{
@@ -850,7 +850,7 @@ static void RenameFilesWithDuplicateTitle(
 //   settings.MovieControversialTemp3,
 //   @"Q:\Files\Movies.Raw"
 //}.SelectMany(d => Directory.EnumerateFiles(d, "*.mp4", SearchOption.AllDirectories))
-//    .Select(f=>Path.GetFileNameWithoutExtension(f)!)
+//    .Select(f=>PathHelper.GetFileNameWithoutExtension(f)!)
 //    .Where(f => f.ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopEnglishKeyword}") || f.ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopForeignKeyword}"))
 //    .Select(f =>
 //    {
@@ -873,14 +873,14 @@ static void RenameFilesWithDuplicateTitle(
 //HashSet<string> allDownloadedTitles = new(File.ReadAllLines(@"e:\AllDownloadedTitles.txt"), StringComparer.OrdinalIgnoreCase);
 
 //Directory.GetDirectories(@"\\beyond-x\E\Files\Downloading")
-//    .Where(d => allDownloadedTitles.Contains(Path.GetFileName(d)))
+//    .Where(d => allDownloadedTitles.Contains(PathHelper.GetFileName(d)))
 //    .ToArray()
 //    .ForEach(d => DirectoryHelper.MoveToDirectory(d, @"\\beyond-x\E\Files\New folder"));
 
 
-//Directory.EnumerateDirectories(@"\\beyond-x\E\Files\Move").Where(d=>allDownloadedTitles.Contains(Path.GetFileName(d))).ForEach(d=>DirectoryHelper.MoveToDirectory(d, @"\\beyond-x\E\Files\Move.Delete"));
+//Directory.EnumerateDirectories(@"\\beyond-x\E\Files\Move").Where(d=>allDownloadedTitles.Contains(PathHelper.GetFileName(d))).ForEach(d=>DirectoryHelper.MoveToDirectory(d, @"\\beyond-x\E\Files\Move.Delete"));
 
-//Directory.GetDirectories(@"E:\Files\Move").Where(d => downloaded.Contains(Path.GetFileName(d))).ToArray()
+//Directory.GetDirectories(@"E:\Files\Move").Where(d => downloaded.Contains(PathHelper.GetFileName(d))).ToArray()
 //    .ForEach(d => DirectoryHelper.MoveToDirectory(d, @"E:\Files\Move.Delete"));
 
 //Video.EnumerateDirectories(@"Q:\Files\Movies\_", 1)
@@ -944,7 +944,7 @@ static void RenameFilesWithDuplicateTitle(
 //await TorrentHelper.AddDefaultTrackersAsync(@"E:\Files\Torrents", log: Logger.WriteLine);
 
 //Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(settings.MovieLibraryMetadata);
-//HashSet<string> titles = new(libraryMetadata.Values.AsParallel().SelectMany(d=>d.Keys).Select(f=>Path.GetFileNameWithoutExtension(f)!).Distinct(StringComparer.InvariantCultureIgnoreCase));
+//HashSet<string> titles = new(libraryMetadata.Values.AsParallel().SelectMany(d=>d.Keys).Select(f=>PathHelper.GetFileNameWithoutExtension(f)!).Distinct(StringComparer.InvariantCultureIgnoreCase));
 //downloadedTitles.AsParallel().Where(downloadedTitle => titles.Any(t=>t.StartsWith(downloadedTitle, StringComparison.OrdinalIgnoreCase))).ForEach(Logger.WriteLine);
 //HashSet<string> xx = new(Directory.EnumerateDirectories(@"E:\Files\Delete").Select(Path.GetFileName), StringComparer.OrdinalIgnoreCase);
 
@@ -968,7 +968,7 @@ static void RenameFilesWithDuplicateTitle(
 //        }
 
 //        string[] subtitles = files.Where(Video.IsSubtitle).ToArray();
-//        if (subtitles.Any(f => Regex.IsMatch(Path.GetFileNameWithoutExtension(f).Split(".").Last(), @"[a-z]{3}\-[0-9]")))
+//        if (subtitles.Any(f => Regex.IsMatch(PathHelper.GetFileNameWithoutExtension(f).Split(".").Last(), @"[a-z]{3}\-[0-9]")))
 //        {
 //            return;
 //        }
@@ -984,15 +984,15 @@ static void RenameFilesWithDuplicateTitle(
 //    .ForEach(metadata =>
 //    {
 //        string title = XDocument.Load(metadata).Root!.Element("title")!.Value;
-//        string name = Path.GetFileNameWithoutExtension(metadata);
+//        string name = PathHelper.GetFileNameWithoutExtension(metadata);
 //        string year = Regex.Match(name, @"\.[0-9]{4}").Value;
 //        string newName = title.Replace(": ", "-").Replace(":", "-") + name.Substring(name.IndexOf(year));
 //        FileHelper.ReplaceFileNameWithoutExtension(metadata, newName);
 
-//        string d = Path.GetDirectoryName(metadata)!;
+//        string d = PathHelper.GetDirectoryName(metadata)!;
 //        Directory
 //            .EnumerateFiles(d)
-//            .Where(f => Path.GetFileNameWithoutExtension(f).StartsWith(name, StringComparison.InvariantCultureIgnoreCase))
+//            .Where(f => PathHelper.GetFileNameWithoutExtension(f).StartsWith(name, StringComparison.InvariantCultureIgnoreCase))
 //            .ForEach(f =>
 //            {
 //                FileHelper.ReplaceFileNameWithoutExtension(f, n => n.Replace(name, newName));
