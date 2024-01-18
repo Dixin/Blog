@@ -277,7 +277,7 @@ internal static partial class Video
         }
 
         string jsonFile = metadataFiles.SingleOrDefault(file => file.EndsWithIgnoreCase(ImdbMetadataExtension) && PathHelper.GetFileName(file).Split("-").First().EqualsIgnoreCase(imdbId), string.Empty);
-        if (jsonFile.IsNotNullOrWhiteSpace() && (!overwrite || await IsLatestVersionAsync(jsonFile)))
+        if (jsonFile.IsNotNullOrWhiteSpace() && (!overwrite || IsLatestVersion(jsonFile)))
         {
             log($"Skip {imdbId}.");
             return (webDriver, false);
@@ -338,7 +338,7 @@ internal static partial class Video
                     log($"Downloaded {data.Url} to {data.File}.");
                     await File.WriteAllTextAsync(data.File, data.Html, cancellationToken);
                     log($"Saved to {data.File}.");
-                }, 
+                },
                 cancellationToken);
 
         string newJsonFile = Path.Combine(metadataDirectory, $"{imdbId}{SubtitleSeparator}{imdbMetadata.Year}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Regions.Select(value => value.Replace(SubtitleSeparator, string.Empty)).Take(5))}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Languages.Take(3).Select(value => value.Replace(SubtitleSeparator, string.Empty)))}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Genres.Take(5).Select(value => value.Replace(SubtitleSeparator, string.Empty)))}{ImdbMetadataExtension}");
@@ -664,11 +664,84 @@ internal static partial class Video
         await JsonHelper.SerializeToFileAsync(movies, jsonFile);
     }
 
-    private static readonly DateTime VersionDateTime = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+    private static readonly DateTime VersionDateTime = new DateTime(2024, 1, 18, 0, 0, 0, DateTimeKind.Utc);
 
     internal static bool IsLatestVersion(string metadata) =>
-        new FileInfo(metadata).LastWriteTimeUtc > VersionDateTime && File.ReadLines(metadata).Any(line => line.StartsWithIgnoreCase("""  "releases": {"""));
+        new FileInfo(metadata).LastWriteTimeUtc > VersionDateTime;
 
-    internal static async Task<bool> IsLatestVersionAsync(string metadata) =>
-        new FileInfo(metadata).LastWriteTimeUtc > VersionDateTime && await File.ReadLinesAsync(metadata).AnyAsync(line => line.StartsWithIgnoreCase("""  "releases": {"""));
+    internal static void UpdateMetadata(string direcotry)
+    {
+        Directory
+            .EnumerateFiles(direcotry, ImdbMetadataSearchPattern, SearchOption.AllDirectories)
+            .Select(metadata => (metadata, ImdbId: PathHelper.GetFileNameWithoutExtension(metadata).Split("-").First()))
+            .Where(metadata =>
+            {
+                if (metadata.ImdbId.IsNullOrWhiteSpace())
+                {
+                    return false;
+                }
+
+                DateTime metadataLastWriteTime = new FileInfo(metadata.metadata).LastWriteTimeUtc;
+                return metadataLastWriteTime > new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                    && metadataLastWriteTime < new DateTime(2024, 1, 18, 0, 0, 0, DateTimeKind.Utc);
+            })
+            .Select(metadata =>
+            {
+                string file = Path.Combine(PathHelper.GetDirectoryName(metadata.metadata), $"{metadata.ImdbId}{ImdbCacheExtension}");
+
+                CQ imdbCQ = File.ReadAllText(file);
+                (string Text, string Url)[] websites = imdbCQ.Find("div[data-testid='details-officialsites'] > ul > li")
+                        .FirstOrDefault(listItem => listItem.TextContent.Trim().StartsWithIgnoreCase("Official sites"))
+                        ?.Cq().Find("ul li")
+                        .Select(listItem => new CQ(listItem))
+                        .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: listItemCQ.Find("a").Attr("href")))
+                        .ToArray()
+                    ?? imdbCQ
+                        .Find("""ul.ipc-metadata-list li[data-testid="details-officialsites"] ul li""")
+                        .Select(listItem => new CQ(listItem))
+                        .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: listItemCQ.Find("a").Attr("href")))
+                        .ToArray();
+
+                (string Text, string Url)[] locations = imdbCQ.Find("div[data-testid='title-details-filminglocations'] > ul > li")
+                        .FirstOrDefault(listItem => listItem.TextContent.Trim().StartsWithIgnoreCase("Filming locations"))
+                        ?.Cq().Find("ul li")
+                        .Select(listItem => new CQ(listItem))
+                        .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: listItemCQ.Find("a").Attr("href")))
+                        .Select(data => (data.Text, $"https://www.imdb.com{data.Url[..data.Url.IndexOfIgnoreCase("&ref_=")]}"))
+                        .ToArray()
+                    ?? imdbCQ
+                        .Find("""ul.ipc-metadata-list li[data-testid="title-details-filminglocations"] ul li""")
+                        .Select(listItem => new CQ(listItem))
+                        .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: listItemCQ.Find("a").Attr("href")))
+                        .Select(data => (data.Text, $"https://www.imdb.com{data.Url[..data.Url.IndexOfIgnoreCase("&ref_=")]}"))
+                        .ToArray();
+
+                (string Text, string Url)[] companies = imdbCQ.Find("div[data-testid='title-details-companies'] > ul > li")
+                        .FirstOrDefault(listItem => listItem.TextContent.Trim().StartsWithIgnoreCase("Production companies"))
+                        ?.Cq().Find("ul li")
+                        .Select(listItem => new CQ(listItem))
+                        .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: new UriBuilder(new Uri(new Uri("https://www.imdb.com"), listItemCQ.Find("a").Attr("href"))) { Query = string.Empty, Port = -1 }.ToString()))
+                        .ToArray()
+                    ?? imdbCQ
+                        .Find("""ul.ipc-metadata-list li[data-testid="title-details-companies"] ul li""")
+                        .Select(listItem => new CQ(listItem))
+                        .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: new UriBuilder(new Uri(new Uri("https://www.imdb.com"), listItemCQ.Find("a").Attr("href"))) { Query = string.Empty, Port = -1 }.ToString()))
+                        .ToArray();
+
+                return (metadata.metadata, websites, locations, companies);
+            })
+            .ForEach(data =>
+            {
+                Logger.WriteLine(PathHelper.GetDirectoryName(data.metadata));
+                Debug.Assert(Imdb.TryLoad(data.metadata, out ImdbMetadata? imdbMetadata));
+                imdbMetadata = imdbMetadata with
+                {
+                    Websites = data.websites.Distinct().ToLookup(item => item.Text, item => item.Url).ToDictionary(group => group.Key, group => group.ToArray()),
+                    FilmingLocations = data.locations.Distinct().ToDictionary(item => item.Text, item => item.Url),
+                    Companies = data.companies.Distinct().ToLookup(item => item.Text, item => item.Url).ToDictionary(group => group.Key, group => group.ToArray())
+                };
+
+                //JsonHelper.SerializeToFile(imdbMetadata, data.metadata);
+            });
+    }
 }

@@ -17,6 +17,7 @@ public partial record ImdbMetadata(
     string Context, string Type, string Url, string Name, string AlternateName, string Image, string ContentRating,
     string[] Genres, ImdbEntity[] Actor, ImdbEntity[] Director, ImdbEntity[] Creator,
     string Description, string DatePublished, string Keywords, ImdbAggregateRating? AggregateRating,
+    Dictionary<string, string[]> Websites, Dictionary<string, string> FilmingLocations, Dictionary<string, string[]> Companies,
     string Duration, ImdbTrailer Trailer,
     string OriginalTitle, string Year, string[] Regions, string[] Languages, Dictionary<string, string[]> Titles, ImdbMetadata? Parent, string Title,
     string[] AllKeywords, string MpaaRating, Dictionary<string, ImdbAdvisory[]> Advisories, Dictionary<string, string[]> Releases, string AlsoKnownAs) : ImdbEntity(Type, Url, Name)
