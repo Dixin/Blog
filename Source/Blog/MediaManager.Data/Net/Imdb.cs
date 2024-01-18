@@ -202,6 +202,44 @@ internal static class Imdb
         //    or "tt0133065" or "tt0173797" or "tt2617008" or "tt1764627" or "tt0225882" or "tt10540298" or "tt0195707" or "tt3807900" or "tt2946498"
         //    or "tt9395794");
 
+        (string Text, string Url)[] websites = imdbCQ.Find("div[data-testid='details-officialsites'] > ul > li")
+                .FirstOrDefault(listItem => listItem.TextContent.Trim().StartsWithIgnoreCase("Official sites"))
+                ?.Cq().Find("ul li")
+                .Select(listItem => new CQ(listItem))
+                .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: listItemCQ.Find("a").Attr("href")))
+                .ToArray()
+            ?? imdbCQ
+                .Find("""ul.ipc-metadata-list li[data-testid="details-officialsites"] ul li""")
+                .Select(listItem => new CQ(listItem))
+                .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: listItemCQ.Find("a").Attr("href")))
+                .ToArray();
+
+        (string Text, string Url)[] locations = imdbCQ.Find("div[data-testid='title-details-filminglocations'] > ul > li")
+                .FirstOrDefault(listItem => listItem.TextContent.Trim().StartsWithIgnoreCase("Filming locations"))
+                ?.Cq().Find("ul li")
+                .Select(listItem => new CQ(listItem))
+                .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: listItemCQ.Find("a").Attr("href")))
+                .Select(data => (data.Text, $"https://www.imdb.com{data.Url[..data.Url.IndexOfIgnoreCase("&ref_=")]}"))
+                .ToArray()
+            ?? imdbCQ
+                .Find("""ul.ipc-metadata-list li[data-testid="title-details-filminglocations"] ul li""")
+                .Select(listItem => new CQ(listItem))
+                .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: listItemCQ.Find("a").Attr("href")))
+                .Select(data => (data.Text, $"https://www.imdb.com{data.Url[..data.Url.IndexOfIgnoreCase("&ref_=")]}"))
+                .ToArray();
+
+        (string Text, string Url)[] companies = imdbCQ.Find("div[data-testid='title-details-companies'] > ul > li")
+                .FirstOrDefault(listItem => listItem.TextContent.Trim().StartsWithIgnoreCase("Production companies"))
+                ?.Cq().Find("ul li")
+                .Select(listItem => new CQ(listItem))
+                .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: new UriBuilder(new Uri(new Uri("https://www.imdb.com"), listItemCQ.Find("a").Attr("href"))) { Query = string.Empty, Port = -1 }.ToString()))
+                .ToArray()
+            ?? imdbCQ
+                .Find("""ul.ipc-metadata-list li[data-testid="title-details-companies"] ul li""")
+                .Select(listItem => new CQ(listItem))
+                .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: new UriBuilder(new Uri(new Uri("https://www.imdb.com"), listItemCQ.Find("a").Attr("href"))) { Query = string.Empty, Port = -1 }.ToString()))
+                .ToArray();
+
         string releaseUrl = $"{imdbUrl}releaseinfo/";
         string releaseHtml = File.Exists(releaseFile)
             ? await File.ReadAllTextAsync(releaseFile, cancellationToken)
@@ -683,7 +721,18 @@ internal static class Imdb
             Advisories = advisories.ToLookup(advisory => advisory.Category).ToDictionary(group => group.Key, group => group.ToArray()),
             AlsoKnownAs = alsoKnownAs,
             Genres = imdbMetadata.Genres ?? [],
-            Releases = dates
+            Releases = dates,
+            Websites = websites
+                .Distinct()
+                .ToLookup(item => item.Text, item => item.Url)
+                .ToDictionary(group => HttpUtility.HtmlDecode(group.Key), group => group.ToArray()),
+            FilmingLocations = locations
+                .Distinct()
+                .ToDictionary(item => item.Text, item => item.Url),
+            Companies = companies
+                .Distinct()
+                .ToLookup(item => item.Text, item => item.Url)
+                .ToDictionary(group => HttpUtility.HtmlDecode(group.Key), group => group.ToArray())
         };
 
         return (
