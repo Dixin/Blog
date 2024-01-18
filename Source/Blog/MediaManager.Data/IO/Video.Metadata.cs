@@ -681,9 +681,9 @@ internal static partial class Video
                     return false;
                 }
 
-                DateTime metadataLastWriteTime = new FileInfo(metadata.metadata).LastWriteTimeUtc;
-                return metadataLastWriteTime > new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
-                    && metadataLastWriteTime < new DateTime(2024, 1, 18, 0, 0, 0, DateTimeKind.Utc);
+                DateTime metadataLastWriteTimeUtc = new FileInfo(metadata.metadata).LastWriteTimeUtc;
+                return metadataLastWriteTimeUtc > new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                    && metadataLastWriteTimeUtc < new DateTime(2024, 1, 18, 0, 0, 0, DateTimeKind.Utc);
             })
             .Select(metadata =>
             {
