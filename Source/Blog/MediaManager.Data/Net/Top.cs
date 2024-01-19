@@ -38,9 +38,9 @@ internal static class Top
         {
             using IWebDriver webDriver = WebDriverHelper.Start(partitionIndex, true);
             webDriver.Url = url;
-            new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(e => e.FindElement(By.Id("pager_links")));
+            new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.Id("pager_links")));
             webDriver.Url = url;
-            IWebElement pager = new WebDriverWait(webDriver, WebDriverHelper.DefaultDomWait).Until(e => e.FindElement(By.Id("pager_links")));
+            IWebElement pager = new WebDriverWait(webDriver, WebDriverHelper.DefaultDomWait).Until(driver => driver.FindElement(By.Id("pager_links")));
             int pageIndex = 1;
             do
             {
@@ -135,7 +135,7 @@ internal static class Top
         webDriver.Url = nextPage[0].GetAttribute("href");
         try
         {
-            pager = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(e => e.FindElement(By.Id("pager_links")));
+            pager = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.Id("pager_links")));
             return true;
         }
         catch (NoSuchElementException exception)

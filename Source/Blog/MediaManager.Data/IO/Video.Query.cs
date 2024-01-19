@@ -6,7 +6,6 @@ using Examples.IO;
 using Examples.Net;
 using MediaManager.Net;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
-using OpenQA.Selenium;
 using Xabe.FFmpeg;
 using JsonReaderException = Newtonsoft.Json.JsonReaderException;
 
@@ -171,7 +170,9 @@ internal static partial class Video
         return directories.Order();
     }
 
-    internal static async Task DownloadImdbMetadataAsync(string directory, int level = DefaultDirectoryLevel, bool overwrite = false, bool useCache = false, bool useBrowser = false, int degreeOfParallelism = Imdb.MaxDegreeOfParallelism, Action<string>? log = null)
+    internal static async Task DownloadImdbMetadataAsync(
+        string directory, int level = DefaultDirectoryLevel, bool overwrite = false, bool useCache = false, 
+        bool useBrowser = false, int degreeOfParallelism = Imdb.MaxDegreeOfParallelism, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
@@ -179,16 +180,14 @@ internal static partial class Video
 
         ConcurrentQueue<string> movies = new(EnumerateDirectories(directory, level));
         int movieTotalCount = movies.Count;
-        Func<int, IWebDriver> startWebDriver = index => WebDriverHelper.Start(index, keepExisting: true, cleanProfile: false);
         await Parallel.ForEachAsync(
             Enumerable.Range(0, degreeOfParallelism),
-            new ParallelOptions() { MaxDegreeOfParallelism = degreeOfParallelism },
+            new ParallelOptions() { MaxDegreeOfParallelism = degreeOfParallelism, CancellationToken = cancellationToken },
             async (webDriverIndex, token) =>
             {
-                IWebDriver? webDriver = null;
+                WebDriverWrapper webDriver = new(() => WebDriverHelper.Start(webDriverIndex, keepExisting: true, cleanProfile: false));
                 if (useBrowser)
                 {
-                    webDriver = startWebDriver(webDriverIndex);
                     webDriver.Url = "https://www.imdb.com/";
                 }
 
@@ -197,7 +196,9 @@ internal static partial class Video
                     int movieIndex = movieTotalCount - movies.Count;
                     log($"{movieIndex * 100 / movieTotalCount}% - {movieIndex}/{movieTotalCount} - {movie}");
 
-                    (webDriver, bool isDownloaded) = await DownloadImdbMetadataAsync(movie, webDriver, () => startWebDriver(webDriverIndex), overwrite, useCache, log);
+                    bool isDownloaded = await Retry.FixedIntervalAsync(
+                        async () => await DownloadImdbMetadataAsync(movie, webDriver, overwrite, useCache, log, token),
+                        retryingHandler: (sender, arg) => webDriver.Restart());
                     if (!isDownloaded)
                     {
                         Interlocked.Decrement(ref movieTotalCount);
@@ -206,7 +207,7 @@ internal static partial class Video
 
                 try
                 {
-                    webDriver?.Dispose();
+                    webDriver.Dispose();
                 }
                 finally
                 {

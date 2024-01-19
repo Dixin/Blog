@@ -213,7 +213,7 @@ internal static partial class Video
         });
     }
 
-    private static async Task<(IWebDriver? WebDriver, bool IsDownloaded)> DownloadImdbMetadataAsync(string directory, IWebDriver? webDriver, Func<IWebDriver>? restart = null, bool overwrite = false, bool useCache = false, Action<string>? log = null)
+    private static async Task<bool> DownloadImdbMetadataAsync(string directory, WebDriverWrapper? webDriver, bool overwrite = false, bool useCache = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
@@ -239,7 +239,7 @@ internal static partial class Video
             if (nfo.IsNullOrWhiteSpace())
             {
                 log($"!Missing metadata {directory}.");
-                return (webDriver, false);
+                return false;
             }
 
             XElement? root = XDocument.Load(nfo).Root;
@@ -247,10 +247,10 @@ internal static partial class Video
         }
 
         log($"Start {directory}");
-        return await DownloadImdbMetadataAsync(imdbId, directory, directory, [jsonFile], files, webDriver, restart, overwrite, useCache, log: log);
+        return await DownloadImdbMetadataAsync(imdbId, directory, directory, [jsonFile], files, webDriver, overwrite, useCache, log, cancellationToken);
     }
 
-    internal static async Task<(IWebDriver? WebDriver, bool IsDownloaded)> DownloadImdbMetadataAsync(string imdbId, string metadataDirectory, string cacheDirectory, string[] metadataFiles, string[] cacheFiles, IWebDriver? webDriver, Func<IWebDriver>? restart = null, bool overwrite = false, bool useCache = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task<bool> DownloadImdbMetadataAsync(string imdbId, string metadataDirectory, string cacheDirectory, string[] metadataFiles, string[] cacheFiles, WebDriverWrapper? webDriver, bool overwrite = false, bool useCache = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
@@ -259,7 +259,7 @@ internal static partial class Video
         {
             Debug.Assert(imdbId.EqualsOrdinal(NotExistingFlag));
             log($"Skip {imdbId}.");
-            return (webDriver, false);
+            return false;
         }
 
         string imdbFile = Path.Combine(cacheDirectory, $"{imdbId}{ImdbCacheExtension}");
@@ -272,15 +272,15 @@ internal static partial class Video
             await new string[] { imdbFile, releaseFile, keywordsFile, advisoriesFile }
                 .Select(file => Path.Combine(cacheDirectory, file))
                 .Where(file => !cacheFiles.ContainsIgnoreCase(file))
-                .ForEachAsync(async file => await File.WriteAllTextAsync(file, string.Empty, cancellationToken), cancellationToken: cancellationToken);
-            return (webDriver, false);
+                .ForEachAsync(async file => await File.WriteAllTextAsync(file, string.Empty, cancellationToken), cancellationToken);
+            return false;
         }
 
         string jsonFile = metadataFiles.SingleOrDefault(file => file.EndsWithIgnoreCase(ImdbMetadataExtension) && PathHelper.GetFileName(file).Split("-").First().EqualsIgnoreCase(imdbId), string.Empty);
         if (jsonFile.IsNotNullOrWhiteSpace() && (!overwrite || IsLatestVersion(jsonFile)))
         {
             log($"Skip {imdbId}.");
-            return (webDriver, false);
+            return false;
         }
 
         string parentImdbFile = Path.Combine(cacheDirectory, $"{imdbId}.Parent{ImdbCacheExtension}");
@@ -298,8 +298,7 @@ internal static partial class Video
             string parentImdbUrl, string parentImdbHtml,
             string parentReleaseUrl, string parentReleaseHtml,
             string parentKeywordsUrl, string parentKeywordsHtml,
-            string parentAdvisoriesUrl, string parentAdvisoriesHtml,
-            webDriver
+            string parentAdvisoriesUrl, string parentAdvisoriesHtml
         ) = await Imdb.DownloadAsync(
             imdbId,
             useCache ? imdbFile : string.Empty,
@@ -310,7 +309,7 @@ internal static partial class Video
             useCache ? parentReleaseFile : string.Empty,
             useCache ? parentKeywordsFile : string.Empty,
             useCache ? parentAdvisoriesFile : string.Empty,
-            webDriver, restart, cancellationToken);
+            webDriver, cancellationToken);
         Debug.Assert(imdbHtml.IsNotNullOrWhiteSpace());
         if (imdbMetadata.Regions.IsEmpty())
         {
@@ -342,7 +341,7 @@ internal static partial class Video
                 cancellationToken);
 
         string newJsonFile = Path.Combine(metadataDirectory, $"{imdbId}{SubtitleSeparator}{imdbMetadata.Year}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Regions.Select(value => value.Replace(SubtitleSeparator, string.Empty)).Take(5))}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Languages.Take(3).Select(value => value.Replace(SubtitleSeparator, string.Empty)))}{SubtitleSeparator}{string.Join(ImdbMetadataSeparator, imdbMetadata.Genres.Take(5).Select(value => value.Replace(SubtitleSeparator, string.Empty)))}{ImdbMetadataExtension}");
-        if (!jsonFile.EqualsIgnoreCase(newJsonFile))
+        if (jsonFile.IsNotNullOrWhiteSpace() && !jsonFile.EqualsIgnoreCase(newJsonFile))
         {
             FileHelper.Move(jsonFile, $"{jsonFile}.del");
         }
@@ -353,14 +352,14 @@ internal static partial class Video
         TimeSpan elapsed = Stopwatch.GetElapsedTime(startTime);
         log($"Elapsed {elapsed}");
 
-        return (webDriver, isDownloaded);
+        return isDownloaded;
     }
 
     internal const string ImdbMetadataSeparator = ",";
 
     internal static async Task DownloadImdbMetadataAsync(
         (string directory, int level)[] directories, Func<VideoDirectoryInfo, bool> predicate,
-        bool overwrite = false, bool useCache = false, bool useBrowser = false, int? degreeOfParallelism = null, Action<string>? log = null)
+        bool overwrite = false, bool useCache = false, bool useBrowser = false, int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         string[] movies = directories
             .SelectMany(directory => EnumerateDirectories(directory.directory, directory.level))
@@ -368,13 +367,13 @@ internal static partial class Video
             .ToArray();
         if (movies.Any())
         {
-            using IWebDriver? webDriver = useBrowser ? WebDriverHelper.Start() : null;
+            using WebDriverWrapper? webDriver = useBrowser ? new() : null;
             if (webDriver is not null)
             {
                 webDriver.Url = "https://www.imdb.com/";
             }
 
-            await movies.ForEachAsync(async movie => await DownloadImdbMetadataAsync(movie, webDriver, null, overwrite, useCache, log));
+            await movies.ForEachAsync(async movie => await DownloadImdbMetadataAsync(movie, webDriver, overwrite, useCache, log, cancellationToken), cancellationToken);
         }
     }
 

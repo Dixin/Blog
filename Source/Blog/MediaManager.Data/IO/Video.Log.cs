@@ -9,7 +9,6 @@ using Examples.Linq;
 using Examples.Net;
 using MediaManager.Net;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
 
 internal static partial class Video
 {
@@ -239,9 +238,15 @@ internal static partial class Video
                 string[] translations = [directoryInfo.TranslatedTitle1, directoryInfo.TranslatedTitle2, directoryInfo.TranslatedTitle3];
                 string[] titles =
                 [
-                    directoryInfo.DefaultTitle1, directoryInfo.DefaultTitle2.TrimStart('-'), directoryInfo.DefaultTitle3.TrimStart('-'),
-                    directoryInfo.OriginalTitle1.TrimStart('='), directoryInfo.OriginalTitle2.TrimStart('-'), directoryInfo.OriginalTitle3.TrimStart('-'),
-                    directoryInfo.TranslatedTitle1, directoryInfo.TranslatedTitle2.TrimStart('-'), directoryInfo.TranslatedTitle3.TrimStart('-')
+                    directoryInfo.DefaultTitle1,
+                    directoryInfo.DefaultTitle2.TrimStart('-'),
+                    directoryInfo.DefaultTitle3.TrimStart('-'),
+                    directoryInfo.OriginalTitle1.TrimStart('='),
+                    directoryInfo.OriginalTitle2.TrimStart('-'),
+                    directoryInfo.OriginalTitle3.TrimStart('-'),
+                    directoryInfo.TranslatedTitle1,
+                    directoryInfo.TranslatedTitle2.TrimStart('-'),
+                    directoryInfo.TranslatedTitle3.TrimStart('-')
                 ];
 
                 if (Regex.IsMatch(trimmedMovie, @"·[0-9]"))
@@ -266,7 +271,7 @@ internal static partial class Video
 
                 string[] topFiles = Directory
                     .GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
-                    .Select(file => PathHelper.GetFileName(file))
+                    .Select(PathHelper.GetFileName)
                     .ToArray();
 
                 string imdbRating = Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata)
@@ -1690,12 +1695,12 @@ internal static partial class Video
         //    new string[] { }.SelectMany(Directory.GetDirectories).Select(Path.GetFileName)!,
         //    StringComparer.OrdinalIgnoreCase);
         //HashSet<string> downloadedTorrentHashes = new(/*Directory.GetFiles(@"E:\Files\MonoTorrent").Concat(Directory.GetFiles(@"E:\Files\MonoTorrentDownload")).Select(torrent => PathHelper.GetFileNameWithoutExtension(torrent).Split("@").Last()), StringComparer.OrdinalIgnoreCase*/);
-        using IWebDriver? webDriver = isDryRun ? null : WebDriverHelper.Start(isLoadingAll: true);
+        using WebDriverWrapper? webDriver = isDryRun ? null : new(() => WebDriverHelper.Start(isLoadingAll: true));
         using HttpClient? httpClient = isDryRun ? null : new HttpClient().AddEdgeHeaders();
         if (!isDryRun && initialUrl.IsNotNullOrWhiteSpace())
         {
             webDriver!.Url = initialUrl;
-            new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(e => e.FindElement(By.Id("pager_links")));
+            webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.Id("pager_links")));
         }
 
         if (updateMetadata)
@@ -1707,7 +1712,7 @@ internal static partial class Video
                     log($"{index * 100 / length}% - {index}/{length} - {imdbId}");
                     try
                     {
-                        await DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver: webDriver, restart: null, overwrite: true, useCache: false, log: log);
+                        await DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: true, useCache: false, log: log);
                     }
                     catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
                     {
@@ -1808,7 +1813,7 @@ internal static partial class Video
                         string cacheFile = Path.Combine(settings.MovieMetadataCacheDirectory, $"{metadata.ImdbId}-{metadata.Title}{ImdbCacheExtension}");
                         string html = cacheFiles.ContainsIgnoreCase(cacheFile) && new FileInfo(cacheFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1)
                             ? await File.ReadAllTextAsync(cacheFile)
-                            : await webDriver!.GetStringAsync(metadata.Link, () => new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))));
+                            : await webDriver!.GetStringAsync(metadata.Link, () => webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))));
                         await Task.Delay(WebDriverHelper.DefaultDomWait);
                         await File.WriteAllTextAsync(cacheFile, html);
                         (string httpUrl, string fileName, string magnetUrl) = TopGetUrls(html, metadata.Link);
@@ -1907,7 +1912,7 @@ internal static partial class Video
                         string cacheFile = Path.Combine(settings.MovieMetadataCacheDirectory, $"{metadata.ImdbId}-{metadata.Title}{ImdbCacheExtension}");
                         string html = cacheFiles.ContainsIgnoreCase(cacheFile) && new FileInfo(cacheFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1)
                             ? await File.ReadAllTextAsync(cacheFile)
-                            : await webDriver!.GetStringAsync(metadata.Link, () => new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))));
+                            : await webDriver!.GetStringAsync(metadata.Link, () => webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))));
                         await Task.Delay(WebDriverHelper.DefaultDomWait);
                         await File.WriteAllTextAsync(cacheFile, html);
                         (string httpUrl, string fileName, string magnetUrl) = TopGetUrls(html, metadata.Link);
@@ -2081,9 +2086,9 @@ internal static partial class Video
             log(length.ToString());
         }
 
-        using IWebDriver webDriver = WebDriverHelper.Start(isLoadingAll: true);
+        using WebDriverWrapper webDriver = new(() => WebDriverHelper.Start(isLoadingAll: true));
         webDriver.Url = initialUrl;
-        new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(e => e.FindElement(By.Id("pager_links")));
+        webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.Id("pager_links")));
 
         if (updateMetadata)
         {
@@ -2093,7 +2098,7 @@ internal static partial class Video
                 log($"{index * 100 / length}% - {index}/{length} - {imdbMetadata.ImdbId}");
                 try
                 {
-                    await DownloadImdbMetadataAsync(imdbMetadata.ImdbId, settings.TVMetadataDirectory, settings.TVMetadataCacheDirectory, metadataFiles.Values.ToArray(), cacheFiles, webDriver: webDriver, restart: null, overwrite: true, useCache: false, log: log);
+                    await DownloadImdbMetadataAsync(imdbMetadata.ImdbId, settings.TVMetadataDirectory, settings.TVMetadataCacheDirectory, metadataFiles.Values.ToArray(), cacheFiles, webDriver, overwrite: true, useCache: false, log: log);
                 }
                 catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
                 {
@@ -2182,7 +2187,7 @@ internal static partial class Video
                         }
                         else
                         {
-                            html = await webDriver.GetStringAsync(metadata.Link, () => new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))));
+                            html = await webDriver.GetStringAsync(metadata.Link, () => webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))));
                             await Task.Delay(WebDriverHelper.DefaultDomWait);
                             await File.WriteAllTextAsync(file, html);
                         }

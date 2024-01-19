@@ -70,7 +70,7 @@ public static class Firewall
         }
 
         await paths.ForEachAsync(async path =>
-            await BlockProgramAsync($"{prefix}{path}", path, output, error, cancellationToken));
+            await BlockProgramAsync($"{prefix}{path}", path, output, error, cancellationToken), cancellationToken);
     }
 
     public static async Task BlockAllProgramsAsync(string? prefix = null, Action<string?>? output = null, Action<string?>? error = null, CancellationToken cancellationToken = default, params string[] directories) =>
@@ -166,7 +166,7 @@ public static class Firewall
         string[] ruleNames = await GetRuleNamesAsync(prefix);
         await ruleNames
             .Distinct(StringComparer.Ordinal)
-            .ForEachAsync(ruleName => DeleteRuleAsync(ruleName, output, error, cancellationToken));
+            .ForEachAsync(ruleName => DeleteRuleAsync(ruleName, output, error, cancellationToken), cancellationToken);
     }
 
     public static async Task BlockAdobeProgramsAsync(Action<string?>? output = null, Action<string?>? error = null, CancellationToken cancellationToken = default)

@@ -3,10 +3,8 @@
 using CsQuery;
 using Examples.Common;
 using Examples.Linq;
-using Examples.Net;
 using MediaManager.IO;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
-using OpenQA.Selenium;
 
 internal static class Rare
 {
@@ -81,7 +79,7 @@ internal static class Rare
             .Distinct(imdbId => imdbId.Value)
             .ToArray();
         int length = imdbIds.Length;
-        using IWebDriver webDriver = WebDriverHelper.Start();
+        using WebDriverWrapper webDriver = new();
         await imdbIds
             .OrderBy(imdbId => imdbId.Value)
             .ForEachAsync(async (imdbId, index) =>
@@ -96,14 +94,14 @@ internal static class Rare
 
                 try
                 {
-                    await Video.DownloadImdbMetadataAsync(imdbId.Value, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver: webDriver, restart: null, overwrite: false, useCache: true, log: log);
+                    await Video.DownloadImdbMetadataAsync(imdbId.Value, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log);
                 }
                 catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
                 {
                     if (imdbId.Value.StartsWithIgnoreCase("tt0"))
                     {
                         imdbId = imdbId with { Value = imdbId.Value.ReplaceIgnoreCase("tt0", "tt") };
-                        await Video.DownloadImdbMetadataAsync(imdbId.Value, @settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver: webDriver, restart: null, overwrite: false, useCache: true, log: log);
+                        await Video.DownloadImdbMetadataAsync(imdbId.Value, @settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log);
                     }
                 }
 

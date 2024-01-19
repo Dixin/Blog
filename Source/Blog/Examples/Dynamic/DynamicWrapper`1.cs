@@ -41,7 +41,7 @@ public class DynamicWrapper<T> : DynamicObject
     public DynamicWrapper(ref T value) // Uses ref in case of 'value' is value type.
     {
         this.value = value.NotNull();
-#if NETSTANDARD
+#if NETSTANDARD || NETCOREAPP
         this.type = value.GetType();
 #else
         this.type = value!.GetType();

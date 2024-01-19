@@ -214,7 +214,7 @@ public class TorrentHelper
                     log?.Invoke(exception.ToString());
                     log?.Invoke(string.Empty);
                 }
-            });
+            }, cancellationToken);
     }
 
     public static async Task DownloadAllFromCache3Async(string magnetUrlPath, string torrentDirectory, Action<string>? log = null, CancellationToken cancellationToken = default)
