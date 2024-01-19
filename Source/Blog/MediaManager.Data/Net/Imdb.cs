@@ -14,7 +14,7 @@ using OpenQA.Selenium.Support.UI;
 
 internal static class Imdb
 {
-    internal static readonly int MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 2);
+    internal static readonly int MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 8);
 
     internal static async Task<(
         ImdbMetadata ImdbMetadata,
