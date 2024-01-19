@@ -3,6 +3,7 @@ namespace Examples.Diagnostics;
 
 using System.Management;
 using System.Runtime.Versioning;
+using Examples.Common;
 using Examples.Management;
 
 [SupportedOSPlatform("windows")]
@@ -86,7 +87,7 @@ public static partial class Win32ProcessHelper
             {
                 Process.GetProcessById((int)processId.Value).Kill(true);
             }
-            finally
+            catch (Exception exception) when (exception.IsNotCritical())
             {
             }
         });

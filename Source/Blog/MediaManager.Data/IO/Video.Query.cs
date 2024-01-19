@@ -171,48 +171,70 @@ internal static partial class Video
     }
 
     internal static async Task DownloadImdbMetadataAsync(
-        string directory, int level = DefaultDirectoryLevel, bool overwrite = false, bool useCache = false, 
-        bool useBrowser = false, int degreeOfParallelism = Imdb.MaxDegreeOfParallelism, Action<string>? log = null, CancellationToken cancellationToken = default)
+        string directory, int level = DefaultDirectoryLevel, bool overwrite = false, bool useCache = false,
+        bool useBrowser = false, int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
+        degreeOfParallelism ??= Imdb.MaxDegreeOfParallelism;
         log ??= Logger.WriteLine;
 
         WebDriverHelper.DisposeAll();
 
+        CancellationTokenSource cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         ConcurrentQueue<string> movies = new(EnumerateDirectories(directory, level));
         int movieTotalCount = movies.Count;
-        await Parallel.ForEachAsync(
-            Enumerable.Range(0, degreeOfParallelism),
-            new ParallelOptions() { MaxDegreeOfParallelism = degreeOfParallelism, CancellationToken = cancellationToken },
-            async (webDriverIndex, token) =>
-            {
-                WebDriverWrapper webDriver = new(() => WebDriverHelper.Start(webDriverIndex, keepExisting: true, cleanProfile: false));
-                if (useBrowser)
+        await Retry.IncrementalAsync(
+            async () => await Parallel.ForEachAsync(
+                Enumerable.Range(0, degreeOfParallelism.Value),
+                new ParallelOptions() { MaxDegreeOfParallelism = degreeOfParallelism.Value, CancellationToken = cancellationTokenSource.Token },
+                async (webDriverIndex, token) =>
                 {
-                    webDriver.Url = "https://www.imdb.com/";
-                }
-
-                while (movies.TryDequeue(out string? movie))
-                {
-                    int movieIndex = movieTotalCount - movies.Count;
-                    log($"{movieIndex * 100 / movieTotalCount}% - {movieIndex}/{movieTotalCount} - {movie}");
-
-                    bool isDownloaded = await Retry.FixedIntervalAsync(
-                        async () => await DownloadImdbMetadataAsync(movie, webDriver, overwrite, useCache, log, token),
-                        retryingHandler: (sender, arg) => webDriver.Restart());
-                    if (!isDownloaded)
+                    token.ThrowIfCancellationRequested();
+                    WebDriverWrapper webDriver = new(() => WebDriverHelper.Start(webDriverIndex, keepExisting: true, cleanProfile: false));
+                    if (useBrowser)
                     {
-                        Interlocked.Decrement(ref movieTotalCount);
+                        webDriver.Url = "https://www.imdb.com/";
                     }
-                }
 
-                try
-                {
-                    webDriver.Dispose();
-                }
-                finally
-                {
-                }
+                    while (movies.TryDequeue(out string? movie))
+                    {
+                        token.ThrowIfCancellationRequested();
+                        int movieIndex = movieTotalCount - movies.Count;
+                        log($"{movieIndex * 100 / movieTotalCount}% - {movieIndex}/{movieTotalCount} - {movie}");
+
+                        if (!await DownloadImdbMetadataAsync(movie, webDriver, overwrite, useCache, log, token))
+                        {
+                            Interlocked.Decrement(ref movieTotalCount);
+                        }
+                    }
+
+                    try
+                    {
+                        webDriver.Dispose();
+                    }
+                    catch (Exception exception) when (exception.IsNotCritical())
+                    {
+                        log(exception.ToString());
+                    }
+                }),
+            retryingHandler: (sender, args) =>
+            {
+                log(args.LastException.ToString());
+                cancellationToken.ThrowIfCancellationRequested();
+                cancellationTokenSource.Cancel();
+                cancellationTokenSource.Dispose();
+                cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                WebDriverHelper.DisposeAll();
+                Thread.Sleep(WebDriverHelper.DefaultNetworkWait);
+                Thread.Sleep(WebDriverHelper.DefaultNetworkWait);
             });
+        try
+        {
+            cancellationTokenSource.Dispose();
+        }
+        catch (Exception exception) when (exception.IsNotCritical())
+        {
+            log(exception.ToString());
+        }
     }
 
     internal static bool IsCommonVideo(this string file) => file.HasAnyExtension(CommonVideoExtensions);

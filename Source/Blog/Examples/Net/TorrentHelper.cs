@@ -21,7 +21,7 @@ public class TorrentHelper
 
     private const string HashSeparator = "@";
 
-    private const int DefaultDegreeOfParallelism = 4;
+    private static readonly int IOMaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4);
 
     public static async Task DownloadAsync(string magnetUrl, string torrentDirectory, CancellationToken cancellationToken = default)
     {
@@ -83,17 +83,19 @@ public class TorrentHelper
             });
     }
 
-    public static async Task DownloadAllFromCacheAsync(string magnetUrlPath, string torrentDirectory, bool useBrowser = false, int degreeOfParallelism = DefaultDegreeOfParallelism, Action<string>? log = null, CancellationToken cancellationToken = default)
+    public static async Task DownloadAllFromCacheAsync(string magnetUrlPath, string torrentDirectory, bool useBrowser = false, int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
+        degreeOfParallelism ??= IOMaxDegreeOfParallelism;
         string[] magnetUrls = (await File.ReadAllTextAsync(magnetUrlPath, cancellationToken))
             .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
         await DownloadAllFromCacheAsync(magnetUrls, torrentDirectory, useBrowser, degreeOfParallelism, log, cancellationToken);
     }
 
-    public static async Task DownloadAllFromCacheAsync(IEnumerable<string> magnetUrls, string torrentDirectory, bool useBrowser = false, int degreeOfParallelism = DefaultDegreeOfParallelism, Action<string>? log = null, CancellationToken cancellationToken = default)
+    public static async Task DownloadAllFromCacheAsync(IEnumerable<string> magnetUrls, string torrentDirectory, bool useBrowser = false, int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         const string Referer = "https://magnet2torrent.com/";
+        degreeOfParallelism ??= IOMaxDegreeOfParallelism;
 
         if (Directory.Exists(torrentDirectory))
         {

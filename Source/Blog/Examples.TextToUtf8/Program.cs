@@ -1,10 +1,10 @@
 ﻿using Ude;
 
-const int MaxDegreeOfParallelism = 4;
+const int IOMaxDegreeOfParallelism = 4;
 
 string path = args[0];
 string searchPattern = args.Length >= 2 ? args[1] : "*.txt";
-int degree = args.Length >= 3 && int.TryParse(args[2], out degree) ? degree : Math.Max(Environment.ProcessorCount, MaxDegreeOfParallelism);
+int degree = args.Length >= 3 && int.TryParse(args[2], out degree) ? degree : Math.Max(Environment.ProcessorCount, IOMaxDegreeOfParallelism);
 Encoding? fromEncoding = args.Length >= 4 ? Encoding.GetEncoding(args[3]) : null;
 
 if (Directory.Exists(path))

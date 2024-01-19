@@ -66,14 +66,16 @@ internal static class Preferred
         return allSummaries;
     }
 
-    internal static async Task DownloadMetadataAsync(ISettings settings, Func<int, bool>? @continue = null, int index = 1, int degreeOfParallelism = 4, Action<string>? log = null)
+    internal static async Task DownloadMetadataAsync(ISettings settings, Func<int, bool>? @continue = null, int index = 1, int? degreeOfParallelism = null, Action<string>? log = null)
     {
+        degreeOfParallelism ??= Video.IOMaxDegreeOfParallelism;
         Dictionary<string, PreferredSummary> allSummaries = await DownloadSummariesAsync(settings, @continue, index, log);
         await DownloadMetadataAsync(settings, allSummaries, degreeOfParallelism, log);
     }
 
-    internal static async Task DownloadMetadataAsync(ISettings settings, Dictionary<string, PreferredSummary>? summaries = null, int degreeOfParallelism = 4, Action<string>? log = null)
+    internal static async Task DownloadMetadataAsync(ISettings settings, Dictionary<string, PreferredSummary>? summaries = null, int? degreeOfParallelism = null, Action<string>? log = null)
     {
+        degreeOfParallelism ??= Video.IOMaxDegreeOfParallelism;
         log ??= Logger.WriteLine;
 
         summaries ??= await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredSummary>>(settings.MoviePreferredSummary);

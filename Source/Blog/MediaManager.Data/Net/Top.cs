@@ -13,8 +13,9 @@ internal static class Top
 {
     private const int WriteCount = 50;
 
-    internal static async Task DownloadMetadataAsync(IEnumerable<string> urls, string jsonPath, Func<int, bool>? @continue = null, int degreeOfParallelism = 4, Action<string>? log = null)
+    internal static async Task DownloadMetadataAsync(IEnumerable<string> urls, string jsonPath, Func<int, bool>? @continue = null, int? degreeOfParallelism = null, Action<string>? log = null)
     {
+        degreeOfParallelism ??= Video.IOMaxDegreeOfParallelism;
         log ??= Logger.WriteLine;
 
         string jsonText;

@@ -359,7 +359,7 @@ internal static partial class Video
 
     internal static async Task DownloadImdbMetadataAsync(
         (string directory, int level)[] directories, Func<VideoDirectoryInfo, bool> predicate,
-        bool overwrite = false, bool useCache = false, bool useBrowser = false, int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
+        bool overwrite = false, bool useCache = false, bool useBrowser = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         string[] movies = directories
             .SelectMany(directory => EnumerateDirectories(directory.directory, directory.level))
