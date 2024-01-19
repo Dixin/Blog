@@ -37,20 +37,20 @@ Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
 //Video.PrintDirectoriesWithMultipleMedia(settings.MovieControversial);
 //Video.PrintDirectoriesWithMultipleMedia(settings.MovieMainstream);
 
-//await Video.DownloadImdbMetadataAsync(settings.Movie3D, 2, overwrite: false, useCache: true, useBrowser: true, 1);
-//await Video.DownloadImdbMetadataAsync(settings.MovieHdr, 2, overwrite: false, useCache: true, useBrowser: true, 1);
-//await Video.DownloadImdbMetadataAsync(settings.MovieControversial, 2, overwrite: true, useCache: false, useBrowser: true, 2);
-//await Video.DownloadImdbMetadataAsync(settings.MovieMainstream, 2, overwrite: false, useCache: true, useBrowser: true, 1);
-//await Video.DownloadImdbMetadataAsync(settings.MovieMainstreamWithoutSubtitle, 2, overwrite: false, useCache: true, useBrowser: true, 1);
-//await Video.DownloadImdbMetadataAsync(settings.MovieMusical, 2, overwrite: false, useCache: true, useBrowser: true, 1);
-//await Video.DownloadImdbMetadataAsync(settings.MovieTemp1, 2, overwrite: false, useCache: true, useBrowser: true, 1);
-//await Video.DownloadImdbMetadataAsync(settings.MovieTemp2, 2, overwrite: false, useCache: true, useBrowser: true, 1);
-//await Video.DownloadImdbMetadataAsync(settings.MovieTemp3, 2, overwrite: false, useCache: true, useBrowser: true, 1);
-//await Video.DownloadImdbMetadataAsync(settings.MovieControversialWithoutSubtitle, 2, overwrite: false, useCache: true, useBrowser: true, 2);
-//await Video.DownloadImdbMetadataAsync(settings.MovieTemp31, 2, overwrite: false, useCache: true, useBrowser: true, 1);
-//await Video.DownloadImdbMetadataAsync(settings.MovieTemp32, 2, overwrite: false, useCache: true, useBrowser: true, 1);
-//await Video.DownloadImdbMetadataAsync(settings.MovieTemp3Encode, 2, overwrite: false, useCache: true, useBrowser: true, 2);
-//await Video.DownloadImdbMetadataAsync(@"D:\Files\Library\Movies Mainstream.主流电影\Test", 1, overwrite: true, useCache: false, useBrowser: true, 1);
+//await Video.DownloadImdbMetadataAsync(settings.Movie3D, 2, overwrite: true, useCache: false, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.MovieHdr, 2, overwrite: true, useCache: false, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.MovieControversial, 2, overwrite: true, useCache: false, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.MovieMainstream, 2, overwrite: true, useCache: false, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.MovieMainstreamWithoutSubtitle, 2, overwrite: true, useCache: false, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.MovieMusical, 2, overwrite: true, useCache: false, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.MovieTemp1, 2, overwrite: true, useCache: false, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.MovieTemp2, 2, overwrite: true, useCache: false, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.MovieTemp3, 2, overwrite: true, useCache: false, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.MovieControversialWithoutSubtitle, 2, overwrite: true, useCache: false, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.MovieTemp31, 2, overwrite: true, useCache: false, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.MovieTemp32, 2, overwrite: true, useCache: false, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.MovieTemp3Encode, 2, overwrite: true, useCache: false, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(@"D:\Files\Library\Movies Mainstream.主流电影\Test", 1, overwrite: true, useCache: false, useBrowser: true);
 
 //await Video.DownloadImdbMetadataAsync(settings.TVControversial, 1, overwrite: false, useCache: true, useBrowser: true, 1);
 //await Video.DownloadImdbMetadataAsync(settings.TVDocumentary, 1, overwrite: false, useCache: true, useBrowser: true, 1);
