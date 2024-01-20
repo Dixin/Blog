@@ -73,15 +73,15 @@ internal static class Preferred
         await DownloadMetadataAsync(settings, allSummaries, degreeOfParallelism, log);
     }
 
-    internal static async Task DownloadMetadataAsync(ISettings settings, Dictionary<string, PreferredSummary>? summaries = null, int? degreeOfParallelism = null, Action<string>? log = null)
+    internal static async Task DownloadMetadataAsync(ISettings settings, Dictionary<string, PreferredSummary>? summaries = null, int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         degreeOfParallelism ??= Video.IOMaxDegreeOfParallelism;
         log ??= Logger.WriteLine;
 
-        summaries ??= await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredSummary>>(settings.MoviePreferredSummary);
+        summaries ??= await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredSummary>>(settings.MoviePreferredSummary, cancellationToken);
 
         ConcurrentDictionary<string, PreferredMetadata[]> details = File.Exists(settings.MoviePreferredMetadata)
-            ? new(await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(settings.MoviePreferredMetadata))
+            ? new(await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(settings.MoviePreferredMetadata, cancellationToken))
             : new();
         HashSet<string> existingLinks = new(details.Values.SelectMany(detailMetadata => detailMetadata).Select(detail => detail.Link), StringComparer.OrdinalIgnoreCase);
 
@@ -99,7 +99,7 @@ internal static class Preferred
                 try
                 {
                     string html = await Retry.FixedIntervalAsync(
-                        async () => await webClient.GetStringAsync(summary.Link),
+                        async () => await webClient.GetStringAsync(summary.Link, cancellationToken),
                         isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound });
                     CQ cq = new(html);
                     CQ info = cq.Find("#movie-info");
@@ -131,7 +131,7 @@ internal static class Preferred
                 }
 
                 log($"End {index}:{summary.Link}");
-            }, degreeOfParallelism);
+            }, degreeOfParallelism, cancellationToken: cancellationToken);
 
         JsonHelper.SerializeToFile(details, settings.MoviePreferredMetadata, WriteJsonLock);
     }

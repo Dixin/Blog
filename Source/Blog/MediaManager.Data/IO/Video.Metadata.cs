@@ -668,9 +668,8 @@ internal static partial class Video
     internal static bool IsLatestVersion(string metadata) =>
         new FileInfo(metadata).LastWriteTimeUtc > VersionDateTimeUtc;
 
-    internal static void UpdateMetadata(string directory)
-    {
-        Directory
+    internal static async Task UpdateMetadataAsync(string directory, CancellationToken cancellationToken) =>
+        await Directory
             .EnumerateFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories)
             .Select(metadata => (metadata, ImdbId: PathHelper.GetFileNameWithoutExtension(metadata).Split("-").First()))
             .Where(metadata =>
@@ -729,8 +728,10 @@ internal static partial class Video
 
                 return (metadata.metadata, websites, locations, companies);
             })
-            .ForEach(data =>
+            .ForEachAsync(async data =>
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 Logger.WriteLine(PathHelper.GetDirectoryName(data.metadata));
                 Debug.Assert(Imdb.TryLoad(data.metadata, out ImdbMetadata? imdbMetadata));
                 imdbMetadata = imdbMetadata with
@@ -740,9 +741,8 @@ internal static partial class Video
                     Companies = data.companies.Distinct().ToLookup(item => item.Text, item => item.Url).ToDictionary(group => group.Key, group => group.ToArray())
                 };
 
-                JsonHelper.SerializeToFile(imdbMetadata, data.metadata);
-            });
-    }
+                await JsonHelper.SerializeToFileAsync(imdbMetadata, data.metadata, cancellationToken);
+            }, cancellationToken);
 
     internal static void CopyMetadata(string sourceDirectory, string destinationDirectory, bool isDryRun = false, Action<string>? log = null)
     {
