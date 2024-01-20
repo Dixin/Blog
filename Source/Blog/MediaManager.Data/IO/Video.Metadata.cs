@@ -743,4 +743,60 @@ internal static partial class Video
                 JsonHelper.SerializeToFile(imdbMetadata, data.metadata);
             });
     }
+
+    internal static void CopyMetadata(string sourceDirectory, string destinationDirectory, bool isDryRun = false, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+
+        ILookup<string, string> sourceMetadataFiles = Directory
+            .EnumerateFiles(sourceDirectory, ImdbMetadataSearchPattern, SearchOption.AllDirectories)
+            .ToLookup(file => PathHelper.GetFileNameWithoutExtension(file).Split("-").FirstOrDefault(string.Empty));
+        ILookup<string, string> destinationMetadataFiles = Directory
+            .EnumerateFiles(destinationDirectory, ImdbMetadataSearchPattern, SearchOption.AllDirectories)
+            .ToLookup(file => PathHelper.GetFileNameWithoutExtension(file).Split("-").FirstOrDefault(string.Empty));
+
+        destinationMetadataFiles
+            .Where(destinationGroup => destinationGroup.Key.IsNotNullOrWhiteSpace() && sourceMetadataFiles.Contains(destinationGroup.Key))
+            .ForEach(destinationGroup =>
+            {
+                string imdbId = destinationGroup.Key;
+                Debug.Assert(Regex.IsMatch(imdbId, "^tt[0-9]+$"));
+                string[] sourceGroup = sourceMetadataFiles[imdbId].ToArray();
+                Debug.Assert(sourceGroup.Any());
+                (string File, DateTime LastWriteUtc) sourceMetadataFile = sourceGroup
+                    .Select(file => (File: file, LastWriteUtc: new FileInfo(file).LastWriteTimeUtc))
+                    .MaxBy(file => file.LastWriteUtc);
+                string sourceMetadataDirectory = PathHelper.GetDirectoryName(sourceMetadataFile.File);
+                string[] sourceFiles = Directory
+                    .EnumerateFiles(sourceMetadataDirectory, ImdbCacheSearchPattern, SearchOption.TopDirectoryOnly)
+                    .Append(sourceMetadataFile.File)
+                    .ToArray();
+                destinationGroup
+                    .Where(destinationMetadataFile => new FileInfo(destinationMetadataFile).LastWriteTimeUtc < sourceMetadataFile.LastWriteUtc)
+                    .ForEach(destinationMetadataFile =>
+                    {
+                        string destinationMetadataDirectory = PathHelper.GetDirectoryName(destinationMetadataFile);
+                        Directory
+                            .EnumerateFiles(destinationMetadataDirectory, ImdbCacheSearchPattern, SearchOption.TopDirectoryOnly)
+                            .Append(destinationMetadataFile)
+                            .ToArray()
+                            .ForEach(file =>
+                            {
+                                log($"Delete {file}.");
+                                if (!isDryRun)
+                                {
+                                    FileHelper.Recycle(file);
+                                }
+                            });
+                        sourceFiles.ForEach(file =>
+                        {
+                            log($"Copy {file} to {destinationMetadataDirectory}.");
+                            if (!isDryRun)
+                            {
+                                FileHelper.CopyToDirectory(file, destinationMetadataDirectory);
+                            }
+                        });
+                    });
+            });
+    }
 }
