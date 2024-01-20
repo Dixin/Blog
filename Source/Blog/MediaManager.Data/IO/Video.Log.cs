@@ -1530,15 +1530,16 @@ internal static partial class Video
 
                 XDocument nfoDocument = XDocument.Load(nfo);
                 string localImdbId = nfoDocument.Root?.Element("imdbid")?.Value ?? nfoDocument.Root?.Element("imdb_id")?.Value ?? string.Empty;
+                string localTitle = nfoDocument.Root?.Element("title")?.Value ?? string.Empty;
                 if (localImdbId.IsNullOrWhiteSpace())
                 {
-                    log($"!!!IMDB id is unavailable: {movie}");
+                    log($"!!!IMDB id is unavailable for '{localTitle}': {movie}");
                     return;
                 }
 
                 if (Imdb.TryRead(movie, out string? jsonImdbId, out _, out _, out _, out _) && !localImdbId.EqualsIgnoreCase(jsonImdbId))
                 {
-                    log($"-IMDB id is inconsistent: {movie}");
+                    log($"-IMDB id is inconsistent for '{localTitle}': {movie}");
                     return;
                 }
 
@@ -1553,7 +1554,7 @@ internal static partial class Video
                 {
                     if (localImdbId.IsNullOrWhiteSpace() || localImdbId.EqualsOrdinal(SubtitleSeparator))
                     {
-                        log($"!IMDB id is missing as x265: {movie}");
+                        log($"!IMDB id is missing as x265 for '{localTitle}': {movie}");
                         return;
                     }
 
@@ -1565,7 +1566,7 @@ internal static partial class Video
                             string remoteImdbId = x265TitlesImdbIds[x265Title];
                             if (!remoteImdbId.EqualsIgnoreCase(localImdbId))
                             {
-                                log($"!IMDB id {localImdbId} should be {remoteImdbId}: {movie}");
+                                log($"!IMDB id {localImdbId} should be {remoteImdbId} for '{localTitle}': {movie}");
                             }
 
                             return;
@@ -1577,13 +1578,13 @@ internal static partial class Video
                             string remoteImdbId = x265XTitlesImdbIds[x265XTitle];
                             if (!remoteImdbId.EqualsIgnoreCase(localImdbId))
                             {
-                                log($"!IMDB id {localImdbId} should be {remoteImdbId}: {movie}");
+                                log($"!IMDB id {localImdbId} should be {remoteImdbId} for '{localTitle}': {movie}");
                             }
 
                             return;
                         }
 
-                        log($"-Title {x265Video.Name} is missing in x265: {movie}");
+                        log($"-Title {x265Video.Name} is missing in x265 for '{localTitle}': {movie}");
                     });
                 }
 
@@ -1592,7 +1593,7 @@ internal static partial class Video
                 {
                     if (localImdbId.IsNullOrWhiteSpace() || localImdbId.EqualsOrdinal(SubtitleSeparator))
                     {
-                        log($"!IMDB id is missing as H264: {movie}");
+                        log($"!IMDB id is missing as H264 for '{localTitle}': {movie}");
                         return;
                     }
 
@@ -1604,7 +1605,7 @@ internal static partial class Video
                             string remoteImdbId = h264TitlesImdbIds[h264Title];
                             if (!remoteImdbId.EqualsIgnoreCase(localImdbId))
                             {
-                                log($"!IMDB id {localImdbId} should be {remoteImdbId}: {movie}");
+                                log($"!IMDB id {localImdbId} should be {remoteImdbId} for '{localTitle}': {movie}");
                             }
 
                             return;
@@ -1616,13 +1617,13 @@ internal static partial class Video
                             string remoteImdbId = h264XTitlesImdbIds[h264XTitle];
                             if (!remoteImdbId.EqualsIgnoreCase(localImdbId))
                             {
-                                log($"!IMDB id {localImdbId} should be {remoteImdbId}: {movie}");
+                                log($"!IMDB id {localImdbId} should be {remoteImdbId} for '{localTitle}': {movie}");
                             }
 
                             return;
                         }
 
-                        log($"-Title {h264Video.Name}is missing in H264: {movie}");
+                        log($"-Title {h264Video.Name}is missing in H264 for '{localTitle}': {movie}");
                     });
                 }
             });
