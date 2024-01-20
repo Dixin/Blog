@@ -1726,7 +1726,7 @@ internal static partial class Video
         }
 
         await imdbIds
-            .ForEachAsync(async (imdbMetadata, index) =>
+            .ForEachAsync(async (imdbMetadata, index, token) =>
             {
                 //log($"{index * 100 / length}% - {index}/{length} - {imdbMetadata!.ImdbId}");
                 if (x265Metadata.TryGetValue(imdbMetadata.ImdbId, out TopMetadata[]? x265Videos))
@@ -2112,7 +2112,7 @@ internal static partial class Video
         }
 
         await imdbIds
-            .ForEachAsync(async (imdbMetadata, index) =>
+            .ForEachAsync(async (imdbMetadata, index, token) =>
             {
                 if (x265Metadata.TryGetValue(imdbMetadata.ImdbId, out TopMetadata[]? h265Videos))
                 {
