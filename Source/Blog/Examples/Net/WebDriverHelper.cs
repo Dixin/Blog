@@ -241,10 +241,11 @@ public static class WebDriverHelper
                 {
                     webDriver.Dispose();
                 }
-                finally
+                catch (Exception innerException) when (innerException.IsNotCritical())
                 {
-                    webDriver = restart?.Invoke() ?? Start();
                 }
+
+                webDriver = restart?.Invoke() ?? Start();
             }
         }
 

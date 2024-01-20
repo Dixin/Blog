@@ -6,11 +6,26 @@ using Examples.Net;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 
-public class WebDriverWrapper(Func<IWebDriver>? webDriverFactory = null) : IDisposable
+public class WebDriverWrapper(Func<IWebDriver>? webDriverFactory = null, string initialUrl = "") : IDisposable
 {
     private IWebDriver? webDriver;
 
-    private IWebDriver WebDriver => this.webDriver ??= webDriverFactory?.Invoke() ?? WebDriverHelper.Start();
+    private IWebDriver WebDriver
+    {
+        get
+        {
+            if (this.webDriver is null)
+            {
+                this.webDriver = webDriverFactory?.Invoke() ?? WebDriverHelper.Start();
+                if (initialUrl.IsNotNullOrWhiteSpace())
+                {
+                    this.webDriver.Url = initialUrl;
+                }
+            }
+            
+            return this.webDriver;
+        }
+    }
 
     public void Restart()
     {
@@ -18,10 +33,11 @@ public class WebDriverWrapper(Func<IWebDriver>? webDriverFactory = null) : IDisp
         {
             this.webDriver?.Dispose();
         }
-        finally
+        catch (Exception exception) when (exception.IsNotCritical())
         {
-            this.webDriver = webDriverFactory?.Invoke() ?? WebDriverHelper.Start();
         }
+
+        this.webDriver = webDriverFactory?.Invoke() ?? WebDriverHelper.Start();
     }
 
     public void Dispose()
@@ -30,7 +46,7 @@ public class WebDriverWrapper(Func<IWebDriver>? webDriverFactory = null) : IDisp
         {
             this.webDriver?.Dispose();
         }
-        finally
+        catch (Exception exception) when (exception.IsNotCritical())
         {
         }
     }

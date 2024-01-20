@@ -846,9 +846,9 @@ internal static class Imdb
         int trimmedLength = imdbIds.Length;
         ConcurrentQueue<string> imdbIdQueue = new(imdbIds);
         await Enumerable.Range(0, MaxDegreeOfParallelism)
-            .Select(index => new WebDriverWrapper(() => WebDriverHelper.Start(index, keepExisting: true)))
-            .ParallelForEachAsync(async webDriver =>
+            .ParallelForEachAsync(async webDriverIndex =>
             {
+                using WebDriverWrapper webDriver = new(() => WebDriverHelper.Start(webDriverIndex, keepExisting: true));
                 while (imdbIdQueue.TryDequeue(out string? imdbId))
                 {
                     int index = trimmedLength - imdbIdQueue.Count;
@@ -866,8 +866,6 @@ internal static class Imdb
                         log($"!!!{imdbId}");
                     }
                 }
-
-                webDriver.Dispose();
             }, MaxDegreeOfParallelism);
     }
 

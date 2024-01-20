@@ -189,11 +189,9 @@ internal static partial class Video
                 async (webDriverIndex, token) =>
                 {
                     token.ThrowIfCancellationRequested();
-                    WebDriverWrapper webDriver = new(() => WebDriverHelper.Start(webDriverIndex, keepExisting: true, cleanProfile: false));
-                    if (useBrowser)
-                    {
-                        webDriver.Url = "https://www.imdb.com/";
-                    }
+                    using WebDriverWrapper? webDriver = useBrowser
+                        ? new(() => WebDriverHelper.Start(webDriverIndex, keepExisting: true, cleanProfile: false), "https://www.imdb.com")
+                        : null;
 
                     while (movies.TryDequeue(out string? movie))
                     {
@@ -205,15 +203,6 @@ internal static partial class Video
                         {
                             Interlocked.Decrement(ref movieTotalCount);
                         }
-                    }
-
-                    try
-                    {
-                        webDriver.Dispose();
-                    }
-                    catch (Exception exception) when (exception.IsNotCritical())
-                    {
-                        log(exception.ToString());
                     }
                 }),
             retryingHandler: (sender, args) =>
