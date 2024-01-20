@@ -165,7 +165,7 @@ internal static class Preferred
                     try
                     {
                         string imdbId = PathHelper.GetFileName(uri.LocalPath.TrimEnd('/'));
-                        if (!Regex.IsMatch(imdbId, @"tt[0-9]+"))
+                        if (!imdbId.IsImdbId())
                         {
                             log($"Invalid IMDB Id: {file}, {url}.");
                         }

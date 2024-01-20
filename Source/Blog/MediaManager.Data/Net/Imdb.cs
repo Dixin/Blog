@@ -799,7 +799,7 @@ internal static class Imdb
             .Where(line => (line.ContainsIgnoreCase("|movies_x265|") || line.ContainsIgnoreCase("|movies|"))
                 && (line.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") || line.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}")))
             .Select(line => line.Split('|'))
-            .Do(cells => Debug.Assert(string.IsNullOrEmpty(cells[^2]) || Regex.IsMatch(cells[^2], "tt[0-9]+")))
+            .Do(cells => Debug.Assert(string.IsNullOrEmpty(cells[^2]) || cells[^2].IsImdbId()))
             .Do(cells => Debug.Assert(cells[1].ContainsIgnoreCase($"-{settings.TopEnglishKeyword}") || cells[1].ContainsIgnoreCase($"-{settings.TopForeignKeyword}")))
             .ToLookup(cells => cells[^2], cells => cells[1]);
 
@@ -987,7 +987,7 @@ internal static class Imdb
         string[] cacheFiles = Directory.GetFiles(@cacheDirectory);
         string[] metadataFiles = Directory.GetFiles(metadataDirectory);
         string[] imdbIds = libraryMetadata.Keys
-            .Where(imdbId => Regex.IsMatch(imdbId, "tt[0-9]+"))
+            .Where(imdbId => imdbId.IsImdbId())
             .Order()
             .ToArray();
         int length = imdbIds.Length;
@@ -1066,4 +1066,6 @@ internal static class Imdb
                 }
             });
     }
+
+    internal static bool IsImdbId(this string value) => Regex.IsMatch(value, "^tt[0-9]+$");
 }

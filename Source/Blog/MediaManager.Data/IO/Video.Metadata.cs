@@ -230,7 +230,7 @@ internal static partial class Video
             else
             {
                 imdbId = name.Split("-").First();
-                Debug.Assert(Regex.IsMatch(imdbId, "^tt[0-9]+$"));
+                Debug.Assert(imdbId.IsImdbId());
             }
         }
         else
@@ -668,7 +668,10 @@ internal static partial class Video
     internal static bool IsLatestVersion(string metadata) =>
         new FileInfo(metadata).LastWriteTimeUtc > VersionDateTimeUtc;
 
-    internal static async Task UpdateMetadataAsync(string directory, CancellationToken cancellationToken) =>
+    internal static async Task UpdateMetadataAsync(string directory, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    {
+        log ??= Logger.WriteLine;
+
         await Directory
             .EnumerateFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories)
             .Select(metadata => (metadata, ImdbId: PathHelper.GetFileNameWithoutExtension(metadata).Split("-").First()))
@@ -732,7 +735,7 @@ internal static partial class Video
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                Logger.WriteLine(PathHelper.GetDirectoryName(data.metadata));
+                log(PathHelper.GetDirectoryName(data.metadata));
                 Debug.Assert(Imdb.TryLoad(data.metadata, out ImdbMetadata? imdbMetadata));
                 imdbMetadata = imdbMetadata with
                 {
@@ -741,8 +744,12 @@ internal static partial class Video
                     Companies = data.companies.Distinct().ToLookup(item => item.Text, item => item.Url).ToDictionary(group => group.Key, group => group.ToArray())
                 };
 
-                await JsonHelper.SerializeToFileAsync(imdbMetadata, data.metadata, cancellationToken);
+                if(!isDryRun)
+                {
+                    await JsonHelper.SerializeToFileAsync(imdbMetadata, data.metadata, cancellationToken);
+                }
             }, cancellationToken);
+    }
 
     internal static void CopyMetadata(string sourceDirectory, string destinationDirectory, bool isDryRun = false, Action<string>? log = null)
     {
@@ -760,7 +767,7 @@ internal static partial class Video
             .ForEach(destinationGroup =>
             {
                 string imdbId = destinationGroup.Key;
-                Debug.Assert(Regex.IsMatch(imdbId, "^tt[0-9]+$"));
+                Debug.Assert(imdbId.IsImdbId());
                 string[] sourceGroup = sourceMetadataFiles[imdbId].ToArray();
                 Debug.Assert(sourceGroup.Any());
                 (string File, DateTime LastWriteUtc) sourceMetadataFile = sourceGroup

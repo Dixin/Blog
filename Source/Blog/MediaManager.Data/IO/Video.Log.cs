@@ -658,7 +658,7 @@ internal static partial class Video
                 }
 
                 imdbId = imdbId.Split(SubtitleSeparator)[0];
-                if (!Regex.IsMatch(imdbId, "tt[0-9]+"))
+                if (!imdbId.IsImdbId())
                 {
                     log($"Invalid IMDB id {imdbId}: {movie}");
                     return;
@@ -977,7 +977,7 @@ internal static partial class Video
                 }
 
                 imdbId = imdbId.Split(SubtitleSeparator)[0];
-                if (!Regex.IsMatch(imdbId, "tt[0-9]+"))
+                if (!imdbId.IsImdbId())
                 {
                     log($"Invalid IMDB id {imdbId}: {tv}");
                     return;
