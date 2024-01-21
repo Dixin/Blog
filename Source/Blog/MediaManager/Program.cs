@@ -239,16 +239,20 @@ Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
 //Video.MoveAllSubtitles(settings.MovieTemp, settings.MovieSubtitleBackupDirectory);
 //await Drive115.WriteOfflineTasksAsync(settings.Drive115Url, settings.Drive115Metadata, "Goto.Isle.of.Love.1969");
 
-//await Video.PrintMovieImdbIdErrorsAsync(settings.MovieTopX265Metadata, settings.MovieTopH264Metadata, settings.MovieTopX265XMetadata, settings.MovieTopH264XMetadata, /*settings.MovieTopH264720PMetadata, settings.MoviePreferredMetadata,*/ null,
-//    settings.MovieMainstream,
+//await Video.PrintMovieImdbIdErrorsAsync(settings, null,
 //    settings.MovieControversial,
+//    settings.MovieControversialTemp3,
 //    settings.MovieControversialWithoutSubtitle,
+//    settings.MovieMainstream,
 //    settings.MovieMainstreamWithoutSubtitle,
 //    settings.MovieMusical,
-//    settings.MovieTemp,
 //    settings.MovieTemp1,
 //    settings.MovieTemp2,
-//    settings.MovieTemp3);
+//    settings.MovieTemp3,
+//    settings.MovieTemp3Encode,
+//    (@"D:\Files\Library\Movies Temp3.2.电影3.2\Rarbg", 1),
+//    (@"D:\Files\Library\Movies Temp3.2.电影3.2\Rarbg8.2", 1)
+//);
 
 //Dictionary<string, TopMetadata[]> x265Metadata = JsonSerializer.Deserialize<Dictionary<string, TopMetadata[]>>(await File.ReadAllTextAsync(settings.TVTopX265Metadata))!;
 //x265Metadata.Values.SelectMany(values=>values).OrderByDescending(meta=>meta.ImdbRating).ThenBy(meta=>meta.ImdbRating)
