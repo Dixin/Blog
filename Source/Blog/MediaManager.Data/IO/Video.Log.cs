@@ -1519,54 +1519,86 @@ internal static partial class Video
 
         directories
             .SelectMany(directory => EnumerateDirectories(directory.Directory, directory.Level))
+            .Select(movie => (Directory: movie, HasJson: Imdb.TryRead(movie, out string? jsonImdbId, out _, out _, out _, out _), JsonImdbId: jsonImdbId))
             .ForEach(movie =>
             {
-                string nfo = Directory.EnumerateFiles(movie, XmlMetadataSearchPattern, SearchOption.TopDirectoryOnly).FirstOrDefault(string.Empty);
-                if (nfo.IsNullOrWhiteSpace())
+                if (!movie.HasJson)
                 {
-                    log($"-IMDB id is unavailable: {movie}");
+                    VideoDirectoryInfo
+                        .GetVideos(movie.Directory)
+                        .Where(video => video.GetEncoderType() is EncoderType.X || video.GetEncoderType() is EncoderType.H && video.GetDefinitionType() == DefinitionType.P1080)
+                        .ForEach(video => log($"!Json is missing for {video.Name}: {movie.Directory}"));
+
+                    Directory
+                        .EnumerateFiles(movie.Directory, XmlMetadataSearchPattern, SearchOption.TopDirectoryOnly)
+                        .Select(file => (Metadata: XDocument.Load(file), file))
+                        .Select(xml => (
+                            xml.file,
+                            xml.Metadata.Root?.Element("imdbid")?.Value ?? xml.Metadata.Root?.Element("imdb_id")?.Value ?? string.Empty,
+                            xml.Metadata.Root?.Element("title")?.Value ?? string.Empty))
+                        .Where(xml => xml.Item2.IsNotNullOrWhiteSpace())
+                        .ForEach(xml => log($"!XML IMDB id {xml.Item2} should be empty for {xml.Item3}: {xml.file}."));
+
                     return;
                 }
 
-                XDocument nfoDocument = XDocument.Load(nfo);
-                string localImdbId = nfoDocument.Root?.Element("imdbid")?.Value ?? nfoDocument.Root?.Element("imdb_id")?.Value ?? string.Empty;
-                string localTitle = nfoDocument.Root?.Element("title")?.Value ?? string.Empty;
-                if (localImdbId.IsNullOrWhiteSpace())
+                Debug.Assert(movie.JsonImdbId.IsNotNullOrWhiteSpace());
+
+                Dictionary<string, (string File, string XmlImdbId, string XmlTitle)> xmlDocuments = Directory
+                    .EnumerateFiles(movie.Directory, XmlMetadataSearchPattern, SearchOption.TopDirectoryOnly)
+                    .Select(file => (Metadata: XDocument.Load(file), file))
+                    .Select(xml => (
+                        xml.file,
+                        xml.Metadata.Root?.Element("imdbid")?.Value ?? xml.Metadata.Root?.Element("imdb_id")?.Value ?? string.Empty,
+                        xml.Metadata.Root?.Element("title")?.Value ?? string.Empty))
+                    .ToDictionary(xml => PathHelper.GetFileNameWithoutExtension(xml.file), StringComparer.OrdinalIgnoreCase);
+                if (xmlDocuments.IsEmpty())
                 {
-                    log($"!!!IMDB id is unavailable for '{localTitle}': {movie}");
+                    log($"!Xml is missing: {movie.Directory}");
                     return;
                 }
 
-                if (Imdb.TryRead(movie, out string? jsonImdbId, out _, out _, out _, out _) && !localImdbId.EqualsIgnoreCase(jsonImdbId))
-                {
-                    log($"-IMDB id is inconsistent for '{localTitle}': {movie}");
-                    return;
-                }
+                xmlDocuments
+                    .Values
+                    .Where(xml => !xml.XmlImdbId.EqualsIgnoreCase(movie.JsonImdbId))
+                    .ForEach(xml => log($"!Xml IMDB id {xml.XmlImdbId} should be {movie.JsonImdbId} for {xml.XmlTitle}: {xml.File}"));
 
-                VideoMovieFileInfo[] videos = VideoDirectoryInfo.GetVideos(movie).ToArray();
+                VideoMovieFileInfo[] videos = VideoDirectoryInfo.GetVideos(movie.Directory).ToArray();
                 if (videos.IsEmpty())
                 {
+                    log($"!Video is missing: {movie.Directory}");
+                    return;
+                }
+
+                if (!xmlDocuments
+                    .Keys
+                    .Order()
+                    .SequenceEqual(videos.Where(video => video.Part is "" or ".cd1" or ".cd01").Select(video => PathHelper.GetFileNameWithoutExtension(video.Name)).Order()))
+                {
+                    log($"!Video is inconsistent with XML: {movie.Directory}");
                     return;
                 }
 
                 VideoMovieFileInfo[] x265Videos = videos.Where(video => video.GetEncoderType() is EncoderType.X).ToArray();
                 if (x265Videos.Any())
                 {
-                    if (localImdbId.IsNullOrWhiteSpace() || localImdbId.EqualsOrdinal(SubtitleSeparator))
+                    if (movie.JsonImdbId.EqualsOrdinal(SubtitleSeparator))
                     {
-                        log($"!IMDB id is missing as x265 for '{localTitle}': {movie}");
+                        log($"!IMDB id is missing as x265: {movie}");
                         return;
                     }
 
                     x265Videos.ForEach(x265Video =>
                     {
+                        (string File, string XmlImdbId, string XmlTitle) xml = xmlDocuments[PathHelper.GetFileNameWithoutExtension(x265Video.Name)];
+
                         string x265Title = x265TitlesImdbIds.Keys.FirstOrDefault(key => x265Video.Name.StartsWithIgnoreCase(key), string.Empty);
                         if (x265Title.IsNotNullOrWhiteSpace())
                         {
                             string remoteImdbId = x265TitlesImdbIds[x265Title];
-                            if (!remoteImdbId.EqualsIgnoreCase(localImdbId))
+                            if (!remoteImdbId.EqualsIgnoreCase(movie.JsonImdbId))
                             {
-                                log($"!IMDB id {localImdbId} should be {remoteImdbId} for '{localTitle}': {movie}");
+                                log($"!IMDB id {movie.JsonImdbId} should be {remoteImdbId} for '{xml.XmlTitle}': {xml.File}");
                             }
 
                             return;
@@ -1576,36 +1608,38 @@ internal static partial class Video
                         if (x265XTitle.IsNotNullOrWhiteSpace())
                         {
                             string remoteImdbId = x265XTitlesImdbIds[x265XTitle];
-                            if (!remoteImdbId.EqualsIgnoreCase(localImdbId))
+                            if (!remoteImdbId.EqualsIgnoreCase(movie.JsonImdbId))
                             {
-                                log($"!IMDB id {localImdbId} should be {remoteImdbId} for '{localTitle}': {movie}");
+                                log($"!IMDB id {movie.JsonImdbId} should be {remoteImdbId} for '{xml.XmlTitle}': {xml.File}");
                             }
 
                             return;
                         }
 
-                        log($"-Title {x265Video.Name} is missing in x265 for '{localTitle}': {movie}");
+                        log($"-{movie.JsonImdbId} with title {x265Video.Name} is missing in x265 for '{xml.XmlTitle}': {movie}");
                     });
                 }
 
                 VideoMovieFileInfo[] h264Videos = videos.Where(video => video.GetEncoderType() is EncoderType.H && video.GetDefinitionType() == DefinitionType.P1080).ToArray();
                 if (h264Videos.Any())
                 {
-                    if (localImdbId.IsNullOrWhiteSpace() || localImdbId.EqualsOrdinal(SubtitleSeparator))
+                    if (movie.JsonImdbId.EqualsOrdinal(SubtitleSeparator))
                     {
-                        log($"!IMDB id is missing as H264 for '{localTitle}': {movie}");
+                        log($"!IMDB id is missing as H264: {movie}");
                         return;
                     }
 
                     h264Videos.ForEach(h264Video =>
                     {
+                        (string File, string XmlImdbId, string XmlTitle) xml = xmlDocuments[PathHelper.GetFileNameWithoutExtension(h264Video.Name)];
+
                         string h264Title = h264TitlesImdbIds.Keys.FirstOrDefault(key => h264Video.Name.StartsWithIgnoreCase(key), string.Empty);
                         if (h264Title.IsNotNullOrWhiteSpace())
                         {
                             string remoteImdbId = h264TitlesImdbIds[h264Title];
-                            if (!remoteImdbId.EqualsIgnoreCase(localImdbId))
+                            if (!remoteImdbId.EqualsIgnoreCase(movie.JsonImdbId))
                             {
-                                log($"!IMDB id {localImdbId} should be {remoteImdbId} for '{localTitle}': {movie}");
+                                log($"!IMDB id {movie.JsonImdbId} should be {remoteImdbId} for '{xml.XmlTitle}': {xml.File}");
                             }
 
                             return;
@@ -1615,15 +1649,15 @@ internal static partial class Video
                         if (h264XTitle.IsNotNullOrWhiteSpace())
                         {
                             string remoteImdbId = h264XTitlesImdbIds[h264XTitle];
-                            if (!remoteImdbId.EqualsIgnoreCase(localImdbId))
+                            if (!remoteImdbId.EqualsIgnoreCase(movie.JsonImdbId))
                             {
-                                log($"!IMDB id {localImdbId} should be {remoteImdbId} for '{localTitle}': {movie}");
+                                log($"!IMDB id {movie.JsonImdbId} should be {remoteImdbId} for '{xml.XmlTitle}': {xml.File}");
                             }
 
                             return;
                         }
 
-                        log($"-Title {h264Video.Name}is missing in H264 for '{localTitle}': {movie}");
+                        log($"-{movie.JsonImdbId} with title {h264Video.Name} is missing in H264 for '{xml.XmlTitle}': {movie}");
                     });
                 }
             });
@@ -1813,15 +1847,15 @@ internal static partial class Video
 
                         string cacheFile = Path.Combine(settings.MovieMetadataCacheDirectory, $"{metadata.ImdbId}-{metadata.Title}{ImdbCacheExtension}");
                         string html = cacheFiles.ContainsIgnoreCase(cacheFile) && new FileInfo(cacheFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1)
-                            ? await File.ReadAllTextAsync(cacheFile)
+                            ? await File.ReadAllTextAsync(cacheFile, token)
                             : await webDriver!.GetStringAsync(metadata.Link, () => webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))));
-                        await Task.Delay(WebDriverHelper.DefaultDomWait);
-                        await File.WriteAllTextAsync(cacheFile, html);
+                        await Task.Delay(WebDriverHelper.DefaultDomWait, token);
+                        await File.WriteAllTextAsync(cacheFile, html, token);
                         (string httpUrl, string fileName, string magnetUrl) = TopGetUrls(html, metadata.Link);
                         log(magnetUrl);
                         //webDriver!.Url = httpUrl;
                         //await Task.Delay(TimeSpan.FromSeconds(3));
-                    });
+                    }, cancellationToken: token);
 
                     if (hasDownload)
                     {
@@ -1912,15 +1946,15 @@ internal static partial class Video
 
                         string cacheFile = Path.Combine(settings.MovieMetadataCacheDirectory, $"{metadata.ImdbId}-{metadata.Title}{ImdbCacheExtension}");
                         string html = cacheFiles.ContainsIgnoreCase(cacheFile) && new FileInfo(cacheFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1)
-                            ? await File.ReadAllTextAsync(cacheFile)
+                            ? await File.ReadAllTextAsync(cacheFile, token)
                             : await webDriver!.GetStringAsync(metadata.Link, () => webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))));
-                        await Task.Delay(WebDriverHelper.DefaultDomWait);
-                        await File.WriteAllTextAsync(cacheFile, html);
+                        await Task.Delay(WebDriverHelper.DefaultDomWait, token);
+                        await File.WriteAllTextAsync(cacheFile, html, token);
                         (string httpUrl, string fileName, string magnetUrl) = TopGetUrls(html, metadata.Link);
                         log(magnetUrl);
                         //webDriver!.Url = httpUrl;
                         //await Task.Delay(TimeSpan.FromSeconds(3));
-                    });
+                    }, cancellationToken: token);
 
                     if (hasDownload)
                     {
@@ -2184,13 +2218,13 @@ internal static partial class Video
                                 return;
                             }
 
-                            html = await File.ReadAllTextAsync(file);
+                            html = await File.ReadAllTextAsync(file, token);
                         }
                         else
                         {
                             html = await webDriver.GetStringAsync(metadata.Link, () => webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))));
-                            await Task.Delay(WebDriverHelper.DefaultDomWait);
-                            await File.WriteAllTextAsync(file, html);
+                            await Task.Delay(WebDriverHelper.DefaultDomWait, token);
+                            await File.WriteAllTextAsync(file, html, token);
                         }
                         (string httpUrl, string fileName, string magnetUrl) = TopGetUrls(html, metadata.Link);
 
@@ -2204,9 +2238,9 @@ internal static partial class Video
                         log(string.Empty);
                         if (!isCached)
                         {
-                            await Task.Delay(TimeSpan.FromSeconds(3));
+                            await Task.Delay(TimeSpan.FromSeconds(3), token);
                         }
-                    });
+                    }, cancellationToken: token);
                 }
             });
     }
