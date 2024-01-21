@@ -267,7 +267,7 @@ internal static partial class Video
                     .Where(title => title.IsNotNullOrWhiteSpace() && (char.IsWhiteSpace(title.First()) || char.IsWhiteSpace(title.Last())))
                     .ForEach(title => log($"!Title has white space {title}: {movie}"));
 
-                allPaths.Where(path => path.Length > 256).ForEach(path => log($"!Path too long: {path}"));
+                //allPaths.Where(path => path.Length > 256).ForEach(path => log($"!Path too long: {path}"));
 
                 string[] topFiles = Directory
                     .GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)

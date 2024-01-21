@@ -131,47 +131,51 @@ internal static partial class Video
             .ForEach(season => CreateSeasonEpisodeMetadata(season, getTitle, getEpisode, getSeason, overwrite));
     }
 
-    internal static void WriteRating(string directory, int level = DefaultDirectoryLevel, bool isDryRun = false, Action<string>? log = null)
+    internal static void UpdateXmlRating(string directory, int level = DefaultDirectoryLevel, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
+
         EnumerateDirectories(directory, level)
             .ToArray()
             .ForEach(movie =>
             {
-                string metadataPath = Directory.GetFiles(movie, XmlMetadataSearchPattern).First();
-                XDocument metadata = XDocument.Load(metadataPath);
-                XElement? ratingElement = metadata.Root!.Element("rating");
-                if (Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata) && imdbMetadata.AggregateRating?.RatingValue is not null)
-                {
-                    // IMDB has rating.
-                    string jsonRatingFormatted = imdbMetadata.AggregateRating.RatingValue.Replace(".0", string.Empty);
-                    if ((ratingElement?.Value).EqualsOrdinal(jsonRatingFormatted))
+                Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata);
+                string? jsonRatingFormatted = imdbMetadata?.AggregateRating?.RatingValue.Replace(".0", string.Empty).Trim();
+                Directory
+                    .GetFiles(movie, XmlMetadataSearchPattern, SearchOption.TopDirectoryOnly)
+                    .ForEach(xmlMetadataFile =>
                     {
-                        return;
-                    }
+                        XDocument metadata = XDocument.Load(xmlMetadataFile);
+                        XElement? ratingElement = metadata.Root!.Element("rating");
+                        if (jsonRatingFormatted is null)
+                        {
+                            if (ratingElement is null)
+                            {
+                                return;
+                            }
 
-                    log($"{movie} rating {ratingElement?.Value} is set to {jsonRatingFormatted}.");
-                    if (!isDryRun)
-                    {
-                        metadata.Root!.SetElementValue("rating", jsonRatingFormatted);
-                        metadata.Save(metadataPath);
-                    }
-                }
-                else
-                {
-                    // IMDB has no rating.
-                    if (ratingElement is null)
-                    {
-                        return;
-                    }
+                            log($"Rating {ratingElement.Value} is removed for {movie}.");
+                            if (!isDryRun)
+                            {
+                                ratingElement.Remove();
+                                metadata.Save(xmlMetadataFile);
+                            }
+                        }
+                        else
+                        {
+                            if (jsonRatingFormatted.EqualsOrdinal(ratingElement?.Value))
+                            {
+                                return;
+                            }
 
-                    log($"{movie} rating {ratingElement.Value} is removed.");
-                    if (!isDryRun)
-                    {
-                        ratingElement.Remove();
-                        metadata.Save(metadataPath);
-                    }
-                }
+                            log($"Rating {ratingElement?.Value} is set to {jsonRatingFormatted} for {movie}.");
+                            if (!isDryRun)
+                            {
+                                metadata.Root!.SetElementValue("rating", jsonRatingFormatted);
+                                metadata.Save(xmlMetadataFile);
+                            }
+                        }
+                    });
             });
     }
 
@@ -744,7 +748,7 @@ internal static partial class Video
                     Companies = data.companies.Distinct().ToLookup(item => item.Text, item => item.Url).ToDictionary(group => group.Key, group => group.ToArray())
                 };
 
-                if(!isDryRun)
+                if (!isDryRun)
                 {
                     await JsonHelper.SerializeToFileAsync(imdbMetadata, data.metadata, cancellationToken);
                 }

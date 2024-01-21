@@ -372,20 +372,13 @@ internal static partial class Video
                         parsed = parsed with { Year = imdbMetadata.Year };
                     }
 
+                    Debug.Assert(parsed.Year.IsNotNullOrWhiteSpace());
                     parsed = parsed with
                     {
                         AggregateRating = imdbMetadata.FormattedAggregateRating,
                         AggregateRatingCount = imdbMetadata.FormattedAggregateRatingCount,
                         ContentRating = imdbMetadata.FormattedContentRating
                     };
-
-                    if (imdbMetadata.Year.IsNotNullOrWhiteSpace())
-                    {
-                        parsed = parsed with
-                        {
-                            Year = imdbMetadata.Year
-                        };
-                    }
                 }
 
                 if (isTV)
@@ -950,8 +943,23 @@ internal static partial class Video
             .ForEach(movie =>
             {
                 Directory
-                    .GetFiles(movie, "*fanart1.jpg", SearchOption.AllDirectories)
-                    .ForEach(file => FileHelper.Move(file, Regex.Replace(file, @"fanart1\.jpg$", "fanart.jpg")));
+                    .EnumerateFiles(movie, "*fanart*.jpg", SearchOption.AllDirectories)
+                    .Where(file => !file.EndsWithIgnoreCase("fanart.jpg"))
+                    .ToArray()
+                    .ForEach(file =>
+                    {
+                        string destinationFile = Regex.Replace(file, @"fanart[0-9]+\.jpg$", "fanart.jpg");
+                        if (File.Exists(destinationFile) && new FileInfo(destinationFile).LastWriteTimeUtc > new FileInfo(file).LastWriteTimeUtc)
+                        {
+                            FileHelper.Recycle(file);
+                        }
+                        else
+                        {
+                            log(file);
+                            FileHelper.Move(file, destinationFile, overwrite);
+                            log(destinationFile);
+                        }
+                    });
 
                 string fanArtDirectory = Path.Combine(movie, "extrafanart");
                 if (!Directory.Exists(fanArtDirectory))
@@ -962,8 +970,7 @@ internal static partial class Video
                 string fanArt = Directory.GetFiles(fanArtDirectory).SingleOrDefault(string.Empty);
                 if (fanArt.IsNotNullOrWhiteSpace())
                 {
-                    Debug.Assert(PathHelper.GetFileNameWithoutExtension(fanArt).StartsWithIgnoreCase("fanart"));
-                    Debug.Assert(PathHelper.GetExtension(fanArt).EqualsIgnoreCase(".jpg"));
+                    Debug.Assert(PathHelper.GetFileName(fanArt).EqualsIgnoreCase("fanart.jpg"));
 
                     string newFanArt = Path.Combine(movie, "fanart.jpg");
                     Debug.Assert(overwrite || !File.Exists(newFanArt));
