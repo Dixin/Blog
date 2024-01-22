@@ -1491,7 +1491,7 @@ internal static partial class Video
             });
     }
 
-    internal static async Task PrintMovieImdbIdErrorsAsync(ISettings settings, Action<string>? log = null, params (string Directory, int Level)[] directories)
+    internal static async Task PrintMovieImdbIdErrorsAsync(ISettings settings, bool ignoreJsonImdbId = false, Action<string>? log = null, params (string Directory, int Level)[] directories)
     {
         log ??= Logger.WriteLine;
         Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265Metadata);
@@ -1522,28 +1522,6 @@ internal static partial class Video
             .Select(movie => (Directory: movie, HasJson: Imdb.TryRead(movie, out string? jsonImdbId, out _, out _, out _, out _), JsonImdbId: jsonImdbId))
             .ForEach(movie =>
             {
-                if (!movie.HasJson)
-                {
-                    VideoDirectoryInfo
-                        .GetVideos(movie.Directory)
-                        .Where(video => video.GetEncoderType() is EncoderType.X || video.GetEncoderType() is EncoderType.H && video.GetDefinitionType() == DefinitionType.P1080)
-                        .ForEach(video => log($"!Json is missing for {video.Name}: {movie.Directory}"));
-
-                    Directory
-                        .EnumerateFiles(movie.Directory, XmlMetadataSearchPattern, SearchOption.TopDirectoryOnly)
-                        .Select(file => (Metadata: XDocument.Load(file), file))
-                        .Select(xml => (
-                            xml.file,
-                            xml.Metadata.Root?.Element("imdbid")?.Value ?? xml.Metadata.Root?.Element("imdb_id")?.Value ?? string.Empty,
-                            xml.Metadata.Root?.Element("title")?.Value ?? string.Empty))
-                        .Where(xml => xml.Item2.IsNotNullOrWhiteSpace())
-                        .ForEach(xml => log($"!XML IMDB id {xml.Item2} should be empty for {xml.Item3}: {xml.file}."));
-
-                    return;
-                }
-
-                Debug.Assert(movie.JsonImdbId.IsNotNullOrWhiteSpace());
-
                 Dictionary<string, (string File, string XmlImdbId, string XmlTitle)> xmlDocuments = Directory
                     .EnumerateFiles(movie.Directory, XmlMetadataSearchPattern, SearchOption.TopDirectoryOnly)
                     .Select(file => (Metadata: XDocument.Load(file), file))
@@ -1554,14 +1532,9 @@ internal static partial class Video
                     .ToDictionary(xml => PathHelper.GetFileNameWithoutExtension(xml.file), StringComparer.OrdinalIgnoreCase);
                 if (xmlDocuments.IsEmpty())
                 {
-                    log($"!Xml is missing: {movie.Directory}");
+                    log($"!XML is missing: {movie.Directory}");
                     return;
                 }
-
-                xmlDocuments
-                    .Values
-                    .Where(xml => !xml.XmlImdbId.EqualsIgnoreCase(movie.JsonImdbId))
-                    .ForEach(xml => log($"!Xml IMDB id {xml.XmlImdbId} should be {movie.JsonImdbId} for {xml.XmlTitle}: {xml.File}"));
 
                 VideoMovieFileInfo[] videos = VideoDirectoryInfo.GetVideos(movie.Directory).ToArray();
                 if (videos.IsEmpty())
@@ -1571,23 +1544,19 @@ internal static partial class Video
                 }
 
                 if (!xmlDocuments
-                    .Keys
-                    .Order()
-                    .SequenceEqual(videos.Where(video => video.Part is "" or ".cd1" or ".cd01").Select(video => PathHelper.GetFileNameWithoutExtension(video.Name)).Order()))
+                        .Keys
+                        .Order()
+                        .SequenceEqual(videos.Where(video => video.Part is "" or ".cd1" or ".cd01").Select(video => PathHelper.GetFileNameWithoutExtension(video.Name)).Order()))
                 {
                     log($"!Video is inconsistent with XML: {movie.Directory}");
                     return;
                 }
 
                 VideoMovieFileInfo[] x265Videos = videos.Where(video => video.GetEncoderType() is EncoderType.X).ToArray();
+                VideoMovieFileInfo[] h264Videos = videos.Where(video => video.GetEncoderType() is EncoderType.H && video.GetDefinitionType() == DefinitionType.P1080).ToArray();
+
                 if (x265Videos.Any())
                 {
-                    if (movie.JsonImdbId.EqualsOrdinal(SubtitleSeparator))
-                    {
-                        log($"!IMDB id is missing as x265: {movie}");
-                        return;
-                    }
-
                     x265Videos.ForEach(x265Video =>
                     {
                         (string File, string XmlImdbId, string XmlTitle) xml = xmlDocuments[PathHelper.GetFileNameWithoutExtension(x265Video.Name)];
@@ -1596,9 +1565,9 @@ internal static partial class Video
                         if (x265Title.IsNotNullOrWhiteSpace())
                         {
                             string remoteImdbId = x265TitlesImdbIds[x265Title];
-                            if (!remoteImdbId.EqualsIgnoreCase(movie.JsonImdbId))
+                            if (!remoteImdbId.EqualsIgnoreCase(xml.XmlImdbId))
                             {
-                                log($"!IMDB id {movie.JsonImdbId} should be {remoteImdbId} for '{xml.XmlTitle}': {xml.File}");
+                                log($"!XML IMDB id {xml.XmlImdbId} should be {remoteImdbId} for '{xml.XmlTitle}': {xml.File}");
                             }
 
                             return;
@@ -1608,27 +1577,20 @@ internal static partial class Video
                         if (x265XTitle.IsNotNullOrWhiteSpace())
                         {
                             string remoteImdbId = x265XTitlesImdbIds[x265XTitle];
-                            if (!remoteImdbId.EqualsIgnoreCase(movie.JsonImdbId))
+                            if (!remoteImdbId.EqualsIgnoreCase(xml.XmlImdbId))
                             {
-                                log($"!IMDB id {movie.JsonImdbId} should be {remoteImdbId} for '{xml.XmlTitle}': {xml.File}");
+                                log($"!XML IMDB id {xml.XmlImdbId} should be {remoteImdbId} for '{xml.XmlTitle}': {xml.File}");
                             }
 
                             return;
                         }
 
-                        log($"-{movie.JsonImdbId} with title {x265Video.Name} is missing in x265 for '{xml.XmlTitle}': {movie}");
+                        log($"-{xml.XmlImdbId} with title {x265Video.Name} is missing in x265 for '{xml.XmlTitle}': {movie.Directory}");
                     });
                 }
 
-                VideoMovieFileInfo[] h264Videos = videos.Where(video => video.GetEncoderType() is EncoderType.H && video.GetDefinitionType() == DefinitionType.P1080).ToArray();
                 if (h264Videos.Any())
                 {
-                    if (movie.JsonImdbId.EqualsOrdinal(SubtitleSeparator))
-                    {
-                        log($"!IMDB id is missing as H264: {movie}");
-                        return;
-                    }
-
                     h264Videos.ForEach(h264Video =>
                     {
                         (string File, string XmlImdbId, string XmlTitle) xml = xmlDocuments[PathHelper.GetFileNameWithoutExtension(h264Video.Name)];
@@ -1637,9 +1599,9 @@ internal static partial class Video
                         if (h264Title.IsNotNullOrWhiteSpace())
                         {
                             string remoteImdbId = h264TitlesImdbIds[h264Title];
-                            if (!remoteImdbId.EqualsIgnoreCase(movie.JsonImdbId))
+                            if (!remoteImdbId.EqualsIgnoreCase(xml.XmlImdbId))
                             {
-                                log($"!IMDB id {movie.JsonImdbId} should be {remoteImdbId} for '{xml.XmlTitle}': {xml.File}");
+                                log($"!XML IMDB id {xml.XmlImdbId} should be {remoteImdbId} for '{xml.XmlTitle}': {xml.File}");
                             }
 
                             return;
@@ -1649,16 +1611,42 @@ internal static partial class Video
                         if (h264XTitle.IsNotNullOrWhiteSpace())
                         {
                             string remoteImdbId = h264XTitlesImdbIds[h264XTitle];
-                            if (!remoteImdbId.EqualsIgnoreCase(movie.JsonImdbId))
+                            if (!remoteImdbId.EqualsIgnoreCase(xml.XmlImdbId))
                             {
-                                log($"!IMDB id {movie.JsonImdbId} should be {remoteImdbId} for '{xml.XmlTitle}': {xml.File}");
+                                log($"!XML IMDB id {xml.XmlImdbId} should be {remoteImdbId} for '{xml.XmlTitle}': {xml.File}");
                             }
 
                             return;
                         }
 
-                        log($"-{movie.JsonImdbId} with title {h264Video.Name} is missing in H264 for '{xml.XmlTitle}': {movie}");
+                        log($"-{xml.XmlImdbId} with title {h264Video.Name} is missing in H264 for '{xml.XmlTitle}': {movie.Directory}");
                     });
+                }
+
+                if (ignoreJsonImdbId)
+                {
+                    return;
+                }
+
+                if (!movie.HasJson)
+                {
+                    x265Videos
+                        .Concat(h264Videos)
+                        .ForEach(video => log($"!Json is missing for {video.Name}: {movie.Directory}"));
+
+                    xmlDocuments
+                        .Values
+                        .Where(xml => xml.XmlImdbId.IsNotNullOrWhiteSpace())
+                        .ForEach(xml => log($"!XML IMDB id {xml.XmlImdbId} should be empty for {xml.XmlTitle}: {xml.File}."));
+                }
+                else
+                {
+                    Debug.Assert(movie.JsonImdbId.IsNotNullOrWhiteSpace());
+
+                    xmlDocuments
+                        .Values
+                        .Where(xml => !xml.XmlImdbId.EqualsIgnoreCase(movie.JsonImdbId))
+                        .ForEach(xml => log($"!Xml IMDB id {xml.XmlImdbId} should be {movie.JsonImdbId} for {xml.XmlTitle}: {xml.File}"));
                 }
             });
     }

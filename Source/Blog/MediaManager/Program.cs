@@ -389,7 +389,7 @@ string[] genres = ["family", "animation", "documentary"];
 //    isDryRun: false);
 //});
 
-//await Video.PrintMovieImdbIdErrorsAsync(settings, null, settings.MovieTemp31);
+//await Video.PrintMovieImdbIdErrorsAsync(settings, true, null, settings.MovieTemp31);
 //Video.MoveSubtitleToParentDirectory(settings.MovieTemp);
 //Video.MoveFanArt(settings.MovieTemp);
 //Video.MoveMetadata(settings.MovieTemp, settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory, 2);
