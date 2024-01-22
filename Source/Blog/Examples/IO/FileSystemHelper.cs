@@ -1,6 +1,6 @@
 ﻿namespace Examples.IO;
 
-public static class FileSystemHelper
+public static partial class FileSystemHelper
 {
     public static void Move(string source, string destination, bool overwrite = false)
     {

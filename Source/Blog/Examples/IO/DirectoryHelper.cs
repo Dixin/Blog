@@ -14,7 +14,7 @@ public static class DirectoryHelper
         Directory.Delete(directory, false);
     }
 
-    public static void Rename(this DirectoryInfo directory, string newName) => 
+    public static void Rename(this DirectoryInfo directory, string newName) =>
         Directory.Move(directory.NotNull().FullName, newName.NotNullOrWhiteSpace());
 
     public static bool TryRename(this DirectoryInfo directory, string newName)
@@ -70,13 +70,13 @@ public static class DirectoryHelper
         }
     }
 
-    public static void SetAttributes(string directory, FileAttributes fileAttributes) => 
+    public static void SetAttributes(string directory, FileAttributes fileAttributes) =>
         new DirectoryInfo(directory.NotNull()).Attributes = fileAttributes;
 
-    public static void AddPrefix(string directory, string prefix) => 
+    public static void AddPrefix(string directory, string prefix) =>
         Directory.Move(directory, PathHelper.AddDirectoryPrefix(directory, prefix));
 
-    public static void AddPostfix(string directory, string postfix) => 
+    public static void AddPostfix(string directory, string postfix) =>
         Directory.Move(directory, PathHelper.AddDirectoryPostfix(directory, postfix));
 
     public static void RenameFileExtensionToLowerCase(string directory) =>
@@ -111,10 +111,15 @@ public static class DirectoryHelper
         FileSystem.DeleteDirectory(directory, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
     }
 
-    public static void ReplaceDirectoryName(string directory, string newName, bool overwrite = false) => 
+    public static void ReplaceDirectoryName(string directory, string newName, bool overwrite = false) =>
         Move(directory, PathHelper.ReplaceDirectoryName(directory, newName), overwrite);
 
     public static void ReplaceDirectoryName(string directory, Func<string, string> replace, bool overwrite = false) =>
         Move(directory, PathHelper.ReplaceDirectoryName(directory, replace), overwrite);
 
+    public static void Copy(string sourceDirectory, string destinationDirectory, bool overwrite = false) =>
+        FileSystem.CopyDirectory(sourceDirectory, destinationDirectory, overwrite);
+
+    public static void CopyToDirectory(string sourceDirectory, string destinationParentDirectory, bool overwrite = false) =>
+        FileSystem.CopyDirectory(sourceDirectory, Path.Combine(destinationParentDirectory, Path.GetFileName(sourceDirectory)), overwrite);
 }

@@ -8,7 +8,7 @@ using static Examples.IO.NativeMethods;
 
 namespace Examples.IO;
 
-internal static class FileSystem
+public static partial class FileSystemHelper
 {
     private enum UIOptionInternal
     {
