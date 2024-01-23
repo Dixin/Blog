@@ -392,18 +392,18 @@ internal static partial class Video
         }
     }
 
-    internal static async Task WriteLibraryMovieMetadata(string jsonPath, Action<string>? log = null, params string[] directories)
+    internal static async Task WriteLibraryMovieMetadata(ISettings settings, Action<string>? log = null, params string[] directories)
     {
         log ??= Logger.WriteLine;
-        Dictionary<string, Dictionary<string, VideoMetadata>> existingMetadata = File.Exists(jsonPath)
-            ? await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(jsonPath)
+        Dictionary<string, Dictionary<string, VideoMetadata>> existingMetadata = File.Exists(settings.MovieLibraryMetadata)
+            ? await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(settings.MovieLibraryMetadata)
             : new();
 
         existingMetadata
             .Values
             .ForEach(group => group
                 .Keys
-                .Where(video => !File.Exists(Path.IsPathRooted(video) ? video : Path.Combine(PathHelper.GetDirectoryName(jsonPath), video)))
+                .Where(video => !File.Exists(Path.IsPathRooted(video) ? video : Path.Combine(settings.LibraryDirectory, video)))
                 .ToArray()
                 .ForEach(group.Remove));
 
@@ -418,21 +418,20 @@ internal static partial class Video
             .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
             .SelectMany(movieJson =>
             {
-                string relativePath = PathHelper.GetDirectoryName(jsonPath);
                 ImdbMetadata? imdbMetadata = null;
                 bool isLoaded = false;
                 return Directory
                     .GetFiles(PathHelper.GetDirectoryName(movieJson), PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
-                    .Where(video => video.IsVideo() && !video.IsDiskImage() && !existingVideos.ContainsKey(Path.GetRelativePath(relativePath, video)))
+                    .Where(video => video.IsVideo() && !video.IsDiskImage() && !existingVideos.ContainsKey(Path.GetRelativePath(settings.LibraryDirectory, video)))
                     .Select(video =>
                     {
                         if (!isLoaded)
                         {
                             isLoaded = true;
-                            ImdbMetadata.TryLoad(movieJson, out imdbMetadata);
+                            Imdb.TryLoad(movieJson, out imdbMetadata);
                         }
 
-                        if (!TryReadVideoMetadata(video, out VideoMetadata? videoMetadata, imdbMetadata, relativePath))
+                        if (!TryReadVideoMetadata(video, out VideoMetadata? videoMetadata, imdbMetadata, settings.LibraryDirectory))
                         {
                             log($"!Fail: {video}");
                         }
@@ -460,7 +459,7 @@ internal static partial class Video
             .ToArray()
             .ForEach(existingMetadata.Remove);
 
-        await JsonHelper.SerializeToFileAsync(existingMetadata, jsonPath);
+        await JsonHelper.SerializeToFileAsync(existingMetadata, settings.MovieLibraryMetadata);
     }
 
     internal static async Task WriteExternalVideoMetadataAsync(string jsonPath, params string[] directories)

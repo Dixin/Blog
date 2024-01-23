@@ -220,7 +220,7 @@ Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
 
 //await Video.ConvertToUtf8Async(settings.LibraryDirectory);
 
-//await Video.WriteLibraryMovieMetadata(settings.MovieLibraryMetadata, null,
+// await Video.WriteLibraryMovieMetadata(settings, null,
 //    settings.MovieControversial,
 //    settings.MovieControversialWithoutSubtitle,
 //    settings.MovieControversialTemp3,
