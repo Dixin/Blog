@@ -289,7 +289,7 @@ internal static partial class Video
                     DefaultTitle1: defaultTitle.ReplaceOrdinal(" - ", " ").ReplaceOrdinal(TitleSeparator, " ").ReplaceOrdinal(".", " ").FilterForFileSystem().Trim(), DefaultTitle2: string.Empty, DefaultTitle3: string.Empty,
                     OriginalTitle1: originalTitle.ReplaceOrdinal(" - ", " ").ReplaceOrdinal(TitleSeparator, " ").ReplaceOrdinal(".", " ").FilterForFileSystem().Trim(), OriginalTitle2: string.Empty, OriginalTitle3: string.Empty,
                     Year: year,
-                    TranslatedTitle1: translatedTitle.ReplaceOrdinal(" - ", " ").ReplaceOrdinal(TitleSeparator, " ").ReplaceOrdinal(".", " ").ReplaceIgnoreCase("：", "-").FilterForFileSystem().Trim(), TranslatedTitle2: string.Empty, TranslatedTitle3: string.Empty, TranslatedTitle4: string.Empty,
+                    TranslatedTitle1: translatedTitle.ReplaceOrdinal(" - ", " ").ReplaceOrdinal(TitleSeparator, " ").ReplaceOrdinal(".", " ").ReplaceIgnoreCase("：", TitleSeparator).FilterForFileSystem().Trim(), TranslatedTitle2: string.Empty, TranslatedTitle3: string.Empty, TranslatedTitle4: string.Empty,
                     AggregateRating: rating, AggregateRatingCount: ratingCount,
                     ContentRating: contentRating,
                     Resolution: isTV ? string.Empty : VideoDirectoryInfo.GetResolution(videoFileInfos, settings),

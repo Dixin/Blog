@@ -118,7 +118,7 @@ public partial record ImdbMetadata(
             return false;
         }
 
-        string[] info = name.Split(FileNameSeparator);
+        string[] info = name.Split(FileNameSeparator, StringSplitOptions.TrimEntries);
         Debug.Assert(info.Length == 5 && info[0].IsImdbId());
         imdbId = info[0];
         year = info[1];
@@ -143,7 +143,7 @@ public partial record ImdbMetadata(
             return false;
         }
 
-        string[] info = name.Split(FileNameSeparator);
+        string[] info = name.Split(FileNameSeparator, StringSplitOptions.TrimEntries);
         Debug.Assert(info.Length == 5 && info[0].IsImdbId());
         imdbId = info[0];
         return true;
