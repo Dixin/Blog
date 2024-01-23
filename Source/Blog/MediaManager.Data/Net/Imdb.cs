@@ -523,7 +523,7 @@ internal static class Imdb
                     {
                         1 => originalTitleValues.Single(),
                         > 1 => originalTitleValues.FirstOrDefault(titleValue => originalTitleValues.Except(EnumerableEx.Return(titleValue)).All(titleValue.ContainsIgnoreCase))
-                            ?? string.Join(TitleSeparator, originalTitleValues),
+                            ?? string.Join(Video.TitleSeparator, originalTitleValues),
                         _ => string.Empty
                     };
 
@@ -554,7 +554,7 @@ internal static class Imdb
                         > 1 => titleValues.FirstOrDefault(availableTitle => releaseHtmlTitle.EqualsOrdinal(availableTitle))
                             ?? titleValues.FirstOrDefault(availableTitle => releaseHtmlTitle.EqualsIgnoreCase(availableTitle))
                             ?? titleValues.FirstOrDefault(titleValue => titleValues.Except(EnumerableEx.Return(titleValue)).All(titleValue.ContainsIgnoreCase))
-                            ?? string.Join(TitleSeparator, titleValues),
+                            ?? string.Join(Video.TitleSeparator, titleValues),
                         _ => releaseHtmlTitle
                     };
 
@@ -725,69 +725,6 @@ internal static class Imdb
         );
     }
 
-    internal const string TitleSeparator = "~";
-
-    internal static bool TryRead(string path, [NotNullWhen(true)] out string? imdbId, [NotNullWhen(true)] out string? year, [NotNullWhen(true)] out string[]? regions, [NotNullWhen(true)] out string[]? languages, [NotNullWhen(true)] out string[]? genres)
-    {
-        imdbId = null;
-        year = null;
-        regions = null;
-        languages = null;
-        genres = null;
-
-        if (!TryRead(path, out string? file))
-        {
-            return false;
-        }
-
-        string name = PathHelper.GetFileNameWithoutExtension(file);
-        if (name.EqualsOrdinal(Video.NotExistingFlag))
-        {
-            return false;
-        }
-
-        string[] info = name.Split(Video.SubtitleSeparator);
-        Debug.Assert(info.Length == 5 && info[0].IsNotNullOrWhiteSpace());
-        imdbId = info[0];
-        year = info[1];
-        regions = info[2].Split(Video.ImdbMetadataSeparator);
-        languages = info[3].Split(Video.ImdbMetadataSeparator);
-        genres = info[4].Split(Video.ImdbMetadataSeparator);
-        return true;
-    }
-
-    internal static bool TryRead(string? path, [NotNullWhen(true)] out string? file)
-    {
-        if (Directory.Exists(path))
-        {
-            file = Directory.GetFiles(path, Video.ImdbMetadataSearchPattern, SearchOption.TopDirectoryOnly).SingleOrDefault();
-            Debug.Assert(file.IsNullOrWhiteSpace() || PathHelper.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.SubtitleSeparator) || PathHelper.GetFileNameWithoutExtension(file).Split(Video.SubtitleSeparator).Length == 5);
-            return file.IsNotNullOrWhiteSpace();
-        }
-
-        if (path.IsNotNullOrWhiteSpace() && path.EndsWith(Video.ImdbMetadataExtension) && File.Exists(path))
-        {
-            file = path;
-            Debug.Assert(file.IsNullOrWhiteSpace() || PathHelper.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.SubtitleSeparator) || PathHelper.GetFileNameWithoutExtension(file).Split(Video.SubtitleSeparator).Length == 5);
-            return true;
-        }
-
-        file = null;
-        return false;
-    }
-
-    internal static bool TryLoad(string? path, [NotNullWhen(true)] out ImdbMetadata? imdbMetadata)
-    {
-        if (TryRead(path, out string? file) && !PathHelper.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.NotExistingFlag))
-        {
-            imdbMetadata = JsonHelper.DeserializeFromFile<ImdbMetadata>(file);
-            return true;
-        }
-
-        imdbMetadata = null;
-        return false;
-    }
-
     internal static async Task DownloadAllMoviesAsync(ISettings settings, Func<int, Range>? getRange = null, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
@@ -841,7 +778,7 @@ internal static class Imdb
         }
 
         imdbIds = imdbIds
-            .Except(metadataFiles.Select(file => PathHelper.GetFileNameWithoutExtension(file).Split("-").First()))
+            .Except(metadataFiles.Select(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty))
             .ToArray();
         int trimmedLength = imdbIds.Length;
         ConcurrentQueue<string> imdbIdQueue = new(imdbIds);
@@ -997,7 +934,7 @@ internal static class Imdb
         }
 
         imdbIds = imdbIds
-            .Except(metadataFiles.Select(file => PathHelper.GetFileNameWithoutExtension(file).Split("-").First()))
+            .Except(metadataFiles.Select(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty))
             .ToArray();
         int trimmedLength = imdbIds.Length;
         await imdbIds.ForEachAsync(async (imdbId, index) =>
@@ -1027,7 +964,7 @@ internal static class Imdb
 
         Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(x265JsonPath);
         string[] libraryImdbIds = tvDirectories.SelectMany(tvDirectory => Directory.EnumerateFiles(tvDirectory, Video.ImdbMetadataSearchPattern, SearchOption.AllDirectories))
-            .Select(file => TryRead(file, out string? imdbId, out _, out _, out _, out _) ? imdbId : string.Empty)
+            .Select(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty)
             .Where(imdbId => imdbId.IsNotNullOrWhiteSpace())
             .ToArray();
 
@@ -1046,7 +983,7 @@ internal static class Imdb
         }
 
         imdbIds = imdbIds
-            .Except(metadataFiles.Select(file => PathHelper.GetFileNameWithoutExtension(file).Split("-").First()))
+            .Except(metadataFiles.Select(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty))
             .ToArray();
         int trimmedLength = imdbIds.Length;
         await imdbIds.ForEachAsync(async (imdbId, index) =>
@@ -1066,6 +1003,4 @@ internal static class Imdb
                 }
             });
     }
-
-    internal static bool IsImdbId(this string value) => Regex.IsMatch(value, "^tt[0-9]+$");
 }

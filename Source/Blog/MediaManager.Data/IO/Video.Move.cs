@@ -207,7 +207,7 @@ internal static partial class Video
                     return;
                 }
 
-                Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata);
+                ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata);
                 string additional = $"@{string.Join(",", imdbMetadata?.Regions.Take(4) ?? [])}#{string.Join(",", imdbMetadata?.Languages.Take(3) ?? [])}";
                 string originalMovie = movieName.ContainsOrdinal("{")
                     ? PathHelper.ReplaceFileName(movie, movieName.Substring(0, movieName.IndexOfOrdinal("@")))
@@ -263,15 +263,15 @@ internal static partial class Video
                     }
                 }
 
-                string json = files.Single(file => file.HasExtension(ImdbMetadataExtension));
-                Imdb.TryLoad(json, out ImdbMetadata? imdbMetadata);
+                string json = files.Single(file => file.HasExtension(ImdbMetadata.FileExtension));
+                ImdbMetadata.TryLoad(json, out ImdbMetadata? imdbMetadata);
 
                 string defaultTitle = english.Root?.Element("title")?.Value ?? throw new InvalidOperationException($"{movie} has no default title.");
-                defaultTitle = defaultTitle.ReplaceOrdinal(" - ", "-");
+                defaultTitle = defaultTitle.ReplaceOrdinal(" - ", TitleSeparator);
                 string translatedTitle = translated?.Root?.Element("title")?.Value ?? string.Empty;
-                translatedTitle = translatedTitle.ReplaceOrdinal(" - ", "-");
+                translatedTitle = translatedTitle.ReplaceOrdinal(" - ", TitleSeparator);
                 string originalTitle = imdbMetadata?.OriginalTitle ?? english.Root?.Element("originaltitle")?.Value ?? imdbMetadata?.Name ?? string.Empty;
-                originalTitle = originalTitle.ReplaceOrdinal(" - ", "-");
+                originalTitle = originalTitle.ReplaceOrdinal(" - ", TitleSeparator);
                 originalTitle = originalTitle.EqualsIgnoreCase(defaultTitle) || originalTitle.IsNullOrWhiteSpace()
                     ? string.Empty
                     : $"={originalTitle}";
@@ -279,17 +279,17 @@ internal static partial class Video
                 string? imdbId = english.Root?.Element("imdbid")?.Value ?? english.Root?.Element("imdb_id")?.Value;
                 Debug.Assert(imdbId.IsNullOrWhiteSpace()
                     ? NotExistingFlag.EqualsOrdinal(PathHelper.GetFileNameWithoutExtension(json))
-                    : imdbId.EqualsIgnoreCase(PathHelper.GetFileNameWithoutExtension(json).Split("-")[0]));
+                    : json.HasImdbId(imdbId));
                 string rating = imdbMetadata?.FormattedAggregateRating ?? NotExistingFlag;
                 string ratingCount = imdbMetadata?.FormattedAggregateRatingCount ?? NotExistingFlag;
                 string[] videos = files.Where(IsVideo).ToArray();
                 string contentRating = imdbMetadata?.FormattedContentRating ?? NotExistingFlag;
                 VideoMovieFileInfo[] videoFileInfos = videos.Select(VideoMovieFileInfo.Parse).ToArray();
                 VideoDirectoryInfo videoDirectoryInfo = new(
-                    DefaultTitle1: defaultTitle.ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " ").FilterForFileSystem().Trim(), DefaultTitle2: string.Empty, DefaultTitle3: string.Empty,
-                    OriginalTitle1: originalTitle.ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " ").FilterForFileSystem().Trim(), OriginalTitle2: string.Empty, OriginalTitle3: string.Empty,
+                    DefaultTitle1: defaultTitle.ReplaceOrdinal(" - ", " ").ReplaceOrdinal(TitleSeparator, " ").ReplaceOrdinal(".", " ").FilterForFileSystem().Trim(), DefaultTitle2: string.Empty, DefaultTitle3: string.Empty,
+                    OriginalTitle1: originalTitle.ReplaceOrdinal(" - ", " ").ReplaceOrdinal(TitleSeparator, " ").ReplaceOrdinal(".", " ").FilterForFileSystem().Trim(), OriginalTitle2: string.Empty, OriginalTitle3: string.Empty,
                     Year: year,
-                    TranslatedTitle1: translatedTitle.ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " ").ReplaceIgnoreCase("：", "-").FilterForFileSystem().Trim(), TranslatedTitle2: string.Empty, TranslatedTitle3: string.Empty, TranslatedTitle4: string.Empty,
+                    TranslatedTitle1: translatedTitle.ReplaceOrdinal(" - ", " ").ReplaceOrdinal(TitleSeparator, " ").ReplaceOrdinal(".", " ").ReplaceIgnoreCase("：", "-").FilterForFileSystem().Trim(), TranslatedTitle2: string.Empty, TranslatedTitle3: string.Empty, TranslatedTitle4: string.Empty,
                     AggregateRating: rating, AggregateRatingCount: ratingCount,
                     ContentRating: contentRating,
                     Resolution: isTV ? string.Empty : VideoDirectoryInfo.GetResolution(videoFileInfos, settings),
@@ -365,7 +365,7 @@ internal static partial class Video
                     return;
                 }
 
-                if (Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata))
+                if (ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata))
                 {
                     if (imdbMetadata.Year.IsNotNullOrWhiteSpace())
                     {
@@ -627,9 +627,9 @@ internal static partial class Video
             .ToArray()
             .ForEach(movie =>
             {
-                string rating = Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata)
+                string rating = ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata)
                     ? imdbMetadata.FormattedAggregateRating
-                    : "-";
+                    : NotExistingFlag;
                 string name = PathHelper.GetFileName(movie);
                 string newName = Regex.Replace(name, @"\[([0-9]\.[0-9]|\-)\]", $"[{rating}]");
                 if (!name.EqualsOrdinal(newName))
@@ -739,7 +739,7 @@ internal static partial class Video
                             video
                                 .ReplaceIgnoreCase(".1080p", string.Empty).ReplaceIgnoreCase(".720p", string.Empty)
                                 .ReplaceOrdinal("    ", " ").ReplaceOrdinal("   ", " ").ReplaceOrdinal("  ", " ")
-                                .ReplaceOrdinal(" - ", "-").ReplaceOrdinal("- ", "-").ReplaceOrdinal(" -", "-"),
+                                .ReplaceOrdinal(" - ", TitleSeparator).ReplaceOrdinal("- ", TitleSeparator).ReplaceOrdinal(" -", TitleSeparator),
                             prefix);
                         if (!isDryRun)
                         {
@@ -1110,7 +1110,7 @@ internal static partial class Video
                 string videoName = PathHelper.GetFileNameWithoutExtension(video);
 
                 string newVideoName = Regex.Replace(videoName, "[ ]+", " ", RegexOptions.IgnoreCase);
-                newVideoName = Regex.Replace(newVideoName, @"[ \.]{0,}[\-]{1,}[ \.]{0,}", "-", RegexOptions.IgnoreCase);
+                newVideoName = Regex.Replace(newVideoName, @"[ \.]{0,}[\-]{1,}[ \.]{0,}", TitleSeparator, RegexOptions.IgnoreCase);
                 newVideoName = Regex.Replace(newVideoName, @"[ \.]{0,}[\(\[]{0,}([0-9]{4})[\)\]]{0,}", ".$1", RegexOptions.IgnoreCase);
                 newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}(HD)?1080p[\)\]]{0,}", ".1080p", RegexOptions.IgnoreCase);
                 newVideoName = Regex.Replace(newVideoName, @"[ \.]+[\(\[]{0,}(HD)?720p[\)\]]{0,}", ".720p", RegexOptions.IgnoreCase);
@@ -1145,7 +1145,7 @@ internal static partial class Video
                 newVideoName = Regex.Replace(newVideoName, @"[ \.]+([12-9])Audio\-([a-zA-Z]+)", "-$2.$1Audio", RegexOptions.IgnoreCase);
                 newVideoName = Regex.Replace(newVideoName, @"[ \.]+cd([12-9])\-([a-zA-Z]+)", "-$2.cd$1", RegexOptions.IgnoreCase);
                 newVideoName = newVideoName
-                    .ReplaceIgnoreCase("：", "-")
+                    .ReplaceIgnoreCase("：", TitleSeparator)
                     .ReplaceIgnoreCase(".BluRay.1080p", ".1080p.BluRay")
                     .ReplaceIgnoreCase(".WEBRip.1080p", ".1080p.WEBRip")
                     .ReplaceIgnoreCase(".AC3.H264", ".H264.AC3")

@@ -100,7 +100,7 @@ internal static partial class Video
                 if (videos.Any())
                 {
                     log(movie);
-                    Imdb.TryRead(movie, out string? imdbId, out _, out _, out _, out _);
+                    ImdbMetadata.TryRead(movie, out string? imdbId, out _, out _, out _, out _);
                     log(imdbId ?? string.Empty);
                     videos.ForEach(video => log(video.Name));
                     log(string.Empty);
@@ -127,12 +127,12 @@ internal static partial class Video
                 searchPatterns.AddRange(AllSubtitleExtensions.Select(extension => new Regex($"{extension}$", RegexOptions.IgnoreCase)));
             }
 
-            noSubtitle = movie => !Directory.GetFiles(movie).Any(file => searchPatterns.Any(searchPattern => searchPattern.IsMatch(file)));
+            noSubtitle = movie => !Directory.EnumerateFiles(movie).Any(file => searchPatterns.Any(searchPattern => searchPattern.IsMatch(file)));
         }
 
         EnumerateDirectories(directory, level)
             .Where(noSubtitle)
-            .ForEach(movie => log($"{(Imdb.TryRead(movie, out string? imdbId, out _, out _, out _, out _) ? imdbId : "-")} {movie}"));
+            .ForEach(movie => log($"{(ImdbMetadata.TryRead(movie, out string? imdbId, out _, out _, out _, out _) ? imdbId : NotExistingFlag)} {movie}"));
     }
 
     internal static void PrintMetadataByGroup(string directory, int level = DefaultDirectoryLevel, string field = "genre", Action<string>? log = null)
@@ -196,7 +196,7 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
         directories.SelectMany(directory => Directory.EnumerateFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories))
-            .GroupBy(metadata => PathHelper.GetFileNameWithoutExtension(metadata).Split("-")[0])
+            .GroupBy(metadata => ImdbMetadata.TryGet(metadata, out string? imdbId) ? imdbId : string.Empty)
             .Where(group => group.Count() > 1)
             .ForEach(group => group.OrderBy(metadata => metadata).Append(string.Empty).ForEach(log));
     }
@@ -274,7 +274,7 @@ internal static partial class Video
                     .Select(PathHelper.GetFileName)
                     .ToArray();
 
-                string imdbRating = Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata)
+                string imdbRating = ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata)
                     ? imdbMetadata.FormattedAggregateRating
                     : NotExistingFlag;
 
@@ -301,7 +301,7 @@ internal static partial class Video
                     log($"!Content rating {directoryInfo.ContentRating} should be {contentRating}: {movie}");
                 }
 
-                string[] imdbFiles = topFiles.Where(file => file.HasExtension(ImdbMetadataExtension)).ToArray();
+                string[] imdbFiles = topFiles.Where(file => file.HasExtension(ImdbMetadata.FileExtension)).ToArray();
                 string[] cacheFiles = topFiles.Where(file => file.HasExtension(ImdbCacheExtension)).ToArray();
 
                 if (imdbFiles.Length != 1)
@@ -558,7 +558,7 @@ internal static partial class Video
                 string movieYear = movieName[1];
                 string? videoYear = null;
                 string? videoTitle = null;
-                if (Imdb.TryLoad(movie, out ImdbMetadata? jsonMetadata))
+                if (ImdbMetadata.TryLoad(movie, out ImdbMetadata? jsonMetadata))
                 {
                     videoYear = jsonMetadata.Year;
                     videoTitle = jsonMetadata.Title;
@@ -607,17 +607,17 @@ internal static partial class Video
                 }
 
                 videoTitle = videoTitle?.Replace(Delimiter, string.Empty).Replace(":", string.Empty);
-                if (videoTitle.EqualsIgnoreCase(movieName[0].Split("=").Last().Replace(SubtitleSeparator, " ")))
+                if (videoTitle.EqualsIgnoreCase(movieName[0].Split("=").Last().Replace(TitleSeparator, " ")))
                 {
                     return;
                 }
 
-                if (videoTitle.EqualsIgnoreCase(movieTitle.Split(SubtitleSeparator).Last()))
+                if (videoTitle.EqualsIgnoreCase(movieTitle.Split(TitleSeparator).Last()))
                 {
                     return;
                 }
 
-                movieTitle = movieTitle.Replace(SubtitleSeparator, " ");
+                movieTitle = movieTitle.Replace(TitleSeparator, " ");
                 if (!videoTitle.EqualsIgnoreCase(movieTitle))
                 {
                     log(movie);
@@ -642,7 +642,7 @@ internal static partial class Video
             .ForEach(movie =>
             {
                 string[] files = Directory.GetFiles(movie);
-                string? json = files.SingleOrDefault(file => file.HasExtension(ImdbMetadataExtension));
+                string? json = files.SingleOrDefault(file => file.HasExtension(ImdbMetadata.FileExtension));
                 if (json.IsNullOrWhiteSpace())
                 {
                     log($"!!! Missing IMDB metadata {movie}");
@@ -650,17 +650,9 @@ internal static partial class Video
                     return;
                 }
 
-                string imdbId = PathHelper.GetFileNameWithoutExtension(json);
-                if (imdbId.EqualsOrdinal(NotExistingFlag))
+                if (!ImdbMetadata.TryGet(json, out string? imdbId))
                 {
-                    log($"{NotExistingFlag} {movie}");
-                    return;
-                }
-
-                imdbId = imdbId.Split(SubtitleSeparator)[0];
-                if (!imdbId.IsImdbId())
-                {
-                    log($"Invalid IMDB id {imdbId}: {movie}");
+                    log($"Missing or no JSON IMDB id: {movie}");
                     return;
                 }
 
@@ -961,7 +953,7 @@ internal static partial class Video
             .ForEach(tv =>
             {
                 string[] topFiles = Directory.GetFiles(tv);
-                string? json = topFiles.SingleOrDefault(file => file.HasExtension(ImdbMetadataExtension));
+                string? json = topFiles.SingleOrDefault(file => file.HasExtension(ImdbMetadata.FileExtension));
                 if (json.IsNullOrWhiteSpace())
                 {
                     log($"!!! Missing IMDB metadata {tv}");
@@ -969,17 +961,9 @@ internal static partial class Video
                     return;
                 }
 
-                string imdbId = PathHelper.GetFileNameWithoutExtension(json);
-                if (imdbId.EqualsOrdinal(NotExistingFlag))
+                if (!ImdbMetadata.TryGet(json, out string? imdbId))
                 {
-                    log($"{NotExistingFlag} {tv}");
-                    return;
-                }
-
-                imdbId = imdbId.Split(SubtitleSeparator)[0];
-                if (!imdbId.IsImdbId())
-                {
-                    log($"Invalid IMDB id {imdbId}: {tv}");
+                    log($"Missing or no IMDB id: {tv}");
                     return;
                 }
 
@@ -1066,8 +1050,8 @@ internal static partial class Video
         HashSet<string> existingImdbIds = new(
             directories.SelectMany(directory => Directory
                 .EnumerateFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories)
-                .Select(file => PathHelper.GetFileNameWithoutExtension(file).Split(".").First())
-                .Where(imdbId => imdbId != NotExistingFlag)),
+                .Select(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty))
+                .Where(imdbId => imdbId.IsNotNullOrWhiteSpace()),
             StringComparer.OrdinalIgnoreCase);
         Dictionary<string, TopMetadata[]> x265Summaries = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265Metadata);
         Dictionary<string, TopMetadata[]> h264Summaries = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264Metadata);
@@ -1147,7 +1131,7 @@ internal static partial class Video
                     return;
                 }
 
-                if (!Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata))
+                if (!ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata))
                 {
                     log($"!Missing metadata {movie}");
                     return;
@@ -1193,7 +1177,7 @@ internal static partial class Video
                         .ToArray();
                 }
 
-                string[] imdbTitles = imdbTitle.Split(Imdb.TitleSeparator)
+                string[] imdbTitles = imdbTitle.Split(TitleSeparator)
                     .Concat(releaseTitles)
                     .Select(title => title
                         .FilterForFileSystem()
@@ -1208,19 +1192,19 @@ internal static partial class Video
                     .SelectMany(imdbTitle => new string[]
                     {
                         imdbTitle,
-                        HttpUtility.HtmlDecode(imdbMetadata.Title).Replace(SubtitleSeparator, " ").FilterForFileSystem(),
+                        HttpUtility.HtmlDecode(imdbMetadata.Title).Replace(TitleSeparator, " ").FilterForFileSystem(),
                         imdbTitle.Replace("(", string.Empty).Replace(")", string.Empty),
                         Regex.Replace(imdbTitle, @"\(.+\)", string.Empty).Trim(),
                         imdbTitle.Replace("...", string.Empty),
                         imdbTitle.Replace("#", "No "),
                         imdbTitle,
-                        imdbTitle.Replace(SubtitleSeparator, " "),
+                        imdbTitle.Replace(TitleSeparator, " "),
                         imdbTitle.Replace(" · ", " "),
                         imdbTitle.Replace(" - ", " "),
-                        imdbTitle.Replace(" - ", SubtitleSeparator),
-                        imdbTitle.ReplaceIgnoreCase(" Vol ", SubtitleSeparator),
-                        imdbTitle.ReplaceIgnoreCase(" Chapter ", SubtitleSeparator),
-                        imdbTitle.Replace(SubtitleSeparator, " "),
+                        imdbTitle.Replace(" - ", TitleSeparator),
+                        imdbTitle.ReplaceIgnoreCase(" Vol ", TitleSeparator),
+                        imdbTitle.ReplaceIgnoreCase(" Chapter ", TitleSeparator),
+                        imdbTitle.Replace(TitleSeparator, " "),
                         imdbTitle.ReplaceIgnoreCase("zero", "0"),
                         imdbTitle.ReplaceIgnoreCase("one", "1"),
                         imdbTitle.ReplaceIgnoreCase("two", "2"),
@@ -1242,31 +1226,31 @@ internal static partial class Video
                 [
                     parsed.DefaultTitle1,
                     parsed.DefaultTitle1.Replace(InstallmentSeparator, " "),
-                    parsed.DefaultTitle1.Replace(InstallmentSeparator, "-"),
+                    parsed.DefaultTitle1.Replace(InstallmentSeparator, TitleSeparator),
                     parsed.DefaultTitle1.Split(InstallmentSeparator).First(),
                     $"{parsed.DefaultTitle1.Split(InstallmentSeparator).First()}{parsed.DefaultTitle2}",
-                    $"{parsed.DefaultTitle1.Split(InstallmentSeparator).First()}{parsed.DefaultTitle2.Replace(SubtitleSeparator, " ")}",
-                    parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()),
-                    parsed.DefaultTitle3.TrimStart(SubtitleSeparator.ToCharArray()),
+                    $"{parsed.DefaultTitle1.Split(InstallmentSeparator).First()}{parsed.DefaultTitle2.Replace(TitleSeparator, " ")}",
+                    parsed.DefaultTitle2.TrimStart(TitleSeparator.ToCharArray()),
+                    parsed.DefaultTitle3.TrimStart(TitleSeparator.ToCharArray()),
                     parsed.OriginalTitle1.TrimStart('='),
                     $"{parsed.DefaultTitle1}{parsed.DefaultTitle2}",
-                    $"{parsed.DefaultTitle1}{parsed.DefaultTitle2}".Replace(SubtitleSeparator, " "),
-                    $"{parsed.DefaultTitle1}{parsed.DefaultTitle2}".Replace(SubtitleSeparator, " ").Replace(InstallmentSeparator, " "),
+                    $"{parsed.DefaultTitle1}{parsed.DefaultTitle2}".Replace(TitleSeparator, " "),
+                    $"{parsed.DefaultTitle1}{parsed.DefaultTitle2}".Replace(TitleSeparator, " ").Replace(InstallmentSeparator, " "),
                     $"{parsed.DefaultTitle1}{parsed.DefaultTitle2}".Replace(InstallmentSeparator, " "),
-                    $"{parsed.DefaultTitle1}{parsed.DefaultTitle2}".Replace(InstallmentSeparator, SubtitleSeparator),
-                    $"{parsed.DefaultTitle1.Split(InstallmentSeparator).First()}{parsed.DefaultTitle2.Split(InstallmentSeparator).First()}".Replace(SubtitleSeparator, " "),
-                    parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Replace(InstallmentSeparator, " "),
-                    parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Replace(InstallmentSeparator, "-"),
-                    parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Split(InstallmentSeparator).First(),
-                    $"{parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Split(InstallmentSeparator).First()}{parsed.DefaultTitle3.Split(InstallmentSeparator).First()}",
-                    $"{parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Split(InstallmentSeparator).First()}{parsed.DefaultTitle3.Split(InstallmentSeparator).First()}".Replace(SubtitleSeparator, " ")
+                    $"{parsed.DefaultTitle1}{parsed.DefaultTitle2}".Replace(InstallmentSeparator, TitleSeparator),
+                    $"{parsed.DefaultTitle1.Split(InstallmentSeparator).First()}{parsed.DefaultTitle2.Split(InstallmentSeparator).First()}".Replace(TitleSeparator, " "),
+                    parsed.DefaultTitle2.TrimStart(TitleSeparator.ToCharArray()).Replace(InstallmentSeparator, " "),
+                    parsed.DefaultTitle2.TrimStart(TitleSeparator.ToCharArray()).Replace(InstallmentSeparator, TitleSeparator),
+                    parsed.DefaultTitle2.TrimStart(TitleSeparator.ToCharArray()).Split(InstallmentSeparator).First(),
+                    $"{parsed.DefaultTitle2.TrimStart(TitleSeparator.ToCharArray()).Split(InstallmentSeparator).First()}{parsed.DefaultTitle3.Split(InstallmentSeparator).First()}",
+                    $"{parsed.DefaultTitle2.TrimStart(TitleSeparator.ToCharArray()).Split(InstallmentSeparator).First()}{parsed.DefaultTitle3.Split(InstallmentSeparator).First()}".Replace(TitleSeparator, " ")
                 ];
                 if (parsed.DefaultTitle2.IsNotNullOrWhiteSpace())
                 {
-                    localTitles.Add($"{parsed.DefaultTitle1} {parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()).ToLowerInvariant()[0]}{parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray())[1..]}");
-                    localTitles.Add($"{parsed.DefaultTitle1} {parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()).ToLowerInvariant()[0]}{parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray())[1..].Replace(InstallmentSeparator, " ")}");
-                    localTitles.Add($"{parsed.DefaultTitle1} {parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()).ToLowerInvariant()}");
-                    localTitles.Add($"{parsed.DefaultTitle1} {parsed.DefaultTitle2.TrimStart(SubtitleSeparator.ToCharArray()).ToLowerInvariant().Replace(InstallmentSeparator, " ")}");
+                    localTitles.Add($"{parsed.DefaultTitle1} {parsed.DefaultTitle2.TrimStart(TitleSeparator.ToCharArray()).ToLowerInvariant()[0]}{parsed.DefaultTitle2.TrimStart(TitleSeparator.ToCharArray())[1..]}");
+                    localTitles.Add($"{parsed.DefaultTitle1} {parsed.DefaultTitle2.TrimStart(TitleSeparator.ToCharArray()).ToLowerInvariant()[0]}{parsed.DefaultTitle2.TrimStart(TitleSeparator.ToCharArray())[1..].Replace(InstallmentSeparator, " ")}");
+                    localTitles.Add($"{parsed.DefaultTitle1} {parsed.DefaultTitle2.TrimStart(TitleSeparator.ToCharArray()).ToLowerInvariant()}");
+                    localTitles.Add($"{parsed.DefaultTitle1} {parsed.DefaultTitle2.TrimStart(TitleSeparator.ToCharArray()).ToLowerInvariant().Replace(InstallmentSeparator, " ")}");
                 }
                 if (imdbTitles.Any(a => localTitles.Any(a.EqualsOrdinal)))
                 {
@@ -1289,6 +1273,7 @@ internal static partial class Video
     internal static void PrintDirectoryOriginalTitleMismatch(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
+
         EnumerateDirectories(directory, level)
             .ToArray()
             .ForEach(movie =>
@@ -1299,7 +1284,7 @@ internal static partial class Video
                     return;
                 }
 
-                if (!Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata))
+                if (!ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata))
                 {
                     log($"!Missing metadata {movie}");
                     return;
@@ -1311,7 +1296,7 @@ internal static partial class Video
                     return;
                 }
 
-                string[] imdbTitles = imdbTitle.Split(Imdb.TitleSeparator)
+                string[] imdbTitles = imdbTitle.Split(TitleSeparator)
                     .Select(title => title
                         .FilterForFileSystem()
                         .Replace(" 3D", string.Empty)
@@ -1325,19 +1310,19 @@ internal static partial class Video
                     .SelectMany(imdbTitle => new string[]
                     {
                         imdbTitle,
-                        HttpUtility.HtmlDecode(imdbMetadata.Title).Replace(SubtitleSeparator, " ").FilterForFileSystem(),
+                        HttpUtility.HtmlDecode(imdbMetadata.Title).Replace(TitleSeparator, " ").FilterForFileSystem(),
                         imdbTitle.Replace("(", string.Empty).Replace(")", string.Empty),
                         Regex.Replace(imdbTitle, @"\(.+\)", string.Empty).Trim(),
                         imdbTitle.Replace("...", string.Empty),
                         imdbTitle.Replace("#", "No "),
                         imdbTitle,
-                        imdbTitle.Replace(SubtitleSeparator, " "),
+                        imdbTitle.Replace(TitleSeparator, " "),
                         imdbTitle.Replace(" · ", " "),
                         imdbTitle.Replace(" - ", " "),
-                        imdbTitle.Replace(" - ", SubtitleSeparator),
-                        imdbTitle.ReplaceIgnoreCase(" Vol ", SubtitleSeparator),
-                        imdbTitle.ReplaceIgnoreCase(" Chapter ", SubtitleSeparator),
-                        imdbTitle.Replace(SubtitleSeparator, " "),
+                        imdbTitle.Replace(" - ", TitleSeparator),
+                        imdbTitle.ReplaceIgnoreCase(" Vol ", TitleSeparator),
+                        imdbTitle.ReplaceIgnoreCase(" Chapter ", TitleSeparator),
+                        imdbTitle.Replace(TitleSeparator, " "),
                         imdbTitle.ReplaceIgnoreCase("zero", "0"),
                         imdbTitle.ReplaceIgnoreCase("one", "1"),
                         imdbTitle.ReplaceIgnoreCase("two", "2"),
@@ -1359,31 +1344,31 @@ internal static partial class Video
                 [
                     parsed.DefaultTitle1,
                     parsed.OriginalTitle1.Replace(InstallmentSeparator, " "),
-                    parsed.OriginalTitle1.Replace(InstallmentSeparator, "-"),
+                    parsed.OriginalTitle1.Replace(InstallmentSeparator, TitleSeparator),
                     parsed.OriginalTitle1.Split(InstallmentSeparator).First(),
                     $"{parsed.OriginalTitle1.Split(InstallmentSeparator).First()}{parsed.OriginalTitle2}",
-                    $"{parsed.OriginalTitle1.Split(InstallmentSeparator).First()}{parsed.OriginalTitle2.Replace(SubtitleSeparator, " ")}",
-                    parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()),
-                    parsed.OriginalTitle3.TrimStart(SubtitleSeparator.ToCharArray()),
+                    $"{parsed.OriginalTitle1.Split(InstallmentSeparator).First()}{parsed.OriginalTitle2.Replace(TitleSeparator, " ")}",
+                    parsed.OriginalTitle2.TrimStart(TitleSeparator.ToCharArray()),
+                    parsed.OriginalTitle3.TrimStart(TitleSeparator.ToCharArray()),
                     parsed.OriginalTitle1.TrimStart('='),
                     $"{parsed.OriginalTitle1}{parsed.OriginalTitle2}",
-                    $"{parsed.OriginalTitle1}{parsed.OriginalTitle2}".Replace(SubtitleSeparator, " "),
-                    $"{parsed.OriginalTitle1}{parsed.OriginalTitle2}".Replace(SubtitleSeparator, " ").Replace(InstallmentSeparator, " "),
+                    $"{parsed.OriginalTitle1}{parsed.OriginalTitle2}".Replace(TitleSeparator, " "),
+                    $"{parsed.OriginalTitle1}{parsed.OriginalTitle2}".Replace(TitleSeparator, " ").Replace(InstallmentSeparator, " "),
                     $"{parsed.OriginalTitle1}{parsed.OriginalTitle2}".Replace(InstallmentSeparator, " "),
-                    $"{parsed.OriginalTitle1}{parsed.OriginalTitle2}".Replace(InstallmentSeparator, SubtitleSeparator),
-                    $"{parsed.OriginalTitle1.Split(InstallmentSeparator).First()}{parsed.OriginalTitle2.Split(InstallmentSeparator).First()}".Replace(SubtitleSeparator, " "),
-                    parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Replace(InstallmentSeparator, " "),
-                    parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Replace(InstallmentSeparator, "-"),
-                    parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Split(InstallmentSeparator).First(),
-                    $"{parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Split(InstallmentSeparator).First()}{parsed.OriginalTitle3.Split(InstallmentSeparator).First()}",
-                    $"{parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()).Split(InstallmentSeparator).First()}{parsed.OriginalTitle3.Split(InstallmentSeparator).First()}".Replace(SubtitleSeparator, " ")
+                    $"{parsed.OriginalTitle1}{parsed.OriginalTitle2}".Replace(InstallmentSeparator, TitleSeparator),
+                    $"{parsed.OriginalTitle1.Split(InstallmentSeparator).First()}{parsed.OriginalTitle2.Split(InstallmentSeparator).First()}".Replace(TitleSeparator, " "),
+                    parsed.OriginalTitle2.TrimStart(TitleSeparator.ToCharArray()).Replace(InstallmentSeparator, " "),
+                    parsed.OriginalTitle2.TrimStart(TitleSeparator.ToCharArray()).Replace(InstallmentSeparator, TitleSeparator),
+                    parsed.OriginalTitle2.TrimStart(TitleSeparator.ToCharArray()).Split(InstallmentSeparator).First(),
+                    $"{parsed.OriginalTitle2.TrimStart(TitleSeparator.ToCharArray()).Split(InstallmentSeparator).First()}{parsed.OriginalTitle3.Split(InstallmentSeparator).First()}",
+                    $"{parsed.OriginalTitle2.TrimStart(TitleSeparator.ToCharArray()).Split(InstallmentSeparator).First()}{parsed.OriginalTitle3.Split(InstallmentSeparator).First()}".Replace(TitleSeparator, " ")
                 ];
                 if (parsed.OriginalTitle2.IsNotNullOrWhiteSpace())
                 {
-                    localTitles.Add($"{parsed.OriginalTitle1} {parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()).ToLowerInvariant()[0]}{parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray())[1..]}");
-                    localTitles.Add($"{parsed.OriginalTitle1} {parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()).ToLowerInvariant()[0]}{parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray())[1..].Replace(InstallmentSeparator, " ")}");
-                    localTitles.Add($"{parsed.OriginalTitle1} {parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()).ToLowerInvariant()}");
-                    localTitles.Add($"{parsed.OriginalTitle1} {parsed.OriginalTitle2.TrimStart(SubtitleSeparator.ToCharArray()).ToLowerInvariant().Replace(InstallmentSeparator, " ")}");
+                    localTitles.Add($"{parsed.OriginalTitle1} {parsed.OriginalTitle2.TrimStart(TitleSeparator.ToCharArray()).ToLowerInvariant()[0]}{parsed.OriginalTitle2.TrimStart(TitleSeparator.ToCharArray())[1..]}");
+                    localTitles.Add($"{parsed.OriginalTitle1} {parsed.OriginalTitle2.TrimStart(TitleSeparator.ToCharArray()).ToLowerInvariant()[0]}{parsed.OriginalTitle2.TrimStart(TitleSeparator.ToCharArray())[1..].Replace(InstallmentSeparator, " ")}");
+                    localTitles.Add($"{parsed.OriginalTitle1} {parsed.OriginalTitle2.TrimStart(TitleSeparator.ToCharArray()).ToLowerInvariant()}");
+                    localTitles.Add($"{parsed.OriginalTitle1} {parsed.OriginalTitle2.TrimStart(TitleSeparator.ToCharArray()).ToLowerInvariant().Replace(InstallmentSeparator, " ")}");
                 }
                 if (imdbTitles.Any(a => localTitles.Any(a.EqualsOrdinal)))
                 {
@@ -1408,7 +1393,7 @@ internal static partial class Video
         log ??= Logger.WriteLine;
         Directory
             .GetFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories)
-            .Select(file => (File: file, Metadata: Imdb.TryLoad(file, out ImdbMetadata? imdbMetadata) ? imdbMetadata : null))
+            .Select(file => (File: file, Metadata: ImdbMetadata.TryLoad(file, out ImdbMetadata? imdbMetadata) ? imdbMetadata : null))
             .Where(metadata => metadata.Metadata?.Genres.ContainsIgnoreCase(genre) is true)
             .ForEach(metadata => log($"{PathHelper.GetDirectoryName(metadata.File)}"));
     }
@@ -1460,7 +1445,7 @@ internal static partial class Video
                             return;
                         }
 
-                        if (Imdb.TryLoad(movie, out ImdbMetadata? imdbMetadata))
+                        if (ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata))
                         {
                             if (!imdbMetadata.Regions.Any(imdbRegion => currentRegions.Any(localRegion => imdbRegion.EqualsOrdinal(localRegion) || $"{imdbRegion}n".EqualsOrdinal(localRegion))))
                             {
@@ -1483,8 +1468,8 @@ internal static partial class Video
                 string[] files = Directory.GetFiles(m);
                 if (!files.Any(IsTextSubtitle))
                 {
-                    Imdb.TryLoad(m, out ImdbMetadata? meta);
-                    log(meta?.ImdbId ?? "-");
+                    ImdbMetadata.TryLoad(m, out ImdbMetadata? meta);
+                    log(meta?.ImdbId ?? NotExistingFlag);
                     log(m);
                     log("");
                 }
@@ -1519,7 +1504,7 @@ internal static partial class Video
 
         directories
             .SelectMany(directory => EnumerateDirectories(directory.Directory, directory.Level))
-            .Select(movie => (Directory: movie, HasJson: Imdb.TryRead(movie, out string? jsonImdbId, out _, out _, out _, out _), JsonImdbId: jsonImdbId))
+            .Select(movie => (Directory: movie, HasJson: ImdbMetadata.TryRead(movie, out string? jsonImdbId, out _, out _, out _, out _), JsonImdbId: jsonImdbId))
             .ForEach(movie =>
             {
                 Dictionary<string, (string File, string XmlImdbId, string XmlTitle)> xmlDocuments = Directory
@@ -1683,7 +1668,7 @@ internal static partial class Video
         //Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync(h264720PJsonPath);
         //Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(rareJsonPath);
         string[] metadataFiles = Directory.GetFiles(settings.MovieMetadataDirectory);
-        Dictionary<string, string> metadataFilesByImdbId = metadataFiles.ToDictionary(file => PathHelper.GetFileName(file).Split("-").First());
+        Dictionary<string, string> metadataFilesByImdbId = metadataFiles.ToDictionary(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty);
         MagnetUri[] downloadingLinks = (await File.ReadAllLinesAsync(@"D:\Files\Library\Movie.Downloading.txt"))
             .Select(line => (MagnetUri.TryParse(line, out MagnetUri? result), result))
             .Where(result => result.Item1)
@@ -2086,17 +2071,17 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
         Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.TVTopX265Metadata);
-        Dictionary<string, string> metadataFiles = Directory.EnumerateFiles(settings.TVMetadataDirectory).ToDictionary(file => PathHelper.GetFileName(file).Split("-").First());
+        Dictionary<string, string> metadataFiles = Directory.EnumerateFiles(settings.TVMetadataDirectory).ToDictionary(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty);
         string[] cacheFiles = Directory.GetFiles(settings.TVMetadataCacheDirectory);
         string[] libraryImdbIds = tvDirectories.SelectMany(tvDirectory => Directory.EnumerateFiles(tvDirectory, ImdbMetadataSearchPattern, SearchOption.AllDirectories))
-            .Select(file => Imdb.TryRead(file, out string? imdbId, out _, out _, out _, out _) ? imdbId : string.Empty)
+            .Select(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty)
             .Where(imdbId => imdbId.IsNotNullOrWhiteSpace())
             .ToArray();
 
         ImdbMetadata?[] imdbIds = x265Metadata.Keys
             .Distinct()
             .Except(libraryImdbIds)
-            .Select(imdbId => metadataFiles.TryGetValue(imdbId, out string? file) && Imdb.TryLoad(file, out ImdbMetadata? imdbMetadata)
+            .Select(imdbId => metadataFiles.TryGetValue(imdbId, out string? file) && ImdbMetadata.TryLoad(file, out ImdbMetadata? imdbMetadata)
                 ? imdbMetadata
                 : null)
             .Where(imdbMetadata => imdbMetadata is not null

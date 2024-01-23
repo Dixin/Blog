@@ -2,6 +2,8 @@
 
 using System.Text.Json.Serialization;
 using Examples.Common;
+using Examples.IO;
+using MediaManager.IO;
 
 public record ImdbEntry(string Type)
 {
@@ -55,6 +57,129 @@ public partial record ImdbMetadata(
     internal string FormattedContentRating => this.ContentRating.IsNullOrWhiteSpace()
         ? "NA"
         : this.ContentRating.Replace("-", string.Empty).Replace(" ", string.Empty).Replace("/", string.Empty).Replace(":", string.Empty);
+
+    internal const string FileNameSeparator = "-";
+
+    internal const string FileNameMetadataSeparator = ",";
+
+    internal const string FileExtension = ".json";
+
+    internal static bool TryRead(string path, [NotNullWhen(true)] out string? imdbId, [NotNullWhen(true)] out string? year, [NotNullWhen(true)] out string[]? regions, [NotNullWhen(true)] out string[]? languages, [NotNullWhen(true)] out string[]? genres)
+    {
+        if (TryRead(path, out string? file))
+        {
+            return TryGet(file, out imdbId, out year, out regions, out languages, out genres);
+        }
+
+        imdbId = null;
+        year = null;
+        regions = null;
+        languages = null;
+        genres = null;
+        return false;
+    }
+
+    private static bool TryRead(string? path, [NotNullWhen(true)] out string? file)
+    {
+        if (Directory.Exists(path))
+        {
+            file = Directory.GetFiles(path, Video.ImdbMetadataSearchPattern, SearchOption.TopDirectoryOnly).SingleOrDefault();
+            Debug.Assert(file.IsNullOrWhiteSpace() || PathHelper.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.NotExistingFlag) || PathHelper.GetFileNameWithoutExtension(file).Split(FileNameSeparator).Length == 5);
+            return file.IsNotNullOrWhiteSpace();
+        }
+
+        if (path.IsNotNullOrWhiteSpace() && path.EndsWith(FileExtension) && File.Exists(path))
+        {
+            file = path;
+            Debug.Assert(file.IsNullOrWhiteSpace() || PathHelper.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.NotExistingFlag) || PathHelper.GetFileNameWithoutExtension(file).Split(FileNameSeparator).Length == 5);
+            return true;
+        }
+
+        file = null;
+        return false;
+    }
+
+    internal static bool TryGet(string file, [NotNullWhen(true)] out string? imdbId, [NotNullWhen(true)] out string? year, [NotNullWhen(true)] out string[]? regions, [NotNullWhen(true)] out string[]? languages, [NotNullWhen(true)] out string[]? genres)
+    {
+        imdbId = null;
+        year = null;
+        regions = null;
+        languages = null;
+        genres = null;
+
+        if (!file.HasExtension(FileExtension))
+        {
+            return false;
+        }
+
+        string name = PathHelper.GetFileNameWithoutExtension(file);
+        if (name.EqualsOrdinal(Video.NotExistingFlag))
+        {
+            return false;
+        }
+
+        string[] info = name.Split(FileNameSeparator);
+        Debug.Assert(info.Length == 5 && info[0].IsImdbId());
+        imdbId = info[0];
+        year = info[1];
+        regions = info[2].Split(FileNameMetadataSeparator);
+        languages = info[3].Split(FileNameMetadataSeparator);
+        genres = info[4].Split(FileNameMetadataSeparator);
+        return true;
+    }
+
+    internal static bool TryGet(string file, [NotNullWhen(true)] out string? imdbId)
+    {
+        imdbId = null;
+
+        if (!file.HasExtension(FileExtension))
+        {
+            return false;
+        }
+
+        string name = PathHelper.GetFileNameWithoutExtension(file);
+        if (name.EqualsOrdinal(Video.NotExistingFlag))
+        {
+            return false;
+        }
+
+        string[] info = name.Split(FileNameSeparator);
+        Debug.Assert(info.Length == 5 && info[0].IsImdbId());
+        imdbId = info[0];
+        return true;
+    }
+
+    internal static bool TryLoad(string? path, [NotNullWhen(true)] out ImdbMetadata? imdbMetadata)
+    {
+        if (TryRead(path, out string? file) && !PathHelper.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.NotExistingFlag))
+        {
+            imdbMetadata = JsonHelper.DeserializeFromFile<ImdbMetadata>(file);
+            return true;
+        }
+
+        imdbMetadata = null;
+        return false;
+    }
+
+    internal string GetFilePath(string directory)
+    {
+        string name = string.Join(
+            FileNameSeparator,
+            [
+                this.ImdbId,
+                this.Year,
+                string.Join(
+                    FileNameMetadataSeparator,
+                    this.Regions.Take(5).Select(value => value.ReplaceOrdinal(FileNameSeparator, string.Empty).ReplaceOrdinal(FileNameMetadataSeparator, string.Empty))),
+                string.Join(
+                    FileNameMetadataSeparator,
+                    this.Languages.Take(3).Select(value => value.ReplaceOrdinal(FileNameSeparator, string.Empty).ReplaceOrdinal(FileNameMetadataSeparator, string.Empty))),
+                string.Join(
+                    FileNameMetadataSeparator,
+                    this.Genres.Take(5).Select(value => value.ReplaceOrdinal(FileNameSeparator, string.Empty).ReplaceOrdinal(FileNameMetadataSeparator, string.Empty)))
+            ]);
+        return Path.Combine(directory, $"{name}{FileExtension}");
+    }
 }
 
 public partial record ImdbMetadata : IImdbMetadata

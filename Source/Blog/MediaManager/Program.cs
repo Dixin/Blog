@@ -772,7 +772,7 @@ static void RenameFilesWithDuplicateTitle(
 //    string[] files = Directory.GetFiles(d);
 //    string video = files.Single(Video.IsVideo);
 //    string xml = files.Single(f => f.HasExtension(Video.XmlMetadataExtension));
-//    string metadata = files.Single(f => f.HasExtension(Video.ImdbMetadataExtension));
+//    string metadata = files.Single(f => f.HasExtension(ImdbMetadata.FileExtension));
 //    if (Regex.IsMatch(PathHelper.GetFileName(d).Split(".").First(), $" [0-9]+"))
 //    {
 //        //string p = PathHelper.GetFileNameWithoutExtension(video).Split("-").First()+"-";
@@ -840,8 +840,6 @@ static void RenameFilesWithDuplicateTitle(
 //   //Regex.Replace(f, @" [0-9]+GB", "")
 //       );
 
-
-//HashSet<string> downloadedHashes = new HashSet<string>(Directory.GetFiles(@"E:\Files\MonoTorrentDownload").Select(f => PathHelper.GetFileNameWithoutExtension(f).Split("@").Last()), StringComparer.OrdinalIgnoreCase);
 
 //await TorrentHelper.AddDefaultTrackersAsync(@"E:\Files\MonoTorrentDownload", Logger.WriteLine);
 

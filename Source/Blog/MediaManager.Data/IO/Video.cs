@@ -1,6 +1,7 @@
 ﻿namespace MediaManager.IO;
 
 using Examples.IO;
+using MediaManager.Net;
 
 internal static partial class Video
 {
@@ -38,11 +39,9 @@ internal static partial class Video
 
     private static readonly string[] AdaptiveAttachments = ["banner.jpg", "banner.png", "box.jpg", "clearart.png", "clearlogo.png", "disc.jpg", "disc.png", "discart.png", "fanart.jpg", "landscape.jpg", "landscape.png", "logo.png", "logo.svg", "poster.jpg", "poster.png", "backdrop.jpg", "back.jpg"];
 
-    internal const string ImdbMetadataExtension = ".json";
-
     internal const string ImdbCacheExtension = ".log";
 
-    internal const string ImdbMetadataSearchPattern = PathHelper.AllSearchPattern + ImdbMetadataExtension;
+    internal const string ImdbMetadataSearchPattern = PathHelper.AllSearchPattern + ImdbMetadata.FileExtension;
 
     private const string ImdbCacheSearchPattern = PathHelper.AllSearchPattern + ImdbCacheExtension;
 
@@ -52,7 +51,7 @@ internal static partial class Video
 
     private const string InstallmentSeparator = "`";
 
-    internal const string SubtitleSeparator = "-";
+    internal const string TitleSeparator = "-";
 
     internal const string VersionSeparator = "-";
 
@@ -62,8 +61,8 @@ internal static partial class Video
 
     internal static string FilterForFileSystem(this string value)
     {
-        value = value.Replace(": ", SubtitleSeparator).Replace(":", SubtitleSeparator).Replace("*", "_").Replace("/", "_");
-        Path.GetInvalidFileNameChars().ForEach(invalid => value = value.Replace(new string(invalid, 1), string.Empty));
+        value = value.Replace(": ", TitleSeparator).Replace(":", TitleSeparator).Replace("*", "_").Replace("/", "_");
+        Path.GetInvalidFileNameChars().ForEach(invalidCharacter => value = value.Replace(new string(invalidCharacter, 1), string.Empty));
         return value;
     }
 
