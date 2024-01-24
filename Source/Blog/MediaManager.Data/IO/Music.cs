@@ -26,7 +26,7 @@ internal static class Music
     {
         (string start, string name)[] tracks = text
             .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
-            .Select(line => (start: line.Split("@".ToCharArray()).Last().Trim(), name: line.Split("@".ToCharArray()).First().Trim()))
+            .Select(line => (start: line.Split("@").Last().Trim(), name: line.Split("@").First().Trim()))
             .ToArray();
         IEnumerable<string> arguments = tracks
             .Select((track, index) => $"""
@@ -61,8 +61,8 @@ internal static class Music
             .EnumerateDirectories(directory, "*", SearchOption.TopDirectoryOnly)
             .ForEach(album =>
             {
-                string song = Directory.EnumerateFiles(album, "*.mp3").First();
-                string[] metadataFiles = PathHelper.GetFileNameWithoutExtension(song).Split(Delimiter.ToCharArray());
+                string song = Directory.EnumerateFiles(album, Audio.AudioExtension).First();
+                string[] metadataFiles = PathHelper.GetFileNameWithoutExtension(song).Split(Delimiter);
                 string genre = metadataFiles[0];
                 string year = metadataFiles[1];
                 string albumName = metadataFiles[2];
@@ -259,7 +259,7 @@ internal static class Music
                     return;
                 }
 
-                string[] names = song.Name.Split(Delimiter.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                string[] names = song.Name.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries);
                 string year = names[0];
                 string albumName = names[1];
                 string artistName = names[3];
@@ -311,7 +311,7 @@ internal static class Music
                 }
                 else
                 {
-                    string[] names = songs.First().Name.Split(Delimiter.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                    string[] names = songs.First().Name.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries);
                     string artistName = names[3];
                     string year = names[0];
                     string albumName = names[1];
@@ -338,7 +338,7 @@ internal static class Music
     internal static void Translate(string music) => Directory.EnumerateFileSystemEntries(music).ForEach(songOrAlbum =>
     {
         string[] names = PathHelper.GetFileName(songOrAlbum)
-            .Split(Delimiter.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+            .Split(Delimiter, StringSplitOptions.RemoveEmptyEntries);
         for (int index = 0; index < names.Length; index++)
         {
             string name = names[index];
@@ -358,7 +358,7 @@ internal static class Music
 
     private static bool IsNotFormatted(string fileName)
     {
-        string[] names = fileName.Split(Delimiter.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        string[] names = fileName.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries);
         return names.Length != 7
             || names[0].Length != 4
             || names[2].Length != 2 && names[2].Length != 3 && names.Any(string.IsNullOrWhiteSpace);

@@ -1210,8 +1210,8 @@ internal static partial class Video
                     parsed.DefaultTitle1.Split(InstallmentSeparator).First(),
                     $"{parsed.DefaultTitle1.Split(InstallmentSeparator).First()}{parsed.DefaultTitle2}",
                     $"{parsed.DefaultTitle1.Split(InstallmentSeparator).First()}{parsed.DefaultTitle2.Replace(TitleSeparator, " ")}",
-                    parsed.DefaultTitle2.TrimStart(TitleSeparator.ToCharArray()),
-                    parsed.DefaultTitle3.TrimStart(TitleSeparator.ToCharArray()),
+                    parsed.DefaultTitle2.TrimStart(TitleSeparator.Single()),
+                    parsed.DefaultTitle3.TrimStart(TitleSeparator.Single()),
                     parsed.OriginalTitle1.TrimStart('='),
                     $"{parsed.DefaultTitle1}{parsed.DefaultTitle2}",
                     $"{parsed.DefaultTitle1}{parsed.DefaultTitle2}".Replace(TitleSeparator, " "),
@@ -1219,18 +1219,18 @@ internal static partial class Video
                     $"{parsed.DefaultTitle1}{parsed.DefaultTitle2}".Replace(InstallmentSeparator, " "),
                     $"{parsed.DefaultTitle1}{parsed.DefaultTitle2}".Replace(InstallmentSeparator, TitleSeparator),
                     $"{parsed.DefaultTitle1.Split(InstallmentSeparator).First()}{parsed.DefaultTitle2.Split(InstallmentSeparator).First()}".Replace(TitleSeparator, " "),
-                    parsed.DefaultTitle2.TrimStart(TitleSeparator.ToCharArray()).Replace(InstallmentSeparator, " "),
-                    parsed.DefaultTitle2.TrimStart(TitleSeparator.ToCharArray()).Replace(InstallmentSeparator, TitleSeparator),
-                    parsed.DefaultTitle2.TrimStart(TitleSeparator.ToCharArray()).Split(InstallmentSeparator).First(),
-                    $"{parsed.DefaultTitle2.TrimStart(TitleSeparator.ToCharArray()).Split(InstallmentSeparator).First()}{parsed.DefaultTitle3.Split(InstallmentSeparator).First()}",
-                    $"{parsed.DefaultTitle2.TrimStart(TitleSeparator.ToCharArray()).Split(InstallmentSeparator).First()}{parsed.DefaultTitle3.Split(InstallmentSeparator).First()}".Replace(TitleSeparator, " ")
+                    parsed.DefaultTitle2.TrimStart(TitleSeparator.Single()).Replace(InstallmentSeparator, " "),
+                    parsed.DefaultTitle2.TrimStart(TitleSeparator.Single()).Replace(InstallmentSeparator, TitleSeparator),
+                    parsed.DefaultTitle2.TrimStart(TitleSeparator.Single()).Split(InstallmentSeparator).First(),
+                    $"{parsed.DefaultTitle2.TrimStart(TitleSeparator.Single()).Split(InstallmentSeparator).First()}{parsed.DefaultTitle3.Split(InstallmentSeparator).First()}",
+                    $"{parsed.DefaultTitle2.TrimStart(TitleSeparator.Single()).Split(InstallmentSeparator).First()}{parsed.DefaultTitle3.Split(InstallmentSeparator).First()}".Replace(TitleSeparator, " ")
                 ];
                 if (parsed.DefaultTitle2.IsNotNullOrWhiteSpace())
                 {
-                    localTitles.Add($"{parsed.DefaultTitle1} {parsed.DefaultTitle2.TrimStart(TitleSeparator.ToCharArray()).ToLowerInvariant()[0]}{parsed.DefaultTitle2.TrimStart(TitleSeparator.ToCharArray())[1..]}");
-                    localTitles.Add($"{parsed.DefaultTitle1} {parsed.DefaultTitle2.TrimStart(TitleSeparator.ToCharArray()).ToLowerInvariant()[0]}{parsed.DefaultTitle2.TrimStart(TitleSeparator.ToCharArray())[1..].Replace(InstallmentSeparator, " ")}");
-                    localTitles.Add($"{parsed.DefaultTitle1} {parsed.DefaultTitle2.TrimStart(TitleSeparator.ToCharArray()).ToLowerInvariant()}");
-                    localTitles.Add($"{parsed.DefaultTitle1} {parsed.DefaultTitle2.TrimStart(TitleSeparator.ToCharArray()).ToLowerInvariant().Replace(InstallmentSeparator, " ")}");
+                    localTitles.Add($"{parsed.DefaultTitle1} {parsed.DefaultTitle2.TrimStart(TitleSeparator.Single()).ToLowerInvariant()[0]}{parsed.DefaultTitle2.TrimStart(TitleSeparator.Single())[1..]}");
+                    localTitles.Add($"{parsed.DefaultTitle1} {parsed.DefaultTitle2.TrimStart(TitleSeparator.Single()).ToLowerInvariant()[0]}{parsed.DefaultTitle2.TrimStart(TitleSeparator.Single())[1..].Replace(InstallmentSeparator, " ")}");
+                    localTitles.Add($"{parsed.DefaultTitle1} {parsed.DefaultTitle2.TrimStart(TitleSeparator.Single()).ToLowerInvariant()}");
+                    localTitles.Add($"{parsed.DefaultTitle1} {parsed.DefaultTitle2.TrimStart(TitleSeparator.Single()).ToLowerInvariant().Replace(InstallmentSeparator, " ")}");
                 }
                 if (imdbTitles.Any(a => localTitles.Any(a.EqualsOrdinal)))
                 {
@@ -1328,8 +1328,8 @@ internal static partial class Video
                     parsed.OriginalTitle1.Split(InstallmentSeparator).First(),
                     $"{parsed.OriginalTitle1.Split(InstallmentSeparator).First()}{parsed.OriginalTitle2}",
                     $"{parsed.OriginalTitle1.Split(InstallmentSeparator).First()}{parsed.OriginalTitle2.Replace(TitleSeparator, " ")}",
-                    parsed.OriginalTitle2.TrimStart(TitleSeparator.ToCharArray()),
-                    parsed.OriginalTitle3.TrimStart(TitleSeparator.ToCharArray()),
+                    parsed.OriginalTitle2.TrimStart(TitleSeparator.Single()),
+                    parsed.OriginalTitle3.TrimStart(TitleSeparator.Single()),
                     parsed.OriginalTitle1.TrimStart('='),
                     $"{parsed.OriginalTitle1}{parsed.OriginalTitle2}",
                     $"{parsed.OriginalTitle1}{parsed.OriginalTitle2}".Replace(TitleSeparator, " "),
@@ -1337,18 +1337,18 @@ internal static partial class Video
                     $"{parsed.OriginalTitle1}{parsed.OriginalTitle2}".Replace(InstallmentSeparator, " "),
                     $"{parsed.OriginalTitle1}{parsed.OriginalTitle2}".Replace(InstallmentSeparator, TitleSeparator),
                     $"{parsed.OriginalTitle1.Split(InstallmentSeparator).First()}{parsed.OriginalTitle2.Split(InstallmentSeparator).First()}".Replace(TitleSeparator, " "),
-                    parsed.OriginalTitle2.TrimStart(TitleSeparator.ToCharArray()).Replace(InstallmentSeparator, " "),
-                    parsed.OriginalTitle2.TrimStart(TitleSeparator.ToCharArray()).Replace(InstallmentSeparator, TitleSeparator),
-                    parsed.OriginalTitle2.TrimStart(TitleSeparator.ToCharArray()).Split(InstallmentSeparator).First(),
-                    $"{parsed.OriginalTitle2.TrimStart(TitleSeparator.ToCharArray()).Split(InstallmentSeparator).First()}{parsed.OriginalTitle3.Split(InstallmentSeparator).First()}",
-                    $"{parsed.OriginalTitle2.TrimStart(TitleSeparator.ToCharArray()).Split(InstallmentSeparator).First()}{parsed.OriginalTitle3.Split(InstallmentSeparator).First()}".Replace(TitleSeparator, " ")
+                    parsed.OriginalTitle2.TrimStart(TitleSeparator.Single()).Replace(InstallmentSeparator, " "),
+                    parsed.OriginalTitle2.TrimStart(TitleSeparator.Single()).Replace(InstallmentSeparator, TitleSeparator),
+                    parsed.OriginalTitle2.TrimStart(TitleSeparator.Single()).Split(InstallmentSeparator).First(),
+                    $"{parsed.OriginalTitle2.TrimStart(TitleSeparator.Single()).Split(InstallmentSeparator).First()}{parsed.OriginalTitle3.Split(InstallmentSeparator).First()}",
+                    $"{parsed.OriginalTitle2.TrimStart(TitleSeparator.Single()).Split(InstallmentSeparator).First()}{parsed.OriginalTitle3.Split(InstallmentSeparator).First()}".Replace(TitleSeparator, " ")
                 ];
                 if (parsed.OriginalTitle2.IsNotNullOrWhiteSpace())
                 {
-                    localTitles.Add($"{parsed.OriginalTitle1} {parsed.OriginalTitle2.TrimStart(TitleSeparator.ToCharArray()).ToLowerInvariant()[0]}{parsed.OriginalTitle2.TrimStart(TitleSeparator.ToCharArray())[1..]}");
-                    localTitles.Add($"{parsed.OriginalTitle1} {parsed.OriginalTitle2.TrimStart(TitleSeparator.ToCharArray()).ToLowerInvariant()[0]}{parsed.OriginalTitle2.TrimStart(TitleSeparator.ToCharArray())[1..].Replace(InstallmentSeparator, " ")}");
-                    localTitles.Add($"{parsed.OriginalTitle1} {parsed.OriginalTitle2.TrimStart(TitleSeparator.ToCharArray()).ToLowerInvariant()}");
-                    localTitles.Add($"{parsed.OriginalTitle1} {parsed.OriginalTitle2.TrimStart(TitleSeparator.ToCharArray()).ToLowerInvariant().Replace(InstallmentSeparator, " ")}");
+                    localTitles.Add($"{parsed.OriginalTitle1} {parsed.OriginalTitle2.TrimStart(TitleSeparator.Single()).ToLowerInvariant()[0]}{parsed.OriginalTitle2.TrimStart(TitleSeparator.Single())[1..]}");
+                    localTitles.Add($"{parsed.OriginalTitle1} {parsed.OriginalTitle2.TrimStart(TitleSeparator.Single()).ToLowerInvariant()[0]}{parsed.OriginalTitle2.TrimStart(TitleSeparator.Single())[1..].Replace(InstallmentSeparator, " ")}");
+                    localTitles.Add($"{parsed.OriginalTitle1} {parsed.OriginalTitle2.TrimStart(TitleSeparator.Single()).ToLowerInvariant()}");
+                    localTitles.Add($"{parsed.OriginalTitle1} {parsed.OriginalTitle2.TrimStart(TitleSeparator.Single()).ToLowerInvariant().Replace(InstallmentSeparator, " ")}");
                 }
                 if (imdbTitles.Any(a => localTitles.Any(a.EqualsOrdinal)))
                 {
@@ -1414,7 +1414,7 @@ internal static partial class Video
 
                 log($"==={localRegionDirectory}==={string.Join(", ", currentLocalRegion)}");
                 string[] currentRegions = currentLocalRegion.Where(region => !region.EndsWithOrdinal(NotExistingFlag)).ToArray();
-                string[] ignorePrefixes = currentLocalRegion.Where(prefix => prefix.EndsWithOrdinal(NotExistingFlag)).Select(prefix => prefix.TrimEnd(NotExistingFlag.ToCharArray())).ToArray();
+                string[] ignorePrefixes = currentLocalRegion.Where(prefix => prefix.EndsWithOrdinal(NotExistingFlag)).Select(prefix => prefix.TrimEnd(NotExistingFlag.Single())).ToArray();
                 Directory
                     .GetDirectories(localRegionDirectory)
                     .ForEach(movie =>

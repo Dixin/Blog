@@ -165,7 +165,7 @@ internal static partial class Video
                     {
                         string subtitleName = PathHelper.GetFileNameWithoutExtension(subtitle);
                         string language = subtitleBase.IsNotNullOrWhiteSpace() && subtitleName.StartsWithIgnoreCase(subtitleBase)
-                            ? subtitleName[subtitleBase.Length..].TrimStart(Delimiter.ToCharArray())
+                            ? subtitleName[subtitleBase.Length..].TrimStart(Delimiter.Single())
                             : subtitleName.Split(Delimiter).Last();
                         if (!Regex.IsMatch(language, @"^([a-z]{3}(\&[a-z]{3})?(\-[a-z0-9]+)?)?$"))
                         {

@@ -15,7 +15,7 @@ internal static class Audio
 
     private static readonly string[] Attachments = ["cover", "clearart", "cdart", "back", "Introduction", "booklet", "box"];
 
-    private const string AudioExtension = ".mp3";
+    internal const string AudioExtension = ".mp3";
 
     internal static void ReplaceTraditionalChinese(string directory, bool isDryRun = false, Action<string>? log = null)
     {
