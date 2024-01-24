@@ -833,7 +833,7 @@ internal static class Imdb
                 for (int currentIndex = Interlocked.Increment(ref index); currentIndex < cacheFiles.Length; currentIndex = Interlocked.Increment(ref index))
                 {
                     string keywordFile = cacheFiles[currentIndex].Replace(".Keywords.bak.log", ".Keywords.log");
-                    if (File.Exists(keywordFile + ".txt"))
+                    if (File.Exists($"{keywordFile}.txt"))
                     {
                         continue;
                     }
@@ -904,7 +904,7 @@ internal static class Imdb
                     }
 
                     File.WriteAllText(keywordFile, keywordsHtml);
-                    File.WriteAllLines(keywordFile + ".txt", allKeywords);
+                    File.WriteAllLines($"{keywordFile}.txt", allKeywords);
                 }
             }, degree);
 

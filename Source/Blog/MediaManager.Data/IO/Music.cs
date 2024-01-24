@@ -73,7 +73,7 @@ internal static class Music
                 }
                 catch (Exception exception)
                 {
-                    Logger.WriteLine(album + " " + exception);
+                    Logger.WriteLine($"{album} {exception}");
                 }
             });
     }

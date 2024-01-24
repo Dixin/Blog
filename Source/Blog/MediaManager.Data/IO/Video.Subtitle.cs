@@ -224,7 +224,7 @@ internal static partial class Video
                 string parent = PathHelper.GetDirectoryName(subtitleDirectory);
                 string[] videos = Directory.GetFiles(parent, VideoSearchPattern, SearchOption.TopDirectoryOnly);
                 string mainVideo = videos.OrderByDescending(video => new FileInfo(video).Length).First();
-                string newSubtitle = Path.Combine(parent, PathHelper.GetFileNameWithoutExtension(mainVideo) + PathHelper.GetExtension(subtitle));
+                string newSubtitle = Path.Combine(parent, $"{PathHelper.GetFileNameWithoutExtension(mainVideo)}{PathHelper.GetExtension(subtitle)}");
                 log(newSubtitle);
                 if (!isDryRun)
                 {

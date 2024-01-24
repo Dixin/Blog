@@ -8,7 +8,7 @@ internal static class Iso
     {
         Directory.EnumerateDirectories(source, "*", SearchOption.TopDirectoryOnly)
             .OrderBy(directory => directory)
-            .Where(directory => !File.Exists(Path.Combine(destination, PathHelper.GetFileName(directory) + ".iso")))
+            .Where(directory => !File.Exists(Path.Combine(destination, $"{PathHelper.GetFileName(directory)}.iso")))
             .Do(directory => Directory
                 .EnumerateFiles(directory, "*", SearchOption.AllDirectories)
                 .ForEach(file =>
@@ -21,7 +21,7 @@ internal static class Iso
                     }
                     if (PathHelper.GetFileNameWithoutExtension(truncated).ContainsOrdinal(";"))
                     {
-                        File.Move(truncated, Path.Combine(PathHelper.GetDirectoryName(truncated), PathHelper.GetFileNameWithoutExtension(truncated).Replace(";", "_") + PathHelper.GetExtension(truncated)));
+                        File.Move(truncated, Path.Combine(PathHelper.GetDirectoryName(truncated), $"{PathHelper.GetFileNameWithoutExtension(truncated).Replace(";", "_")}{PathHelper.GetExtension(truncated)}"));
                     }
                 }))
             .Do(directory => Directory

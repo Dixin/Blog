@@ -92,7 +92,7 @@ internal static class Extensions
 
     private static void BackUp(this string file)
     {
-        string backUpFile = file + ".bak";
+        string backUpFile = $"{file}.bak";
         if (File.Exists(backUpFile))
         {
             backUpFile.RemoveReadOnly();

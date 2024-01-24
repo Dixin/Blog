@@ -106,7 +106,7 @@ public class DynamicWrapper<T> : DynamicObject
         }
 
         // Searches in explicitly implemented properties for interface.
-        MethodInfo? method = this.type.GetInterfaceMethod(string.Concat("get_", binder.Name));
+        MethodInfo? method = this.type.GetInterfaceMethod($"get_{binder.Name}");
         if (method is not null)
         {
             result = method.Invoke(this.value, null).ToDynamic();
@@ -215,7 +215,7 @@ public class DynamicWrapper<T> : DynamicObject
 
         if (!this.isValueType)
         {
-            MethodInfo? method = this.type.GetInterfaceMethod(string.Concat("set_", binder.Name), value);
+            MethodInfo? method = this.type.GetInterfaceMethod($"set_{binder.Name}", value);
             method?.Invoke(this.value, [value]);
 
             PropertyInfo? property = this.type.GetBaseProperty(binder.Name);

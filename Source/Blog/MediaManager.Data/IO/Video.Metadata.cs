@@ -30,7 +30,7 @@ internal static partial class Video
             .GetFiles(directory, XmlMetadataSearchPattern, SearchOption.AllDirectories)
             .Where(file => file.EndsWithOrdinal($"{Delimiter}{flag}{XmlMetadataExtension}"))
             .Where(file => File.Exists(file.Replace($"{Delimiter}{flag}{XmlMetadataExtension}", XmlMetadataExtension)))
-            .ForEach(file => FileHelper.Move(file, Path.Combine(PathHelper.GetDirectoryName(file), PathHelper.GetFileNameWithoutExtension(file).Replace($"{Delimiter}{flag}", string.Empty) + PathHelper.GetExtension(file)), true));
+            .ForEach(file => FileHelper.Move(file, Path.Combine(PathHelper.GetDirectoryName(file), $"{PathHelper.GetFileNameWithoutExtension(file).Replace($"{Delimiter}{flag}", string.Empty)}{PathHelper.GetExtension(file)}"), true));
     }
 
     internal static void DeleteFeaturettesMetadata(string directory, int level = DefaultDirectoryLevel, bool isDryRun = false, Action<string>? log = null)

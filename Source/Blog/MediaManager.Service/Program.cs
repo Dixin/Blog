@@ -24,7 +24,7 @@ static void Configure(WebHostBuilderContext hostContext, IApplicationBuilder app
             new DirectoryInfo(localPath)
                 .GetDirectories()
                 .OrderBy(item => item.Name)
-                .Select(directory => $"""<li>{(directory.Attributes.HasFlag(FileAttributes.Hidden) ? "🗀" : "📁")}<a href="{(string.IsNullOrWhiteSpace(requestPath) ? "/" : "/" + requestPath + "/")}{directory.Name}">{directory.Name}</a></li>"""));
+                .Select(directory => $"""<li>{(directory.Attributes.HasFlag(FileAttributes.Hidden) ? "🗀" : "📁")}<a href="{(string.IsNullOrWhiteSpace(requestPath) ? "/" : $"/{requestPath}/")}{directory.Name}">{directory.Name}</a></li>"""));
         string filesHtml = string.Join(Environment.NewLine,
             new DirectoryInfo(localPath)
                 .GetFiles()
