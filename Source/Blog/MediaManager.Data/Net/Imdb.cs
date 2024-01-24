@@ -838,7 +838,7 @@ internal static class Imdb
                         continue;
                     }
 
-                    string imdbId = PathHelper.GetFileNameWithoutExtension(keywordFile).Split(".").First();
+                    string imdbId = PathHelper.GetFileNameWithoutExtension(keywordFile).Split(Video.Delimiter).First();
                     string imdbUrl = $"https://www.imdb.com/title/{imdbId}/";
                     string keywordsUrl = $"{imdbUrl}keywords/";
                     string keywordsHtml = WebDriverHelper.GetString(ref webDriver, keywordsUrl);

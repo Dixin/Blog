@@ -28,9 +28,9 @@ internal static partial class Video
     {
         Directory
             .GetFiles(directory, XmlMetadataSearchPattern, SearchOption.AllDirectories)
-            .Where(nfo => nfo.EndsWithOrdinal($"{Delimiter}{flag}{XmlMetadataExtension}"))
-            .Where(nfo => File.Exists(nfo.Replace($"{Delimiter}{flag}{XmlMetadataExtension}", XmlMetadataExtension)))
-            .ForEach(nfo => FileHelper.Move(nfo, Path.Combine(PathHelper.GetDirectoryName(nfo), PathHelper.GetFileNameWithoutExtension(nfo).Replace($"{Delimiter}{flag}", string.Empty) + PathHelper.GetExtension(nfo)), true));
+            .Where(file => file.EndsWithOrdinal($"{Delimiter}{flag}{XmlMetadataExtension}"))
+            .Where(file => File.Exists(file.Replace($"{Delimiter}{flag}{XmlMetadataExtension}", XmlMetadataExtension)))
+            .ForEach(file => FileHelper.Move(file, Path.Combine(PathHelper.GetDirectoryName(file), PathHelper.GetFileNameWithoutExtension(file).Replace($"{Delimiter}{flag}", string.Empty) + PathHelper.GetExtension(file)), true));
     }
 
     internal static void DeleteFeaturettesMetadata(string directory, int level = DefaultDirectoryLevel, bool isDryRun = false, Action<string>? log = null)
@@ -187,16 +187,14 @@ internal static partial class Video
         EnumerateDirectories(directory, level).ForEach(movie =>
         {
             string[] files = Directory.GetFiles(movie);
-            string jsonMetadata = files.FirstOrDefault(file => file.EndsWithIgnoreCase(ImdbMetadata.FileExtension), string.Empty);
-            if (jsonMetadata.IsNotNullOrWhiteSpace())
+            if (!ImdbMetadata.TryGet(files, out string? jsonMetadata, out string? imdbId))
             {
                 return;
             }
 
-            string xmlMetadata = files.First(file => file.EndsWithIgnoreCase(XmlMetadataExtension));
-            XDocument xmlDocument = XDocument.Load(xmlMetadata);
-            string imdbId = xmlDocument.Root?.Element("imdbid")?.Value ?? string.Empty;
-            if (imdbId.IsNullOrWhiteSpace())
+            if (!files
+                    .Where(IsXmlMetadata)
+                    .All(xmlMetadata => xmlMetadata.TryGetXmlImdbId(out string? xmlImdbId) && imdbId.EqualsIgnoreCase(xmlImdbId)))
             {
                 return;
             }
@@ -205,13 +203,13 @@ internal static partial class Video
                 .Where(file =>
                 {
                     string name = PathHelper.GetFileNameWithoutExtension(file);
-                    return (name.EqualsIgnoreCase(imdbId) || name.StartsWithIgnoreCase($"{imdbId}.")) && File.Exists(file);
+                    return name.EqualsIgnoreCase(imdbId) || name.StartsWithIgnoreCase($"{imdbId}{Delimiter}");
                 })
                 .ToArray()
                 .ForEach(file => FileHelper.MoveToDirectory(file, movie));
 
             metadataFiles
-                .Where(file => file.ExistsWithImdbId(imdbId))
+                .Where(file => file.HasImdbId(imdbId))
                 .ToArray()
                 .ForEach(file => FileHelper.MoveToDirectory(file, movie));
         });
@@ -222,7 +220,7 @@ internal static partial class Video
         log ??= Logger.WriteLine;
 
         string[] files = Directory.GetFiles(directory, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
-        string jsonFile = files.SingleOrDefault(file => file.EndsWithIgnoreCase(ImdbMetadata.FileExtension), string.Empty);
+        string jsonFile = files.SingleOrDefault(IsImdbMetadata, string.Empty);
         string imdbId;
         if (jsonFile.IsNotNullOrWhiteSpace())
         {
@@ -239,9 +237,8 @@ internal static partial class Video
         else
         {
             string[] xmlImdbIds = files
-                .Where(file => file.EndsWithIgnoreCase(XmlMetadataExtension))
-                .Select(file => XDocument.Load(file).Root)
-                .Select(root => (root?.Element("imdbid") ?? root?.Element("imdb_id"))?.Value ?? string.Empty)
+                .Where(IsXmlMetadata)
+                .Select(file => file.TryGetXmlImdbId(out string? xmlImdbId) ? xmlImdbId : string.Empty)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
             if (xmlImdbIds.Length == 0)
@@ -428,7 +425,7 @@ internal static partial class Video
                         if (!isLoaded)
                         {
                             isLoaded = true;
-                            Imdb.TryLoad(movieJson, out imdbMetadata);
+                            ImdbMetadata.TryLoad(movieJson, out imdbMetadata);
                         }
 
                         if (!TryReadVideoMetadata(video, out VideoMetadata? videoMetadata, imdbMetadata, settings.LibraryDirectory))
@@ -469,7 +466,7 @@ internal static partial class Video
             .Select(video =>
             {
                 string metadata = PathHelper.ReplaceExtension(video, XmlMetadataExtension);
-                string imdbId = XDocument.Load(metadata).Root?.Element("imdbid")?.Value ?? throw new InvalidOperationException(video);
+                string imdbId = metadata.TryGetXmlImdbId(out string? xmlImdbId) ? xmlImdbId : throw new InvalidOperationException(video);
                 if (TryReadVideoMetadata(video, out VideoMetadata? videoMetadata))
                 {
                     return (ImdbId: imdbId, Value: videoMetadata);
@@ -490,7 +487,7 @@ internal static partial class Video
             ? new(await JsonHelper.DeserializeFromFileAsync<Dictionary<string, ImdbMetadata>>(mergedMetadataPath))
             : new();
         ILookup<string, string> cacheFilesByImdbId = Directory.GetFiles(metadataCacheDirectory, ImdbCacheSearchPattern)
-            .ToLookup(file => PathHelper.GetFileNameWithoutExtension(file).Split(".").First());
+            .ToLookup(file => PathHelper.GetFileNameWithoutExtension(file).Split(Delimiter).First());
         Dictionary<string, string> metadataFilesByImdbId = Directory.GetFiles(metadataDirectory, ImdbMetadataSearchPattern)
             .ToDictionary(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty);
 
@@ -577,8 +574,8 @@ internal static partial class Video
         await EnumerateDirectories(directory, level).ForEachAsync(async movie =>
         {
             string[] metadataFiles = Directory.GetFiles(movie, XmlMetadataSearchPattern);
-            string backupMetadataFile = metadataFiles.First(file => file.EndsWithIgnoreCase($".{DefaultBackupFlag}{XmlMetadataExtension}"));
-            string metadataFile = metadataFiles.First(file => !file.EndsWithIgnoreCase($".{DefaultBackupFlag}{XmlMetadataExtension}"));
+            string backupMetadataFile = metadataFiles.First(file => file.EndsWithIgnoreCase($"{Delimiter}{DefaultBackupFlag}{XmlMetadataExtension}"));
+            string metadataFile = metadataFiles.First(file => !file.EndsWithIgnoreCase($"{Delimiter}{DefaultBackupFlag}{XmlMetadataExtension}"));
             XDocument metadataDocument = XDocument.Load(metadataFile);
             string translatedTitle = metadataDocument.Root!.Element("title")!.Value;
             if (translatedTitle.ContainsChineseCharacter() || Regex.IsMatch(translatedTitle, @"^[0-9]+$"))
@@ -588,10 +585,9 @@ internal static partial class Video
 
             log(movie);
             log(translatedTitle);
-            string englishTitle = XDocument.Load(backupMetadataFile).Root?.Element("title")?.Value ?? string.Empty;
+            string englishTitle = XDocument.Load(backupMetadataFile).TryGetTitle(out string? xmlTitle) ? xmlTitle : string.Empty;
             log(englishTitle);
-            string imdbId = XDocument.Load(backupMetadataFile).Root?.Element("imdbid")?.Value ?? string.Empty;
-            if (imdbId.IsNullOrWhiteSpace())
+            if (!backupMetadataFile.TryGetXmlImdbId(out string? imdbId))
             {
                 noTranslation.Add((englishTitle, metadataDocument.Root!.Element("year")?.Value ?? string.Empty));
                 return;
@@ -774,7 +770,7 @@ internal static partial class Video
             .ToLookup(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty);
         ILookup<string, string> destinationMetadataFiles = Directory
             .EnumerateFiles(destinationDirectory, ImdbMetadataSearchPattern, SearchOption.AllDirectories)
-            .ToLookup(file =>  ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty);
+            .ToLookup(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty);
 
         destinationMetadataFiles
             .Where(destinationGroup => destinationGroup.Key.IsNotNullOrWhiteSpace() && sourceMetadataFiles.Contains(destinationGroup.Key))

@@ -12,5 +12,20 @@ internal static class ImdbMetadataExtensions
 
     internal static string GetImdbId(this string file) => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : throw new ArgumentOutOfRangeException(nameof(file), file, null);
 
-    internal static bool IsImdbId(this string value) => Regex.IsMatch(value, "^tt[0-9]+$");
+    internal static bool IsImdbId(this string? value) => value.IsNotNullOrWhiteSpace() && Regex.IsMatch(value, "^tt[0-9]+$");
+
+    internal static bool TryGetImdbId(this XDocument xml, [NotNullWhen(true)] out string? imdbId)
+    {
+        XElement? root = xml.Root;
+        imdbId = root?.Element("imdbid")?.Value ?? root?.Element("imdb_id")?.Value;
+        return imdbId.IsImdbId();
+    }
+
+    internal static bool TryGetXmlImdbId(this string xml, [NotNullWhen(true)] out string? imdbId) => XDocument.Load(xml).TryGetImdbId(out imdbId);
+
+    internal static bool TryGetTitle(this XDocument xml, [NotNullWhen(true)] out string? title)
+    {
+        title = xml.Root?.Element("title")?.Value;
+        return title.IsNotNullOrWhiteSpace();
+    }
 }

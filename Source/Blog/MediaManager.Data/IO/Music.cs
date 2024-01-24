@@ -5,7 +5,7 @@ using Examples.IO;
 
 internal static class Music
 {
-    private const string Separator = ".";
+    private const string Delimiter = Video.Delimiter;
 
     // const string text = @"
     // The Dark Knight @1:03
@@ -62,11 +62,11 @@ internal static class Music
             .ForEach(album =>
             {
                 string song = Directory.EnumerateFiles(album, "*.mp3").First();
-                string[] info = PathHelper.GetFileNameWithoutExtension(song).Split(Separator.ToCharArray());
-                string genre = info[0];
-                string year = info[1];
-                string albumName = info[2];
-                string artist = info[4];
+                string[] metadataFiles = PathHelper.GetFileNameWithoutExtension(song).Split(Delimiter.ToCharArray());
+                string genre = metadataFiles[0];
+                string year = metadataFiles[1];
+                string albumName = metadataFiles[2];
+                string artist = metadataFiles[4];
                 try
                 {
                     Directory.Move(album, Path.Combine(PathHelper.GetDirectoryName(album), $"{genre}.{artist}.{year}.{albumName}"));
@@ -259,13 +259,13 @@ internal static class Music
                     return;
                 }
 
-                string[] names = song.Name.Split(Separator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                string[] names = song.Name.Split(Delimiter.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
                 string year = names[0];
                 string albumName = names[1];
                 string artistName = names[3];
                 string genre = names[5];
 
-                string newAlbumName = $"{genre}{Separator}{artistName}{Separator}{year}{Separator}{albumName}";
+                string newAlbumName = $"{genre}{Delimiter}{artistName}{Delimiter}{year}{Delimiter}{albumName}";
                 DirectoryInfo newAlbum = new(Path.Combine(toDirectory.FullName, newAlbumName));
                 if (!newAlbum.Exists)
                 {
@@ -311,7 +311,7 @@ internal static class Music
                 }
                 else
                 {
-                    string[] names = songs.First().Name.Split(Separator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                    string[] names = songs.First().Name.Split(Delimiter.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
                     string artistName = names[3];
                     string year = names[0];
                     string albumName = names[1];
@@ -322,7 +322,7 @@ internal static class Music
                     }
                     else
                     {
-                        string newAlbumName = $"{genre}{Separator}{artistName}{Separator}{year}{Separator}{albumName}";
+                        string newAlbumName = $"{genre}{Delimiter}{artistName}{Delimiter}{year}{Delimiter}{albumName}";
                         if (!album.Name.EqualsIgnoreCase(newAlbumName))
                         {
                             album.Rename(newAlbumName);
@@ -338,7 +338,7 @@ internal static class Music
     internal static void Translate(string music) => Directory.EnumerateFileSystemEntries(music).ForEach(songOrAlbum =>
     {
         string[] names = PathHelper.GetFileName(songOrAlbum)
-            .Split(Separator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+            .Split(Delimiter.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
         for (int index = 0; index < names.Length; index++)
         {
             string name = names[index];
@@ -351,14 +351,14 @@ internal static class Music
                 }
             }
         }
-        FileSystemHelper.Move(songOrAlbum, Path.Combine(PathHelper.GetDirectoryName(songOrAlbum), string.Join(Separator, names)));
+        FileSystemHelper.Move(songOrAlbum, Path.Combine(PathHelper.GetDirectoryName(songOrAlbum), string.Join(Delimiter, names)));
     });
 
     private static bool IsMusicFile(string extension) => Extensions.ContainsIgnoreCase(extension);
 
     private static bool IsNotFormatted(string fileName)
     {
-        string[] names = fileName.Split(Separator.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+        string[] names = fileName.Split(Delimiter.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
         return names.Length != 7
             || names[0].Length != 4
             || names[2].Length != 2 && names[2].Length != 3 && names.Any(string.IsNullOrWhiteSpace);

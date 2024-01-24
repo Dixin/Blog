@@ -29,7 +29,7 @@ internal static partial class Video
     internal static (string? Charset, float? Confidence, string File)[] GetSubtitles(string directory) =>
         Directory
             .EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
-            .Where(file => TextExtensions.Any(file.EndsWithIgnoreCase))
+            .Where(file => file.HasAnyExtension(TextExtensions))
             .Select(file =>
             {
                 using FileStream fileStream = File.OpenRead(file);
@@ -151,7 +151,7 @@ internal static partial class Video
                 }
                 else
                 {
-                    string subtitleMetadata = files.SingleOrDefault(file => file.EndsWithIgnoreCase(XmlMetadataExtension), string.Empty);
+                    string subtitleMetadata = files.SingleOrDefault(IsXmlMetadata, string.Empty);
                     if (subtitleMetadata.IsNotNullOrWhiteSpace())
                     {
                         subtitleBase = PathHelper.GetFileNameWithoutExtension(subtitleMetadata);
@@ -165,14 +165,14 @@ internal static partial class Video
                     {
                         string subtitleName = PathHelper.GetFileNameWithoutExtension(subtitle);
                         string language = subtitleBase.IsNotNullOrWhiteSpace() && subtitleName.StartsWithIgnoreCase(subtitleBase)
-                            ? subtitleName.Substring(subtitleBase.Length).TrimStart('.')
-                            : subtitleName.Split(".").Last();
+                            ? subtitleName.Substring(subtitleBase.Length).TrimStart(Delimiter.ToCharArray())
+                            : subtitleName.Split(Delimiter).Last();
                         if (!Regex.IsMatch(language, @"^([a-z]{3}(\&[a-z]{3})?(\-[a-z0-9]+)?)?$"))
                         {
                             language = string.Empty;
                         }
 
-                        string newSubtitleName = $"{PathHelper.GetFileNameWithoutExtension(video)}{(language.IsNullOrWhiteSpace() ? string.Empty : ".")}{language}{PathHelper.GetExtension(subtitle)}";
+                        string newSubtitleName = $"{PathHelper.GetFileNameWithoutExtension(video)}{(language.IsNullOrWhiteSpace() ? string.Empty : Delimiter)}{language}{PathHelper.GetExtension(subtitle)}";
                         string newSubtitle = Path.Combine(PathHelper.GetDirectoryName(video), newSubtitleName);
                         if (rename is not null)
                         {
@@ -253,7 +253,7 @@ internal static partial class Video
                 {
                     _ when language.ContainsIgnoreCase("eng") => string.Empty,
                     _ when language.ContainsIgnoreCase("chi") => ".chs",
-                    _ => "." + language
+                    _ => $"{Delimiter}{language}"
                 };
                 string newSubtitle = Path.Combine(parent, $"{PathHelper.GetFileNameWithoutExtension(mainVideo)}{postfix}.srt");
                 log(subtitle);
@@ -377,16 +377,16 @@ internal static partial class Video
                     log($"!Format {subtitle}");
                 }
 
-                if (PathHelper.GetFileNameWithoutExtension(subtitle).EndsWithIgnoreCase(".eng"))
+                if (PathHelper.GetFileNameWithoutExtension(subtitle).EndsWithIgnoreCase($"{Delimiter}eng"))
                 {
-                    string sss = subtitle.Replace(".eng.", ".");
+                    string sss = subtitle.Replace($"{Delimiter}eng.", Delimiter);
                     if (File.Exists(sss))
                     {
                         log($"!Duplicate {subtitle}");
                     }
                 }
 
-                string postfix = PathHelper.GetFileNameWithoutExtension(subtitle).Split(".").Last();
+                string postfix = PathHelper.GetFileNameWithoutExtension(subtitle).Split(Delimiter).Last();
                 if (postfix.ContainsIgnoreCase("chs") || postfix.ContainsIgnoreCase("cht"))
                 {
                     if (!File.ReadAllText(subtitle).ContainsOrdinal("的"))
@@ -409,7 +409,7 @@ internal static partial class Video
         log ??= Logger.WriteLine;
         Directory
             .EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
-            .Where(file => IsSubtitle(file) && Regex.IsMatch(PathHelper.GetFileNameWithoutExtension(file).Split(".").Last(), @"^[a-z]{3}\-[0-9]{1,2}$"))
+            .Where(file => file.IsSubtitle() && Regex.IsMatch(PathHelper.GetFileNameWithoutExtension(file).Split(Delimiter).Last(), @"^[a-z]{3}\-[0-9]{1,2}$"))
             .ToArray()
             .ForEach(subtitle =>
             {

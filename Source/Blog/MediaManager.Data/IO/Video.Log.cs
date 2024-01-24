@@ -17,9 +17,7 @@ internal static partial class Video
         PrintVideosWithErrors(
             Directory
                 .EnumerateFiles(directory, PathHelper.AllSearchPattern, searchOption)
-                .Where(file => predicate?.Invoke(file) ?? AllVideoExtensions
-                    .Where(extension => !extension.EqualsIgnoreCase(".iso"))
-                    .Any(file.EndsWithIgnoreCase)),
+                .Where(file => predicate?.Invoke(file) ?? file.HasAnyExtension(AllVideoExtensions.Except([DiskImageExtension]))),
             isNoAudioAllowed,
             is720,
             is1080,
@@ -175,7 +173,7 @@ internal static partial class Video
                 string videoName = string.Empty;
                 if (!(directoryYear.EqualsOrdinal(metadataYear)
                         && Directory.GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
-                            .Where(file => AllVideoExtensions.Any(file.EndsWithIgnoreCase))
+                            .Where(IsVideo)
                             .All(video => (videoName = PathHelper.GetFileName(video)).ContainsOrdinal(directoryYear))))
                 {
                     log($"Directory: {directoryYear}, Metadata {metadataYear}, Video: {videoName}, {movie}");
@@ -301,8 +299,8 @@ internal static partial class Video
                     log($"!Content rating {directoryInfo.ContentRating} should be {contentRating}: {movie}");
                 }
 
-                string[] imdbFiles = topFiles.Where(file => file.HasExtension(ImdbMetadata.FileExtension)).ToArray();
-                string[] cacheFiles = topFiles.Where(file => file.HasExtension(ImdbCacheExtension)).ToArray();
+                string[] imdbFiles = topFiles.Where(IsImdbMetadata).ToArray();
+                string[] cacheFiles = topFiles.Where(IsImdbCache).ToArray();
 
                 if (imdbFiles.Length != 1)
                 {
@@ -359,8 +357,8 @@ internal static partial class Video
                                 : throw new InvalidOperationException(video))
                             .ToArray();
                         VideoEpisodeFileInfo[] videoFileInfos = allVideoFileInfos.NotNull().ToArray();
-                        string[] subtitles = topFiles.Where(file => file.HasAnyExtension(AllSubtitleExtensions)).ToArray();
-                        string[] metadataFiles = topFiles.Where(file => file.HasExtension(XmlMetadataExtension)).ToArray();
+                        string[] subtitles = topFiles.Where(IsSubtitle).ToArray();
+                        string[] metadataFiles = topFiles.Where(IsXmlMetadata).ToArray();
 
                         Enumerable.Range(0, videos.Length).Where(index => allVideoFileInfos[index] is null).ForEach(index => log($"!Video name {videos[index]}: {movie}"));
 
@@ -414,8 +412,8 @@ internal static partial class Video
                         throw new InvalidOperationException(video);
                     })
                     .ToArray();
-                string[] subtitles = topFiles.Where(file => file.HasAnyExtension(AllSubtitleExtensions)).ToArray();
-                string[] metadataFiles = topFiles.Where(file => file.HasExtension(XmlMetadataExtension)).ToArray();
+                string[] subtitles = topFiles.Where(IsSubtitle).ToArray();
+                string[] metadataFiles = topFiles.Where(IsXmlMetadata).ToArray();
                 string[] otherFiles = topFiles.Except(videos).Except(subtitles).Except(metadataFiles).Except(imdbFiles).Except(cacheFiles).ToArray();
 
                 if (directoryInfo.Is2160P && !videoFileInfos.Any(video => video.GetDefinitionType() is DefinitionType.P2160))
@@ -481,9 +479,9 @@ internal static partial class Video
                     {
                         string videoName = PathHelper.GetFileNameWithoutExtension(video);
                         string subtitleName = PathHelper.GetFileNameWithoutExtension(subtitle);
-                        return subtitleName.EqualsOrdinal(videoName) || subtitle.StartsWithOrdinal($"{videoName}.") && allowedSubtitleLanguages.Any(allowedLanguage =>
+                        return subtitleName.EqualsOrdinal(videoName) || subtitle.StartsWithOrdinal($"{videoName}{Delimiter}") && allowedSubtitleLanguages.Any(allowedLanguage =>
                         {
-                            string subtitleLanguage = subtitleName.Substring($"{videoName}.".Length);
+                            string subtitleLanguage = subtitleName[$"{videoName}{Delimiter}".Length..];
                             return subtitleLanguage.Equals(allowedLanguage) || subtitleLanguage.StartsWithOrdinal($"{allowedLanguage}-");
                         });
                     })))
@@ -514,9 +512,7 @@ internal static partial class Video
 
                 metadataFiles.ForEach(metadataFile =>
                 {
-                    metadataFile = Path.Combine(movie, metadataFile);
-                    XDocument metadata = XDocument.Load(Path.Combine(movie, metadataFile));
-                    string? metadataImdbId = metadata.Root?.Element("imdbid")?.Value;
+                    metadataFile.TryGetXmlImdbId(out string? metadataImdbId);
                     // string? metadataImdbRating = metadata.Root?.Element("rating")?.Value;
                     if (imdbMetadata is null)
                     {
@@ -553,7 +549,7 @@ internal static partial class Video
         EnumerateDirectories(directory, level)
             .ForEach(movie =>
             {
-                string[] movieName = PathHelper.GetFileName(movie).Split(".");
+                string[] movieName = PathHelper.GetFileName(movie).Split(Delimiter);
                 string movieTitle = movieName[0].Split("=")[0];
                 string movieYear = movieName[1];
                 string? videoYear = null;
@@ -568,7 +564,7 @@ internal static partial class Video
                 if (videoYear.IsNullOrWhiteSpace())
                 {
                     (videoTitle, videoYear) = Directory
-                        .GetFiles(movie, "*.nfo", SearchOption.TopDirectoryOnly)
+                        .GetFiles(movie, XmlMetadataSearchPattern, SearchOption.TopDirectoryOnly)
                         .Select(metadata =>
                         {
                             XElement root = XDocument.Load(metadata).Root ?? throw new InvalidOperationException(metadata);
@@ -582,7 +578,7 @@ internal static partial class Video
                 {
                     log(movie);
                     movieName[1] = videoYear!;
-                    string newMovie = Path.Combine(PathHelper.GetDirectoryName(movie), string.Join(".", movieName));
+                    string newMovie = Path.Combine(PathHelper.GetDirectoryName(movie), string.Join(Delimiter, movieName));
                     log(newMovie);
                     // Directory.Move(movie, newMovie);
                     string backMovie = movie.Replace(@"E:\", @"F:\");
@@ -642,15 +638,7 @@ internal static partial class Video
             .ForEach(movie =>
             {
                 string[] files = Directory.GetFiles(movie);
-                string? json = files.SingleOrDefault(file => file.HasExtension(ImdbMetadata.FileExtension));
-                if (json.IsNullOrWhiteSpace())
-                {
-                    log($"!!! Missing IMDB metadata {movie}");
-                    log(string.Empty);
-                    return;
-                }
-
-                if (!ImdbMetadata.TryGet(json, out string? imdbId))
+                if (!ImdbMetadata.TryGet(files, out string? json, out string? imdbId))
                 {
                     log($"Missing or no JSON IMDB id: {movie}");
                     return;
@@ -698,7 +686,7 @@ internal static partial class Video
                 {
                     otherPreferredMetadata = otherPreferredMetadata
                         .Where(metadataVersion => preferredVideos.Any(preferredVideo =>
-                            metadataVersion.Version.Key.Split(".").All(keyword => !preferredVideo.Name.ContainsIgnoreCase(keyword))))
+                            metadataVersion.Version.Key.Split(Delimiter).All(keyword => !preferredVideo.Name.ContainsIgnoreCase(keyword))))
                         .ToArray();
                 }
 
@@ -734,7 +722,7 @@ internal static partial class Video
                         .Where(metadata => !videos.Any(video =>
                         {
                             string metadataTitle = metadata.Title;
-                            string[] videoEditions = video.Info.Edition.Split(".", StringSplitOptions.RemoveEmptyEntries);
+                            string[] videoEditions = video.Info.Edition.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries);
                             // (Not any) Local is equal to or better than remote metadata.
                             return video.Info.GetEncoderType() is EncoderType.X
                                 && (video.Name.StartsWithIgnoreCase(metadata.Title)
@@ -751,7 +739,7 @@ internal static partial class Video
                                     && video.Info.Edition.IsNotNullOrWhiteSpace()
                                     && metadataInfo
                                         .Edition
-                                        .Split(".", StringSplitOptions.RemoveEmptyEntries)
+                                        .Split(Delimiter, StringSplitOptions.RemoveEmptyEntries)
                                         .All(metadataEdition => videoEditions.ContainsIgnoreCase(metadataEdition)));
                         }))
                         .ToArray();
@@ -815,7 +803,7 @@ internal static partial class Video
                         .Where(metadata => !videos.Any(video =>
                         {
                             string metadataTitle = metadata.Title;
-                            string[] videoEditions = video.Info.Edition.Split(".", StringSplitOptions.RemoveEmptyEntries);
+                            string[] videoEditions = video.Info.Edition.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries);
                             // (Not any) Local is equal to or better than remote metadata.
                             return video.Info.GetEncoderType() is EncoderType.H
                                 && (video.Name.StartsWithIgnoreCase(metadata.Title)
@@ -832,7 +820,7 @@ internal static partial class Video
                                     && video.Info.Edition.IsNotNullOrWhiteSpace()
                                     && metadataInfo
                                         .Edition
-                                        .Split(".", StringSplitOptions.RemoveEmptyEntries)
+                                        .Split(Delimiter, StringSplitOptions.RemoveEmptyEntries)
                                         .All(metadataEdition => videoEditions.ContainsIgnoreCase(metadataEdition)));
                         }))
                         .ToArray();
@@ -953,15 +941,7 @@ internal static partial class Video
             .ForEach(tv =>
             {
                 string[] topFiles = Directory.GetFiles(tv);
-                string? json = topFiles.SingleOrDefault(file => file.HasExtension(ImdbMetadata.FileExtension));
-                if (json.IsNullOrWhiteSpace())
-                {
-                    log($"!!! Missing IMDB metadata {tv}");
-                    log(string.Empty);
-                    return;
-                }
-
-                if (!ImdbMetadata.TryGet(json, out string? imdbId))
+                if (!ImdbMetadata.TryGet(topFiles, out string? json, out string? imdbId))
                 {
                     log($"Missing or no IMDB id: {tv}");
                     return;
@@ -1512,8 +1492,8 @@ internal static partial class Video
                     .Select(file => (Metadata: XDocument.Load(file), file))
                     .Select(xml => (
                         xml.file,
-                        xml.Metadata.Root?.Element("imdbid")?.Value ?? xml.Metadata.Root?.Element("imdb_id")?.Value ?? string.Empty,
-                        xml.Metadata.Root?.Element("title")?.Value ?? string.Empty))
+                        xml.Metadata.TryGetImdbId(out string? imdbId) ? imdbId : string.Empty,
+                        xml.Metadata.TryGetTitle(out string? title) ? title : string.Empty))
                     .ToDictionary(xml => PathHelper.GetFileNameWithoutExtension(xml.file), StringComparer.OrdinalIgnoreCase);
                 if (xmlDocuments.IsEmpty())
                 {
@@ -1641,7 +1621,7 @@ internal static partial class Video
         log ??= Logger.WriteLine;
         directories.SelectMany(directory => EnumerateDirectories(directory.Directory, directory.Level))
             .Where(movie => !PathHelper.GetFileName(movie).StartsWithIgnoreCase("Nikkatsu") && !PathHelper.GetFileName(movie).StartsWithIgnoreCase("Oniroku Dan") && !PathHelper.GetFileName(movie).StartsWithIgnoreCase("Angel Guts"))
-            .Select(movie => (movie, XDocument.Load(Directory.EnumerateFiles(movie, "*.nfo").First())))
+            .Select(movie => (movie, XDocument.Load(Directory.EnumerateFiles(movie, XmlMetadataSearchPattern).First())))
             .Where(movie => movie.Item2.Root?.Elements("studio").Any(element => element.Value.ContainsIgnoreCase("Nikkatsu")) is true && movie.Item2.Root.Elements("tag").Any(element => element.Value.ContainsIgnoreCase("pink")))
             .ForEach(movie =>
             {

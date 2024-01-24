@@ -14,7 +14,7 @@ internal static partial class Video
     private static IEnumerable<string> EnumerateVideos(string directory, Func<string, bool>? predicate = null) =>
         Directory
             .EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
-            .Where(file => (predicate?.Invoke(file) ?? true) && file.HasAnyExtension(AllVideoExtensions));
+            .Where(file => (predicate?.Invoke(file) ?? true) && file.IsVideo());
 
     internal static Task<VideoMetadata> ReadVideoMetadataAsync(string file, ImdbMetadata? imdbMetadata = null, string? relativePath = null, int retryCount = 10) =>
         Retry.IncrementalAsync(
@@ -235,4 +235,10 @@ internal static partial class Video
     internal static bool IsSubtitle(this string file) => file.HasAnyExtension(AllSubtitleExtensions);
 
     internal static bool IsDiskImage(this string file) => file.HasExtension(DiskImageExtension);
+
+    internal static bool IsImdbMetadata(this string file) => file.HasExtension(ImdbMetadata.Extension);
+
+    internal static bool IsXmlMetadata(this string file) => file.HasExtension(XmlMetadataExtension);
+
+    internal static bool IsImdbCache(this string file) => file.HasExtension(ImdbCacheExtension);
 }

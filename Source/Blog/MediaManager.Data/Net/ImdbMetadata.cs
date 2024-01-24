@@ -62,7 +62,7 @@ public partial record ImdbMetadata(
 
     internal const string FileNameMetadataSeparator = ",";
 
-    internal const string FileExtension = ".json";
+    internal const string Extension = ".json";
 
     internal static bool TryRead(string path, [NotNullWhen(true)] out string? imdbId, [NotNullWhen(true)] out string? year, [NotNullWhen(true)] out string[]? regions, [NotNullWhen(true)] out string[]? languages, [NotNullWhen(true)] out string[]? genres)
     {
@@ -88,7 +88,7 @@ public partial record ImdbMetadata(
             return file.IsNotNullOrWhiteSpace();
         }
 
-        if (path.IsNotNullOrWhiteSpace() && path.EndsWith(FileExtension) && File.Exists(path))
+        if (path.IsNotNullOrWhiteSpace() && path.EndsWith(Extension) && File.Exists(path))
         {
             file = path;
             Debug.Assert(file.IsNullOrWhiteSpace() || PathHelper.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.NotExistingFlag) || PathHelper.GetFileNameWithoutExtension(file).Split(FileNameSeparator).Length == 5);
@@ -107,7 +107,7 @@ public partial record ImdbMetadata(
         languages = null;
         genres = null;
 
-        if (!file.HasExtension(FileExtension))
+        if (!file.HasExtension(Extension))
         {
             return false;
         }
@@ -128,11 +128,31 @@ public partial record ImdbMetadata(
         return true;
     }
 
+    internal static bool TryGet(IEnumerable<string> files, [NotNullWhen(true)] out string? file, [NotNullWhen(true)] out string? imdbId)
+    {
+        string[] metadataFiles = files.Where(file => file.HasExtension(Extension)).ToArray();
+        if (metadataFiles.Length != 1)
+        {
+            file = null;
+            imdbId = null;
+            return false;
+        }
+
+        file = metadataFiles.Single();
+        if (TryGet(file, out imdbId))
+        {
+            return true;
+        }
+
+        file = null;
+        return false;
+    }
+
     internal static bool TryGet(string file, [NotNullWhen(true)] out string? imdbId)
     {
         imdbId = null;
 
-        if (!file.HasExtension(FileExtension))
+        if (!file.HasExtension(Extension))
         {
             return false;
         }
@@ -178,7 +198,7 @@ public partial record ImdbMetadata(
                     FileNameMetadataSeparator,
                     this.Genres.Take(5).Select(value => value.ReplaceOrdinal(FileNameSeparator, string.Empty).ReplaceOrdinal(FileNameMetadataSeparator, string.Empty)))
             ]);
-        return Path.Combine(directory, $"{name}{FileExtension}");
+        return Path.Combine(directory, $"{name}{Extension}");
     }
 }
 

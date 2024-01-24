@@ -13,15 +13,15 @@ internal static partial class Video
 
     private const string ThumbExtension = ".jpg";
 
-    internal const string XmlMetadataSearchPattern = PathHelper.AllSearchPattern + XmlMetadataExtension;
+    internal const string XmlMetadataSearchPattern = $"{PathHelper.AllSearchPattern}{XmlMetadataExtension}";
 
-    private const string VideoSearchPattern = PathHelper.AllSearchPattern + VideoExtension;
+    private const string VideoSearchPattern = $"{PathHelper.AllSearchPattern}{VideoExtension}";
 
     private const string Featurettes = nameof(Featurettes);
 
     private const string DefaultBackupFlag = "backup";
 
-    private const string Delimiter = ".";
+    internal const string Delimiter = ".";
 
     private static readonly string[] UncommonVideoExtensions = [".3gp", ".dat", ".divx", ".flv", ".m1v", ".m2ts", ".m4v", ".mkv", ".mov", ".mpeg", ".mpg", ".rm", ".rmvb", ".ts", ".vob", ".webm", ".wmv"];
 
@@ -41,9 +41,9 @@ internal static partial class Video
 
     internal const string ImdbCacheExtension = ".log";
 
-    internal const string ImdbMetadataSearchPattern = PathHelper.AllSearchPattern + ImdbMetadata.FileExtension;
+    internal const string ImdbMetadataSearchPattern = $"{PathHelper.AllSearchPattern}{ImdbMetadata.Extension}";
 
-    private const string ImdbCacheSearchPattern = PathHelper.AllSearchPattern + ImdbCacheExtension;
+    private const string ImdbCacheSearchPattern = $"{PathHelper.AllSearchPattern}{ImdbCacheExtension}";
 
     private static readonly string[] SubtitleLanguages = ["bul", "can", "cat", "chs", "cht", "cze", "dan", "dut", "eng", "fil", "fin", "fre", "gre", "heb", "hin", "ind", "ger", "hun", "ita", "jap", "kor", "mal", "nor", "pol", "por", "rom", "rum", "rus", "slo", "spa", "swe", "tam", "tha", "tur", "ukr"];
 

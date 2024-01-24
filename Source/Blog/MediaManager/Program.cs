@@ -772,7 +772,7 @@ static void RenameFilesWithDuplicateTitle(
 //    string[] files = Directory.GetFiles(d);
 //    string video = files.Single(Video.IsVideo);
 //    string xml = files.Single(f => f.HasExtension(Video.XmlMetadataExtension));
-//    string metadata = files.Single(f => f.HasExtension(ImdbMetadata.FileExtension));
+//    string metadata = files.Single(f => f.HasExtension(ImdbMetadata.Extension));
 //    if (Regex.IsMatch(PathHelper.GetFileName(d).Split(".").First(), $" [0-9]+"))
 //    {
 //        //string p = PathHelper.GetFileNameWithoutExtension(video).Split("-").First()+"-";

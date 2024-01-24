@@ -227,9 +227,9 @@ internal static class Audio
             .ForEach(album =>
             {
                 string[] files = Directory.GetFiles(album, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
-                string[] audios = files.Where(file => file.EndsWithIgnoreCase(AudioExtension)).ToArray();
+                string[] audios = files.Where(file => file.HasExtension(AudioExtension)).ToArray();
                 string[] attachments = files.Where(file => Attachments.ContainsIgnoreCase(PathHelper.GetFileNameWithoutExtension(file))).ToArray();
-                string[] metadata = files.Where(file => PathHelper.GetFileName(file).EqualsIgnoreCase("album.nfo")).ToArray();
+                string[] metadata = files.Where(file => PathHelper.GetFileName(file).EqualsIgnoreCase($"album{Video.XmlMetadataExtension}")).ToArray();
 
                 files.Except(audios).Except(attachments).Except(metadata).ForEach(log);
             });

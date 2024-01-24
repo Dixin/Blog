@@ -17,7 +17,7 @@ internal class FfmpegHelper
                 .GetFiles(directory, originalVideoSearchPattern, SearchOption.AllDirectories)
             : Directory
                 .EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
-                .Where(file => file.IsVideo() && !PathHelper.GetFileNameWithoutExtension(file).ContainsIgnoreCase(".DUBBED."))
+                .Where(file => file.IsVideo() && !PathHelper.GetFileNameWithoutExtension(file).ContainsIgnoreCase($"{Video.Delimiter}DUBBED{Video.Delimiter}"))
                 .ToArray();
 
         originalVideos.ForEach(originalVideo =>
