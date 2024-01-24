@@ -26,15 +26,15 @@
     </ItemGroup>
 
 	<ItemGroup>
-         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.0" />
+         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.1" />
          <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
          <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
          <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
          <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
          <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
          <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
-         <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="120.0.6099.10900" />
-         <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="119.0.2151.42" /> 
+         <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="121.0.6167.8500" />
+         <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="120.0.2210.144" /> 
     </ItemGroup>
 
     <ItemGroup>
