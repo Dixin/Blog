@@ -92,7 +92,9 @@ public class TorrentHelper
         await DownloadAllFromCacheAsync(magnetUrls, torrentDirectory, useBrowser, degreeOfParallelism, log, cancellationToken);
     }
 
-    public static async Task DownloadAllFromCacheAsync(IEnumerable<string> magnetUrls, string torrentDirectory, bool useBrowser = false, int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
+    public static async Task DownloadAllFromCacheAsync(
+        IEnumerable<string> magnetUrls, string torrentDirectory, bool useBrowser = false, int? degreeOfParallelism = null, 
+        Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         const string Referer = "https://magnet2torrent.com/";
         degreeOfParallelism ??= IOMaxDegreeOfParallelism;
@@ -109,44 +111,48 @@ public class TorrentHelper
         await magnetUrls
             .Select(MagnetUri.Parse)
             .ExceptBy(downloadedHashes, uri => uri.ExactTopic, StringComparer.OrdinalIgnoreCase)
-            .ParallelForEachAsync(async (magnetUri, index) =>
-            {
-                string torrentUrl = $"https://itorrents.org/torrent/{magnetUri.ExactTopic}{TorrentExtension}";
-                if (!useBrowser)
+            .ParallelForEachAsync
+                (async (magnetUri, index, token) =>
                 {
-                    using HttpClient httpClient = new HttpClient().AddEdgeHeaders(referer: Referer);
-                    try
+                    token.ThrowIfCancellationRequested();
+                    string torrentUrl = $"https://itorrents.org/torrent/{magnetUri.ExactTopic}{TorrentExtension}";
+                    if (!useBrowser)
                     {
-                        await Retry.FixedIntervalAsync(
-                            async () => await httpClient.GetFileAsync(
-                                torrentUrl,
-                                Path.Combine(torrentDirectory, $"{magnetUri.DisplayName}@{magnetUri.ExactTopic}{TorrentExtension}"),
-                                cancellationToken),
-                            isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.Moved });
+                        using HttpClient httpClient = new HttpClient().AddEdgeHeaders(referer: Referer);
+                        try
+                        {
+                            await Retry.FixedIntervalAsync(
+                                async () => await httpClient.GetFileAsync(
+                                    torrentUrl,
+                                    Path.Combine(torrentDirectory, $"{magnetUri.DisplayName}@{magnetUri.ExactTopic}{TorrentExtension}"),
+                                    token),
+                                isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.Moved });
+                        }
+                        catch (Exception exception) when (exception.IsNotCritical())
+                        {
+                            log?.Invoke(magnetUri.ToString());
+                            log?.Invoke(exception.ToString());
+                            log?.Invoke(string.Empty);
+                        }
                     }
-                    catch (Exception exception) when (exception.IsNotCritical())
+                    else
                     {
-                        log?.Invoke(magnetUri.ToString());
-                        log?.Invoke(exception.ToString());
-                        log?.Invoke(string.Empty);
+                        using IWebDriver webDriver = WebDriverHelper.Start(downloadDirectory: torrentDirectory);
+                        webDriver.Navigate().GoToUrl(Referer);
+                        try
+                        {
+                            Retry.FixedInterval(() => webDriver.Url = torrentUrl);
+                        }
+                        catch (Exception exception) when (exception.IsNotCritical())
+                        {
+                            log?.Invoke(magnetUri.ToString());
+                            log?.Invoke(exception.ToString());
+                            log?.Invoke(string.Empty);
+                        }
                     }
-                }
-                else
-                {
-                    using IWebDriver webDriver = WebDriverHelper.Start(downloadDirectory: torrentDirectory);
-                    webDriver.Navigate().GoToUrl(Referer);
-                    try
-                    {
-                        Retry.FixedInterval(() => webDriver.Url = torrentUrl);
-                    }
-                    catch (Exception exception) when (exception.IsNotCritical())
-                    {
-                        log?.Invoke(magnetUri.ToString());
-                        log?.Invoke(exception.ToString());
-                        log?.Invoke(string.Empty);
-                    }
-                }
-            }, degreeOfParallelism, cancellationToken);
+                }, 
+                degreeOfParallelism, 
+                cancellationToken);
     }
 
     public static async Task DownloadAllFromCache2Async(string magnetUrlPath, string torrentDirectory, string lastHash = "", Action<string>? log = null, CancellationToken cancellationToken = default)

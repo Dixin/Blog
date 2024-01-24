@@ -8,11 +8,14 @@ using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 internal static class Entry
 {
+    internal static readonly int MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 16);
+
     internal static async Task DownloadMetadataAsync(
         string baseUrl, int startIndex, int count,
         string entryJsonPath, string libraryJsonPath, string x265JsonPath, string h264JsonPath, string preferredJsonPath, string h264720PJsonPath,
-        Action<string>? log = null)
+        int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
+        degreeOfParallelism ??= MaxDegreeOfParallelism;
         log ??= Logger.WriteLine;
 
         List<string> entryLinks = [];
@@ -20,52 +23,59 @@ internal static class Entry
         await Enumerable
             .Range(startIndex, count)
             .Select(index => $"{baseUrl}/page/{index}/")
-            .ForEachAsync(async url =>
+            .ForEachAsync(
+                async (url, index, token) =>
+                {
+                    token.ThrowIfCancellationRequested();
+                    try
+                    {
+                        string html = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(url, token));
+                        CQ listCQ = html;
+                        log($"Done {url}");
+                        listCQ
+                            .Find("h2.entry-title a")
+                            .Select(entryLink => entryLink.GetAttribute("href"))
+                            .ForEach(entryLinks.Add);
+                    }
+                    catch (Exception exception) when (exception.IsNotCritical())
+                    {
+                        log(exception.ToString());
+                    }
+                },
+                cancellationToken);
+        ConcurrentDictionary<string, EntryMetadata> entryMetadata = File.Exists(entryJsonPath) 
+            ? new(await JsonHelper.DeserializeFromFileAsync<Dictionary<string, EntryMetadata>>(entryJsonPath, cancellationToken)) 
+            : new();
+        await entryLinks.ParallelForEachAsync(
+            async (entryLink, index, token) =>
             {
+                token.ThrowIfCancellationRequested();
+                using HttpClient httpClient = new();
                 try
                 {
-                    string html = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(url));
-                    CQ listCQ = html;
-                    log($"Done {url}");
-                    listCQ
-                        .Find("h2.entry-title a")
-                        .Select(entryLink => entryLink.GetAttribute("href"))
-                        .ForEach(entryLinks.Add);
+                    string html = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(entryLink, cancellationToken));
+                    CQ entryCQ = html;
+                    string title = entryCQ.Find("h1.entry-title").Text().Trim();
+                    log($"Done {title} {entryLink}");
+                    entryMetadata[entryLink] = new EntryMetadata(
+                        title,
+                        entryCQ.Find("div.entry-content").Html());
                 }
                 catch (Exception exception) when (exception.IsNotCritical())
                 {
                     log(exception.ToString());
                 }
-            });
-        ConcurrentDictionary<string, EntryMetadata> entryMetadata = File.Exists(entryJsonPath) 
-            ? new(await JsonHelper.DeserializeFromFileAsync<Dictionary<string, EntryMetadata>>(entryJsonPath)) 
-            : new();
-        await entryLinks.ParallelForEachAsync(async entryLink =>
-        {
-            using HttpClient httpClient = new();
-            try
-            {
-                string html = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(entryLink));
-                CQ entryCQ = html;
-                string title = entryCQ.Find("h1.entry-title").Text().Trim();
-                log($"Done {title} {entryLink}");
-                entryMetadata[entryLink] = new EntryMetadata(
-                    title,
-                    entryCQ.Find("div.entry-content").Html());
-            }
-            catch (Exception exception) when (exception.IsNotCritical())
-            {
-                log(exception.ToString());
-            }
-        }, 4);
+            },
+            degreeOfParallelism,
+            cancellationToken);
 
-        await JsonHelper.SerializeToFileAsync(entryMetadata, entryJsonPath);
+        await JsonHelper.SerializeToFileAsync(entryMetadata, entryJsonPath, cancellationToken);
 
-        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(libraryJsonPath);
-        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(x265JsonPath);
-        Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264JsonPath);
-        Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(preferredJsonPath);
-        Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264720PJsonPath);
+        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(libraryJsonPath, cancellationToken);
+        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(x265JsonPath, cancellationToken);
+        Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264JsonPath, cancellationToken);
+        Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(preferredJsonPath, cancellationToken);
+        Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264720PJsonPath, cancellationToken);
         entryMetadata
             .SelectMany(entry => Regex
                 .Matches(entry.Value.Content, @"imdb\.com/title/(tt[0-9]+)")

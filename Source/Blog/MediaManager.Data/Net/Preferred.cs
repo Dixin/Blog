@@ -92,46 +92,49 @@ internal static class Preferred
             .OrderBy(summary => summary.Link)
             .Do(summary => log(summary.Link))
             .ToArray()
-            .ParallelForEachAsync(async (summary, index) =>
-            {
-                log($"Start {index}:{summary.Link}");
-                using HttpClient webClient = new HttpClient().AddEdgeHeaders();
-                try
+            .ParallelForEachAsync(
+                async (summary, index, token) =>
                 {
-                    string html = await Retry.FixedIntervalAsync(
-                        async () => await webClient.GetStringAsync(summary.Link, cancellationToken),
-                        isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound });
-                    CQ cq = new(html);
-                    CQ info = cq.Find("#movie-info");
-                    PreferredMetadata detail = new(
-                        Link: summary.Link,
-                        Title: summary.Title,
-                        ImdbId: info.Find("a.icon[title='IMDb Rating']").Attr("href").Replace("https://www.imdb.com/title/", string.Empty).Trim('/'),
-                        ImdbRating: summary.ImdbRating,
-                        Genres: summary.Genres,
-                        Image: summary.Image,
-                        Year: summary.Year,
-                        Language: info.Find("h2 a span").Text().Trim().TrimStart('[').TrimEnd(']'),
-                        Availabilities: info.Find("p.hidden-sm a[rel='nofollow']").ToDictionary(link => link.TextContent.Trim(), link => link.GetAttribute("href")));
-                    lock (AddDetailLock)
+                    token.ThrowIfCancellationRequested();
+                    log($"Start {index}:{summary.Link}");
+                    using HttpClient webClient = new HttpClient().AddEdgeHeaders();
+                    try
                     {
-                        details[detail.ImdbId] = details.ContainsKey(detail.ImdbId)
-                            ? details[detail.ImdbId].Where(item => !item.Link.EqualsIgnoreCase(detail.Link)).Append(detail).ToArray()
-                            : [detail];
+                        string html = await Retry.FixedIntervalAsync(async () => await webClient.GetStringAsync(summary.Link, token),
+                            isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound });
+                        CQ cq = new(html);
+                        CQ info = cq.Find("#movie-info");
+                        PreferredMetadata detail = new(
+                            Link: summary.Link,
+                            Title: summary.Title,
+                            ImdbId: info.Find("a.icon[title='IMDb Rating']").Attr("href").Replace("https://www.imdb.com/title/", string.Empty).Trim('/'),
+                            ImdbRating: summary.ImdbRating,
+                            Genres: summary.Genres,
+                            Image: summary.Image,
+                            Year: summary.Year,
+                            Language: info.Find("h2 a span").Text().Trim().TrimStart('[').TrimEnd(']'),
+                            Availabilities: info.Find("p.hidden-sm a[rel='nofollow']").ToDictionary(link => link.TextContent.Trim(), link => link.GetAttribute("href")));
+                        lock (AddDetailLock)
+                        {
+                            details[detail.ImdbId] = details.ContainsKey(detail.ImdbId)
+                                ? details[detail.ImdbId].Where(item => !item.Link.EqualsIgnoreCase(detail.Link)).Append(detail).ToArray()
+                                : [detail];
+                        }
                     }
-                }
-                catch (Exception exception)
-                {
-                    log($"{summary.Link} {exception}");
-                }
+                    catch (Exception exception)
+                    {
+                        log($"{summary.Link} {exception}");
+                    }
 
-                if (Interlocked.Increment(ref count) % WriteCount == 0)
-                {
-                    JsonHelper.SerializeToFile(details, settings.MoviePreferredMetadata, WriteJsonLock);
-                }
+                    if (Interlocked.Increment(ref count) % WriteCount == 0)
+                    {
+                        JsonHelper.SerializeToFile(details, settings.MoviePreferredMetadata, WriteJsonLock);
+                    }
 
-                log($"End {index}:{summary.Link}");
-            }, degreeOfParallelism, cancellationToken: cancellationToken);
+                    log($"End {index}:{summary.Link}");
+                }, 
+                degreeOfParallelism, 
+                cancellationToken);
 
         JsonHelper.SerializeToFile(details, settings.MoviePreferredMetadata, WriteJsonLock);
     }

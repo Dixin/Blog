@@ -3,6 +3,7 @@ namespace MediaManager.IO;
 using System;
 using Examples.Common;
 using Examples.IO;
+using Examples.Linq;
 using Examples.Net;
 using MediaManager.Net;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
@@ -183,28 +184,30 @@ internal static partial class Video
         ConcurrentQueue<string> movies = new(EnumerateDirectories(directory, level));
         int movieTotalCount = movies.Count;
         await Retry.IncrementalAsync(
-            async () => await Parallel.ForEachAsync(
-                Enumerable.Range(0, degreeOfParallelism.Value),
-                new ParallelOptions() { MaxDegreeOfParallelism = degreeOfParallelism.Value, CancellationToken = cancellationTokenSource.Token },
-                async (webDriverIndex, token) =>
-                {
-                    token.ThrowIfCancellationRequested();
-                    using WebDriverWrapper? webDriver = useBrowser
-                        ? new(() => WebDriverHelper.Start(webDriverIndex, keepExisting: true, cleanProfile: false), "https://www.imdb.com")
-                        : null;
-
-                    while (movies.TryDequeue(out string? movie))
+            async () => await Enumerable
+                .Range(0, degreeOfParallelism.Value)
+                .ParallelForEachAsync(
+                    async (webDriverIndex, index, token) =>
                     {
                         token.ThrowIfCancellationRequested();
-                        int movieIndex = movieTotalCount - movies.Count;
-                        log($"{movieIndex * 100 / movieTotalCount}% - {movieIndex}/{movieTotalCount} - {movie}");
+                        using WebDriverWrapper? webDriver = useBrowser
+                            ? new(() => WebDriverHelper.Start(webDriverIndex, keepExisting: true, cleanProfile: false), "https://www.imdb.com")
+                            : null;
 
-                        if (!await DownloadImdbMetadataAsync(movie, webDriver, overwrite, useCache, log, token))
+                        while (movies.TryDequeue(out string? movie))
                         {
-                            Interlocked.Decrement(ref movieTotalCount);
+                            token.ThrowIfCancellationRequested();
+                            int movieIndex = movieTotalCount - movies.Count;
+                            log($"{movieIndex * 100 / movieTotalCount}% - {movieIndex}/{movieTotalCount} - {movie}");
+
+                            if (!await DownloadImdbMetadataAsync(movie, webDriver, overwrite, useCache, log, token))
+                            {
+                                Interlocked.Decrement(ref movieTotalCount);
+                            }
                         }
-                    }
-                }),
+                    },
+                    degreeOfParallelism,
+                    cancellationToken),
             retryingHandler: (sender, args) =>
             {
                 log(args.LastException.ToString());

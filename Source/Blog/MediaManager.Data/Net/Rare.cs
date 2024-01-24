@@ -12,13 +12,13 @@ internal static class Rare
 
     private const int WriteCount = 100;
 
-    internal static async Task DownloadMetadataAsync(ISettings settings, string indexUrl, int? degreeOfParallelism = null, Action<string>? log = null)
+    internal static async Task DownloadMetadataAsync(ISettings settings, string indexUrl, int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         degreeOfParallelism ??= Video.IOMaxDegreeOfParallelism;
         log ??= Logger.WriteLine;
 
         using HttpClient httpClient = new();
-        string indexHtml = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(indexUrl));
+        string indexHtml = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(indexUrl, cancellationToken));
         CQ indexCQ = indexHtml;
         string[] links = indexCQ
             .Find("#content li.wsp-post a")
@@ -27,29 +27,33 @@ internal static class Rare
         int linkCount = links.Length;
         log($"Total: {linkCount}");
         ConcurrentDictionary<string, RareMetadata> rareMetadata = new();
-        await links.ParallelForEachAsync(async (link, index) =>
-        {
-            using HttpClient httpClient = new();
-            try
+        await links.ParallelForEachAsync(
+            async (link, index, token) =>
             {
-                string html = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(link));
-                CQ rareCQ = html;
-                CQ rareArticleCQ = rareCQ.Find("#content article");
-                string title = rareArticleCQ.Find("h1").Text().Trim();
-                log($"{Math.Round((decimal)index * 100 / linkCount)}% {index}/{linkCount} {title} {link}");
-                rareMetadata[link] = new RareMetadata(title,
-                    rareArticleCQ.Html());
-            }
-            catch (Exception exception) when (exception.IsNotCritical())
-            {
-                log(exception.ToString());
-            }
+                token.ThrowIfCancellationRequested();
+                using HttpClient httpClient = new();
+                try
+                {
+                    string html = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(link, token));
+                    CQ rareCQ = html;
+                    CQ rareArticleCQ = rareCQ.Find("#content article");
+                    string title = rareArticleCQ.Find("h1").Text().Trim();
+                    log($"{Math.Round((decimal)index * 100 / linkCount)}% {index}/{linkCount} {title} {link}");
+                    rareMetadata[link] = new RareMetadata(title,
+                        rareArticleCQ.Html());
+                }
+                catch (Exception exception) when (exception.IsNotCritical())
+                {
+                    log(exception.ToString());
+                }
 
-            if (index % WriteCount == 0)
-            {
-                JsonHelper.SerializeToFile(rareMetadata, settings.MovieRareMetadata, WriteJsonLock);
-            }
-        }, degreeOfParallelism);
+                if (index % WriteCount == 0)
+                {
+                    JsonHelper.SerializeToFile(rareMetadata, settings.MovieRareMetadata, WriteJsonLock);
+                }
+            }, 
+            degreeOfParallelism, 
+            cancellationToken);
 
         JsonHelper.SerializeToFile(rareMetadata, settings.MovieRareMetadata, WriteJsonLock);
 

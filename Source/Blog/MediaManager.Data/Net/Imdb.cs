@@ -725,13 +725,13 @@ internal static class Imdb
         );
     }
 
-    internal static async Task DownloadAllMoviesAsync(ISettings settings, Func<int, Range>? getRange = null, Action<string>? log = null)
+    internal static async Task DownloadAllMoviesAsync(ISettings settings, Func<int, Range>? getRange = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
         WebDriverHelper.DisposeAll();
 
-        ILookup<string, string> top = (await File.ReadAllLinesAsync(settings.TopDatabase))
+        ILookup<string, string> top = (await File.ReadAllLinesAsync(settings.TopDatabase, cancellationToken))
             .AsParallel()
             .Where(line => (line.ContainsIgnoreCase("|movies_x265|") || line.ContainsIgnoreCase("|movies|"))
                 && (line.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") || line.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}")))
@@ -740,13 +740,13 @@ internal static class Imdb
             .Do(cells => Debug.Assert(cells[1].ContainsIgnoreCase($"-{settings.TopEnglishKeyword}") || cells[1].ContainsIgnoreCase($"-{settings.TopForeignKeyword}")))
             .ToLookup(cells => cells[^2], cells => cells[1]);
 
-        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(settings.MovieLibraryMetadata);
-        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265Metadata);
-        Dictionary<string, TopMetadata[]> x265XMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265XMetadata);
-        Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264Metadata);
-        Dictionary<string, TopMetadata[]> h264XMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264XMetadata);
-        Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(settings.MoviePreferredMetadata);
-        Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264720PMetadata);
+        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(settings.MovieLibraryMetadata, cancellationToken);
+        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265Metadata, cancellationToken);
+        Dictionary<string, TopMetadata[]> x265XMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265XMetadata, cancellationToken);
+        Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264Metadata, cancellationToken);
+        Dictionary<string, TopMetadata[]> h264XMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264XMetadata, cancellationToken);
+        Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(settings.MoviePreferredMetadata, cancellationToken);
+        Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264720PMetadata, cancellationToken);
         //Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(rareJsonPath);
 
         string[] cacheFiles = Directory.GetFiles(settings.MovieMetadataCacheDirectory)
@@ -783,27 +783,31 @@ internal static class Imdb
         int trimmedLength = imdbIds.Length;
         ConcurrentQueue<string> imdbIdQueue = new(imdbIds);
         await Enumerable.Range(0, MaxDegreeOfParallelism)
-            .ParallelForEachAsync(async webDriverIndex =>
-            {
-                using WebDriverWrapper webDriver = new(() => WebDriverHelper.Start(webDriverIndex, keepExisting: true));
-                while (imdbIdQueue.TryDequeue(out string? imdbId))
+            .ParallelForEachAsync(
+                async (webDriverIndex, _, token) =>
                 {
-                    int index = trimmedLength - imdbIdQueue.Count;
-                    log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
-                    try
+                    token.ThrowIfCancellationRequested();
+                    using WebDriverWrapper webDriver = new(() => WebDriverHelper.Start(webDriverIndex, keepExisting: true));
+                    while (imdbIdQueue.TryDequeue(out string? imdbId))
                     {
-                        await Retry.FixedIntervalAsync(async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log));
+                        int index = trimmedLength - imdbIdQueue.Count;
+                        log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
+                        try
+                        {
+                            await Retry.FixedIntervalAsync(async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log, token));
+                        }
+                        catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
+                        {
+                            log($"!!!{imdbId}");
+                        }
+                        catch (ArgumentException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
+                        {
+                            log($"!!!{imdbId}");
+                        }
                     }
-                    catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
-                    {
-                        log($"!!!{imdbId}");
-                    }
-                    catch (ArgumentException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
-                    {
-                        log($"!!!{imdbId}");
-                    }
-                }
-            }, MaxDegreeOfParallelism);
+                },
+                MaxDegreeOfParallelism,
+                cancellationToken);
     }
 
     internal static async Task UpdateAllMoviesKeywordsAsync(

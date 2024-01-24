@@ -13,24 +13,31 @@ internal static class Top
 {
     private const int WriteCount = 50;
 
-    internal static async Task DownloadMetadataAsync(IEnumerable<string> urls, string jsonPath, Func<int, bool>? @continue = null, int? degreeOfParallelism = null, Action<string>? log = null)
+    internal static async Task DownloadMetadataAsync(
+        IEnumerable<string> urls, string jsonPath, Func<int, bool>? @continue = null, 
+        int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         degreeOfParallelism ??= Video.IOMaxDegreeOfParallelism;
         log ??= Logger.WriteLine;
 
         string jsonText;
         ConcurrentDictionary<string, TopMetadata[]> allSummaries = File.Exists(jsonPath)
-            ? new(await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(jsonPath))
+            ? new(await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(jsonPath, cancellationToken))
             : new();
 
-        await urls.ParallelForEachAsync(async (url, index) => await DownloadMetadataAsync(url, jsonPath, allSummaries, index + 1, @continue, log), degreeOfParallelism);
-        await JsonHelper.SerializeToFileAsync(allSummaries, jsonPath);
+        await urls.ParallelForEachAsync(
+            async (url, index, token) => await DownloadMetadataAsync(url, jsonPath, allSummaries, index + 1, @continue, log, token), 
+            degreeOfParallelism, 
+            cancellationToken);
+        await JsonHelper.SerializeToFileAsync(allSummaries, jsonPath, cancellationToken);
     }
 
-    internal static async Task DownloadMetadataAsync(string url, string jsonPath, Func<int, bool>? @continue = null, Action<string>? log = null) =>
-        await DownloadMetadataAsync(new[] { url }, jsonPath, @continue, 1, log: log);
+    internal static async Task DownloadMetadataAsync(string url, string jsonPath, Func<int, bool>? @continue = null, Action<string>? log = null, CancellationToken cancellationToken = default) =>
+        await DownloadMetadataAsync(new[] { url }, jsonPath, @continue, 1, log, cancellationToken);
 
-    private static async Task DownloadMetadataAsync(string url, string jsonPath, ConcurrentDictionary<string, TopMetadata[]> allSummaries, int partitionIndex, Func<int, bool>? @continue = null, Action<string>? log = null)
+    private static async Task DownloadMetadataAsync(
+        string url, string jsonPath, ConcurrentDictionary<string, TopMetadata[]> allSummaries, int partitionIndex, Func<int, bool>? @continue = null, 
+        Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
         @continue ??= _ => true;
@@ -45,12 +52,13 @@ internal static class Top
             int pageIndex = 1;
             do
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 if (!@continue(pageIndex))
                 {
                     break;
                 }
 
-                await Task.Delay(WebDriverHelper.DefaultDomWait);
+                await Task.Delay(WebDriverHelper.DefaultDomWait, cancellationToken);
                 log($"{partitionIndex}:{pageIndex} Start {webDriver.Url}");
 
                 CQ page = webDriver.PageSource;
@@ -105,9 +113,6 @@ internal static class Top
                     JsonHelper.SerializeToFile(allSummaries, jsonPath, WriteJsonLock);
                 }
             } while (webDriver.HasNextPage(ref pager, log));
-
-            webDriver.Close();
-            webDriver.Quit();
         }
         catch (Exception exception)
         {
