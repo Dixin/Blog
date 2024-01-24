@@ -25,7 +25,7 @@ internal static class Music
     internal static void Segment(string video, string text)
     {
         (string start, string name)[] tracks = text
-            .Split(Environment.NewLine.ToCharArray(), StringSplitOptions.RemoveEmptyEntries)
+            .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
             .Select(line => (start: line.Split("@".ToCharArray()).Last().Trim(), name: line.Split("@".ToCharArray()).First().Trim()))
             .ToArray();
         IEnumerable<string> arguments = tracks

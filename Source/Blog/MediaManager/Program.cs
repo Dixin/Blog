@@ -785,7 +785,7 @@ static void RenameFilesWithDuplicateTitle(
 //    string year = a[1];
 //    string tailTitle = title[(title.IndexOf("-") + 1)..];
 //    string metadata2 = PathHelper.GetFileName(d)[PathHelper.GetFileName(d).IndexOf("[")..];
-//    int index = tailTitle.IndexOfOrdinal("`");
+//    int index = tailTitle.IndexOfOrdinal(Video.InstallmentSeparator);
 //    string postfix = string.Empty;
 //    if (index > 0)
 //    {

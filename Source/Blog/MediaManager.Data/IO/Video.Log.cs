@@ -254,7 +254,7 @@ internal static partial class Video
 
                 DirectorySpecialCharacters.Where(trimmedMovie.Contains).ForEach(specialCharacter => log($"!Special character {specialCharacter}: {trimmedMovie}"));
                 translations
-                    .Where(translated => Regex.IsMatch(translated.Split("`").First(), "[0-9]+"))
+                    .Where(translated => Regex.IsMatch(translated.Split(InstallmentSeparator).First(), "[0-9]+"))
                     .ForEach(translated => log($"!Translation has number {translated}: {movie}"));
                 translations
                     .Where(translation => !string.IsNullOrEmpty(translation) && translation.All(character => character is >= 'a' and <= 'z' or >= 'A' and <= 'Z' || char.IsPunctuation(character) || char.IsSeparator(character) || char.IsSymbol(character) || char.IsWhiteSpace(character)))

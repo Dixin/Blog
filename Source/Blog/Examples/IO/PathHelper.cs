@@ -57,7 +57,7 @@ public static class PathHelper
         {
             oneDrive = File.ReadLines(iniFile)
                 .Last(line => !string.IsNullOrWhiteSpace(line))
-                .Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                .Split(" ", StringSplitOptions.RemoveEmptyEntries)
                 .Last()
                 .Trim('"');
             return !string.IsNullOrWhiteSpace(oneDrive);
