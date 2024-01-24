@@ -164,7 +164,7 @@ internal static partial class Video
                 string movieDirectory = PathHelper.GetFileName(movie);
                 if (movieDirectory.StartsWithOrdinal("0."))
                 {
-                    movieDirectory = movieDirectory.Substring("0.".Length);
+                    movieDirectory = movieDirectory["0.".Length..];
                 }
 
                 VideoDirectoryInfo videoDirectoryInfo = VideoDirectoryInfo.Parse(movieDirectory);
@@ -218,12 +218,12 @@ internal static partial class Video
                 string trimmedMovie = PathHelper.GetFileName(movie);
                 if (trimmedMovie.StartsWithOrdinal("0."))
                 {
-                    trimmedMovie = trimmedMovie.Substring("0.".Length);
+                    trimmedMovie = trimmedMovie["0.".Length..];
                 }
 
                 if (trimmedMovie.ContainsOrdinal("{"))
                 {
-                    trimmedMovie = trimmedMovie.Substring(0, trimmedMovie.IndexOfOrdinal("{"));
+                    trimmedMovie = trimmedMovie[..trimmedMovie.IndexOfOrdinal("{")];
                 }
 
                 if (!VideoDirectoryInfo.TryParse(trimmedMovie, out VideoDirectoryInfo? directoryInfo))

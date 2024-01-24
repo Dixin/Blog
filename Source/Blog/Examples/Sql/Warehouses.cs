@@ -257,7 +257,7 @@ internal static class Warehouses
                     string lastField = fields.Last();
                     if (lastField.ContainsOrdinal("@"))
                     {
-                        string firstField = line.Substring(0, line.Length - lastField.Length).TrimEnd();
+                        string firstField = line[..^lastField.Length].TrimEnd();
                         string newLine = string.Join("\t", [firstField, lastField, string.Empty]);
                         writer.WriteLine(newLine);
                     }

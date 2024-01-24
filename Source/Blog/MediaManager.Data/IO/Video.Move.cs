@@ -210,7 +210,7 @@ internal static partial class Video
                 ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata);
                 string additional = $"@{string.Join(",", imdbMetadata?.Regions.Take(4) ?? [])}#{string.Join(",", imdbMetadata?.Languages.Take(3) ?? [])}";
                 string originalMovie = movieName.ContainsOrdinal("{")
-                    ? PathHelper.ReplaceFileName(movie, movieName.Substring(0, movieName.IndexOfOrdinal("@")))
+                    ? PathHelper.ReplaceFileName(movie, movieName[..movieName.IndexOfOrdinal("@")])
                     : movie;
                 string newMovie = $"{originalMovie}{additional}";
                 log(movie);
@@ -328,7 +328,7 @@ internal static partial class Video
                 bool isRenamed = false;
                 if (movieName.StartsWithOrdinal("0."))
                 {
-                    movieName = movieName.Substring("0.".Length);
+                    movieName = movieName["0.".Length..];
                     isRenamed = true;
                 }
 
@@ -858,7 +858,7 @@ internal static partial class Video
                 {
                     const string Language = "eng";
                     string englishSubtitleName = PathHelper.GetFileNameWithoutExtension(englishSubtitle);
-                    string newEnglishSubtitle = Path.Combine(PathHelper.GetDirectoryName(englishSubtitle), $"{englishSubtitleName.Substring(0, englishSubtitleName.LastIndexOf(Delimiter, StringComparison.Ordinal))}.{Language}{PathHelper.GetExtension(englishSubtitle)}");
+                    string newEnglishSubtitle = Path.Combine(PathHelper.GetDirectoryName(englishSubtitle), $"{englishSubtitleName[..englishSubtitleName.LastIndexOf(Delimiter, StringComparison.Ordinal)]}.{Language}{PathHelper.GetExtension(englishSubtitle)}");
                     log($"Move {englishSubtitle}");
                     if (!isDryRun)
                     {
@@ -880,7 +880,7 @@ internal static partial class Video
 
                             string language = EncodingHelper.TryRead(chineseSubtitle, out string? content, out _) && "為們說無當".Any(content.ContainsOrdinal) ? "cht" : "chs";
                             string chineseSubtitleName = PathHelper.GetFileNameWithoutExtension(chineseSubtitle);
-                            string newChineseSubtitle = Path.Combine(PathHelper.GetDirectoryName(chineseSubtitle), $"{chineseSubtitleName.Substring(0, chineseSubtitleName.LastIndexOf(Delimiter, StringComparison.Ordinal))}.{language}{PathHelper.GetExtension(chineseSubtitle)}");
+                            string newChineseSubtitle = Path.Combine(PathHelper.GetDirectoryName(chineseSubtitle), $"{chineseSubtitleName[..chineseSubtitleName.LastIndexOf(Delimiter, StringComparison.Ordinal)]}.{language}{PathHelper.GetExtension(chineseSubtitle)}");
                             log($"Move {chineseSubtitle}");
                             if (!isDryRun)
                             {
@@ -901,7 +901,7 @@ internal static partial class Video
 
                             const string Language = "chs";
                             string chineseSubtitleName = PathHelper.GetFileNameWithoutExtension(chineseSubtitle);
-                            string newChineseSubtitle = Path.Combine(PathHelper.GetDirectoryName(chineseSubtitle), $"{chineseSubtitleName.Substring(0, chineseSubtitleName.LastIndexOf(Delimiter, StringComparison.Ordinal))}.{Language}{PathHelper.GetExtension(chineseSubtitle)}");
+                            string newChineseSubtitle = Path.Combine(PathHelper.GetDirectoryName(chineseSubtitle), $"{chineseSubtitleName[..chineseSubtitleName.LastIndexOf(Delimiter, StringComparison.Ordinal)]}.{Language}{PathHelper.GetExtension(chineseSubtitle)}");
                             log($"Move {chineseSubtitle}");
                             if (!isDryRun)
                             {
@@ -1004,7 +1004,7 @@ internal static partial class Video
                     log(PathHelper.ReplaceFileName(video, episode.Name));
                     log(string.Empty);
 
-                    string initial = video.Substring(0, video.Length - PathHelper.GetExtension(video).Length);
+                    string initial = video[..^PathHelper.GetExtension(video).Length];
                     string newInitial = Path.Combine(PathHelper.GetDirectoryName(video), PathHelper.GetFileNameWithoutExtension(episode.Name));
                     string[] attachments = files
                         .Where(file => !file.EqualsIgnoreCase(video) && file.StartsWithIgnoreCase(initial))

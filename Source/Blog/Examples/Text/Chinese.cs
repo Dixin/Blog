@@ -151,7 +151,7 @@ public static partial class Chinese
             int length = StringInfo.GetNextTextElementLength(remaining.Span);
             yield return (index, length);
             index += length;
-            remaining = remaining.Slice(length);
+            remaining = remaining[length..];
         }
     }
 

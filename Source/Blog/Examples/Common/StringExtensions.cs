@@ -27,7 +27,7 @@ public static class StringExtensions
         string.Equals(value1, value2, StringComparison.Ordinal);
 
     public static string Left(this string value, int count) =>
-        string.IsNullOrEmpty(value) || count < 1 ? string.Empty : value.Substring(0, Math.Min(count, value.Length));
+        string.IsNullOrEmpty(value) || count < 1 ? string.Empty : value[..Math.Min(count, value.Length)];
 
     public static void LogWith(this string? message, TextWriter? logger) => 
         logger?.WriteLine(message);

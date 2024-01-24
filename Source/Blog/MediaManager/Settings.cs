@@ -114,7 +114,7 @@ public partial record Settings : ISettings
         keywords
             .Split(Environment.NewLine, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
             .Select(keyword => keyword.Trim().Trim(',').Trim('"').ToLowerInvariant().Replace("-", " "))
-            .Select(keyword => keyword.StartsWithOrdinal(@"//""") ? (IsComment: true, Value: keyword.Substring(@"//""".Length)) : (IsComment: false, Value: keyword))
+            .Select(keyword => keyword.StartsWithOrdinal(@"//""") ? (IsComment: true, Value: keyword[@"//""".Length..]) : (IsComment: false, Value: keyword))
             .OrderBy(keyword => keyword.Value)
             .DistinctBy(keyword => keyword.Value)
             .Select(keyword => keyword.IsComment ? $"""//"{keyword.Value}",""" : $"""

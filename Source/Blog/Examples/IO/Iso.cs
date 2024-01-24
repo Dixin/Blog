@@ -16,7 +16,7 @@ internal static class Iso
                     string truncated = file;
                     if (PathHelper.GetFileName(file).Length > 110)
                     {
-                        truncated = Path.Combine(PathHelper.GetDirectoryName(file), PathHelper.GetFileNameWithoutExtension(file).Substring(0, 110 - PathHelper.GetExtension(file).Length) + PathHelper.GetExtension(file));
+                        truncated = Path.Combine(PathHelper.GetDirectoryName(file), $"{PathHelper.GetFileNameWithoutExtension(file)[..(110 - PathHelper.GetExtension(file).Length)]}{PathHelper.GetExtension(file)}");
                         File.Move(file, truncated);
                     }
                     if (PathHelper.GetFileNameWithoutExtension(truncated).ContainsOrdinal(";"))

@@ -455,7 +455,7 @@ internal static class Imdb
             originalTitle = imdbCQ.Find(@"h1[data-testid='hero__pageTitle']").Next("div").Text().Trim();
             if (originalTitle.StartsWithIgnoreCase("Original title: "))
             {
-                originalTitle = originalTitle.Substring("Original title: ".Length).Trim();
+                originalTitle = originalTitle["Original title: ".Length..].Trim();
             }
 
             if (originalTitle.IsNullOrWhiteSpace())
@@ -496,7 +496,7 @@ internal static class Imdb
                 if (titles.Any())
                 {
                     string releaseHtmlTitle = releaseCQ.Find("title").Text();
-                    releaseHtmlTitle = releaseHtmlTitle.Substring(0, releaseHtmlTitle.LastIndexOfOrdinal("(")).Trim();
+                    releaseHtmlTitle = releaseHtmlTitle[..releaseHtmlTitle.LastIndexOfOrdinal("(")].Trim();
 
                     if (!titles.TryGetValue("(original title)", out string[]? originalTitleValues))
                     {
@@ -591,7 +591,7 @@ internal static class Imdb
                     }
 
                     htmlTitle = htmlTitle.ContainsOrdinal("(")
-                        ? htmlTitle.Substring(0, htmlTitle.LastIndexOfOrdinal("(")).Trim()
+                        ? htmlTitle[..htmlTitle.LastIndexOfOrdinal("(")].Trim()
                         : htmlTitle.Replace("- IMDB", string.Empty).Trim();
                     Debug.Assert(title.EqualsOrdinal(htmlTitle) || htmlTitle.ContainsOrdinal(title));
                 }
