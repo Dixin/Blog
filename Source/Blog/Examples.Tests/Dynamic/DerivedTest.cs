@@ -1,5 +1,3 @@
 namespace Examples.Tests.Dynamic;
 
-internal class DerivedTest : BaseTest
-{
-}
+internal class DerivedTest : BaseTest;

@@ -7,7 +7,7 @@ public class CustomTextWriter : TextWriter
     private readonly Action<string?> write;
 
     public CustomTextWriter(Action<string?> write, Encoding? encoding = null) =>
-        (this.write, this.Encoding ) = (write.NotNull(), encoding ?? Encoding.Default);
+        (this.write, this.Encoding ) = (write.ThrowIfNull(), encoding ?? Encoding.Default);
 
     public override void Write(string? value) => this.write(value);
 

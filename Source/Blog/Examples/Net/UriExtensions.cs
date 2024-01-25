@@ -8,7 +8,7 @@ public static class UriExtensions
 {
     public static Uri RemoveQuery(this Uri uri, string query, int port = -1)
     {
-        NameValueCollection queries = HttpUtility.ParseQueryString(uri.NotNull().Query);
+        NameValueCollection queries = HttpUtility.ParseQueryString(uri.ThrowIfNull().Query);
         queries.Remove(query);
 
         return new UriBuilder(uri) { Port = port, Query = queries.ToString() }.Uri;

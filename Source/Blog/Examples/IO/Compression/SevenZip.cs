@@ -26,7 +26,7 @@ public class SevenZip
 
     #region Constructors and Destructors
 
-    public SevenZip(string sevenZ) => this.sevenZ = sevenZ.NotNullOrWhiteSpace();
+    public SevenZip(string sevenZ) => this.sevenZ = sevenZ.ThrowIfNullOrWhiteSpace();
 
     #endregion
 
@@ -34,14 +34,14 @@ public class SevenZip
 
     public static void DeleteDirectory(string directory, TextWriter? logger)
     {
-        $"Start deleting directory {directory.NotNullOrWhiteSpace()}".LogWith(logger);
+        $"Start deleting directory {directory.ThrowIfNullOrWhiteSpace()}".LogWith(logger);
         DirectoryHelper.Delete(directory);
         $"End deleting directory {directory}".LogWith(logger);
     }
 
     public static void DeleteFile(string file, TextWriter? logger)
     {
-        $"Start deleting file {file.NotNullOrWhiteSpace()}".LogWith(logger);
+        $"Start deleting file {file.ThrowIfNullOrWhiteSpace()}".LogWith(logger);
         FileHelper.Delete(file);
         $"End deleting file {file}".LogWith(logger);
     }
@@ -55,7 +55,7 @@ public class SevenZip
         TextWriter? logger = null,
         int level = DefaultCompressionLevel)
     {
-        Directory.EnumerateFiles(directory.NotNullOrWhiteSpace())
+        Directory.EnumerateFiles(directory.ThrowIfNullOrWhiteSpace())
             .Where(file => archiveExtensions.Contains(PathHelper.GetExtension(file), StringComparer.OrdinalIgnoreCase))
             .ForEach(archive => this.ToZip(archive, zipFile?.Invoke(archive), deleteArchive, logger, level));
 
@@ -73,7 +73,7 @@ public class SevenZip
         TextWriter? logger = null,
         int level = DefaultCompressionLevel)
     {
-        source.NotNullOrWhiteSpace();
+        source.ThrowIfNullOrWhiteSpace();
         intermediateFile ??= name => $"{source}..zip";
 
         string firstPassZip = intermediateFile(source);
@@ -87,7 +87,7 @@ public class SevenZip
 
     public void Extract(string archive, string? destination = null, bool deleteArchive = false, TextWriter? logger = null)
     {
-        archive.NotNullOrWhiteSpace();
+        archive.ThrowIfNullOrWhiteSpace();
 
         destination = !string.IsNullOrWhiteSpace(destination)
             ? destination
@@ -116,10 +116,10 @@ public class SevenZip
         bool isRecursive = false,
         TextWriter? logger = null)
     {
-        archiveExtensions.NotNull();
+        archiveExtensions.ThrowIfNull();
 
         Directory
-            .EnumerateFiles(directory.NotNullOrWhiteSpace())
+            .EnumerateFiles(directory.ThrowIfNullOrWhiteSpace())
             .Where(file => archiveExtensions.Contains(PathHelper.GetExtension(file), StringComparer.OrdinalIgnoreCase))
             .ForEach(archive =>
                 this.Extract(archive, destinationDirectory?.Invoke(archive), deleteArchive, logger));
@@ -140,7 +140,7 @@ public class SevenZip
         TextWriter? logger = null,
         int level = DefaultCompressionLevel)
     {
-        archive.NotNullOrWhiteSpace();
+        archive.ThrowIfNullOrWhiteSpace();
 
         // Create temp directory.
         string tempDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
@@ -175,7 +175,7 @@ public class SevenZip
         string? password = null,
         int level = DefaultCompressionLevel)
     {
-        source.NotNullOrWhiteSpace();
+        source.ThrowIfNullOrWhiteSpace();
         level = FormatCompressionLevel(level);
         zip = !string.IsNullOrWhiteSpace(zip) ? zip : $"{source}.zip";
         string? passwordArgument = string.IsNullOrEmpty(password) ? null : $"-p{password}";

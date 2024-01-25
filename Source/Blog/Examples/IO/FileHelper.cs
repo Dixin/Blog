@@ -9,16 +9,16 @@ public static class FileHelper
     public static void Delete(string file)
     {
         // new FileInfo(toAttachment).IsReadOnly = false;
-        File.SetAttributes(file.NotNullOrWhiteSpace(), FileAttributes.Normal); // In case file is read only.
+        File.SetAttributes(file.ThrowIfNullOrWhiteSpace(), FileAttributes.Normal); // In case file is read only.
         File.Delete(file);
     }
 
     public static bool Contains(string file, string find, Encoding? encoding = null, StringComparison comparison = StringComparison.Ordinal) =>
-        File.ReadAllText(file.NotNullOrWhiteSpace(), encoding ?? Encoding.UTF8).Contains(find, comparison);
+        File.ReadAllText(file.ThrowIfNullOrWhiteSpace(), encoding ?? Encoding.UTF8).Contains(find, comparison);
 
     public static void Replace(string file, string find, string? replace = null, Encoding? encoding = null)
     {
-        file.NotNullOrWhiteSpace();
+        file.ThrowIfNullOrWhiteSpace();
         replace ??= string.Empty;
         encoding ??= Encoding.UTF8;
 
@@ -27,11 +27,11 @@ public static class FileHelper
     }
 
     public static void Rename(this FileInfo file, string newName) =>
-        file.NotNull().MoveTo(newName.NotNullOrWhiteSpace());
+        file.ThrowIfNull().MoveTo(newName.ThrowIfNullOrWhiteSpace());
 
     public static void Move(string source, string destination, bool overwrite = false)
     {
-        source.NotNullOrWhiteSpace();
+        source.ThrowIfNullOrWhiteSpace();
 
         string destinationDirectory = PathHelper.GetDirectoryName(destination);
         if (!Directory.Exists(destinationDirectory))
@@ -44,7 +44,7 @@ public static class FileHelper
 
     public static bool TryMove(string source, string destination, bool overwrite = false)
     {
-        source.NotNullOrWhiteSpace();
+        source.ThrowIfNullOrWhiteSpace();
 
         if (!overwrite && File.Exists(destination))
         {
@@ -72,7 +72,7 @@ public static class FileHelper
 
     public static void Copy(string source, string destination, bool overwrite = false)
     {
-        source.NotNullOrWhiteSpace();
+        source.ThrowIfNullOrWhiteSpace();
 
         string destinationDirectory = PathHelper.GetDirectoryName(destination);
         if (!Directory.Exists(destinationDirectory))
@@ -168,7 +168,7 @@ public static class FileHelper
 
     public static void Recycle(string file)
     {
-        if (!File.Exists(file.NotNullOrWhiteSpace()))
+        if (!File.Exists(file.ThrowIfNullOrWhiteSpace()))
         {
             throw new ArgumentOutOfRangeException(nameof(file), file, "Not found.");
         }

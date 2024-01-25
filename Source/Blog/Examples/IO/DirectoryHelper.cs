@@ -8,18 +8,18 @@ public static class DirectoryHelper
 {
     public static void Delete(string directory)
     {
-        Directory.GetFiles(directory.NotNull()).ForEach(FileHelper.Delete);
+        Directory.GetFiles(directory.ThrowIfNull()).ForEach(FileHelper.Delete);
         Directory.GetDirectories(directory).ForEach(Delete);
         SetAttributes(directory, FileAttributes.Normal);
         Directory.Delete(directory, false);
     }
 
     public static void Rename(this DirectoryInfo directory, string newName) =>
-        Directory.Move(directory.NotNull().FullName, newName.NotNullOrWhiteSpace());
+        Directory.Move(directory.ThrowIfNull().FullName, newName.ThrowIfNullOrWhiteSpace());
 
     public static bool TryRename(this DirectoryInfo directory, string newName)
     {
-        if (directory.NotNull().Exists && !directory.Name.EqualsOrdinal(newName.NotNullOrWhiteSpace()))
+        if (directory.ThrowIfNull().Exists && !directory.Name.EqualsOrdinal(newName.ThrowIfNullOrWhiteSpace()))
         {
             try
             {
@@ -37,9 +37,9 @@ public static class DirectoryHelper
 
     public static void Move(string source, string destination, bool overwrite = false)
     {
-        source.NotNullOrWhiteSpace();
+        source.ThrowIfNullOrWhiteSpace();
 
-        if (overwrite && Directory.Exists(destination.NotNullOrWhiteSpace()))
+        if (overwrite && Directory.Exists(destination.ThrowIfNullOrWhiteSpace()))
         {
             Directory.Delete(destination);
         }
@@ -64,14 +64,14 @@ public static class DirectoryHelper
 
     public static void Empty(DirectoryInfo directory)
     {
-        if (directory.NotNull().Exists)
+        if (directory.ThrowIfNull().Exists)
         {
             directory.EnumerateFileSystemInfos().ForEach(fileSystemInfo => fileSystemInfo.Delete());
         }
     }
 
     public static void SetAttributes(string directory, FileAttributes fileAttributes) =>
-        new DirectoryInfo(directory.NotNull()).Attributes = fileAttributes;
+        new DirectoryInfo(directory.ThrowIfNull()).Attributes = fileAttributes;
 
     public static void AddPrefix(string directory, string prefix) =>
         Directory.Move(directory, PathHelper.AddDirectoryPrefix(directory, prefix));

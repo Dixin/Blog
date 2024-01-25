@@ -12,7 +12,7 @@ public static class Wmi
     {
         using ManagementObjectSearcher searcher = new(
             managementScope ?? new(), // Default ManagementPath: \\.\root\cimv2.
-            objectQuery.NotNull()); // Default QueryLangauge: WQL.
+            objectQuery.ThrowIfNull()); // Default QueryLangauge: WQL.
         using ManagementObjectCollection processes = searcher.Get();
         return processes.OfType<ManagementObject>().ToArray();
     }

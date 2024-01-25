@@ -20,7 +20,6 @@ internal static class Top
         degreeOfParallelism ??= Video.IOMaxDegreeOfParallelism;
         log ??= Logger.WriteLine;
 
-        string jsonText;
         ConcurrentDictionary<string, TopMetadata[]> allSummaries = File.Exists(jsonPath)
             ? new(await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(jsonPath, cancellationToken))
             : new();

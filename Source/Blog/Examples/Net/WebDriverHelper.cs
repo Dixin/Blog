@@ -222,7 +222,7 @@ public static class WebDriverHelper
 
     public static string GetString(ref IWebDriver webDriver, string url, int retryCount = 10, Func<IWebDriver>? restart = null, Action? wait = null)
     {
-        webDriver.NotNull();
+        webDriver.ThrowIfNull();
 
         Exception? lastException = null;
         for (int retry = 0; retry < retryCount; retry++)

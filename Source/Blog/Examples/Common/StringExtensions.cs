@@ -6,10 +6,10 @@ public static class StringExtensions
         string.Format(CultureInfo.InvariantCulture, format, args);
 
     public static bool ContainsIgnoreCase(this string value, string substring) => 
-        value.NotNull().Contains(substring, StringComparison.OrdinalIgnoreCase);
+        value.ThrowIfNull().Contains(substring, StringComparison.OrdinalIgnoreCase);
 
     public static bool StartsWithIgnoreCase(this string value, string substring) => 
-        value.NotNull().StartsWith(substring, StringComparison.OrdinalIgnoreCase);
+        value.ThrowIfNull().StartsWith(substring, StringComparison.OrdinalIgnoreCase);
 
     public static bool IsNullOrWhiteSpace([NotNullWhen(false)] this string? value) => 
         string.IsNullOrWhiteSpace(value);

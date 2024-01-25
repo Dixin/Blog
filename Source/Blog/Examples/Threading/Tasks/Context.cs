@@ -6,7 +6,7 @@ public static partial class ActionExtensions
 {
     public static Task InvokeWith(this Action action, SynchronizationContext synchronizationContext, ExecutionContext executionContext)
     {
-        action.NotNull();
+        action.ThrowIfNull();
 
         return new Func<object?>(() =>
         {
@@ -20,7 +20,7 @@ public static partial class FuncExtensions
 {
     public static TResult InvokeWith<TResult>(this Func<TResult> function, ExecutionContext? executionContext)
     {
-        function.NotNull();
+        function.ThrowIfNull();
 
         if (executionContext is null)
         {
@@ -37,7 +37,7 @@ public static partial class FuncExtensions
     [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
     public static Task<TResult> InvokeWith<TResult>(this Func<TResult> function, SynchronizationContext? synchronizationContext, ExecutionContext? executionContext)
     {
-        function.NotNull();
+        function.ThrowIfNull();
 
         TaskCompletionSource<TResult> taskCompletionSource = new();
         try
@@ -85,8 +85,8 @@ public static class TaskExtensions
 {
     public static Task<TNewResult> ContinueWithContext<TResult, TNewResult>(this Task<TResult> task, Func<Task<TResult>, TNewResult> continuation)
     {
-        task.NotNull();
-        continuation.NotNull();
+        task.ThrowIfNull();
+        continuation.ThrowIfNull();
 
         // See: System.Runtime.CompilerServices.AsyncMethodBuilderCore.GetCompletionAction()
         ExecutionContext? executionContext = ExecutionContext.Capture();
@@ -102,8 +102,8 @@ public static class TaskExtensions
 
     public static Task<TNewResult> ContinueWithContext<TNewResult>(this Task task, Func<Task, TNewResult> continuation)
     {
-        task.NotNull();
-        continuation.NotNull();
+        task.ThrowIfNull();
+        continuation.ThrowIfNull();
 
         // See: System.Runtime.CompilerServices.AsyncMethodBuilderCore.GetCompletionAction()
         ExecutionContext? executionContext = ExecutionContext.Capture();
@@ -119,9 +119,9 @@ public static class TaskExtensions
 
     public static Task ContinueWithContext<TResult>(this Task<TResult> task, Action<Task<TResult>> continuation)
     {
-        continuation.NotNull();
+        continuation.ThrowIfNull();
 
-        return task.NotNull().ContinueWithContext(new Func<Task<TResult>, object?>(t =>
+        return task.ThrowIfNull().ContinueWithContext(new Func<Task<TResult>, object?>(t =>
         {
             continuation(t);
             return null;
@@ -130,9 +130,9 @@ public static class TaskExtensions
 
     public static Task ContinueWithContext(this Task task, Action<Task> continuation)
     {
-        continuation.NotNull();
+        continuation.ThrowIfNull();
 
-        return task.NotNull().ContinueWithContext(new Func<Task, object?>(t =>
+        return task.ThrowIfNull().ContinueWithContext(new Func<Task, object?>(t =>
         {
             continuation(t);
             return null;

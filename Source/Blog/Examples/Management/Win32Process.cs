@@ -111,7 +111,7 @@ public partial record Win32Process
 {
     public Win32Process(ManagementObject process)
     {
-        this.Caption = process.NotNull()[nameof(this.Caption)] as string;
+        this.Caption = process.ThrowIfNull()[nameof(this.Caption)] as string;
         this.CommandLine = process[nameof(this.CommandLine)] as string;
         this.CreationClassName = process[nameof(this.CreationClassName)] as string;
         this.CreationDate = process[nameof(this.CreationDate)] is string creationDate && !string.IsNullOrWhiteSpace(creationDate)

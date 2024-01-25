@@ -26,7 +26,7 @@ internal static class Drive115
             log($"Start of page {page}.");
             new WebDriverWait(offlineTasksFrame, WebDriverHelper.DefaultManualWait).Until(driver =>
             {
-                ReadOnlyCollection<IWebElement> tasksElements = driver.FindElements(By.CssSelector("#js-warp li"));
+                //ReadOnlyCollection<IWebElement> tasksElements = driver.FindElements(By.CssSelector("#js-warp li"));
                 if (driver.FindElements(By.CssSelector("#js-warp li")).IsEmpty())
                 {
                     return false;
@@ -71,7 +71,7 @@ internal static class Drive115
             }
 
             log($"End of page {page}.");
-            Retry.Incremental(() => nextPageElement.Click());
+            Retry.Incremental(nextPageElement.Click);
         }
     }
 

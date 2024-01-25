@@ -187,7 +187,7 @@ internal static partial class Video
         EnumerateDirectories(directory, level).ForEach(movie =>
         {
             string[] files = Directory.GetFiles(movie);
-            if (!ImdbMetadata.TryGet(files, out string? jsonMetadata, out string? imdbId))
+            if (!ImdbMetadata.TryGet(files, out string? _, out string? imdbId))
             {
                 return;
             }
@@ -486,8 +486,8 @@ internal static partial class Video
         ConcurrentDictionary<string, ImdbMetadata> mergedMetadata = File.Exists(mergedMetadataPath)
             ? new(await JsonHelper.DeserializeFromFileAsync<Dictionary<string, ImdbMetadata>>(mergedMetadataPath))
             : new();
-        ILookup<string, string> cacheFilesByImdbId = Directory.GetFiles(metadataCacheDirectory, ImdbCacheSearchPattern)
-            .ToLookup(file => PathHelper.GetFileNameWithoutExtension(file).Split(Delimiter).First());
+        //ILookup<string, string> cacheFilesByImdbId = Directory.GetFiles(metadataCacheDirectory, ImdbCacheSearchPattern)
+        //    .ToLookup(file => PathHelper.GetFileNameWithoutExtension(file).Split(Delimiter).First());
         Dictionary<string, string> metadataFilesByImdbId = Directory.GetFiles(metadataDirectory, ImdbMetadataSearchPattern)
             .ToDictionary(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty);
 

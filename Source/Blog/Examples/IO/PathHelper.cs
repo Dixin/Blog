@@ -15,11 +15,11 @@ public static class PathHelper
     [SuppressMessage("Microsoft.Design", "CA1055:UriReturnValuesShouldNotBeStrings")]
     [SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#")]
     public static string FromUrl(string url) =>
-        new Uri(url.NotNullOrWhiteSpace()).AbsoluteUri;
+        new Uri(url.ThrowIfNullOrWhiteSpace()).AbsoluteUri;
 
     [SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#")]
     public static string AbsolutePath(string url) =>
-        new Uri(url.NotNullOrWhiteSpace()).AbsolutePath;
+        new Uri(url.ThrowIfNullOrWhiteSpace()).AbsolutePath;
 
     public static string ExecutingAssembly() =>
          // Better than AbsolutePath(Assembly.GetExecutingAssembly().GetName().CodeBase);

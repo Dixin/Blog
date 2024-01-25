@@ -1,5 +1,3 @@
 ﻿namespace MediaManager.Database;
 
-internal static class Jellyfin
-{
-}
+internal static class Jellyfin;

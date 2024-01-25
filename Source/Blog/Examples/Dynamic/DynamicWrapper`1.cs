@@ -40,7 +40,7 @@ public class DynamicWrapper<T> : DynamicObject
     [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", MessageId = "0#")]
     public DynamicWrapper(ref T value) // Uses ref in case of 'value' is value type.
     {
-        this.value = value.NotNull();
+        this.value = value.ThrowIfNull();
 #if NETSTANDARD || NETCOREAPP
         this.type = value.GetType();
 #else

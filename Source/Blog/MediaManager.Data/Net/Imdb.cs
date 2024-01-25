@@ -931,7 +931,7 @@ internal static class Imdb
             .Where(imdbId => imdbId.IsImdbId())
             .Order()
             .ToArray();
-        int length = imdbIds.Length;
+        //int length = imdbIds.Length;
         if (partition is not null)
         {
             imdbIds = partition(imdbIds).ToArray();

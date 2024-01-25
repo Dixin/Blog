@@ -10,7 +10,7 @@ public static class FieldInfoExtensions
     [SuppressMessage("Microsoft.Design", "CA1045:DoNotPassTypesByReference", MessageId = "1#")]
     public static void SetValue<T>(this FieldInfo field, ref T obj, object? value)
     {
-        field.NotNull();
+        field.ThrowIfNull();
 
         if (typeof(T).IsValueType)
         {

@@ -232,7 +232,7 @@ internal static partial class Video
                     return;
                 }
 
-                string[] allPaths = Directory.GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.AllDirectories);
+                //string[] allPaths = Directory.GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.AllDirectories);
                 string[] translations = [directoryInfo.TranslatedTitle1, directoryInfo.TranslatedTitle2, directoryInfo.TranslatedTitle3];
                 string[] titles =
                 [
@@ -357,8 +357,8 @@ internal static partial class Video
                                 : throw new InvalidOperationException(video))
                             .ToArray();
                         VideoEpisodeFileInfo[] videoFileInfos = allVideoFileInfos.NotNull().ToArray();
-                        string[] subtitles = topFiles.Where(IsSubtitle).ToArray();
-                        string[] metadataFiles = topFiles.Where(IsXmlMetadata).ToArray();
+                        //string[] subtitles = topFiles.Where(IsSubtitle).ToArray();
+                        //string[] metadataFiles = topFiles.Where(IsXmlMetadata).ToArray();
 
                         Enumerable.Range(0, videos.Length).Where(index => allVideoFileInfos[index] is null).ForEach(index => log($"!Video name {videos[index]}: {movie}"));
 
@@ -638,7 +638,7 @@ internal static partial class Video
             .ForEach(movie =>
             {
                 string[] files = Directory.GetFiles(movie);
-                if (!ImdbMetadata.TryGet(files, out string? json, out string? imdbId))
+                if (!ImdbMetadata.TryGet(files, out string? _, out string? imdbId))
                 {
                     log($"Missing or no JSON IMDB id: {movie}");
                     return;
@@ -941,7 +941,7 @@ internal static partial class Video
             .ForEach(tv =>
             {
                 string[] topFiles = Directory.GetFiles(tv);
-                if (!ImdbMetadata.TryGet(topFiles, out string? json, out string? imdbId))
+                if (!ImdbMetadata.TryGet(topFiles, out string? _, out string? imdbId))
                 {
                     log($"Missing or no IMDB id: {tv}");
                     return;
@@ -1648,7 +1648,7 @@ internal static partial class Video
         //Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync(h264720PJsonPath);
         //Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(rareJsonPath);
         string[] metadataFiles = Directory.GetFiles(settings.MovieMetadataDirectory);
-        Dictionary<string, string> metadataFilesByImdbId = metadataFiles.ToDictionary(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty);
+        //Dictionary<string, string> metadataFilesByImdbId = metadataFiles.ToDictionary(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty);
         MagnetUri[] downloadingLinks = (await File.ReadAllLinesAsync(@"D:\Files\Library\Movie.Downloading.txt"))
             .Select(line => (MagnetUri.TryParse(line, out MagnetUri? result), result))
             .Where(result => result.Item1)
@@ -1704,11 +1704,11 @@ internal static partial class Video
                     }
                     catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
                     {
-                        log($"!!!{imdbId}");
+                        log($"!!!{imdbId} {exception}");
                     }
                     catch (ArgumentException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
                     {
-                        log($"!!!{imdbId}");
+                        log($"!!!{imdbId} {exception}");
                     }
                 });
         }
@@ -1804,7 +1804,7 @@ internal static partial class Video
                             : await webDriver!.GetStringAsync(metadata.Link, () => webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))));
                         await Task.Delay(WebDriverHelper.DefaultDomWait, token);
                         await File.WriteAllTextAsync(cacheFile, html, token);
-                        (string httpUrl, string fileName, string magnetUrl) = TopGetUrls(html, metadata.Link);
+                        (string _, string _, string magnetUrl) = TopGetUrls(html, metadata.Link);
                         log(magnetUrl);
                         //webDriver!.Url = httpUrl;
                         //await Task.Delay(TimeSpan.FromSeconds(3));
@@ -1903,7 +1903,7 @@ internal static partial class Video
                             : await webDriver!.GetStringAsync(metadata.Link, () => webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))));
                         await Task.Delay(WebDriverHelper.DefaultDomWait, token);
                         await File.WriteAllTextAsync(cacheFile, html, token);
-                        (string httpUrl, string fileName, string magnetUrl) = TopGetUrls(html, metadata.Link);
+                        (string _, string _, string magnetUrl) = TopGetUrls(html, metadata.Link);
                         log(magnetUrl);
                         //webDriver!.Url = httpUrl;
                         //await Task.Delay(TimeSpan.FromSeconds(3));
@@ -2058,14 +2058,14 @@ internal static partial class Video
             .Where(imdbId => imdbId.IsNotNullOrWhiteSpace())
             .ToArray();
 
-        ImdbMetadata?[] imdbIds = x265Metadata.Keys
+        ImdbMetadata[] imdbIds = x265Metadata.Keys
             .Distinct()
             .Except(libraryImdbIds)
             .Select(imdbId => metadataFiles.TryGetValue(imdbId, out string? file) && ImdbMetadata.TryLoad(file, out ImdbMetadata? imdbMetadata)
                 ? imdbMetadata
                 : null)
-            .Where(imdbMetadata => imdbMetadata is not null
-                && predicate(imdbMetadata))
+            .NotNull()
+            .Where(predicate)
             .OrderBy(imdbId => imdbId.ImdbId)
             .ToArray();
         int length = imdbIds.Length;
@@ -2090,11 +2090,11 @@ internal static partial class Video
                 }
                 catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
                 {
-                    log($"!!!{imdbMetadata.ImdbId}");
+                    log($"!!!{imdbMetadata.ImdbId} {exception}");
                 }
                 catch (ArgumentException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
                 {
-                    log($"!!!{imdbMetadata.ImdbId}");
+                    log($"!!!{imdbMetadata.ImdbId} {exception}");
                 }
             });
         }
@@ -2179,7 +2179,7 @@ internal static partial class Video
                             await Task.Delay(WebDriverHelper.DefaultDomWait, token);
                             await File.WriteAllTextAsync(file, html, token);
                         }
-                        (string httpUrl, string fileName, string magnetUrl) = TopGetUrls(html, metadata.Link);
+                        (string httpUrl, string _, string magnetUrl) = TopGetUrls(html, metadata.Link);
 
                         // log(magnetUrl);
                         // webDriver!.Url = httpUrl;

@@ -32,7 +32,7 @@ public static partial class TypeExtensions
     }
 
     internal static MethodInfo? GetInterfaceMethod(this Type type, string name, params object?[] args) =>
-        type.NotNull()
+        type.ThrowIfNull()
             .GetInterfaces()
             .Select(type.GetInterfaceMap)
             .SelectMany(mapping => mapping.TargetMethods)
@@ -44,12 +44,12 @@ public static partial class TypeExtensions
                         parameter.ParameterType.IsInstanceOfType(args[index])).Aggregate(true, (a, b) => a && b));
 
     internal static FieldInfo? GetTypeField(this Type type, string name) =>
-        type.NotNull()
+        type.ThrowIfNull()
             .GetRuntimeFields()
             .FirstOrDefault(field => field.Name.Equals(name, StringComparison.Ordinal));
 
     internal static PropertyInfo? GetTypeIndex(this Type type, params object[] args) =>
-        type.NotNull()
+        type.ThrowIfNull()
             .GetRuntimeProperties()
             .FirstOrDefault(
                 property =>
@@ -59,7 +59,7 @@ public static partial class TypeExtensions
                         true, (a, b) => a && b));
 
     internal static MethodInfo? GetTypeMethod(this Type type, string name, params object?[] args) =>
-        type.NotNull()
+        type.ThrowIfNull()
             .GetRuntimeMethods()
             .FirstOrDefault(method =>
                 string.Equals(method.Name, name, StringComparison.Ordinal)
@@ -70,7 +70,7 @@ public static partial class TypeExtensions
                     .All(match => true));
 
     internal static PropertyInfo? GetTypeProperty(this Type type, string name) =>
-        type.NotNull()
+        type.ThrowIfNull()
             .GetRuntimeProperties()
             .FirstOrDefault(property => property.Name.Equals(name, StringComparison.Ordinal));
 
@@ -81,7 +81,7 @@ public static partial class TypeExtensions
 {
     public static bool IsAssignableTo(this Type from, Type to)
     {
-        if (to.NotNull().IsAssignableFrom(from.NotNull()))
+        if (to.ThrowIfNull().IsAssignableFrom(from.ThrowIfNull()))
         {
             return true;
         }
@@ -112,19 +112,19 @@ public static partial class TypeExtensions
     [return: MaybeNull]
     public static TValue GetField<TValue>(this object @object, string name)
     {
-        object? value = (@object.NotNull().GetType().GetTypeField(name) ?? throw new ArgumentOutOfRangeException(nameof(name))).GetValue(@object);
+        object? value = (@object.ThrowIfNull().GetType().GetTypeField(name) ?? throw new ArgumentOutOfRangeException(nameof(name))).GetValue(@object);
         return value is null ? default : (TValue)value;
     }
 
     public static void SetField(this object @object, string name, object value) => 
-        (@object.NotNull().GetType().GetTypeField(name) ?? throw new ArgumentOutOfRangeException(nameof(name))).SetValue(@object, value);
+        (@object.ThrowIfNull().GetType().GetTypeField(name) ?? throw new ArgumentOutOfRangeException(nameof(name))).SetValue(@object, value);
 
     public static TValue? GetProperty<TValue>(this object @object, string name)
     {
-        object? value = (@object.NotNull().GetType().GetTypeProperty(name) ?? throw new ArgumentOutOfRangeException(nameof(name))).GetValue(@object);
+        object? value = (@object.ThrowIfNull().GetType().GetTypeProperty(name) ?? throw new ArgumentOutOfRangeException(nameof(name))).GetValue(@object);
         return value is null ? default : (TValue)value;
     }
 
     public static void SetProperty(this object @object, string name, object value) => 
-        (@object.NotNull().GetType().GetTypeProperty(name) ?? throw new ArgumentOutOfRangeException(nameof(name))).SetValue(@object, value);
+        (@object.ThrowIfNull().GetType().GetTypeProperty(name) ?? throw new ArgumentOutOfRangeException(nameof(name))).SetValue(@object, value);
 }

@@ -11,9 +11,7 @@ public record ImdbEntry(string Type)
     public string Type { get; init; } = Type;
 }
 
-public record ImdbEntity(string Type, string Url, string Name) : ImdbEntry(Type)
-{
-}
+public record ImdbEntity(string Type, string Url, string Name) : ImdbEntry(Type);
 
 public partial record ImdbMetadata(
     string Context, string Type, string Url, string Name, string AlternateName, string Image, string ContentRating,

@@ -3,7 +3,7 @@
 public static class Argument
 {
     [return: NotNull]
-    public static T NotNull<T>(
+    public static T ThrowIfNull<T>(
 #if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             [NotNull]
 #endif
@@ -13,44 +13,32 @@ public static class Argument
             : value;
 
     [return: NotNull]
-    public static string NotNullOrWhiteSpace(
+    public static string ThrowIfNullOrWhiteSpace(
 #if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             [NotNull]
 #endif
         [ValidatedNotNull]this string value, [CallerArgumentExpression(nameof(value))] string name = "") =>
-        string.IsNullOrWhiteSpace(value)
-            ? throw new ArgumentNullException(name)
+        string.IsNullOrWhiteSpace(value.ThrowIfNull())
+            ? throw new ArgumentException(default, name)
             : value;
 
     [return: NotNull]
-    public static string NotNullOrEmpty(
+    public static string ThrowIfNullOrEmpty(
 #if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             [NotNull]
 #endif
         [ValidatedNotNull]this string value, [CallerArgumentExpression(nameof(value))] string name = "") =>
-        string.IsNullOrEmpty(value)
-            ? throw new ArgumentNullException(name)
+        string.IsNullOrEmpty(value.ThrowIfNull())
+            ? throw new ArgumentException(default, name)
             : value;
 
     [return: NotNull]
-    public static IEnumerable<T> NotNullOrEmpty<T>(
+    public static IEnumerable<T> ThrowIfNullOrEmpty<T>(
 #if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             [NotNull]
 #endif
-        [ValidatedNotNull]this IEnumerable<T> value, [CallerArgumentExpression(nameof(value))] string name = "")
-    {
-        if (value is null)
-        {
-            throw new ArgumentNullException(name);
-        }
-
-        if (!value.Any())
-        {
-            throw new ArgumentOutOfRangeException(name);
-        }
-
-        return value;
-    }
+        [ValidatedNotNull]this IEnumerable<T>? value, [CallerArgumentExpression(nameof(value))] string name = "") =>
+        value.ThrowIfNull().IsEmpty() ? throw new ArgumentException(default, name) : value;
 
     public static void NotNull<T>(Func<T> value)
     {

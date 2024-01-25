@@ -11,7 +11,7 @@ public static partial class ProcessHelper
         bool redirectError = errorReceived is not null;
         ProcessStartInfo startInfo = new ProcessStartInfo()
         {
-            FileName = fileName.NotNullOrWhiteSpace(),
+            FileName = fileName.ThrowIfNullOrWhiteSpace(),
             Arguments = arguments,
             CreateNoWindow = !window,
             UseShellExecute = window,
@@ -70,7 +70,7 @@ public static partial class ProcessHelper
         bool redirectError = errorReceived is not null;
         ProcessStartInfo startInfo = new ProcessStartInfo()
         {
-            FileName = fileName.NotNullOrWhiteSpace(),
+            FileName = fileName.ThrowIfNullOrWhiteSpace(),
             Arguments = arguments,
             CreateNoWindow = !window,
             UseShellExecute = window,

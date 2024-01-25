@@ -4,7 +4,7 @@ public static class ArrayExtensions
 {
     public static T[] ConcatArray<T>(this T[] array1, T[] array2)
     {
-        T[] concat = new T[array1.NotNull().Length + array2.NotNull().Length];
+        T[] concat = new T[array1.ThrowIfNull().Length + array2.ThrowIfNull().Length];
         if (typeof(T).IsPrimitive)
         {
             int byteLength1 = Buffer.ByteLength(array1);

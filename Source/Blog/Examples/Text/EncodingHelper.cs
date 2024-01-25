@@ -9,9 +9,9 @@ public static class EncodingHelper
 
     public static string Convert(string value, Encoding from, Encoding to)
     {
-        to.NotNull();
+        to.ThrowIfNull();
 
-        byte[] fromBytes = from.NotNull().GetBytes(value);
+        byte[] fromBytes = from.ThrowIfNull().GetBytes(value);
         byte[] toBytes = Encoding.Convert(from, to, fromBytes);
 
         return to.GetString(toBytes);
@@ -23,10 +23,10 @@ public static class EncodingHelper
 
     public static async Task ConvertAsync(Encoding from, Encoding to, string fromPath, string? toPath = null, byte[]? bom = null)
     {
-        from.NotNull();
-        to.NotNull();
+        from.ThrowIfNull();
+        to.ThrowIfNull();
 
-        byte[] fromBytes = await File.ReadAllBytesAsync(fromPath.NotNullOrWhiteSpace());
+        byte[] fromBytes = await File.ReadAllBytesAsync(fromPath.ThrowIfNullOrWhiteSpace());
         byte[] toBytes = Encoding.Convert(from, to, fromBytes);
         await File.WriteAllBytesAsync(toPath ?? fromPath, toBytes);
         await using FileStream fileStream = new(toPath ?? fromPath, FileMode.Create, FileAccess.Write, FileShare.Read);
