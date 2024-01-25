@@ -44,6 +44,12 @@ internal record VideoDirectoryInfo(
             value = PathHelper.GetFileName(value);
         }
 
+        if (value.IsNullOrWhiteSpace())
+        {
+            result = null;
+            return false;
+        }
+
         Match match = NameRegex.Match(value);
         if (!match.Success)
         {

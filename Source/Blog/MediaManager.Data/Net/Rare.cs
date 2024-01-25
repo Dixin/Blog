@@ -102,6 +102,7 @@ internal static class Rare
                 }
                 catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
                 {
+                    log(exception.ToString());
                     if (imdbId.Value.StartsWithIgnoreCase("tt0"))
                     {
                         imdbId = imdbId with { Value = imdbId.Value.ReplaceIgnoreCase("tt0", "tt") };

@@ -416,7 +416,7 @@ internal static partial class Video
                 string newSubtitle = Regex.Replace(subtitle, @"(\.[a-z]{3})\-[0-9]{1,2}(\.[a-zA-Z]{3})$", "$1$2");
                 if (File.Exists(newSubtitle))
                 {
-                    Logger.WriteLine(subtitle);
+                    log(subtitle);
                 }
                 else
                 {

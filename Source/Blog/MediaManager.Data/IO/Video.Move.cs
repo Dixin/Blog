@@ -494,7 +494,7 @@ internal static partial class Video
                 }
 
                 if (VideoMovieFileInfo.Parse(PathHelper.GetFileNameWithoutExtension(toVideoMetadata.File)).GetEncoderType() is EncoderType.X or EncoderType.H
-                    && VideoMovieFileInfo.Parse(PathHelper.GetFileNameWithoutExtension(fromVideoMetadata.File)).GetEncoderType() is not EncoderType.X or EncoderType.H)
+                    && VideoMovieFileInfo.Parse(PathHelper.GetFileNameWithoutExtension(fromVideoMetadata.File)).GetEncoderType() is not (EncoderType.X or EncoderType.H))
                 {
                     log($"Video {toVideoMetadata.File} is better version.");
                     return;
@@ -931,7 +931,7 @@ internal static partial class Video
 
         Directory
             .GetFiles(directory, "*.eng.srt", SearchOption.AllDirectories)
-            .ForEach(f => FileHelper.Move(f, f.ReplaceIgnoreCase(".eng.srt", ".srt"), false));
+            .ForEach(f => FileHelper.Move(f, f.ReplaceIgnoreCase(".eng.srt", ".srt")));
     }
 
     internal static void MoveFanArt(string directory, int level = DefaultDirectoryLevel, bool overwrite = false, Action<string>? log = null)
@@ -1091,6 +1091,7 @@ internal static partial class Video
             .EnumerateFiles(directory, PathHelper.AllSearchPattern, searchOption)
             .Where(IsVideo)
             .ToArray()
+            .Do(log)
             .ForEach(video => FileHelper.MoveToDirectory(video, Path.Combine(PathHelper.GetDirectoryName(video), PathHelper.GetFileNameWithoutExtension(video))));
     }
 
@@ -1196,7 +1197,7 @@ internal static partial class Video
         videosWithErrors.Prepend(string.Empty).ForEach(log);
     }
 
-    internal static void FormatDirectories(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null)
+    internal static void FormatDirectoriesWithVideo(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
@@ -1205,7 +1206,10 @@ internal static partial class Video
             .ForEach(movie =>
             {
                 string video = Directory.EnumerateFiles(movie).First(IsVideo);
-                DirectoryHelper.ReplaceDirectoryName(movie, PathHelper.GetFileNameWithoutExtension(video));
+                log(movie);
+                string newMovie = PathHelper.ReplaceDirectoryName(directory, PathHelper.GetFileNameWithoutExtension(video));
+                DirectoryHelper.Move(movie, newMovie);
+                log(newMovie);
             });
     }
 }

@@ -12,7 +12,7 @@ using JsonReaderException = Newtonsoft.Json.JsonReaderException;
 
 internal static partial class Video
 {
-    private static IEnumerable<string> EnumerateVideos(string directory, Func<string, bool>? predicate = null) =>
+    internal static IEnumerable<string> EnumerateVideos(string directory, Func<string, bool>? predicate = null) =>
         Directory
             .EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
             .Where(file => (predicate?.Invoke(file) ?? true) && file.IsVideo());
