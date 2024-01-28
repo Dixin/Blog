@@ -7,44 +7,44 @@ public static class Argument
 #if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             [NotNull]
 #endif
-        [ValidatedNotNull]this T value, [CallerArgumentExpression(nameof(value))] string name = "") =>
-        value is null
-            ? throw new ArgumentNullException(name)
-            : value;
+        [ValidatedNotNull]this T argument, [CallerArgumentExpression(nameof(argument))] string paramName = "") =>
+        argument is null
+            ? throw new ArgumentNullException(paramName)
+            : argument;
 
     [return: NotNull]
     public static string ThrowIfNullOrWhiteSpace(
 #if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             [NotNull]
 #endif
-        [ValidatedNotNull]this string value, [CallerArgumentExpression(nameof(value))] string name = "") =>
-        string.IsNullOrWhiteSpace(value.ThrowIfNull())
-            ? throw new ArgumentException(default, name)
-            : value;
+        [ValidatedNotNull]this string argument, [CallerArgumentExpression(nameof(argument))] string paramName = "") =>
+        string.IsNullOrWhiteSpace(argument.ThrowIfNull())
+            ? throw new ArgumentException(default, paramName)
+            : argument;
 
     [return: NotNull]
     public static string ThrowIfNullOrEmpty(
 #if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             [NotNull]
 #endif
-        [ValidatedNotNull]this string value, [CallerArgumentExpression(nameof(value))] string name = "") =>
-        string.IsNullOrEmpty(value.ThrowIfNull())
-            ? throw new ArgumentException(default, name)
-            : value;
+        [ValidatedNotNull]this string argument, [CallerArgumentExpression(nameof(argument))] string paramName = "") =>
+        string.IsNullOrEmpty(argument.ThrowIfNull())
+            ? throw new ArgumentException(default, paramName)
+            : argument;
 
     [return: NotNull]
     public static IEnumerable<T> ThrowIfNullOrEmpty<T>(
 #if NETSTANDARD2_1_OR_GREATER || NET5_0_OR_GREATER
             [NotNull]
 #endif
-        [ValidatedNotNull]this IEnumerable<T>? value, [CallerArgumentExpression(nameof(value))] string name = "") =>
-        value.ThrowIfNull().IsEmpty() ? throw new ArgumentException(default, name) : value;
+        [ValidatedNotNull]this IEnumerable<T>? argument, [CallerArgumentExpression(nameof(argument))] string paramName = "") =>
+        argument.ThrowIfNull().IsEmpty() ? throw new ArgumentException(default, paramName) : argument;
 
-    public static void NotNull<T>(Func<T> value)
+    public static void ThrowIfNull<T>(Func<T> getArgument)
     {
-        if (value() is null)
+        if (getArgument() is null)
         {
-            throw new ArgumentNullException(GetName(value));
+            throw new ArgumentNullException(GetName(getArgument));
         }
     }
 
@@ -58,11 +58,11 @@ public static class Argument
         return closure.Name;
     }
 
-    public static void NotNull<T>(Expression<Func<T>> value)
+    public static void ThrowIfNull<T>(Expression<Func<T>> getArgument)
     {
-        if (value.Compile().Invoke() is null)
+        if (getArgument.Compile().Invoke() is null)
         {
-            throw new ArgumentNullException(GetName(value));
+            throw new ArgumentNullException(GetName(getArgument));
         }
     }
 
@@ -73,4 +73,19 @@ public static class Argument
         MemberInfo closure = displayClassInstance.Member;
         return closure.Name;
     }
+
+    public static T ThrowIfEqual<T>(this T argument, T value, [CallerArgumentExpression(nameof(argument))] string paramName = "") =>
+        EqualityComparer<T>.Default.Equals(argument, value)
+            ? throw new ArgumentOutOfRangeException(paramName, argument, $"{paramName} ('{argument}') must be equal to '{value}'.")
+            : argument;
+
+    public static T ThrowIfNotEqual<T>(this T argument, T value, [CallerArgumentExpression(nameof(argument))] string paramName = "") =>
+        EqualityComparer<T>.Default.Equals(argument, value)
+            ? argument
+            : throw new ArgumentOutOfRangeException(paramName, argument, $"{paramName} ('{argument}') must not be equal to '{value}'.");
+
+    public static T ThrowIfLessThan<T>(this T argument, T value, [CallerArgumentExpression(nameof(argument))] string paramName = "") where T : IComparable<T> =>
+        argument.CompareTo(value) < 0
+            ? throw new ArgumentOutOfRangeException(paramName, argument, $"{paramName} ('{argument}') must be greater than or equal to '{value}'.")
+            : argument;
 }
