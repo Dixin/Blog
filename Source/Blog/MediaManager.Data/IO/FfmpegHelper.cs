@@ -6,6 +6,13 @@ using Examples.IO;
 using Examples.Linq;
 using Xabe.FFmpeg;
 
+internal enum FfmpegVideoCrop
+{
+    NoCrop = 0,
+    AdaptiveCrop,
+    StrictCrop
+}
+
 internal static class FfmpegHelper
 {
     internal const string Executable = "ffmpeg";
@@ -59,13 +66,13 @@ internal static class FfmpegHelper
 
     internal static async Task EncodeAsync(
         string input, string output = "",
-        bool overwrite = false, bool? estimateCrop = null, bool sample = false,
+        bool overwrite = false, FfmpegVideoCrop videoCrop = FfmpegVideoCrop.NoCrop, bool sample = false,
         string? relativePath = null, int retryCount = Video.IODefaultRetryCount, int? cropTimestampCount = DefaultTimestampCount, Action<string>? log = null, CancellationToken cancellationToken = default, params TimeSpan[] cropTimestamps)
     {
         log ??= Logger.WriteLine;
 
         TimeSpan? duration = null;
-        if (estimateCrop is not null)
+        if (videoCrop is not FfmpegVideoCrop.NoCrop)
         {
             if (cropTimestamps.Any())
             {
@@ -97,9 +104,9 @@ internal static class FfmpegHelper
             videoFilters.Add("bwdif=mode=send_field:parity=auto:deint=all");
         }
 
-        if (estimateCrop is true)
+        if (videoCrop is not FfmpegVideoCrop.NoCrop)
         {
-            (int width, int height, int x, int y) = await GetVideoCropAsync(input, estimate: estimateCrop.Value, log: log, timestamps: cropTimestamps);
+            (int width, int height, int x, int y) = await GetVideoCropAsync(input, isAdaptive: videoCrop is FfmpegVideoCrop.AdaptiveCrop, log: log, cancellationToken: cancellationToken, timestamps: cropTimestamps);
             if (width != videoMetadata.Width || height != videoMetadata.Height)
             {
                 videoFilters.Add($"crop={width}:{height}:{x}:{y}");
@@ -216,17 +223,18 @@ internal static class FfmpegHelper
         return Enumerable.Range(1, timestampCount).Select(index => timestamp * index);
     }
 
-    internal static async Task<(int Width, int Height, int X, int Y)> GetVideoCropAsync(string file, int frameCount = 30, bool estimate = false, Action<string>? log = null, int timestampCount = 3)
+    private static async Task<(int Width, int Height, int X, int Y)> GetVideoCropAsync(string file, bool isAdaptive = false, int frameCount = 30, int timestampCount = 3, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
-        TimeSpan duration = (await FFmpeg.GetMediaInfo(file)).Duration;
-        return await GetVideoCropAsync(file, frameCount, estimate, log, GetTimestamps(duration, timestampCount).ToArray());
+        TimeSpan duration = (await FFmpeg.GetMediaInfo(file, cancellationToken)).Duration;
+        return await GetVideoCropAsync(file, isAdaptive, frameCount, log, cancellationToken, GetTimestamps(duration, timestampCount).ToArray());
     }
 
-    internal static async Task<(int Width, int Height, int X, int Y)> GetVideoCropAsync(string file, int frameCount = 30, bool estimate = false, Action<string>? log = null, params TimeSpan[] timestamps)
+    private static async Task<(int Width, int Height, int X, int Y)> GetVideoCropAsync(
+        string file, bool isAdaptive = false, int frameCount = 30, Action<string>? log = null, CancellationToken cancellationToken = default, params TimeSpan[] timestamps)
     {
         if (timestamps.IsEmpty())
         {
-            TimeSpan duration = (await FFmpeg.GetMediaInfo(file)).Duration;
+            TimeSpan duration = (await FFmpeg.GetMediaInfo(file, cancellationToken)).Duration;
             timestamps = GetTimestamps(duration).ToArray();
         }
 
@@ -247,7 +255,7 @@ internal static class FfmpegHelper
                     .Where(match => match.Success)
                     .Select(match => (match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Value, match.Groups[4].Value))
                     .ToArray();
-                Debug.Assert(timestampCrops.Length == frameCount - 1);
+                Debug.Assert(timestampCrops.Length == frameCount - 1 || timestampCrops.Length == frameCount || timestampCrops.Length == frameCount + 1);
                 (string, string, string, string)[] distinctTimestampCrops = timestampCrops.Distinct().ToArray();
                 if (distinctTimestampCrops.Length != 1)
                 {
@@ -270,7 +278,7 @@ internal static class FfmpegHelper
             return distinctCrops.First().Key;
         }
 
-        if (estimate)
+        if (isAdaptive)
         {
             return (
                 distinctCrops.Select(group => group.Key.Width).Max(),
@@ -287,7 +295,7 @@ internal static class FfmpegHelper
     }
 
     internal static async Task EncodeAllAsync(
-        string inputDirectory, string outputDirectory = "", bool? estimateCrop = null, bool overwrite = false, bool isTV = false,
+        string inputDirectory, string outputDirectory = "", FfmpegVideoCrop videoCrop = FfmpegVideoCrop.NoCrop, bool overwrite = false, bool isTV = false,
         Func<string, bool>? inputPredicate = null, Func<string, string>? getOutput = null,
         int? maxDegreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
@@ -313,7 +321,7 @@ internal static class FfmpegHelper
                 {
                     try
                     {
-                        await EncodeAsync(input, getOutput(input), overwrite, estimateCrop, log: log, cancellationToken: token);
+                        await EncodeAsync(input, getOutput(input), overwrite, videoCrop, log: log, cancellationToken: token);
                     }
                     catch (Exception exception) when (exception.IsNotCritical())
                     {
