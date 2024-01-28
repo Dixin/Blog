@@ -34,6 +34,8 @@ Trace.Listeners.Add(consoleTraceListener);
 
 Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
 
+using CancellationTokenSource cancellationTokenSource = new();
+
 //Video.PrintDirectoriesWithMultipleMedia(settings.MovieControversial);
 //Video.PrintDirectoriesWithMultipleMedia(settings.MovieMainstream);
 
@@ -596,24 +598,12 @@ static void RenameFilesWithDuplicateTitle(
 //        log(string.Empty);
 //    });
 //await Entry.DownloadMetadataAsync("http://hotxshare.com", 1, 238, @"D:\Files\Library\Movie.EntryMetadata.json", settings.MovieLibraryMetadata, settings.MovieTopX265Metadata, settings.MovieTopH264Metadata, settings.MoviePreferredMetadata, settings.MovieTopH264720PMetadata, log);
-// await Parallel.ForEachAsync(
-//    Directory.GetFiles(@"L:\Files3\Movies\Korean", "*", SearchOption.AllDirectories)
-//        .Where(f => f.EndsWithIgnoreCase(".mkv") || f.EndsWithIgnoreCase(".mp4"))
-//        .Order()
-//        .ToArray()
-//        .Hide(),
-//    new ParallelOptions() { MaxDegreeOfParallelism = 3 },
-//    async (f, _) =>
-//    {
-//        try
-//        {
-//            await FfmpegHelper.EncodeAsync(f, Path.Combine(@"E:\", PathHelper.GetFileName(f)), estimateCrop: true);
-//        }
-//        catch (Exception e)
-//        {
-//            Logger.WriteLine(e.ToString());
-//        }
-//    });
+
+//await FfmpegHelper.EncodeAllAsync(
+//    Path.Combine(settings.MovieTemp3Encode, "SD.Encode"), @"D:\Temp\Encode", false,
+//    inputPredicate: input => input.HasExtension(".mkv"),
+//    maxDegreeOfParallelism: 2, cancellationToken: cancellationTokenSource.Token);
+
 //Video.PrintMoviesWithoutSubtitle(@"E:\Files\Movies", 2, null, "eng");
 //Video.MoveAllSubtitles(@"S:\Files\Library\Movies Temp", @"S:\Files\Library\Movies Temp.Subs");
 //string[] files = Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory).Order().ToArray();
@@ -673,7 +663,6 @@ static void RenameFilesWithDuplicateTitle(
 //    log);
 //await Video.PrintMovieLinksAsync(settings.MovieLibraryMetadata, settings.MovieTopX265Metadata, settings.MovieTopH264Metadata, settings.MoviePreferredMetadata, settings.MovieTopH264720PMetadata, settings.MovieRareMetadata, settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory, false, null, "female full frontal nudity", "unsimulated sex", "vagina", "labia", "female pubic");
 
-//FfmpegHelper.Encode(@"E:\Files\TV.Encode.Crop\Veneno=Vida y muerte de un icono.2020.毒药-一名偶像的生与死[8.7-4K][TVMA][1080f]\Season 01\Veneno.S01E01.1080p.WEBRip-hdalx.ffmpeg.La.noche.que.cruzamos.el.Mississippi.mkv", estimateCrop: true, sample: true);
 //Drive115.DownloadOfflineTasks(
 //    "https://115.com/?tab=offline&mode=wangpan",
 //    (title, link) => title.Contains("A.History.of.Sex.2003")

@@ -17,11 +17,11 @@ internal static partial class Video
             .EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
             .Where(file => (predicate?.Invoke(file) ?? true) && file.IsVideo());
 
-    internal static Task<VideoMetadata> ReadVideoMetadataAsync(string file, ImdbMetadata? imdbMetadata = null, string? relativePath = null, int retryCount = 10) =>
+    internal static Task<VideoMetadata> ReadVideoMetadataAsync(string file, ImdbMetadata? imdbMetadata = null, string? relativePath = null, int retryCount = IODefaultRetryCount, CancellationToken cancellationToken = default) =>
         Retry.IncrementalAsync(
             async () =>
             {
-                IMediaInfo mediaInfo = await FFmpeg.GetMediaInfo(file);
+                IMediaInfo mediaInfo = await FFmpeg.GetMediaInfo(file, cancellationToken);
                 IVideoStream videoStream = mediaInfo.VideoStreams.Single(videoStream => !videoStream.Codec.EqualsIgnoreCase("mjpeg") && !videoStream.Codec.EqualsIgnoreCase("png"));
                 return new VideoMetadata()
                 {
@@ -36,10 +36,9 @@ internal static partial class Video
                     FrameRate = videoStream.Framerate
                 };
             },
-            retryCount,
-            _ => true);
+            retryCount);
 
-    internal static bool TryReadVideoMetadata(string file, [NotNullWhen(true)] out VideoMetadata? videoMetadata, ImdbMetadata? imdbMetadata = null, string? relativePath = null, int retryCount = 10, Action<string>? log = null)
+    internal static bool TryReadVideoMetadata(string file, [NotNullWhen(true)] out VideoMetadata? videoMetadata, ImdbMetadata? imdbMetadata = null, string? relativePath = null, int retryCount = IODefaultRetryCount, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         Task<VideoMetadata> task = ReadVideoMetadataAsync(file, imdbMetadata, relativePath, retryCount);

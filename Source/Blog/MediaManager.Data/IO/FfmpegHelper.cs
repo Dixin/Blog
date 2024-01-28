@@ -3,11 +3,18 @@
 using Examples.Common;
 using Examples.Diagnostics;
 using Examples.IO;
+using Examples.Linq;
 using Xabe.FFmpeg;
 
-internal class FfmpegHelper
+internal static class FfmpegHelper
 {
+    internal const string Executable = "ffmpeg";
+
+    internal const string EncoderPostfix = $"{Video.Delimiter}{Executable}";
+
     private const int DefaultTimestampCount = 3;
+
+    private static readonly int MaxDegreeOfParallelism = int.Min(3, Environment.ProcessorCount);
 
     internal static void MergeAllDubbed(string directory, string originalVideoSearchPattern = "", Func<string, string>? getDubbedVideo = null, Func<string, string>? getOutputVideo = null, Func<string, string>? renameAttachment = null, bool overwrite = false, bool? isTV = null, bool isDryRun = false, bool ignoreDurationDifference = false, Action<string>? log = null)
     {
@@ -53,12 +60,12 @@ internal class FfmpegHelper
     internal static async Task EncodeAsync(
         string input, string output = "",
         bool overwrite = false, bool? estimateCrop = null, bool sample = false,
-        string? relativePath = null, int retryCount = 10, int? cropTimestampCount = DefaultTimestampCount, Action<string>? log = null, params TimeSpan[] cropTimestamps)
+        string? relativePath = null, int retryCount = Video.IODefaultRetryCount, int? cropTimestampCount = DefaultTimestampCount, Action<string>? log = null, CancellationToken cancellationToken = default, params TimeSpan[] cropTimestamps)
     {
         log ??= Logger.WriteLine;
 
         TimeSpan? duration = null;
-        if (estimateCrop.HasValue)
+        if (estimateCrop is not null)
         {
             if (cropTimestamps.Any())
             {
@@ -71,15 +78,15 @@ internal class FfmpegHelper
             {
                 if (cropTimestampCount is null or <= 0)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(cropTimestampCount), cropTimestampCount, $"The value should be positive.");
+                    throw new ArgumentOutOfRangeException(nameof(cropTimestampCount), cropTimestampCount, "The value should be positive.");
                 }
 
-                duration = (await FFmpeg.GetMediaInfo(input)).Duration;
+                duration = (await FFmpeg.GetMediaInfo(input, cancellationToken)).Duration;
                 cropTimestamps = GetTimestamps(duration.Value, cropTimestampCount.Value).ToArray();
             }
         }
 
-        VideoMetadata videoMetadata = await Video.ReadVideoMetadataAsync(input, null, relativePath, retryCount);
+        VideoMetadata videoMetadata = await Video.ReadVideoMetadataAsync(input, null, relativePath, retryCount, cancellationToken);
 
         string mapAudio = videoMetadata.Audio > 0 ? "-map 0:a " : string.Empty;
 
@@ -90,7 +97,7 @@ internal class FfmpegHelper
             videoFilters.Add("bwdif=mode=send_field:parity=auto:deint=all");
         }
 
-        if (estimateCrop.HasValue)
+        if (estimateCrop is true)
         {
             (int width, int height, int x, int y) = await GetVideoCropAsync(input, estimate: estimateCrop.Value, log: log, timestamps: cropTimestamps);
             if (width != videoMetadata.Width || height != videoMetadata.Height)
@@ -102,7 +109,7 @@ internal class FfmpegHelper
         string sampleDuration;
         if (sample)
         {
-            duration ??= (await FFmpeg.GetMediaInfo(input)).Duration;
+            duration ??= (await FFmpeg.GetMediaInfo(input, cancellationToken)).Duration;
             TimeSpan sampleStart = duration.Value / 2;
             sampleDuration = $" -ss {sampleStart.Hours:00}:{sampleStart.Minutes:00}:{sampleStart.Seconds:00} -t 00:00:30";
         }
@@ -114,10 +121,9 @@ internal class FfmpegHelper
         if (output.IsNullOrWhiteSpace())
         {
             output = input;
-            const string Postfix = ".ffmpeg";
-            if (!PathHelper.GetFileNameWithoutExtension(output).ContainsIgnoreCase(Postfix))
+            if (!PathHelper.GetFileNameWithoutExtension(output).ContainsIgnoreCase(EncoderPostfix))
             {
-                output = PathHelper.AddFilePostfix(output, Postfix);
+                output = PathHelper.AddFilePostfix(output, EncoderPostfix);
             }
 
             output = PathHelper.ReplaceExtension(output, Video.VideoExtension);
@@ -141,7 +147,7 @@ internal class FfmpegHelper
             """;
         log(arguments);
         log(string.Empty);
-        ProcessHelper.StartAndWait("ffmpeg", arguments, window: true);
+        await ProcessHelper.StartAndWaitAsync(Executable, arguments, null, null, null, true, cancellationToken);
     }
 
     internal static void MergeDubbed(string input, ref string output, string dubbed = "", bool overwrite = false, bool? isTV = null, bool ignoreDurationDifference = false, bool isDryRun = false, Action<string>? log = null)
@@ -194,7 +200,7 @@ internal class FfmpegHelper
         if (!isDryRun)
         {
             ProcessHelper.StartAndWait(
-                "ffmpeg",
+                Executable,
                 $"""
                     -i "{input}" -i "{dubbed}" -c copy -map_metadata 0 -map 0 -map 1:a "{output}" -{(overwrite ? "y" : "n")}
                     """,
@@ -228,7 +234,7 @@ internal class FfmpegHelper
             .Select(timestamp =>
             {
                 string arguments = $"""-ss {timestamp.Hours:00}:{timestamp.Minutes:00}:{timestamp.Seconds:00} -i "{file}" -filter:v cropdetect -vframes {frameCount} -f null -max_muxing_queue_size 9999 NUL""";
-                (int exitCode, List<string?> output, List<string?> errors) = ProcessHelper.Run("ffmpeg", arguments);
+                (int exitCode, List<string?> output, List<string?> errors) = ProcessHelper.Run(Executable, arguments);
                 if (exitCode != 0)
                 {
                     throw new InvalidOperationException(file);
@@ -246,7 +252,7 @@ internal class FfmpegHelper
                 if (distinctTimestampCrops.Length != 1)
                 {
                     log?.Invoke($"""
-                        ffmpeg {arguments}
+                        {Executable} {arguments}
                         {string.Join(Environment.NewLine, timestampCrops)}
                         """);
                 }
@@ -278,5 +284,63 @@ internal class FfmpegHelper
             {file}
             {string.Join(Environment.NewLine, crops)}
             """);
+    }
+
+    internal static async Task EncodeAllAsync(
+        string inputDirectory, string outputDirectory = "", bool? estimateCrop = null, bool overwrite = false, bool isTV = false,
+        Func<string, bool>? inputPredicate = null, Func<string, string>? getOutput = null,
+        int? maxDegreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
+    {
+        if (outputDirectory.IsNotNullOrWhiteSpace() && getOutput is not null)
+        {
+            throw new ArgumentOutOfRangeException(nameof(outputDirectory), outputDirectory, $"{nameof(outputDirectory)} conflicts with {nameof(getOutput)}.");
+        }
+
+        inputPredicate ??= file => PathHelper.GetFileNameWithoutExtension(file).ContainsIgnoreCase(EncoderPostfix);
+        getOutput ??= outputDirectory.IsNullOrWhiteSpace()
+            ? input => PathHelper.ReplaceExtension(input.AddEncoderIfMissing(isTV), Video.VideoExtension)
+            : input => Path.Combine(outputDirectory, $"{PathHelper.GetFileNameWithoutExtension(input.AddEncoderIfMissing(isTV))}{Video.VideoExtension}");
+        log ??= Logger.WriteLine;
+        maxDegreeOfParallelism ??= MaxDegreeOfParallelism;
+
+        await Directory
+            .EnumerateFiles(inputDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
+            .Where(file => file.IsVideo() && inputPredicate(file))
+            .Order()
+            .ToArray()
+            .ParallelForEachAsync(
+                async (input, index, token) =>
+                {
+                    try
+                    {
+                        await EncodeAsync(input, getOutput(input), overwrite, estimateCrop, log: log, cancellationToken: token);
+                    }
+                    catch (Exception exception) when (exception.IsNotCritical())
+                    {
+                        log(exception.ToString());
+                    }
+                },
+                maxDegreeOfParallelism,
+                cancellationToken);
+    }
+
+    private static string AddEncoderIfMissing(this string file, bool isTV = false)
+    {
+        string name = PathHelper.GetFileName(file);
+        if (name.ContainsIgnoreCase(EncoderPostfix))
+        {
+            return file;
+        }
+
+        if (isTV)
+        {
+            return VideoEpisodeFileInfo.TryParse(name, out VideoEpisodeFileInfo? episode)
+                ? PathHelper.ReplaceFileNameWithoutExtension(file, (episode with { Encoder = EncoderPostfix }).Name)
+                : PathHelper.AddFilePostfix(file, EncoderPostfix);
+        }
+
+        return VideoMovieFileInfo.TryParse(name, out VideoMovieFileInfo? video)
+            ? PathHelper.ReplaceFileNameWithoutExtension(file, (video with { Encoder = EncoderPostfix }).Name)
+            : PathHelper.AddFilePostfix(file, EncoderPostfix);
     }
 }

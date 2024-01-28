@@ -40,7 +40,7 @@ internal static class Music
                 {
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
-                    FileName = "ffmpeg",
+                    FileName = FfmpegHelper.Executable,
                     Arguments = argument,
                     RedirectStandardError = true
                 }

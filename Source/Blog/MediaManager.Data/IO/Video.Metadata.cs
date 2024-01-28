@@ -95,7 +95,7 @@ internal static partial class Video
 
                         if (title.IsNullOrWhiteSpace())
                         {
-                            title = match.Groups[3].Value.Replace("BluRay.", string.Empty).Replace("WEBRip.", string.Empty).Replace("1080p.", string.Empty).Replace("720p.", string.Empty).Replace("ffmpeg.", string.Empty);
+                            title = match.Groups[3].Value.Replace("BluRay.", string.Empty).Replace("WEBRip.", string.Empty).Replace("1080p.", string.Empty).Replace("720p.", string.Empty).Replace($"{FfmpegHelper.Executable}{Delimiter}", string.Empty);
                         }
                     }
                 }

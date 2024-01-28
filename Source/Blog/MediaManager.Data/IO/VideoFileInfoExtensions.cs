@@ -18,7 +18,7 @@ internal static class VideoFileInfoExtensions
 
         return video.Encoder.TrimStart('.') switch
         {
-            "ffmpeg" => EncoderType.F,
+            FfmpegHelper.Executable => EncoderType.F,
             "nvenc" => EncoderType.N,
             "handbrake" => EncoderType.B,
             _ => EncoderType.P

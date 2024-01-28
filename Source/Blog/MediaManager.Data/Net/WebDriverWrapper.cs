@@ -8,6 +8,8 @@ using OpenQA.Selenium.Support.UI;
 
 public class WebDriverWrapper(Func<IWebDriver>? webDriverFactory = null, string initialUrl = "") : IDisposable
 {
+    internal const int NetworkDefaultRetryCount = 5;
+
     private IWebDriver? webDriver;
 
     private IWebDriver WebDriver
@@ -51,7 +53,7 @@ public class WebDriverWrapper(Func<IWebDriver>? webDriverFactory = null, string 
         }
     }
 
-    public string GetString(string url, Action? wait = null, int retryCount = 10)
+    public string GetString(string url, Action? wait = null, int retryCount = NetworkDefaultRetryCount)
     {
         Exception? lastException = null;
         for (int retry = 0; retry < retryCount; retry++)
@@ -73,7 +75,7 @@ public class WebDriverWrapper(Func<IWebDriver>? webDriverFactory = null, string 
         throw lastException!;
     }
 
-    public async Task<string> GetStringAsync(string url, Action? wait = null, int retryCount = 10)
+    public async Task<string> GetStringAsync(string url, Action? wait = null, int retryCount = NetworkDefaultRetryCount)
     {
         Exception? lastException = null;
         for (int retry = 0; retry < retryCount; retry++)

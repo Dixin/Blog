@@ -59,6 +59,8 @@ internal static partial class Video
 
     internal static readonly int IOMaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 4);
 
+    internal const int IODefaultRetryCount = 3;
+
     internal static string FilterForFileSystem(this string value)
     {
         value = value.Replace(": ", TitleSeparator).Replace(":", TitleSeparator).Replace("*", "_").Replace("/", "_");
