@@ -109,6 +109,8 @@ public interface ISettings
 
     string MoviePreferredUrl { get; init; }
 
+    string MovieSharedUrl { get; init; }
+
     string TVTopX265Url { get; init; }
 
     string Drive115Metadata { get; init; }
@@ -134,6 +136,8 @@ public interface ISettings
     string MoviePreferredMetadata { get; init; }
 
     string MovieRareMetadata { get; init; }
+
+    string MovieSharedMetadata { get; init; }
 
     string MovieImdbSpecialMetadata { get; init; }
 

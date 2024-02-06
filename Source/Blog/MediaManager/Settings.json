@@ -17,6 +17,7 @@
     "MovieTopH264ForeignUrl": "",
     "MovieTopH264720PUrl": "",
     "MoviePreferredUrl": "",
+    "MovieSharedUrl": "",
     "TVTopX265Url": "",
 
     "MovieTopDuplications": [],
@@ -33,6 +34,7 @@
     "MoviePreferredSummary": "D:\\Files\\Library\\Movie.PreferredSummary.json",
     "MoviePreferredMetadata": "D:\\Files\\Library\\Movie.PreferredMetadata.json",
     "MovieRareMetadata": "D:\\Files\\Library\\Movie.RareMetadata.json",
+    "MovieSharedMetadata": "D:\\Files\\Library\\Movie.SharedMetadata.json",
     "MovieImdbSpecialMetadata": "D:\\Files\\Library\\Movie.ImdbSpecial.json",
     "MovieMergedMetadata": "D:\\Files\\Library\\Movie.MergedMetadata.json",
     "TVTopX265Metadata": "D:\\Files\\Library\\TV.TopMetadata.x265.json",

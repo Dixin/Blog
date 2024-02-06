@@ -21,6 +21,7 @@ public partial record Settings(
     string MovieTopH264ForeignUrl,
     string MovieTopH264720PUrl,
     string MoviePreferredUrl,
+    string MovieSharedUrl,
     string TVTopX265Url,
 
     string Drive115Metadata,
@@ -35,6 +36,7 @@ public partial record Settings(
     string MoviePreferredSummary,
     string MoviePreferredMetadata,
     string MovieRareMetadata,
+    string MovieSharedMetadata,
     string MovieImdbSpecialMetadata,
     string MovieMergedMetadata,
     string TVTopX265Metadata,
