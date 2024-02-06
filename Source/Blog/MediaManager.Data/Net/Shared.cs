@@ -21,7 +21,6 @@ internal static class Shared
         degreeOfParallelism ??= MaxDegreeOfParallelism;
 
         IDictionary<string, string> itemUrls = await DownloadListAsync(settings.MovieSharedUrl, degreeOfParallelism.Value, log, cancellationToken);
-        await JsonHelper.SerializeToFileAsync(itemUrls.ToDictionary(item => item.Key, item => item.Value), @"D:\Files\Library\Movie.SharedUrls.json", cancellationToken);
         return await DownloadItemsAsync(itemUrls, settings.MovieSharedMetadata, degreeOfParallelism.Value, skipExisting, log, cancellationToken);
     }
 
