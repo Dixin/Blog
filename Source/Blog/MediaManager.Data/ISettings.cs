@@ -27,7 +27,7 @@ public interface ISettings
 
     DirectorySettings MovieControversialWithoutSubtitle { get; init; }
 
-    DirectorySettings MovieControversialTemp3 { get; init; }
+    DirectorySettings MovieControversialTemp4 { get; init; }
 
     DirectorySettings MovieMainstream { get; init; }
 
@@ -45,7 +45,13 @@ public interface ISettings
 
     DirectorySettings MovieTemp32 { get; init; }
 
-    DirectorySettings MovieTemp3Encode { get; init; }
+    DirectorySettings MovieTemp4 { get; init; }
+
+    DirectorySettings MovieTemp41 { get; init; }
+
+    DirectorySettings MovieTemp42 { get; init; }
+
+    DirectorySettings MovieTemp4Encode { get; init; }
 
     DirectorySettings MovieExternalNew { get; init; }
 

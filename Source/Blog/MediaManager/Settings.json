@@ -62,7 +62,7 @@
         "Directory": "D:\\Files\\Library\\Movies Controversial.非主流电影[未抓取字幕]",
         "Level": 2
     },
-    "MovieControversialTemp3": {
+    "MovieControversialTemp4": {
         "Directory": "D:\\Files\\Library\\Movies Controversial Temp3.非主流电影3",
         "Level": 2
     },
@@ -82,12 +82,12 @@
         "Directory": "D:\\Files\\Library\\Movies Mainstream Temp2.主流电影2",
         "Level": 2
     },
-    "MovieTemp3": {
-        "Directory": "D:\\Files\\Library\\Movies Mainstream Temp3.主流电影3",
-        "Level": 2
-    },
     "MovieMusical": {
         "Directory": "D:\\Files\\Library\\Movies Musical.音乐",
+        "Level": 2
+    },
+    "MovieTemp3": {
+        "Directory": "D:\\Files\\Library\\Movies Mainstream Temp3.主流电影3",
         "Level": 2
     },
     "MovieTemp31": {
@@ -98,7 +98,19 @@
         "Directory": "D:\\Files\\Library\\Movies Temp3.2.电影3.2",
         "Level": 2
     },
-    "MovieTemp3Encode": {
+    "MovieTemp4": {
+        "Directory": "D:\\Files\\Library\\Movies Mainstream Temp4.主流电影4",
+        "Level": 2
+    },
+    "MovieTemp41": {
+        "Directory": "D:\\Files\\Library\\Movies Temp4.电影4",
+        "Level": 2
+    },
+    "MovieTemp42": {
+        "Directory": "D:\\Files\\Library\\Movies Temp4.2.电影4.2",
+        "Level": 2
+    },
+    "MovieTemp4Encode": {
         "Directory": "D:\\Files\\Library\\Movies Encode3.电影3",
         "Level": 2
     },

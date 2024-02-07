@@ -57,7 +57,7 @@ public partial record Settings(
 
     public DirectorySettings MovieControversialWithoutSubtitle { get; init; }
 
-    public DirectorySettings MovieControversialTemp3 { get; init; }
+    public DirectorySettings MovieControversialTemp4 { get; init; }
 
     public DirectorySettings MovieMainstream { get; init; }
 
@@ -75,7 +75,13 @@ public partial record Settings(
 
     public DirectorySettings MovieTemp32 { get; init; }
 
-    public DirectorySettings MovieTemp3Encode { get; init; }
+    public DirectorySettings MovieTemp4 { get; init; }
+
+    public DirectorySettings MovieTemp41 { get; init; }
+
+    public DirectorySettings MovieTemp42 { get; init; }
+
+    public DirectorySettings MovieTemp4Encode { get; init; }
 
     public DirectorySettings MovieExternalNew { get; init; }
 
