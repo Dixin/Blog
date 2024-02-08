@@ -67,7 +67,7 @@ public interface ISettings
 
     DirectorySettings TVMainstreamWithoutSubtitle { get; init; }
 
-    DirectorySettings TVTemp3 { get; init; }
+    DirectorySettings TVTemp4 { get; init; }
 
     DirectorySettings AudioControversial { get; init; }
 

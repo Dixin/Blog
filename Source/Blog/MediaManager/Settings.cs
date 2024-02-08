@@ -97,7 +97,7 @@ public partial record Settings(
 
     public DirectorySettings TVMainstreamWithoutSubtitle { get; init; }
 
-    public DirectorySettings TVTemp3 { get; init; }
+    public DirectorySettings TVTemp4 { get; init; }
 
     public DirectorySettings AudioControversial { get; init; }
 
