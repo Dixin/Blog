@@ -61,6 +61,8 @@ internal static partial class Video
 
     internal const int IODefaultRetryCount = 3;
 
+    private const string SubtitleDirectory = "Subs";
+
     internal static string FilterForFileSystem(this string value)
     {
         value = value.Replace(": ", TitleSeparator).Replace(":", TitleSeparator).Replace("*", "_").Replace("/", "_");

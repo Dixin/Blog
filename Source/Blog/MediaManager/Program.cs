@@ -42,7 +42,7 @@ using CancellationTokenSource cancellationTokenSource = new();
 //await Video.DownloadImdbMetadataAsync(settings.Movie3D, 2, overwrite: true, useCache: false, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.MovieHdr, 2, overwrite: true, useCache: false, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.MovieControversial, 2, overwrite: true, useCache: false, useBrowser: true);
-//await Video.DownloadImdbMetadataAsync(settings.MovieControversialTemp3, 2, overwrite: true, useCache: false, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.MovieControversialTemp4, 2, overwrite: true, useCache: false, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.MovieControversialWithoutSubtitle, 2, overwrite: true, useCache: false, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.MovieMainstream, 2, overwrite: true, useCache: false, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.MovieMainstreamWithoutSubtitle, 2, overwrite: true, useCache: false, useBrowser: true);
@@ -52,35 +52,41 @@ using CancellationTokenSource cancellationTokenSource = new();
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp3, 2, overwrite: true, useCache: false, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp31, 2, overwrite: true, useCache: false, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp32, 2, overwrite: true, useCache: false, useBrowser: true);
-//await Video.DownloadImdbMetadataAsync(settings.MovieTemp3Encode, 2, overwrite: true, useCache: false, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.MovieTemp4, 2, overwrite: true, useCache: false, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.MovieTemp41, 2, overwrite: true, useCache: false, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.MovieTemp42, 2, overwrite: true, useCache: false, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.MovieTemp4Encode, 2, overwrite: true, useCache: false, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(@"D:\Files\Library\Movies Mainstream.主流电影\Test", 1, overwrite: true, useCache: false, useBrowser: true);
 
 //await Video.DownloadImdbMetadataAsync(settings.TVControversial, 1, overwrite: true, useCache: false, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.TVDocumentary, 1, overwrite: true, useCache: false, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.TVMainstream, 1, overwrite: true, useCache: false, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.TVMainstreamWithoutSubtitle, 1, overwrite: true, useCache: false, useBrowser: true);
-//await Video.DownloadImdbMetadataAsync(settings.TVTemp3, 1, overwrite: true, useCache: false, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.TVTemp4, 1, overwrite: true, useCache: false, useBrowser: true);
 
-// Video.MoveFanArt(settings.Movie3D);
-// Video.MoveFanArt(settings.MovieHdr);
-// Video.MoveFanArt(settings.MovieControversial);
-// Video.MoveFanArt(settings.MovieControversialTemp3);
-// Video.MoveFanArt(settings.MovieControversialWithoutSubtitle);
-// Video.MoveFanArt(settings.MovieMainstream);
-// Video.MoveFanArt(settings.MovieMainstreamWithoutSubtitle);
-// Video.MoveFanArt(settings.MovieMusical);
-// Video.MoveFanArt(settings.MovieTemp1);
-// Video.MoveFanArt(settings.MovieTemp2);
-// Video.MoveFanArt(settings.MovieTemp3);
-// Video.MoveFanArt(settings.MovieTemp31);
-// Video.MoveFanArt(settings.MovieTemp32);
-// Video.MoveFanArt(settings.MovieTemp3Encode);
+//Video.MoveFanArt(settings.Movie3D);
+//Video.MoveFanArt(settings.MovieHdr);
+//Video.MoveFanArt(settings.MovieControversial);
+//Video.MoveFanArt(settings.MovieControversialTemp4);
+//Video.MoveFanArt(settings.MovieControversialWithoutSubtitle);
+//Video.MoveFanArt(settings.MovieMainstream);
+//Video.MoveFanArt(settings.MovieMainstreamWithoutSubtitle);
+//Video.MoveFanArt(settings.MovieMusical);
+//Video.MoveFanArt(settings.MovieTemp1);
+//Video.MoveFanArt(settings.MovieTemp2);
+//Video.MoveFanArt(settings.MovieTemp3);
+//Video.MoveFanArt(settings.MovieTemp31);
+//Video.MoveFanArt(settings.MovieTemp32);
+//Video.MoveFanArt(settings.MovieTemp4);
+//Video.MoveFanArt(settings.MovieTemp41);
+//Video.MoveFanArt(settings.MovieTemp42);
+//Video.MoveFanArt(settings.MovieTemp4Encode);
 
-// Video.MoveFanArt(settings.TVControversial, 1);
-// Video.MoveFanArt(settings.TVDocumentary, 1);
-// Video.MoveFanArt(settings.TVMainstream, 1);
-// Video.MoveFanArt(settings.TVMainstreamWithoutSubtitle, 1);
-// Video.MoveFanArt(settings.TVTemp3, 1);
+//Video.MoveFanArt(settings.TVControversial, 1);
+//Video.MoveFanArt(settings.TVDocumentary, 1);
+//Video.MoveFanArt(settings.TVMainstream, 1);
+//Video.MoveFanArt(settings.TVMainstreamWithoutSubtitle, 1);
+//Video.MoveFanArt(settings.TVTemp4, 1);
 
 //await Video.DownloadImdbMetadataAsync(
 //    new (string Directory, int Level)[]
@@ -113,26 +119,29 @@ using CancellationTokenSource cancellationTokenSource = new();
 //Video.RenameDirectoriesWithoutAdditionalMetadata(settings.MovieControversial);
 //Video.RenameDirectoriesWithoutAdditionalMetadata(settings.MovieMainstream);
 
-// Video.RenameDirectoriesWithImdbMetadata(settings, settings.Movie3D, isDryRun: true);
-// Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieHdr, isDryRun: true);
-// Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieControversial, isDryRun: true);
-// Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieControversialTemp3, isDryRun: true);
-// Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieControversialWithoutSubtitle, isDryRun: true);
-// Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieMainstream, isDryRun: true);
-// Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieMainstreamWithoutSubtitle, isDryRun: true);
-// Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieMusical, isDryRun: true);
-// Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp1, isDryRun: true);
-// Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp2, isDryRun: true);
-// Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp3, isDryRun: true);
-// Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp31, isDryRun: true);
-// Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp32, isDryRun: true);
-// Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp3Encode, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.Movie3D, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieHdr, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieControversial, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieControversialTemp4, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieControversialWithoutSubtitle, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieMainstream, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieMainstreamWithoutSubtitle, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieMusical, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp1, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp2, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp3, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp31, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp32, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp4, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp41, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp42, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp4Encode, isDryRun: true);
 
-// Video.RenameDirectoriesWithImdbMetadata(settings, settings.TVControversial, level: 1, isTV: true, isDryRun: true);
-// Video.RenameDirectoriesWithImdbMetadata(settings, settings.TVDocumentary, level: 1, isTV: true, isDryRun: true);
-// Video.RenameDirectoriesWithImdbMetadata(settings, settings.TVMainstream, level: 1, isTV: true, isDryRun: true);
-// Video.RenameDirectoriesWithImdbMetadata(settings, settings.TVMainstreamWithoutSubtitle, level: 1, isTV: true, isDryRun: true);
-// Video.RenameDirectoriesWithImdbMetadata(settings, settings.TVTemp3, level: 1, isTV: true, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.TVControversial, level: 1, isTV: true, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.TVDocumentary, level: 1, isTV: true, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.TVMainstream, level: 1, isTV: true, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.TVMainstreamWithoutSubtitle, level: 1, isTV: true, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.TVTemp4, level: 1, isTV: true, isDryRun: true);
 
 // Video.UpdateXmlRating(settings.Movie3D);
 // Video.UpdateXmlRating(settings.MovieHdr);
@@ -392,8 +401,9 @@ string[] genres = ["family", "animation", "documentary"];
 //});
 
 //await Video.PrintMovieImdbIdErrorsAsync(settings, true, null, settings.MovieTemp31);
-//Video.MoveSubtitleToParentDirectory(settings.MovieTemp);
-//Video.MoveFanArt(settings.MovieTemp);
+//Video.MoveFanArt(settings.MovieTemp32);
+//await Video.ConvertToUtf8Async(settings.MovieTemp32, true);
+//Video.MoveSubtitleToParentDirectory(settings.MovieTemp32, @"\\beyond-r\j\Files\Library\Movies.Subtitles", true);
 //Video.MoveMetadata(settings.MovieTemp, settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory, 2);
 //Video.BackupMetadata(settings.MovieTemp);
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp, 2, overwrite: false, useCache: true, useBrowser: true, 1);
@@ -506,7 +516,7 @@ static void RenameEpisode(ISettings settings, string mediaDirectory, string meta
     //tvs.ForEach(tv => Video.MoveSubtitlesForEpisodes(tv, Path.Combine(metadataDirectory, PathHelper.GetFileName(tv)), isDryRun: isDryRun, log: log));
 }
 
-//Video.MoveTopTVEpisodes(settings, @"\\beyond-r\F\Files\Library\TV", @"\\beyond-r\F\Files\TV.Subtitles", isDryRun: false);
+//Video.MoveTopTVEpisodes(settings, @"", @"\\beyond-r\j\Files\Library\TV.Subtitles", isDryRun: false);
 //Video.FormatTV(
 //    @"E:\Files\TV",
 //    @"",

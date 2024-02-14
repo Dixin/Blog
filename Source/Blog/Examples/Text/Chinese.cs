@@ -1,56 +1,59 @@
 ﻿namespace Examples.Text;
 
+using Examples.Common;
+using System.Buffers;
+
 public static partial class Chinese
 {
     // https://en.wikipedia.org/wiki/List_of_Unicode_characters#East_Asian_writing_systems
     public static (char Min, char Max, string Name, string Uri)[] BasicBlocks { get; } =
     [
         // ⺀
-        ('\u2E80', '\u2EFF', "CJK Radicals Supplement", "https://en.wikipedia.org/wiki/CJK_Radicals_Supplement"),   
-        
+        ('\u2E80', '\u2EFF', "CJK Radicals Supplement", "https://en.wikipedia.org/wiki/CJK_Radicals_Supplement"),
+
         // ⼀
-        ('\u2F00', '\u2FDF', "Kangxi Radicals", "https://en.wikipedia.org/wiki/Kangxi_radical#Unicode"),   
-        
+        ('\u2F00', '\u2FDF', "Kangxi Radicals", "https://en.wikipedia.org/wiki/Kangxi_radical#Unicode"),
+
         // ⿰
-        ('\u2FF0', '\u2FFF', "Ideographic Description Characters", "https://en.wikipedia.org/wiki/Ideographic_Description_Characters_(Unicode_block)"),   
-        
+        ('\u2FF0', '\u2FFF', "Ideographic Description Characters", "https://en.wikipedia.org/wiki/Ideographic_Description_Characters_(Unicode_block)"),
+
         // 〥
-        ('\u3000', '\u303F', "CJK Symbols and Punctuation", "https://en.wikipedia.org/wiki/CJK_Symbols_and_Punctuation"),   
-        
+        ('\u3000', '\u303F', "CJK Symbols and Punctuation", "https://en.wikipedia.org/wiki/CJK_Symbols_and_Punctuation"),
+
         // い
-        ('\u3040', '\u309F', "Hiragana", "https://en.wikipedia.org/wiki/Hiragana_(Unicode_block)"),   
-        
+        ('\u3040', '\u309F', "Hiragana", "https://en.wikipedia.org/wiki/Hiragana_(Unicode_block)"),
+
         // ア
-        ('\u30A0', '\u30FF', "Katakana", "https://en.wikipedia.org/wiki/Katakana_(Unicode_block)"),   
-        
+        ('\u30A0', '\u30FF', "Katakana", "https://en.wikipedia.org/wiki/Katakana_(Unicode_block)"),
+
         // ㄆ
-        ('\u3100', '\u312F', "Bopomofo", "https://en.wikipedia.org/wiki/Bopomofo_(Unicode_block)"),   
+        ('\u3100', '\u312F', "Bopomofo", "https://en.wikipedia.org/wiki/Bopomofo_(Unicode_block)"),
 
         // ㆝
         ('\u3190', '\u319F', "Kanbun", "https://en.wikipedia.org/wiki/Kanbun_(Unicode_block)"),
 
         // ㆡ
-        ('\u31A0', '\u31BF', "Bopomofo Extended", "https://en.wikipedia.org/wiki/Bopomofo_Extended"),   
-        
+        ('\u31A0', '\u31BF', "Bopomofo Extended", "https://en.wikipedia.org/wiki/Bopomofo_Extended"),
+
         // ㇏
         // Strokes in (31C0, 31E3) are not handled by SQL Server collation: ㇀㇁㇂㇃㇄㇅㇆㇇㇈㇉㇊㇋㇌㇍㇎㇏㇐㇑㇒㇓㇔㇕㇖㇗㇘㇙㇚㇛㇜㇝㇞㇟㇠㇡㇢㇣.
-        ('\u31C0', '\u31EF', "CJK Strokes", "https://en.wikipedia.org/wiki/CJK_Strokes_(Unicode_block)"),   
-        
+        ('\u31C0', '\u31EF', "CJK Strokes", "https://en.wikipedia.org/wiki/CJK_Strokes_(Unicode_block)"),
+
         // ㇰ
-        ('\u31F0', '\u31FF', "Katakana Phonetic Extensions", "https://en.wikipedia.org/wiki/Katakana_Phonetic_Extensions"),   
+        ('\u31F0', '\u31FF', "Katakana Phonetic Extensions", "https://en.wikipedia.org/wiki/Katakana_Phonetic_Extensions"),
 
         // ㊥
-        ('\u3200', '\u32FF', "Enclosed CJK Letters and Months", "https://en.wikipedia.org/wiki/Enclosed_CJK_Letters_and_Months"),   
+        ('\u3200', '\u32FF', "Enclosed CJK Letters and Months", "https://en.wikipedia.org/wiki/Enclosed_CJK_Letters_and_Months"),
 
         // ㍞
-        ('\u3300', '\u33FF', "CJK Compatibility", "https://en.wikipedia.org/wiki/CJK_Compatibility"),   
-        
+        ('\u3300', '\u33FF', "CJK Compatibility", "https://en.wikipedia.org/wiki/CJK_Compatibility"),
+
         // 㐦
-        ('\u3400', '\u4DBF', "CJK Ideographs Extension A", "https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_Extension_A"),   
+        ('\u3400', '\u4DBF', "CJK Ideographs Extension A", "https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_Extension_A"),
 
         // ䷿
         ('\u4DC0', '\u4DFF', "Yijing Hexagram Symbols", "https://en.wikipedia.org/wiki/Yijing_Hexagram_Symbols_(Unicode_block)"),
-        
+
         // 一
         ('\u4E00', '\u9FFF', "CJK Unified Ideographs", "https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_(Unicode_block)"),
 
@@ -64,14 +67,14 @@ public static partial class Chinese
         ('\uA700', '\uA71F', "Modifier Tone Letters", "https://en.wikipedia.org/wiki/Modifier_Tone_Letters"),
 
         // 豈
-        ('\uF900', '\uFAFF', "CJK Compatibility Ideographs", "https://en.wikipedia.org/wiki/CJK_Compatibility_Ideographs"),   
-        
+        ('\uF900', '\uFAFF', "CJK Compatibility Ideographs", "https://en.wikipedia.org/wiki/CJK_Compatibility_Ideographs"),
+
         // ︗
         ('\uFE10', '\uFE1F', "Vertical Forms", "https://en.wikipedia.org/wiki/Vertical_Forms"),
 
         // ︽
-        ('\uFE30', '\uFE4F', "CJK Compatibility Forms", "https://en.wikipedia.org/wiki/CJK_Compatibility_Forms"),   
-        
+        ('\uFE30', '\uFE4F', "CJK Compatibility Forms", "https://en.wikipedia.org/wiki/CJK_Compatibility_Forms"),
+
         // ﹨
         ('\uFE50', '\uFE6F', "Small Form Variants", "https://en.wikipedia.org/wiki/Small_Form_Variants"),
 
@@ -141,6 +144,8 @@ public static partial class Chinese
         // 𰀃
         (0x30000, 0x3134F, "CJK Ideographs Extension G", "https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_Extension_G")
     ];
+
+    public static readonly SearchValues<char> CommonTraditionalChinese = SearchValues.Create("這個們來時為說國著後會過對於學麼發當還樣種開總從無現動頭經長兒愛給間親進話與問爾點幾將實聲車機氣書體卻電門聽員許寫馬難結樂東記處讓應場報關張認軍歲覺萬邊風媽變師戰遠輕條達業羅錢紶嗎語離飛歡題該論終請醫製決窢傳講讀運則產視連類隊觀盡紅識亞術熱興談極講辦強華諣計雙轉訴稱麗領節統斷歷驚臉選緊維絕樹傷願誰準聯婦紀買靜詩獨復義確單蘭舉鍾遊號費價圖剛腦響禮細專塊腳靈據眾筆習務須試懷調廣蘇顯議夢錯設線雖養際陽紙納驗夠嚴證飯導頓獲藝創區謝組館質續標實倫護貝劇險煙依鬥幫漢慢聞資擊顧淚團聖園勞陳魚異寶權魯簡態級尋殺勝範樓貴責較職屬漸錄絲黨繼趕葉賣堅遺臨擔戲衛藥詞雲規舊適鄉彈鐵壓負雜畢亂頂農練徵壞餘蒆燈環憶歐層陣瑪島項惡戀擁營諾銀勢獎優課鳥劉敗揮鮮財槍夥傑跡藸遍蓋順薩劃歸聽預編濟釋燒誤");
 
     public static IEnumerable<(int Index, int Length)> GetTextElements(this string value)
     {
@@ -373,7 +378,7 @@ public static partial class Chinese
         {
             characters[index] = characters[index].ToHalfWidth();
         }
-        
+
         return new string(characters);
     }
 
@@ -394,7 +399,7 @@ public static partial class Chinese
     }
 
     private const char FullWidthZero = '０';
-    
+
     private const char FullWidthNine = '９';
 
     private const char FullWidthUpperA = 'Ａ';
@@ -416,4 +421,7 @@ public static partial class Chinese
 
         return new string(characters);
     }
+
+    public static bool ContainsCommonTraditionalChineseCharacter(this string? value) => 
+        value.IsNotNullOrWhiteSpace() && value.AsSpan().ContainsAny(CommonTraditionalChinese);
 }

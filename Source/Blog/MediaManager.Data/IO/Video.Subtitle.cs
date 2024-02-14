@@ -4,6 +4,8 @@ using Examples.Common;
 using Examples.IO;
 using Examples.Linq;
 using Examples.Text;
+using System;
+using System.Linq;
 using Ude;
 
 internal static partial class Video
@@ -22,9 +24,9 @@ internal static partial class Video
 
     private static readonly string[] AllSubtitleExtensions = TextSubtitleExtensions.Concat(BinarySubtitleExtensions).ToArray();
 
-    private static readonly string[] CommonChinese = ["的", "是"];
+    private static readonly string[] CommonEnglish = [" the ", " is ", " to ", " of ", " and "];
 
-    private static readonly string[] CommonEnglish = [" of ", " is "];
+    private static bool ContainsCommonEnglish(this string? value) => value.IsNotNullOrWhiteSpace() && CommonEnglish.All(value.ContainsIgnoreCase);
 
     internal static (string? Charset, float? Confidence, string File)[] GetSubtitles(string directory) =>
         Directory
@@ -210,109 +212,379 @@ internal static partial class Video
             });
     }
 
-    internal static void MoveSubtitleToParentDirectory(string directory, bool isDryRun = false, Action<string>? log = null)
+    internal static void MoveSubtitleToParentDirectory(string directory, string subtitleDirectory, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
+
         Directory
             .EnumerateFiles(directory, "*.idx", SearchOption.AllDirectories)
             .Concat(Directory.EnumerateFiles(directory, "*.sub", SearchOption.AllDirectories))
-            .Where(subtitle => "Subs".EqualsIgnoreCase(PathHelper.GetFileName(PathHelper.GetDirectoryName(subtitle))))
+            .Where(subtitle => SubtitleDirectory.EqualsIgnoreCase(PathHelper.GetFileName(PathHelper.GetDirectoryName(subtitle))))
+            .GroupBy(subtitle => PathHelper.GetDirectoryName(PathHelper.GetDirectoryName(subtitle)))
             .ToArray()
-            .ForEach(subtitle =>
+            .ForEach(movieGroup =>
             {
-                string subtitleDirectory = PathHelper.GetDirectoryName(subtitle);
-                string parent = PathHelper.GetDirectoryName(subtitleDirectory);
-                string[] videos = Directory.GetFiles(parent, VideoSearchPattern, SearchOption.TopDirectoryOnly);
-                string mainVideo = videos.OrderByDescending(video => new FileInfo(video).Length).First();
-                string newSubtitle = Path.Combine(parent, $"{PathHelper.GetFileNameWithoutExtension(mainVideo)}{PathHelper.GetExtension(subtitle)}");
-                log(newSubtitle);
+                string movieSubtitleDirectory = PathHelper.GetDirectoryName(movieGroup.First());
+                string[] videos = Directory.GetFiles(movieGroup.Key, VideoSearchPattern, SearchOption.TopDirectoryOnly);
+                if (videos.Length != 1)
+                {
+                    log($"!Video count is {videos.Length} in {movieGroup.Key}.");
+                    return;
+                }
+
+                string video = videos.Single();
+                string[] subtitles = movieGroup.ToArray();
+                subtitles.ForEach(subtitle =>
+                {
+                    string name = PathHelper.GetFileNameWithoutExtension(subtitle);
+                    Match match = Regex.Match(name, @"^(.+) \([0-9]+\)$");
+                    if (match.Success)
+                    {
+                        string duplicate = PathHelper.ReplaceFileNameWithoutExtension(subtitle, match.Groups[1].Value);
+                        if (!isDryRun && subtitles.ContainsIgnoreCase(duplicate))
+                        {
+                            FileHelper.Recycle(subtitle);
+                            return;
+                        }
+                    }
+
+                    string destinationSubtitle = Path.Combine(movieGroup.Key, $"{PathHelper.GetFileNameWithoutExtension(video)}{PathHelper.GetExtension(subtitle)}");
+                    log(subtitle);
+                    if (!isDryRun)
+                    {
+                        FileHelper.Move(subtitle, destinationSubtitle);
+                    }
+
+                    log(destinationSubtitle);
+                    log(string.Empty);
+                });
+
                 if (!isDryRun)
                 {
-                    File.Move(subtitle, newSubtitle);
-                    if (Directory.EnumerateFiles(subtitleDirectory).IsEmpty())
+                    string[] files = Directory.GetFiles(movieSubtitleDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories);
+                    if (files.IsEmpty() || files.All(file => file.HasExtension(".bak")))
                     {
-                        DirectoryHelper.Recycle(subtitleDirectory);
+                        DirectoryHelper.Recycle(movieSubtitleDirectory);
                     }
                 }
             });
 
         Directory
             .EnumerateFiles(directory, "*.srt", SearchOption.AllDirectories)
-            .Where(subtitle => "Subs".EqualsIgnoreCase(PathHelper.GetFileName(PathHelper.GetDirectoryName(subtitle))))
+            .Where(subtitle => SubtitleDirectory.EqualsIgnoreCase(PathHelper.GetFileName(PathHelper.GetDirectoryName(subtitle))))
+            .GroupBy(subtitle => PathHelper.GetDirectoryName(PathHelper.GetDirectoryName(subtitle)))
+            .Select(movieGroup => (
+                Movie: movieGroup.Key,
+                Subtitles: movieGroup.ToArray(),
+                Videos: Directory.GetFiles(movieGroup.Key, VideoSearchPattern, SearchOption.TopDirectoryOnly)))
             .ToArray()
-            .ForEach(subtitle =>
+            .ForEach(movieGroup =>
             {
-                string subtitleDirectory = PathHelper.GetDirectoryName(subtitle);
-                string parent = PathHelper.GetDirectoryName(subtitleDirectory);
-                string[] videos = Directory.GetFiles(parent, VideoSearchPattern, SearchOption.TopDirectoryOnly);
-                string mainVideo = videos.Length == 1
-                    ? videos[0]
-                    : videos.OrderByDescending(video => new FileInfo(video).Length).First();
-                string language = PathHelper.GetFileNameWithoutExtension(subtitle);
-                string postfix = language switch
+                if (movieGroup.Videos.Length != 1)
                 {
-                    _ when language.ContainsIgnoreCase("eng") => string.Empty,
-                    _ when language.ContainsIgnoreCase("chi") => ".chs",
-                    _ => $"{Delimiter}{language}"
-                };
-                string newSubtitle = Path.Combine(parent, $"{PathHelper.GetFileNameWithoutExtension(mainVideo)}{postfix}.srt");
-                log(subtitle);
-                if (!isDryRun)
-                {
-                    if (File.Exists(newSubtitle))
-                    {
-                        if (string.IsNullOrEmpty(postfix)) // English.
-                        {
-                            long subtitleSize = new FileInfo(subtitle).Length;
-                            long newSubtitleSize = new FileInfo(newSubtitle).Length;
-                            if (subtitleSize >= newSubtitleSize)
-                            {
-                                string newSecondarySubtitle = PathHelper.AddFilePostfix(newSubtitle, ".eng");
-                                if (File.Exists(newSecondarySubtitle))
-                                {
-                                    Debug.Assert(newSubtitleSize >= new FileInfo(newSecondarySubtitle).Length);
-                                    FileHelper.Recycle(newSecondarySubtitle);
-                                }
+                    log($"!Video count is {movieGroup.Videos.Length} in {movieGroup.Movie}.");
+                    return;
+                }
 
-                                FileHelper.Move(newSubtitle, newSecondarySubtitle); // smaller.srt => smaller.eng.srt
-                                FileHelper.Move(subtitle, newSubtitle); // larger.srt
+                HashSet<string> movieSubtitles = new(movieGroup.Subtitles, StringComparer.OrdinalIgnoreCase);
+                movieGroup
+                    .Subtitles
+                    .ForEach(subtitle =>
+                    {
+                        string name = PathHelper.GetFileNameWithoutExtension(subtitle);
+                        Match match = Regex.Match(name, @"^(.+) \([0-9]+\)$");
+                        if (match.Success)
+                        {
+                            string duplicate = PathHelper.ReplaceFileNameWithoutExtension(subtitle, match.Groups[1].Value);
+                            if (!isDryRun && movieGroup.Subtitles.ContainsIgnoreCase(duplicate))
+                            {
+                                FileHelper.Recycle(subtitle);
+                                Debug.Assert(movieSubtitles.Remove(subtitle));
+                            }
+                        }
+                    });
+
+                string video = movieGroup.Videos.Single();
+                string videoName = PathHelper.GetFileNameWithoutExtension(video);
+                string[] originalNames = movieSubtitles
+                    .Select(PathHelper.GetFileNameWithoutExtension)
+                    .ToArray();
+                Debug.Assert(originalNames.Length == movieSubtitles.Count);
+
+                string[] postfixes = movieSubtitles
+                    .Select((subtitle, index) =>
+                    {
+                        string postfix = originalNames[index].ToLowerInvariant();
+                        Match match = Regex.Match(postfix, "^[0-9]+_(.+)$");
+                        if (match.Success)
+                        {
+                            postfix = match.Groups[1].Value;
+                        }
+
+                        string content = string.Empty;
+                        if (postfix is "subs" or "Sdh" or "sdh-sdh")
+                        {
+                            content = File.ReadAllText(subtitle);
+                            if (content.ContainsCommonEnglish())
+                            {
+                                return "eng";
+                            }
+                        }
+
+                        if (!postfix.ContainsOrdinal(Delimiter))
+                        {
+                            if (postfix.Length >= 3)
+                            {
+                                postfix = postfix[..3];
                             }
                             else
                             {
-                                newSubtitle = PathHelper.AddFilePostfix(newSubtitle, ".eng");
-                                if (File.Exists(newSubtitle))
-                                {
-                                    newSubtitleSize = new FileInfo(newSubtitle).Length;
-                                    if (subtitleSize >= newSubtitleSize)
-                                    {
-                                        FileHelper.Recycle(newSubtitle);
-                                        FileHelper.Move(subtitle, newSubtitle);
-                                    }
-                                    else
-                                    {
-                                        FileHelper.Recycle(subtitle);
-                                    }
-                                }
-                                else
-                                {
-                                    FileHelper.Move(subtitle, newSubtitle);
-                                }
+                                log($"Language is too short as {postfix} for {subtitle}");
+                                return postfix;
                             }
                         }
                         else
                         {
-                            log($"!{subtitle}");
+                            string[] languages = postfix
+                                .Split(Delimiter, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                                .Where(segment => Regex.IsMatch(segment, "^[a-z]{3}$"))
+                                .ToArray();
+                            if (languages.Length == 1)
+                            {
+                                postfix = languages.Single();
+                            }
+                            else if (languages.Any(language => language.StartsWithIgnoreCase("chi")))
+                            {
+                                postfix = "chi";
+                            }
+                            else
+                            {
+                                if (content.IsNullOrWhiteSpace())
+                                {
+                                    content = File.ReadAllText(subtitle);
+                                }
+
+                                if (content.ContainsCommonEnglish())
+                                {
+                                    return "eng";
+                                }
+
+                                log($"!Language cannot be detected from {postfix} for {subtitle}.");
+                            }
                         }
+
+                        if (postfix is "jpn")
+                        {
+                            return "jap";
+                        }
+
+                        if (postfix is "ram")
+                        {
+                            return "rom";
+                        }
+
+                        if (postfix is "und")
+                        {
+                            if (content.IsNullOrWhiteSpace())
+                            {
+                                content = File.ReadAllText(subtitle);
+                            }
+
+                            if (content.ContainsCommonEnglish())
+                            {
+                                return "eng";
+                            }
+
+                            if (content.ContainsChineseCharacter())
+                            {
+                                return content.ContainsCommonTraditionalChineseCharacter() ? "cht" : "chs";
+                            }
+                        }
+
+                        if (postfix is "chi")
+                        {
+                            if (content.IsNullOrWhiteSpace())
+                            {
+                                content = File.ReadAllText(subtitle);
+                            }
+
+                            return content.ContainsCommonTraditionalChineseCharacter() ? "cht" : "chs";
+                        }
+
+                        return postfix;
+                    })
+                    .ToArray();
+                Debug.Assert(postfixes.Length == movieSubtitles.Count);
+
+                (string Language, (string Subtitle, string OriginalName, long Length)[] Subtitles)[] languageSubtitles = movieSubtitles
+                    .Zip(postfixes, originalNames)
+                    .GroupBy(subtitle => subtitle.Second, subtitle => (Subtitle: subtitle.First, OriginalName: subtitle.Third))
+                    .Select(subtitleGroup =>
+                    {
+                        (string Subtitle, string OriginalName)[] subtitles = subtitleGroup.ToArray();
+                        return (
+                            Language: subtitleGroup.Key,
+                            Subtitles: subtitles.Length == 1
+                                ? subtitles
+                                    .Select(subtitle => (subtitle.Subtitle, subtitle.OriginalName, 0L))
+                                    .ToArray()
+                                : subtitles
+                                    .Select(subtitle => (subtitle.Subtitle, subtitle.OriginalName, new FileInfo(subtitle.Subtitle).Length))
+                                    .OrderByDescending(subtitle => subtitle.Length)
+                                    .ToArray());
+                    })
+                    .ToArray();
+
+                languageSubtitles.ForEach(subtitleGroup =>
+                {
+                    if (subtitleGroup.Language is "eng")
+                    {
+                        (string Subtitle, string OriginalName, long Length) firstSubtitle = subtitleGroup.Subtitles.First();
+                        string destinationFirstSubtitle = Path.Combine(movieGroup.Movie, $"{videoName}.srt");
+                        string destinationSecondSubtitle = Path.Combine(movieGroup.Movie, $"{videoName}.eng.srt");
+                        log(firstSubtitle.Subtitle);
+                        if (!isDryRun)
+                        {
+                            if (File.Exists(destinationFirstSubtitle))
+                            {
+                                if (firstSubtitle.Length == 0)
+                                {
+                                    firstSubtitle.Length = new FileInfo(firstSubtitle.Subtitle).Length;
+                                }
+
+                                long destinationFirstSubtitleLength = new FileInfo(destinationFirstSubtitle).Length;
+                                if (firstSubtitle.Length > destinationFirstSubtitleLength)
+                                {
+                                    FileHelper.Move(destinationFirstSubtitle, destinationSecondSubtitle);
+                                    FileHelper.Move(firstSubtitle.Subtitle, destinationFirstSubtitle);
+                                }
+                                else if (firstSubtitle.Length == destinationFirstSubtitleLength)
+                                {
+                                    FileHelper.Move(firstSubtitle.Subtitle, Path.Combine(subtitleDirectory, $"{videoName}{Delimiter}{firstSubtitle.OriginalName}.srt"));
+                                }
+                                else
+                                {
+                                    FileHelper.Move(firstSubtitle.Subtitle, destinationSecondSubtitle);
+                                }
+                            }
+                            else
+                            {
+                                FileHelper.Move(firstSubtitle.Subtitle, destinationFirstSubtitle);
+                            }
+                        }
+
+                        log(destinationFirstSubtitle);
+                        log(string.Empty);
+
+                        if (subtitleGroup.Subtitles.Length > 1)
+                        {
+                            (string Subtitle, string OriginalName, long Length) secondSubtitle = subtitleGroup.Subtitles[1];
+                            log(secondSubtitle.Subtitle);
+                            if (!isDryRun)
+                            {
+                                if (File.Exists(destinationSecondSubtitle))
+                                {
+                                    if (secondSubtitle.Length == 0)
+                                    {
+                                        secondSubtitle.Length = new FileInfo(secondSubtitle.Subtitle).Length;
+                                    }
+
+                                    long destinationSecondSubtitleLength = new FileInfo(destinationSecondSubtitle).Length;
+                                    if (secondSubtitle.Length > destinationSecondSubtitleLength)
+                                    {
+                                        FileHelper.MoveToDirectory(destinationSecondSubtitle, subtitleDirectory);
+                                        FileHelper.Move(secondSubtitle.Subtitle, destinationSecondSubtitle);
+                                    }
+                                    else
+                                    {
+                                        FileHelper.Move(secondSubtitle.Subtitle, Path.Combine(subtitleDirectory, $"{videoName}{Delimiter}{secondSubtitle.OriginalName}.srt"));
+                                    }
+                                }
+                                else
+                                {
+                                    FileHelper.Move(secondSubtitle.Subtitle, destinationSecondSubtitle);
+                                }
+                            }
+
+                            log(destinationSecondSubtitle);
+                            log(string.Empty);
+                        }
+
+                        subtitleGroup
+                            .Subtitles
+                            .Skip(2)
+                            .ForEach(subtitle =>
+                            {
+                                log(subtitle.Subtitle);
+                                string destinationSubtitle = Path.Combine(subtitleDirectory, $"{videoName}{Delimiter}{subtitle.OriginalName}.srt");
+                                if (!isDryRun)
+                                {
+                                    FileHelper.Move(subtitle.Subtitle, destinationSubtitle);
+                                }
+
+                                log(destinationSubtitle);
+                                log(string.Empty);
+                            });
                     }
                     else
                     {
-                        FileHelper.Move(subtitle, newSubtitle);
-                    }
+                        (string Subtitle, string OriginalName, long Length) firstSubtitle = subtitleGroup.Subtitles.First();
+                        string destinationFirstSubtitle = Path.Combine(movieGroup.Movie, $"{videoName}{Delimiter}{subtitleGroup.Language}.srt");
+                        log(firstSubtitle.Subtitle);
+                        if (!isDryRun)
+                        {
+                            if (File.Exists(destinationFirstSubtitle))
+                            {
+                                if (firstSubtitle.Length == 0)
+                                {
+                                    firstSubtitle.Length = new FileInfo(firstSubtitle.Subtitle).Length;
+                                }
 
-                    if (Directory.EnumerateFiles(subtitleDirectory).IsEmpty())
-                    {
-                        DirectoryHelper.Recycle(subtitleDirectory);
+                                long destinationFirstSubtitleLength = new FileInfo(destinationFirstSubtitle).Length;
+                                if (firstSubtitle.Length > destinationFirstSubtitleLength)
+                                {
+                                    FileHelper.MoveToDirectory(destinationFirstSubtitle, subtitleDirectory);
+                                    FileHelper.Move(firstSubtitle.Subtitle, destinationFirstSubtitle);
+                                }
+                                else
+                                {
+                                    FileHelper.Move(firstSubtitle.Subtitle, Path.Combine(subtitleDirectory, $"{videoName}{Delimiter}{subtitleGroup.Subtitles.First().OriginalName}.srt"));
+                                }
+                            }
+                            else
+                            {
+                                FileHelper.Move(firstSubtitle.Subtitle, destinationFirstSubtitle);
+                            }
+                        }
+
+                        log(destinationFirstSubtitle);
+                        log(string.Empty);
+
+                        subtitleGroup
+                            .Subtitles
+                            .Skip(1)
+                            .ForEach(subtitle =>
+                            {
+                                log(subtitle.Subtitle);
+                                string destinationSubtitle = Path.Combine(subtitleDirectory, $"{videoName}{Delimiter}{subtitle.OriginalName}.srt");
+                                if (!isDryRun)
+                                {
+                                    FileHelper.Move(subtitle.Subtitle, destinationSubtitle);
+                                }
+
+                                log(destinationSubtitle);
+                                log(string.Empty);
+                            });
                     }
+                });
+
+                string movieSubtitleDirectory = Path.Combine(movieGroup.Movie, SubtitleDirectory);
+
+                if (!isDryRun)
+                {
+                    string[] files = Directory.GetFiles(movieSubtitleDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories);
+                    Debug.Assert(files.IsEmpty() || files.All(file => file.HasExtension(".bak")));
+                    DirectoryHelper.Recycle(movieSubtitleDirectory);
                 }
             });
     }
@@ -328,14 +600,23 @@ internal static partial class Video
             {
                 string content = File.ReadAllText(file);
                 List<string> languages = [];
-                if (CommonChinese.All(chinese => content.ContainsOrdinal(chinese)))
+                if (content.ContainsChineseCharacter())
                 {
-                    languages.Add("chs");
+                    if (content.ContainsCommonTraditionalChineseCharacter())
+                    {
+                        languages.Add("cht");
+                    }
+                    else
+                    {
+                        languages.Add("chs");
+                    }
                 }
-                if (CommonEnglish.All(english => content.ContainsIgnoreCase(english)))
+
+                if (content.ContainsCommonEnglish())
                 {
                     languages.Add("eng");
                 }
+
                 if (languages.Any())
                 {
                     if (PathHelper.GetFileNameWithoutExtension(file).EndsWithIgnoreCase(string.Join('&', languages)) || PathHelper.GetFileNameWithoutExtension(file).EndsWith(string.Join('&', languages.AsEnumerable().Reverse())))
@@ -389,14 +670,14 @@ internal static partial class Video
                 string postfix = PathHelper.GetFileNameWithoutExtension(subtitle).Split(Delimiter).Last();
                 if (postfix.ContainsIgnoreCase("chs") || postfix.ContainsIgnoreCase("cht"))
                 {
-                    if (!File.ReadAllText(subtitle).ContainsOrdinal("的"))
+                    if (!File.ReadAllText(subtitle).ContainsChineseCharacter())
                     {
                         log($"!Not Chinese {subtitle}");
                     }
                 }
                 else
                 {
-                    if (File.ReadAllText(subtitle).ContainsOrdinal("的"))
+                    if (File.ReadAllText(subtitle).ContainsChineseCharacter())
                     {
                         log($"!Chinese {subtitle}");
                     }

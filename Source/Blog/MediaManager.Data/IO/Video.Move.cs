@@ -783,7 +783,7 @@ internal static partial class Video
             .Where(season => season.ContainsIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}"))
             .ForEach(season =>
             {
-                string subtitleDirectory = Path.Combine(season, "Subs");
+                string subtitleDirectory = Path.Combine(season, SubtitleDirectory);
                 Directory
                     .GetDirectories(subtitleDirectory)
                     .ForEach(episodeSubtitleDirectory => Directory
@@ -826,7 +826,7 @@ internal static partial class Video
         Directory
             .EnumerateDirectories(directory)
             .SelectMany(Directory.EnumerateDirectories)
-            .Select(season => Path.Combine(season, "Subs"))
+            .Select(season => Path.Combine(season, SubtitleDirectory))
             .ToArray()
             .ForEach(seasonSubtitleDirectory =>
             {
@@ -878,7 +878,7 @@ internal static partial class Video
                         {
                             string chineseSubtitle = chineseSubtitles.Single();
 
-                            string language = EncodingHelper.TryRead(chineseSubtitle, out string? content, out _) && "為們說無當".Any(content.ContainsOrdinal) ? "cht" : "chs";
+                            string language = EncodingHelper.TryRead(chineseSubtitle, out string? content, out _) && content.ContainsCommonTraditionalChineseCharacter() ? "cht" : "chs";
                             string chineseSubtitleName = PathHelper.GetFileNameWithoutExtension(chineseSubtitle);
                             string newChineseSubtitle = Path.Combine(PathHelper.GetDirectoryName(chineseSubtitle), $"{chineseSubtitleName[..chineseSubtitleName.LastIndexOf(Delimiter, StringComparison.Ordinal)]}.{language}{PathHelper.GetExtension(chineseSubtitle)}");
                             log($"Move {chineseSubtitle}");
@@ -894,7 +894,7 @@ internal static partial class Video
                     case > 1:
                         {
                             string chineseSubtitle = chineseSubtitles
-                                .Where(subtitle => EncodingHelper.TryRead(subtitle, out string? content, out _) && !"為們說無當嗎這".Any(content.ContainsOrdinal))
+                                .Where(subtitle => EncodingHelper.TryRead(subtitle, out string? content, out _) && !content.ContainsCommonTraditionalChineseCharacter())
                                 .OrderByDescending(subtitle => new FileInfo(subtitle).Length)
                                 .First();
                             chineseSubtitles = [chineseSubtitle];
@@ -1022,7 +1022,6 @@ internal static partial class Video
                         log(string.Empty);
                     });
                 }
-
             });
     }
 

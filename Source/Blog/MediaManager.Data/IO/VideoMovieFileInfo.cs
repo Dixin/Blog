@@ -66,6 +66,6 @@ internal record VideoMovieFileInfo(
     public static ISettings Settings
     {
         get => settings ?? throw new InvalidOperationException();
-        set => settings = value;
+        set => settings = value.ThrowIfNull();
     }
 }
