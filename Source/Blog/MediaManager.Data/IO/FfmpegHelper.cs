@@ -4,6 +4,7 @@ using Examples.Common;
 using Examples.Diagnostics;
 using Examples.IO;
 using Examples.Linq;
+using MediaManager.Net;
 using Xabe.FFmpeg;
 
 public enum FfmpegVideoCrop
@@ -164,7 +165,7 @@ public static class FfmpegHelper
         await ProcessHelper.StartAndWaitAsync(Executable, arguments, null, null, null, true, cancellationToken);
     }
 
-    internal static void MergeDubbed(string input, ref string output, string dubbed = "", bool overwrite = false, bool? isTV = null, bool ignoreDurationDifference = false, bool isDryRun = false, Action<string>? log = null)
+    internal static bool MergeDubbed(string input, ref string output, string dubbed = "", bool overwrite = false, bool? isTV = null, bool ignoreDurationDifference = false, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         isTV ??= Regex.IsMatch(PathHelper.GetFileNameWithoutExtension(input), @"(\.|\s)S[0-9]{2}E[0-9]{2}(\.|\s)", RegexOptions.IgnoreCase);
@@ -205,15 +206,16 @@ public static class FfmpegHelper
             if (difference > TimeSpan.FromSeconds(1) || difference < TimeSpan.FromSeconds(-1))
             {
                 log($"The difference between the durations of {input} and {dubbed} is {difference}.");
-                return;
+                return false;
             }
         }
 
         log(input);
         log(dubbed);
+        int result = 0;
         if (!isDryRun)
         {
-            ProcessHelper.StartAndWait(
+            result = ProcessHelper.StartAndWait(
                 Executable,
                 $"""
                     -i "{input}" -i "{dubbed}" -c copy -map_metadata 0 -map 0 -map 1:a "{output}" -{(overwrite ? "y" : "n")}
@@ -222,6 +224,7 @@ public static class FfmpegHelper
         }
 
         log(output);
+        return result == 0;
     }
 
     private static IEnumerable<TimeSpan> GetTimestamps(TimeSpan duration, int timestampCount = DefaultTimestampCount)
@@ -383,4 +386,39 @@ public static class FfmpegHelper
                 : VideoMovieFileInfo.TryParse(file, out VideoMovieFileInfo? video)
                     ? PathHelper.ReplaceFileNameWithoutExtension(file, (video with { Encoder = EncoderPostfix }).Name)
                     : PathHelper.AddFilePostfix(file, EncoderPostfix);
+
+    internal static void MergeDubbedMovies(string directory, int level = Video.DefaultDirectoryLevel, bool isDryRun = false, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+
+        Video
+            .EnumerateDirectories(directory, level)
+            .GroupBy(movie =>
+            {
+                if (ImdbMetadata.TryRead(movie, out string? imdbId, out _, out _, out _, out _))
+                {
+                    return imdbId;
+                }
+
+                throw new InvalidOperationException($"!IMDB id is missing in {movie}.");
+            })
+            .Select(group => group.ToArray())
+            .Where(group => group.Length == 2)
+            .Select(group => (
+                Dubbed: group.FirstOrDefault(movie => PathHelper.GetFileName(movie).ContainsIgnoreCase(".DUBBED."), string.Empty),
+                Original: group.FirstOrDefault(movie => !PathHelper.GetFileName(movie).ContainsIgnoreCase(".DUBBED."), string.Empty)))
+            .Where(match => match.Original.IsNotNullOrWhiteSpace() && match.Dubbed.IsNotNullOrWhiteSpace())
+            .Select(match => (
+                OriginalVideo: Directory.EnumerateFiles(match.Original, Video.VideoSearchPattern).Single(),
+                DubbedVideo: Directory.EnumerateFiles(match.Dubbed, Video.VideoSearchPattern).Single()))
+            .Select(match => (
+                match.OriginalVideo,
+                match.DubbedVideo,
+                MergedVideo: PathHelper.AddFilePostfix(match.OriginalVideo, ".2Audio")))
+            .ToArray()
+            .Select(match =>
+                (match, Result: MergeDubbed(match.OriginalVideo, ref match.MergedVideo, match.DubbedVideo, false, false, false, isDryRun, log)))
+            .Where(result => !result.Result)
+            .ForEach(result => log(result.match.ToString()));
+    }
 }

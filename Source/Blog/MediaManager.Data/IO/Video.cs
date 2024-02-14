@@ -15,7 +15,7 @@ internal static partial class Video
 
     internal const string XmlMetadataSearchPattern = $"{PathHelper.AllSearchPattern}{XmlMetadataExtension}";
 
-    private const string VideoSearchPattern = $"{PathHelper.AllSearchPattern}{VideoExtension}";
+    internal const string VideoSearchPattern = $"{PathHelper.AllSearchPattern}{VideoExtension}";
 
     private const string Featurettes = nameof(Featurettes);
 
