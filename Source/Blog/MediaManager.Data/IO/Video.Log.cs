@@ -193,10 +193,19 @@ internal static partial class Video
     internal static void PrintDuplicateImdbId(Action<string>? log = null, params string[] directories)
     {
         log ??= Logger.WriteLine;
-        directories.SelectMany(directory => Directory.EnumerateFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories))
+
+        directories
+            .SelectMany(directory => Directory.EnumerateFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories))
             .GroupBy(metadata => ImdbMetadata.TryGet(metadata, out string? imdbId) ? imdbId : string.Empty)
             .Where(group => group.Count() > 1)
-            .ForEach(group => group.OrderBy(metadata => metadata).Append(string.Empty).ForEach(log));
+            .ForEach(group => group
+                .Select(metadata => (metadata, Movie: PathHelper.GetFileName(PathHelper.GetDirectoryName(metadata))))
+                .OrderBy(metadata => metadata.Movie)
+                .ThenBy(metadata => metadata.metadata)
+                .Select(metadata => $"{metadata.Movie} - {metadata.metadata}")
+                .Append(string.Empty)
+                .Prepend(group.Key)
+                .ForEach(log));
     }
 
     private static readonly string[] TitlesWithNoTranslation = ["Beyond", "IMAX", "Paul & Wing", "Paul & Steve", "Paul", "Wing", "Steve", "GEM", "Metro", "TVB"];

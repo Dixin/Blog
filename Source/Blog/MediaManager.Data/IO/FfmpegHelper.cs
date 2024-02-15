@@ -387,7 +387,7 @@ public static class FfmpegHelper
                     ? PathHelper.ReplaceFileNameWithoutExtension(file, (video with { Encoder = EncoderPostfix }).Name)
                     : PathHelper.AddFilePostfix(file, EncoderPostfix);
 
-    internal static void MergeAllDubbedMovies(string directory, int level = Video.DefaultDirectoryLevel, string recycleDirectory = "", bool isDryRun = false, Action<string>? log = null)
+    internal static void MergeAllDubbedMovies(string directory, int level = Video.DefaultDirectoryLevel, string recycleDirectory = "", bool ignoeDurationDifference = false, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
@@ -424,7 +424,7 @@ public static class FfmpegHelper
         movies
             .Where(match => !File.Exists(match.MergedVideo))
             .Select(match =>
-                (match, Result: MergeDubbed(match.OriginalVideo, ref match.MergedVideo, match.DubbedVideo, false, false, false, isDryRun, log)))
+                (match, Result: MergeDubbed(match.OriginalVideo, ref match.MergedVideo, match.DubbedVideo, false, false, ignoeDurationDifference, isDryRun, log)))
             .Where(result => !result.Result)
             .ForEach(result => log(result.match.ToString()));
 
@@ -432,7 +432,7 @@ public static class FfmpegHelper
         {
             return;
         }
-        
+
         Action<string> cleanDirectory = recycleDirectory.IsNullOrWhiteSpace()
             ? DirectoryHelper.Recycle
             : directory => DirectoryHelper.MoveToDirectory(directory, recycleDirectory);
@@ -464,9 +464,9 @@ public static class FfmpegHelper
             {
                 Directory
                     .EnumerateFiles(PathHelper.GetDirectoryName(match.DubbedVideo))
-                    .Where(file=>PathHelper.GetFileNameWithoutExtension(file).StartsWithIgnoreCase(PathHelper.GetFileNameWithoutExtension(match.DubbedVideo)))
+                    .Where(file => PathHelper.GetFileNameWithoutExtension(file).StartsWithIgnoreCase(PathHelper.GetFileNameWithoutExtension(match.DubbedVideo)))
                     .ToArray()
-                    .ForEach(file=>FileHelper.MoveToDirectory(file, PathHelper.GetDirectoryName(match.OriginalVideo)));
+                    .ForEach(file => FileHelper.MoveToDirectory(file, PathHelper.GetDirectoryName(match.OriginalVideo)));
 
                 cleanDirectory(PathHelper.GetDirectoryName(match.DubbedVideo));
             });
