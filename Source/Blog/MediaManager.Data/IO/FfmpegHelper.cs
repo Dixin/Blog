@@ -387,11 +387,11 @@ public static class FfmpegHelper
                     ? PathHelper.ReplaceFileNameWithoutExtension(file, (video with { Encoder = EncoderPostfix }).Name)
                     : PathHelper.AddFilePostfix(file, EncoderPostfix);
 
-    internal static void MergeDubbedMovies(string directory, int level = Video.DefaultDirectoryLevel, bool isDryRun = false, Action<string>? log = null)
+    internal static void MergeAllDubbedMovies(string directory, int level = Video.DefaultDirectoryLevel, string recycleDirectory = "", bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
-        Video
+        (string OriginalVideo, string DubbedVideo, string MergedVideo)[] movies = Video
             .EnumerateDirectories(directory, level)
             .GroupBy(movie =>
             {
@@ -409,16 +409,66 @@ public static class FfmpegHelper
                 Original: group.FirstOrDefault(movie => !PathHelper.GetFileName(movie).ContainsIgnoreCase(".DUBBED."), string.Empty)))
             .Where(match => match.Original.IsNotNullOrWhiteSpace() && match.Dubbed.IsNotNullOrWhiteSpace())
             .Select(match => (
-                OriginalVideo: Directory.EnumerateFiles(match.Original, Video.VideoSearchPattern).Single(),
-                DubbedVideo: Directory.EnumerateFiles(match.Dubbed, Video.VideoSearchPattern).Single()))
+                OriginalVideo: Directory
+                    .EnumerateFiles(match.Original, Video.VideoSearchPattern)
+                    .Single(video => !PathHelper.GetFileNameWithoutExtension(video).ContainsIgnoreCase(".2Audio")),
+                DubbedVideo: Directory
+                    .EnumerateFiles(match.Dubbed, Video.VideoSearchPattern)
+                    .Single()))
             .Select(match => (
                 match.OriginalVideo,
                 match.DubbedVideo,
                 MergedVideo: PathHelper.AddFilePostfix(match.OriginalVideo, ".2Audio")))
-            .ToArray()
+            .ToArray();
+
+        movies
+            .Where(match => !File.Exists(match.MergedVideo))
             .Select(match =>
                 (match, Result: MergeDubbed(match.OriginalVideo, ref match.MergedVideo, match.DubbedVideo, false, false, false, isDryRun, log)))
             .Where(result => !result.Result)
             .ForEach(result => log(result.match.ToString()));
+
+        if (isDryRun)
+        {
+            return;
+        }
+        
+        Action<string> cleanDirectory = recycleDirectory.IsNullOrWhiteSpace()
+            ? DirectoryHelper.Recycle
+            : directory => DirectoryHelper.MoveToDirectory(directory, recycleDirectory);
+
+        Action<string> cleanFile = recycleDirectory.IsNullOrWhiteSpace()
+            ? FileHelper.Recycle
+            : file => FileHelper.MoveToDirectory(file, recycleDirectory);
+
+        movies
+            .Where(match => File.Exists(match.MergedVideo))
+            .ToArray()
+            .ForEach(match =>
+            {
+                cleanFile(match.OriginalVideo);
+                Directory.EnumerateFiles(PathHelper.GetDirectoryName(match.OriginalVideo))
+                    .Where(file => !file.EqualsIgnoreCase(match.MergedVideo))
+                    .ToArray()
+                    .ForEach(file => FileHelper.ReplaceFileNameWithoutExtension(
+                        file,
+                        name => name.ReplaceIgnoreCase(PathHelper.GetFileNameWithoutExtension(match.OriginalVideo), PathHelper.GetFileNameWithoutExtension(match.MergedVideo))));
+
+                cleanDirectory(PathHelper.GetDirectoryName(match.DubbedVideo));
+            });
+
+        movies
+            .Where(match => !File.Exists(match.MergedVideo))
+            .ToArray()
+            .ForEach(match =>
+            {
+                Directory
+                    .EnumerateFiles(PathHelper.GetDirectoryName(match.DubbedVideo))
+                    .Where(file=>PathHelper.GetFileNameWithoutExtension(file).StartsWithIgnoreCase(PathHelper.GetFileNameWithoutExtension(match.DubbedVideo)))
+                    .ToArray()
+                    .ForEach(file=>FileHelper.MoveToDirectory(file, PathHelper.GetDirectoryName(match.OriginalVideo)));
+
+                cleanDirectory(PathHelper.GetDirectoryName(match.DubbedVideo));
+            });
     }
 }

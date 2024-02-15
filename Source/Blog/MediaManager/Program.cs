@@ -404,7 +404,7 @@ string[] genres = ["family", "animation", "documentary"];
 //Video.MoveFanArt(settings.MovieTemp32);
 //await Video.ConvertToUtf8Async(settings.MovieTemp32, true);
 //Video.MoveSubtitleToParentDirectory(settings.MovieTemp32, @"\\beyond-r\j\Files\Library\Movies.Subtitles", true);
-//FfmpegHelper.MergeDubbedMovies(settings.MovieTemp32, isDryRun: true);
+//FfmpegHelper.MergeAllDubbedMovies(settings.MovieTemp32, isDryRun: true);
 //Video.BackupMetadata(settings.MovieTemp);
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp, 2, overwrite: false, useCache: true, useBrowser: true, 1);
 //Video.PrintDuplicateImdbId(null, settings.MovieTemp32);
