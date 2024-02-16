@@ -938,49 +938,62 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
 
-        EnumerateDirectories(directory, level)
-            .ForEach(movie =>
+        Directory
+            .GetFiles(directory, "*fanart*.jpg", SearchOption.AllDirectories)
+            .ForEach(fanArt =>
             {
-                Directory
-                    .EnumerateFiles(movie, "*fanart*.jpg", SearchOption.AllDirectories)
-                    .Where(file => !file.EndsWithIgnoreCase("fanart.jpg"))
-                    .ToArray()
-                    .ForEach(file =>
-                    {
-                        string destinationFile = Regex.Replace(file, @"fanart[0-9]+\.jpg$", "fanart.jpg");
-                        if (File.Exists(destinationFile) && new FileInfo(destinationFile).LastWriteTimeUtc > new FileInfo(file).LastWriteTimeUtc)
-                        {
-                            FileHelper.Recycle(file);
-                        }
-                        else
-                        {
-                            log(file);
-                            FileHelper.Move(file, destinationFile, overwrite);
-                            log(destinationFile);
-                        }
-                    });
-
-                string fanArtDirectory = Path.Combine(movie, "extrafanart");
-                if (!Directory.Exists(fanArtDirectory))
+                string destinationFanArt = fanArt.ReplaceIgnoreCase(@"\extrafanart\", @"\");
+                destinationFanArt = Regex.Replace(destinationFanArt, @"(\\|\-)fanart[0-9]+\.jpg$", "$1fanart.jpg");
+                if (!fanArt.EqualsIgnoreCase(destinationFanArt))
                 {
-                    return;
+                    FileHelper.Move(fanArt, destinationFanArt, true, true);
                 }
-
-                string fanArt = Directory.GetFiles(fanArtDirectory).SingleOrDefault(string.Empty);
-                if (fanArt.IsNotNullOrWhiteSpace())
-                {
-                    Debug.Assert(PathHelper.GetFileName(fanArt).EqualsIgnoreCase("fanart.jpg"));
-
-                    string newFanArt = Path.Combine(movie, "fanart.jpg");
-                    Debug.Assert(overwrite || !File.Exists(newFanArt));
-
-                    log(fanArt);
-                    File.Move(fanArt, newFanArt, overwrite);
-                    log(newFanArt);
-                }
-
-                DirectoryHelper.Recycle(fanArtDirectory);
             });
+        // EnumerateDirectories(directory, level)
+        //     .AsParallel()
+        //     .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
+        //     .ForAll(movie =>
+        //     {
+        //         Directory
+        //             .EnumerateFiles(movie, "*fanart*.jpg", SearchOption.AllDirectories)
+        //             .Where(file => !file.EndsWithIgnoreCase("fanart.jpg"))
+        //             .ToArray()
+        //             .ForEach(file =>
+        //             {
+        //                 string destinationFile = Regex.Replace(file, @"fanart[0-9]+\.jpg$", "fanart.jpg");
+        //                 if (File.Exists(destinationFile) && new FileInfo(destinationFile).LastWriteTimeUtc > new FileInfo(file).LastWriteTimeUtc)
+        //                 {
+        //                     FileHelper.Recycle(file);
+        //                 }
+        //                 else
+        //                 {
+        //                     log(file);
+        //                     FileHelper.Move(file, destinationFile, overwrite);
+        //                     log(destinationFile);
+        //                 }
+        //             });
+
+        //         string fanArtDirectory = Path.Combine(movie, "extrafanart");
+        //         if (!Directory.Exists(fanArtDirectory))
+        //         {
+        //             return;
+        //         }
+
+        //         string fanArt = Directory.GetFiles(fanArtDirectory).SingleOrDefault(string.Empty);
+        //         if (fanArt.IsNotNullOrWhiteSpace())
+        //         {
+        //             Debug.Assert(PathHelper.GetFileName(fanArt).EqualsIgnoreCase("fanart.jpg"));
+
+        //             string newFanArt = Path.Combine(movie, "fanart.jpg");
+        //             Debug.Assert(overwrite || !File.Exists(newFanArt));
+
+        //             log(fanArt);
+        //             File.Move(fanArt, newFanArt, overwrite);
+        //             log(newFanArt);
+        //         }
+
+        //         DirectoryHelper.Recycle(fanArtDirectory);
+        //     });
     }
 
     internal static void RenameEpisodeWithoutTitle(ISettings settings, string directory, bool isDryRun = false, Action<string>? log = null)

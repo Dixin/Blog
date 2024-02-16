@@ -193,7 +193,7 @@ internal static partial class Video
 
             if (!files
                     .Where(IsXmlMetadata)
-                    .All(xmlMetadata => xmlMetadata.TryGetXmlImdbId(out string? xmlImdbId) && imdbId.EqualsIgnoreCase(xmlImdbId)))
+                    .All(xmlMetadata => xmlMetadata.TryLoadXmlImdbId(out string? xmlImdbId) && imdbId.EqualsIgnoreCase(xmlImdbId)))
             {
                 return;
             }
@@ -237,7 +237,7 @@ internal static partial class Video
         {
             string[] xmlImdbIds = files
                 .Where(IsXmlMetadata)
-                .Select(file => file.TryGetXmlImdbId(out string? xmlImdbId) ? xmlImdbId : string.Empty)
+                .Select(file => file.TryLoadXmlImdbId(out string? xmlImdbId) ? xmlImdbId : string.Empty)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
             if (xmlImdbIds.Length == 0)
@@ -465,7 +465,7 @@ internal static partial class Video
             .Select(video =>
             {
                 string metadata = PathHelper.ReplaceExtension(video, XmlMetadataExtension);
-                string imdbId = metadata.TryGetXmlImdbId(out string? xmlImdbId) ? xmlImdbId : throw new InvalidOperationException(video);
+                string imdbId = metadata.TryLoadXmlImdbId(out string? xmlImdbId) ? xmlImdbId : throw new InvalidOperationException(video);
                 if (TryReadVideoMetadata(video, out VideoMetadata? videoMetadata))
                 {
                     return (ImdbId: imdbId, Value: videoMetadata);
@@ -592,7 +592,7 @@ internal static partial class Video
                         string englishTitle = backupMetadataDocument.TryGetTitle(out string? xmlTitle) ? xmlTitle : string.Empty;
                         string year = backupMetadataDocument.Root!.Element("year")?.Value ?? string.Empty;
 
-                        if (!backupMetadataFile.TryGetXmlImdbId(out string? imdbId)
+                        if (!backupMetadataFile.TryLoadXmlImdbId(out string? imdbId)
                             || translatedTitle.IsNullOrEmpty()) // Already searched Douban, no result.
                         {
                             noTranslation.Add((englishTitle, year, movie));

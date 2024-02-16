@@ -29,12 +29,12 @@ public static class FileHelper
     public static void Rename(this FileInfo file, string newName) =>
         file.ThrowIfNull().MoveTo(newName.ThrowIfNullOrWhiteSpace());
 
-    public static void Move(string source, string destination, bool overwrite = false)
+    public static void Move(string source, string destination, bool overwrite = false, bool skipDestinationDirectory = false)
     {
         source.ThrowIfNullOrWhiteSpace();
 
         string destinationDirectory = PathHelper.GetDirectoryName(destination);
-        if (!Directory.Exists(destinationDirectory))
+        if (!skipDestinationDirectory && !Directory.Exists(destinationDirectory))
         {
             Directory.CreateDirectory(destinationDirectory);
         }

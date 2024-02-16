@@ -385,6 +385,21 @@ internal static partial class Video
                             return "rom";
                         }
 
+                        if (postfix is "deu")
+                        {
+                            return "ger";
+                        }
+
+                        if (postfix is "fra")
+                        {
+                            return "fre";
+                        }
+
+                        if (postfix is "nld")
+                        {
+                            return "dut";
+                        }
+
                         if (postfix is "und")
                         {
                             if (content.IsNullOrWhiteSpace())
@@ -439,6 +454,12 @@ internal static partial class Video
 
                 languageSubtitles.ForEach(subtitleGroup =>
                 {
+                    if (subtitleGroup.Language is "ara" or "per")
+                    {
+                        subtitleGroup.Subtitles.ForEach(subtitle => FileHelper.Recycle(subtitle.Subtitle));
+                        return;
+                    }
+
                     if (subtitleGroup.Language is "eng")
                     {
                         (string Subtitle, string OriginalName, long Length) firstSubtitle = subtitleGroup.Subtitles.First();

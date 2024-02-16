@@ -521,7 +521,7 @@ internal static partial class Video
 
                 metadataFiles.ForEach(metadataFile =>
                 {
-                    metadataFile.TryGetXmlImdbId(out string? metadataImdbId);
+                    Path.Combine(movie, metadataFile).TryLoadXmlImdbId(out string? metadataImdbId);
                     // string? metadataImdbRating = metadata.Root?.Element("rating")?.Value;
                     if (imdbMetadata is null)
                     {
