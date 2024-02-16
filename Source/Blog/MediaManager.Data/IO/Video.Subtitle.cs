@@ -26,7 +26,7 @@ internal static partial class Video
 
     private static readonly string[] CommonEnglish = [" the ", " is ", " to ", " of ", " and "];
 
-    private static bool ContainsCommonEnglish(this string? value) => value.IsNotNullOrWhiteSpace() && CommonEnglish.All(value.ContainsIgnoreCase);
+    private static bool ContainsCommonEnglish([NotNullWhen(true)] this string? value) => value.IsNotNullOrWhiteSpace() && CommonEnglish.All(value.ContainsIgnoreCase);
 
     internal static (string? Charset, float? Confidence, string File)[] GetSubtitles(string directory) =>
         Directory

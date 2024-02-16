@@ -1801,7 +1801,7 @@ internal static partial class Video
                         string cacheFile = Path.Combine(settings.MovieMetadataCacheDirectory, $"{metadata.ImdbId}-{metadata.Title}{ImdbCacheExtension}");
                         string html = cacheFiles.ContainsIgnoreCase(cacheFile) && new FileInfo(cacheFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1)
                             ? await File.ReadAllTextAsync(cacheFile, token)
-                            : await webDriver!.GetStringAsync(metadata.Link, () => webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))));
+                            : await webDriver!.GetStringAsync(metadata.Link, () => webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))), cancellationToken: token);
                         await Task.Delay(WebDriverHelper.DefaultDomWait, token);
                         await File.WriteAllTextAsync(cacheFile, html, token);
                         (string _, string _, string magnetUrl) = TopGetUrls(html, metadata.Link);
@@ -1900,7 +1900,7 @@ internal static partial class Video
                         string cacheFile = Path.Combine(settings.MovieMetadataCacheDirectory, $"{metadata.ImdbId}-{metadata.Title}{ImdbCacheExtension}");
                         string html = cacheFiles.ContainsIgnoreCase(cacheFile) && new FileInfo(cacheFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1)
                             ? await File.ReadAllTextAsync(cacheFile, token)
-                            : await webDriver!.GetStringAsync(metadata.Link, () => webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))));
+                            : await webDriver!.GetStringAsync(metadata.Link, () => webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))), cancellationToken: token);
                         await Task.Delay(WebDriverHelper.DefaultDomWait, token);
                         await File.WriteAllTextAsync(cacheFile, html, token);
                         (string _, string _, string magnetUrl) = TopGetUrls(html, metadata.Link);
@@ -2175,7 +2175,7 @@ internal static partial class Video
                         }
                         else
                         {
-                            html = await webDriver.GetStringAsync(metadata.Link, () => webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))));
+                            html = await webDriver.GetStringAsync(metadata.Link, () => webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))), cancellationToken: token);
                             await Task.Delay(WebDriverHelper.DefaultDomWait, token);
                             await File.WriteAllTextAsync(file, html, token);
                         }

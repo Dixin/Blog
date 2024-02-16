@@ -14,6 +14,9 @@ public static class StringExtensions
     public static bool IsNullOrWhiteSpace([NotNullWhen(false)] this string? value) => 
         string.IsNullOrWhiteSpace(value);
 
+    public static bool IsNullOrEmpty([NotNullWhen(false)] this string? value) =>
+        string.IsNullOrEmpty(value);
+
     public static string IfNullOrWhiteSpace(this string? value, string alternative) =>
         string.IsNullOrWhiteSpace(value) ? alternative : value;
 

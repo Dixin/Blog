@@ -75,7 +75,7 @@ public class WebDriverWrapper(Func<IWebDriver>? webDriverFactory = null, string 
         throw lastException!;
     }
 
-    public async Task<string> GetStringAsync(string url, Action? wait = null, int retryCount = NetworkDefaultRetryCount)
+    public async Task<string> GetStringAsync(string url, Action? wait = null, int retryCount = NetworkDefaultRetryCount, CancellationToken cancellationToken = default)
     {
         Exception? lastException = null;
         for (int retry = 0; retry < retryCount; retry++)
@@ -83,7 +83,7 @@ public class WebDriverWrapper(Func<IWebDriver>? webDriverFactory = null, string 
             try
             {
                 this.WebDriver.Url = url;
-                await Task.Delay(WebDriverHelper.DefaultDomWait);
+                await Task.Delay(WebDriverHelper.DefaultDomWait, cancellationToken);
                 wait?.Invoke();
                 return this.WebDriver.PageSource;
             }

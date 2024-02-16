@@ -7,7 +7,6 @@ using Examples.Linq;
 using Examples.Net;
 using Examples.Text;
 using MediaManager.Net;
-using OpenQA.Selenium;
 
 internal static partial class Video
 {
@@ -563,59 +562,109 @@ internal static partial class Video
         await JsonHelper.SerializeToFileAsync(mergedMetadata, mergedMetadataPath);
     }
 
-    internal static async Task DownloadMissingTitlesFromDoubanAsync(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null)
+    internal static async Task DownloadMissingTitlesFromDoubanAsync(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
-        using IWebDriver webDriver = WebDriverHelper.Start();
+        WebDriverHelper.DisposeAll();
 
-        List<(string Title, string Year)> noTranslation = [];
+        ConcurrentQueue<string> movies = new(EnumerateDirectories(directory, level));
+        List<(string Title, string Year, string Directory)> noTranslation = [];
+        await Enumerable
+            .Range(0, Douban.MaxDegreeOfParallelism)
+            .ParallelForEachAsync(
+                async (webDriverIndex, _, token) =>
+                {
+                    using WebDriverWrapper webDriver = new(() => WebDriverHelper.Start(webDriverIndex, keepExisting: true));
+                    while (movies.TryDequeue(out string? movie))
+                    {
+                        string[] metadataFiles = Directory.GetFiles(movie, XmlMetadataSearchPattern);
+                        string backupMetadataFile = metadataFiles.First(file => file.EndsWithIgnoreCase($"{Delimiter}{DefaultBackupFlag}{XmlMetadataExtension}"));
+                        string metadataFile = metadataFiles.First(file => !file.EndsWithIgnoreCase($"{Delimiter}{DefaultBackupFlag}{XmlMetadataExtension}"));
+                        XDocument metadataDocument = XDocument.Load(metadataFile);
+                        string translatedTitle = metadataDocument.Root!.Element("title")!.Value;
+                        if (translatedTitle.ContainsChineseCharacter() || Regex.IsMatch(translatedTitle, @"^[0-9]+$"))
+                        {
+                            continue;
+                        }
 
-        await EnumerateDirectories(directory, level).ForEachAsync(async movie =>
-        {
-            string[] metadataFiles = Directory.GetFiles(movie, XmlMetadataSearchPattern);
-            string backupMetadataFile = metadataFiles.First(file => file.EndsWithIgnoreCase($"{Delimiter}{DefaultBackupFlag}{XmlMetadataExtension}"));
-            string metadataFile = metadataFiles.First(file => !file.EndsWithIgnoreCase($"{Delimiter}{DefaultBackupFlag}{XmlMetadataExtension}"));
-            XDocument metadataDocument = XDocument.Load(metadataFile);
-            string translatedTitle = metadataDocument.Root!.Element("title")!.Value;
-            if (translatedTitle.ContainsChineseCharacter() || Regex.IsMatch(translatedTitle, @"^[0-9]+$"))
-            {
-                return;
-            }
+                        XDocument backupMetadataDocument = XDocument.Load(backupMetadataFile);
+                        string englishTitle = backupMetadataDocument.TryGetTitle(out string? xmlTitle) ? xmlTitle : string.Empty;
+                        string year = backupMetadataDocument.Root!.Element("year")?.Value ?? string.Empty;
 
-            log(movie);
-            log(translatedTitle);
-            string englishTitle = XDocument.Load(backupMetadataFile).TryGetTitle(out string? xmlTitle) ? xmlTitle : string.Empty;
-            log(englishTitle);
-            if (!backupMetadataFile.TryGetXmlImdbId(out string? imdbId))
-            {
-                noTranslation.Add((englishTitle, metadataDocument.Root!.Element("year")?.Value ?? string.Empty));
-                return;
-            }
+                        if (!backupMetadataFile.TryGetXmlImdbId(out string? imdbId)
+                            || translatedTitle.IsNullOrEmpty()) // Already searched Douban, no result.
+                        {
+                            noTranslation.Add((englishTitle, year, movie));
+                            continue;
+                        }
 
-            string doubanTitle = await Douban.GetTitleAsync(webDriver, imdbId);
-            int lastIndex = doubanTitle.LastIndexOf(englishTitle, StringComparison.InvariantCultureIgnoreCase);
-            if (lastIndex >= 0)
-            {
-                doubanTitle = doubanTitle[..lastIndex].Trim();
-            }
+                        string doubanTitle = await Douban.GetTitleAsync(webDriver, imdbId, token);
+                        int lastIndex = doubanTitle.LastIndexOf(englishTitle, StringComparison.InvariantCultureIgnoreCase);
+                        if (lastIndex >= 0)
+                        {
+                            doubanTitle = doubanTitle[..lastIndex].Trim();
+                        }
 
-            log(doubanTitle);
-            if (!doubanTitle.EqualsIgnoreCase(translatedTitle))
-            {
-                metadataDocument.Root!.Element("title")!.Value = doubanTitle;
-                metadataDocument.Save(metadataFile);
-            }
+                        string originalTitle = backupMetadataDocument.Root!.Element("originaltitle")?.Value ?? string.Empty;
+                        if (originalTitle.IsNotNullOrWhiteSpace())
+                        {
+                            lastIndex = doubanTitle.LastIndexOf(originalTitle, StringComparison.InvariantCultureIgnoreCase);
+                            if (lastIndex >= 0)
+                            {
+                                doubanTitle = doubanTitle[..lastIndex].Trim();
+                            }
+                        }
 
-            if (!doubanTitle.ContainsChineseCharacter())
-            {
-                noTranslation.Add((englishTitle, metadataDocument.Root!.Element("year")?.Value ?? string.Empty));
-            }
+                        log($"""
+                            {movie}
+                            {englishTitle}
+                            {translatedTitle}
+                            {doubanTitle}
+                            
+                            """);
+                        if (!doubanTitle.EqualsIgnoreCase(translatedTitle))
+                        {
+                            metadataFiles
+                                .Where(file => !file.EndsWithIgnoreCase($"{Delimiter}{DefaultBackupFlag}{XmlMetadataExtension}"))
+                                .ToArray()
+                                .ForEach(metadataFile =>
+                                {
+                                    XDocument metadataDocument = XDocument.Load(metadataFile);
+                                    metadataDocument.Root!.Element("title")!.Value = doubanTitle;
+                                    metadataDocument.Save(metadataFile);
+                                });
+                        }
 
-            log(string.Empty);
-        });
+                        if (!doubanTitle.ContainsChineseCharacter())
+                        {
+                            noTranslation.Add((englishTitle, year, movie));
+                        }
+                    }
+                },
+                Douban.MaxDegreeOfParallelism,
+                cancellationToken);
 
         noTranslation.ForEach(movie => log($"{movie.Title} ({movie.Year})"));
+        log(string.Empty);
+        noTranslation.ForEach(movie => log($"{movie.Title} ({movie.Year}) - {movie.Directory}"));
+        string[] translatedTitles = await File.ReadAllLinesAsync(@"D:\User\Downloads\TranslatedTitles.txt", cancellationToken);
+        Debug.Assert(noTranslation.Count == translatedTitles.Length);
+        noTranslation.ForEach((movie, index) =>
+        {
+            string translatedTitle = translatedTitles[index];
+            string year = translatedTitle[^5..^1];
+            Debug.Assert(movie.Year.EqualsOrdinal(year));
+            Directory.EnumerateFiles(movie.Directory, XmlMetadataSearchPattern)
+                .Where(file => !file.EndsWithIgnoreCase($"{Delimiter}{DefaultBackupFlag}{XmlMetadataExtension}"))
+                .ToArray()
+                .ForEach(metadataFile =>
+                {
+                    XDocument metadataDocument = XDocument.Load(metadataFile);
+                    metadataDocument.Root!.Element("title")!.Value = translatedTitle[..^7].Trim();
+                    metadataDocument.Save(metadataFile);
+                });
+        });
     }
 
     internal static async Task WriteNikkatsuMetadataAsync(string cacheFile, string jsonFile)

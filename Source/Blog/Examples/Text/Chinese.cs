@@ -422,6 +422,6 @@ public static partial class Chinese
         return new string(characters);
     }
 
-    public static bool ContainsCommonTraditionalChineseCharacter(this string? value) => 
+    public static bool ContainsCommonTraditionalChineseCharacter([NotNullWhen(true)] this string? value) => 
         value.IsNotNullOrWhiteSpace() && value.AsSpan().ContainsAny(CommonTraditionalChinese);
 }

@@ -4,10 +4,10 @@ using OpenQA.Selenium;
 
 public static class WebDriverExtensions
 {
-    public static async Task<string> GetStringAsync(this IWebDriver webDriver, string url, Action? wait = null)
+    public static async Task<string> GetStringAsync(this IWebDriver webDriver, string url, Action? wait = null, CancellationToken cancellationToken = default)
     {
         webDriver.Url = url;
-        await Task.Delay(WebDriverHelper.DefaultDomWait);
+        await Task.Delay(WebDriverHelper.DefaultDomWait, cancellationToken);
         wait?.Invoke();
         return webDriver.PageSource;
     }

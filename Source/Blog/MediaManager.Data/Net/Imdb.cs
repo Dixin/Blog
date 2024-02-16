@@ -782,7 +782,8 @@ internal static class Imdb
             .ToArray();
         int trimmedLength = imdbIds.Length;
         ConcurrentQueue<string> imdbIdQueue = new(imdbIds);
-        await Enumerable.Range(0, MaxDegreeOfParallelism)
+        await Enumerable
+            .Range(0, MaxDegreeOfParallelism)
             .ParallelForEachAsync(
                 async (webDriverIndex, _, token) =>
                 {
@@ -814,7 +815,7 @@ internal static class Imdb
         string libraryJsonPath,
         string x265JsonPath, string h264JsonPath, string preferredJsonPath, string h264720PJsonPath, string rareJsonPath, string x265XJsonPath, string h264XJsonPath,
         string cacheDirectory, string metadataDirectory,
-        Func<int, Range>? getRange = null, Action<string>? log = null)
+        Func<int, Range>? getRange = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
@@ -826,93 +827,94 @@ internal static class Imdb
             cacheFiles = cacheFiles.Take(getRange(length)).ToArray();
         }
 
-        int degree = 2;
-        IWebDriver[] webDrivers = Enumerable.Range(0, degree).Select(index => WebDriverHelper.Start(index, keepExisting: true)).ToArray();
-        webDrivers.ForEach(webDriver => webDriver.Url = "http://imdb.com");
+        ConcurrentQueue<string> cacheFilesQueue = new(cacheFiles);
+        const int MaxDegreeOfParallelism = 2;
+        WebDriverHelper.DisposeAll();
 
-        int index = -1;
-        webDrivers
-            .ParallelForEach((webDriver, i) =>
-            {
-                for (int currentIndex = Interlocked.Increment(ref index); currentIndex < cacheFiles.Length; currentIndex = Interlocked.Increment(ref index))
+        await Enumerable.Range(0, MaxDegreeOfParallelism)
+            .ParallelForEachAsync(
+                async (index, i, token) =>
                 {
-                    string keywordFile = cacheFiles[currentIndex].Replace(".Keywords.bak.log", ".Keywords.log");
-                    if (File.Exists($"{keywordFile}.txt"))
+                    using WebDriverWrapper webDriver = new(() => WebDriverHelper.Start(index, keepExisting: true), "http://imdb.com");
+                    while (cacheFilesQueue.TryDequeue(out string? cacheFile))
                     {
-                        continue;
-                    }
-
-                    string imdbId = PathHelper.GetFileNameWithoutExtension(keywordFile).Split(Video.Delimiter).First();
-                    string imdbUrl = $"https://www.imdb.com/title/{imdbId}/";
-                    string keywordsUrl = $"{imdbUrl}keywords/";
-                    string keywordsHtml = WebDriverHelper.GetString(ref webDriver, keywordsUrl);
-                    CQ keywordsCQ = keywordsHtml;
-                    string[] allKeywords = keywordsCQ.Find("#keywords_content table td div.sodatext a").Select(keyword => keyword.TextContent.Trim()).ToArray();
-                    Debug.Assert(allKeywords.IsEmpty());
-                    if (true)
-                    {
-                        CQ seeAllButtonCQ = keywordsCQ.Find("span.chained-see-more-button button.ipc-see-more__button:contains('All') span.ipc-btn__text:visible");
-                        Debug.Assert(seeAllButtonCQ.Length is 0 or 1);
-                        if (true)
+                        string keywordFile = cacheFile.Replace(".Keywords.bak.log", ".Keywords.log");
+                        if (File.Exists($"{keywordFile}.txt"))
                         {
-                            if (seeAllButtonCQ.Any() && webDriver.Url.EqualsIgnoreCase(keywordsUrl))
-                            {
-                                int rowCount = webDriver.FindElements(By.CssSelector("div[data-testid='sub-section']>ul>li")).Count;
-                                IWebElement seeAllButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElements(By.CssSelector("span.chained-see-more-button button.ipc-see-more__button")).Last());
-                                if (!seeAllButton.Displayed)
-                                {
-                                    seeAllButtonCQ = keywordsCQ.Find("span.single-page-see-more-button button.ipc-see-more__button:contains('more') span.ipc-btn__text:visible");
-                                    seeAllButton = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElements(By.CssSelector("span.single-page-see-more-button button.ipc-see-more__button")).Last());
-                                }
-
-                                Debug.Assert(seeAllButtonCQ.Length == 1);
-                                Debug.Assert(seeAllButton.Displayed);
-                                try
-                                {
-                                    Retry.FixedInterval(seeAllButton.Click);
-                                }
-                                catch (Exception exception) when (exception.IsNotCritical())
-                                {
-                                    seeAllButton.SendKeys(Keys.Space);
-                                }
-
-                                new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver =>
-                                {
-                                    keywordsHtml = webDriver.PageSource;
-                                    keywordsCQ = keywordsHtml;
-                                    rowCount = keywordsCQ.Find("div[data-testid='sub-section']>ul>li").Length;
-                                    Thread.Sleep(WebDriverHelper.DefaultNetworkWait);
-                                    return driver.FindElements(By.CssSelector("div[data-testid='sub-section']>ul>li")).Count == rowCount
-                                        && keywordsCQ.Find("span.chained-see-more-button button.ipc-see-more__button:contains('All') span.ipc-btn__text:visible").IsEmpty()
-                                        && keywordsCQ.Find("span.single-page-see-more-button button.ipc-see-more__button:contains('more') span.ipc-btn__text:visible").IsEmpty();
-                                });
-                            }
-
-                            keywordsHtml = webDriver.PageSource;
+                            continue;
                         }
 
-                        keywordsCQ = keywordsHtml;
-                        CQ allKeywordsCQ = keywordsCQ.Find("div[data-testid='sub-section']>ul>li");
-                        allKeywords = allKeywordsCQ
-                            .Select(row => row.Cq())
-                            .Select(rowCQ => HttpUtility.HtmlDecode(rowCQ.Children().Eq(0).Text()))
-                            .ToArray();
+                        string imdbId = PathHelper.GetFileNameWithoutExtension(keywordFile).Split(Video.Delimiter).First();
+                        string imdbUrl = $"https://www.imdb.com/title/{imdbId}/";
+                        string keywordsUrl = $"{imdbUrl}keywords/";
+                        string keywordsHtml = await webDriver.GetStringAsync(keywordsUrl, cancellationToken: token);
+                        CQ keywordsCQ = keywordsHtml;
+                        string[] allKeywords = keywordsCQ.Find("#keywords_content table td div.sodatext a").Select(keyword => keyword.TextContent.Trim()).ToArray();
+                        Debug.Assert(allKeywords.IsEmpty());
+                        if (true)
+                        {
+                            CQ seeAllButtonCQ = keywordsCQ.Find("span.chained-see-more-button button.ipc-see-more__button:contains('All') span.ipc-btn__text:visible");
+                            Debug.Assert(seeAllButtonCQ.Length is 0 or 1);
+                            if (true)
+                            {
+                                if (seeAllButtonCQ.Any() && webDriver.Url.EqualsIgnoreCase(keywordsUrl))
+                                {
+                                    int rowCount = webDriver.FindElements(By.CssSelector("div[data-testid='sub-section']>ul>li")).Count;
+                                    IWebElement seeAllButton = webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElements(By.CssSelector("span.chained-see-more-button button.ipc-see-more__button")).Last());
+                                    if (!seeAllButton.Displayed)
+                                    {
+                                        seeAllButtonCQ = keywordsCQ.Find("span.single-page-see-more-button button.ipc-see-more__button:contains('more') span.ipc-btn__text:visible");
+                                        seeAllButton = webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElements(By.CssSelector("span.single-page-see-more-button button.ipc-see-more__button")).Last());
+                                    }
 
-                        //CQ oldKeywordsCQ = File.ReadAllText(cacheFiles[currentIndex]);
-                        //string[] oldKeywords = oldKeywordsCQ
-                        //    .Select(row => row.Cq())
-                        //    .Select(rowCQ => HttpUtility.HtmlDecode(rowCQ.Children().Eq(0).Text()))
-                        //    .ToArray();
+                                    Debug.Assert(seeAllButtonCQ.Length == 1);
+                                    Debug.Assert(seeAllButton.Displayed);
+                                    try
+                                    {
+                                        Retry.FixedInterval(seeAllButton.Click);
+                                    }
+                                    catch (Exception exception) when (exception.IsNotCritical())
+                                    {
+                                        seeAllButton.SendKeys(Keys.Space);
+                                    }
 
-                        //log($"{allKeywordsCQ.Length} - {oldKeywords.Length}");
+                                    webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver =>
+                                    {
+                                        keywordsHtml = webDriver.PageSource;
+                                        keywordsCQ = keywordsHtml;
+                                        rowCount = keywordsCQ.Find("div[data-testid='sub-section']>ul>li").Length;
+                                        Thread.Sleep(WebDriverHelper.DefaultNetworkWait);
+                                        return driver.FindElements(By.CssSelector("div[data-testid='sub-section']>ul>li")).Count == rowCount
+                                            && keywordsCQ.Find("span.chained-see-more-button button.ipc-see-more__button:contains('All') span.ipc-btn__text:visible").IsEmpty()
+                                            && keywordsCQ.Find("span.single-page-see-more-button button.ipc-see-more__button:contains('more') span.ipc-btn__text:visible").IsEmpty();
+                                    });
+                                }
+
+                                keywordsHtml = webDriver.PageSource;
+                            }
+
+                            keywordsCQ = keywordsHtml;
+                            CQ allKeywordsCQ = keywordsCQ.Find("div[data-testid='sub-section']>ul>li");
+                            allKeywords = allKeywordsCQ
+                                .Select(row => row.Cq())
+                                .Select(rowCQ => HttpUtility.HtmlDecode(rowCQ.Children().Eq(0).Text()))
+                                .ToArray();
+
+                            //CQ oldKeywordsCQ = File.ReadAllText(cacheFiles[currentIndex]);
+                            //string[] oldKeywords = oldKeywordsCQ
+                            //    .Select(row => row.Cq())
+                            //    .Select(rowCQ => HttpUtility.HtmlDecode(rowCQ.Children().Eq(0).Text()))
+                            //    .ToArray();
+
+                            //log($"{allKeywordsCQ.Length} - {oldKeywords.Length}");
+                        }
+
+                        await File.WriteAllTextAsync(keywordFile, keywordsHtml, token);
+                        await File.WriteAllLinesAsync($"{keywordFile}.txt", allKeywords, token);
                     }
-
-                    File.WriteAllText(keywordFile, keywordsHtml);
-                    File.WriteAllLines($"{keywordFile}.txt", allKeywords);
-                }
-            }, degree);
-
-        webDrivers.ForEach(webDriver => webDriver.Dispose());
+                },
+                MaxDegreeOfParallelism,
+                cancellationToken);
     }
 
     internal static async Task DownloadAllLibraryMoviesAsync(
