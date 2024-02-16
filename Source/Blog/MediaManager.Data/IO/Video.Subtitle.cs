@@ -278,7 +278,9 @@ internal static partial class Video
                 Subtitles: movieGroup.ToArray(),
                 Videos: Directory.GetFiles(movieGroup.Key, VideoSearchPattern, SearchOption.TopDirectoryOnly)))
             .ToArray()
-            .ForEach(movieGroup =>
+            .AsParallel()
+            .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
+            .ForAll(movieGroup =>
             {
                 if (movieGroup.Videos.Length != 1)
                 {
