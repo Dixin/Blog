@@ -162,4 +162,6 @@ public interface ISettings
     string TopMagnetUrls { get; init; }
 
     string TopDatabase { get; init; }
+
+    string TempFile { get; init; }
 }

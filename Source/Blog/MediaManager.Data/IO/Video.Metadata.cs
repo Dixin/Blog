@@ -562,7 +562,7 @@ internal static partial class Video
         await JsonHelper.SerializeToFileAsync(mergedMetadata, mergedMetadataPath);
     }
 
-    internal static async Task DownloadMissingTitlesFromDoubanAsync(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task DownloadMissingTitlesFromDoubanAsync(ISettings settings, string directory, int level = DefaultDirectoryLevel, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
@@ -648,7 +648,13 @@ internal static partial class Video
         noTranslation.ForEach(movie => log($"{movie.Title} ({movie.Year})"));
         log(string.Empty);
         noTranslation.ForEach(movie => log($"{movie.Title} ({movie.Year}) - {movie.Directory}"));
-        string[] translatedTitles = await File.ReadAllLinesAsync(@"D:\User\Downloads\TranslatedTitles.txt", cancellationToken);
+
+        if (Debugger.IsAttached)
+        {
+            Debugger.Break();
+        }
+
+        string[] translatedTitles = await File.ReadAllLinesAsync(settings.TempFile, cancellationToken);
         Debug.Assert(noTranslation.Count == translatedTitles.Length);
         noTranslation.ForEach((movie, index) =>
         {
