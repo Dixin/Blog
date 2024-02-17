@@ -934,21 +934,38 @@ internal static partial class Video
             .ForEach(f => FileHelper.Move(f, f.ReplaceIgnoreCase(".eng.srt", ".srt")));
     }
 
-    internal static void MoveFanArt(string directory, int level = DefaultDirectoryLevel, bool overwrite = false, Action<string>? log = null)
+    internal static void MoveFanArt(string directory, int level = DefaultDirectoryLevel, bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
-        Directory
-            .GetFiles(directory, "*fanart*.jpg", SearchOption.AllDirectories)
+        string[] fanArts = Directory.GetFiles(directory, "*fanart*.jpg", SearchOption.AllDirectories);
+        fanArts
             .ForEach(fanArt =>
             {
                 string destinationFanArt = fanArt.ReplaceIgnoreCase(@"\extrafanart\", @"\");
                 destinationFanArt = Regex.Replace(destinationFanArt, @"(\\|\-)fanart[0-9]+\.jpg$", "$1fanart.jpg");
                 if (!fanArt.EqualsIgnoreCase(destinationFanArt))
                 {
-                    FileHelper.Move(fanArt, destinationFanArt, true, true);
+                    log(fanArt);
+                    if (!isDryRun)
+                    {
+                        FileHelper.Move(fanArt, destinationFanArt, overwrite, true);
+                    }
+
+                    log(destinationFanArt);
                 }
             });
+
+        if (!isDryRun)
+        {
+            fanArts
+                .Select(PathHelper.GetDirectoryName)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Where(fanArtDirectory => PathHelper.GetFileName(fanArtDirectory).EqualsIgnoreCase("extrafanart") && Directory.EnumerateFileSystemEntries(fanArtDirectory).IsEmpty())
+                .ToArray()
+                .ForEach(DirectoryHelper.Recycle);
+        }
+
         // EnumerateDirectories(directory, level)
         //     .AsParallel()
         //     .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
