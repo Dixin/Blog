@@ -411,10 +411,11 @@ public static class FfmpegHelper
             .Select(match => (
                 OriginalVideo: Directory
                     .EnumerateFiles(match.Original, Video.VideoSearchPattern)
-                    .Single(video => !PathHelper.GetFileNameWithoutExtension(video).ContainsIgnoreCase(".2Audio")),
+                    .SingleOrDefault(video => !PathHelper.GetFileNameWithoutExtension(video).ContainsIgnoreCase(".2Audio"), string.Empty),
                 DubbedVideo: Directory
                     .EnumerateFiles(match.Dubbed, Video.VideoSearchPattern)
                     .Single()))
+            .Where(match => match.OriginalVideo.IsNotNullOrWhiteSpace())
             .Select(match => (
                 match.OriginalVideo,
                 match.DubbedVideo,
