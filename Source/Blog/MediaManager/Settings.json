@@ -41,6 +41,8 @@
     "TopMagnetUrls": "D:\\Files\\Library\\Top.MagnetUrls.txt",
     "TopDatabase": "D:\\Files\\Library\\Top.Database.txt",
 
+    "TempFile": "D:\\Files\\Library\\Temp.txt",
+
     "MovieMetadataDirectory": "D:\\Files\\Library\\MovieMetadata",
     "MovieMetadataCacheDirectory": "D:\\Files\\Library\\MovieMetadataCache",
     "TVMetadataDirectory": "D:\\Files\\Library\\TVMetadata",

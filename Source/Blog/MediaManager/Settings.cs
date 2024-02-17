@@ -47,7 +47,9 @@ public partial record Settings(
     string TVMetadataCacheDirectory,
 
     string TopMagnetUrls,
-    string TopDatabase)
+    string TopDatabase,
+    
+    string TempFile)
 {
     public DirectorySettings Movie3D { get; init; }
 
