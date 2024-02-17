@@ -500,15 +500,15 @@ internal static partial class Video
                     return;
                 }
 
-                if (toVideoMetadata.Width - fromVideoMetadata.Width > 5)
+                if (toVideoMetadata.VideoWidth - fromVideoMetadata.VideoWidth > 5)
                 {
-                    log($"Width {fromVideoMetadata.File} {fromVideoMetadata.Width} {toVideoMetadata.Width}");
+                    log($"Width {fromVideoMetadata.File} {fromVideoMetadata.VideoWidth} {toVideoMetadata.VideoWidth}");
                     return;
                 }
 
-                if (toVideoMetadata.Height - fromVideoMetadata.Height > 20)
+                if (toVideoMetadata.VideoHeight - fromVideoMetadata.VideoHeight > 20)
                 {
-                    log($"Height {fromVideoMetadata.File} {fromVideoMetadata.Height} {toVideoMetadata.Height}");
+                    log($"Height {fromVideoMetadata.File} {fromVideoMetadata.VideoHeight} {toVideoMetadata.VideoHeight}");
                     return;
                 }
 
@@ -518,9 +518,9 @@ internal static partial class Video
                     return;
                 }
 
-                if (toVideoMetadata.Audio - fromVideoMetadata.Audio > 0)
+                if (toVideoMetadata.AudioStreams.Length - fromVideoMetadata.AudioStreams.Length > 0)
                 {
-                    log($"Audio {fromVideoMetadata.File} {fromVideoMetadata.Audio} {toVideoMetadata.Audio}");
+                    log($"Audio {fromVideoMetadata.File} {fromVideoMetadata.AudioStreams.Length} {toVideoMetadata.AudioStreams.Length}");
                     return;
                 }
 

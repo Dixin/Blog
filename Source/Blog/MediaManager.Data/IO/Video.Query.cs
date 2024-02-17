@@ -26,14 +26,13 @@ internal static partial class Video
                 return new VideoMetadata()
                 {
                     File = relativePath.IsNullOrWhiteSpace() ? file : Path.GetRelativePath(relativePath, file),
-                    Width = videoStream.Width,
-                    Height = videoStream.Height,
-                    Audio = mediaInfo.AudioStreams?.Count() ?? 0,
-                    Subtitle = mediaInfo.SubtitleStreams?.Count() ?? 0,
-                    AudioBitRates = mediaInfo.AudioStreams?.Select(audio => (int)audio.Bitrate).ToArray() ?? [],
+                    VideoWidth = videoStream.Width,
+                    VideoHeight = videoStream.Height,
+                    AudioStreams = mediaInfo.AudioStreams?.OrderBy(audio => audio.Index).Select(audio => (audio.Language, audio.Title, (int)audio.Bitrate)).ToArray() ?? [],
+                    SubtitleStreams = mediaInfo.SubtitleStreams?.OrderBy(subtitle => subtitle.Index).Select(subtitle => (subtitle.Language, subtitle.Title, subtitle.Path)).ToArray() ?? [],
                     TotalMilliseconds = mediaInfo.Duration.TotalMilliseconds,
                     Imdb = imdbMetadata,
-                    FrameRate = videoStream.Framerate
+                    VideoFrameRate = videoStream.Framerate
                 };
             },
             retryCount);
@@ -57,7 +56,7 @@ internal static partial class Video
         }
 
         videoMetadata = task.Result;
-        log($"{videoMetadata.Width}x{videoMetadata.Height}, {videoMetadata.Audio} audio, {file}");
+        log($"{videoMetadata.VideoWidth}x{videoMetadata.VideoHeight}, {videoMetadata.AudioStreams.Length} audio, {file}");
         return true;
     }
 
@@ -94,9 +93,9 @@ internal static partial class Video
 
     private static (string? Message, Action<string>? Action) GetVideoError(VideoMetadata videoMetadata, bool isNoAudioAllowed, Action<string>? is720 = null, Action<string>? is1080 = null)
     {
-        if (videoMetadata.Width <= 0 || videoMetadata.Height <= 0 || (isNoAudioAllowed ? videoMetadata.Audio < 0 : videoMetadata.Audio <= 0))
+        if (videoMetadata.VideoWidth <= 0 || videoMetadata.VideoHeight <= 0 || isNoAudioAllowed || videoMetadata.AudioStreams.Any())
         {
-            return ($"Failed {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.Audio}Audio {videoMetadata.File}", null);
+            return ($"Failed {videoMetadata.VideoWidth}x{videoMetadata.VideoHeight} {videoMetadata.AudioStreams.Length}Audio {videoMetadata.File}", null);
         }
 
         string fileName = PathHelper.GetFileNameWithoutExtension(videoMetadata.File);
@@ -104,53 +103,53 @@ internal static partial class Video
         {
             if (videoMetadata.DefinitionType is not DefinitionType.P1080)
             {
-                return ($"!Not 1080p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}", null);
+                return ($"!Not 1080p: {videoMetadata.VideoWidth}x{videoMetadata.VideoHeight} {videoMetadata.File}", null);
             }
         }
         else
         {
             if (videoMetadata.DefinitionType is DefinitionType.P1080)
             {
-                return ($"!1080p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}", is1080);
+                return ($"!1080p: {videoMetadata.VideoWidth}x{videoMetadata.VideoHeight} {videoMetadata.File}", is1080);
             }
 
             if (fileName.ContainsIgnoreCase("720p"))
             {
                 if (videoMetadata.DefinitionType is not DefinitionType.P720)
                 {
-                    return ($"!Not 720p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}", null);
+                    return ($"!Not 720p: {videoMetadata.VideoWidth}x{videoMetadata.VideoHeight} {videoMetadata.File}", null);
                 }
             }
             else
             {
                 if (videoMetadata.DefinitionType is DefinitionType.P720)
                 {
-                    return ($"!720p: {videoMetadata.Width}x{videoMetadata.Height} {videoMetadata.File}", is720);
+                    return ($"!720p: {videoMetadata.VideoWidth}x{videoMetadata.VideoHeight} {videoMetadata.File}", is720);
                 }
             }
         }
 
-        if (Math.Abs(videoMetadata.FrameRate - 23.976) > 0.001)
+        if (Math.Abs(videoMetadata.VideoFrameRate - 23.976) > 0.001)
         {
             //return ($"!Not 23.976fps: {videoMetadata.FrameRate} {videoMetadata.File}", null);
         }
 
         if (Regex.IsMatch(fileName, "[1-9]Audio"))
         {
-            if (videoMetadata.Audio < 2)
+            if (videoMetadata.AudioStreams.Length < 2)
             {
-                return ($"!Not multiple audio: {videoMetadata.Audio} {videoMetadata.File}", null);
+                return ($"!Not multiple audio: {videoMetadata.AudioStreams.Length} {videoMetadata.File}", null);
             }
         }
         else
         {
-            if (videoMetadata.Audio >= 2)
+            if (videoMetadata.AudioStreams.Length >= 2)
             {
-                return ($"!Multiple audio: {videoMetadata.Audio} {videoMetadata.File}", null);
+                return ($"!Multiple audio: {videoMetadata.AudioStreams.Length} {videoMetadata.File}", null);
             }
         }
 
-        if (videoMetadata.AudioBitRates.Any(bitRate => bitRate < 192000))
+        if (videoMetadata.AudioStreams.Any(audio => audio.BitRate < 192000))
         {
             //return ($"!Bad audio: Bit rate is only {string.Join(',', videoMetadata.AudioBitRates)} {videoMetadata.File}", null);
         }

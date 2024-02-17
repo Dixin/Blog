@@ -8,28 +8,28 @@ public record VideoMetadata
 
     public string File { get; init; } = string.Empty;
 
-    public int Width { get; init; }
+    public int VideoWidth { get; init; }
 
-    public int Height { get; init; }
+    public int VideoHeight { get; init; }
 
     public double TotalMilliseconds { get; init; }
 
-    public int Audio { get; init; }
+    public (string Language, string Title, int BitRate)[] AudioStreams { get; init; } = [];
 
-    public int[] AudioBitRates { get; init; } = [];
+    public (string Language, string Title, string Path)[] SubtitleStreams { get; init; } = [];
 
-    public double FrameRate { get; init; }
+    public double VideoFrameRate { get; init; }
 
     internal int Subtitle { get; init; }
 
     internal TimeSpan Duration => TimeSpan.FromSeconds(this.TotalMilliseconds);
 
     internal DefinitionType DefinitionType =>
-        this.Width >= 3800 || this.Height >= 2150
+        this.VideoWidth >= 3800 || this.VideoHeight >= 2150
             ? DefinitionType.P2160
-            : this.Width >= 1900 || this.Height >= 1070
+            : this.VideoWidth >= 1900 || this.VideoHeight >= 1070
                 ? DefinitionType.P1080
-                : this.Width >= 1280 || this.Height >= 720
+                : this.VideoWidth >= 1280 || this.VideoHeight >= 720
                     ? DefinitionType.P720
                     : DefinitionType.P480;
 }
