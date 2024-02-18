@@ -542,10 +542,10 @@ internal static partial class Video
             StringComparer.OrdinalIgnoreCase);
         Action<string> recycleMetadata = metadataRecycleDirectory.IsNullOrWhiteSpace()
             ? FileHelper.Recycle
-            : file => FileHelper.MoveToDirectory(file, metadataRecycleDirectory, skipDestinationDirectory: true);
+            : file => FileHelper.MoveToDirectory(file, metadataRecycleDirectory, true, true);
         Action<string> recycleCache = cacheRecycleDirectory.IsNullOrWhiteSpace()
             ? FileHelper.Recycle
-            : file => FileHelper.MoveToDirectory(file, cacheRecycleDirectory, skipDestinationDirectory: true);
+            : file => FileHelper.MoveToDirectory(file, cacheRecycleDirectory, true, true);
         metadataFilesByImdbId
             .Where(metadataFile => topLibraryImdbIds.Contains(metadataFile.Key))
             .ToArray()

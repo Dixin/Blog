@@ -749,12 +749,8 @@ internal static class Imdb
         Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264720PMetadata, cancellationToken);
         //Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(rareJsonPath);
 
-        string[] cacheFiles = Directory.GetFiles(settings.MovieMetadataCacheDirectory)
-            .Concat(Directory.EnumerateFiles(@"\\Beyond-r\f\Files\Library\MovieMetadataCache"))
-            .ToArray();
-        string[] metadataFiles = Directory.GetFiles(settings.MovieMetadataDirectory)
-            .Concat(Directory.EnumerateFiles(@"\\Beyond-r\f\Files\Library\MovieMetadata"))
-            .ToArray();
+        string[] cacheFiles = Directory.GetFiles(settings.MovieMetadataCacheDirectory);
+        string[] metadataFiles = Directory.GetFiles(settings.MovieMetadataDirectory);
         string[] imdbIds = x265Metadata.Keys
             .Concat(x265XMetadata.Keys)
             .Concat(h264Metadata.Keys)
@@ -778,7 +774,7 @@ internal static class Imdb
         }
 
         imdbIds = imdbIds
-            .Except(metadataFiles.Select(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty))
+            .Except(metadataFiles.Select(file => file.GetImdbId()))
             .ToArray();
         int trimmedLength = imdbIds.Length;
         ConcurrentQueue<string> imdbIdQueue = new(imdbIds);
