@@ -1643,7 +1643,7 @@ internal static partial class Video
     }
 
     internal static async Task PrintMovieLinksAsync(
-        ISettings settings, Func<ImdbMetadata, bool> predicate, HashSet<string> keywords, string initialUrl = "", bool updateMetadata = false, bool isDryRun = false, Action<string>? log = null)
+        ISettings settings, Func<ImdbMetadata, HashSet<string>, bool> predicate, string initialUrl = "", bool updateMetadata = false, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
@@ -1657,6 +1657,7 @@ internal static partial class Video
         //Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync(h264720PJsonPath);
         //Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(rareJsonPath);
         string[] metadataFiles = Directory.GetFiles(settings.MovieMetadataDirectory);
+        HashSet<string> keywords = new(settings.AllImdbKeywords, StringComparer.OrdinalIgnoreCase);
         //Dictionary<string, string> metadataFilesByImdbId = metadataFiles.ToDictionary(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty);
         MagnetUri[] downloadingLinks = (await File.ReadAllLinesAsync(@"D:\Files\Library\Movie.Downloading.txt"))
             .Select(line => (MagnetUri.TryParse(line, out MagnetUri? result), result))
@@ -1677,7 +1678,7 @@ internal static partial class Video
             //        .Select(match => match.Groups[1].Value)))
             //.Intersect(mergedMetadata.Keys)
             .Select(imdbId => mergedMetadata[imdbId])
-            .Where(predicate)
+            .Where(imdbMetadata => predicate(imdbMetadata, keywords))
             .OrderBy(imdbMetadata => imdbMetadata.ImdbId)
             .ToArray();
         int length = imdbIds.Length;

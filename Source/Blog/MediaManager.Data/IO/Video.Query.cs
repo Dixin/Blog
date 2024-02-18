@@ -40,24 +40,32 @@ internal static partial class Video
     internal static bool TryReadVideoMetadata(string file, [NotNullWhen(true)] out VideoMetadata? videoMetadata, ImdbMetadata? imdbMetadata = null, string? relativePath = null, int retryCount = IODefaultRetryCount, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
-        Task<VideoMetadata> task = ReadVideoMetadataAsync(file, imdbMetadata, relativePath, retryCount);
-        if (!task.Wait(TimeSpan.FromSeconds(30)))
+
+        videoMetadata = null;
+        try
         {
-            videoMetadata = null;
-            log($"!Timeout {file}");
+            Task<VideoMetadata> task = ReadVideoMetadataAsync(file, imdbMetadata, relativePath, retryCount);
+            if (!task.Wait(TimeSpan.FromSeconds(30)))
+            {
+                log($"!Timeout with {file}");
+                return false;
+            }
+
+            if (task.Exception is not null)
+            {
+                log($"!Fail with {file} for {task.Exception}");
+                return false;
+            }
+
+            videoMetadata = task.Result;
+            log($"{videoMetadata.VideoWidth}x{videoMetadata.VideoHeight}, {videoMetadata.AudioStreams.Length} audio, {file}");
+            return true;
+        }
+        catch (Exception exception) when (exception.IsNotCritical())
+        {
+            log($"!Fail with {file} for {exception}");
             return false;
         }
-
-        if (task.Exception is not null)
-        {
-            videoMetadata = null;
-            log($"!Fail {file} {task.Exception}");
-            return false;
-        }
-
-        videoMetadata = task.Result;
-        log($"{videoMetadata.VideoWidth}x{videoMetadata.VideoHeight}, {videoMetadata.AudioStreams.Length} audio, {file}");
-        return true;
     }
 
     internal static int ReadAudioMetadata(string file, Action<string>? log = null)

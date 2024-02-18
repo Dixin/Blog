@@ -388,92 +388,110 @@ internal static partial class Video
         }
     }
 
-    internal static async Task WriteLibraryMovieMetadata(ISettings settings, Action<string>? log = null, params string[] directories)
+    internal static async Task WriteLibraryMovieMetadata(ISettings settings, Action<string>? log = null, params string[][] directoryDrives)
     {
         log ??= Logger.WriteLine;
-        Dictionary<string, Dictionary<string, VideoMetadata>> existingMetadata = File.Exists(settings.MovieLibraryMetadata)
-            ? await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(settings.MovieLibraryMetadata)
+
+        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> existingMetadata = File.Exists(settings.MovieLibraryMetadata)
+            ? await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>>>(settings.MovieLibraryMetadata)
             : new();
 
         existingMetadata
             .Values
-            .ForEach(group => group
-                .Keys
-                .Where(video => !File.Exists(Path.IsPathRooted(video) ? video : Path.Combine(settings.LibraryDirectory, video)))
-                .ToArray()
-                .ForEach(group.Remove));
-
-        HashSet<string> existingVideos = new(existingMetadata.Values.SelectMany(group => group.Keys), StringComparer.OrdinalIgnoreCase);
-        ConcurrentDictionary<string, string> allMetadataFiles = new();
-        ConcurrentDictionary<string, ConcurrentBag<string>> newVideos = new();
-        directories
-            .SelectMany(directory => Directory.EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories))
-            .AsParallel()
-            .ForAll(file =>
-            {
-                string currentDirectory = PathHelper.GetDirectoryName(file);
-                if (file.IsImdbMetadata())
-                {
-                    allMetadataFiles[currentDirectory] = file;
-                    return;
-                }
-
-                if (file.IsVideo() && !file.IsDiskImage() && !existingVideos.Contains(Path.GetRelativePath(settings.LibraryDirectory, file)))
-                {
-
-                    if (Path.GetFileName(currentDirectory).EqualsIgnoreCase(Featurettes))
-                    {
-                        return;
-                    }
-
-                    newVideos.AddOrUpdate(
-                        currentDirectory,
-                        key => new ConcurrentBag<string>([file]),
-                        (key, videos) =>
-                        {
-                            videos.Add(file);
-                            return videos;
-                        });
-                }
-            });
-
-        Debug.Assert(newVideos.Values.All(group => group.Any()));
-        Dictionary<string, Dictionary<string, VideoMetadata>> newVideoMetadata = newVideos
+            .SelectMany(group => group.Keys, (group, video) => (group, video))
             .AsParallel()
             .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
-            .Select(group => (
-                Videos: group.Value, 
-                Metadata: ImdbMetadata.TryLoad(allMetadataFiles.TryGetValue(group.Key, out string? metadataFile) ? metadataFile : string.Empty, out ImdbMetadata? imdbMetadata) ? imdbMetadata : null))
-            .SelectMany(group => group
-                .Videos
-                .Select(video =>
-                {
-                    if (!TryReadVideoMetadata(video, out VideoMetadata? videoMetadata, group.Metadata, settings.LibraryDirectory))
-                    {
-                        log($"!Fail: {video}");
-                    }
+            .Where(video => !File.Exists(Path.IsPathRooted(video.video) ? video.video : Path.Combine(settings.LibraryDirectory, video.video)))
+            .ForAll(video => Debug.Assert(video.group.TryRemove(video.video, out _)));
 
-                    return videoMetadata;
-                })
-                .NotNull())
-            .ToLookup(videoMetadata => videoMetadata.Imdb?.ImdbId ?? string.Empty)
-            .ToDictionary(group => group.Key, group => group.ToDictionary(videoMetadata => videoMetadata.File));
-
-        newVideoMetadata.ForEach(group =>
-        {
-            if (!existingMetadata.ContainsKey(group.Key))
+        HashSet<string> existingVideos = new(existingMetadata.Values.SelectMany(group => group.Keys), StringComparer.OrdinalIgnoreCase);
+        directoryDrives
+            // Hard drives in parallel.
+            .AsParallel()
+            .ForAll(driveDirectories =>
             {
-                existingMetadata[group.Key] = [];
-            }
+                ConcurrentDictionary<string, string> allMetadataFiles = new();
+                ConcurrentDictionary<string, ConcurrentBag<string>> newVideos = new();
 
-            group.Value.ForEach(video => existingMetadata[group.Key][video.Key] = video.Value);
-        });
+                driveDirectories
+                    // IO per hard drive, sequential.
+                    .SelectMany(directory => Directory.EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories))
+                    // No IO involved.
+                    .AsParallel()
+                    .ForAll(file =>
+                    {
+                        string directory = PathHelper.GetDirectoryName(file);
+                        if (file.IsImdbMetadata())
+                        {
+                            allMetadataFiles[directory] = file;
+                            return;
+                        }
+
+                        if (file.IsVideo() && !file.IsDiskImage() && !existingVideos.Contains(Path.GetRelativePath(settings.LibraryDirectory, file)))
+                        {
+
+                            if (Path.GetFileName(directory).EqualsIgnoreCase(Featurettes))
+                            {
+                                return;
+                            }
+
+                            newVideos.AddOrUpdate(
+                                directory,
+                                key => [file],
+                                (key, videos) =>
+                                {
+                                    videos.Add(file);
+                                    return videos;
+                                });
+                        }
+                    });
+
+                Debug.Assert(newVideos.Values.All(group => group.Any()));
+                Dictionary<string, Dictionary<string, VideoMetadata>> newVideoMetadata = newVideos
+                    .AsParallel()
+                    .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
+                    .Select(group =>
+                    {
+                        ImdbMetadata? imdbMetadata = null;
+                        if (!allMetadataFiles.TryGetValue(group.Key, out string? metadataFile))
+                        {
+                            log($"!Metadata is missing for {group.Key}.");
+                        }
+                        else if (!ImdbMetadata.TryLoad(metadataFile, out imdbMetadata))
+                        {
+                            log($"!Metadata is unavailable for {group.Key}.");
+                        }
+
+                        return (Videos: group.Value, Metadata: imdbMetadata);
+                    })
+                    .SelectMany(group => group
+                        .Videos
+                        .Select(video =>
+                        {
+                            if (!TryReadVideoMetadata(video, out VideoMetadata? videoMetadata, group.Metadata, settings.LibraryDirectory))
+                            {
+                                log($"!Fail: {video}");
+                            }
+
+                            return videoMetadata;
+                        })
+                        .NotNull())
+                    .ToLookup(videoMetadata => videoMetadata.Imdb?.ImdbId ?? string.Empty)
+                    .ToDictionary(group => group.Key, group => group.ToDictionary(videoMetadata => videoMetadata.File));
+
+                newVideoMetadata.ForEach(group => existingMetadata.AddOrUpdate(group.Key,
+                    key => new ConcurrentDictionary<string, VideoMetadata>(group.Value),
+                    (key, videos) =>
+                    {
+                        group.Value.ForEach(video => Debug.Assert(videos.TryAdd(video.Key, video.Value)));
+                        return videos;
+                    }));
+            });
 
         existingMetadata
-            .Keys
-            .Where(imdbId => existingMetadata[imdbId].IsEmpty())
+            .Where(group => group.Value.IsEmpty())
             .ToArray()
-            .ForEach(existingMetadata.Remove);
+            .ForEach(group => Debug.Assert(existingMetadata.TryRemove(group)));
 
         await JsonHelper.SerializeToFileAsync(existingMetadata, settings.MovieLibraryMetadata);
     }
