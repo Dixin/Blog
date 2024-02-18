@@ -517,45 +517,66 @@ internal static partial class Video
         await JsonHelper.SerializeToFileAsync(allVideoMetadata, jsonPath);
     }
 
-    internal static async Task UpdateMergedMovieMetadataAsync(string metadataDirectory, string metadataCacheDirectory, string mergedMetadataPath, string libraryMetadataPath)
+    internal static async Task UpdateMergedMovieMetadataAsync(ISettings settings, string metadataRecycleDirectory = "", string cacheRecycleDirectory = "", Action<string>? log = null, CancellationToken cancellationToken = default)
     {
-        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(libraryMetadataPath);
-        ConcurrentDictionary<string, ImdbMetadata> mergedMetadata = File.Exists(mergedMetadataPath)
-            ? new(await JsonHelper.DeserializeFromFileAsync<Dictionary<string, ImdbMetadata>>(mergedMetadataPath))
+        log ??= Logger.WriteLine;
+
+        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(settings.MovieLibraryMetadata, cancellationToken);
+        ConcurrentDictionary<string, ImdbMetadata> mergedMetadata = File.Exists(settings.MovieMergedMetadata)
+            ? await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, ImdbMetadata>>(settings.MovieMergedMetadata, cancellationToken)
             : new();
-        //ILookup<string, string> cacheFilesByImdbId = Directory.GetFiles(metadataCacheDirectory, ImdbCacheSearchPattern)
-        //    .ToLookup(file => PathHelper.GetFileNameWithoutExtension(file).Split(Delimiter).First());
-        Dictionary<string, string> metadataFilesByImdbId = Directory.GetFiles(metadataDirectory, ImdbMetadataSearchPattern)
+        ILookup<string, string> cacheFilesByImdbId = Directory
+            .EnumerateFiles(settings.MovieMetadataCacheDirectory, ImdbCacheSearchPattern)
+            .ToLookup(file => PathHelper.GetFileNameWithoutExtension(file).Split(Delimiter).First());
+        Dictionary<string, string> metadataFilesByImdbId = Directory
+            .EnumerateFiles(settings.MovieMetadataDirectory, ImdbMetadataSearchPattern)
             .ToDictionary(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty);
 
+        HashSet<string> topLibraryImdbIds = new(
+            libraryMetadata
+                .Where(group => group
+                    .Value
+                    .Select(video => PathHelper.GetFileNameWithoutExtension(video.Key))
+                    .Any(name => name.ContainsIgnoreCase(".1080p.") && (name.EndsWithIgnoreCase("-RARBG") || name.EndsWithIgnoreCase("-VXT"))))
+                .Select(group => group.Key),
+            StringComparer.OrdinalIgnoreCase);
+        Action<string> recycleMetadata = metadataRecycleDirectory.IsNullOrWhiteSpace()
+            ? FileHelper.Recycle
+            : file => FileHelper.MoveToDirectory(file, metadataRecycleDirectory);
+        Action<string> recycleCache = cacheRecycleDirectory.IsNullOrWhiteSpace()
+            ? FileHelper.Recycle
+            : file => FileHelper.MoveToDirectory(file, cacheRecycleDirectory);
         metadataFilesByImdbId
-            .Keys
-            .Intersect(libraryMetadata.Keys)
+            .Where(metadataFile => topLibraryImdbIds.Contains(metadataFile.Key))
             .ToArray()
-            .ForEach(imdbId =>
+            .ForEach(metadataFile =>
             {
-                FileHelper.Recycle(metadataFilesByImdbId[imdbId]);
-                metadataFilesByImdbId.Remove(imdbId);
+                log($"Delete {metadataFile.Value}");
+                recycleMetadata(metadataFile.Value);
+                metadataFilesByImdbId.Remove(metadataFile.Key);
             });
 
-        //cacheFilesByImdbId
-        //    .Select(group=>group.Key)
-        //    .Intersect(libraryMetadata.Keys)
-        //    .ToArray()
-        //    .ForEach(imdbId=> cacheFilesByImdbId[imdbId].ForEach(FileHelper.Delete));
+        cacheFilesByImdbId
+            .Where(group => topLibraryImdbIds.Contains(group.Key))
+            .ToArray()
+            .ForEach(group => group.ForEach(file =>
+            {
+                log($"Delete {file}");
+                recycleCache(file);
+            }));
 
         mergedMetadata
             .Keys
             .Except(metadataFilesByImdbId.Keys, StringComparer.OrdinalIgnoreCase)
             .ToArray()
-            .ForEach(imdbId => mergedMetadata.Remove(imdbId, out _));
+            .ForEach(imdbId => Debug.Assert(mergedMetadata.TryRemove(imdbId, out _)));
 
         metadataFilesByImdbId
             .Keys
             .Except(mergedMetadata.Keys, StringComparer.OrdinalIgnoreCase)
             .AsParallel()
             .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
-            .ForEach(imdbId =>
+            .ForAll(imdbId =>
             {
                 string file = metadataFilesByImdbId[imdbId];
                 if (ImdbMetadata.TryLoad(file, out ImdbMetadata? imdbMetadata))
@@ -568,8 +589,7 @@ internal static partial class Video
                 }
             });
 
-        string mergedMetadataJson = JsonSerializer.Serialize(mergedMetadata, new JsonSerializerOptions() { WriteIndented = true });
-        await FileHelper.WriteTextAsync(mergedMetadataPath, mergedMetadataJson);
+        await JsonHelper.SerializeToFileAsync(mergedMetadata, settings.MovieMergedMetadata, cancellationToken);
     }
 
     internal static async Task MergeMovieMetadataAsync(string metadataDirectory, string mergedMetadataPath)

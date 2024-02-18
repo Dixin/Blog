@@ -1703,8 +1703,10 @@ internal static partial class Video
 
         if (updateMetadata)
         {
+            HashSet<string> metadataDirectoryImdbIds = new(metadataFiles.Select(file => file.GetImdbId()), StringComparer.OrdinalIgnoreCase);
             await imdbIds
                 .Select(imdbId => imdbId.ImdbId)
+                .Where(imdbId => !metadataDirectoryImdbIds.Contains(imdbId))
                 .ForEachAsync(async (imdbId, index) =>
                 {
                     log($"{index * 100 / length}% - {index}/{length} - {imdbId}");
