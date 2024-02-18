@@ -61,8 +61,8 @@ public static class FileHelper
         return true;
     }
 
-    public static void MoveToDirectory(string source, string destinationParentDirectory, bool overwrite = false) => 
-        Move(source, Path.Combine(destinationParentDirectory, Path.GetFileName(source)), overwrite);
+    public static void MoveToDirectory(string source, string destinationParentDirectory, bool overwrite = false, bool skipDestinationDirectory = false) => 
+        Move(source, Path.Combine(destinationParentDirectory, Path.GetFileName(source)), overwrite, skipDestinationDirectory);
 
     public static bool TryMoveToDirectory(string source, string destinationParentDirectory, bool overwrite = false) =>
         TryMove(source, Path.Combine(destinationParentDirectory, Path.GetFileName(source)), overwrite);
