@@ -10,7 +10,6 @@ using Examples.Net;
 using MediaManager.IO;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Support.UI;
 
 internal static class Imdb
 {
@@ -791,7 +790,9 @@ internal static class Imdb
                         log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
                         try
                         {
-                            await Retry.FixedIntervalAsync(async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log, token));
+                            await Retry.FixedIntervalAsync(
+                                async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log, token),
+                                isTransient: exception => exception is not ArgumentOutOfRangeException && exception is not ArgumentException);
                         }
                         catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
                         {
@@ -940,21 +941,21 @@ internal static class Imdb
             .ToArray();
         int trimmedLength = imdbIds.Length;
         await imdbIds.ForEachAsync(async (imdbId, index) =>
+        {
+            log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
+            try
             {
-                log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
-                try
-                {
-                    await Video.DownloadImdbMetadataAsync(imdbId, metadataDirectory, cacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log);
-                }
-                catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
-                {
-                    log($"!!!{imdbId}");
-                }
-                catch (ArgumentException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
-                {
-                    log($"!!!{imdbId}");
-                }
-            });
+                await Video.DownloadImdbMetadataAsync(imdbId, metadataDirectory, cacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log);
+            }
+            catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
+            {
+                log($"!!!{imdbId}");
+            }
+            catch (ArgumentException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
+            {
+                log($"!!!{imdbId}");
+            }
+        });
     }
 
     internal static async Task DownloadAllTVsAsync(
@@ -989,20 +990,20 @@ internal static class Imdb
             .ToArray();
         int trimmedLength = imdbIds.Length;
         await imdbIds.ForEachAsync(async (imdbId, index) =>
+        {
+            log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
+            try
             {
-                log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
-                try
-                {
-                    await Video.DownloadImdbMetadataAsync(imdbId, metadataDirectory, cacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log);
-                }
-                catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
-                {
-                    log($"!!!{imdbId}");
-                }
-                catch (ArgumentException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
-                {
-                    log($"!!!{imdbId}");
-                }
-            });
+                await Video.DownloadImdbMetadataAsync(imdbId, metadataDirectory, cacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log);
+            }
+            catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
+            {
+                log($"!!!{imdbId}");
+            }
+            catch (ArgumentException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
+            {
+                log($"!!!{imdbId}");
+            }
+        });
     }
 }

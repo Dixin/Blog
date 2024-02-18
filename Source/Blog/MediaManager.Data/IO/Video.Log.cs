@@ -1647,7 +1647,8 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
 
-        ILookup<string, string> topMagnetUris = (await File.ReadAllLinesAsync(settings.TopMagnetUrls)).ToLookup(line => MagnetUri.Parse(line).DisplayName, StringComparer.OrdinalIgnoreCase);
+        ILookup<string, string> topMagnetUris = (await File.ReadAllLinesAsync(settings.TopMagnetUrls))
+            .ToLookup(line => MagnetUri.Parse(line).DisplayName, StringComparer.OrdinalIgnoreCase);
         Dictionary<string, ImdbMetadata> mergedMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, ImdbMetadata>>(settings.MovieMergedMetadata);
 
         Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(settings.MovieLibraryMetadata);
@@ -1656,14 +1657,14 @@ internal static partial class Video
         //Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(preferredJsonPath);
         //Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync(h264720PJsonPath);
         //Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(rareJsonPath);
-        string[] metadataFiles = Directory.GetFiles(settings.MovieMetadataDirectory);
+        //string[] metadataFiles = Directory.GetFiles(settings.MovieMetadataDirectory);
+        //string[] cacheFiles = Directory.GetFiles(settings.MovieMetadataCacheDirectory);
         HashSet<string> keywords = new(settings.AllImdbKeywords, StringComparer.OrdinalIgnoreCase);
         //Dictionary<string, string> metadataFilesByImdbId = metadataFiles.ToDictionary(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty);
-        MagnetUri[] downloadingLinks = (await File.ReadAllLinesAsync(@"D:\Files\Library\Movie.Downloading.txt"))
-            .Select(line => (MagnetUri.TryParse(line, out MagnetUri? result), result))
-            .Where(result => result.Item1)
-            .Select(result => result.result!).ToArray();
-        string[] cacheFiles = Directory.GetFiles(settings.MovieMetadataCacheDirectory);
+        //MagnetUri[] downloadingLinks = (await File.ReadAllLinesAsync(@"D:\Files\Library\Movie.Downloading.txt"))
+        //    .Select(line => (MagnetUri.TryParse(line, out MagnetUri? result), result))
+        //    .Where(result => result.Item1)
+        //    .Select(result => result.result!).ToArray();
 
         ImdbMetadata[] imdbIds = x265Metadata.Keys
             .Concat(h264Metadata.Keys)
@@ -1677,7 +1678,8 @@ internal static partial class Video
             //        .Where(match => match.Success)
             //        .Select(match => match.Groups[1].Value)))
             //.Intersect(mergedMetadata.Keys)
-            .Select(imdbId => mergedMetadata[imdbId])
+            .Select(imdbId => mergedMetadata.GetValueOrDefault(imdbId))
+            .NotNull()
             .Where(imdbMetadata => predicate(imdbMetadata, keywords))
             .OrderBy(imdbMetadata => imdbMetadata.ImdbId)
             .ToArray();
@@ -1685,7 +1687,8 @@ internal static partial class Video
         log(length.ToString());
         log(x265Metadata.Keys.Intersect(imdbIds.Select(metadata => metadata.ImdbId)).Count().ToString());
 
-        keywords.Select(keyword => (keyword, imdbIds.Count(imdbId => imdbId.AllKeywords.ContainsIgnoreCase(keyword))))
+        keywords
+            .Select(keyword => (keyword, imdbIds.Count(imdbId => imdbId.AllKeywords.ContainsIgnoreCase(keyword))))
             .OrderByDescending(keyword => keyword.Item2)
             .ForEach(keyword => log($"{keyword.Item2} - {keyword}"));
 
@@ -1693,37 +1696,37 @@ internal static partial class Video
         //    new string[] { }.SelectMany(Directory.GetDirectories).Select(Path.GetFileName)!,
         //    StringComparer.OrdinalIgnoreCase);
         //HashSet<string> downloadedTorrentHashes = new(/*Directory.GetFiles(@"E:\Files\MonoTorrent").Concat(Directory.GetFiles(@"E:\Files\MonoTorrentDownload")).Select(torrent => PathHelper.GetFileNameWithoutExtension(torrent).Split("@").Last()), StringComparer.OrdinalIgnoreCase*/);
-        using WebDriverWrapper? webDriver = isDryRun ? null : new(() => WebDriverHelper.Start(isLoadingAll: true));
+        using WebDriverWrapper? webDriver = isDryRun ? null : new(() => WebDriverHelper.Start(isLoadingAll: true), initialUrl);
         using HttpClient? httpClient = isDryRun ? null : new HttpClient().AddEdgeHeaders();
-        if (!isDryRun && initialUrl.IsNotNullOrWhiteSpace())
-        {
-            webDriver!.Url = initialUrl;
-            webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.Id("pager_links")));
-        }
+        //if (!isDryRun && initialUrl.IsNotNullOrWhiteSpace())
+        //{
+        //    webDriver!.Url = initialUrl;
+        //    webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.Id("pager_links")));
+        //}
 
-        if (updateMetadata)
-        {
-            HashSet<string> metadataDirectoryImdbIds = new(metadataFiles.Select(file => file.GetImdbId()), StringComparer.OrdinalIgnoreCase);
-            await imdbIds
-                .Select(imdbId => imdbId.ImdbId)
-                .Where(imdbId => !metadataDirectoryImdbIds.Contains(imdbId))
-                .ForEachAsync(async (imdbId, index) =>
-                {
-                    log($"{index * 100 / length}% - {index}/{length} - {imdbId}");
-                    try
-                    {
-                        await DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: true, useCache: false, log: log);
-                    }
-                    catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
-                    {
-                        log($"!!!{imdbId} {exception}");
-                    }
-                    catch (ArgumentException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
-                    {
-                        log($"!!!{imdbId} {exception}");
-                    }
-                });
-        }
+        //if (updateMetadata)
+        //{
+        //    HashSet<string> metadataDirectoryImdbIds = new(metadataFiles.Select(file => file.GetImdbId()), StringComparer.OrdinalIgnoreCase);
+        //    await imdbIds
+        //        .Select(imdbId => imdbId.ImdbId)
+        //        .Where(imdbId => !metadataDirectoryImdbIds.Contains(imdbId))
+        //        .ForEachAsync(async (imdbId, index) =>
+        //        {
+        //            log($"{index * 100 / length}% - {index}/{length} - {imdbId}");
+        //            try
+        //            {
+        //                await DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: true, useCache: false, log: log);
+        //            }
+        //            catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
+        //            {
+        //                log($"!!!{imdbId} {exception}");
+        //            }
+        //            catch (ArgumentException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
+        //            {
+        //                log($"!!!{imdbId} {exception}");
+        //            }
+        //        });
+        //}
 
         await imdbIds
             .ForEachAsync(async (imdbMetadata, index, token) =>
@@ -1791,14 +1794,17 @@ internal static partial class Video
                                 if (uris.Length > 0)
                                 {
                                     MagnetUri[] result = uris
-                                        .Take(0..)
+                                        .Take(..)
                                         .Select(MagnetUri.Parse)
-                                        .Where(uri => !downloadingLinks.Any(downloadingUri => downloadingUri.ExactTopic.EqualsIgnoreCase(uri.ExactTopic) || downloadingUri.DisplayName.EqualsIgnoreCase(uri.DisplayName)))
+                                        //.Where(uri => !downloadingLinks.Any(downloadingUri => downloadingUri.ExactTopic.EqualsIgnoreCase(uri.ExactTopic) || downloadingUri.DisplayName.EqualsIgnoreCase(uri.DisplayName)))
                                         .ToArray();
                                     if (result.Any())
                                     {
                                         hasDownload = true;
-                                        result.Select(uri => uri.ToString()).Append(string.Empty).ForEach(log);
+                                        result
+                                            .Select(uri => uri.ToString())
+                                            //.Append(string.Empty)
+                                            .ForEach(log);
                                     }
                                 }
                             }
@@ -1810,14 +1816,14 @@ internal static partial class Video
                             return;
                         }
 
-                        string cacheFile = Path.Combine(settings.MovieMetadataCacheDirectory, $"{metadata.ImdbId}-{metadata.Title}{ImdbCacheExtension}");
-                        string html = cacheFiles.ContainsIgnoreCase(cacheFile) && new FileInfo(cacheFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1)
-                            ? await File.ReadAllTextAsync(cacheFile, token)
-                            : await webDriver!.GetStringAsync(metadata.Link, () => webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))), cancellationToken: token);
-                        await Task.Delay(WebDriverHelper.DefaultDomWait, token);
-                        await File.WriteAllTextAsync(cacheFile, html, token);
-                        (string _, string _, string magnetUrl) = TopGetUrls(html, metadata.Link);
-                        log(magnetUrl);
+                        //string cacheFile = Path.Combine(settings.MovieMetadataCacheDirectory, $"{metadata.ImdbId}-{metadata.Title}{ImdbCacheExtension}");
+                        //string html = cacheFiles.ContainsIgnoreCase(cacheFile) && new FileInfo(cacheFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1)
+                        //    ? await File.ReadAllTextAsync(cacheFile, token)
+                        //    : await webDriver!.GetStringAsync(metadata.Link, () => webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))), cancellationToken: token);
+                        //await Task.Delay(WebDriverHelper.DefaultDomWait, token);
+                        //await File.WriteAllTextAsync(cacheFile, html, token);
+                        //(string _, string _, string magnetUrl) = TopGetUrls(html, metadata.Link);
+                        //log(magnetUrl);
                         //webDriver!.Url = httpUrl;
                         //await Task.Delay(TimeSpan.FromSeconds(3));
                     }, cancellationToken: token);
@@ -1890,14 +1896,17 @@ internal static partial class Video
                                 if (uris.Length > 0)
                                 {
                                     MagnetUri[] result = uris
-                                        .Take(0..)
+                                        .Take(..)
                                         .Select(MagnetUri.Parse)
-                                        .Where(uri => !downloadingLinks.Any(downloadingUri => downloadingUri.ExactTopic.EqualsIgnoreCase(uri.ExactTopic) || downloadingUri.DisplayName.EqualsIgnoreCase(uri.DisplayName)))
+                                        //.Where(uri => !downloadingLinks.Any(downloadingUri => downloadingUri.ExactTopic.EqualsIgnoreCase(uri.ExactTopic) || downloadingUri.DisplayName.EqualsIgnoreCase(uri.DisplayName)))
                                         .ToArray();
                                     if (result.Any())
                                     {
                                         hasDownload = true;
-                                        result.Select(uri => uri.ToString()).Append(string.Empty).ForEach(log);
+                                        result
+                                            .Select(uri => uri.ToString())
+                                            //.Append(string.Empty)
+                                            .ForEach(log);
                                     }
                                 }
                             }
@@ -1909,14 +1918,14 @@ internal static partial class Video
                             return;
                         }
 
-                        string cacheFile = Path.Combine(settings.MovieMetadataCacheDirectory, $"{metadata.ImdbId}-{metadata.Title}{ImdbCacheExtension}");
-                        string html = cacheFiles.ContainsIgnoreCase(cacheFile) && new FileInfo(cacheFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1)
-                            ? await File.ReadAllTextAsync(cacheFile, token)
-                            : await webDriver!.GetStringAsync(metadata.Link, () => webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))), cancellationToken: token);
-                        await Task.Delay(WebDriverHelper.DefaultDomWait, token);
-                        await File.WriteAllTextAsync(cacheFile, html, token);
-                        (string _, string _, string magnetUrl) = TopGetUrls(html, metadata.Link);
-                        log(magnetUrl);
+                        //string cacheFile = Path.Combine(settings.MovieMetadataCacheDirectory, $"{metadata.ImdbId}-{metadata.Title}{ImdbCacheExtension}");
+                        //string html = cacheFiles.ContainsIgnoreCase(cacheFile) && new FileInfo(cacheFile).LastWriteTimeUtc > DateTime.UtcNow - TimeSpan.FromDays(1)
+                        //    ? await File.ReadAllTextAsync(cacheFile, token)
+                        //    : await webDriver!.GetStringAsync(metadata.Link, () => webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))), cancellationToken: token);
+                        //await Task.Delay(WebDriverHelper.DefaultDomWait, token);
+                        //await File.WriteAllTextAsync(cacheFile, html, token);
+                        //(string _, string _, string magnetUrl) = TopGetUrls(html, metadata.Link);
+                        //log(magnetUrl);
                         //webDriver!.Url = httpUrl;
                         //await Task.Delay(TimeSpan.FromSeconds(3));
                     }, cancellationToken: token);
