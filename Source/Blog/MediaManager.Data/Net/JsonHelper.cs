@@ -40,6 +40,16 @@ internal class JsonHelper
         return Deserialize<TValue>(jsonContent);
     }
 
+    public static TValue DeserializeFromFile<TValue>(string file, TValue @default) =>
+        File.Exists(file)
+            ? DeserializeNullable<TValue>(File.ReadAllText(file)) ?? @default
+            : @default;
+
+    public static async Task<TValue> DeserializeFromFileAsync<TValue>(string file, TValue @default, CancellationToken cancellationToken = default) =>
+        File.Exists(file)
+            ? DeserializeNullable<TValue>(await File.ReadAllTextAsync(file, cancellationToken)) ?? @default
+            : @default;
+
     public static string Serialize<TValue>(TValue value) =>
         JsonSerializer.Serialize(value, SerializerOptions);
 

@@ -388,13 +388,13 @@ internal static partial class Video
         }
     }
 
-    internal static async Task WriteLibraryMovieMetadata(ISettings settings, Action<string>? log = null, params string[][] directoryDrives)
+    internal static async Task WriteLibraryMovieMetadataAsync(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default, params string[][] directoryDrives)
     {
         log ??= Logger.WriteLine;
 
-        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata?>> existingMetadata = File.Exists(settings.MovieLibraryMetadata)
-            ? await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata?>>>(settings.MovieLibraryMetadata)
-            : new();
+        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata?>> existingMetadata = await JsonHelper
+            .DeserializeFromFileAsync<ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata?>>>(
+                settings.MovieLibraryMetadata, new(), cancellationToken);
 
         existingMetadata
             .Values
@@ -475,12 +475,12 @@ internal static partial class Video
 
                             return (
                                 ImdbId: group.Metadata?.ImdbId ?? string.Empty,
-                                RelativePath: Path.GetRelativePath(settings.LibraryDirectory, video), 
+                                RelativePath: Path.GetRelativePath(settings.LibraryDirectory, video),
                                 Metadata: videoMetadata);
                         }))
                     .ToLookup(video => video.ImdbId)
                     .ToDictionary(
-                        group => group.Key, 
+                        group => group.Key,
                         group => group.ToDictionary(video => video.RelativePath, video => video.Metadata));
 
                 newVideoMetadata.ForEach(group => existingMetadata.AddOrUpdate(group.Key,
@@ -497,7 +497,7 @@ internal static partial class Video
             .ToArray()
             .ForEach(group => Debug.Assert(existingMetadata.TryRemove(group)));
 
-        await JsonHelper.SerializeToFileAsync(existingMetadata, settings.MovieLibraryMetadata);
+        await JsonHelper.SerializeToFileAsync(existingMetadata, settings.MovieLibraryMetadata, cancellationToken);
     }
 
     internal static async Task WriteExternalVideoMetadataAsync(string jsonPath, params string[] directories)
@@ -526,9 +526,8 @@ internal static partial class Video
         log ??= Logger.WriteLine;
 
         Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(settings.MovieLibraryMetadata, cancellationToken);
-        ConcurrentDictionary<string, ImdbMetadata> mergedMetadata = File.Exists(settings.MovieMergedMetadata)
-            ? await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, ImdbMetadata>>(settings.MovieMergedMetadata, cancellationToken)
-            : new();
+        ConcurrentDictionary<string, ImdbMetadata> mergedMetadata = await JsonHelper
+            .DeserializeFromFileAsync<ConcurrentDictionary<string, ImdbMetadata>>(settings.MovieMergedMetadata, new(), cancellationToken);
         ILookup<string, string> cacheFilesByImdbId = Directory
             .EnumerateFiles(settings.MovieMetadataCacheDirectory, ImdbCacheSearchPattern)
             .ToLookup(file => PathHelper.GetFileNameWithoutExtension(file).Split(Delimiter).First());

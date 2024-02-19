@@ -43,9 +43,8 @@ internal static class Entry
                     }
                 },
                 cancellationToken);
-        ConcurrentDictionary<string, EntryMetadata> entryMetadata = File.Exists(entryJsonPath) 
-            ? new(await JsonHelper.DeserializeFromFileAsync<Dictionary<string, EntryMetadata>>(entryJsonPath, cancellationToken)) 
-            : new();
+        ConcurrentDictionary<string, EntryMetadata> entryMetadata = await JsonHelper
+            .DeserializeFromFileAsync<ConcurrentDictionary<string, EntryMetadata>>(entryJsonPath, new(), cancellationToken);
         await entryLinks.ParallelForEachAsync(
             async (entryLink, index, token) =>
             {

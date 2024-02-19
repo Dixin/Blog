@@ -12,21 +12,21 @@ internal static class Preferred
 {
     private const int WriteCount = 100;
 
-    internal static async Task<Dictionary<string, PreferredSummary>> DownloadSummariesAsync(ISettings settings, Func<int, bool>? @continue = null, int index = 1, Action<string>? log = null)
+    internal static async Task<Dictionary<string, PreferredSummary>> DownloadSummariesAsync(
+        ISettings settings, Func<int, bool>? @continue = null, int index = 1, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
         @continue ??= _ => true;
-        Dictionary<string, PreferredSummary> allSummaries = File.Exists(settings.MoviePreferredSummary)
-            ? await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredSummary>>(settings.MoviePreferredSummary)
-            : new();
+        Dictionary<string, PreferredSummary> allSummaries = await JsonHelper
+            .DeserializeFromFileAsync<Dictionary<string, PreferredSummary>>(settings.MoviePreferredSummary, new(), cancellationToken);
         List<string> links = [];
         using HttpClient httpClient = new HttpClient().AddEdgeHeaders();
         for (; @continue(index); index++)
         {
             string url = $"{settings.MoviePreferredUrl}/browse-movies?page={index}";
             log($"Start {url}");
-            string html = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(url));
+            string html = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(url, cancellationToken));
             CQ cq = new(html);
             if (cq[".browse-movie-wrap"].IsEmpty())
             {
@@ -54,7 +54,7 @@ internal static class Preferred
 
             if (index % WriteCount == 0)
             {
-                await JsonHelper.SerializeToFileAsync(allSummaries, settings.MoviePreferredSummary);
+                await JsonHelper.SerializeToFileAsync(allSummaries, settings.MoviePreferredSummary, cancellationToken);
             }
 
             log($"End {url}");
@@ -62,7 +62,7 @@ internal static class Preferred
 
         links.OrderBy(link => link).ForEach(log);
 
-        await JsonHelper.SerializeToFileAsync(allSummaries, settings.MoviePreferredSummary);
+        await JsonHelper.SerializeToFileAsync(allSummaries, settings.MoviePreferredSummary, cancellationToken);
         return allSummaries;
     }
 
@@ -80,9 +80,8 @@ internal static class Preferred
 
         summaries ??= await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredSummary>>(settings.MoviePreferredSummary, cancellationToken);
 
-        ConcurrentDictionary<string, PreferredMetadata[]> details = File.Exists(settings.MoviePreferredMetadata)
-            ? new(await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(settings.MoviePreferredMetadata, cancellationToken))
-            : new();
+        ConcurrentDictionary<string, PreferredMetadata[]> details = await JsonHelper
+            .DeserializeFromFileAsync<ConcurrentDictionary<string, PreferredMetadata[]>>(settings.MoviePreferredMetadata, new(), cancellationToken);
         HashSet<string> existingLinks = new(details.Values.SelectMany(detailMetadata => detailMetadata).Select(detail => detail.Link), StringComparer.OrdinalIgnoreCase);
 
         int count = 1;
@@ -132,8 +131,8 @@ internal static class Preferred
                     }
 
                     log($"End {index}:{summary.Link}");
-                }, 
-                degreeOfParallelism, 
+                },
+                degreeOfParallelism,
                 cancellationToken);
 
         JsonHelper.SerializeToFile(details, settings.MoviePreferredMetadata, WriteJsonLock);
