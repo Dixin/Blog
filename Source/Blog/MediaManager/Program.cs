@@ -35,7 +35,6 @@ Trace.Listeners.Add(consoleTraceListener);
 Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
 //FFmpeg.SetExecutablesPath(@"C:\Users\User\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-6.1.1-full_build\bin");
 
-
 //Video.PrintDirectoriesWithMultipleMedia(settings.MovieControversial);
 //Video.PrintDirectoriesWithMultipleMedia(settings.MovieMainstream);
 
@@ -407,19 +406,19 @@ string[] genres = ["family", "animation", "documentary"];
 //});
 
 //await Video.PrintMovieImdbIdErrorsAsync(settings, true, null, settings.MovieTemp31);
-//Video.MoveFanArt(settings.MovieTemp32);
-//await Video.ConvertToUtf8Async(settings.MovieTemp32, true);
-//Video.MoveSubtitleToParentDirectory(settings.MovieTemp32, @"\\beyond-r\j\Files\Library\Movies.Subtitles", true);
-//FfmpegHelper.MergeAllDubbedMovies(settings.MovieTemp32, isDryRun: true);
-//Video.BackupMetadata(settings.MovieTemp);
+//await Video.ConvertToUtf8Async(settings.MovieTemp31, true);
+//Video.MoveSubtitleToParentDirectory(settings.MovieTemp31, @"\\beyond-r\j\Files\Library\Movies.Subtitles", false);
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp31, 2, overwrite: false, useCache: true, useBrowser: true);
-//Video.PrintDuplicateImdbId(null, settings.MovieTemp32);
+//FfmpegHelper.MergeAllDubbedMovies(settings.MovieTemp31, isDryRun: true);
+//Video.BackupMetadata(settings.MovieTemp31);
+//Video.PrintDuplicateImdbId(null, settings.MovieTemp31, settings.MovieTemp3);
 //await Video.DownloadMissingTitlesFromDoubanAsync(settings, settings.MovieTemp31);
-//Video.PrintVideosWithErrors(settings.MovieTemp32, searchOption: SearchOption.AllDirectories);
-//Video.RenameDirectoriesWithMetadata(settings.MovieTemp, isDryRun: false);
-//Video.RestoreMetadata(settings.MovieTemp);
+//Video.PrintVideosWithErrors(settings.MovieTemp31, searchOption: SearchOption.AllDirectories);
+//Video.RenameDirectoriesWithMetadata(settings, settings.MovieTemp31, isDryRun: false);
+//Video.RestoreMetadata(settings.MovieTemp31);
 //Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp3);
-//Video.RenameDirectoriesWithImdbMetadata(settings.MovieTemp, isDryRun: false);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp31, isDryRun: false);
+//Video.MoveFanArt(settings.MovieTemp31);
 
 //Directory.GetFiles(@"D:\User\Downloads\New folder", "*", SearchOption.AllDirectories)
 //    .ForEach(f => File.Move(f, f
