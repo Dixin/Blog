@@ -7,6 +7,7 @@ using MediaManager.Net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Xabe.FFmpeg;
 using SearchOption = System.IO.SearchOption;
 using Video = MediaManager.IO.Video;
 
@@ -25,16 +26,15 @@ Settings settings = configuration.Get<Settings>() ?? throw new InvalidOperationE
 VideoMovieFileInfo.Settings = settings;
 VideoEpisodeFileInfo.Settings = settings;
 
+using CancellationTokenSource cancellationTokenSource = new();
 AppDomainData.DataDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\Data");
-
 using TextWriterTraceListener textTraceListener = new(Path.Combine(Path.GetTempPath(), "Trace.txt"));
 Trace.Listeners.Add(textTraceListener);
 using ConsoleTraceListener consoleTraceListener = new();
 Trace.Listeners.Add(consoleTraceListener);
-
 Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
+//FFmpeg.SetExecutablesPath(@"C:\Users\User\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-6.1.1-full_build\bin");
 
-using CancellationTokenSource cancellationTokenSource = new();
 
 //Video.PrintDirectoriesWithMultipleMedia(settings.MovieControversial);
 //Video.PrintDirectoriesWithMultipleMedia(settings.MovieMainstream);
@@ -231,19 +231,28 @@ using CancellationTokenSource cancellationTokenSource = new();
 
 //await Video.ConvertToUtf8Async(settings.LibraryDirectory);
 
-// await Video.WriteLibraryMovieMetadata(settings, null,
-//    settings.MovieControversial,
-//    settings.MovieControversialWithoutSubtitle,
-//    settings.MovieControversialTemp3,
-//    settings.MovieMainstream,
-//    settings.MovieMainstreamWithoutSubtitle,
-//    settings.MovieMusical,
-//    settings.MovieTemp1,
-//    settings.MovieTemp2,
-//    settings.MovieTemp3,
-//    settings.MovieTemp31,
-//    settings.MovieTemp32,
-//    settings.MovieTemp3Encode);
+//await Video.WriteLibraryMovieMetadata(settings, null,
+//    [
+//        settings.MovieMainstream,
+//        settings.MovieMainstreamWithoutSubtitle,
+//        settings.MovieTemp1,
+
+//    ],
+//    [
+//        settings.MovieControversial,
+//        settings.MovieControversialWithoutSubtitle,
+//        settings.MovieTemp2,
+//        settings.MovieMusical,
+//    ],
+//    [
+//        settings.MovieTemp3,
+//        settings.MovieTemp31,
+//        settings.MovieTemp32
+//    ],
+//    [
+//        settings.MovieControversialTemp4,
+//        settings.MovieTemp4Encode
+//    ]);
 //await Video.WriteExternalVideoMetadataAsync(settings.MovieExternalMetadata, settings.MovieTemp);
 //await Video.CompareAndMoveAsync(settings.MovieExternalMetadata, settings.MovieLibraryMetadata, settings.MovieExternalNew, settings.MovieExternalDelete, isDryRun: false);
 
@@ -313,13 +322,10 @@ string[] genres = ["family", "animation", "documentary"];
 //                .Any(advisory => advisory.FormattedSeverity == ImdbAdvisorySeverity.Severe)
 //    || imdbMetadata.AllKeywords.Intersect(keywords, StringComparer.OrdinalIgnoreCase).Any()), isDryRun: true);
 
-//await Video.MergeMovieMetadataAsync(settings.MovieMetadataDirectory, @"D:\Files\Library\Movie.MergedMetadata.json");
-//await Video.UpdateMergedMovieMetadataAsync(settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, @"D:\Files\Library\Movie.MergedMetadata.json", settings.MovieLibraryMetadata);
-//await Video.MergeMovieMetadataAsync(settings.MovieMetadataDirectory, @"D:\Files\Library\Movie.MergedMetadata.json");
-//HashSet<string> keywords = new(settings.AllImdbKeywords, StringComparer.OrdinalIgnoreCase);
+//await Video.WriteMergedMovieMetadataAsync(settings);
 //await Video.PrintMovieLinksAsync(
 //    settings,
-//    imdbMetadata =>
+//    (imdbMetadata, keywords) =>
 //    //imdbMetadata.AllKeywords.Intersect(new string[] { "test" }, StringComparer.OrdinalIgnoreCase).IsEmpty()
 //    // &&imdbMetadata.Genres.Intersect(genres, StringComparer.OrdinalIgnoreCase).IsEmpty()
 //    //&& imdbMetadata.Genres.Intersect(new string[] { "action" }, StringComparer.OrdinalIgnoreCase).Any()
@@ -327,12 +333,12 @@ string[] genres = ["family", "animation", "documentary"];
 //            .Where(advisory => advisory.Key.ContainsIgnoreCase("sex") || advisory.Key.ContainsIgnoreCase("nudity"))
 //            .SelectMany(advisory => advisory.Value)
 //            .Any(advisory => advisory.FormattedSeverity == ImdbAdvisorySeverity.Severe)
-//        || imdbMetadata.AllKeywords.Any(keyword => keywords.Contains(keyword)))
+//        || imdbMetadata.AllKeywords.Any(keywords.Contains))
 //    //&& string.Compare(imdbMetadata.FormattedAggregateRating, "8.0", StringComparison.Ordinal) <= 0
 //    //&& string.Compare(imdbMetadata.FormattedAggregateRating, "7.0", StringComparison.Ordinal) >= 0
 //    //&& imdbMetadata.AggregateRating?.RatingCount >= 10_000
 //    //&& imdbMetadata.AllKeywords.Intersect(keywords, StringComparer.OrdinalIgnoreCase).Any()
-//    , keywords,
+//    ,
 //    isDryRun: true);
 
 //await Preferred.DownloadMetadataAsync(settings.MoviePreferredSummary, settings.MoviePreferredMetadata, log, 4);
@@ -406,15 +412,14 @@ string[] genres = ["family", "animation", "documentary"];
 //Video.MoveSubtitleToParentDirectory(settings.MovieTemp32, @"\\beyond-r\j\Files\Library\Movies.Subtitles", true);
 //FfmpegHelper.MergeAllDubbedMovies(settings.MovieTemp32, isDryRun: true);
 //Video.BackupMetadata(settings.MovieTemp);
-//await Video.DownloadImdbMetadataAsync(settings.MovieTemp, 2, overwrite: false, useCache: true, useBrowser: true, 1);
+//await Video.DownloadImdbMetadataAsync(settings.MovieTemp31, 2, overwrite: false, useCache: true, useBrowser: true);
 //Video.PrintDuplicateImdbId(null, settings.MovieTemp32);
-//await Video.DownloadMissingTitlesFromDoubanAsync(settings.MovieTemp);
+//await Video.DownloadMissingTitlesFromDoubanAsync(settings, settings.MovieTemp31);
 //Video.PrintVideosWithErrors(settings.MovieTemp32, searchOption: SearchOption.AllDirectories);
 //Video.RenameDirectoriesWithMetadata(settings.MovieTemp, isDryRun: false);
 //Video.RestoreMetadata(settings.MovieTemp);
-//Video.PrintDirectoriesWithErrors(settings, settings.MovieMainstream);
+//Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp3);
 //Video.RenameDirectoriesWithImdbMetadata(settings.MovieTemp, isDryRun: false);
-//Video.RemoveSubtitleSuffix(settings.MovieTemp31);
 
 //Directory.GetFiles(@"D:\User\Downloads\New folder", "*", SearchOption.AllDirectories)
 //    .ForEach(f => File.Move(f, f
@@ -1009,3 +1014,10 @@ static void RenameFilesWithDuplicateTitle(
 //    });
 
 //Video.FormatVideoFileNames(@"\\beyond-r\F\Files\Library\Movies", SearchOption.AllDirectories, isDryRun: true);
+//Directory.GetFiles(settings.MovieTemp3, "*.2Audio.mp4", SearchOption.AllDirectories)
+//    .Select(v => Video.ReadVideoMetadataAsync(v).Result)
+//    .Where(v => !(v.AudioStreams.Length == 2 
+//        && v.AudioStreams[0].Language != v.AudioStreams[1].Language
+//        && v.AudioStreams[0].Language is not "eng"
+//        && v.AudioStreams[1].Language is "eng"))
+//    .ForEach(v => Logger.WriteLine(v.File));

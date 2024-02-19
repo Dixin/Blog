@@ -42,7 +42,9 @@ public partial record Settings(
     string TVTopX265Metadata,
 
     string MovieMetadataDirectory,
+    string MovieMetadataBackupDirectory,
     string MovieMetadataCacheDirectory,
+    string MovieMetadataCacheBackupDirectory,
     string TVMetadataDirectory,
     string TVMetadataCacheDirectory,
 

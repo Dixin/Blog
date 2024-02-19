@@ -153,7 +153,11 @@ public interface ISettings
 
     string MovieMetadataDirectory { get; init; }
 
+    string MovieMetadataBackupDirectory { get; init; }
+
     string MovieMetadataCacheDirectory { get; init; }
+
+    string MovieMetadataCacheBackupDirectory { get; init; }
 
     string TVMetadataDirectory { get; init; }
 

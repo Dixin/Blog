@@ -517,7 +517,7 @@ internal static partial class Video
         await JsonHelper.SerializeToFileAsync(allVideoMetadata, jsonPath);
     }
 
-    internal static async Task WriteMergedMovieMetadataAsync(ISettings settings, string metadataRecycleDirectory = "", string cacheRecycleDirectory = "", Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task WriteMergedMovieMetadataAsync(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
@@ -540,12 +540,12 @@ internal static partial class Video
                     .Any(name => name.ContainsIgnoreCase(".1080p.") && (name.EndsWithIgnoreCase("-RARBG") || name.EndsWithIgnoreCase("-VXT"))))
                 .Select(group => group.Key),
             StringComparer.OrdinalIgnoreCase);
-        Action<string> recycleMetadata = metadataRecycleDirectory.IsNullOrWhiteSpace()
+        Action<string> recycleMetadata = settings.MovieMetadataBackupDirectory.IsNullOrWhiteSpace()
             ? FileHelper.Recycle
-            : file => FileHelper.MoveToDirectory(file, metadataRecycleDirectory, true, true);
-        Action<string> recycleCache = cacheRecycleDirectory.IsNullOrWhiteSpace()
+            : file => FileHelper.MoveToDirectory(file, settings.MovieMetadataBackupDirectory, true, true);
+        Action<string> recycleCache = settings.MovieMetadataCacheBackupDirectory.IsNullOrWhiteSpace()
             ? FileHelper.Recycle
-            : file => FileHelper.MoveToDirectory(file, cacheRecycleDirectory, true, true);
+            : file => FileHelper.MoveToDirectory(file, settings.MovieMetadataCacheBackupDirectory, true, true);
         metadataFilesByImdbId
             .Where(metadataFile => topLibraryImdbIds.Contains(metadataFile.Key))
             .ToArray()

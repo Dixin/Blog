@@ -44,7 +44,10 @@
     "TempFile": "D:\\Files\\Library\\Temp.txt",
 
     "MovieMetadataDirectory": "D:\\Files\\Library\\MovieMetadata",
+    "MovieMetadataBackupDirectory": "D:\\Files\\Library\\MovieMetadataBackup",
     "MovieMetadataCacheDirectory": "D:\\Files\\Library\\MovieMetadataCache",
+    "MovieMetadataCacheBackupDirectory": "D:\\Files\\Library\\MovieMetadataCacheBackup",
+
     "TVMetadataDirectory": "D:\\Files\\Library\\TVMetadata",
     "TVMetadataCacheDirectory": "D:\\Files\\Library\\TVMetadataCache",
 

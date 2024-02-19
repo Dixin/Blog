@@ -337,8 +337,8 @@ internal static partial class Video
                         log($"!Metadata file missing {TVShowMetadataFile}: {movie}");
                     }
 
-                    XDocument metadata = XDocument.Load(Path.Combine(movie, metadataFile));
-                    string? metadataImdbId = metadata.Root?.Element("imdb_id")?.Value;
+                    XDocument xmlMetadata = XDocument.Load(Path.Combine(movie, metadataFile));
+                    string? metadataImdbId = xmlMetadata.Root?.Element("imdb_id")?.Value;
                     if (imdbMetadata is null)
                     {
                         if (metadataImdbId.IsNotNullOrWhiteSpace())
