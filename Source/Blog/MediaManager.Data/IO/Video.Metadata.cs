@@ -392,8 +392,8 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
 
-        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> existingMetadata = File.Exists(settings.MovieLibraryMetadata)
-            ? await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>>>(settings.MovieLibraryMetadata)
+        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata?>> existingMetadata = File.Exists(settings.MovieLibraryMetadata)
+            ? await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata?>>>(settings.MovieLibraryMetadata)
             : new();
 
         existingMetadata
@@ -447,7 +447,7 @@ internal static partial class Video
                     });
 
                 Debug.Assert(newVideos.Values.All(group => group.Any()));
-                Dictionary<string, Dictionary<string, VideoMetadata>> newVideoMetadata = newVideos
+                Dictionary<string, Dictionary<string, VideoMetadata?>> newVideoMetadata = newVideos
                     .AsParallel()
                     .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
                     .Select(group =>
@@ -468,19 +468,23 @@ internal static partial class Video
                         .Videos
                         .Select(video =>
                         {
-                            if (!TryReadVideoMetadata(video, out VideoMetadata? videoMetadata, group.Metadata, settings.LibraryDirectory))
+                            if (!TryReadVideoMetadata(video, out VideoMetadata? videoMetadata, group.Metadata, settings.LibraryDirectory, 1))
                             {
                                 log($"!Fail: {video}");
                             }
 
-                            return videoMetadata;
-                        })
-                        .NotNull())
-                    .ToLookup(videoMetadata => videoMetadata.Imdb?.ImdbId ?? string.Empty)
-                    .ToDictionary(group => group.Key, group => group.ToDictionary(videoMetadata => videoMetadata.File));
+                            return (
+                                ImdbId: group.Metadata?.ImdbId ?? string.Empty,
+                                RelativePath: Path.GetRelativePath(settings.LibraryDirectory, video), 
+                                Metadata: videoMetadata);
+                        }))
+                    .ToLookup(video => video.ImdbId)
+                    .ToDictionary(
+                        group => group.Key, 
+                        group => group.ToDictionary(video => video.RelativePath, video => video.Metadata));
 
                 newVideoMetadata.ForEach(group => existingMetadata.AddOrUpdate(group.Key,
-                    key => new ConcurrentDictionary<string, VideoMetadata>(group.Value),
+                    key => new ConcurrentDictionary<string, VideoMetadata?>(group.Value),
                     (key, videos) =>
                     {
                         group.Value.ForEach(video => Debug.Assert(videos.TryAdd(video.Key, video.Value)));

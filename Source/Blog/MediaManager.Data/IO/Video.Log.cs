@@ -2218,4 +2218,24 @@ internal static partial class Video
                 }
             });
     }
+
+    internal static async Task PrintFranchiseAsync(ISettings settings, string franchiseDirectory, int level = DefaultDirectoryLevel, Action<string>? log = null, CancellationToken cancellationToken = default)
+    {
+        log ??= Logger.WriteLine;
+
+        Dictionary<string, Dictionary<string, VideoMetadata?>> existingMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata?>>>(settings.MovieLibraryMetadata, cancellationToken);
+        ILookup<string, string> directoryNames = existingMetadata
+            .Values
+            .SelectMany(group => group.Keys)
+            .ToLookup(
+                relativePath => Regex.Replace(PathHelper.GetFileName(PathHelper.GetDirectoryName(relativePath)), "^The ", string.Empty, RegexOptions.IgnoreCase),
+                relativePath => relativePath);
+        EnumerateDirectories(franchiseDirectory, level)
+            .Select(directory => Regex.Replace(PathHelper.GetFileName(directory).Split("`").First(), "^The ", string.Empty, RegexOptions.IgnoreCase))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order()
+            .ForEach(franchise => directoryNames
+                .Where(group => group.Key.StartsWithIgnoreCase(franchise))
+                .ForEach(group => group.Order().ForEach(video => log($"{franchise} | {group.Key} | {video}"))));
+    }
 }
