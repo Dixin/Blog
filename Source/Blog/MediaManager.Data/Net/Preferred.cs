@@ -113,10 +113,10 @@ internal static class Preferred
                             Year: summary.Year,
                             Language: info.Find("h2 a span").Text().Trim().TrimStart('[').TrimEnd(']'),
                             Availabilities: info.Find("p.hidden-sm a[rel='nofollow']").ToDictionary(link => link.TextContent.Trim(), link => link.GetAttribute("href")));
-                        
+
                         details.AddOrUpdate(
-                            detail.ImdbId, 
-                            key => [detail], 
+                            detail.ImdbId,
+                            key => [detail],
                             (key, group) => group
                                 .Where(item => !item.Link.EqualsIgnoreCase(detail.Link))
                                 .Append(detail)
@@ -187,5 +187,149 @@ internal static class Preferred
             .Where(imdbId => imdbId.IsNotNullOrWhiteSpace())
             .ToArray();
         await JsonHelper.SerializeToFileAsync(titles, jsonPath);
+    }
+
+    internal static async Task DownloadAllTorrentsAsync(ISettings settings, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    {
+        log ??= Logger.WriteLine;
+
+        HashSet<string> existingTorrents = new(Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory, TorrentHelper.TorrentSearchPattern), StringComparer.OrdinalIgnoreCase);
+
+        ConcurrentDictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper
+            .DeserializeFromFileAsync<ConcurrentDictionary<string, PreferredMetadata[]>>(settings.MoviePreferredMetadata, new(), cancellationToken);
+        PreferredMetadata[] allMetadata = preferredMetadata
+            .SelectMany(group => group.Value)
+            .ToArray();
+        int length = allMetadata.Length;
+        log($"Estimation {allMetadata.Length - existingTorrents.Count} files.");
+        await allMetadata
+            .ParallelForEachAsync(
+                async (metadata, index, token) =>
+                {
+                    if (index % 100 == 0)
+                    {
+                        log($"{index * 100 / length}% - {index}/{length}");
+                    }
+
+                    await DownloadTorrentsAsync(settings, metadata, existingTorrents.Contains, isDryRun, log, token);
+                },
+                Environment.ProcessorCount,
+                cancellationToken);
+    }
+
+    internal static async Task<bool> DownloadTorrentsAsync(
+        ISettings settings, PreferredMetadata preferredMetadata, Func<string, bool>? skip = null, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    {
+        log ??= Logger.WriteLine;
+        skip ??= File.Exists;
+
+        (string Quality, string Link, PreferredMetadata Metadata)[] availabilities = preferredMetadata
+            .Availabilities
+            .Select(availability => (Quality: availability.Key, Link: availability.Value, Metadata: preferredMetadata))
+            .ToArray();
+        (string Quality, string Link, PreferredMetadata Metadata)[] videos = availabilities
+            .Where(availability => availability.Quality.ContainsIgnoreCase("1080") && availability.Quality.ContainsIgnoreCase("Blu") && availability.Quality.ContainsIgnoreCase("265"))
+            .ToArray();
+        if (videos.IsEmpty())
+        {
+            videos = availabilities
+                .Where(availability => availability.Quality.ContainsIgnoreCase("1080") && availability.Quality.ContainsIgnoreCase("Blu"))
+                .ToArray();
+        }
+
+        if (videos.IsEmpty())
+        {
+            videos = availabilities
+                .Where(availability => availability.Quality.ContainsIgnoreCase("1080") && availability.Quality.ContainsIgnoreCase("WEB") && availability.Quality.ContainsIgnoreCase("265"))
+                .ToArray();
+        }
+
+        if (videos.IsEmpty())
+        {
+            videos = availabilities
+                .Where(availability => availability.Quality.ContainsIgnoreCase("1080") && availability.Quality.ContainsIgnoreCase("WEB"))
+                .ToArray();
+        }
+
+        if (videos.IsEmpty())
+        {
+            videos = availabilities
+                .Where(availability => availability.Quality.ContainsIgnoreCase("720") && availability.Quality.ContainsIgnoreCase("Blu"))
+                .ToArray();
+        }
+
+        if (videos.IsEmpty())
+        {
+            videos = availabilities
+                .Where(availability => availability.Quality.ContainsIgnoreCase("720") && availability.Quality.ContainsIgnoreCase("WEB"))
+                .ToArray();
+        }
+
+        if (videos.IsEmpty())
+        {
+            videos = availabilities
+                .Where(availability => availability.Quality.ContainsIgnoreCase("480"))
+                .ToArray();
+        }
+
+        if (videos.IsEmpty())
+        {
+            log($"!{preferredMetadata.ImdbId} has no valid availability: {string.Join("|", availabilities.Select(availability => availability.Quality))}.");
+            return false;
+        }
+
+        //log($"{preferredVideos.First().ImdbId}-{imdbMetadata.FormattedAggregateRating}-{imdbMetadata.FormattedAggregateRatingCount}-{preferredVideos.First().Title} {preferredVideos.First().Link} {imdbMetadata.Link}");
+        //log($"{imdbMetadata.Link}keywords");
+        //log($"{imdbMetadata.Link}parentalguide");
+        using HttpClient? httpClient = isDryRun ? null : new HttpClient().AddEdgeHeaders();
+        bool isDownloaded = false;
+        await videos.ForEachAsync(
+            async (video, index, token) =>
+            {
+                //log($"{video.Key} | {video.Link} | {video.Metadata.Link}");
+                string hash = video.Link.Split("/", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last().Trim();
+                string webUrl = video.Metadata.Link.Split("/", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last().Trim();
+                string quality = video.Quality.Replace(".", " ").FilterForFileSystem();
+                string title = video.Metadata.Title.ReplaceOrdinal(" - ", " ").ReplaceOrdinal("-", " ").ReplaceOrdinal(".", " ").ReplaceIgnoreCase("：", " ").ReplaceOrdinal("  ", " ").FilterForFileSystem().Trim();
+                string name = $"{preferredMetadata.ImdbId}.{hash}.{webUrl}.{quality}.{title}";
+                string file = Path.Combine(settings.MovieMetadataCacheDirectory, $"{name}{TorrentHelper.TorrentExtension}");
+                if (skip(file))
+                {
+                    return;
+                }
+
+                if (httpClient is null)
+                {
+                    log($"""
+                         {name}
+                         {file}
+
+                         """);
+                    return;
+                }
+
+                try
+                {
+                    await Retry.FixedIntervalAsync(
+                            async () => await httpClient.GetFileAsync(video.Link, file, token),
+                            isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound });
+                    isDownloaded = true;
+                    log($"""
+                         {name}
+                         {file}
+
+                         """);
+                }
+                catch (Exception exception) when (exception.IsNotCritical())
+                {
+                    log($"""
+                         {name}
+                         magnet:?xt=urn:btih:{hash}
+
+                         """);
+                }
+            },
+            cancellationToken);
+        return isDownloaded;
     }
 }

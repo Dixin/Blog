@@ -15,9 +15,9 @@ using OpenQA.Selenium;
 
 public class TorrentHelper
 {
-    private const string TorrentExtension = ".torrent";
+    internal const string TorrentExtension = ".torrent";
 
-    private const string TorrentSearchPattern = $"{PathHelper.AllSearchPattern}{TorrentExtension}";
+    internal const string TorrentSearchPattern = $"{PathHelper.AllSearchPattern}{TorrentExtension}";
 
     private const string HashSeparator = "@";
 
@@ -29,11 +29,10 @@ public class TorrentHelper
         MagnetLink magnetLink = new(InfoHash.FromHex(magnetUri.ExactTopic), magnetUri.DisplayName, magnetUri.Trackers.ToArray());
         EngineSettingsBuilder engineSettingsBuilder = new()
         {
-            CacheDirectory = torrentDirectory,
+            CacheDirectory = torrentDirectory
         };
 
-        ClientEngine clientEngine = new(engineSettingsBuilder.ToSettings());
-        //await clientEngine.StartAllAsync();
+        using ClientEngine clientEngine = new(engineSettingsBuilder.ToSettings());
         byte[] torrent = await clientEngine.DownloadMetadataAsync(magnetLink, cancellationToken);
         string torrentPath = Path.Combine(torrentDirectory, $"{magnetUri.DisplayName}{HashSeparator}{magnetUri.ExactTopic}{TorrentExtension}");
         await File.WriteAllBytesAsync(torrentPath, torrent, cancellationToken);
@@ -64,7 +63,7 @@ public class TorrentHelper
             CacheDirectory = torrentDirectory
         };
 
-        ClientEngine clientEngine = new(engineSettingsBuilder.ToSettings());
+        using ClientEngine clientEngine = new(engineSettingsBuilder.ToSettings());
         await clientEngine.StartAllAsync();
         return magnetUrls
             .Select(magnetUrl => MagnetUri.Parse(magnetUrl).AddDefaultTrackers())
@@ -89,13 +88,15 @@ public class TorrentHelper
         string[] magnetUrls = (await File.ReadAllTextAsync(magnetUrlPath, cancellationToken))
             .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        await DownloadAllFromCacheAsync(magnetUrls, torrentDirectory, useBrowser, degreeOfParallelism, log, cancellationToken);
+        await DownloadAllFromCacheAsync(magnetUrls, torrentDirectory, null, useBrowser, degreeOfParallelism, log, cancellationToken);
     }
 
     public static async Task DownloadAllFromCacheAsync(
-        IEnumerable<string> magnetUrls, string torrentDirectory, bool useBrowser = false, int? degreeOfParallelism = null, 
+        IEnumerable<string> magnetUrls, string torrentDirectory, Func<string, string>? getHashFromFile = null, bool useBrowser = false, int? degreeOfParallelism = null,
         Action<string>? log = null, CancellationToken cancellationToken = default)
     {
+        getHashFromFile ??= torrent => PathHelper.GetFileNameWithoutExtension(torrent).Split(HashSeparator).Last();
+
         const string Referer = "https://magnet2torrent.com/";
         degreeOfParallelism ??= IOMaxDegreeOfParallelism;
 
@@ -106,52 +107,66 @@ public class TorrentHelper
 
         IEnumerable<string> downloadedHashes = Directory
             .EnumerateFiles(torrentDirectory, TorrentSearchPattern, SearchOption.AllDirectories)
-            .Select(torrent => PathHelper.GetFileNameWithoutExtension(torrent).Split(HashSeparator).Last());
+            .Select(getHashFromFile);
 
-        await magnetUrls
+        ConcurrentQueue<MagnetUri> magnetUris = new(magnetUrls
             .Select(MagnetUri.Parse)
-            .ExceptBy(downloadedHashes, uri => uri.ExactTopic, StringComparer.OrdinalIgnoreCase)
+            .ExceptBy(downloadedHashes, uri => uri.ExactTopic, StringComparer.OrdinalIgnoreCase));
+        if (useBrowser)
+        {
+            WebDriverHelper.DisposeAll();
+        }
+
+        await Enumerable
+            .Range(0, degreeOfParallelism.Value)
             .ParallelForEachAsync
-                (async (magnetUri, index, token) =>
+                (async (index, _, token) =>
                 {
                     token.ThrowIfCancellationRequested();
-                    string torrentUrl = $"https://itorrents.org/torrent/{magnetUri.ExactTopic}{TorrentExtension}";
                     if (!useBrowser)
                     {
                         using HttpClient httpClient = new HttpClient().AddEdgeHeaders(referer: Referer);
-                        try
+                        while (magnetUris.TryDequeue(out MagnetUri? magnetUri))
                         {
-                            await Retry.FixedIntervalAsync(
-                                async () => await httpClient.GetFileAsync(
-                                    torrentUrl,
-                                    Path.Combine(torrentDirectory, $"{magnetUri.DisplayName}@{magnetUri.ExactTopic}{TorrentExtension}"),
-                                    token),
-                                isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.Moved });
-                        }
-                        catch (Exception exception) when (exception.IsNotCritical())
-                        {
-                            log?.Invoke(magnetUri.ToString());
-                            log?.Invoke(exception.ToString());
-                            log?.Invoke(string.Empty);
+                            string torrentUrl = $"https://itorrents.org/torrent/{magnetUri.ExactTopic}{TorrentExtension}";
+                            try
+                            {
+                                await Retry.FixedIntervalAsync(
+                                    async () => await httpClient.GetFileAsync(
+                                        torrentUrl,
+                                        Path.Combine(torrentDirectory, $"{magnetUri.DisplayName}@{magnetUri.ExactTopic}{TorrentExtension}"),
+                                        token),
+                                    isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.Moved });
+                            }
+                            catch (Exception exception) when (exception.IsNotCritical())
+                            {
+                                log?.Invoke(magnetUri.ToString());
+                                log?.Invoke(exception.ToString());
+                                log?.Invoke(string.Empty);
+                            }
                         }
                     }
                     else
                     {
-                        using IWebDriver webDriver = WebDriverHelper.Start(downloadDirectory: torrentDirectory);
+                        using IWebDriver webDriver = WebDriverHelper.Start(index, downloadDirectory: torrentDirectory, isLoadingAll: true, keepExisting: true);
                         webDriver.Navigate().GoToUrl(Referer);
-                        try
+                        while (magnetUris.TryDequeue(out MagnetUri? magnetUri))
                         {
-                            Retry.FixedInterval(() => webDriver.Url = torrentUrl);
-                        }
-                        catch (Exception exception) when (exception.IsNotCritical())
-                        {
-                            log?.Invoke(magnetUri.ToString());
-                            log?.Invoke(exception.ToString());
-                            log?.Invoke(string.Empty);
+                            string torrentUrl = $"https://itorrents.org/torrent/{magnetUri.ExactTopic}{TorrentExtension}";
+                            try
+                            {
+                                Retry.FixedInterval(() => webDriver.Url = torrentUrl);
+                            }
+                            catch (Exception exception) when (exception.IsNotCritical())
+                            {
+                                log?.Invoke(magnetUri.ToString());
+                                log?.Invoke(exception.ToString());
+                                log?.Invoke(string.Empty);
+                            }
                         }
                     }
-                }, 
-                degreeOfParallelism, 
+                },
+                degreeOfParallelism,
                 cancellationToken);
     }
 
