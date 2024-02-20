@@ -113,12 +113,14 @@ internal static class Preferred
                             Year: summary.Year,
                             Language: info.Find("h2 a span").Text().Trim().TrimStart('[').TrimEnd(']'),
                             Availabilities: info.Find("p.hidden-sm a[rel='nofollow']").ToDictionary(link => link.TextContent.Trim(), link => link.GetAttribute("href")));
-                        lock (AddDetailLock)
-                        {
-                            details[detail.ImdbId] = details.ContainsKey(detail.ImdbId)
-                                ? details[detail.ImdbId].Where(item => !item.Link.EqualsIgnoreCase(detail.Link)).Append(detail).ToArray()
-                                : [detail];
-                        }
+                        
+                        details.AddOrUpdate(
+                            detail.ImdbId, 
+                            key => [detail], 
+                            (key, group) => group
+                                .Where(item => !item.Link.EqualsIgnoreCase(detail.Link))
+                                .Append(detail)
+                                .ToArray());
                     }
                     catch (Exception exception)
                     {
@@ -139,8 +141,6 @@ internal static class Preferred
     }
 
     private static readonly object WriteJsonLock = new();
-
-    private static readonly object AddDetailLock = new();
 
     internal static async Task WriteImdbSpecialTitles(string imdbBasicsPath, string jsonPath)
     {

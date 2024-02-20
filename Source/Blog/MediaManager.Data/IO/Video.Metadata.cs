@@ -525,7 +525,8 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
 
-        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(settings.MovieLibraryMetadata, cancellationToken);
+        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper
+            .DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(settings.MovieLibraryMetadata, cancellationToken);
         ConcurrentDictionary<string, ImdbMetadata> mergedMetadata = await JsonHelper
             .DeserializeFromFileAsync<ConcurrentDictionary<string, ImdbMetadata>>(settings.MovieMergedMetadata, new(), cancellationToken);
         ILookup<string, string> cacheFilesByImdbId = Directory
@@ -549,9 +550,11 @@ internal static partial class Video
         Action<string> recycleCache = settings.MovieMetadataCacheBackupDirectory.IsNullOrWhiteSpace()
             ? FileHelper.Recycle
             : file => FileHelper.MoveToDirectory(file, settings.MovieMetadataCacheBackupDirectory, true, true);
-        metadataFilesByImdbId
+        KeyValuePair<string, string>[] metadataToDelete = metadataFilesByImdbId
             .Where(metadataFile => topLibraryImdbIds.Contains(metadataFile.Key))
-            .ToArray()
+            .ToArray();
+        log($"Delete {metadataToDelete.Length}");
+        metadataToDelete
             .ForEach(metadataFile =>
             {
                 log($"Delete {metadataFile.Value}");
@@ -574,9 +577,12 @@ internal static partial class Video
             .ToArray()
             .ForEach(imdbId => Debug.Assert(mergedMetadata.TryRemove(imdbId, out _)));
 
-        metadataFilesByImdbId
+        string[] newImdbIds = metadataFilesByImdbId
             .Keys
             .Except(mergedMetadata.Keys, StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+        log($"Add {newImdbIds.Length}.");
+        newImdbIds
             .AsParallel()
             .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
             .ForAll(imdbId =>
@@ -588,7 +594,7 @@ internal static partial class Video
                 }
                 else
                 {
-                    throw new InvalidOperationException(file);
+                    Debug.Fail(file);
                 }
             });
 

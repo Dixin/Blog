@@ -230,12 +230,11 @@ Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
 
 //await Video.ConvertToUtf8Async(settings.LibraryDirectory);
 
-//await Video.WriteLibraryMovieMetadata(settings, null,
+//await Video.WriteLibraryMovieMetadataAsync(settings, null, default,
 //    [
 //        settings.MovieMainstream,
 //        settings.MovieMainstreamWithoutSubtitle,
 //        settings.MovieTemp1,
-
 //    ],
 //    [
 //        settings.MovieControversial,
@@ -410,7 +409,7 @@ string[] genres = ["family", "animation", "documentary"];
 //Video.MoveSubtitleToParentDirectory(settings.MovieTemp31, @"\\beyond-r\j\Files\Library\Movies.Subtitles", false);
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp31, 2, overwrite: false, useCache: true, useBrowser: true);
 //FfmpegHelper.MergeAllDubbedMovies(settings.MovieTemp31, isDryRun: true);
-//Video.PrintDuplicateImdbId(null, settings.MovieTemp31);
+//Video.PrintDuplicateImdbId(null, settings.MovieTemp31, settings.MovieTemp3);
 //Video.PrintVideosWithErrors(settings.MovieTemp31, searchOption: SearchOption.AllDirectories);
 //Video.BackupMetadata(settings.MovieTemp31);
 //await Video.DownloadMissingTitlesFromDoubanAsync(settings, settings.MovieTemp31);
