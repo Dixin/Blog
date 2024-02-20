@@ -410,15 +410,15 @@ string[] genres = ["family", "animation", "documentary"];
 //Video.MoveSubtitleToParentDirectory(settings.MovieTemp31, @"\\beyond-r\j\Files\Library\Movies.Subtitles", false);
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp31, 2, overwrite: false, useCache: true, useBrowser: true);
 //FfmpegHelper.MergeAllDubbedMovies(settings.MovieTemp31, isDryRun: true);
-//Video.BackupMetadata(settings.MovieTemp31);
-//Video.PrintDuplicateImdbId(null, settings.MovieTemp31, settings.MovieTemp3);
-//await Video.DownloadMissingTitlesFromDoubanAsync(settings, settings.MovieTemp31);
+//Video.PrintDuplicateImdbId(null, settings.MovieTemp31);
 //Video.PrintVideosWithErrors(settings.MovieTemp31, searchOption: SearchOption.AllDirectories);
-//Video.RenameDirectoriesWithMetadata(settings, settings.MovieTemp31, isDryRun: false);
-//Video.RestoreMetadata(settings.MovieTemp31);
-//Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp3);
+//Video.BackupMetadata(settings.MovieTemp31);
+//await Video.DownloadMissingTitlesFromDoubanAsync(settings, settings.MovieTemp31);
+//Video.RenameDirectoriesWithMetadata(settings, settings.MovieTemp31, isDryRun: true, skipRenamed: true);
 //Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp31, isDryRun: false);
 //Video.MoveFanArt(settings.MovieTemp31);
+//Video.RestoreMetadata(settings.MovieTemp31);
+//Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp31);
 
 //Directory.GetFiles(@"D:\User\Downloads\New folder", "*", SearchOption.AllDirectories)
 //    .ForEach(f => File.Move(f, f

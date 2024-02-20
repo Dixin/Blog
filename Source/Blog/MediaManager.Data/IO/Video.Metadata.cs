@@ -468,7 +468,7 @@ internal static partial class Video
                         .Videos
                         .Select(video =>
                         {
-                            if (!TryReadVideoMetadata(video, out VideoMetadata? videoMetadata, group.Metadata, settings.LibraryDirectory, 1))
+                            if (!TryReadVideoMetadata(video, out VideoMetadata? videoMetadata, group.Metadata, settings.LibraryDirectory))
                             {
                                 log($"!Fail: {video}");
                             }

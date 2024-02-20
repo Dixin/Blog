@@ -101,7 +101,7 @@ internal static partial class Video
 
     private static (string? Message, Action<string>? Action) GetVideoError(VideoMetadata videoMetadata, bool isNoAudioAllowed, Action<string>? is720 = null, Action<string>? is1080 = null)
     {
-        if (videoMetadata.VideoWidth <= 0 || videoMetadata.VideoHeight <= 0 || isNoAudioAllowed || videoMetadata.AudioStreams.Any())
+        if (videoMetadata.VideoWidth <= 0 || videoMetadata.VideoHeight <= 0 || isNoAudioAllowed || videoMetadata.AudioStreams.IsEmpty())
         {
             return ($"Failed {videoMetadata.VideoWidth}x{videoMetadata.VideoHeight} {videoMetadata.AudioStreams.Length}Audio {videoMetadata.File}", null);
         }

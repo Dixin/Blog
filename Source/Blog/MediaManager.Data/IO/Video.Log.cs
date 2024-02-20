@@ -14,6 +14,7 @@ internal static partial class Video
 {
     internal static void PrintVideosWithErrors(string directory, bool isNoAudioAllowed = false, SearchOption searchOption = SearchOption.TopDirectoryOnly, Func<string, bool>? predicate = null, Action<string>? is720 = null, Action<string>? is1080 = null, Action<string>? log = null)
     {
+        log ??= Logger.WriteLine;
         PrintVideosWithErrors(
             Directory
                 .EnumerateFiles(directory, PathHelper.AllSearchPattern, searchOption)
@@ -30,6 +31,7 @@ internal static partial class Video
         files
             .ToArray()
             .AsParallel()
+            .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
             .Select((video, index) =>
             {
                 if (!TryReadVideoMetadata(video, out VideoMetadata? videoMetadata, log: message => log($"{index} {message}")))
