@@ -184,6 +184,6 @@ public static class FileHelper
     public static void ReplaceFileNameWithoutExtension(string file, string newFileNameWithoutExtension, bool overwrite = false) =>
         Move(file, PathHelper.ReplaceFileNameWithoutExtension(file, newFileNameWithoutExtension), overwrite);
 
-    public static void ReplaceFileNameWithoutExtension(string file, Func<string, string> replace, bool overwrite = false) =>
-        Move(file, PathHelper.ReplaceFileNameWithoutExtension(file, replace), overwrite);
+    public static void ReplaceFileNameWithoutExtension(string file, Func<string, string> replace, bool overwrite = false, bool skipDestinationDirectory = false) =>
+        Move(file, PathHelper.ReplaceFileNameWithoutExtension(file, replace), overwrite, skipDestinationDirectory);
 }

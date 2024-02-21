@@ -35,6 +35,7 @@ public partial record Settings(
     string MovieTopH264720PMetadata,
     string MoviePreferredSummary,
     string MoviePreferredMetadata,
+    string MoviePreferredFileMetadata,
     string MovieRareMetadata,
     string MovieSharedMetadata,
     string MovieImdbSpecialMetadata,

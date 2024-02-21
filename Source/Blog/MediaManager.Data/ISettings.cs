@@ -141,6 +141,8 @@ public interface ISettings
 
     string MoviePreferredMetadata { get; init; }
 
+    string MoviePreferredFileMetadata { get; init; }
+
     string MovieRareMetadata { get; init; }
 
     string MovieSharedMetadata { get; init; }

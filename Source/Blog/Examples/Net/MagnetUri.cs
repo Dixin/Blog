@@ -4,7 +4,16 @@ using System.Collections.Immutable;
 using System.Web;
 using Examples.Common;
 
-public record MagnetUri(string ExactTopic, string DisplayName, string[] Trackers) : ISimpleParsable<MagnetUri>
+public interface IMagnetUri
+{
+    string ExactTopic { get; }
+
+    string DisplayName { get; }
+
+    string[] Trackers { get; }
+}
+
+public record MagnetUri(string ExactTopic, string DisplayName, string[] Trackers) : ISimpleParsable<MagnetUri>, IMagnetUri
 {
     private const int HashLength = 40;
 
