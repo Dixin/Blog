@@ -808,15 +808,11 @@ internal static class Imdb
                 cancellationToken);
     }
 
-    internal static async Task UpdateAllMoviesKeywordsAsync(
-        string libraryJsonPath,
-        string x265JsonPath, string h264JsonPath, string preferredJsonPath, string h264720PJsonPath, string rareJsonPath, string x265XJsonPath, string h264XJsonPath,
-        string cacheDirectory, string metadataDirectory,
-        Func<int, Range>? getRange = null, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task UpdateAllMoviesKeywordsAsync(ISettings settings, Func<int, Range>? getRange = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
-        string[] cacheFiles = Directory.EnumerateFiles(cacheDirectory, "*.Keywords.bak.log").Order().ToArray();
+        string[] cacheFiles = Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory, "*.Keywords.log").Order().ToArray();
 
         int length = cacheFiles.Length;
         if (getRange is not null)
@@ -825,17 +821,17 @@ internal static class Imdb
         }
 
         ConcurrentQueue<string> cacheFilesQueue = new(cacheFiles);
-        const int MaxDegreeOfParallelism = 2;
+        int maxDegreeOfParallelism = Environment.ProcessorCount;
         WebDriverHelper.DisposeAll();
 
-        await Enumerable.Range(0, MaxDegreeOfParallelism)
+        await Enumerable
+            .Range(0, maxDegreeOfParallelism)
             .ParallelForEachAsync(
                 async (index, i, token) =>
                 {
                     using WebDriverWrapper webDriver = new(() => WebDriverHelper.Start(index, keepExisting: true), "http://imdb.com");
-                    while (cacheFilesQueue.TryDequeue(out string? cacheFile))
+                    while (cacheFilesQueue.TryDequeue(out string? keywordFile))
                     {
-                        string keywordFile = cacheFile.Replace(".Keywords.bak.log", ".Keywords.log");
                         if (File.Exists($"{keywordFile}.txt"))
                         {
                             continue;
@@ -906,11 +902,13 @@ internal static class Imdb
                             //log($"{allKeywordsCQ.Length} - {oldKeywords.Length}");
                         }
 
-                        await File.WriteAllTextAsync(keywordFile, keywordsHtml, token);
-                        await File.WriteAllLinesAsync($"{keywordFile}.txt", allKeywords, token);
+                        await FileHelper.WriteTextAsync(keywordFile, keywordsHtml, cancellationToken: token);
+                        await FileHelper.WriteTextAsync($"{keywordFile}.txt", string.Join(Environment.NewLine, allKeywords), cancellationToken: token);
+                        //await File.WriteAllTextAsync(keywordFile, keywordsHtml, token);
+                        //await File.WriteAllLinesAsync($"{keywordFile}.txt", allKeywords, token);
                     }
                 },
-                MaxDegreeOfParallelism,
+                maxDegreeOfParallelism,
                 cancellationToken);
     }
 

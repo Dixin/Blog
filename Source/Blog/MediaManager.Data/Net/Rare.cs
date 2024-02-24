@@ -8,8 +8,6 @@ using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 internal static class Rare
 {
-    private static readonly object WriteJsonLock = new();
-
     private const int WriteCount = 100;
 
     internal static async Task DownloadMetadataAsync(ISettings settings, string indexUrl, int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
@@ -27,6 +25,7 @@ internal static class Rare
         int linkCount = links.Length;
         log($"Total: {linkCount}");
         ConcurrentDictionary<string, RareMetadata> rareMetadata = new();
+        object writeJsonLock = new();
         await links.ParallelForEachAsync(
             async (link, index, token) =>
             {
@@ -49,13 +48,13 @@ internal static class Rare
 
                 if (index % WriteCount == 0)
                 {
-                    JsonHelper.SerializeToFile(rareMetadata, settings.MovieRareMetadata, WriteJsonLock);
+                    JsonHelper.SerializeToFile(rareMetadata, settings.MovieRareMetadata, ref writeJsonLock);
                 }
             }, 
             degreeOfParallelism, 
             cancellationToken);
 
-        JsonHelper.SerializeToFile(rareMetadata, settings.MovieRareMetadata, WriteJsonLock);
+        JsonHelper.SerializeToFile(rareMetadata, settings.MovieRareMetadata, ref writeJsonLock);
 
         await PrintVersionsAsync(settings, rareMetadata, log);
     }

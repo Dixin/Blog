@@ -402,7 +402,11 @@ internal static partial class Video
             .AsParallel()
             .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
             .Where(video => !File.Exists(Path.IsPathRooted(video.video) ? video.video : Path.Combine(settings.LibraryDirectory, video.video)))
-            .ForAll(video => Debug.Assert(video.group.TryRemove(video.video, out _)));
+            .ForAll(video =>
+            {
+                log($"Delete {video.video}.");
+                Debug.Assert(video.group.TryRemove(video.video, out _));
+            });
 
         HashSet<string> existingVideos = new(existingMetadata.Values.SelectMany(group => group.Keys), StringComparer.OrdinalIgnoreCase);
         directoryDrives
@@ -484,16 +488,25 @@ internal static partial class Video
                         group => group.ToDictionary(video => video.RelativePath, video => video.Metadata));
 
                 newVideoMetadata.ForEach(group => existingMetadata.AddOrUpdate(group.Key,
-                    key => new ConcurrentDictionary<string, VideoMetadata?>(group.Value),
+                    key =>
+                    {
+                        log($"Create {group.Key} with {string.Join("|", group.Value.Keys)}.");
+                        return new ConcurrentDictionary<string, VideoMetadata?>(group.Value);
+                    },
                     (key, videos) =>
                     {
-                        group.Value.ForEach(video => Debug.Assert(videos.TryAdd(video.Key, video.Value)));
+                        group.Value.ForEach(video =>
+                        {
+                            log($"Add to {group.Key} with {video.Key}.");
+                            Debug.Assert(videos.TryAdd(video.Key, video.Value));
+                        });
                         return videos;
                     }));
             });
 
         existingMetadata
             .Where(group => group.Value.IsEmpty())
+            .Do(group => log($"Delete {group.Key}."))
             .ToArray()
             .ForEach(group => Debug.Assert(existingMetadata.TryRemove(group)));
 
@@ -574,6 +587,7 @@ internal static partial class Video
         mergedMetadata
             .Keys
             .Except(metadataFilesByImdbId.Keys, StringComparer.OrdinalIgnoreCase)
+            .Do(imdbId => log($"Delete {imdbId}."))
             .ToArray()
             .ForEach(imdbId => Debug.Assert(mergedMetadata.TryRemove(imdbId, out _)));
 
@@ -590,6 +604,7 @@ internal static partial class Video
                 string file = metadataFilesByImdbId[imdbId];
                 if (ImdbMetadata.TryLoad(file, out ImdbMetadata? imdbMetadata))
                 {
+                    log($"Add {file}.");
                     mergedMetadata[imdbId] = imdbMetadata;
                 }
                 else

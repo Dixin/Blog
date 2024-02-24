@@ -11,8 +11,6 @@ internal static class Shared
 {
     private static readonly int MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 50);
 
-    private static readonly object WriteJsonLock = new();
-
     private const int WriteCount = 100;
 
     internal static async Task<SharedMetadata[]> DownloadMetadataAsync(ISettings settings, bool skipExisting = false, int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
@@ -73,6 +71,7 @@ internal static class Shared
             downloadingUrls = downloadingUrls.Where(item => !results.ContainsKey(item.Key));
         }
 
+        object writeJsonLock = new();
         await downloadingUrls
             .ParallelForEachAsync(
                 async (url, index, token) =>
@@ -115,7 +114,7 @@ internal static class Shared
                     if (results.Count % WriteCount == 0)
                     {
                         SharedMetadata[] ordered = results.Values.OrderByDescending(item => item.Id).ToArray();
-                        JsonHelper.SerializeToFile(ordered, metadataFile, WriteJsonLock);
+                        JsonHelper.SerializeToFile(ordered, metadataFile, ref writeJsonLock);
                     }
                 },
                 degreeOfParallelism,

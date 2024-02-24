@@ -61,21 +61,21 @@ public static class FileHelper
         return true;
     }
 
-    public static void MoveToDirectory(string source, string destinationParentDirectory, bool overwrite = false, bool skipDestinationDirectory = false) => 
+    public static void MoveToDirectory(string source, string destinationParentDirectory, bool overwrite = false, bool skipDestinationDirectory = false) =>
         Move(source, Path.Combine(destinationParentDirectory, Path.GetFileName(source)), overwrite, skipDestinationDirectory);
 
     public static bool TryMoveToDirectory(string source, string destinationParentDirectory, bool overwrite = false) =>
         TryMove(source, Path.Combine(destinationParentDirectory, Path.GetFileName(source)), overwrite);
 
-    public static void CopyToDirectory(string source, string destinationParentDirectory, bool overwrite = false) => 
-        Copy(source, Path.Combine(destinationParentDirectory, Path.GetFileName(source)), overwrite);
+    public static void CopyToDirectory(string source, string destinationParentDirectory, bool overwrite = false, bool skipDestinationDirectory = false) =>
+        Copy(source, Path.Combine(destinationParentDirectory, Path.GetFileName(source)), overwrite, skipDestinationDirectory);
 
-    public static void Copy(string source, string destination, bool overwrite = false)
+    public static void Copy(string source, string destination, bool overwrite = false, bool skipDestinationDirectory = false)
     {
         source.ThrowIfNullOrWhiteSpace();
 
         string destinationDirectory = PathHelper.GetDirectoryName(destination);
-        if (!Directory.Exists(destinationDirectory))
+        if (!skipDestinationDirectory && !Directory.Exists(destinationDirectory))
         {
             Directory.CreateDirectory(destinationDirectory);
         }
@@ -139,31 +139,34 @@ public static class FileHelper
         File.Move(tempFile, file);
     }
 
-    public static void WriteText(string file, string text, Encoding? encoding = null, object? @lock = null)
+    public static void WriteText(string file, string text, Encoding? encoding = null)
     {
         encoding ??= Encoding.UTF8;
         string tempFile = $"{file}.tmp";
-        if (@lock is null)
-        {
-            WriteTextImplementation();
-            return;
-        }
+
+        WriteTextImplementation(file, tempFile, text, encoding);
+    }
+
+    public static void WriteText(string file, string text, ref readonly object @lock, Encoding? encoding = null)
+    {
+        encoding ??= Encoding.UTF8;
+        string tempFile = $"{file}.tmp";
 
         lock (@lock)
         {
-            WriteTextImplementation();
+            WriteTextImplementation(file, tempFile, text, encoding);
         }
+    }
 
-        void WriteTextImplementation()
+    private static void WriteTextImplementation(string file, string tempFile, string text, Encoding encoding)
+    {
+        File.WriteAllText(tempFile, text, encoding);
+        if (File.Exists(file))
         {
-            File.WriteAllText(tempFile, text, encoding);
-            if (File.Exists(file))
-            {
-                Delete(file);
-            }
-
-            File.Move(tempFile, file);
+            Delete(file);
         }
+
+        File.Move(tempFile, file);
     }
 
     public static void Recycle(string file)
@@ -181,8 +184,8 @@ public static class FileHelper
     public static void ReplaceFileName(string file, string newFileName, bool overwrite = false) =>
         Move(file, PathHelper.ReplaceFileName(file, newFileName), overwrite);
 
-    public static void ReplaceFileNameWithoutExtension(string file, string newFileNameWithoutExtension, bool overwrite = false) =>
-        Move(file, PathHelper.ReplaceFileNameWithoutExtension(file, newFileNameWithoutExtension), overwrite);
+    public static void ReplaceFileNameWithoutExtension(string file, string newFileNameWithoutExtension, bool overwrite = false, bool skipDestinationDirectory = false) =>
+        Move(file, PathHelper.ReplaceFileNameWithoutExtension(file, newFileNameWithoutExtension), overwrite, skipDestinationDirectory);
 
     public static void ReplaceFileNameWithoutExtension(string file, Func<string, string> replace, bool overwrite = false, bool skipDestinationDirectory = false) =>
         Move(file, PathHelper.ReplaceFileNameWithoutExtension(file, replace), overwrite, skipDestinationDirectory);

@@ -1474,24 +1474,32 @@ internal static partial class Video
         Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264Metadata);
         Dictionary<string, TopMetadata[]> x265XMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265XMetadata);
         Dictionary<string, TopMetadata[]> h264XMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264XMetadata);
-        //Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(preferredJsonPath);
+        Dictionary<string, PreferredFileMetadata[]> preferredFileMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredFileMetadata[]>>(settings.MoviePreferredFileMetadata);
         //Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264720PJsonPath);
         HashSet<string> topDuplications = new(settings.MovieTopDuplications, StringComparer.OrdinalIgnoreCase);
 
-        Dictionary<string, string> x265TitlesImdbIds = x265Metadata
+        Dictionary<string, string> x265TitlesToImdbIds = x265Metadata
             .SelectMany(pair => pair.Value)
             .ToDictionary(metadata => metadata.Title, metadata => metadata.ImdbId);
-        Dictionary<string, string> x265XTitlesImdbIds = x265XMetadata
+        Dictionary<string, string> x265XTitlesToImdbIds = x265XMetadata
             .SelectMany(pair => pair.Value)
             .ToDictionary(metadata => metadata.Title, metadata => metadata.ImdbId);
-        Dictionary<string, string> h264TitlesImdbIds = h264Metadata
+        Dictionary<string, string> h264TitlesToImdbIds = h264Metadata
             .Where(pair => pair.Key.IsNotNullOrWhiteSpace())
             .SelectMany(pair => pair.Value)
             .Where(metadata => !topDuplications.Contains(metadata.Title))
             .ToDictionary(metadata => metadata.Title, metadata => metadata.ImdbId);
-        Dictionary<string, string> h264XTitlesImdbIds = h264XMetadata
+        Dictionary<string, string> h264XTitlesToImdbIds = h264XMetadata
             .SelectMany(pair => pair.Value)
             .ToDictionary(metadata => metadata.Title, metadata => metadata.ImdbId);
+        ILookup<string, string> preferredTitlesToImdbIds = preferredFileMetadata
+            .SelectMany(pair => pair.Value)
+            .ToLookup(
+                metadata => metadata.File
+                    .ReplaceIgnoreCase(".YIFY", "-YIFY")
+                    .ReplaceIgnoreCase(".BRRip.", ".BluRay.")
+                    .ReplaceIgnoreCase(".1080.BluRay.", ".1080p.BluRay."),
+                metadata => metadata.ImdbId);
 
         directories
             .SelectMany(directory => EnumerateDirectories(directory.Directory, directory.Level))
@@ -1530,6 +1538,7 @@ internal static partial class Video
 
                 VideoMovieFileInfo[] x265Videos = videos.Where(video => video.GetEncoderType() is EncoderType.X).ToArray();
                 VideoMovieFileInfo[] h264Videos = videos.Where(video => video.GetEncoderType() is EncoderType.H && video.GetDefinitionType() == DefinitionType.P1080).ToArray();
+                VideoMovieFileInfo[] preferredVideos = videos.Where(video => video.GetEncoderType() is EncoderType.Y or EncoderType.XY).ToArray();
 
                 if (x265Videos.Any())
                 {
@@ -1537,10 +1546,10 @@ internal static partial class Video
                     {
                         (string File, string XmlImdbId, string XmlTitle) xml = xmlDocuments[PathHelper.GetFileNameWithoutExtension(x265Video.Name)];
 
-                        string x265Title = x265TitlesImdbIds.Keys.FirstOrDefault(key => x265Video.Name.StartsWithIgnoreCase(key), string.Empty);
+                        string x265Title = x265TitlesToImdbIds.Keys.FirstOrDefault(key => x265Video.Name.StartsWithIgnoreCase(key), string.Empty);
                         if (x265Title.IsNotNullOrWhiteSpace())
                         {
-                            string remoteImdbId = x265TitlesImdbIds[x265Title];
+                            string remoteImdbId = x265TitlesToImdbIds[x265Title];
                             if (!remoteImdbId.EqualsIgnoreCase(xml.XmlImdbId))
                             {
                                 log($"!XML IMDB id {xml.XmlImdbId} should be {remoteImdbId} for '{xml.XmlTitle}': {xml.File}");
@@ -1549,10 +1558,10 @@ internal static partial class Video
                             return;
                         }
 
-                        string x265XTitle = x265XTitlesImdbIds.Keys.FirstOrDefault(key => x265Video.Name.StartsWithIgnoreCase(key), string.Empty);
+                        string x265XTitle = x265XTitlesToImdbIds.Keys.FirstOrDefault(key => x265Video.Name.StartsWithIgnoreCase(key), string.Empty);
                         if (x265XTitle.IsNotNullOrWhiteSpace())
                         {
-                            string remoteImdbId = x265XTitlesImdbIds[x265XTitle];
+                            string remoteImdbId = x265XTitlesToImdbIds[x265XTitle];
                             if (!remoteImdbId.EqualsIgnoreCase(xml.XmlImdbId))
                             {
                                 log($"!XML IMDB id {xml.XmlImdbId} should be {remoteImdbId} for '{xml.XmlTitle}': {xml.File}");
@@ -1571,10 +1580,10 @@ internal static partial class Video
                     {
                         (string File, string XmlImdbId, string XmlTitle) xml = xmlDocuments[PathHelper.GetFileNameWithoutExtension(h264Video.Name)];
 
-                        string h264Title = h264TitlesImdbIds.Keys.FirstOrDefault(key => h264Video.Name.StartsWithIgnoreCase(key), string.Empty);
+                        string h264Title = h264TitlesToImdbIds.Keys.FirstOrDefault(key => h264Video.Name.StartsWithIgnoreCase(key), string.Empty);
                         if (h264Title.IsNotNullOrWhiteSpace())
                         {
-                            string remoteImdbId = h264TitlesImdbIds[h264Title];
+                            string remoteImdbId = h264TitlesToImdbIds[h264Title];
                             if (!remoteImdbId.EqualsIgnoreCase(xml.XmlImdbId))
                             {
                                 log($"!XML IMDB id {xml.XmlImdbId} should be {remoteImdbId} for '{xml.XmlTitle}': {xml.File}");
@@ -1583,10 +1592,10 @@ internal static partial class Video
                             return;
                         }
 
-                        string h264XTitle = h264XTitlesImdbIds.Keys.FirstOrDefault(key => h264Video.Name.StartsWithIgnoreCase(key), string.Empty);
+                        string h264XTitle = h264XTitlesToImdbIds.Keys.FirstOrDefault(key => h264Video.Name.StartsWithIgnoreCase(key), string.Empty);
                         if (h264XTitle.IsNotNullOrWhiteSpace())
                         {
-                            string remoteImdbId = h264XTitlesImdbIds[h264XTitle];
+                            string remoteImdbId = h264XTitlesToImdbIds[h264XTitle];
                             if (!remoteImdbId.EqualsIgnoreCase(xml.XmlImdbId))
                             {
                                 log($"!XML IMDB id {xml.XmlImdbId} should be {remoteImdbId} for '{xml.XmlTitle}': {xml.File}");
@@ -1596,6 +1605,31 @@ internal static partial class Video
                         }
 
                         log($"-{xml.XmlImdbId} with title {h264Video.Name} is missing in H264 for '{xml.XmlTitle}': {movie.Directory}");
+                    });
+                }
+
+                if (preferredVideos.Any())
+                {
+                    preferredVideos.ForEach(preferredVideo =>
+                    {
+                        (string File, string XmlImdbId, string XmlTitle) xml = xmlDocuments[PathHelper.GetFileNameWithoutExtension(preferredVideo.Name)];
+
+                        string[] preferredTitles = preferredTitlesToImdbIds
+                            .Select(group => group.Key)
+                            .Where(key => preferredVideo.Name.StartsWithIgnoreCase(key))
+                            .ToArray();
+                        if (preferredTitles.Any() && preferredTitles.All(preferredTitle => preferredTitle.IsNotNullOrWhiteSpace()))
+                        {
+                            string[] remoteImdbIds = preferredTitles.SelectMany(preferredTitle => preferredTitlesToImdbIds[preferredTitle]).ToArray();
+                            if (!remoteImdbIds.ContainsIgnoreCase(xml.XmlImdbId))
+                            {
+                                log($"!XML IMDB id {xml.XmlImdbId} should be {string.Join("|", remoteImdbIds)} for '{xml.XmlTitle}': {xml.File}");
+                            }
+
+                            return;
+                        }
+
+                        log($"-{xml.XmlImdbId} with title {preferredVideo.Name} is missing in preferred for '{xml.XmlTitle}': {movie.Directory}");
                     });
                 }
 
@@ -1944,7 +1978,25 @@ internal static partial class Video
                 {
                     await preferredVideos
                         .Do(preferredMetadata => Debug.Assert(preferredMetadata.ImdbId.EqualsIgnoreCase(imdbMetadata.ImdbId)))
-                        .ForEachAsync(async preferredMetadata => await Preferred.DownloadTorrentsAsync(settings, preferredMetadata, null, isDryRun, log, token), token);
+                        .ForEachAsync(async preferredMetadata =>
+                        {
+                            await Task.Yield();
+                            //await Preferred.DownloadTorrentsAsync(settings, preferredMetadata, null, isDryRun, log, token);
+                            preferredMetadata.PreferredAvailabilities
+                                .Select(availability => Path.Combine(settings.MovieMetadataCacheDirectory, $"{preferredMetadata.ImdbId}.{availability.Value.Split("/").Last()}{TorrentHelper.TorrentExtension}"))
+                                .Do(log)
+                                .ForEach(file =>
+                                {
+                                    if (File.Exists(file))
+                                    {
+                                        FileHelper.CopyToDirectory(file, @"E:\Files\Yts", true, true);
+                                    }
+                                    else
+                                    {
+                                        log($"magnet:?xt=urn:btih:{PathHelper.GetFileNameWithoutExtension(file).Split(".").Last()}");
+                                    }
+                                });
+                        }, token);
                 }
 
                 //if (h264720PMetadata.TryGetValue(imdbMetadata.ImdbId, out TopMetadata[]? h264720PVideos))

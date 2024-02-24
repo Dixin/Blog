@@ -53,10 +53,16 @@ internal class JsonHelper
     public static string Serialize<TValue>(TValue value) =>
         JsonSerializer.Serialize(value, SerializerOptions);
 
-    public static void SerializeToFile<TValue>(TValue value, string file, object? @lock = null)
+    public static void SerializeToFile<TValue>(TValue value, string file)
     {
         string jsonContent = Serialize(value);
-        FileHelper.WriteText(file, jsonContent, @lock: @lock);
+        FileHelper.WriteText(file, jsonContent);
+    }
+
+    public static void SerializeToFile<TValue>(TValue value, string file, ref readonly object @lock)
+    {
+        string jsonContent = Serialize(value);
+        FileHelper.WriteText(file, jsonContent, in @lock);
     }
 
     public static async Task SerializeToFileAsync<TValue>(TValue value, string file, CancellationToken cancellationToken = default)

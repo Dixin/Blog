@@ -11,10 +11,10 @@ using OpenQA.Selenium.Support.UI;
 
 internal static class Top
 {
-    private const int WriteCount = 50;
+    private const int WriteCount = 100;
 
     internal static async Task DownloadMetadataAsync(
-        IEnumerable<string> urls, string jsonPath, Func<int, bool>? @continue = null, 
+        IEnumerable<string> urls, string jsonPath, Func<int, bool>? @continue = null,
         int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         degreeOfParallelism ??= Video.IOMaxDegreeOfParallelism;
@@ -24,8 +24,8 @@ internal static class Top
             .DeserializeFromFileAsync<ConcurrentDictionary<string, TopMetadata[]>>(jsonPath, new(), cancellationToken);
 
         await urls.ParallelForEachAsync(
-            async (url, index, token) => await DownloadMetadataAsync(url, jsonPath, allSummaries, index + 1, @continue, log, token), 
-            degreeOfParallelism, 
+            async (url, index, token) => await DownloadMetadataAsync(url, jsonPath, allSummaries, index + 1, @continue, log, token),
+            degreeOfParallelism,
             cancellationToken);
         await JsonHelper.SerializeToFileAsync(allSummaries, jsonPath, cancellationToken);
     }
@@ -34,12 +34,13 @@ internal static class Top
         await DownloadMetadataAsync(new[] { url }, jsonPath, @continue, 1, log, cancellationToken);
 
     private static async Task DownloadMetadataAsync(
-        string url, string jsonPath, ConcurrentDictionary<string, TopMetadata[]> allSummaries, int partitionIndex, Func<int, bool>? @continue = null, 
+        string url, string jsonPath, ConcurrentDictionary<string, TopMetadata[]> allSummaries, int partitionIndex, Func<int, bool>? @continue = null,
         Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
         @continue ??= _ => true;
 
+        object writeJsonLock = new();
         try
         {
             using IWebDriver webDriver = WebDriverHelper.Start(partitionIndex, true);
@@ -95,20 +96,18 @@ internal static class Top
                         int leech = int.TryParse(cells.Eq(5).Text().Trim(), out int leechValue) ? leechValue : -1;
                         return new TopMetadata(link, title, imdbId, imdbRating, genres, image, cells.Eq(2).Text().Trim(), cells.Eq(3).Text().Trim(), seed, leech, cells.Eq(7).Text().Trim());
                     })
-                    .ForEach(summary =>
-                    {
-                        lock (AddSummaryLock)
-                        {
-                            allSummaries[summary.ImdbId] = allSummaries.ContainsKey(summary.ImdbId)
-                                ? allSummaries[summary.ImdbId].Where(existing => !existing.Title.EqualsIgnoreCase(summary.Title)).Append(summary).ToArray()
-                                : [summary];
-                        }
-                    });
+                    .ForEach(summary => allSummaries.AddOrUpdate(
+                        summary.ImdbId,
+                        key => [summary],
+                        (key, group) => group
+                            .Where(existing => !existing.Title.EqualsIgnoreCase(summary.Title))
+                            .Append(summary)
+                            .ToArray()));
 
                 log($"{partitionIndex}:{pageIndex} End {webDriver.Url}");
                 if (pageIndex++ % WriteCount == 0)
                 {
-                    JsonHelper.SerializeToFile(allSummaries, jsonPath, WriteJsonLock);
+                    JsonHelper.SerializeToFile(allSummaries, jsonPath, ref writeJsonLock);
                 }
             } while (webDriver.HasNextPage(ref pager, log));
         }
@@ -118,13 +117,9 @@ internal static class Top
         }
         finally
         {
-            JsonHelper.SerializeToFile(allSummaries, jsonPath, WriteJsonLock);
+            JsonHelper.SerializeToFile(allSummaries, jsonPath, ref writeJsonLock);
         }
     }
-
-    private static readonly object WriteJsonLock = new();
-
-    private static readonly object AddSummaryLock = new();
 
     private static bool HasNextPage(this IWebDriver webDriver, ref IWebElement pager, Action<string>? log = null)
     {

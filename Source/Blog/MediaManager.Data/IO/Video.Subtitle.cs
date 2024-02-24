@@ -316,11 +316,20 @@ internal static partial class Video
                 string[] postfixes = movieSubtitles
                     .Select((subtitle, index) =>
                     {
-                        string postfix = originalNames[index].ToLowerInvariant();
+                        string originalName = originalNames[index].ToLowerInvariant();
+                        string postfix = originalName;
                         Match match = Regex.Match(postfix, "^[0-9]+_(.+)$");
                         if (match.Success)
                         {
                             postfix = match.Groups[1].Value;
+                        }
+                        else
+                        {
+                            match = Regex.Match(postfix, @"^.+\.([a-z]{3})(\.hi)?$");
+                            if (match.Success)
+                            {
+                                postfix = match.Groups[1].Value;
+                            }
                         }
 
                         string content = string.Empty;
@@ -420,6 +429,16 @@ internal static partial class Video
 
                         if (postfix is "chi")
                         {
+                            if (originalName.ContainsOrdinal("simplified"))
+                            {
+                                return "chs";
+                            }
+
+                            if (originalName.ContainsOrdinal("traditional"))
+                            {
+                                return "cht";
+                            }
+
                             if (content.IsNullOrWhiteSpace())
                             {
                                 content = File.ReadAllText(subtitle);
@@ -487,7 +506,23 @@ internal static partial class Video
                                 }
                                 else
                                 {
-                                    FileHelper.Move(firstSubtitle.Subtitle, destinationSecondSubtitle);
+                                    if (File.Exists(destinationSecondSubtitle))
+                                    {
+                                        long destinationSecondSubtitleLength = new FileInfo(destinationSecondSubtitle).Length;
+                                        if (firstSubtitle.Length > destinationSecondSubtitleLength)
+                                        {
+                                            FileHelper.MoveToDirectory(destinationSecondSubtitle, subtitleDirectory);
+                                            FileHelper.Move(firstSubtitle.Subtitle, destinationSecondSubtitle);
+                                        }
+                                        else
+                                        {
+                                            FileHelper.Move(firstSubtitle.Subtitle, Path.Combine(subtitleDirectory, $"{videoName}{Delimiter}{firstSubtitle.OriginalName}.srt"));
+                                        }
+                                    }
+                                    else
+                                    {
+                                        FileHelper.Move(firstSubtitle.Subtitle, destinationSecondSubtitle);
+                                    }
                                 }
                             }
                             else
