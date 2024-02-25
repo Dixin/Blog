@@ -892,8 +892,77 @@ internal static class Imdb
                                     .Select(rowCQ => HttpUtility.HtmlDecode(rowCQ.Children().Eq(0).Text()))
                                     .ToArray();
 
-                                await FileHelper.WriteTextAsync(keywordFile, keywordsHtml);
-                                await FileHelper.WriteTextAsync($"{keywordFile}.txt", string.Join(Environment.NewLine, allKeywords));
+                                await FileHelper.WriteTextAsync(keywordFile, keywordsHtml, cancellationToken: token);
+                                await FileHelper.WriteTextAsync($"{keywordFile}.txt", string.Join(Environment.NewLine, allKeywords), cancellationToken: token);
+                            }
+                        });
+
+                        log($"{cacheFilesQueue.Count} of {totalDownloadCount} to download.");
+                    }
+                },
+                maxDegreeOfParallelism,
+                cancellationToken);
+    }
+
+    internal static async Task UpdateAllMoviesAdvisoriesAsync(ISettings settings, Func<int, Range>? getRange = null, int? maxDegreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
+    {
+        log ??= Logger.WriteLine;
+        maxDegreeOfParallelism ??= MaxDegreeOfParallelism;
+
+        WebDriverHelper.DisposeAll();
+        string[] cacheFiles = Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory, "*.Advisories.log").Order().ToArray();
+        HashSet<string> advisoriesFiles = new(Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory, "*.Advisories.log.txt"), StringComparer.OrdinalIgnoreCase);
+        int length = cacheFiles.Length;
+        if (getRange is not null)
+        {
+            cacheFiles = cacheFiles.Take(getRange(length)).ToArray();
+        }
+
+        ConcurrentQueue<string> cacheFilesQueue = new(cacheFiles.Where(advisoriesFile => !advisoriesFiles.Contains($"{advisoriesFile}.txt")));
+        int totalDownloadCount = cacheFilesQueue.Count;
+        log($"Download {totalDownloadCount}.");
+        await Enumerable
+            .Range(0, maxDegreeOfParallelism.Value)
+            .ParallelForEachAsync(
+                async (webDriverIndex, i, token) =>
+                {
+                    using WebDriverWrapper webDriver = new(() => WebDriverHelper.Start(webDriverIndex, keepExisting: true), "http://imdb.com");
+                    while (cacheFilesQueue.TryDequeue(out string? advisoriesFile))
+                    {
+                        if (File.Exists($"{advisoriesFile}.txt"))
+                        {
+                            continue;
+                        }
+
+                        await Retry.FixedIntervalAsync(async () =>
+                        {
+                            string imdbId = PathHelper.GetFileNameWithoutExtension(advisoriesFile).Split(Video.Delimiter).First();
+                            string imdbUrl = $"https://www.imdb.com/title/{imdbId}/";
+                            string advisoriesUrl = $"{imdbUrl}parentalguide";
+                            string advisoriesHtml = await webDriver.GetStringAsync(advisoriesUrl, cancellationToken: token);
+                            if (true)
+                            {
+                                CQ parentalGuideCQ = advisoriesHtml;
+                                string mpaaRating = parentalGuideCQ.Find("#mpaa-rating td").Last().Text().Trim();
+                                ImdbAdvisory[] advisories = parentalGuideCQ
+                                    .Find("#main section.content-advisories-index section")
+                                    .Where(section => section.Id.StartsWithIgnoreCase("advisory-"))
+                                    .Select(section =>
+                                    {
+                                        CQ sectionCQ = section.Cq();
+                                        string category = sectionCQ.Find("h4").Text().Trim();
+                                        string severity = sectionCQ.Find("li.advisory-severity-vote span.ipl-status-pill").Text().Trim();
+                                        string[] details = sectionCQ.Find("li.ipl-zebra-list__item").Select(li => li.ChildNodes.First().NodeValue.Trim()).ToArray();
+                                        return new ImdbAdvisory(category, severity, details);
+                                    })
+                                    .Where(advisory => advisory.Severity.IsNotNullOrWhiteSpace() || advisory.Details.Any())
+                                    .ToArray();
+                                Dictionary<string, ImdbAdvisory[]> result = new()
+                                {
+                                    [mpaaRating] = advisories
+                                };
+                                await FileHelper.WriteTextAsync(advisoriesFile, advisoriesHtml, cancellationToken: token);
+                                await JsonHelper.SerializeToFileAsync(advisories, $"{advisoriesFile}.txt", token);
                             }
                         });
 
