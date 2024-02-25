@@ -809,6 +809,7 @@ internal static class Imdb
         log ??= Logger.WriteLine;
         maxDegreeOfParallelism ??= MaxDegreeOfParallelism;
 
+        WebDriverHelper.DisposeAll();
         string[] cacheFiles = Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory, "*.Keywords.log").Order().ToArray();
         HashSet<string> keywordsFiles = new(Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory, "*.Keywords.log.txt"), StringComparer.OrdinalIgnoreCase);
         int length = cacheFiles.Length;
@@ -818,7 +819,6 @@ internal static class Imdb
         }
 
         ConcurrentQueue<string> cacheFilesQueue = new(cacheFiles.Where(keywordFile => !keywordsFiles.Contains($"{keywordFile}.txt")));
-        WebDriverHelper.DisposeAll();
         int totalDownloadCount = cacheFilesQueue.Count;
         log($"Download {totalDownloadCount}.");
         await Enumerable
