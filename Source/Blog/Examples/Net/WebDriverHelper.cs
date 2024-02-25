@@ -22,7 +22,7 @@ public static class WebDriverHelper
 
     private const string ProfilePrefix = "Selenium Profile";
 
-    private const bool IsEdgeDefault = true;
+    private const bool IsEdgeDefault = false;
 
     public static IWebDriver Start(int index, bool isLoadingAll = false, bool keepWindow = false, bool keepExisting = false, bool cleanProfile = false, string downloadDirectory = "") =>
         IsEdgeDefault
