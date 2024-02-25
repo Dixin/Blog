@@ -41,12 +41,12 @@ internal static class Imdb
         string json = imdbCQ.Find("""script[type="application/ld+json"]""").Text();
         if (imdbCQ.Find("title").Text().Trim().StartsWithIgnoreCase("500 Error"))
         {
-            throw new ArgumentException("Server side error.", nameof(imdbId));
+            throw new HttpRequestException(HttpRequestError.InvalidResponse, imdbUrl, null, HttpStatusCode.InternalServerError);
         }
 
         if (imdbCQ.Find("title").Text().Trim().StartsWithIgnoreCase("404 Error"))
         {
-            throw new ArgumentOutOfRangeException(nameof(imdbId));
+            throw new HttpRequestException(HttpRequestError.InvalidResponse, imdbUrl, null, HttpStatusCode.NotFound);
         }
 
         ImdbMetadata imdbMetadata = JsonHelper.Deserialize<ImdbMetadata>(json);
@@ -792,15 +792,11 @@ internal static class Imdb
                         {
                             await Retry.FixedIntervalAsync(
                                 async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log, token),
-                                isTransient: exception => exception is not ArgumentOutOfRangeException && exception is not ArgumentException);
+                                isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError });
                         }
-                        catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
+                        catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
                         {
-                            log($"!!!{imdbId}");
-                        }
-                        catch (ArgumentException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
-                        {
-                            log($"!!!{imdbId}");
+                            log($"!!!{imdbId} {exception.ToString()}");
                         }
                     }
                 },
@@ -808,28 +804,29 @@ internal static class Imdb
                 cancellationToken);
     }
 
-    internal static async Task UpdateAllMoviesKeywordsAsync(ISettings settings, Func<int, Range>? getRange = null, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task UpdateAllMoviesKeywordsAsync(ISettings settings, Func<int, Range>? getRange = null, int? maxDegreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
+        maxDegreeOfParallelism ??= MaxDegreeOfParallelism;
 
         string[] cacheFiles = Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory, "*.Keywords.log").Order().ToArray();
-
+        HashSet<string> keywordsFiles = new(Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory, "*.Keywords.log.txt"), StringComparer.OrdinalIgnoreCase);
         int length = cacheFiles.Length;
         if (getRange is not null)
         {
             cacheFiles = cacheFiles.Take(getRange(length)).ToArray();
         }
 
-        ConcurrentQueue<string> cacheFilesQueue = new(cacheFiles);
-        int maxDegreeOfParallelism = Environment.ProcessorCount;
+        ConcurrentQueue<string> cacheFilesQueue = new(cacheFiles.Where(keywordFile => !keywordsFiles.Contains($"{keywordFile}.txt")));
         WebDriverHelper.DisposeAll();
-
+        int totalDownloadCount = cacheFilesQueue.Count;
+        log($"Download {totalDownloadCount}.");
         await Enumerable
-            .Range(0, maxDegreeOfParallelism)
+            .Range(0, maxDegreeOfParallelism.Value)
             .ParallelForEachAsync(
-                async (index, i, token) =>
+                async (webDriverIndex, i, token) =>
                 {
-                    using WebDriverWrapper webDriver = new(() => WebDriverHelper.Start(index, keepExisting: true), "http://imdb.com");
+                    using WebDriverWrapper webDriver = new(() => WebDriverHelper.Start(webDriverIndex, keepExisting: true), "http://imdb.com");
                     while (cacheFilesQueue.TryDequeue(out string? keywordFile))
                     {
                         if (File.Exists($"{keywordFile}.txt"))
@@ -892,20 +889,12 @@ internal static class Imdb
                                 .Select(row => row.Cq())
                                 .Select(rowCQ => HttpUtility.HtmlDecode(rowCQ.Children().Eq(0).Text()))
                                 .ToArray();
-
-                            //CQ oldKeywordsCQ = File.ReadAllText(cacheFiles[currentIndex]);
-                            //string[] oldKeywords = oldKeywordsCQ
-                            //    .Select(row => row.Cq())
-                            //    .Select(rowCQ => HttpUtility.HtmlDecode(rowCQ.Children().Eq(0).Text()))
-                            //    .ToArray();
-
-                            //log($"{allKeywordsCQ.Length} - {oldKeywords.Length}");
                         }
 
-                        await FileHelper.WriteTextAsync(keywordFile, keywordsHtml, cancellationToken: token);
-                        await FileHelper.WriteTextAsync($"{keywordFile}.txt", string.Join(Environment.NewLine, allKeywords), cancellationToken: token);
-                        //await File.WriteAllTextAsync(keywordFile, keywordsHtml, token);
-                        //await File.WriteAllLinesAsync($"{keywordFile}.txt", allKeywords, token);
+                        await Retry.FixedIntervalAsync(async () => await FileHelper.WriteTextAsync(keywordFile, keywordsHtml, cancellationToken: token));
+                        await Retry.FixedIntervalAsync(async () => await FileHelper.WriteTextAsync($"{keywordFile}.txt", string.Join(Environment.NewLine, allKeywords), cancellationToken: token));
+
+                        log($"{cacheFilesQueue.Count} of {totalDownloadCount} to download.");
                     }
                 },
                 maxDegreeOfParallelism,
@@ -943,15 +932,13 @@ internal static class Imdb
             log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
             try
             {
-                await Video.DownloadImdbMetadataAsync(imdbId, metadataDirectory, cacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log);
+                await Retry.FixedIntervalAsync(
+                    async () => await Video.DownloadImdbMetadataAsync(imdbId, metadataDirectory, cacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log),
+                    isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError });
             }
-            catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
+            catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
             {
-                log($"!!!{imdbId}");
-            }
-            catch (ArgumentException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
-            {
-                log($"!!!{imdbId}");
+                log($"!!!{imdbId} {exception.ToString()}");
             }
         });
     }
@@ -992,15 +979,13 @@ internal static class Imdb
             log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
             try
             {
-                await Video.DownloadImdbMetadataAsync(imdbId, metadataDirectory, cacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log);
+                await Retry.FixedIntervalAsync(
+                    async () => await Video.DownloadImdbMetadataAsync(imdbId, metadataDirectory, cacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log),
+                    isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError });
             }
-            catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
+            catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
             {
-                log($"!!!{imdbId}");
-            }
-            catch (ArgumentException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
-            {
-                log($"!!!{imdbId}");
+                log($"!!!{imdbId} {exception}");
             }
         });
     }

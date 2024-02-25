@@ -8,6 +8,7 @@ using Examples.IO;
 using Examples.Linq;
 using Examples.Net;
 using MediaManager.Net;
+using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using OpenQA.Selenium;
 
 internal static partial class Video
@@ -1751,13 +1752,11 @@ internal static partial class Video
         //            log($"{index * 100 / length}% - {index}/{length} - {imdbId}");
         //            try
         //            {
-        //                await DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: true, useCache: false, log: log);
+        //                await Retry.FixedIntervalAsync(
+        //                    async () => await DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: true, useCache: false, log: log),
+        //                    isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError });
         //            }
-        //            catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
-        //            {
-        //                log($"!!!{imdbId} {exception}");
-        //            }
-        //            catch (ArgumentException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
+        //            catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
         //            {
         //                log($"!!!{imdbId} {exception}");
         //            }
@@ -2119,13 +2118,11 @@ internal static partial class Video
                 log($"{index * 100 / length}% - {index}/{length} - {imdbMetadata.ImdbId}");
                 try
                 {
-                    await DownloadImdbMetadataAsync(imdbMetadata.ImdbId, settings.TVMetadataDirectory, settings.TVMetadataCacheDirectory, metadataFiles.Values.ToArray(), cacheFiles, webDriver, overwrite: true, useCache: false, log: log);
+                    await Retry.FixedIntervalAsync(
+                        async () => await DownloadImdbMetadataAsync(imdbMetadata.ImdbId, settings.TVMetadataDirectory, settings.TVMetadataCacheDirectory, metadataFiles.Values.ToArray(), cacheFiles, webDriver, overwrite: true, useCache: false, log: log);
+                    isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError }),
                 }
-                catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
-                {
-                    log($"!!!{imdbMetadata.ImdbId} {exception}");
-                }
-                catch (ArgumentException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
+                catch (HttpRequestException exception) when(exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
                 {
                     log($"!!!{imdbMetadata.ImdbId} {exception}");
                 }

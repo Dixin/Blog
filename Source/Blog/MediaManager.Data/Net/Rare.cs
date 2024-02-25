@@ -50,8 +50,8 @@ internal static class Rare
                 {
                     JsonHelper.SerializeToFile(rareMetadata, settings.MovieRareMetadata, ref writeJsonLock);
                 }
-            }, 
-            degreeOfParallelism, 
+            },
+            degreeOfParallelism,
             cancellationToken);
 
         JsonHelper.SerializeToFile(rareMetadata, settings.MovieRareMetadata, ref writeJsonLock);
@@ -97,11 +97,13 @@ internal static class Rare
 
                 try
                 {
-                    await Video.DownloadImdbMetadataAsync(imdbId.Value, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log);
+                    await Retry.FixedIntervalAsync(
+                        async () => await Video.DownloadImdbMetadataAsync(imdbId.Value, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log),
+                        isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError });
                 }
-                catch (ArgumentOutOfRangeException exception) /*when (exception.ParamName.EqualsIgnoreCase("imdbId"))*/
+                catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
                 {
-                    log(exception.ToString());
+                    log($"!!!{imdbId} {exception.ToString()}");
                     if (imdbId.Value.StartsWithIgnoreCase("tt0"))
                     {
                         imdbId = imdbId with { Value = imdbId.Value.ReplaceIgnoreCase("tt0", "tt") };
