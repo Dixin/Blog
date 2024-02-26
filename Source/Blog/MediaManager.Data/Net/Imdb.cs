@@ -912,13 +912,14 @@ internal static class Imdb
         WebDriverHelper.DisposeAll();
         string[] cacheFiles = Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory, "*.Advisories.log").Order().ToArray();
         HashSet<string> advisoriesFiles = new(Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory, "*.Advisories.log.txt"), StringComparer.OrdinalIgnoreCase);
+        HashSet<string> certificationsFiles = new(Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory, "*.Advisories.log.Certifications.txt"), StringComparer.OrdinalIgnoreCase);
         int length = cacheFiles.Length;
         if (getRange is not null)
         {
             cacheFiles = cacheFiles.Take(getRange(length)).ToArray();
         }
 
-        ConcurrentQueue<string> cacheFilesQueue = new(cacheFiles.Where(advisoriesFile => !advisoriesFiles.Contains($"{advisoriesFile}.txt")));
+        ConcurrentQueue<string> cacheFilesQueue = new(cacheFiles.Where(advisoriesFile => !(advisoriesFiles.Contains($"{advisoriesFile}.txt") && certificationsFiles.Contains($"{advisoriesFile}.Certifications.txt"))));
         int totalDownloadCount = cacheFilesQueue.Count;
         log($"Download {totalDownloadCount}.");
         await Enumerable
@@ -929,7 +930,7 @@ internal static class Imdb
                     using WebDriverWrapper webDriver = new(() => WebDriverHelper.Start(webDriverIndex, keepExisting: true), "http://imdb.com");
                     while (cacheFilesQueue.TryDequeue(out string? advisoriesFile))
                     {
-                        if (File.Exists($"{advisoriesFile}.txt"))
+                        if (File.Exists($"{advisoriesFile}.txt") && File.Exists($"{advisoriesFile}.Certifications.txt"))
                         {
                             continue;
                         }
@@ -961,8 +962,17 @@ internal static class Imdb
                                 {
                                     [mpaaRating] = advisories
                                 };
+                                Dictionary<string, string> certifications = parentalGuideCQ
+                                    .Find("#certificates li.ipl-inline-list__item")
+                                    .Select(certificationDom => (
+                                        Certification: Regex.Replace(certificationDom.TextContent.Trim(), @"\s+", " "),
+                                        Link: certificationDom.Cq().Find("a").Attr("href").Trim()))
+                                    .DistinctBy(certification => certification.Certification)
+                                    .Do(certification => log(certification.Certification))
+                                    .ToDictionary(certification => certification.Certification, certification => certification.Link);
                                 await FileHelper.WriteTextAsync(advisoriesFile, advisoriesHtml, cancellationToken: token);
-                                await JsonHelper.SerializeToFileAsync(advisories, $"{advisoriesFile}.txt", token);
+                                await JsonHelper.SerializeToFileAsync(result, $"{advisoriesFile}.txt", token);
+                                await JsonHelper.SerializeToFileAsync(certifications, $"{advisoriesFile}.Certifications.txt", token);
                             }
                         });
 
