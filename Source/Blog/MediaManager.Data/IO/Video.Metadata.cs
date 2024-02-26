@@ -953,4 +953,37 @@ internal static partial class Video
                     });
             });
     }
+
+    internal static async Task UpdateCertifications(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default, params string[][] directoryDrives)
+    {
+        log ??= Logger.WriteLine;
+
+        directoryDrives
+            .AsParallel()
+            .ForAll(driveDirectories =>
+            {
+                driveDirectories
+                    .SelectMany(directory => Directory.EnumerateFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories))
+                    .Where(metadataFile => !PathHelper.GetFileNameWithoutExtension(metadataFile).EqualsIgnoreCase(NotExistingFlag))
+                    .Select(metadataFile => (MetadataFile: metadataFile, AdvisoriesFile: PathHelper.ReplaceFileName(metadataFile, $"{metadataFile.GetImdbId()}.Advisories.log")))
+                    .AsParallel()
+                    .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
+                    .ForAll(file =>
+                    {
+                        ImdbMetadata imdbMetadata = JsonHelper.DeserializeFromFile<ImdbMetadata>(file.AdvisoriesFile);
+                        CQ parentalGuideCQ = File.ReadAllText(file.AdvisoriesFile);
+                        Dictionary<string, string> certifications = parentalGuideCQ
+                            .Find("#certificates li.ipl-inline-list__item")
+                            .Select(certificationDom => (
+                                Certification: Regex.Replace(certificationDom.TextContent.Trim(), @"\s+", " "),
+                                Link: certificationDom.Cq().Find("a").Attr("href").Trim()))
+                            .DistinctBy(certification => certification.Certification)
+                            .ToDictionary(certification => certification.Certification, certification => certification.Link);
+                        log(string.Join(Environment.NewLine, certifications.Keys));
+                        imdbMetadata = imdbMetadata with { Certifications = certifications };
+                        JsonHelper.SerializeToFile(imdbMetadata, file.MetadataFile);
+                    });
+            });
+
+    }
 }
