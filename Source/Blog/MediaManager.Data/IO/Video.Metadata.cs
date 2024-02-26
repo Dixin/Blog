@@ -954,7 +954,7 @@ internal static partial class Video
             });
     }
 
-    internal static async Task UpdateCertifications(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default, params string[][] directoryDrives)
+    internal static void UpdateCertifications(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default, params string[][] directoryDrives)
     {
         log ??= Logger.WriteLine;
 
@@ -970,7 +970,7 @@ internal static partial class Video
                     .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
                     .ForAll(file =>
                     {
-                        ImdbMetadata imdbMetadata = JsonHelper.DeserializeFromFile<ImdbMetadata>(file.AdvisoriesFile);
+                        ImdbMetadata imdbMetadata = JsonHelper.DeserializeFromFile<ImdbMetadata>(file.MetadataFile);
                         CQ parentalGuideCQ = File.ReadAllText(file.AdvisoriesFile);
                         Dictionary<string, string> certifications = parentalGuideCQ
                             .Find("#certificates li.ipl-inline-list__item")
