@@ -910,16 +910,16 @@ internal static class Imdb
         maxDegreeOfParallelism ??= MaxDegreeOfParallelism;
 
         WebDriverHelper.DisposeAll();
-        string[] cacheFiles = Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory, "*.Advisories.log").Order().ToArray();
+
         HashSet<string> advisoriesFiles = new(Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory, "*.Advisories.log.txt"), StringComparer.OrdinalIgnoreCase);
         HashSet<string> certificationsFiles = new(Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory, "*.Advisories.log.Certifications.txt"), StringComparer.OrdinalIgnoreCase);
-        int length = cacheFiles.Length;
-        if (getRange is not null)
-        {
-            cacheFiles = cacheFiles.Take(getRange(length)).ToArray();
-        }
+        string[] cacheFiles = Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory, "*.Advisories.log")
+            .Where(advisoriesFile => !(advisoriesFiles.Contains($"{advisoriesFile}.txt") && certificationsFiles.Contains($"{advisoriesFile}.Certifications.txt")))
+            .Order()
+            .ToArray();
 
-        ConcurrentQueue<string> cacheFilesQueue = new(cacheFiles.Where(advisoriesFile => !(advisoriesFiles.Contains($"{advisoriesFile}.txt") && certificationsFiles.Contains($"{advisoriesFile}.Certifications.txt"))));
+        int length = cacheFiles.Length;
+        ConcurrentQueue<string> cacheFilesQueue = new(getRange is not null ? cacheFiles.Take(getRange(length)) : cacheFiles);
         int totalDownloadCount = cacheFilesQueue.Count;
         log($"Download {totalDownloadCount}.");
         await Enumerable
