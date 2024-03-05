@@ -216,6 +216,11 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
 
+        if (!Directory.Exists(subtitleDirectory))
+        {
+            Directory.CreateDirectory(subtitleDirectory);
+        }
+
         Directory
             .EnumerateFiles(directory, "*.idx", SearchOption.AllDirectories)
             .Concat(Directory.EnumerateFiles(directory, "*.sub", SearchOption.AllDirectories))
@@ -252,7 +257,7 @@ internal static partial class Video
                     log(subtitle);
                     if (!isDryRun)
                     {
-                        FileHelper.Move(subtitle, destinationSubtitle);
+                        FileHelper.Move(subtitle, destinationSubtitle, false, true);
                     }
 
                     log(destinationSubtitle);
@@ -497,12 +502,12 @@ internal static partial class Video
                                 long destinationFirstSubtitleLength = new FileInfo(destinationFirstSubtitle).Length;
                                 if (firstSubtitle.Length > destinationFirstSubtitleLength)
                                 {
-                                    FileHelper.Move(destinationFirstSubtitle, destinationSecondSubtitle);
-                                    FileHelper.Move(firstSubtitle.Subtitle, destinationFirstSubtitle);
+                                    FileHelper.Move(destinationFirstSubtitle, destinationSecondSubtitle, false, true);
+                                    FileHelper.Move(firstSubtitle.Subtitle, destinationFirstSubtitle, false, true);
                                 }
                                 else if (firstSubtitle.Length == destinationFirstSubtitleLength)
                                 {
-                                    FileHelper.Move(firstSubtitle.Subtitle, Path.Combine(subtitleDirectory, $"{videoName}{Delimiter}{firstSubtitle.OriginalName}.srt"));
+                                    FileHelper.Move(firstSubtitle.Subtitle, Path.Combine(subtitleDirectory, $"{videoName}{Delimiter}{firstSubtitle.OriginalName}.srt"), true, true);
                                 }
                                 else
                                 {
@@ -512,22 +517,22 @@ internal static partial class Video
                                         if (firstSubtitle.Length > destinationSecondSubtitleLength)
                                         {
                                             FileHelper.MoveToDirectory(destinationSecondSubtitle, subtitleDirectory);
-                                            FileHelper.Move(firstSubtitle.Subtitle, destinationSecondSubtitle);
+                                            FileHelper.Move(firstSubtitle.Subtitle, destinationSecondSubtitle, false, true);
                                         }
                                         else
                                         {
-                                            FileHelper.Move(firstSubtitle.Subtitle, Path.Combine(subtitleDirectory, $"{videoName}{Delimiter}{firstSubtitle.OriginalName}.srt"));
+                                            FileHelper.Move(firstSubtitle.Subtitle, Path.Combine(subtitleDirectory, $"{videoName}{Delimiter}{firstSubtitle.OriginalName}.srt"), false, true);
                                         }
                                     }
                                     else
                                     {
-                                        FileHelper.Move(firstSubtitle.Subtitle, destinationSecondSubtitle);
+                                        FileHelper.Move(firstSubtitle.Subtitle, destinationSecondSubtitle, false, true);
                                     }
                                 }
                             }
                             else
                             {
-                                FileHelper.Move(firstSubtitle.Subtitle, destinationFirstSubtitle);
+                                FileHelper.Move(firstSubtitle.Subtitle, destinationFirstSubtitle, false, true);
                             }
                         }
 
@@ -550,17 +555,17 @@ internal static partial class Video
                                     long destinationSecondSubtitleLength = new FileInfo(destinationSecondSubtitle).Length;
                                     if (secondSubtitle.Length > destinationSecondSubtitleLength)
                                     {
-                                        FileHelper.MoveToDirectory(destinationSecondSubtitle, subtitleDirectory);
-                                        FileHelper.Move(secondSubtitle.Subtitle, destinationSecondSubtitle);
+                                        FileHelper.MoveToDirectory(destinationSecondSubtitle, subtitleDirectory, false, true);
+                                        FileHelper.Move(secondSubtitle.Subtitle, destinationSecondSubtitle, false, true);
                                     }
                                     else
                                     {
-                                        FileHelper.Move(secondSubtitle.Subtitle, Path.Combine(subtitleDirectory, $"{videoName}{Delimiter}{secondSubtitle.OriginalName}.srt"));
+                                        FileHelper.Move(secondSubtitle.Subtitle, Path.Combine(subtitleDirectory, $"{videoName}{Delimiter}{secondSubtitle.OriginalName}.srt"), false, true);
                                     }
                                 }
                                 else
                                 {
-                                    FileHelper.Move(secondSubtitle.Subtitle, destinationSecondSubtitle);
+                                    FileHelper.Move(secondSubtitle.Subtitle, destinationSecondSubtitle, false, true);
                                 }
                             }
 
@@ -577,7 +582,7 @@ internal static partial class Video
                                 string destinationSubtitle = Path.Combine(subtitleDirectory, $"{videoName}{Delimiter}{subtitle.OriginalName}.srt");
                                 if (!isDryRun)
                                 {
-                                    FileHelper.Move(subtitle.Subtitle, destinationSubtitle);
+                                    FileHelper.Move(subtitle.Subtitle, destinationSubtitle, false, true);
                                 }
 
                                 log(destinationSubtitle);
@@ -601,17 +606,17 @@ internal static partial class Video
                                 long destinationFirstSubtitleLength = new FileInfo(destinationFirstSubtitle).Length;
                                 if (firstSubtitle.Length > destinationFirstSubtitleLength)
                                 {
-                                    FileHelper.MoveToDirectory(destinationFirstSubtitle, subtitleDirectory);
-                                    FileHelper.Move(firstSubtitle.Subtitle, destinationFirstSubtitle);
+                                    FileHelper.MoveToDirectory(destinationFirstSubtitle, subtitleDirectory, false, true);
+                                    FileHelper.Move(firstSubtitle.Subtitle, destinationFirstSubtitle, false, true);
                                 }
                                 else
                                 {
-                                    FileHelper.Move(firstSubtitle.Subtitle, Path.Combine(subtitleDirectory, $"{videoName}{Delimiter}{subtitleGroup.Subtitles.First().OriginalName}.srt"));
+                                    FileHelper.Move(firstSubtitle.Subtitle, Path.Combine(subtitleDirectory, $"{videoName}{Delimiter}{subtitleGroup.Subtitles.First().OriginalName}.srt"), false, true);
                                 }
                             }
                             else
                             {
-                                FileHelper.Move(firstSubtitle.Subtitle, destinationFirstSubtitle);
+                                FileHelper.Move(firstSubtitle.Subtitle, destinationFirstSubtitle, false, true);
                             }
                         }
 
@@ -627,7 +632,7 @@ internal static partial class Video
                                 string destinationSubtitle = Path.Combine(subtitleDirectory, $"{videoName}{Delimiter}{subtitle.OriginalName}.srt");
                                 if (!isDryRun)
                                 {
-                                    FileHelper.Move(subtitle.Subtitle, destinationSubtitle);
+                                    FileHelper.Move(subtitle.Subtitle, destinationSubtitle, false, true);
                                 }
 
                                 log(destinationSubtitle);

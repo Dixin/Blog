@@ -971,8 +971,8 @@ internal static partial class Video
                     .ForAll(file =>
                     {
                         ImdbMetadata imdbMetadata = JsonHelper.DeserializeFromFile<ImdbMetadata>(file.MetadataFile);
-                        CQ parentalGuideCQ = File.ReadAllText(file.AdvisoriesFile);
-                        Dictionary<string, string> certifications = parentalGuideCQ
+                        CQ advisoriesCQ = File.ReadAllText(file.AdvisoriesFile);
+                        Dictionary<string, string> certifications = advisoriesCQ
                             .Find("#certificates li.ipl-inline-list__item")
                             .Select(certificationDom => (
                                 Certification: Regex.Replace(certificationDom.TextContent.Trim(), @"\s+", " "),
