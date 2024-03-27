@@ -62,7 +62,7 @@ internal static partial class Video
             .ForEach(log);
     }
 
-    internal static void PrintDirectoriesWithMultipleMedia(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null)
+    internal static void PrintDirectoriesWithMultipleVideos(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
@@ -1768,7 +1768,7 @@ internal static partial class Video
             .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
             .ForEachAsync(async (imdbMetadata, index, token) =>
             {
-                log($"{index * 100 / length}% - {index}/{length} - {imdbMetadata.ImdbId}");
+                //log($"{index * 100 / length}% - {index}/{length} - {imdbMetadata.ImdbId}");
                 //if (x265Metadata.TryGetValue(imdbMetadata.ImdbId, out TopMetadata[]? x265Videos))
                 //{
                 //    List<TopMetadata> excluded = [];

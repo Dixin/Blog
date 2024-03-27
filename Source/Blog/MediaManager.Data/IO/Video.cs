@@ -45,7 +45,7 @@ internal static partial class Video
 
     private const string ImdbCacheSearchPattern = $"{PathHelper.AllSearchPattern}{ImdbCacheExtension}";
 
-    private static readonly string[] SubtitleLanguages = ["baq", "bho", "bok", "bul", "can", "cat", "chs", "cht", "cro", "cze", "dan", "dut", "eng", "est", "fil", "fin", "fre", "glg", "gre", "heb", "hin", "hrv", "ind", "ger", "hun", "ice", "ita", "jap", "kan", "kor", "lat", "lit", "mac", "mal", "may", "nor", "pol", "por", "rom", "rum", "rus", "slo", "spa", "srp", "swe", "tam", "tel", "tha", "tur", "ukr", "vie"];
+    private static readonly string[] SubtitleLanguages = ["baq", "bho", "bok", "bul", "can", "cat", "chs", "cht", "cro", "cze", "dan", "dut", "eng", "est", "fil", "fin", "fre", "glg", "gre", "heb", "hin", "hrv", "ind", "ger", "hun", "ice", "ita", "jap", "kan", "kor", "lat", "lav", "lit", "mac", "mal", "may", "nob", "nor", "pol", "por", "rom", "rum", "rus", "slo", "slv", "spa", "srp", "swe", "tam", "tel", "tha", "tur", "ukr", "vie"];
 
     internal const string NotExistingFlag = "-";
 

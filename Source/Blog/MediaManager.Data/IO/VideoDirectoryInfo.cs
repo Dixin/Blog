@@ -14,7 +14,7 @@ internal record VideoDirectoryInfo(
     string Resolution, string Source,
     string Is3D, string Hdr) : INaming, ISimpleParsable<VideoDirectoryInfo>
 {
-    private static readonly Regex NameRegex = new(@"^([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?((\=[^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?)?\.([0-9\-]{4})\.([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?\[([0-9]\.[0-9]|\-)-([0-9\.KM]+|\-)\]\[(\-|13\+|16\+|18|18\+|AO|Approved|C|E|G|GP|M|MA17|MPG|NA|NC17|NotRated|Passed|PG|PG13|R|T|TV13|TV14|TVG|TVMA|TVPG|TVY|TVY7|Unrated|X)\](\[(2160|1080|720|480)(b|b[2-9]|f|f[2-9]|h|h[2-9]|n|n[2-9]|p|p[2-9]|x|x[2-9]|X|X[2-9]|y|y[2-9])(\+)?\])?(\[3D\])?(\[HDR\])?$");
+    private static readonly Regex NameRegex = new(@"^([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?((\=[^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?)?\.([0-9\-]{4})\.([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?\[([0-9]\.[0-9]|\-)-([0-9\.KM]+|\-)\]\[(\-|13\+|16\+|18|18\+|AO|Approved|C|E|G|GP|M|MA17|MPG|NA|NC17|NotRated|Passed|PG|PG13|R|T|TV13|TV14|TVG|TVMA|TVPG|TVY|TVY7|TVY7FV|Unrated|X)\](\[(2160|1080|720|480)(b|b[2-9]|f|f[2-9]|h|h[2-9]|n|n[2-9]|p|p[2-9]|x|x[2-9]|X|X[2-9]|y|y[2-9])(\+)?\])?(\[3D\])?(\[HDR\])?$");
 
     internal string FormattedDefinition
     {
