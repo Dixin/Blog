@@ -32,7 +32,7 @@ using TextWriterTraceListener textTraceListener = new(Path.Combine(Path.GetTempP
 using ConsoleTraceListener consoleTraceListener = new();
 Trace.Listeners.Add(consoleTraceListener);
 Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
-FFmpeg.SetExecutablesPath(@"C:\Users\User\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-6.1.1-full_build\bin");
+FFmpeg.SetExecutablesPath(@"C:\Users\User\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-7.0-full_build\bin");
 
 //Video.PrintDirectoriesWithMultipleMedia(settings.MovieControversial);
 //Video.PrintDirectoriesWithMultipleMedia(settings.MovieMainstream);
@@ -56,11 +56,11 @@ FFmpeg.SetExecutablesPath(@"C:\Users\User\AppData\Local\Microsoft\WinGet\Package
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp4Encode, 2, overwrite: true, useCache: false, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(@"D:\Files\Library\Movies Mainstream.主流电影\Test", 1, overwrite: true, useCache: false, useBrowser: true);
 
-//await Video.DownloadImdbMetadataAsync(settings.TVControversial, 1, overwrite: true, useCache: false, useBrowser: true);
-//await Video.DownloadImdbMetadataAsync(settings.TVDocumentary, 1, overwrite: true, useCache: false, useBrowser: true);
-//await Video.DownloadImdbMetadataAsync(settings.TVMainstream, 1, overwrite: true, useCache: false, useBrowser: true);
-//await Video.DownloadImdbMetadataAsync(settings.TVMainstreamWithoutSubtitle, 1, overwrite: true, useCache: false, useBrowser: true);
-//await Video.DownloadImdbMetadataAsync(settings.TVTemp4, 1, overwrite: true, useCache: false, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.TVControversial, 1, overwrite: false, useCache: true, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.TVDocumentary, 1, overwrite: false, useCache: true, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.TVMainstream, 1, overwrite: false, useCache: true, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.TVMainstreamWithoutSubtitle, 1, overwrite: false, useCache: true, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.TVTemp4, 1, overwrite: false, useCache: true, useBrowser: true);
 
 //Video.MoveFanArt(settings.Movie3D);
 //Video.MoveFanArt(settings.MovieHdr);
@@ -410,12 +410,12 @@ string[] genres = ["family", "animation", "documentary"];
 //});
 
 //await Video.PrintMovieImdbIdErrorsAsync(settings, true, null, settings.MovieTemp41);
-//await Video.ConvertToUtf8Async(settings.MovieTemp31, true);
-//Video.MoveSubtitleToParentDirectory(settings.MovieTemp42, @"D:\Files\Library\Movies Temp4.电影4\Subtitle", false);
+//await Video.ConvertToUtf8Async(settings.MovieTemp11, true);
+//Video.MoveSubtitleToParentDirectory(settings.MovieTemp41, @"D:\Files\Library\Movies Temp4.电影4\Subtitle", false);
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp41, 2, overwrite: false, useCache: true, useBrowser: true);
-//FfmpegHelper.MergeAllDubbedMovies(settings.MovieTemp31, isDryRun: true);
+//FfmpegHelper.MergeAllDubbedMovies(settings.MovieTemp41, isDryRun: true);
 //Video.PrintDuplicateImdbId(null, settings.MovieTemp41, settings.MovieTemp3, settings.MovieTemp4);
-//Video.PrintVideosWithErrors(@"\\beyond-r\J\Files\Library\New folder", searchOption: SearchOption.AllDirectories);
+//Video.PrintVideosWithErrors(settings.MovieTemp41, searchOption: SearchOption.AllDirectories);
 //Video.BackupMetadata(settings.MovieTemp41);
 //await Video.DownloadMissingTitlesFromDoubanAsync(settings, settings.MovieTemp41);
 //Video.RenameDirectoriesWithMetadata(settings, settings.MovieTemp41, isDryRun: false, skipRenamed: true);
@@ -1307,27 +1307,36 @@ static async Task MoveSharedMoviesAsync(ISettings settings, Action<string>? log 
     //    });
 }
 
-//Directory.GetFiles(@"\\beyond-r\J\Files\Library\new folder", "*.mkv", SearchOption.AllDirectories)
-//    .ForEach(video =>
+//Directory.GetFiles(@"D:/Files/Library/Movies Temp4.2.电影4.2", "*.mkv", SearchOption.AllDirectories)
+//    .AsParallel()
+//    .WithDegreeOfParallelism(3)
+//    .ForAll(video =>
 //    {
-//        int subtitleCount = FFmpeg.GetMediaInfo(video).Result.SubtitleStreams.Count();
-//        if (subtitleCount == 0)
+//        try
 //        {
-//            return;
-//        }
+//            TimeSpan duration1 = FFmpeg.GetMediaInfo(video).Result.Duration;
+//            TimeSpan duration2 = FFmpeg.GetMediaInfo(video + ".mp4").Result.Duration;
+//            TimeSpan delta = duration1 - duration2;
+//            if (delta >= TimeSpan.FromSeconds(-1) && delta <= TimeSpan.FromSeconds(1))
+//            {
+//                return;
+//            }
 
-//        string currentDirectory = PathHelper.GetDirectoryName(video);
-//        string videoName = PathHelper.GetFileNameWithoutExtension(video);
-//        if (!Directory.EnumerateFiles(currentDirectory)
-//                .Select(PathHelper.GetFileNameWithoutExtension)
-//                .Any(name => name.StartsWithIgnoreCase(videoName) && Regex.IsMatch(name[videoName.Length..], @"\.[a-z]{3}\-[1-9]")))
-//        {
+//            Logger.WriteLine(delta.ToString());
 //            Logger.WriteLine(video);
+//            Logger.WriteLine("");
+//        }
+//        catch (Exception e)
+//        {
+//            Logger.WriteLine(e.ToString());
+//            Logger.WriteLine(video);
+//            Logger.WriteLine("");
 //        }
 //    });
 //Video.FormatVideoFileNames(@"\\beyond-r\J\Files\Library\new folder", SearchOption.AllDirectories, false);
 
 //Video.PrintDirectoriesWithMultipleVideos(@"\\beyond-r\J\Files\Library\New folder");
+//Video.RenameFiles(@"\\beyond-r\J\Files\Library\Movies", (f,i)=>f.Replace(".2Audio.SUBBED", ".SUBBED.2Audio"));
 //Directory.EnumerateFiles(@"\\beyond-r\J\Files\Library\Movies", "*", SearchOption.AllDirectories)
 //    .Where(f => f.IsVideo() && !VideoMovieFileInfo.TryParse(f, out _))
 //    .ForEach(Logger.WriteLine);
@@ -1342,3 +1351,92 @@ static async Task MoveSharedMoviesAsync(ISettings settings, Action<string>? log 
 //            subs.Append("").ForEach(Logger.WriteLine);
 //        }
 //    });
+
+//Video.EnumerateDirectories(@"\\beyond-r\J\Files\Library\Movies")
+//    .ForEach(d =>
+//    {
+//        string[] files = Directory.GetFiles(d);
+//        string[] subtitleFiles = files.Where(f=>f.IsSubtitle()).ToArray();
+//        //string currentDirectory = PathHelper.GetDirectoryName(video);
+//        //string videoName = PathHelper.GetFileNameWithoutExtension(video);
+//        subtitleFiles
+//            .Where(f => Regex.IsMatch(PathHelper.GetFileNameWithoutExtension(f), @"\.[a-z]{3}-[0-9]+$"))
+//            .ToArray()
+//            .ForEach(s =>
+//            {
+//                //string newSubtitle = PathHelper.ReplaceFileNameWithoutExtension(s, name => name[..^3] + "t");
+//                //if (!File.Exists(newSubtitle))
+//                //{
+//                //    FileHelper.Move(s, newSubtitle);
+//                //    return;
+//                //}
+//                //newSubtitle = PathHelper.ReplaceFileNameWithoutExtension(s, name => name[..^3] + "s");
+//                //if (!File.Exists(newSubtitle))
+//                //{
+//                //    FileHelper.Move(s, newSubtitle);
+//                //}
+//                Logger.WriteLine(s);
+//            });
+//    });
+
+//Video.EnumerateDirectories(@"\\beyond-r\J\Files\Library\Movies Temp4.2.电影4.2")
+//    .Where(d => VideoDirectoryInfo.Parse(d).Source.StartsWithIgnoreCase("f"))
+//    .ToArray()
+//    .ForEach(d => DirectoryHelper.Move(d, d.Replace(@"\Movies Temp4.2.电影4.2\", @"\Encode\")));
+
+
+Video.EnumerateDirectories(settings.MovieTemp41)
+    .ToArray()
+    .ForEach(d =>
+    {
+        //string video = Directory.EnumerateFiles(d).First(Video.IsVideo);
+        //string name = PathHelper.GetFileNameWithoutExtension(video);
+        //DirectoryHelper.ReplaceDirectoryName(d, name);
+        string[] files = Directory.GetFiles(d, "*");
+        string[] nfos = files.Where(f => f.EndsWithIgnoreCase(".nfo")).ToArray();
+        //if (nfos.Length == 1)
+        //{
+        //    return;
+        //}
+
+        //if (nfos.Length == 0)
+        //{
+        //    Logger.WriteLine(d);
+        //    return;
+        //}
+
+        //if (nfos.Select(nfo =>
+        //    {
+        //        XDocument doc = XDocument.Load(nfo);
+        //        return (doc.Root.Element("title").Value, doc.Root.Element("year").Value);
+        //    }).Distinct().Count() != 1)
+        //{
+        //    Logger.WriteLine(d);
+        //    return;
+        //}
+
+        string[] imdbFiles = files.Where(f => f.EndsWithIgnoreCase(".tmp")).ToArray();
+        if (imdbFiles.Length == 1)
+        {
+            string fileImdbId = PathHelper.GetFileNameWithoutExtension(imdbFiles.Single());
+            (string, int)[] xmlImdbIds = nfos.Select((nfo, index) => (XDocument.Load(nfo).Root?.Element("imdbid")?.Value ?? string.Empty, index)).ToArray();
+            (string, int)[] differentXmlImdbIds = xmlImdbIds.Where(xmlImdbId => xmlImdbId.Item1 != fileImdbId).ToArray();
+            if (differentXmlImdbIds.IsEmpty())
+            {
+                File.Move(imdbFiles.Single(), imdbFiles.Single() + ".txt");
+            }
+            else
+            {
+                Logger.WriteLine(d);
+                Logger.WriteLine(fileImdbId);
+                differentXmlImdbIds.ForEach(xmlImdbId =>
+                {
+                    int index = xmlImdbId.Item2;
+                    string nfo = nfos[index];
+                    string title = XDocument.Load(nfo).Root?.Element("title")?.Value ?? string.Empty;
+                    Logger.WriteLine(title);
+                });
+                Logger.WriteLine("");
+            }
+        }
+    });

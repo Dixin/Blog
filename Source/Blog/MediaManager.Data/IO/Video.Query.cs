@@ -35,7 +35,8 @@ internal static partial class Video
                     VideoFrameRate = videoStream.Framerate
                 };
             },
-            retryCount);
+            retryCount,
+            cancellationToken: cancellationToken);
 
     internal static bool TryReadVideoMetadata(string file, [NotNullWhen(true)] out VideoMetadata? videoMetadata, ImdbMetadata? imdbMetadata = null, string? relativePath = null, int retryCount = IODefaultRetryCount, Action<string>? log = null)
     {
@@ -224,7 +225,8 @@ internal static partial class Video
                 WebDriverHelper.DisposeAll();
                 Thread.Sleep(WebDriverHelper.DefaultNetworkWait);
                 Thread.Sleep(WebDriverHelper.DefaultNetworkWait);
-            });
+            },
+            cancellationToken: cancellationToken);
         try
         {
             cancellationTokenSource.Dispose();

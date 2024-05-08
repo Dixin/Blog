@@ -282,6 +282,7 @@ internal static partial class Video
                 string[] topFiles = Directory
                     .GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
                     .Select(PathHelper.GetFileName)
+                    //.Where(file => !file.EndsWithIgnoreCase(".temp") && !file.EndsWithIgnoreCase(".tmp") && !file.EndsWithIgnoreCase(".tmp.txt"))
                     .ToArray();
 
                 string imdbRating = ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata)
@@ -2122,7 +2123,7 @@ internal static partial class Video
                         async () => await DownloadImdbMetadataAsync(imdbMetadata.ImdbId, settings.TVMetadataDirectory, settings.TVMetadataCacheDirectory, metadataFiles.Values.ToArray(), cacheFiles, webDriver, overwrite: true, useCache: false, log: log),
                     isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError });
                 }
-                catch (HttpRequestException exception) when(exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
+                catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
                 {
                     log($"!!!{imdbMetadata.ImdbId} {exception}");
                 }

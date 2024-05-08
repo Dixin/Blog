@@ -283,9 +283,14 @@ internal static partial class Video
         if (imdbId.EqualsOrdinal(NotExistingFlag))
         {
             await new string[] { imdbFile, releaseFile, keywordsFile, advisoriesFile }
-                .Select(file => Path.Combine(cacheDirectory, file))
                 .Where(file => !cacheFiles.ContainsIgnoreCase(file))
                 .ForEachAsync(async file => await File.WriteAllTextAsync(file, string.Empty, cancellationToken), cancellationToken);
+            string notExistingJsonFile = Path.Combine(metadataDirectory, $"{NotExistingFlag}{ImdbMetadata.Extension}");
+            if (!File.Exists(notExistingJsonFile))
+            {
+                await File.WriteAllTextAsync(notExistingJsonFile, string.Empty, cancellationToken);
+            }
+
             return false;
         }
 
@@ -671,18 +676,23 @@ internal static partial class Video
                         }
 
                         XDocument backupMetadataDocument = XDocument.Load(backupMetadataFile);
-                        string englishTitle = backupMetadataDocument.TryGetTitle(out string? xmlTitle) ? xmlTitle : string.Empty;
+                        string backupOriginalTitle = backupMetadataDocument.Root!.Element("originaltitle")?.Value ?? string.Empty;
+                        string backupEnglishTitle = backupMetadataDocument.TryGetTitle(out string? xmlTitle) ? xmlTitle : string.Empty;
                         string year = backupMetadataDocument.Root!.Element("year")?.Value ?? string.Empty;
 
                         if (!backupMetadataFile.TryLoadXmlImdbId(out string? imdbId)
                             || translatedTitle.IsNullOrEmpty()) // Already searched Douban, no result.
                         {
-                            noTranslation.Add((englishTitle, year, movie));
+                            if (backupOriginalTitle.IsNullOrWhiteSpace() || !backupOriginalTitle.ContainsCjkCharacter())
+                            {
+                                noTranslation.Add((backupEnglishTitle, year, movie));
+                            }
+
                             continue;
                         }
 
                         string doubanTitle = await Douban.GetTitleAsync(webDriver, imdbId, token);
-                        int lastIndex = doubanTitle.LastIndexOf(englishTitle, StringComparison.InvariantCultureIgnoreCase);
+                        int lastIndex = doubanTitle.LastIndexOf(backupEnglishTitle, StringComparison.InvariantCultureIgnoreCase);
                         if (lastIndex >= 0)
                         {
                             doubanTitle = doubanTitle[..lastIndex].Trim();
@@ -700,7 +710,7 @@ internal static partial class Video
 
                         log($"""
                             {movie}
-                            {englishTitle}
+                            {backupEnglishTitle}
                             {translatedTitle}
                             {doubanTitle}
                             
@@ -718,9 +728,9 @@ internal static partial class Video
                                 });
                         }
 
-                        if (!doubanTitle.ContainsChineseCharacter())
+                        if (!doubanTitle.ContainsCjkCharacter() && !backupOriginalTitle.ContainsCjkCharacter())
                         {
-                            noTranslation.Add((englishTitle, year, movie));
+                            noTranslation.Add((backupEnglishTitle, year, movie));
                         }
                     }
                 },
@@ -729,7 +739,7 @@ internal static partial class Video
 
         noTranslation.ForEach(movie => log($"{movie.Title} ({movie.Year})"));
         log(string.Empty);
-        noTranslation.ForEach(movie => log($"{movie.Title} ({movie.Year}) - {movie.Directory}"));
+        noTranslation.OrderBy(movie => movie.Directory).ForEach(movie => log($"{movie.Title} ({movie.Year}) - {movie.Directory}"));
 
         if (Debugger.IsAttached)
         {

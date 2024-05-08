@@ -137,12 +137,18 @@ public static partial class Chinese
 
         // 𬺰
         (0x2CEB0, 0x2EBEF, "CJK Ideographs Extension F", "https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_Extension_F"),
+        
+        // 𮯰
+        (0x2EBF0, 0x2EE5F, "CJK Ideographs Extension I", "https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_Extension_I"),
 
         // 丽
-        (0x2F800, 0x2FA1F, "CJK Comparability Ideographs Supplement", "https://en.wikipedia.org/wiki/CJK_Compatibility_Ideographs_Supplement"),
+        (0x2F800, 0x2FA1F, "CJK Compatibility Ideographs Supplement", "https://en.wikipedia.org/wiki/CJK_Compatibility_Ideographs_Supplement"),
 
         // 𰀃
-        (0x30000, 0x3134F, "CJK Ideographs Extension G", "https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_Extension_G")
+        (0x30000, 0x3134F, "CJK Ideographs Extension G", "https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_Extension_G"),
+        
+        // 𱍐
+        (0x31350, 0x323AF, "CJK Ideographs Extension H", "https://en.wikipedia.org/wiki/CJK_Unified_Ideographs_Extension_H")
     ];
 
     public static readonly SearchValues<char> CommonTraditionalChinese = SearchValues.Create("這個們來時為說國著後會過對於學麼發當還樣種開總從無現動頭經長兒愛給間親進話與問爾點幾將實聲車機氣書體卻電門聽員許寫馬難結樂東記處讓應場報關張認軍歲覺萬邊風媽變師戰遠輕條達業羅錢紶嗎語離飛歡題該論終請醫製決窢傳講讀運則產視連類隊觀盡紅識亞術熱興談極講辦強華諣計雙轉訴稱麗領節統斷歷驚臉選緊維絕樹傷願誰準聯婦紀買靜詩獨復義確單蘭舉鍾遊號費價圖剛腦響禮細專塊腳靈據眾筆習務須試懷調廣蘇顯議夢錯設線雖養際陽紙納驗夠嚴證飯導頓獲藝創區謝組館質續標實倫護貝劇險煙鬥幫漢聞資擊顧淚團聖園勞陳魚異寶權魯簡態級尋殺勝範樓貴責較職屬漸錄絲黨繼趕葉賣堅遺臨擔戲衛藥詞雲規舊適鄉彈鐵壓負雜畢亂頂農練徵壞餘蒆燈環憶歐層陣瑪島項惡戀擁營諾銀勢獎優課鳥劉敗揮鮮財槍夥傑跡藸蓋順薩劃歸聽預編濟釋燒誤");
@@ -160,7 +166,7 @@ public static partial class Chinese
         }
     }
 
-    private static string GetChart(int min) => $"https://www.unicode.org/charts/PDF/U{min:X4}.pdf";
+    internal static string GetChart(int min) => $"https://www.unicode.org/charts/PDF/U{min:X4}.pdf";
 
     public static bool IsChineseCharacter(
         [NotNullWhen(true)] string? value,

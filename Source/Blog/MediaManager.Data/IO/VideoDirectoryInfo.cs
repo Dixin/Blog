@@ -64,7 +64,7 @@ internal record VideoDirectoryInfo(
             TranslatedTitle1: match.Groups[9].Value, TranslatedTitle2: match.Groups[10].Value, TranslatedTitle3: match.Groups[11].Value, TranslatedTitle4: match.Groups[12].Value,
             AggregateRating: match.Groups[13].Value, AggregateRatingCount: match.Groups[14].Value,
             ContentRating: match.Groups[15].Value,
-            // FormatedDefinition: match.Groups[16].Value;
+            // FormattedDefinition: match.Groups[16].Value;
             Resolution: match.Groups[17].Value, Source: match.Groups[18].Value,
             Is3D: match.Groups[20].Value, Hdr: match.Groups[21].Value);
         return true;
