@@ -340,7 +340,7 @@ public static class FfmpegHelper
     internal static async Task EncodeAllAsync(
         string inputDirectory, string outputDirectory = "", FfmpegVideoCrop videoCrop = FfmpegVideoCrop.NoCrop, bool overwrite = false, bool isTV = false,
         Func<string, bool>? inputPredicate = null, Func<string, string>? getOutput = null,
-        int? maxDegreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
+        int? maxDegreeOfParallelism = null, int? cropTimestampCount = DefaultTimestampCount, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         maxDegreeOfParallelism ??= MaxDegreeOfParallelism;
         log ??= Logger.WriteLine;
@@ -365,7 +365,7 @@ public static class FfmpegHelper
                 {
                     try
                     {
-                        await EncodeAsync(input, getOutput(input), overwrite, videoCrop, log: log, cancellationToken: token);
+                        await EncodeAsync(input, getOutput(input), overwrite, videoCrop, cropTimestampCount: cropTimestampCount, log: log, cancellationToken: token);
                     }
                     catch (Exception exception) when (exception.IsNotCritical())
                     {
