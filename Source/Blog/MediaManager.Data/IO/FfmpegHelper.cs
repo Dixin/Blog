@@ -7,7 +7,7 @@ using Examples.Linq;
 using MediaManager.Net;
 using Xabe.FFmpeg;
 
-public enum FfmpegVideoCrop
+public enum VideoCropMode
 {
     NoCrop = 0,
     StrictCrop,
@@ -21,11 +21,16 @@ public static class FfmpegHelper
 
     internal const string EncoderPostfix = $"{Video.Delimiter}{Executable}";
 
-    private const int DefaultTimestampCount = 3;
+    private const int DefaultTimestampCount = 5;
+
+    private const int DefaultCropDarknessLimit = 24;
 
     private static readonly int MaxDegreeOfParallelism = int.Min(3, Environment.ProcessorCount);
 
-    internal static void MergeAllDubbed(string directory, string originalVideoSearchPattern = "", Func<string, string>? getDubbedVideo = null, Func<string, string>? getOutputVideo = null, Func<string, string>? renameAttachment = null, bool overwrite = false, bool? isTV = null, bool isDryRun = false, bool ignoreDurationDifference = false, Action<string>? log = null)
+    internal static void MergeAllDubbed(
+        string directory, string originalVideoSearchPattern = "", Func<string, string>? getDubbedVideo = null,
+        Func<string, string>? getOutputVideo = null, Func<string, string>? renameAttachment = null,
+        bool overwrite = false, bool? isTV = null, bool isDryRun = false, bool ignoreDurationDifference = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         string[] originalVideos = originalVideoSearchPattern.IsNotNullOrWhiteSpace()
@@ -67,14 +72,37 @@ public static class FfmpegHelper
     }
 
     internal static async Task EncodeAsync(
-        string input, string output = "",
-        bool overwrite = false, FfmpegVideoCrop videoCrop = FfmpegVideoCrop.NoCrop, bool sample = false,
-        string? relativePath = null, int retryCount = Video.IODefaultRetryCount, int? cropTimestampCount = DefaultTimestampCount, Action<string>? log = null, CancellationToken cancellationToken = default, params TimeSpan[] cropTimestamps)
+        string input, string output = "", string? relativePath = null,
+        bool overwrite = false, bool sample = false,
+        VideoCropMode videoCropMode = VideoCropMode.NoCrop, int? cropTimestampCount = DefaultTimestampCount, int cropDarknessLimit = DefaultCropDarknessLimit,
+        int retryCount = Video.IODefaultRetryCount, Action<string>? log = null, CancellationToken cancellationToken = default, params TimeSpan[] cropTimestamps)
     {
         log ??= Logger.WriteLine;
 
+        if (output.IsNullOrWhiteSpace())
+        {
+            output = input;
+            if (!PathHelper.GetFileNameWithoutExtension(output).ContainsIgnoreCase(EncoderPostfix))
+            {
+                output = PathHelper.AddFilePostfix(output, EncoderPostfix);
+            }
+
+            output = PathHelper.ReplaceExtension(output, Video.VideoExtension);
+        }
+
+        if (output.EqualsIgnoreCase(input))
+        {
+            throw new InvalidOperationException($"Input and output are the same: {input}.");
+        }
+
+        if (!overwrite && File.Exists(output))
+        {
+            log($"Output exists: {output}.");
+            return;
+        }
+
         TimeSpan? duration = null;
-        if (videoCrop is not FfmpegVideoCrop.NoCrop)
+        if (videoCropMode is not VideoCropMode.NoCrop)
         {
             if (cropTimestamps.Any())
             {
@@ -106,12 +134,12 @@ public static class FfmpegHelper
             videoFilters.Add("bwdif=mode=send_field:parity=auto:deint=all");
         }
 
-        if (videoCrop is not FfmpegVideoCrop.NoCrop)
+        if (videoCropMode is not VideoCropMode.NoCrop)
         {
-            (int width, int height, int x, int y) = await GetVideoCropAsync(input, videoCrop, log: log, cancellationToken: cancellationToken, timestamps: cropTimestamps);
+            (int width, int height, int left, int top) = await GetVideoCropAsync(input, videoCropMode: videoCropMode, cropDarknessLimit: cropDarknessLimit, log: log, cancellationToken: cancellationToken, timestamps: cropTimestamps);
             if (width != videoMetadata.VideoWidth || height != videoMetadata.VideoHeight)
             {
-                videoFilters.Add($"crop={width}:{height}:{x}:{y}");
+                videoFilters.Add($"crop={width}:{height}:{left}:{top}");
             }
         }
 
@@ -125,28 +153,6 @@ public static class FfmpegHelper
         else
         {
             sampleDuration = string.Empty;
-        }
-
-        if (output.IsNullOrWhiteSpace())
-        {
-            output = input;
-            if (!PathHelper.GetFileNameWithoutExtension(output).ContainsIgnoreCase(EncoderPostfix))
-            {
-                output = PathHelper.AddFilePostfix(output, EncoderPostfix);
-            }
-
-            output = PathHelper.ReplaceExtension(output, Video.VideoExtension);
-        }
-
-        if (output.EqualsIgnoreCase(input))
-        {
-            throw new InvalidOperationException($"Input and output are the same: {input}.");
-        }
-
-        if (!overwrite && File.Exists(output))
-        {
-            log($"Output exists: {output}.");
-            return;
         }
 
         string outputDirectory = PathHelper.GetDirectoryName(output);
@@ -233,19 +239,21 @@ public static class FfmpegHelper
         return Enumerable.Range(1, timestampCount).Select(index => firstTimestamp * index);
     }
 
-    internal static async Task<(int Width, int Height, int X, int Y)> GetVideoCropAsync(
-        string file, FfmpegVideoCrop videoCrop = FfmpegVideoCrop.AdaptiveCropWithLimit, int timestampCount = DefaultTimestampCount, int frameCountPerTimestamp = 30, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task<(int Width, int Height, int Left, int Top)> GetVideoCropAsync(
+        string file, int timestampCount = DefaultTimestampCount, VideoCropMode videoCropMode = VideoCropMode.AdaptiveCropWithLimit, int frameCountPerTimestamp = 30, int cropDarknessLimit = DefaultCropDarknessLimit,
+        Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
         TimeSpan duration = (await FFmpeg.GetMediaInfo(file, cancellationToken)).Duration;
-        return await GetVideoCropAsync(file, videoCrop, timestampCount, frameCountPerTimestamp, log, cancellationToken, GetTimestamps(duration, timestampCount).ToArray());
+        return await GetVideoCropAsync(file, timestampCount, videoCropMode, frameCountPerTimestamp, cropDarknessLimit, log, cancellationToken, GetTimestamps(duration, timestampCount).ToArray());
     }
 
-    private static async Task<(int Width, int Height, int X, int Y)> GetVideoCropAsync(
-        string file, FfmpegVideoCrop videoCrop = FfmpegVideoCrop.AdaptiveCropWithLimit, int timestampCount = DefaultTimestampCount, int frameCountPerTimestamp = 30, Action<string>? log = null, CancellationToken cancellationToken = default, params TimeSpan[] timestamps)
+    private static async Task<(int Width, int Height, int Left, int Top)> GetVideoCropAsync(string file, int timestampCount = DefaultTimestampCount, VideoCropMode videoCropMode = VideoCropMode.AdaptiveCropWithLimit, int frameCountPerTimestamp = 30, int cropDarknessLimit = DefaultCropDarknessLimit, Action<string>? log = null, CancellationToken cancellationToken = default, params TimeSpan[] timestamps)
     {
-        videoCrop.ThrowIfEqual(FfmpegVideoCrop.NoCrop);
+        videoCropMode.ThrowIfEqual(VideoCropMode.NoCrop);
+        frameCountPerTimestamp.ThrowIfNotPositive();
+        cropDarknessLimit.ThrowIfNotPositive();
         log ??= Logger.WriteLine;
 
         if (timestamps.IsEmpty())
@@ -257,21 +265,28 @@ public static class FfmpegHelper
         (string Width, string Height, string X, string Y)[] crops = timestamps
             .SelectMany(timestamp =>
             {
-                string arguments = $"""-ss {timestamp.Hours:00}:{timestamp.Minutes:00}:{timestamp.Seconds:00} -i "{file}" -filter:v cropdetect -vframes {frameCountPerTimestamp} -f null -max_muxing_queue_size 9999 NUL""";
+                string arguments = $"""-ss {timestamp.Hours:00}:{timestamp.Minutes:00}:{timestamp.Seconds:00} -i "{file}" -filter:v cropdetect={cropDarknessLimit}:16:0 -vframes {frameCountPerTimestamp} -f null -max_muxing_queue_size 9999 NUL""";
                 (int exitCode, List<string?> output, List<string?> errors) = ProcessHelper.Run(Executable, arguments);
                 if (exitCode != 0)
                 {
                     throw new InvalidOperationException(file);
                 }
 
-                (string, string, string, string)[] timestampCrops = output
-                    .Concat(errors)
+                string[] messages = output.Concat(errors).ToArray();
+                (string, string, string, string)[] timestampCrops = messages
                     .Where(message => message.IsNotNullOrWhiteSpace())
                     .Select(message => Regex.Match(message!, @" crop=([0-9]+):([0-9]+):([0-9]+):([0-9]+)$"))
                     .Where(match => match.Success)
                     .Select(match => (match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Value, match.Groups[4].Value))
                     .ToArray();
-                Debug.Assert(timestampCrops.Length > 1/* && timestampCrops.Length >= frameCountPerTimestamp - 1*/);
+                if (timestampCrops.Length <= 1 /* || timestampCrops.Length < frameCountPerTimestamp - 1*/)
+                {
+                    throw new InvalidOperationException($"""
+                         {file}
+                         {string.Join(Environment.NewLine, messages)}
+                         """);
+                }
+
                 (string, string, string, string)[] distinctTimestampCrops = timestampCrops.Distinct().ToArray();
                 if (distinctTimestampCrops.Length != 1)
                 {
@@ -293,7 +308,7 @@ public static class FfmpegHelper
             return distinctCrops.First().Key;
         }
 
-        if (videoCrop is FfmpegVideoCrop.StrictCrop)
+        if (videoCropMode is VideoCropMode.StrictCrop)
         {
             throw new InvalidOperationException($"""
                  {file}
@@ -301,19 +316,19 @@ public static class FfmpegHelper
                  """);
         }
 
-        (int Width, int Height, int X, int Y) crop = (
+        (int Width, int Height, int Left, int Top) crop = (
             distinctCrops.Select(group => group.Key.Width).Max(),
             distinctCrops.Select(group => group.Key.Height).Max(),
             distinctCrops.Select(group => group.Key.X).Min(),
             distinctCrops.Select(group => group.Key.Y).Min()
         );
 
-        if (videoCrop is FfmpegVideoCrop.AdaptiveCropWithoutLimit)
+        if (videoCropMode is VideoCropMode.AdaptiveCropWithoutLimit)
         {
             return crop;
         }
 
-        Debug.Assert(videoCrop is FfmpegVideoCrop.AdaptiveCropWithLimit);
+        Debug.Assert(videoCropMode is VideoCropMode.AdaptiveCropWithLimit);
         (double Width, double Height, double X, double Y) average = (
             distinctCrops.Select(group => group.Key.Width).Average(),
             distinctCrops.Select(group => group.Key.Height).Average(),
@@ -338,9 +353,9 @@ public static class FfmpegHelper
     }
 
     internal static async Task EncodeAllAsync(
-        string inputDirectory, string outputDirectory = "", FfmpegVideoCrop videoCrop = FfmpegVideoCrop.NoCrop, bool overwrite = false, bool isTV = false,
+        string inputDirectory, string outputDirectory = "", VideoCropMode videoCropMode = VideoCropMode.NoCrop, bool overwrite = false, bool isTV = false,
         Func<string, bool>? inputPredicate = null, Func<string, string>? getOutput = null,
-        int? maxDegreeOfParallelism = null, int? cropTimestampCount = DefaultTimestampCount, Action<string>? log = null, CancellationToken cancellationToken = default)
+        int? maxDegreeOfParallelism = null, int? cropTimestampCount = DefaultTimestampCount, bool sample = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         maxDegreeOfParallelism ??= MaxDegreeOfParallelism;
         log ??= Logger.WriteLine;
@@ -355,17 +370,38 @@ public static class FfmpegHelper
             ? input => PathHelper.ReplaceExtension(input.AddEncoderIfMissing(isTV), Video.VideoExtension)
             : input => PathHelper.ReplaceExtension(input.AddEncoderIfMissing(isTV).ReplaceIgnoreCase(inputDirectory, outputDirectory), Video.VideoExtension);
 
-        await Directory
+        List<string> inputVideos = [];
+        List<string> skippedInputVideos = [];
+        ConcurrentBag<string> outputVideos = [];
+        string[] videos = Directory
             .EnumerateFiles(inputDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
-            .Where(file => file.IsVideo() && inputPredicate(file))
+            .Where(file =>
+            {
+                if (!file.IsVideo())
+                {
+                    return false;
+                }
+
+                if (inputPredicate(file))
+                {
+                    inputVideos.Add(file);
+                    return true;
+                }
+
+                log($"Skip {file}");
+                skippedInputVideos.Add(file);
+                return false;
+            })
             .Order()
-            .ToArray()
-            .ParallelForEachAsync(
+            .ToArray();
+        await videos.ParallelForEachAsync(
                 async (input, index, token) =>
                 {
                     try
                     {
-                        await EncodeAsync(input, getOutput(input), overwrite, videoCrop, cropTimestampCount: cropTimestampCount, log: log, cancellationToken: token);
+                        string output = getOutput(input);
+                        outputVideos.Add(output);
+                        await EncodeAsync(input, output, overwrite: overwrite, videoCropMode: videoCropMode, cropTimestampCount: cropTimestampCount, sample: sample, log: log, cancellationToken: token);
                     }
                     catch (Exception exception) when (exception.IsNotCritical())
                     {
@@ -374,6 +410,37 @@ public static class FfmpegHelper
                 },
                 maxDegreeOfParallelism,
                 cancellationToken);
+
+        log($"Should encode {inputVideos.Count} input videos:");
+        inputVideos.ForEach(log);
+
+        log($"Skipped {skippedInputVideos.Count} input videos:");
+        skippedInputVideos.ForEach(log);
+
+        List<string> existingOutputVideos = [];
+        List<string> missingOutputVideos = [];
+        log($"Should output {outputVideos.Count} videos");
+        outputVideos.ForEach(video =>
+        {
+            log(video);
+            if (File.Exists(video))
+            {
+                existingOutputVideos.Add(video);
+            }
+            else
+            {
+                missingOutputVideos.Add(video);
+            }
+        });
+
+        log($"Existing {existingOutputVideos.Count} output videos");
+        existingOutputVideos.ForEach(log);
+
+        log($"Existing {existingOutputVideos.Distinct(StringComparer.OrdinalIgnoreCase).Count()} distinct output videos");
+        existingOutputVideos.GroupBy(video => video).Where(group => group.Count() > 1).ForEach(group => log(group.Key));
+
+        log($"Missing {missingOutputVideos.Count} output videos");
+        missingOutputVideos.ForEach(log);
     }
 
     private static string AddEncoderIfMissing(this string file, bool isTV = false) =>
@@ -387,7 +454,7 @@ public static class FfmpegHelper
                     ? PathHelper.ReplaceFileNameWithoutExtension(file, (video with { Encoder = EncoderPostfix }).Name)
                     : PathHelper.AddFilePostfix(file, EncoderPostfix);
 
-    internal static void MergeAllDubbedMovies(string directory, int level = Video.DefaultDirectoryLevel, string recycleDirectory = "", bool ignoeDurationDifference = false, bool isDryRun = false, Action<string>? log = null)
+    internal static void MergeAllDubbedMovies(string directory, int level = Video.DefaultDirectoryLevel, string recycleDirectory = "", bool ignoreDurationDifference = false, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
@@ -425,7 +492,7 @@ public static class FfmpegHelper
         movies
             .Where(match => !File.Exists(match.MergedVideo))
             .Select(match =>
-                (match, Result: MergeDubbed(match.OriginalVideo, ref match.MergedVideo, match.DubbedVideo, false, false, ignoeDurationDifference, isDryRun, log)))
+                (match, Result: MergeDubbed(match.OriginalVideo, ref match.MergedVideo, match.DubbedVideo, false, false, ignoreDurationDifference, isDryRun, log)))
             .Where(result => !result.Result)
             .ForEach(result => log(result.match.ToString()));
 
