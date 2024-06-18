@@ -79,16 +79,16 @@ internal static partial class Video
     }
 
     internal static void PrintVideosP(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null) =>
-        PrintVideos(directory, level, file => VideoMovieFileInfo.Parse(file).GetEncoderType() is EncoderType.P, log);
+        PrintVideos(directory, level, file => VideoMovieFileInfo.Parse(file).GetEncoderType() is EncoderType.HD, log);
 
     internal static void PrintVideosY(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null) =>
-        PrintVideos(directory, level, file => VideoMovieFileInfo.Parse(file).GetEncoderType() is EncoderType.Y, log);
+        PrintVideos(directory, level, file => VideoMovieFileInfo.Parse(file).GetEncoderType() is EncoderType.PreferredH264, log);
 
     internal static void PrintVideosNotX(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null) =>
-        PrintVideos(directory, level, file => VideoMovieFileInfo.Parse(file).GetEncoderType() is EncoderType.X, log);
+        PrintVideos(directory, level, file => VideoMovieFileInfo.Parse(file).GetEncoderType() is EncoderType.TopX265, log);
 
     internal static void PrintVideosH(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null) =>
-        PrintVideos(directory, level, file => VideoMovieFileInfo.Parse(file).GetEncoderType() is EncoderType.H, log);
+        PrintVideos(directory, level, file => VideoMovieFileInfo.Parse(file).GetEncoderType() is EncoderType.TopH264, log);
 
     private static void PrintVideos(string directory, int level, Func<string, bool> predicate, Action<string>? log = null)
     {
@@ -662,7 +662,7 @@ internal static partial class Video
                     .Select(file => (file, PathHelper.GetFileNameWithoutExtension(file), VideoMovieFileInfo.Parse(file)))
                     .ToArray();
                 (string File, string Name, VideoMovieFileInfo Info)[] preferredVideos = videos
-                    .Where(video => video.Info.GetEncoderType() is EncoderType.Y or EncoderType.XY)
+                    .Where(video => video.Info.GetEncoderType() is EncoderType.PreferredH264 or EncoderType.PreferredX265)
                     .ToArray();
 
                 PreferredMetadata[] availablePreferredMetadata = preferredMetadata
@@ -715,7 +715,7 @@ internal static partial class Video
                         {
                             if (VideoMovieFileInfo.TryParse(metadata.Title, out VideoMovieFileInfo? video))
                             {
-                                return video.GetEncoderType() is EncoderType.X or EncoderType.H;
+                                return video.GetEncoderType() is EncoderType.TopX265 or EncoderType.TopH264;
                             }
 
                             log($"!Fail to parse metadata {metadata.Title} {metadata.Link}");
@@ -737,7 +737,7 @@ internal static partial class Video
                             string metadataTitle = metadata.Title;
                             string[] videoEditions = video.Info.Edition.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries);
                             // (Not any) Local is equal to or better than remote metadata.
-                            return video.Info.GetEncoderType() is EncoderType.X
+                            return video.Info.GetEncoderType() is EncoderType.TopX265
                                 && (video.Name.StartsWithIgnoreCase(metadata.Title)
                                     || video.Info.Origin.ContainsIgnoreCase(".BluRay") && metadataTitle.ContainsIgnoreCase(".WEBRip.")
                                     || !video.Info.Edition.ContainsIgnoreCase("PREVIEW") && metadataTitle.ContainsIgnoreCase(".PREVIEW.")
@@ -779,7 +779,7 @@ internal static partial class Video
                     return;
                 }
 
-                if (videos.Any(video => video.Info.GetEncoderType() is EncoderType.X))
+                if (videos.Any(video => video.Info.GetEncoderType() is EncoderType.TopX265))
                 {
                     if (videos.All(video => !video.Info.Origin.ContainsIgnoreCase("BluRay")) && bluRayPreferredMetadata.Any())
                     {
@@ -801,7 +801,7 @@ internal static partial class Video
                         {
                             if (VideoMovieFileInfo.TryParse(metadata.Title, out VideoMovieFileInfo? video))
                             {
-                                return video.GetEncoderType() is EncoderType.X or EncoderType.H;
+                                return video.GetEncoderType() is EncoderType.TopX265 or EncoderType.TopH264;
                             }
 
                             log($"!Fail to parse metadata {metadata.Title} {metadata.Link}");
@@ -818,7 +818,7 @@ internal static partial class Video
                             string metadataTitle = metadata.Title;
                             string[] videoEditions = video.Info.Edition.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries);
                             // (Not any) Local is equal to or better than remote metadata.
-                            return video.Info.GetEncoderType() is EncoderType.H
+                            return video.Info.GetEncoderType() is EncoderType.TopH264
                                 && (video.Name.StartsWithIgnoreCase(metadata.Title)
                                     || video.Info.Origin.ContainsIgnoreCase(".BluRay") && metadataTitle.ContainsIgnoreCase(".WEBRip.")
                                     || !video.Info.Edition.ContainsIgnoreCase("PREVIEW") && metadataTitle.ContainsIgnoreCase(".PREVIEW.")
@@ -860,7 +860,7 @@ internal static partial class Video
                     return;
                 }
 
-                if (videos.Any(video => video.Info.GetEncoderType() is EncoderType.H))
+                if (videos.Any(video => video.Info.GetEncoderType() is EncoderType.TopH264))
                 {
                     if (videos.All(video => !video.Info.Origin.ContainsIgnoreCase("BluRay")) && bluRayPreferredMetadata.Any())
                     {
@@ -975,7 +975,7 @@ internal static partial class Video
                         && Directory
                             .EnumerateFiles(seasonDirectory)
                             .Where(IsCommonVideo)
-                            .All(episode => VideoEpisodeFileInfo.TryParse(episode, out VideoEpisodeFileInfo? parsed) && parsed.GetEncoderType() is EncoderType.X && !(parsed.Origin.ContainsIgnoreCase("WEBRip") && seasonMetadata.Title.ContainsIgnoreCase("BluRay"))))
+                            .All(episode => VideoEpisodeFileInfo.TryParse(episode, out VideoEpisodeFileInfo? parsed) && parsed.GetEncoderType() is EncoderType.TopX265 && !(parsed.Origin.ContainsIgnoreCase("WEBRip") && seasonMetadata.Title.ContainsIgnoreCase("BluRay"))))
                     {
                         return;
                     }
@@ -1538,9 +1538,9 @@ internal static partial class Video
                     return;
                 }
 
-                VideoMovieFileInfo[] x265Videos = videos.Where(video => video.GetEncoderType() is EncoderType.X).ToArray();
-                VideoMovieFileInfo[] h264Videos = videos.Where(video => video.GetEncoderType() is EncoderType.H && video.GetDefinitionType() == DefinitionType.P1080).ToArray();
-                VideoMovieFileInfo[] preferredVideos = videos.Where(video => video.GetEncoderType() is EncoderType.Y or EncoderType.XY).ToArray();
+                VideoMovieFileInfo[] x265Videos = videos.Where(video => video.GetEncoderType() is EncoderType.TopX265).ToArray();
+                VideoMovieFileInfo[] h264Videos = videos.Where(video => video.GetEncoderType() is EncoderType.TopH264 && video.GetDefinitionType() == DefinitionType.P1080).ToArray();
+                VideoMovieFileInfo[] preferredVideos = videos.Where(video => video.GetEncoderType() is EncoderType.PreferredH264 or EncoderType.PreferredX265).ToArray();
 
                 if (x265Videos.Any())
                 {
@@ -2247,5 +2247,130 @@ internal static partial class Video
             .ForEach(franchise => directoryNames
                 .Where(group => group.Key.StartsWithIgnoreCase(franchise))
                 .ForEach(group => group.Order().ForEach(video => log($"{franchise} | {group.Key} | {video}"))));
+    }
+
+    internal static async Task PrintMoviesByCollectionAsync(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default, params string[][] directoryDrives)
+    {
+        log ??= Logger.WriteLine;
+
+        HashSet<string> xmls = new(Directory.GetFiles(settings.MovieTemp41, XmlMetadataSearchPattern, SearchOption.AllDirectories), StringComparer.OrdinalIgnoreCase);
+
+        //directoryDrives
+        //    // Hard drives in parallel.
+        //    .AsParallel()
+        //    .SelectMany(driveDirectories => driveDirectories
+        //        .SelectMany(directory => EnumerateDirectories(directory))
+        //        .AsParallel()
+        //        .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
+        //        .Where(directory => !Directory.EnumerateFiles(directory).Any(file => file.IsVideo())))
+        //.Order()
+        //.Do(log)
+        //.ForEach(directory =>
+        //{
+        //    DirectoryHelper.CopyToDirectory(directory, @"D:\Temp2");
+        //    DirectoryHelper.Delete(directory);
+        //});
+
+        //directoryDrives
+        //    // Hard drives in parallel.
+        //    .AsParallel()
+        //    .SelectMany(driveDirectories => driveDirectories
+        //        .SelectMany(directory => Directory.EnumerateFiles(directory, XmlMetadataSearchPattern, SearchOption.AllDirectories))
+        //        .AsParallel()
+        //        .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
+        //        .Select(file =>
+        //        {
+        //            XElement root = XDocument.Load(file).Root ?? throw new InvalidOperationException(file);
+        //            string directory = PathHelper.GetDirectoryName(file);
+        //            return (
+        //                Path: file,
+        //                Directory: directory,
+        //                DirectoryName: PathHelper.GetFileName(directory),
+        //                Collection: root.Element("collectionnumber")?.Value ?? string.Empty,
+        //                CollectionName: root.Element("set")?.Value ?? string.Empty,
+        //                ImdbId: root.Element("imdbid")?.Value ?? string.Empty,
+        //                TmdbId: root.Element("tmdbid")?.Value ?? string.Empty);
+        //        })
+        //        .Where(metadata => metadata.TmdbId.IsNullOrWhiteSpace()))
+        //    .GroupBy(metadata => metadata.Directory)
+        //    .OrderBy(group => group.Key)
+        //    .ForEach(group => group
+        //        .DistinctBy(metadata => metadata.Directory)
+        //        .OrderBy(metadata => metadata.DirectoryName)
+        //        .Select(metadata => $"{metadata.DirectoryName} | {metadata.Directory} | https://www.imdb.com/title/{metadata.ImdbId}/")
+        //        .Append(string.Empty)
+        //        .ForEach(log));
+
+        //directoryDrives
+        //    // Hard drives in parallel.
+        //    .AsParallel()
+        //    .SelectMany(driveDirectories => driveDirectories
+        //        .SelectMany(directory => Directory.EnumerateFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories))
+        //        .AsParallel()
+        //        .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
+        //        .Where(file => PathHelper.GetFileNameWithoutExtension(file).EqualsOrdinal("-")))
+        //    .OrderBy(file => file)
+        //    .ForEach(file => log($"{PathHelper.GetFileName(PathHelper.GetDirectoryName(file))} | {PathHelper.GetDirectoryName(file)}{Environment.NewLine}"));
+
+        directoryDrives
+            // Hard drives in parallel.
+            .AsParallel()
+            .ForAll(driveDirectories => driveDirectories
+                .SelectMany(directory => EnumerateDirectories(directory))
+                .ForEach(movie =>
+                {
+                    
+                    //string newMovie = Regex.Replace(movie, @"[ ]{2,}", " ");
+                    if (movie.ContainsOrdinal(".."))
+                    {
+                        log(movie);
+                    }
+                }));
+        ;
+        ;
+        ;
+
+        directoryDrives
+            // Hard drives in parallel.
+            .AsParallel()
+            .SelectMany(driveDirectories => driveDirectories
+                .SelectMany(directory => Directory.EnumerateFiles(directory, XmlMetadataSearchPattern, SearchOption.AllDirectories))
+                .AsParallel()
+                .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
+                .Select(file =>
+                {
+                    XElement root = XDocument.Load(file).Root ?? throw new InvalidOperationException(file);
+                    string directory = PathHelper.GetDirectoryName(file);
+                    return (
+                        Path: file,
+                        Directory: directory,
+                        DirectoryName: PathHelper.GetFileName(directory),
+                        Collection: root.Element("collectionnumber")?.Value ?? string.Empty,
+                        CollectionName: root.Element("set")?.Value ?? string.Empty,
+                        ImdbId: root.Element("imdbid")?.Value ?? string.Empty,
+                        TmdbId: root.Element("tmdbid")?.Value ?? string.Empty);
+                })
+                .Where(metadata => metadata.Collection.IsNotNullOrWhiteSpace()))
+            .GroupBy(metadata => metadata.Collection)
+            .OrderBy(group => group.Key)
+            //.Where(group => group.Any(metadata => xmls.Contains(metadata.Path)))
+            .ForEach(group =>
+            {
+                (string Path, string Directory, string DirectoryName, string Collection, string CollectionName, string ImdbId, string TmdbId)[] movies = group
+                    .DistinctBy(metadata => metadata.Directory)
+                    .OrderBy(metadata => metadata.DirectoryName)
+                    .ToArray();
+
+                if (movies.Length > 1 && movies.DistinctBy(movie => PathHelper.GetDirectoryName(movie.Directory), StringComparer.OrdinalIgnoreCase).Count() == 1)
+                {
+                    return;
+                }
+
+                movies
+                    .Select(metadata => $"{metadata.CollectionName} | {metadata.DirectoryName} | {metadata.Directory} | https://www.imdb.com/title/{metadata.ImdbId}/ | https://www.themoviedb.org/movie/{metadata.TmdbId}")
+                    .Prepend($"https://www.themoviedb.org/collection/{group.Key}")
+                    .Append(string.Empty)
+                    .ForEach(log);
+            });
     }
 }

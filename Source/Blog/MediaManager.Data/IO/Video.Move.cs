@@ -481,7 +481,7 @@ internal static partial class Video
 
                 VideoMetadata toVideoMetadata = group.Single().Value;
                 toVideoMetadata = toVideoMetadata with { File = Path.Combine(PathHelper.GetDirectoryName(toJsonPath), toVideoMetadata.File) };
-                if (VideoMovieFileInfo.Parse(PathHelper.GetFileNameWithoutExtension(toVideoMetadata.File)).GetEncoderType() is EncoderType.X)
+                if (VideoMovieFileInfo.Parse(PathHelper.GetFileNameWithoutExtension(toVideoMetadata.File)).GetEncoderType() is EncoderType.TopX265)
                 {
                     log($"Video {toVideoMetadata.File} is x265.");
                     return;
@@ -493,8 +493,8 @@ internal static partial class Video
                     return;
                 }
 
-                if (VideoMovieFileInfo.Parse(PathHelper.GetFileNameWithoutExtension(toVideoMetadata.File)).GetEncoderType() is EncoderType.X or EncoderType.H
-                    && VideoMovieFileInfo.Parse(PathHelper.GetFileNameWithoutExtension(fromVideoMetadata.File)).GetEncoderType() is not (EncoderType.X or EncoderType.H))
+                if (VideoMovieFileInfo.Parse(PathHelper.GetFileNameWithoutExtension(toVideoMetadata.File)).GetEncoderType() is EncoderType.TopX265 or EncoderType.TopH264
+                    && VideoMovieFileInfo.Parse(PathHelper.GetFileNameWithoutExtension(fromVideoMetadata.File)).GetEncoderType() is not (EncoderType.TopX265 or EncoderType.TopH264))
                 {
                     log($"Video {toVideoMetadata.File} is better version.");
                     return;
@@ -1023,7 +1023,7 @@ internal static partial class Video
             .ForEach(video =>
             {
                 log(video);
-                if (VideoEpisodeFileInfo.TryParse(video, out VideoEpisodeFileInfo? episode) && episode.GetEncoderType() == EncoderType.X && episode.EpisodeTitle.IsNotNullOrWhiteSpace())
+                if (VideoEpisodeFileInfo.TryParse(video, out VideoEpisodeFileInfo? episode) && episode.GetEncoderType() == EncoderType.TopX265 && episode.EpisodeTitle.IsNotNullOrWhiteSpace())
                 {
                     episode = episode with { EpisodeTitle = string.Empty };
                     if (!isDryRun)

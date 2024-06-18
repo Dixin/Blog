@@ -13,16 +13,28 @@ internal interface IVideoFileInfo : INaming
     string Edition { get; }
 
     string MultipleAudio { get; }
+
+    string Origin { get; }
 }
 
 internal enum EncoderType
 {
-    P = 0,
-    B,
-    N,
-    F,
-    Y,
-    XY,
-    H,
-    X
+    HD = 0,
+    HDBluRay,
+    KoreanFfmpegX265,
+    Korean,
+    HandbrakeH264,
+    HandbrakeH264BluRay,
+    NvidiaX265,
+    NvidiaX265BluRay,
+    FfmpegX265,
+    FfmpegX265BluRay,
+    PreferredH264,
+    PreferredH264BluRay,
+    PreferredX265,
+    PreferredX265BluRay,
+    TopH264,
+    TopH264BluRay,
+    TopX265,
+    TopX265BluRay
 }

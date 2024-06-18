@@ -14,7 +14,7 @@ internal record VideoDirectoryInfo(
     string Resolution, string Source,
     string Is3D, string Hdr) : INaming, ISimpleParsable<VideoDirectoryInfo>
 {
-    private static readonly Regex NameRegex = new(@"^([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?((\=[^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?)?\.([0-9\-]{4})\.([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?\[([0-9]\.[0-9]|\-)-([0-9\.KM]+|\-)\]\[(\-|13\+|16\+|18|18\+|AO|Approved|C|E|G|GP|M|MA17|MPG|NA|NC17|NotRated|Passed|PG|PG13|R|T|TV13|TV14|TVG|TVMA|TVPG|TVY|TVY7|TVY7FV|Unrated|X)\](\[(2160|1080|720|480)(b|b[2-9]|f|f[2-9]|h|h[2-9]|n|n[2-9]|p|p[2-9]|x|x[2-9]|X|X[2-9]|y|y[2-9])(\+)?\])?(\[3D\])?(\[HDR\])?$");
+    private static readonly Regex NameRegex = new(@"^([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?((\=[^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?)?\.([0-9\-]{4})\.([^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?\[([0-9]\.[0-9]|\-)-([0-9\.KM]+|\-)\]\[(\-|13\+|16\+|18|18\+|AO|Approved|C|E|G|GP|M|MA17|MPG|NA|NC17|NotRated|Passed|PG|PG13|R|T|TV13|TV14|TVG|TVMA|TVPG|TVY|TVY7|TVY7FV|Unrated|X)\](\[(2160|1080|720|480)(B|B[2-9]|F|F[2-9]|H|H[2-9]|K|K[2-9]|N|N[2-9]|P|P[2-9]|X|X[2-9]|Y|Y[2-9]|Z|Z[2-9]|b|b[2-9]|f|f[2-9]|h|h[2-9]|k|k[2-9]|n|n[2-9]|p|p[2-9]|x|x[2-9]|y|y[2-9]|z|z[2-9])(\+)?\])?(\[3D\])?(\[HDR\])?$");
 
     internal string FormattedDefinition
     {
@@ -90,7 +90,7 @@ internal record VideoDirectoryInfo(
     {
         return videos.Select(video => video.GetDefinitionType()).Max() switch
         {
-            DefinitionType.P480 when videos.Any(video => video.GetEncoderType() is not EncoderType.P) => "480",
+            DefinitionType.P480 when videos.Any(video => video.GetEncoderType() is not (EncoderType.HD or EncoderType.HDBluRay)) => "480",
             DefinitionType.P720 => "720",
             DefinitionType.P1080 => "1080",
             DefinitionType.P2160 => "2160",
@@ -102,8 +102,8 @@ internal record VideoDirectoryInfo(
     {
         int total1080P = videos.Count(video => video.GetDefinitionType() is DefinitionType.P1080);
         int total720P = videos.Count(video => video.GetDefinitionType() is DefinitionType.P720);
-        int total480PWithEncoder = videos.Count(video => !video.IsHD() && video.GetEncoderType() is not EncoderType.P);
-        int total480P = videos.Count(video => !video.IsHD() && video.GetEncoderType() is EncoderType.P);
+        int total480PWithEncoder = videos.Count(video => !video.IsHD() && video.GetEncoderType() is not EncoderType.HD);
+        int total480P = videos.Count(video => !video.IsHD() && video.GetEncoderType() is EncoderType.HD);
         int max = new int[] { total1080P, total720P, total480PWithEncoder, total480P }.Max();
         return max switch
         {
@@ -125,14 +125,24 @@ internal record VideoDirectoryInfo(
             IGrouping<EncoderType, VideoMovieFileInfo> group = videosByEncoder.First();
             string encoder = group.Key switch
             {
-                EncoderType.X => "x",
-                EncoderType.H => "h",
-                EncoderType.XY => "X",
-                EncoderType.Y => "y",
-                EncoderType.F => "f",
-                EncoderType.N => "n",
-                EncoderType.B => "b",
-                EncoderType.P => "p",
+                EncoderType.TopX265BluRay => "x",
+                EncoderType.TopX265 => "X",
+                EncoderType.TopH264BluRay => "h",
+                EncoderType.TopH264 => "H",
+                EncoderType.PreferredX265BluRay => "z",
+                EncoderType.PreferredX265 => "Z",
+                EncoderType.PreferredH264BluRay => "y",
+                EncoderType.PreferredH264 => "Y",
+                EncoderType.FfmpegX265BluRay => "f",
+                EncoderType.FfmpegX265 => "F",
+                EncoderType.NvidiaX265BluRay => "n",
+                EncoderType.NvidiaX265 => "N",
+                EncoderType.HandbrakeH264BluRay => "b",
+                EncoderType.HandbrakeH264 => "B",
+                EncoderType.Korean => "k",
+                EncoderType.KoreanFfmpegX265 => "K",
+                EncoderType.HDBluRay => "p",
+                EncoderType.HD => "P",
                 _ => throw new ArgumentOutOfRangeException(nameof(videos))
             };
 
@@ -146,11 +156,18 @@ internal record VideoDirectoryInfo(
             IGrouping<EncoderType, VideoMovieFileInfo> group = videosByEncoder.First();
             return group.Key switch
             {
-                EncoderType.Y => $"y{videos.Max(video => video.FormatAudioCount())}",
-                EncoderType.F => $"f{videos.Max(video => video.FormatAudioCount())}",
-                EncoderType.N => $"n{videos.Max(video => video.FormatAudioCount())}",
-                EncoderType.B => $"b{videos.Max(video => video.FormatAudioCount())}",
-                EncoderType.P => string.Empty,
+                EncoderType.PreferredH264BluRay => $"y{videos.Max(video => video.FormatAudioCount())}",
+                EncoderType.PreferredH264 => $"Y{videos.Max(video => video.FormatAudioCount())}",
+                EncoderType.FfmpegX265BluRay => $"f{videos.Max(video => video.FormatAudioCount())}",
+                EncoderType.FfmpegX265 => $"F{videos.Max(video => video.FormatAudioCount())}",
+                EncoderType.NvidiaX265BluRay => $"n{videos.Max(video => video.FormatAudioCount())}",
+                EncoderType.NvidiaX265 => $"N{videos.Max(video => video.FormatAudioCount())}",
+                EncoderType.HandbrakeH264BluRay => $"b{videos.Max(video => video.FormatAudioCount())}",
+                EncoderType.HandbrakeH264 => $"B{videos.Max(video => video.FormatAudioCount())}",
+                EncoderType.Korean => $"k{videos.Max(video => video.FormatAudioCount())}",
+                EncoderType.KoreanFfmpegX265 => $"K{videos.Max(video => video.FormatAudioCount())}",
+                EncoderType.HDBluRay => string.Empty,
+                EncoderType.HD => string.Empty,
                 _ => throw new ArgumentOutOfRangeException(nameof(videos))
             };
         }
@@ -165,12 +182,12 @@ internal record VideoDirectoryInfo(
             .First();
         string encoder = maxGroup.Key switch
         {
-            EncoderType.X => "x",
-            EncoderType.H => "h",
-            EncoderType.Y => "y",
-            EncoderType.F => "f",
-            EncoderType.N => "n",
-            EncoderType.B => "b",
+            EncoderType.TopX265 => "x",
+            EncoderType.TopH264 => "h",
+            EncoderType.PreferredH264 => "y",
+            EncoderType.FfmpegX265 => "f",
+            EncoderType.NvidiaX265 => "n",
+            EncoderType.HandbrakeH264 => "b",
             _ when maxGroup.GroupBy(video => video.IsHD()).OrderByDescending(group => group.Count()).First().Key => "p",
             _ => string.Empty
         };
