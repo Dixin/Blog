@@ -1,5 +1,7 @@
 ﻿namespace Examples.Common;
 
+using System.Numerics;
+
 public static class Argument
 {
     [return: NotNull]
@@ -87,5 +89,25 @@ public static class Argument
     public static T ThrowIfLessThan<T>(this T argument, T value, [CallerArgumentExpression(nameof(argument))] string paramName = "") where T : IComparable<T> =>
         argument.CompareTo(value) < 0
             ? throw new ArgumentOutOfRangeException(paramName, argument, $"{paramName} ('{argument}') must be greater than or equal to '{value}'.")
+            : argument;
+
+    public static T ThrowIfNegative<T>(this T argument, [CallerArgumentExpression(nameof(argument))] string paramName = "") where T : IComparable<T>, IAdditiveIdentity<T, T> =>
+        argument.CompareTo(T.AdditiveIdentity) < 0
+            ? throw new ArgumentOutOfRangeException(paramName, argument, $"{paramName} ('{argument}') must be greater than or equal to zero.")
+            : argument;
+
+    public static T ThrowIfPositive<T>(this T argument, [CallerArgumentExpression(nameof(argument))] string paramName = "") where T : IComparable<T>, IAdditiveIdentity<T, T> =>
+        argument.CompareTo(T.AdditiveIdentity) > 0
+            ? throw new ArgumentOutOfRangeException(paramName, argument, $"{paramName} ('{argument}') must be less than or equal to zero.")
+            : argument;
+
+    public static T ThrowIfNotNegative<T>(this T argument, [CallerArgumentExpression(nameof(argument))] string paramName = "") where T : IComparable<T>, IAdditiveIdentity<T, T> =>
+        argument.CompareTo(T.AdditiveIdentity) >= 0
+            ? throw new ArgumentOutOfRangeException(paramName, argument, $"{paramName} ('{argument}') must be less than zero.")
+            : argument;
+
+    public static T ThrowIfNotPositive<T>(this T argument, [CallerArgumentExpression(nameof(argument))] string paramName = "") where T : IComparable<T>, IAdditiveIdentity<T, T> =>
+        argument.CompareTo(T.AdditiveIdentity) <= 0
+            ? throw new ArgumentOutOfRangeException(paramName, argument, $"{paramName} ('{argument}') must be greater than zero.")
             : argument;
 }
