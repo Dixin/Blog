@@ -38,7 +38,7 @@ internal record VideoEpisodeFileInfo(
             value = PathHelper.GetFileName(value);
         }
 
-        nameRegex ??= new Regex(@$"^(.+?)(\.([0-9]{{4}}))?\.S([0-9]{{2,4}})E([0-9]{{2,3}})(E([0-9]{{2,3}}))?(\.[A-Z\.\-]+?)?(\.2160p|\.1080p|\.720p|\.540p|\.480p|\.360p)?(\.WEBRip|\.BluRay|\.DVDRip|\.HDRip|\.HDTV|\.VHSRip|\.LDRip|\.DVD|\.LDVDRip|\.LDDVDRip|\.HQDVDRip|\.TV|\.VCD|\.VCDRip)?(\.H264|\.x264|\.x265|\.DivX|\.Xvid)?(\.AAC|\.AC3|\.MP3|\.AAC5\.1|\.DTS)?(\{Video.VersionSeparator}({Settings.TopEnglishKeyword}|{Settings.TopForeignKeyword}|\[{Settings.PreferredNewKeyword}\.(MX|AM|AG|LT)\]|[a-zA-Z0-9@]+?))?(\.[2-9]Audio)?(\.watermark)?(\.{FfmpegHelper.Executable}|\.nvenc|\.handbrake)?(\.bul|\.chs|\.cht|\.cht&eng|\.chs&eng|\.dut|\.eng|\.fre|\.heb|\.jap|\.kor|\.pol|\.dut|\.spa|\.swe|\.por)?(\.(.+))?(\.mp4|\.avi|\.rmvb|\.mkv|\.ts)$");
+        nameRegex ??= new Regex(@$"^(.+?)(\.([0-9]{{4}}))?\.S([0-9]{{2,4}})E([0-9]{{2,3}})(E([0-9]{{2,3}}))?(\.[A-Z\.\-]+?)?(\.HDR)?(\.2160p|\.1080p|\.720p|\.540p|\.480p|\.360p)?(\.WEBRip|\.BluRay|\.DVDRip|\.HDRip|\.HDTV|\.VHSRip|\.LDRip|\.DVD|\.LDVDRip|\.LDDVDRip|\.HQDVDRip|\.TV|\.VCD|\.VCDRip)?(\.H264|\.x264|\.x265|\.DivX|\.Xvid)?(\.AAC|\.AC3|\.MP3|\.AAC5\.1|\.DTS|\.DDP)?(\{Video.VersionSeparator}({Settings.TopEnglishKeyword}|{Settings.TopForeignKeyword}|\[{Settings.PreferredNewKeyword}\.(MX|AM|AG|LT)\]|[a-zA-Z0-9@]+?))?(\.[2-9]Audio)?(\.watermark)?(\.{FfmpegHelper.Executable}|\.nvenc|\.handbrake)?(\.bul|\.chs|\.cht|\.cht&eng|\.chs&eng|\.dut|\.eng|\.fre|\.heb|\.jap|\.kor|\.pol|\.dut|\.spa|\.swe|\.por)?(\.(.+))?(\.mp4|\.avi|\.rmvb|\.mkv|\.ts)$");
         Match match = nameRegex.Match(value);
         if (!match.Success)
         {
@@ -50,15 +50,15 @@ internal record VideoEpisodeFileInfo(
             TVTitle: match.Groups[1].Value, Year: match.Groups[3].Value,
             Season: match.Groups[4].Value, Episode: match.Groups[5].Value, AdditionalEpisode: match.Groups[7].Value,
             Edition: match.Groups[8].Value,
-            Definition: match.Groups[9].Value,
-            Origin: match.Groups[10].Value,
-            VideoCodec: match.Groups[11].Value, AudioCodec: match.Groups[12].Value, Version: match.Groups[14].Value,
-            MultipleAudio: match.Groups[16].Value,
-            Watermark: match.Groups[17].Value,
-            Encoder: match.Groups[18].Value,
-            Subtitle: match.Groups[19].Value,
-            EpisodeTitle: match.Groups[21].Value,
-            Extension: match.Groups[22].Value);
+            Definition: match.Groups[10].Value,
+            Origin: match.Groups[11].Value,
+            VideoCodec: match.Groups[12].Value, AudioCodec: match.Groups[13].Value, Version: match.Groups[15].Value,
+            MultipleAudio: match.Groups[17].Value,
+            Watermark: match.Groups[18].Value,
+            Encoder: match.Groups[19].Value,
+            Subtitle: match.Groups[20].Value,
+            EpisodeTitle: match.Groups[22].Value,
+            Extension: match.Groups[23].Value);
         return true;
     }
 

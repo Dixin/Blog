@@ -100,13 +100,15 @@ internal record VideoDirectoryInfo(
 
     internal static string GetResolution(VideoEpisodeFileInfo[] videos, ISettings settings)
     {
+        int total2160P = videos.Count(video => video.GetDefinitionType() is DefinitionType.P2160);
         int total1080P = videos.Count(video => video.GetDefinitionType() is DefinitionType.P1080);
         int total720P = videos.Count(video => video.GetDefinitionType() is DefinitionType.P720);
         int total480PWithEncoder = videos.Count(video => !video.IsHD() && video.GetEncoderType() is not EncoderType.HD);
         int total480P = videos.Count(video => !video.IsHD() && video.GetEncoderType() is EncoderType.HD);
-        int max = new int[] { total1080P, total720P, total480PWithEncoder, total480P }.Max();
+        int max = new int[] { total2160P, total1080P, total720P, total480PWithEncoder, total480P }.Max();
         return max switch
         {
+            _ when max == total2160P => "2160",
             _ when max == total1080P => "1080",
             _ when max == total720P => "720",
             _ when max == total480PWithEncoder => "480",
@@ -182,13 +184,20 @@ internal record VideoDirectoryInfo(
             .First();
         string encoder = maxGroup.Key switch
         {
-            EncoderType.TopX265 => "x",
-            EncoderType.TopH264 => "h",
-            EncoderType.PreferredH264 => "y",
-            EncoderType.FfmpegX265 => "f",
-            EncoderType.NvidiaX265 => "n",
-            EncoderType.HandbrakeH264 => "b",
-            _ when maxGroup.GroupBy(video => video.IsHD()).OrderByDescending(group => group.Count()).First().Key => "p",
+            EncoderType.TopX265BluRay => "x",
+            EncoderType.TopX265 => "X",
+            EncoderType.TopH264BluRay => "h",
+            EncoderType.TopH264 => "H",
+            EncoderType.PreferredH264BluRay => "y",
+            EncoderType.PreferredH264 => "Y",
+            EncoderType.FfmpegX265BluRay => "f",
+            EncoderType.FfmpegX265 => "F",
+            EncoderType.NvidiaX265BluRay => "n",
+            EncoderType.NvidiaX265 => "N",
+            EncoderType.HandbrakeH264BluRay => "b",
+            EncoderType.HandbrakeH264 => "B",
+            EncoderType.HDBluRay when maxGroup.GroupBy(video => video.IsHD()).OrderByDescending(group => group.Count()).First().Key => "p",
+            EncoderType.HD when maxGroup.GroupBy(video => video.IsHD()).OrderByDescending(group => group.Count()).First().Key => "P",
             _ => string.Empty
         };
 
