@@ -28,7 +28,7 @@ internal static partial class Video
 
     private static bool ContainsCommonEnglish([NotNullWhen(true)] this string? value) => value.IsNotNullOrWhiteSpace() && CommonEnglish.All(value.ContainsIgnoreCase);
 
-    internal static (string? Charset, float? Confidence, string File)[] GetSubtitles(string directory) =>
+    internal static IEnumerable<(string? Charset, float? Confidence, string File)> EnumerateSubtitles(string directory) =>
         Directory
             .EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
             .Where(file => file.HasAnyExtension(TextExtensions))
@@ -39,15 +39,14 @@ internal static partial class Video
                 detector.Feed(fileStream);
                 detector.DataEnd();
                 return detector.Charset is not null ? (detector.Charset, detector.Confidence, File: file) : (Charset: (string?)null, Confidence: (float?)null, File: file);
-            })
-            .OrderBy(result => result.Charset)
-            .ThenByDescending(result => result.Confidence)
-            .ToArray();
+            });
+            //.OrderBy(result => result.Charset)
+            //.ThenByDescending(result => result.Confidence);
 
     internal static void DeleteSubtitle(string directory, bool isDryRun = false, Action<string>? log = null, params string[] encodings)
     {
         log ??= Logger.WriteLine;
-        GetSubtitles(directory)
+        EnumerateSubtitles(directory)
             .Where(result => encodings.Any(encoding => encoding.EqualsIgnoreCase(result.Charset)))
             .ForEach(result =>
             {
@@ -62,7 +61,7 @@ internal static partial class Video
     internal static async Task ConvertToUtf8Async(string directory, bool backup = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
-        await GetSubtitles(directory)
+        await EnumerateSubtitles(directory)
             .Where(result =>
             {
                 if (result.Charset?.ToUpperInvariant() != "UTF-8")
@@ -104,7 +103,7 @@ internal static partial class Video
                             encoding = Encoding.UTF8;
                             break;
                         default:
-                            log($"Not supported {result.Item1}, file {result.Item3}");
+                            log($"!Not supported {result.Item1}, file {result.Item3}");
                             return;
                     }
 
