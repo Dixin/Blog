@@ -90,7 +90,7 @@ public static class Argument
         argument.CompareTo(value) < 0
             ? throw new ArgumentOutOfRangeException(paramName, argument, $"{paramName} ('{argument}') must be greater than or equal to '{value}'.")
             : argument;
-
+#if NET7_0_OR_GREATER
     public static T ThrowIfNegative<T>(this T argument, [CallerArgumentExpression(nameof(argument))] string paramName = "") where T : IComparable<T>, IAdditiveIdentity<T, T> =>
         argument.CompareTo(T.AdditiveIdentity) < 0
             ? throw new ArgumentOutOfRangeException(paramName, argument, $"{paramName} ('{argument}') must be greater than or equal to zero.")
@@ -110,4 +110,5 @@ public static class Argument
         argument.CompareTo(T.AdditiveIdentity) <= 0
             ? throw new ArgumentOutOfRangeException(paramName, argument, $"{paramName} ('{argument}') must be greater than zero.")
             : argument;
+#endif
 }
