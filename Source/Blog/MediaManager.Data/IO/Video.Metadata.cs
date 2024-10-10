@@ -397,9 +397,7 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
 
-        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata?>> existingMetadata = await JsonHelper
-            .DeserializeFromFileAsync<ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata?>>>(
-                settings.MovieLibraryMetadata, new(), cancellationToken);
+        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> existingMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
 
         existingMetadata
             .Values
@@ -515,10 +513,10 @@ internal static partial class Video
             .ToArray()
             .ForEach(group => Debug.Assert(existingMetadata.TryRemove(group)));
 
-        await JsonHelper.SerializeToFileAsync(existingMetadata, settings.MovieLibraryMetadata, cancellationToken);
+        await settings.WriteMovieLibraryMetadataAsync(existingMetadata, cancellationToken);
     }
 
-    internal static async Task WriteExternalVideoMetadataAsync(string jsonPath, params string[] directories)
+    internal static async Task WriteExternalVideoMetadataAsync(ISettings settings, CancellationToken cancellationToken = default, params string[] directories)
     {
         Dictionary<string, VideoMetadata> allVideoMetadata = directories
             .SelectMany(directory => Directory.GetFiles(directory, VideoSearchPattern, SearchOption.AllDirectories))
@@ -536,15 +534,14 @@ internal static partial class Video
             .Distinct(metadata => metadata.ImdbId)
             .ToDictionary(metadata => metadata.ImdbId, metadata => metadata.Value);
 
-        await JsonHelper.SerializeToFileAsync(allVideoMetadata, jsonPath);
+        await settings.WriteMovieExternalMetadataAsync(allVideoMetadata, cancellationToken);
     }
 
     internal static async Task WriteMergedMovieMetadataAsync(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
-        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper
-            .DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(settings.MovieLibraryMetadata, cancellationToken);
+        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
         ConcurrentDictionary<string, ImdbMetadata> mergedMetadata = await JsonHelper
             .DeserializeFromFileAsync<ConcurrentDictionary<string, ImdbMetadata>>(settings.MovieMergedMetadata, new(), cancellationToken);
         ILookup<string, string> cacheFilesByImdbId = Directory

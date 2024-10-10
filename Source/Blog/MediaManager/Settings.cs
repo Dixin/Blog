@@ -141,81 +141,129 @@ public partial record Settings
 {
     private Dictionary<string, VideoMetadata>? movieExternalMetadata;
 
-    internal async Task<Dictionary<string, VideoMetadata>> LoadMovieExternalMetadataAsync(CancellationToken cancellationToken) =>
+    public async Task<Dictionary<string, VideoMetadata>> LoadMovieExternalMetadataAsync(CancellationToken cancellationToken) =>
         this.movieExternalMetadata ??= await JsonHelper.DeserializeFromFileAsync<Dictionary<string, VideoMetadata>>(this.MovieExternalMetadata, cancellationToken);
 
-    private Dictionary<string, Dictionary<string, VideoMetadata?>>? movieLibraryMetadataAsync;
+    public async Task WriteMovieExternalMetadataAsync(Dictionary<string, VideoMetadata> value, CancellationToken cancellationToken) =>
+        await JsonHelper.SerializeToFileAsync(this.movieExternalMetadata = value, this.MovieExternalMetadata, cancellationToken);
 
-    internal async Task<Dictionary<string, Dictionary<string, VideoMetadata?>>> LoadMovieLibraryMetadataAsync(CancellationToken cancellationToken) =>
-        this.movieLibraryMetadataAsync ??= await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata?>>>(this.MovieLibraryMetadata, cancellationToken);
+    private ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>>? movieLibraryMetadataAsync;
 
-    private HashSet<string>? ignored;
+    public async Task<ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>>> LoadMovieLibraryMetadataAsync(CancellationToken cancellationToken) =>
+        this.movieLibraryMetadataAsync ??= await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>>>(this.MovieLibraryMetadata, cancellationToken);
 
-    internal async Task<HashSet<string>> LoadIgnoredAsync(CancellationToken cancellationToken) =>
-        this.ignored ??= new(await JsonHelper.DeserializeFromFileAsync<string[]>(this.MovieIgnoredMetadata, cancellationToken), StringComparer.OrdinalIgnoreCase);
+    public async Task WriteMovieLibraryMetadataAsync(ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> value, CancellationToken cancellationToken) =>
+        await JsonHelper.SerializeToFileAsync(this.movieLibraryMetadataAsync = value, this.MovieLibraryMetadata, cancellationToken);
+
+    private HashSet<string>? movieIgnoredMetadata;
+
+    public async Task<HashSet<string>> LoadIgnoredAsync(CancellationToken cancellationToken) =>
+        this.movieIgnoredMetadata ??= new(await JsonHelper.DeserializeFromFileAsync<string[]>(this.MovieIgnoredMetadata, cancellationToken), StringComparer.OrdinalIgnoreCase);
+
+    public async Task WriteMovieIgnoredMetadataAsync(HashSet<string> value, CancellationToken cancellationToken) =>
+        await JsonHelper.SerializeToFileAsync(this.movieIgnoredMetadata = value, this.MovieIgnoredMetadata, cancellationToken);
 
     private Dictionary<string, TopMetadata[]>? movieTopX265Metadata;
 
-    internal async Task<Dictionary<string, TopMetadata[]>> LoadMovieTopX265MetadataAsync(CancellationToken cancellationToken) =>
+    public async Task<Dictionary<string, TopMetadata[]>> LoadMovieTopX265MetadataAsync(CancellationToken cancellationToken) =>
         this.movieTopX265Metadata ??= await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(this.MovieTopX265Metadata, cancellationToken);
+
+    public async Task WriteMovieTopX265MetadataAsync(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken) =>
+        await JsonHelper.SerializeToFileAsync(this.movieTopX265Metadata = value, this.MovieTopX265Metadata, cancellationToken);
 
     private Dictionary<string, TopMetadata[]>? movieTopH264Metadata;
 
-    internal async Task<Dictionary<string, TopMetadata[]>> LoadMovieTopH264MetadataAsync(CancellationToken cancellationToken) =>
+    public async Task<Dictionary<string, TopMetadata[]>> LoadMovieTopH264MetadataAsync(CancellationToken cancellationToken) =>
         this.movieTopH264Metadata ??= await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(this.MovieTopH264Metadata, cancellationToken);
+
+    public async Task WriteMovieTopH264MetadataAsync(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken) =>
+        await JsonHelper.SerializeToFileAsync(this.movieTopH264Metadata = value, this.MovieTopH264Metadata, cancellationToken);
 
     private Dictionary<string, TopMetadata[]>? movieTopX265XMetadata;
 
-    internal async Task<Dictionary<string, TopMetadata[]>> LoadMovieTopX265XMetadataAsync(CancellationToken cancellationToken) =>
+    public async Task<Dictionary<string, TopMetadata[]>> LoadMovieTopX265XMetadataAsync(CancellationToken cancellationToken) =>
         this.movieTopX265XMetadata ??= await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(this.MovieTopX265XMetadata, cancellationToken);
+
+    public async Task WriteMovieTopX265XMetadataAsync(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken) =>
+        await JsonHelper.SerializeToFileAsync(this.movieTopX265XMetadata = value, this.MovieTopX265XMetadata, cancellationToken);
 
     private Dictionary<string, TopMetadata[]>? movieTopH264XMetadata;
 
-    internal async Task<Dictionary<string, TopMetadata[]>> LoadMovieTopH264XMetadataAsync(CancellationToken cancellationToken) =>
+    public async Task<Dictionary<string, TopMetadata[]>> LoadMovieTopH264XMetadataAsync(CancellationToken cancellationToken) =>
         this.movieTopH264XMetadata ??= await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(this.MovieTopH264XMetadata, cancellationToken);
+
+    public async Task WriteMovieTopH264XMetadataAsync(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken) =>
+        await JsonHelper.SerializeToFileAsync(this.movieTopH264XMetadata = value, this.MovieTopH264XMetadata, cancellationToken);
 
     private Dictionary<string, TopMetadata[]>? movieTopH264720PMetadata;
 
-    internal async Task<Dictionary<string, TopMetadata[]>> LoadMovieTopH264720PMetadataAsync(CancellationToken cancellationToken) =>
+    public async Task<Dictionary<string, TopMetadata[]>> LoadMovieTopH264720PMetadataAsync(CancellationToken cancellationToken) =>
         this.movieTopH264720PMetadata ??= await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(this.MovieTopH264720PMetadata, cancellationToken);
+
+    public async Task WriteMovieTopH264720PMetadataAsync(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken) =>
+        await JsonHelper.SerializeToFileAsync(this.movieTopH264720PMetadata = value, this.MovieTopH264720PMetadata, cancellationToken);
 
     private ConcurrentDictionary<string, PreferredSummary>? preferredSummaries;
 
-    internal async Task<ConcurrentDictionary<string, PreferredSummary>> LoadMoviePreferredSummaryAsync(CancellationToken cancellationToken) =>
+    public async Task<ConcurrentDictionary<string, PreferredSummary>> LoadMoviePreferredSummaryAsync(CancellationToken cancellationToken) =>
         this.preferredSummaries ??= await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, PreferredSummary>>(this.MoviePreferredSummary, new(), cancellationToken);
 
-    private Dictionary<string, PreferredMetadata[]>? preferredMetadata;
+    public async Task WriteMoviePreferredSummaryAsync(ConcurrentDictionary<string, PreferredSummary> value, CancellationToken cancellationToken) =>
+        await JsonHelper.SerializeToFileAsync(this.preferredSummaries = value, this.MoviePreferredSummary, cancellationToken);
 
-    internal async Task<Dictionary<string, PreferredMetadata[]>> LoadMoviePreferredMetadataAsync(CancellationToken cancellationToken) =>
-        this.preferredMetadata ??= await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(this.MoviePreferredMetadata, cancellationToken);
+    private ConcurrentDictionary<string, List<PreferredMetadata>>? preferredMetadata;
+
+    public async Task<ConcurrentDictionary<string, List<PreferredMetadata>>> LoadMoviePreferredMetadataAsync(CancellationToken cancellationToken) =>
+        this.preferredMetadata ??= await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, List<PreferredMetadata>>>(this.MoviePreferredMetadata, cancellationToken);
+
+    public async Task WriteMoviePreferredMetadataAsync(ConcurrentDictionary<string, List<PreferredMetadata>> value, CancellationToken cancellationToken) =>
+        await JsonHelper.SerializeToFileAsync(this.preferredMetadata = value, this.MoviePreferredMetadata, cancellationToken);
 
     private ConcurrentDictionary<string, List<PreferredFileMetadata>>? preferredFileMetadata;
 
-    internal async Task<ConcurrentDictionary<string, List<PreferredFileMetadata>>> LoadMoviePreferredFileMetadataAsync(CancellationToken cancellationToken) =>
+    public async Task<ConcurrentDictionary<string, List<PreferredFileMetadata>>> LoadMoviePreferredFileMetadataAsync(CancellationToken cancellationToken) =>
      this.preferredFileMetadata ??= await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, List<PreferredFileMetadata>>>(this.MoviePreferredFileMetadata, new(), cancellationToken);
+
+    public async Task WriteMoviePreferredFileMetadataAsync(ConcurrentDictionary<string, List<PreferredFileMetadata>> value, CancellationToken cancellationToken) =>
+        await JsonHelper.SerializeToFileAsync(this.preferredFileMetadata = value, this.MoviePreferredFileMetadata, cancellationToken);
 
     private Dictionary<string, RareMetadata>? movieRareMetadata;
 
-    internal async Task<Dictionary<string, RareMetadata>> LoadMovieRareMetadataAsync(CancellationToken cancellationToken) =>
+    public async Task<Dictionary<string, RareMetadata>> LoadMovieRareMetadataAsync(CancellationToken cancellationToken) =>
         this.movieRareMetadata ??= await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(this.MovieRareMetadata, cancellationToken);
+
+    public async Task WriteMovieRareMetadataAsync(Dictionary<string, RareMetadata> value, CancellationToken cancellationToken) =>
+        await JsonHelper.SerializeToFileAsync(this.movieRareMetadata = value, this.MovieRareMetadata, cancellationToken);
 
     private SharedMetadata[]? movieSharedMetadata;
 
-    internal async Task<SharedMetadata[]> LoadMovieSharedMetadataAsync(CancellationToken cancellationToken) =>
+    public async Task<SharedMetadata[]> LoadMovieSharedMetadataAsync(CancellationToken cancellationToken) =>
         this.movieSharedMetadata ??= await JsonHelper.DeserializeFromFileAsync<SharedMetadata[]>(this.MovieSharedMetadata, cancellationToken);
+
+    public async Task WriteMovieSharedMetadataAsync(SharedMetadata[] value, CancellationToken cancellationToken) =>
+        await JsonHelper.SerializeToFileAsync(this.movieSharedMetadata = value, this.MovieSharedMetadata, cancellationToken);
 
     private string[]? movieImdbSpecialMetadata;
 
-    internal async Task<string[]> LoadMovieImdbSpecialMetadataAsync(CancellationToken cancellationToken) =>
+    public async Task<string[]> LoadMovieImdbSpecialMetadataAsync(CancellationToken cancellationToken) =>
         this.movieImdbSpecialMetadata ??= await JsonHelper.DeserializeFromFileAsync<string[]>(this.MovieImdbSpecialMetadata, cancellationToken);
+
+    public async Task WriteMovieImdbSpecialMetadataAsync(string[] value, CancellationToken cancellationToken) =>
+        await JsonHelper.SerializeToFileAsync(this.movieImdbSpecialMetadata = value, this.MovieImdbSpecialMetadata, cancellationToken);
 
     private Dictionary<string, ImdbMetadata>? movieMergedMetadata;
 
-    internal async Task<Dictionary<string, ImdbMetadata>> LoadMovieMergedMetadataAsync(CancellationToken cancellationToken) =>
+    public async Task<Dictionary<string, ImdbMetadata>> LoadMovieMergedMetadataAsync(CancellationToken cancellationToken) =>
         this.movieMergedMetadata ??= await JsonHelper.DeserializeFromFileAsync<Dictionary<string, ImdbMetadata>>(this.MovieMergedMetadata, cancellationToken);
+
+    public async Task WriteMovieMergedMetadataAsync(Dictionary<string, ImdbMetadata> value, CancellationToken cancellationToken) =>
+        await JsonHelper.SerializeToFileAsync(this.movieMergedMetadata = value, this.MovieMergedMetadata, cancellationToken);
 
     private Dictionary<string, TopMetadata[]>? tvTopX265Metadata;
 
-    internal async Task<Dictionary<string, TopMetadata[]>> LoadTVTopX265MetadataAsync(CancellationToken cancellationToken) =>
+    public async Task<Dictionary<string, TopMetadata[]>> LoadTVTopX265MetadataAsync(CancellationToken cancellationToken) =>
         this.tvTopX265Metadata ??= await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(this.TVTopX265Metadata, cancellationToken);
+
+    public async Task WriteTVTopX265MetadataAsync(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken) =>
+        await JsonHelper.SerializeToFileAsync(this.tvTopX265Metadata = value, this.TVTopX265Metadata, cancellationToken);
 }

@@ -16,7 +16,7 @@ internal static class Rare
         log ??= Logger.WriteLine;
 
         using HttpClient httpClient = new();
-        string indexHtml = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(indexUrl, cancellationToken));
+        string indexHtml = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(indexUrl, cancellationToken), cancellationToken: cancellationToken);
         CQ indexCQ = indexHtml;
         string[] links = indexCQ
             .Find("#content li.wsp-post a")
@@ -33,7 +33,7 @@ internal static class Rare
                 using HttpClient httpClient = new();
                 try
                 {
-                    string html = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(link, token));
+                    string html = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(link, token), cancellationToken: token);
                     CQ rareCQ = html;
                     CQ rareArticleCQ = rareCQ.Find("#content article");
                     string title = rareArticleCQ.Find("h1").Text().Trim();
@@ -56,18 +56,18 @@ internal static class Rare
 
         JsonHelper.SerializeToFile(rareMetadata, settings.MovieRareMetadata, ref writeJsonLock);
 
-        await PrintVersionsAsync(settings, rareMetadata, log);
+        await PrintVersionsAsync(settings, rareMetadata, log, cancellationToken);
     }
 
-    internal static async Task PrintVersionsAsync(ISettings settings, IDictionary<string, RareMetadata> rareMetadata, Action<string>? log = null, params string[] categories)
+    internal static async Task PrintVersionsAsync(ISettings settings, IDictionary<string, RareMetadata> rareMetadata, Action<string>? log = null, CancellationToken cancellationToken = default, params string[] categories)
     {
         log ??= Logger.WriteLine;
 
-        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(settings.MovieLibraryMetadata);
-        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265Metadata);
-        Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264Metadata);
-        Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(settings.MoviePreferredMetadata);
-        Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264720PMetadata);
+        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadMovieTopX265MetadataAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> h264Metadata = await settings.LoadMovieTopH264MetadataAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> h264720PMetadata = await settings.LoadMovieTopH264720PMetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
 
         string[] cacheFiles = Directory.GetFiles(settings.MovieMetadataCacheDirectory);
         string[] metadataFiles = Directory.GetFiles(settings.MovieMetadataDirectory);
@@ -88,7 +88,7 @@ internal static class Rare
             .ForEachAsync(async (imdbId, index) =>
             {
                 log($"{index * 100 / length}% - {index}/{length} - {imdbId}");
-                if (libraryMetadata.TryGetValue(imdbId.Value, out Dictionary<string, VideoMetadata>? libraryVideos) && libraryVideos.Any())
+                if (libraryMetadata.TryGetValue(imdbId.Value, out ConcurrentDictionary<string, VideoMetadata>? libraryVideos) && libraryVideos.Any())
                 {
                     libraryVideos.ForEach(video => log($"- {video.Key} {video.Value.File}"));
                     log(string.Empty);
@@ -98,8 +98,8 @@ internal static class Rare
                 try
                 {
                     await Retry.FixedIntervalAsync(
-                        async () => await Video.DownloadImdbMetadataAsync(imdbId.Value, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log),
-                        isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError });
+                        async () => await Video.DownloadImdbMetadataAsync(imdbId.Value, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log, cancellationToken: cancellationToken),
+                        isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError }, cancellationToken: cancellationToken);
                 }
                 catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
                 {
@@ -107,7 +107,7 @@ internal static class Rare
                     if (imdbId.Value.StartsWithIgnoreCase("tt0"))
                     {
                         imdbId = imdbId with { Value = imdbId.Value.ReplaceIgnoreCase("tt0", "tt") };
-                        await Video.DownloadImdbMetadataAsync(imdbId.Value, @settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log);
+                        await Video.DownloadImdbMetadataAsync(imdbId.Value, @settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log, cancellationToken: cancellationToken);
                     }
                 }
 
@@ -215,7 +215,7 @@ internal static class Rare
                     return;
                 }
 
-                if (preferredMetadata.TryGetValue(imdbId.Value, out PreferredMetadata[]? preferredVideos))
+                if (preferredMetadata.TryGetValue(imdbId.Value, out List<PreferredMetadata>? preferredVideos))
                 {
                     PreferredMetadata preferredVideo = preferredVideos.Single();
                     if (preferredVideo.Availabilities.Count > 1)
@@ -269,7 +269,7 @@ internal static class Rare
                     h264720PVideos.ForEach(metadata => log($"{metadata.Link} {metadata.Title}"));
                     log(string.Empty);
                 }
-            });
+            }, cancellationToken: cancellationToken);
     }
 
     internal static async Task PrintVersionsAsync(ISettings settings, Action<string>? log = null)

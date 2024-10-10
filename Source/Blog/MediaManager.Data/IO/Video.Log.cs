@@ -637,14 +637,14 @@ internal static partial class Video
             });
     }
 
-    internal static async Task PrintMovieVersions(ISettings settings, Action<string>? log = null, params (string Directory, int Level)[] directories)
+    internal static async Task PrintMovieVersions(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default, params (string Directory, int Level)[] directories)
     {
         log ??= Logger.WriteLine;
-        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265Metadata);
-        Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264Metadata);
-        Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264720PMetadata);
-        Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(settings.MoviePreferredMetadata);
-        HashSet<string> ignore = new(await JsonHelper.DeserializeFromFileAsync<string[]>(settings.MovieIgnoredMetadata), StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadMovieTopX265MetadataAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> h264Metadata = await settings.LoadMovieTopH264MetadataAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> h264720PMetadata = await settings.LoadMovieTopH264720PMetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
+        HashSet<string> ignore = await settings.LoadIgnoredAsync(cancellationToken);
 
         directories
             .SelectMany(directory => EnumerateDirectories(directory.Directory, directory.Level))
@@ -666,7 +666,7 @@ internal static partial class Video
                     .ToArray();
 
                 PreferredMetadata[] availablePreferredMetadata = preferredMetadata
-                    .TryGetValue(imdbId, out PreferredMetadata[]? preferredResult)
+                    .TryGetValue(imdbId, out List<PreferredMetadata>? preferredResult)
                     ? preferredResult
                         .Where(metadata => !ignore.Contains(metadata.Link))
                         .ToArray()
@@ -988,13 +988,13 @@ internal static partial class Video
             });
     }
 
-    internal static async Task PrintSpecialTitles(ISettings settings, Action<string>? log = null)
+    internal static async Task PrintSpecialTitles(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
-        string[] specialImdbIds = await JsonHelper.DeserializeFromFileAsync<string[]>(settings.MovieImdbSpecialMetadata);
-        Dictionary<string, TopMetadata[]> x265Summaries = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265Metadata);
-        Dictionary<string, TopMetadata[]> h264Summaries = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264Metadata);
-        Dictionary<string, PreferredMetadata[]> preferredDetails = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(settings.MoviePreferredMetadata);
+        string[] specialImdbIds = await settings.LoadMovieImdbSpecialMetadataAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> x265Summaries = await settings.LoadMovieTopX265MetadataAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> h264Summaries = await settings.LoadMovieTopH264MetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, List<PreferredMetadata>> preferredDetails = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
 
         specialImdbIds = specialImdbIds
             .Where(imdbId => x265Summaries.ContainsKey(imdbId))
@@ -1037,7 +1037,7 @@ internal static partial class Video
         });
     }
 
-    internal static async Task PrintHighRatingAsync(ISettings settings, string threshold = "8.0", string[]? excludedGenres = null, Action<string>? log = null, params string[] directories)
+    internal static async Task PrintHighRatingAsync(ISettings settings, string threshold = "8.0", string[]? excludedGenres = null, Action<string>? log = null, CancellationToken cancellationToken = default, params string[] directories)
     {
         log ??= Logger.WriteLine;
         HashSet<string> existingImdbIds = new(
@@ -1046,9 +1046,9 @@ internal static partial class Video
                 .Select(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty))
                 .Where(imdbId => imdbId.IsNotNullOrWhiteSpace()),
             StringComparer.OrdinalIgnoreCase);
-        Dictionary<string, TopMetadata[]> x265Summaries = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265Metadata);
-        Dictionary<string, TopMetadata[]> h264Summaries = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264Metadata);
-        Dictionary<string, PreferredMetadata[]> preferredDetails = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(settings.MoviePreferredMetadata);
+        Dictionary<string, TopMetadata[]> x265Summaries = await settings.LoadMovieTopX265MetadataAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> h264Summaries = await settings.LoadMovieTopH264MetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, List<PreferredMetadata>> preferredDetails = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
 
         Dictionary<string, Dictionary<string, IImdbMetadata[]>> highRatings = new();
 
@@ -1094,7 +1094,7 @@ internal static partial class Video
                     highRatings[summaries.Key] = new();
                 }
 
-                highRatings[summaries.Key]["Preferred"] = summaries.Value;
+                highRatings[summaries.Key]["Preferred"] = summaries.Value.ToArray();
             });
 
         highRatings
@@ -1469,15 +1469,14 @@ internal static partial class Video
             });
     }
 
-    internal static async Task PrintMovieImdbIdErrorsAsync(ISettings settings, bool ignoreJsonImdbId = false, Action<string>? log = null, params (string Directory, int Level)[] directories)
+    internal static async Task PrintMovieImdbIdErrorsAsync(ISettings settings, bool ignoreJsonImdbId = false, Action<string>? log = null, CancellationToken cancellationToken = default, params (string Directory, int Level)[] directories)
     {
         log ??= Logger.WriteLine;
-        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265Metadata);
-        Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264Metadata);
-        Dictionary<string, TopMetadata[]> x265XMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265XMetadata);
-        Dictionary<string, TopMetadata[]> h264XMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264XMetadata);
-        Dictionary<string, PreferredFileMetadata[]> preferredFileMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredFileMetadata[]>>(settings.MoviePreferredFileMetadata);
-        //Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264720PJsonPath);
+        Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadMovieTopX265MetadataAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> h264Metadata = await settings.LoadMovieTopH264MetadataAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> x265XMetadata = await settings.LoadMovieTopX265XMetadataAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> h264XMetadata = await settings.LoadMovieTopH264XMetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, List<PreferredFileMetadata>> preferredFileMetadata = await settings.LoadMoviePreferredFileMetadataAsync(cancellationToken);
         HashSet<string> topDuplications = new(settings.MovieTopDuplications, StringComparer.OrdinalIgnoreCase);
 
         Dictionary<string, string> x265TitlesToImdbIds = x265Metadata
@@ -1681,19 +1680,19 @@ internal static partial class Video
     }
 
     internal static async Task PrintMovieLinksAsync(
-        ISettings settings, Func<ImdbMetadata, HashSet<string>, bool> predicate, string initialUrl = "", bool updateMetadata = false, bool isDryRun = false, Action<string>? log = null)
+        ISettings settings, Func<ImdbMetadata, HashSet<string>, bool> predicate, string initialUrl = "", bool updateMetadata = false, bool isDryRun = false, Action<string>? log = null,CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
-        ILookup<string, string> topMagnetUris = (await File.ReadAllLinesAsync(settings.TopMagnetUrls))
+        ILookup<string, string> topMagnetUris = (await File.ReadAllLinesAsync(settings.TopMagnetUrls, cancellationToken))
             .ToLookup(line => MagnetUri.Parse(line).DisplayName, StringComparer.OrdinalIgnoreCase);
-        Dictionary<string, ImdbMetadata> mergedMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, ImdbMetadata>>(settings.MovieMergedMetadata);
+        Dictionary<string, ImdbMetadata> mergedMetadata = await settings.LoadMovieMergedMetadataAsync(cancellationToken);
 
-        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(settings.MovieLibraryMetadata);
-        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265Metadata);
-        Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264Metadata);
-        Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(settings.MoviePreferredMetadata);
-        //Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync(h264720PJsonPath);
+        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadMovieTopX265MetadataAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> h264Metadata = await settings.LoadMovieTopH264MetadataAsync(cancellationToken);
+        //Dictionary<string, TopMetadata[]> h264720PMetadata = await settings.LoadMovieTopH264720PMetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
         //Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(rareJsonPath);
         //string[] metadataFiles = Directory.GetFiles(settings.MovieMetadataDirectory);
         //string[] cacheFiles = Directory.GetFiles(settings.MovieMetadataCacheDirectory);
@@ -1974,7 +1973,7 @@ internal static partial class Video
                 //    }
                 //}
 
-                if (preferredMetadata.TryGetValue(imdbMetadata.ImdbId, out PreferredMetadata[]? preferredVideos))
+                if (preferredMetadata.TryGetValue(imdbMetadata.ImdbId, out List<PreferredMetadata>? preferredVideos))
                 {
                     await preferredVideos
                         .Do(preferredMetadata => Debug.Assert(preferredMetadata.ImdbId.EqualsIgnoreCase(imdbMetadata.ImdbId)))
@@ -2062,7 +2061,7 @@ internal static partial class Video
 
                 //    return;
                 //}
-            });
+            }, cancellationToken: cancellationToken);
     }
 
     internal static (string HttpUrl, string FileName, string MagnetUrl) TopGetUrls(CQ pageCQ, string baseUrl)
@@ -2233,7 +2232,7 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
 
-        Dictionary<string, Dictionary<string, VideoMetadata?>> existingMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata?>>>(settings.MovieLibraryMetadata, cancellationToken);
+        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> existingMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
         ILookup<string, string> directoryNames = existingMetadata
             .Values
             .SelectMany(group => group.Keys)
@@ -2253,7 +2252,7 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
 
-        HashSet<string> xmls = new(Directory.GetFiles(settings.MovieTemp41, XmlMetadataSearchPattern, SearchOption.AllDirectories), StringComparer.OrdinalIgnoreCase);
+        //HashSet<string> xmls = new(Directory.GetFiles(settings.MovieTemp41, XmlMetadataSearchPattern, SearchOption.AllDirectories), StringComparer.OrdinalIgnoreCase);
 
         //directoryDrives
         //    // Hard drives in parallel.
@@ -2326,9 +2325,6 @@ internal static partial class Video
                         log(movie);
                     }
                 }));
-        ;
-        ;
-        ;
 
         directoryDrives
             // Hard drives in parallel.

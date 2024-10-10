@@ -1,6 +1,7 @@
 ﻿namespace MediaManager;
 
 using MediaManager.IO;
+using MediaManager.Net;
 
 public record struct DirectorySettings(string Directory, int Level)
 {
@@ -170,4 +171,68 @@ public interface ISettings
     string TopDatabase { get; init; }
 
     string TempFile { get; init; }
+
+    Task<Dictionary<string, VideoMetadata>> LoadMovieExternalMetadataAsync(CancellationToken cancellationToken);
+
+    Task WriteMovieExternalMetadataAsync(Dictionary<string, VideoMetadata> value, CancellationToken cancellationToken);
+
+    Task<ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>>> LoadMovieLibraryMetadataAsync(CancellationToken cancellationToken);
+
+    Task WriteMovieLibraryMetadataAsync(ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> value, CancellationToken cancellationToken);
+
+    Task<HashSet<string>> LoadIgnoredAsync(CancellationToken cancellationToken);
+
+    Task WriteMovieIgnoredMetadataAsync(HashSet<string> value, CancellationToken cancellationToken);
+
+    Task<Dictionary<string, TopMetadata[]>> LoadMovieTopX265MetadataAsync(CancellationToken cancellationToken);
+
+    Task WriteMovieTopX265MetadataAsync(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken);
+
+    Task<Dictionary<string, TopMetadata[]>> LoadMovieTopH264MetadataAsync(CancellationToken cancellationToken);
+
+    Task WriteMovieTopH264MetadataAsync(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken);
+
+    Task<Dictionary<string, TopMetadata[]>> LoadMovieTopX265XMetadataAsync(CancellationToken cancellationToken);
+
+    Task WriteMovieTopX265XMetadataAsync(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken);
+
+    Task<Dictionary<string, TopMetadata[]>> LoadMovieTopH264XMetadataAsync(CancellationToken cancellationToken);
+
+    Task WriteMovieTopH264XMetadataAsync(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken);
+
+    Task<Dictionary<string, TopMetadata[]>> LoadMovieTopH264720PMetadataAsync(CancellationToken cancellationToken);
+
+    Task WriteMovieTopH264720PMetadataAsync(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken);
+
+    Task<ConcurrentDictionary<string, PreferredSummary>> LoadMoviePreferredSummaryAsync(CancellationToken cancellationToken);
+
+    Task WriteMoviePreferredSummaryAsync(ConcurrentDictionary<string, PreferredSummary> value, CancellationToken cancellationToken);
+
+    Task<ConcurrentDictionary<string, List<PreferredMetadata>>> LoadMoviePreferredMetadataAsync(CancellationToken cancellationToken);
+
+    Task WriteMoviePreferredMetadataAsync(ConcurrentDictionary<string, List<PreferredMetadata>> value, CancellationToken cancellationToken);
+
+    Task<ConcurrentDictionary<string, List<PreferredFileMetadata>>> LoadMoviePreferredFileMetadataAsync(CancellationToken cancellationToken);
+
+    Task WriteMoviePreferredFileMetadataAsync(ConcurrentDictionary<string, List<PreferredFileMetadata>> value, CancellationToken cancellationToken);
+
+    Task<Dictionary<string, RareMetadata>> LoadMovieRareMetadataAsync(CancellationToken cancellationToken);
+
+    Task WriteMovieRareMetadataAsync(Dictionary<string, RareMetadata> value, CancellationToken cancellationToken);
+
+    Task<SharedMetadata[]> LoadMovieSharedMetadataAsync(CancellationToken cancellationToken);
+
+    Task WriteMovieSharedMetadataAsync(SharedMetadata[] value, CancellationToken cancellationToken);
+
+    Task<string[]> LoadMovieImdbSpecialMetadataAsync(CancellationToken cancellationToken);
+
+    Task WriteMovieImdbSpecialMetadataAsync(string[] value, CancellationToken cancellationToken);
+
+    Task<Dictionary<string, ImdbMetadata>> LoadMovieMergedMetadataAsync(CancellationToken cancellationToken);
+
+    Task WriteMovieMergedMetadataAsync(Dictionary<string, ImdbMetadata> value, CancellationToken cancellationToken);
+
+    Task<Dictionary<string, TopMetadata[]>> LoadTVTopX265MetadataAsync(CancellationToken cancellationToken);
+
+    Task WriteTVTopX265MetadataAsync(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken);
 }

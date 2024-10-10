@@ -36,7 +36,7 @@ internal static class Imdb
         string imdbUrl = $"https://www.imdb.com/title/{imdbId}/";
         string imdbHtml = File.Exists(imdbFile)
             ? await File.ReadAllTextAsync(imdbFile, cancellationToken)
-            : webDriver?.GetString(imdbUrl) ?? await Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(imdbUrl, cancellationToken));
+            : webDriver?.GetString(imdbUrl) ?? await Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(imdbUrl, cancellationToken), cancellationToken: cancellationToken);
         CQ imdbCQ = imdbHtml;
         string json = imdbCQ.Find("""script[type="application/ld+json"]""").Text();
         if (imdbCQ.Find("title").Text().Trim().StartsWithIgnoreCase("500 Error"))
@@ -237,7 +237,7 @@ internal static class Imdb
         string releaseUrl = $"{imdbUrl}releaseinfo/";
         string releaseHtml = File.Exists(releaseFile)
             ? await File.ReadAllTextAsync(releaseFile, cancellationToken)
-            : webDriver?.GetString(releaseUrl) ?? await Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(releaseUrl, cancellationToken));
+            : webDriver?.GetString(releaseUrl) ?? await Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(releaseUrl, cancellationToken), cancellationToken: cancellationToken);
         CQ releaseCQ = releaseHtml;
 
         if (webDriver is not null)
@@ -607,7 +607,7 @@ internal static class Imdb
         string keywordsUrl = $"{imdbUrl}keywords/";
         string keywordsHtml = File.Exists(keywordsFile)
             ? await File.ReadAllTextAsync(keywordsFile, cancellationToken)
-            : webDriver?.GetString(keywordsUrl) ?? await Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(keywordsUrl, cancellationToken));
+            : webDriver?.GetString(keywordsUrl) ?? await Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(keywordsUrl, cancellationToken), cancellationToken: cancellationToken);
         CQ keywordsCQ = keywordsHtml;
         string[] allKeywords = keywordsCQ.Find("#keywords_content table td div.sodatext a").Select(keyword => keyword.TextContent.Trim()).ToArray();
         if (allKeywords.IsEmpty())
@@ -663,7 +663,7 @@ internal static class Imdb
         string advisoriesUrl = $"{imdbUrl}parentalguide";
         string advisoriesHtml = File.Exists(advisoriesFile)
             ? await File.ReadAllTextAsync(advisoriesFile, cancellationToken)
-            : webDriver?.GetString(advisoriesUrl) ?? await Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(advisoriesUrl, cancellationToken));
+            : webDriver?.GetString(advisoriesUrl) ?? await Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(advisoriesUrl, cancellationToken), cancellationToken: cancellationToken);
         CQ parentalGuideCQ = advisoriesHtml;
         string mpaaRating = parentalGuideCQ.Find("#mpaa-rating td").Last().Text().Trim();
         ImdbAdvisory[] advisories = parentalGuideCQ
@@ -739,13 +739,13 @@ internal static class Imdb
             .Do(cells => Debug.Assert(cells[1].ContainsIgnoreCase($"-{settings.TopEnglishKeyword}") || cells[1].ContainsIgnoreCase($"-{settings.TopForeignKeyword}")))
             .ToLookup(cells => cells[^2], cells => cells[1]);
 
-        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(settings.MovieLibraryMetadata, cancellationToken);
-        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265Metadata, cancellationToken);
-        Dictionary<string, TopMetadata[]> x265XMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopX265XMetadata, cancellationToken);
-        Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264Metadata, cancellationToken);
-        Dictionary<string, TopMetadata[]> h264XMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264XMetadata, cancellationToken);
-        Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(settings.MoviePreferredMetadata, cancellationToken);
-        Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264720PMetadata, cancellationToken);
+        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadMovieTopX265MetadataAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> h264Metadata = await settings.LoadMovieTopH264MetadataAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> h264720PMetadata = await settings.LoadMovieTopH264720PMetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> x265XMetadata = await settings.LoadMovieTopX265XMetadataAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> h264XMetadata = await settings.LoadMovieTopH264XMetadataAsync(cancellationToken);
         //Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(rareJsonPath);
 
         string[] cacheFiles = Directory.GetFiles(settings.MovieMetadataCacheDirectory);
@@ -792,7 +792,7 @@ internal static class Imdb
                         {
                             await Retry.FixedIntervalAsync(
                                 async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log, token),
-                                isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError });
+                                isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError }, cancellationToken: token);
                         }
                         catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
                         {
@@ -895,7 +895,7 @@ internal static class Imdb
                                 await FileHelper.WriteTextAsync(keywordFile, keywordsHtml, cancellationToken: token);
                                 await FileHelper.WriteTextAsync($"{keywordFile}.txt", string.Join(Environment.NewLine, allKeywords), cancellationToken: token);
                             }
-                        });
+                        }, cancellationToken: token);
 
                         log($"{cacheFilesQueue.Count} of {totalDownloadCount} to download.");
                     }
@@ -974,7 +974,7 @@ internal static class Imdb
                                 await JsonHelper.SerializeToFileAsync(result, $"{advisoriesFile}.txt", token);
                                 await JsonHelper.SerializeToFileAsync(certifications, $"{advisoriesFile}.Certifications.txt", token);
                             }
-                        });
+                        }, cancellationToken: token);
 
                         log($"{cacheFilesQueue.Count} of {totalDownloadCount} to download.");
                     }

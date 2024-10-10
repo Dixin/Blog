@@ -21,8 +21,7 @@ internal static class Preferred
         log ??= Logger.WriteLine;
         degreeOfParallelism ??= MaxDegreeOfParallelism;
         predicate ??= _ => true;
-        ConcurrentDictionary<string, PreferredSummary> allSummaries = await JsonHelper
-            .DeserializeFromFileAsync<ConcurrentDictionary<string, PreferredSummary>>(settings.MoviePreferredSummary, new(), cancellationToken);
+        ConcurrentDictionary<string, PreferredSummary> allSummaries = await settings.LoadMoviePreferredSummaryAsync(cancellationToken);
         ConcurrentQueue<PreferredSummary> downloadedSummaries = [];
         ConcurrentQueue<int> pageIndexes = new(Enumerable.Range(initialPageIndex, int.MaxValue).Where(predicate));
         object writeJsonLock = new();
@@ -36,7 +35,7 @@ internal static class Preferred
                     {
                         string url = $"{settings.MoviePreferredUrl}/browse-movies?page={pageIndex}";
                         log($"Start {url}");
-                        string html = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(url, cancellationToken));
+                        string html = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(url, cancellationToken), cancellationToken: token);
                         CQ cq = new(html);
                         if (cq[".browse-movie-wrap"].IsEmpty())
                         {
@@ -76,7 +75,7 @@ internal static class Preferred
 
         log($"Downloaded {downloadedSummaries.Count}");
 
-        await JsonHelper.SerializeToFileAsync(allSummaries, settings.MoviePreferredSummary, cancellationToken);
+        await settings.WriteMoviePreferredSummaryAsync(allSummaries, cancellationToken);
         return downloadedSummaries;
     }
 
@@ -92,10 +91,9 @@ internal static class Preferred
         degreeOfParallelism ??= MaxDegreeOfParallelism;
         log ??= Logger.WriteLine;
 
-        summaries ??= new ConcurrentQueue<PreferredSummary>((await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredSummary>>(settings.MoviePreferredSummary, cancellationToken)).Values);
+        summaries ??= new ConcurrentQueue<PreferredSummary>((await settings.LoadMoviePreferredSummaryAsync(cancellationToken)).Values);
         summaries = new ConcurrentQueue<PreferredSummary>(summaries.OrderBy(summary => summary.Link));
-        ConcurrentDictionary<string, List<PreferredMetadata>> details = await JsonHelper
-            .DeserializeFromFileAsync<ConcurrentDictionary<string, List<PreferredMetadata>>>(settings.MoviePreferredMetadata, new(), cancellationToken);
+        ConcurrentDictionary<string, List<PreferredMetadata>> details = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
 
         int summaryIndex = 0;
         int summaryCount = summaries.Count;
@@ -114,7 +112,7 @@ internal static class Preferred
                         {
                             string html = await Retry.FixedIntervalAsync(
                                 async () => await httpClient.GetStringAsync(summary.Link, token),
-                                isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound });
+                                isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound }, cancellationToken: token);
                             CQ cq = new(html);
                             CQ info = cq.Find("#movie-info");
                             CQ specsCQ = cq.Find("#movie-tech-specs");
@@ -421,7 +419,7 @@ internal static class Preferred
                 {
                     await Retry.FixedIntervalAsync(
                             async () => await httpClient.GetFileAsync(video.Value, file, token),
-                            isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound });
+                            isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound }, cancellationToken: token);
                     isDownloaded = true;
                     log($"""
                          Download {file}
