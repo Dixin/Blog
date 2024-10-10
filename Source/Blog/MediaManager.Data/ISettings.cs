@@ -123,7 +123,7 @@ public interface ISettings
 
     string MovieLibraryMetadata { get; init; }
 
-    string MovieIgnoreMetadata { get; init; }
+    string MovieIgnoredMetadata { get; init; }
 
     string MovieExternalMetadata { get; init; }
 

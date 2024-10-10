@@ -644,7 +644,7 @@ internal static partial class Video
         Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264Metadata);
         Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(settings.MovieTopH264720PMetadata);
         Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(settings.MoviePreferredMetadata);
-        HashSet<string> ignore = new(await JsonHelper.DeserializeFromFileAsync<string[]>(settings.MovieIgnoreMetadata), StringComparer.OrdinalIgnoreCase);
+        HashSet<string> ignore = new(await JsonHelper.DeserializeFromFileAsync<string[]>(settings.MovieIgnoredMetadata), StringComparer.OrdinalIgnoreCase);
 
         directories
             .SelectMany(directory => EnumerateDirectories(directory.Directory, directory.Level))
