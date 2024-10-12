@@ -216,9 +216,9 @@ public interface ISettings
 
     Task WriteMoviePreferredFileMetadataAsync(ConcurrentDictionary<string, List<PreferredFileMetadata>> value, CancellationToken cancellationToken);
 
-    Task<Dictionary<string, RareMetadata>> LoadMovieRareMetadataAsync(CancellationToken cancellationToken);
+    Task<ConcurrentDictionary<string, RareMetadata>> LoadMovieRareMetadataAsync(CancellationToken cancellationToken);
 
-    Task WriteMovieRareMetadataAsync(Dictionary<string, RareMetadata> value, CancellationToken cancellationToken);
+    Task WriteMovieRareMetadataAsync(ConcurrentDictionary<string, RareMetadata> value, CancellationToken cancellationToken);
 
     Task<SharedMetadata[]> LoadMovieSharedMetadataAsync(CancellationToken cancellationToken);
 
@@ -228,9 +228,9 @@ public interface ISettings
 
     Task WriteMovieImdbSpecialMetadataAsync(string[] value, CancellationToken cancellationToken);
 
-    Task<Dictionary<string, ImdbMetadata>> LoadMovieMergedMetadataAsync(CancellationToken cancellationToken);
+    Task<ConcurrentDictionary<string, ImdbMetadata>> LoadMovieMergedMetadataAsync(CancellationToken cancellationToken);
 
-    Task WriteMovieMergedMetadataAsync(Dictionary<string, ImdbMetadata> value, CancellationToken cancellationToken);
+    Task WriteMovieMergedMetadataAsync(ConcurrentDictionary<string, ImdbMetadata> value, CancellationToken cancellationToken);
 
     Task<Dictionary<string, TopMetadata[]>> LoadTVTopX265MetadataAsync(CancellationToken cancellationToken);
 

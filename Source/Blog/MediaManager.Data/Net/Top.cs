@@ -31,7 +31,7 @@ internal static class Top
     }
 
     internal static async Task DownloadMetadataAsync(string url, string jsonPath, Func<int, bool>? @continue = null, Action<string>? log = null, CancellationToken cancellationToken = default) =>
-        await DownloadMetadataAsync(new[] { url }, jsonPath, @continue, 1, log, cancellationToken);
+        await DownloadMetadataAsync([url], jsonPath, @continue, 1, log, cancellationToken);
 
     private static async Task DownloadMetadataAsync(
         string url, string jsonPath, ConcurrentDictionary<string, TopMetadata[]> allSummaries, int partitionIndex, Func<int, bool>? @continue = null,

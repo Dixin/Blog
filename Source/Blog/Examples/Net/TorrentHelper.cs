@@ -136,7 +136,8 @@ public class TorrentHelper
                                         torrentUrl,
                                         Path.Combine(torrentDirectory, $"{magnetUri.DisplayName}@{magnetUri.ExactTopic}{TorrentExtension}"),
                                         token),
-                                    isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.Moved });
+                                    isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.Moved },
+                                    cancellationToken: token);
                             }
                             catch (Exception exception) when (exception.IsNotCritical())
                             {
@@ -214,22 +215,24 @@ public class TorrentHelper
                 string torrentUrl = $"https://torrage.info/torrent.php?h={magnetUri.ExactTopic}";
                 try
                 {
-                    await Retry.FixedIntervalAsync(async () =>
-                    {
-                        webDriver.Url = torrentUrl;
-                        await Task.Delay(WebDriverHelper.DefaultDomWait, cancellationToken);
-                        IWebElement link = webDriver.FindElement(By.Id("torrent-operation-link"));
-                        string torrentDownloadUrl = link.GetAttribute("href");
-                        link.Click();
-                        await Task.Delay(WebDriverHelper.DefaultDomWait, cancellationToken);
-                        if (!webDriver.Title.ContainsIgnoreCase("Page Not Found"))
+                    await Retry.FixedIntervalAsync(
+                        async () =>
                         {
-                            await Task.Delay(WebDriverHelper.DefaultNetworkWait, cancellationToken);
-                        }
+                            webDriver.Url = torrentUrl;
+                            await Task.Delay(WebDriverHelper.DefaultDomWait, cancellationToken);
+                            IWebElement link = webDriver.FindElement(By.Id("torrent-operation-link"));
+                            string torrentDownloadUrl = link.GetAttribute("href");
+                            link.Click();
+                            await Task.Delay(WebDriverHelper.DefaultDomWait, cancellationToken);
+                            if (!webDriver.Title.ContainsIgnoreCase("Page Not Found"))
+                            {
+                                await Task.Delay(WebDriverHelper.DefaultNetworkWait, cancellationToken);
+                            }
 
-                        log?.Invoke(magnetUri.ExactTopic);
-                        await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
-                    });
+                            log?.Invoke(magnetUri.ExactTopic);
+                            await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
+                        }, 
+                        cancellationToken: cancellationToken);
                 }
                 catch (Exception exception) when (exception.IsNotCritical())
                 {
@@ -273,18 +276,20 @@ public class TorrentHelper
                 string torrentUrl = $"https://btcache.me/torrent/{magnetUri.ExactTopic}";
                 try
                 {
-                    await Retry.FixedIntervalAsync(async () =>
-                    {
-                        webDriver.Url = torrentUrl;
-                        await Task.Delay(WebDriverHelper.DefaultDomWait, cancellationToken);
-                        IWebElement bodyElement = webDriver.FindElement(By.TagName("body"));
-                        if (!bodyElement.Text.ContainsIgnoreCase("Invalid INFO_HASH") && Debugger.IsAttached)
+                    await Retry.FixedIntervalAsync(
+                        async () =>
                         {
-                            Debugger.Break();
-                        }
+                            webDriver.Url = torrentUrl;
+                            await Task.Delay(WebDriverHelper.DefaultDomWait, cancellationToken);
+                            IWebElement bodyElement = webDriver.FindElement(By.TagName("body"));
+                            if (!bodyElement.Text.ContainsIgnoreCase("Invalid INFO_HASH") && Debugger.IsAttached)
+                            {
+                                Debugger.Break();
+                            }
 
-                        log?.Invoke(magnetUri.ExactTopic);
-                    });
+                            log?.Invoke(magnetUri.ExactTopic);
+                        },
+                        cancellationToken: cancellationToken);
                 }
                 catch (Exception exception) when (exception.IsNotCritical())
                 {

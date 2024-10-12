@@ -542,8 +542,7 @@ internal static partial class Video
         log ??= Logger.WriteLine;
 
         ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
-        ConcurrentDictionary<string, ImdbMetadata> mergedMetadata = await JsonHelper
-            .DeserializeFromFileAsync<ConcurrentDictionary<string, ImdbMetadata>>(settings.MovieMergedMetadata, new(), cancellationToken);
+        ConcurrentDictionary<string, ImdbMetadata> mergedMetadata = await settings.LoadMovieMergedMetadataAsync(cancellationToken);
         ILookup<string, string> cacheFilesByImdbId = Directory
             .EnumerateFiles(settings.MovieMetadataCacheDirectory, ImdbCacheSearchPattern)
             .ToLookup(file => PathHelper.GetFileNameWithoutExtension(file).Split(Delimiter).First());
@@ -615,10 +614,10 @@ internal static partial class Video
                 }
             });
 
-        await JsonHelper.SerializeToFileAsync(mergedMetadata, settings.MovieMergedMetadata, cancellationToken);
+        await settings.WriteMovieMergedMetadataAsync(mergedMetadata, cancellationToken);
     }
 
-    internal static async Task MergeMovieMetadataAsync(string metadataDirectory, string mergedMetadataPath)
+    internal static async Task MergeMovieMetadataAsync(ISettings settings, string metadataDirectory, CancellationToken cancellationToken = default)
     {
         ConcurrentDictionary<string, ImdbMetadata> mergedMetadata = new();
 
@@ -643,7 +642,7 @@ internal static partial class Video
                 }
             });
 
-        await JsonHelper.SerializeToFileAsync(mergedMetadata, mergedMetadataPath);
+        await settings.WriteMovieMergedMetadataAsync(mergedMetadata, cancellationToken);
     }
 
     internal static async Task DownloadMissingTitlesFromDoubanAsync(ISettings settings, string directory, int level = DefaultDirectoryLevel, Action<string>? log = null, CancellationToken cancellationToken = default)

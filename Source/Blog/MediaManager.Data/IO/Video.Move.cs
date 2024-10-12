@@ -447,11 +447,11 @@ internal static partial class Video
             });
     }
 
-    internal static async Task CompareAndMoveAsync(ISettings settings, string fromJsonPath, string toJsonPath, string newDirectory, string deletedDirectory, Action<string>? log = null, bool isDryRun = false, bool moveAllAttachment = true)
+    internal static async Task CompareAndMoveAsync(ISettings settings, string fromJsonPath, string newDirectory, string deletedDirectory, Action<string>? log = null, bool isDryRun = false, bool moveAllAttachment = true, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
-        Dictionary<string, VideoMetadata> externalMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, VideoMetadata>>(fromJsonPath);
-        Dictionary<string, Dictionary<string, VideoMetadata>> moviesMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(toJsonPath);
+        Dictionary<string, VideoMetadata> externalMetadata = await settings.LoadMovieExternalMetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> moviesMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
 
         externalMetadata
             .Where(externalVideo => File.Exists(externalVideo.Value.File))
@@ -461,7 +461,7 @@ internal static partial class Video
                 string fromMovie = PathHelper.GetDirectoryName(fromVideoMetadata.File);
                 log($"Starting {fromMovie}");
 
-                if (!moviesMetadata.TryGetValue(externalVideo.Key, out Dictionary<string, VideoMetadata>? group) || group.IsEmpty())
+                if (!moviesMetadata.TryGetValue(externalVideo.Key, out ConcurrentDictionary<string, VideoMetadata>? group) || group.IsEmpty())
                 {
                     string newExternalMovie = Path.Combine(newDirectory, PathHelper.GetFileName(fromMovie));
                     if (!isDryRun)
@@ -480,7 +480,7 @@ internal static partial class Video
                 }
 
                 VideoMetadata toVideoMetadata = group.Single().Value;
-                toVideoMetadata = toVideoMetadata with { File = Path.Combine(PathHelper.GetDirectoryName(toJsonPath), toVideoMetadata.File) };
+                toVideoMetadata = toVideoMetadata with { File = Path.Combine(settings.LibraryDirectory, toVideoMetadata.File) };
                 if (VideoMovieFileInfo.Parse(PathHelper.GetFileNameWithoutExtension(toVideoMetadata.File)).GetEncoderType() is EncoderType.TopX265)
                 {
                     log($"Video {toVideoMetadata.File} is x265.");

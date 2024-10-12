@@ -984,13 +984,13 @@ internal static class Imdb
     }
 
     internal static async Task DownloadAllLibraryMoviesAsync(
-        string libraryJsonPath,
+        ISettings settings,
         string cacheDirectory, string metadataDirectory,
-        Func<IEnumerable<string>, IEnumerable<string>>? partition = null, Action<string>? log = null)
+        Func<IEnumerable<string>, IEnumerable<string>>? partition = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
-        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(libraryJsonPath);
+        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
 
         using WebDriverWrapper webDriver = new();
         string[] cacheFiles = Directory.GetFiles(@cacheDirectory);
@@ -1009,30 +1009,33 @@ internal static class Imdb
             .Except(metadataFiles.Select(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty))
             .ToArray();
         int trimmedLength = imdbIds.Length;
-        await imdbIds.ForEachAsync(async (imdbId, index) =>
-        {
-            log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
-            try
+        await imdbIds.ForEachAsync(
+            async (imdbId, index) =>
             {
-                await Retry.FixedIntervalAsync(
-                    async () => await Video.DownloadImdbMetadataAsync(imdbId, metadataDirectory, cacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log),
-                    isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError });
-            }
-            catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
-            {
-                log($"!!!{imdbId} {exception.ToString()}");
-            }
-        });
+                log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
+                try
+                {
+                    await Retry.FixedIntervalAsync(
+                        async () => await Video.DownloadImdbMetadataAsync(imdbId, metadataDirectory, cacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log, cancellationToken: cancellationToken),
+                        isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError }, 
+                        cancellationToken: cancellationToken);
+                }
+                catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
+                {
+                    log($"!!!{imdbId} {exception.ToString()}");
+                }
+            }, 
+            cancellationToken);
     }
 
     internal static async Task DownloadAllTVsAsync(
-        string x265JsonPath,
+        ISettings settings,
         string[] tvDirectories, string cacheDirectory, string metadataDirectory,
-        Func<int, Range>? getRange = null, Action<string>? log = null)
+        Func<int, Range>? getRange = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
-        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(x265JsonPath);
+        Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadMovieTopX265MetadataAsync(cancellationToken);
         string[] libraryImdbIds = tvDirectories.SelectMany(tvDirectory => Directory.EnumerateFiles(tvDirectory, Video.ImdbMetadataSearchPattern, SearchOption.AllDirectories))
             .Select(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty)
             .Where(imdbId => imdbId.IsNotNullOrWhiteSpace())
@@ -1056,19 +1059,22 @@ internal static class Imdb
             .Except(metadataFiles.Select(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty))
             .ToArray();
         int trimmedLength = imdbIds.Length;
-        await imdbIds.ForEachAsync(async (imdbId, index) =>
-        {
-            log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
-            try
+        await imdbIds.ForEachAsync(
+            async (imdbId, index) =>
             {
-                await Retry.FixedIntervalAsync(
-                    async () => await Video.DownloadImdbMetadataAsync(imdbId, metadataDirectory, cacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log),
-                    isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError });
-            }
-            catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
-            {
-                log($"!!!{imdbId} {exception}");
-            }
-        });
+                log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
+                try
+                {
+                    await Retry.FixedIntervalAsync(
+                        async () => await Video.DownloadImdbMetadataAsync(imdbId, metadataDirectory, cacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log, cancellationToken: cancellationToken),
+                        isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError }, 
+                        cancellationToken: cancellationToken);
+                }
+                catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
+                {
+                    log($"!!!{imdbId} {exception}");
+                }
+            }, 
+            cancellationToken: cancellationToken);
     }
 }

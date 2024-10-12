@@ -226,8 +226,7 @@ internal static class Music
         ["The Punisher"] = "惩罚者"
     };
 
-    private static readonly HashSet<string> Extensions = new(
-        new[] { ".mp3", ".m4a", ".wma" }, StringComparer.OrdinalIgnoreCase);
+    private static readonly HashSet<string> Extensions = new([".mp3", ".m4a", ".wma"], StringComparer.OrdinalIgnoreCase);
 
     internal static void RenameAlbum(string from, string to)
     {

@@ -205,7 +205,7 @@ internal static class Preferred
                 degreeOfParallelism,
                 cancellationToken);
 
-        await JsonHelper.SerializeToFileAsync(details, settings.MoviePreferredMetadata, cancellationToken);
+        await settings.WriteMoviePreferredMetadataAsync(details, cancellationToken);
     }
 
     internal static void CleanupMetadata(ConcurrentDictionary<string, List<PreferredMetadata>> details)
@@ -292,7 +292,7 @@ internal static class Preferred
     });
     }
 
-    internal static async Task WriteImdbSpecialTitles(string imdbBasicsPath, string jsonPath)
+    internal static async Task WriteImdbSpecialTitles(ISettings settings, string imdbBasicsPath, CancellationToken cancellationToken = default)
     {
         string[] specialTitles = File.ReadLines(imdbBasicsPath)
             .Skip(1)
@@ -300,7 +300,7 @@ internal static class Preferred
             .Where(line => !"0".EqualsOrdinal(line.ElementAtOrDefault(4)))
             .Select(line => line[0])
             .ToArray();
-        await JsonHelper.SerializeToFileAsync(specialTitles, jsonPath);
+        await settings.WriteMovieImdbSpecialMetadataAsync(specialTitles, cancellationToken);
     }
 
     internal static async Task WritePreferredSpecialTitles(string directory, string jsonPath, Action<string>? log = null)
@@ -543,7 +543,7 @@ internal static class Preferred
 
         if (!isDryRun)
         {
-            await JsonHelper.SerializeToFileAsync(allFileMetadata, settings.MoviePreferredFileMetadata, cancellationToken);
+            await settings.WriteMoviePreferredFileMetadataAsync(allFileMetadata, cancellationToken);
         }
     }
 
@@ -552,8 +552,7 @@ internal static class Preferred
         log ??= Logger.WriteLine;
 
         using HttpClient httpClient = new HttpClient().AddEdgeHeaders();
-        Dictionary<string, List<PreferredMetadata>> details = await JsonHelper
-            .DeserializeFromFileAsync<Dictionary<string, List<PreferredMetadata>>>(settings.MoviePreferredMetadata, cancellationToken);
+        ConcurrentDictionary<string, List<PreferredMetadata>> details = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
 
         details
             .Values
@@ -578,7 +577,7 @@ internal static class Preferred
                     Logger.WriteLine($"Remove not found: {metadataNotFound.Link}");
                     if (details[metadataNotFound.ImdbId].IsEmpty())
                     {
-                        Debug.Assert(details.Remove(metadataNotFound.ImdbId));
+                        Debug.Assert(details.Remove(metadataNotFound.ImdbId, out _));
                     }
                 }
             });
@@ -603,7 +602,7 @@ internal static class Preferred
                     Logger.WriteLine($"Remove not found: {metadataNotFound.Link}");
                     if (details[metadataNotFound.ImdbId].IsEmpty())
                     {
-                        Debug.Assert(details.Remove(metadataNotFound.ImdbId));
+                        Debug.Assert(details.Remove(metadataNotFound.ImdbId, out _));
                     }
                 }
             });
@@ -621,7 +620,7 @@ internal static class Preferred
 
         if (!isDryRun)
         {
-            await JsonHelper.SerializeToFileAsync(details, settings.MoviePreferredMetadata, cancellationToken);
+            await settings.WriteMoviePreferredMetadataAsync(details, cancellationToken);
         }
     }
 
@@ -638,8 +637,7 @@ internal static class Preferred
             .EnumerateFiles(settings.MovieMetadataCacheDirectory, TorrentHelper.TorrentSearchPattern)
             .ToLookup(file => PathHelper.GetFileNameWithoutExtension(file).Split(".")[1]);
 
-        Dictionary<string, List<PreferredMetadata>> details = await JsonHelper
-            .DeserializeFromFileAsync<Dictionary<string, List<PreferredMetadata>>>(settings.MoviePreferredMetadata, cancellationToken);
+        ConcurrentDictionary<string, List<PreferredMetadata>> details = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
         Dictionary<string, string> exactTopicToImdbIds = details
                 .Values
                 .SelectMany(group => group)

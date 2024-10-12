@@ -227,12 +227,12 @@ public partial record Settings
     public async Task WriteMoviePreferredFileMetadataAsync(ConcurrentDictionary<string, List<PreferredFileMetadata>> value, CancellationToken cancellationToken) =>
         await JsonHelper.SerializeToFileAsync(this.preferredFileMetadata = value, this.MoviePreferredFileMetadata, cancellationToken);
 
-    private Dictionary<string, RareMetadata>? movieRareMetadata;
+    private ConcurrentDictionary<string, RareMetadata>? movieRareMetadata;
 
-    public async Task<Dictionary<string, RareMetadata>> LoadMovieRareMetadataAsync(CancellationToken cancellationToken) =>
-        this.movieRareMetadata ??= await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(this.MovieRareMetadata, cancellationToken);
+    public async Task<ConcurrentDictionary<string, RareMetadata>> LoadMovieRareMetadataAsync(CancellationToken cancellationToken) =>
+        this.movieRareMetadata ??= await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, RareMetadata>>(this.MovieRareMetadata, cancellationToken);
 
-    public async Task WriteMovieRareMetadataAsync(Dictionary<string, RareMetadata> value, CancellationToken cancellationToken) =>
+    public async Task WriteMovieRareMetadataAsync(ConcurrentDictionary<string, RareMetadata> value, CancellationToken cancellationToken) =>
         await JsonHelper.SerializeToFileAsync(this.movieRareMetadata = value, this.MovieRareMetadata, cancellationToken);
 
     private SharedMetadata[]? movieSharedMetadata;
@@ -251,12 +251,12 @@ public partial record Settings
     public async Task WriteMovieImdbSpecialMetadataAsync(string[] value, CancellationToken cancellationToken) =>
         await JsonHelper.SerializeToFileAsync(this.movieImdbSpecialMetadata = value, this.MovieImdbSpecialMetadata, cancellationToken);
 
-    private Dictionary<string, ImdbMetadata>? movieMergedMetadata;
+    private ConcurrentDictionary<string, ImdbMetadata>? movieMergedMetadata;
 
-    public async Task<Dictionary<string, ImdbMetadata>> LoadMovieMergedMetadataAsync(CancellationToken cancellationToken) =>
-        this.movieMergedMetadata ??= await JsonHelper.DeserializeFromFileAsync<Dictionary<string, ImdbMetadata>>(this.MovieMergedMetadata, cancellationToken);
+    public async Task<ConcurrentDictionary<string, ImdbMetadata>> LoadMovieMergedMetadataAsync(CancellationToken cancellationToken) =>
+        this.movieMergedMetadata ??= await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, ImdbMetadata>>(this.MovieMergedMetadata, cancellationToken);
 
-    public async Task WriteMovieMergedMetadataAsync(Dictionary<string, ImdbMetadata> value, CancellationToken cancellationToken) =>
+    public async Task WriteMovieMergedMetadataAsync(ConcurrentDictionary<string, ImdbMetadata> value, CancellationToken cancellationToken) =>
         await JsonHelper.SerializeToFileAsync(this.movieMergedMetadata = value, this.MovieMergedMetadata, cancellationToken);
 
     private Dictionary<string, TopMetadata[]>? tvTopX265Metadata;

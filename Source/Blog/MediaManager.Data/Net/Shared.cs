@@ -19,7 +19,7 @@ internal static class Shared
         degreeOfParallelism ??= MaxDegreeOfParallelism;
 
         IDictionary<string, string> itemUrls = await DownloadListAsync(settings.MovieSharedUrl, degreeOfParallelism.Value, log, cancellationToken);
-        return await DownloadItemsAsync(itemUrls, settings.MovieSharedMetadata, degreeOfParallelism.Value, skipExisting, log, cancellationToken);
+        return await DownloadItemsAsync(settings, itemUrls, degreeOfParallelism.Value, skipExisting, log, cancellationToken);
     }
 
     private static async Task<IDictionary<string, string>> DownloadListAsync(string indexUrl, int degreeOfParallelism, Action<string>? log = null, CancellationToken cancellationToken = default)
@@ -42,7 +42,8 @@ internal static class Shared
                     using HttpClient httpClient = new();
                     CQ listCQ = await Retry.FixedIntervalAsync(
                         async () => await httpClient.GetStringAsync(listUrl, token),
-                        retryingHandler: (sender, args) => log($"{args.CurrentRetryCount} {listUrl}: {args.LastException.GetBaseException()}"));
+                        retryingHandler: (sender, args) => log($"{args.CurrentRetryCount} {listUrl}: {args.LastException.GetBaseException()}"), 
+                        cancellationToken: token);
                     log(listUrl);
                     listCQ.Find("#content article")
                         .Select(article => (article.Id, Url: article.Cq().Find(" h2.entry-title a").Attr("href")))
@@ -54,16 +55,16 @@ internal static class Shared
         return itemLinks;
     }
 
-    private static async Task<SharedMetadata[]> DownloadItemsAsync(IDictionary<string, string> itemUrls, string metadataFile, int degreeOfParallelism, bool skipExisting = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    private static async Task<SharedMetadata[]> DownloadItemsAsync(ISettings settings, IDictionary<string, string> itemUrls, int degreeOfParallelism, bool skipExisting = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
         log($"Total items: {itemUrls.Count}.");
         ConcurrentDictionary<string, SharedMetadata> results = new(StringComparer.OrdinalIgnoreCase);
         IEnumerable<KeyValuePair<string, string>> downloadingUrls = itemUrls;
-        if (skipExisting && File.Exists(metadataFile))
+        if (skipExisting && File.Exists(settings.MovieSharedMetadata))
         {
-            (await JsonHelper.DeserializeFromFileAsync<SharedMetadata[]>(metadataFile, cancellationToken))
+            (await settings.LoadMovieSharedMetadataAsync(cancellationToken))
                 .AsParallel()
                 .Where(item => itemUrls.ContainsKey(item.Url))
                 .ForAll(item => results[item.Url] = item);
@@ -82,7 +83,8 @@ internal static class Shared
                     {
                         itemCQ = await Retry.FixedIntervalAsync(
                             async () => await httpClient.GetStringAsync(url.Key, token),
-                            retryingHandler: (sender, args) => log($"{args.CurrentRetryCount} {url.Key}: {args.LastException.GetBaseException()}"));
+                            retryingHandler: (sender, args) => log($"{args.CurrentRetryCount} {url.Key}: {args.LastException.GetBaseException()}"), 
+                            cancellationToken: token);
                     }
                     catch (Exception exception) when (exception.IsNotCritical())
                     {
@@ -114,13 +116,13 @@ internal static class Shared
                     if (results.Count % WriteCount == 0)
                     {
                         SharedMetadata[] ordered = results.Values.OrderByDescending(item => item.Id).ToArray();
-                        JsonHelper.SerializeToFile(ordered, metadataFile, ref writeJsonLock);
+                        JsonHelper.SerializeToFile(ordered, settings.MovieSharedMetadata, ref writeJsonLock);
                     }
                 },
                 degreeOfParallelism,
                 cancellationToken);
         SharedMetadata[] ordered = results.Values.OrderByDescending(item => item.Id).ToArray();
-        await JsonHelper.SerializeToFileAsync(ordered, metadataFile, cancellationToken);
+        await settings.WriteMovieSharedMetadataAsync(ordered, cancellationToken);
         return ordered;
     }
 }

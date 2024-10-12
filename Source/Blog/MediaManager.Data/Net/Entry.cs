@@ -11,6 +11,7 @@ internal static class Entry
     internal static readonly int MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 16);
 
     internal static async Task DownloadMetadataAsync(
+        ISettings settings,
         string baseUrl, int startIndex, int count,
         string entryJsonPath, string libraryJsonPath, string x265JsonPath, string h264JsonPath, string preferredJsonPath, string h264720PJsonPath,
         int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
@@ -29,7 +30,7 @@ internal static class Entry
                     token.ThrowIfCancellationRequested();
                     try
                     {
-                        string html = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(url, token));
+                        string html = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(url, token), cancellationToken: token);
                         CQ listCQ = html;
                         log($"Done {url}");
                         listCQ
@@ -52,7 +53,7 @@ internal static class Entry
                 using HttpClient httpClient = new();
                 try
                 {
-                    string html = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(entryLink, cancellationToken));
+                    string html = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(entryLink, cancellationToken), cancellationToken: token);
                     CQ entryCQ = html;
                     string title = entryCQ.Find("h1.entry-title").Text().Trim();
                     log($"Done {title} {entryLink}");
@@ -70,11 +71,11 @@ internal static class Entry
 
         await JsonHelper.SerializeToFileAsync(entryMetadata, entryJsonPath, cancellationToken);
 
-        Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, Dictionary<string, VideoMetadata>>>(libraryJsonPath, cancellationToken);
-        Dictionary<string, TopMetadata[]> x265Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(x265JsonPath, cancellationToken);
-        Dictionary<string, TopMetadata[]> h264Metadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264JsonPath, cancellationToken);
-        Dictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(preferredJsonPath, cancellationToken);
-        Dictionary<string, TopMetadata[]> h264720PMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, TopMetadata[]>>(h264720PJsonPath, cancellationToken);
+        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadMovieTopX265MetadataAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> h264Metadata = await settings.LoadMovieTopH264MetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> h264720PMetadata = await settings.LoadMovieTopH264720PMetadataAsync(cancellationToken);
         entryMetadata
             .SelectMany(entry => Regex
                 .Matches(entry.Value.Content, @"imdb\.com/title/(tt[0-9]+)")

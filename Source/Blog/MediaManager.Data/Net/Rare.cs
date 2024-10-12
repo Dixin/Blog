@@ -54,7 +54,7 @@ internal static class Rare
             degreeOfParallelism,
             cancellationToken);
 
-        JsonHelper.SerializeToFile(rareMetadata, settings.MovieRareMetadata, ref writeJsonLock);
+        await settings.WriteMovieRareMetadataAsync(rareMetadata, cancellationToken);
 
         await PrintVersionsAsync(settings, rareMetadata, log, cancellationToken);
     }
@@ -272,9 +272,9 @@ internal static class Rare
             }, cancellationToken: cancellationToken);
     }
 
-    internal static async Task PrintVersionsAsync(ISettings settings, Action<string>? log = null)
+    internal static async Task PrintVersionsAsync(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
-        Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(settings.MovieRareMetadata);
-        await PrintVersionsAsync(settings, rareMetadata, log);
+        ConcurrentDictionary<string, RareMetadata> rareMetadata = await settings.LoadMovieRareMetadataAsync(cancellationToken);
+        await PrintVersionsAsync(settings, rareMetadata, log, cancellationToken);
     }
 }
