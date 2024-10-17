@@ -33,7 +33,7 @@ public class TorrentHelper
         };
 
         using ClientEngine clientEngine = new(engineSettingsBuilder.ToSettings());
-        byte[] torrent = await clientEngine.DownloadMetadataAsync(magnetLink, cancellationToken);
+        byte[] torrent = (await clientEngine.DownloadMetadataAsync(magnetLink, cancellationToken)).ToArray();
         string torrentPath = Path.Combine(torrentDirectory, $"{magnetUri.DisplayName}{HashSeparator}{magnetUri.ExactTopic}{TorrentExtension}");
         await File.WriteAllBytesAsync(torrentPath, torrent, cancellationToken);
     }
@@ -75,7 +75,7 @@ public class TorrentHelper
             ))
             .Select(async task =>
             {
-                byte[] torrent = await clientEngine.DownloadMetadataAsync(task.Item2, cancellationToken);
+                byte[] torrent = (await clientEngine.DownloadMetadataAsync(task.Item2, cancellationToken)).ToArray();
                 string torrentPath = Path.Combine(torrentDirectory, $"{task.magnetUri.DisplayName}{HashSeparator}{task.magnetUri.ExactTopic}{TorrentExtension}");
                 log?.Invoke(torrentPath);
                 await File.WriteAllBytesAsync(torrentPath, torrent, cancellationToken);

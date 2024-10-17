@@ -505,8 +505,8 @@ internal static class Preferred
                     string torrentVideoName = PathHelper.GetFileNameWithoutExtension(torrentVideoPath);
                     Debug.Assert(torrentVideoName.ContainsIgnoreCase("samples") || !torrentVideoName.ContainsIgnoreCase("sample"));
                     Debug.Assert(!torrentVideoName.ContainsOrdinal("@"));
-                    string actualExactTopic = torrent.InfoHash.ToHex().ToUpperInvariant();
-                    TorrentFile[] torrentVideos = torrent
+                    string actualExactTopic = torrent.InfoHashes.V1OrV2.ToHex().ToUpperInvariant();
+                    ITorrentFile[] torrentVideos = torrent
                         .Files
                         .Where(file => file.Path.IsVideo() && !PathHelper.GetFileNameWithoutExtension(file.Path).ContainsIgnoreCase("sample"))
                         .ToArray();
