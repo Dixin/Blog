@@ -1,5 +1,6 @@
 ﻿using Examples.Common;
 using Examples.IO;
+using Examples.Linq;
 using Examples.Net;
 using MediaManager;
 using MediaManager.IO;
@@ -7,6 +8,7 @@ using MediaManager.Net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MonoTorrent;
 using Xabe.FFmpeg;
 using SearchOption = System.IO.SearchOption;
 
@@ -318,9 +320,11 @@ Action<string> log = Logger.WriteLine;
 //await Imdb.DownloadAllTVsAsync(settings, [settings.TVMainstream], settings.TVMetadataCacheDirectory, settings.TVMetadataDirectory);
 
 //string[] genres = ["family", "animation", "documentary"];
-//await Video.PrintTVLinks(settings, new string[] { settings.TVMainstream, settings.TVMainstreamWithoutSubtitle }, @"D:\Files\Library\TVMetadata", @"D:\Files\Library\TVMetadataCache", settings.TVTopX265Url,
+//string[] keywords = [];
+//await Video.PrintTVLinks(
+//    settings, [settings.TVMainstream, settings.TVMainstreamWithoutSubtitle], settings.TVTopX265Url,
 //    imdbMetadata =>
-//        !imdbMetadata.AllKeywords.Intersect(new string[] { "test" }, StringComparer.OrdinalIgnoreCase).Any()
+//        !imdbMetadata.AllKeywords.Intersect(["test"], StringComparer.OrdinalIgnoreCase).Any()
 //        && !imdbMetadata.Genres.Intersect(genres, StringComparer.OrdinalIgnoreCase).Any()
 //        && (imdbMetadata
 //            .Advisories
@@ -340,7 +344,7 @@ Action<string> log = Logger.WriteLine;
 //        || imdbMetadata.AllKeywords.Any(keywords.Contains),
 //    isDryRun: true);
 
-//await Preferred.DownloadMetadataAsync(settings, log, 4);
+//await Preferred.DownloadMetadataAsync(settings);
 
 //Audio.ReplaceTraditionalChinese(settings.AudioMainstream, true);
 
@@ -349,18 +353,18 @@ Action<string> log = Logger.WriteLine;
 //Audio.PrintDirectoriesWithErrors(settings.AudioShow);
 //Audio.PrintDirectoriesWithErrors(settings.AudioSoundtrack);
 
-//Video.MoveAllSubtitles(settings.MovieTemp, settings.MovieSubtitleBackupDirectory);
+//Video.MoveAllSubtitles(settings.MovieTemp4, settings.MovieSubtitleBackupDirectory);
 
 //Video.RenameDirectoriesWithMetadata(settings, settings.TVTemp4, 1, isTV: true, isDryRun: false, skipRenamed: true);
-//Video.RenameDirectoriesWithAdditionalMetadata(settings.MovieTemp, 2);
-//Video.RenameDirectoriesWithoutMetadata(settings.MovieControversial, isDryRun: false);
+//Video.RenameDirectoriesWithAdditionalMetadata(settings.MovieTemp4, 2);
+//Video.RenameDirectoriesWithoutAdditionalMetadata(settings.MovieControversial, isDryRun: false);
 
 //Video.RenameEpisodes(@"D:\Files\Library\TV Controversial.非主流电视剧\European Adult.2020.欧洲成人[-][-]", "European Adult");
 //Video.CreateTVEpisodeMetadata(@"T:\Files\Library\TV Tutorial.教程\English Toefl.2017.英语托福[---][-]");
 
 //Video.PrintVideosWithErrors(@"E:\Files\Korean", searchOption: SearchOption.AllDirectories);
-//Video.RenameDirectoriesWithMetadata(settings.MovieTemp, 2);
-//Video.RestoreMetadata(settings.MovieTemp);
+//Video.RenameDirectoriesWithMetadata(settings, settings.MovieTemp4, 2);
+//Video.RestoreMetadata(settings.MovieTemp4);
 
 //Video.PrintMovieRegionsWithErrors(settings.MovieRegions, log, settings.MovieControversial, settings.MovieMainstream, settings.MovieMainstreamWithoutSubtitle);
 
@@ -385,8 +389,8 @@ Action<string> log = Logger.WriteLine;
 //    //rename: (f, t) => Regex.Replace(f, @"(\.S[0-9]{2}E[0-9]{2})", $"{"$1".ToUpperInvariant()}.{t}"),
 //    isDryRun: false);
 
-//await Video.PrintMovieImdbIdErrorsAsync(settings, true, null, settings.MovieTemp41);
-//await Video.ConvertToUtf8Async(settings.MovieTemp11, true);
+//await Video.PrintMovieImdbIdErrorsAsync(settings, true, log, cancellationTokenSource.Token, settings.MovieTemp41);
+//await Video.ConvertToUtf8Async(settings.MovieTemp4, true);
 //Video.MoveSubtitleToParentDirectory(settings.MovieTemp41, settings.MovieSubtitleBackupDirectory, false);
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp41, 2, overwrite: false, useCache: true, useBrowser: true);
 //FfmpegHelper.MergeAllDubbedMovies(settings.MovieTemp41, isDryRun: true);
@@ -420,6 +424,13 @@ Action<string> log = Logger.WriteLine;
 //    overwrite: false);
 
 //Video.CreateTVEpisodeMetadata(@"H:\Downloads7\New folder (6)\阅读\_1", f => PathHelper.GetFileNameWithoutExtension(f).Split(".").Last());
+
+//Video.MoveTopTVEpisodes(settings, @"", @"\\beyond-r\j\Files\Library\TV.Subtitles", isDryRun: false);
+//Video.FormatTV(
+//    @"E:\Files\TV",
+//    @"",
+//    renameForTitle: (f, t) => f.Replace($"{Video.VersionSeparator}{settings.TopEnglishKeyword}", $"{Video.VersionSeparator}{settings.TopEnglishKeyword}.{t}"),
+//    isDryRun: false);
 
 static void RenameEpisode(ISettings settings, string mediaDirectory, string metadataDirectory, bool isDryRun = false, Action<string>? log = null)
 {
@@ -500,13 +511,6 @@ static void RenameEpisode(ISettings settings, string mediaDirectory, string meta
     //tvs.ForEach(tv => Video.MoveSubtitlesForEpisodes(tv, Path.Combine(metadataDirectory, PathHelper.GetFileName(tv)), isDryRun: isDryRun, log: log));
 }
 
-//Video.MoveTopTVEpisodes(settings, @"", @"\\beyond-r\j\Files\Library\TV.Subtitles", isDryRun: false);
-//Video.FormatTV(
-//    @"E:\Files\TV",
-//    @"",
-//    renameForTitle: (f, t) => f.Replace($"{Video.VersionSeparator}{Video.TopEnglishKeyword}", $"{Video.VersionSeparator}{Video.TopEnglishKeyword}.{t}"),
-//    isDryRun: false);
-
 static void RenameFilesWithDuplicateTitle(
     string directory,
     string titleFlag,
@@ -557,7 +561,7 @@ static void RenameFilesWithDuplicateTitle(
 }
 
 //Directory.GetDirectories(@"G:\AV\New folder", "*", SearchOption.TopDirectoryOnly)
-//    .SelectMany(d => Directory.GetFiles(d))
+//    .SelectMany(Directory.GetFiles)
 //    .ForEach(f =>
 //    {
 //        //string metadata = Directory.GetFiles(d, "*.nfo").Single();
@@ -591,10 +595,10 @@ static void RenameFilesWithDuplicateTitle(
 //        log(newFile);
 //        log(string.Empty);
 //    });
-//await Entry.DownloadMetadataAsync(settings, "http://hotxshare.com", 1, 238, @"D:\Files\Library\Movie.EntryMetadata.json", log);
+//await Entry.DownloadMetadataAsync(settings, "http://hotxshare.com", 1, 238, @"D:\Files\Library\Movie.EntryMetadata.json");
 
 //await FfmpegHelper.EncodeAllAsync(
-//    Path.Combine(settings.MovieTemp3Encode, "SD.Encode"), @"D:\Temp\Encode", false,
+//    Path.Combine(settings.MovieTemp4Encode, "SD.Encode"), @"D:\Temp\Encode", VideoCropMode.NoCrop,
 //    inputPredicate: input => input.HasExtension(".mkv"),
 //    maxDegreeOfParallelism: 2, cancellationToken: cancellationTokenSource.Token);
 
@@ -615,13 +619,13 @@ static void RenameFilesWithDuplicateTitle(
 //        log(line);
 //        lock (@lock)
 //        {
-//            File.AppendAllLines(file, new string[] { line });
+//            File.AppendAllLines(file, [line]);
 //        }
 //    }
 //}, 4);
 
 //Directory.GetDirectories(@"U:\Move\New folder").ForEach(d => DirectoryHelper.AddPostfix(d, "[HDR]"));
-//Directory.GetDirectories(@"U:\Move\New folder").ForEach(d=>DirectoryHelper.ReplaceDirectoryName(d,n=>n.Replace("[1080x]","[2160x]")));
+//Directory.GetDirectories(@"U:\Move\New folder").ForEach(d => DirectoryHelper.ReplaceDirectoryName(d, n => n.Replace("[1080x]", "[2160x]")));
 //Directory.GetDirectories(@"U:\Move\New folder").ForEach(d => Directory.CreateDirectory(Path.Combine(@"T:\Move\New folder", PathHelper.GetFileName(d))));
 //string[] sourceDirectories = Directory.GetDirectories(@"S:\Files\Library\Movies Mainstream.主流电影\American Fiction.美国科幻");
 //string[] destinationDirectories = Directory.GetDirectories(@"T:\Files\Library\Movies 4K HDR.高动态范围电影\American Fiction.美国科幻");
@@ -647,10 +651,8 @@ static void RenameFilesWithDuplicateTitle(
 //Video.RenameFiles(@"E:\Files\Move\TV\Black.Sails", (f, i) => f.Replace("..", "."), isDryRun: false);
 //await Rare.PrintVersionsAsync(settings, log);
 //await Rare.DownloadMetadataAsync(
-//    settings
-//    "https://rarelust.com/movies-index/", 
-//    log);
-//await Video.PrintMovieLinksAsync(settings, false, null, "female full frontal nudity", "unsimulated sex", "vagina", "labia", "female pubic");
+//    settings,
+//    "https://rarelust.com/movies-index/");
 
 //Drive115.DownloadOfflineTasks(
 //    "https://115.com/?tab=offline&mode=wangpan",
@@ -659,7 +661,7 @@ static void RenameFilesWithDuplicateTitle(
 //        || link.ContainsIgnoreCase("0e394f73e99ed6e9c4e5f8b4a75befd1de1cc0b3")
 //        || link.ContainsIgnoreCase("3fef3fb6764a95383c941db41b8a2522ac1cfcd3"),
 //    (title, link) => Debugger.Break());
-//Drive115.WriteOfflineTasksAsync("https://115.com/?tab=offline&mode=wangpan",
+//await Drive115.WriteOfflineTasksAsync("https://115.com/?tab=offline&mode=wangpan",
 //    @"D:\Files\Library\Drive115.OfflineTasks.json");
 
 //Video.RenameFiles(@"E:\Files\Korean\Even.closer.hautnah.s01.french.web.h264-freamon\Season 01", (f, i) =>
@@ -668,7 +670,7 @@ static void RenameFilesWithDuplicateTitle(
 //        .Replace(".1080p.BluRay.DTS.x264-SbR", ".1080p.BluRay-SbR.ffmpeg")
 //        .Replace(".1080p.WEB-DL.DD+5.1.x264-SbR", ".1080p.WEBRip.H264-SbR")
 //    , searchOption: SearchOption.AllDirectories);
-//string[] keywords = { "unsimulated sex", "labia", "vagina", "female full frontal nudity", "female pubic" };
+//string[] keywords = ["unsimulated sex", "labia", "vagina", "female full frontal nudity", "female pubic"];
 //Directory.GetDirectories(@"T:\Files\Library\Movies Mainstream.Temp")
 //    .Where(d =>
 //    {
@@ -677,7 +679,7 @@ static void RenameFilesWithDuplicateTitle(
 //    })
 //    .ForEach(d => Directory.GetDirectories(d).ForEach(m =>
 //    {
-//        if (Imdb.TryLoad(m, out ImdbMetadata? imdbMetadata))
+//        if (ImdbMetadata.TryLoad(m, out ImdbMetadata? imdbMetadata))
 //        {
 //            keywords.ForEach(keyword =>
 //            {
@@ -705,10 +707,10 @@ static void RenameFilesWithDuplicateTitle(
 //                return;
 //            }
 
-//            if (f.EndsWithIgnoreCase(".nfo") )
+//            if (f.EndsWithIgnoreCase(".nfo"))
 //            {
 //                string destination = PathHelper.ReplaceExtension(video, ".nfo");
-//                if(!File.Exists(destination))
+//                if (!File.Exists(destination))
 //                {
 //                    FileHelper.Copy(f, destination);
 //                }
@@ -761,8 +763,8 @@ static void RenameFilesWithDuplicateTitle(
 //    string[] a = PathHelper.GetFileName(d).Split(".");
 //    string title = a[0].Replace("  ", " ");
 //    string year = a[1];
-//    string tailTitle = title[(title.IndexOf("-") + 1)..];
-//    string metadata2 = PathHelper.GetFileName(d)[PathHelper.GetFileName(d).IndexOf("[")..];
+//    string tailTitle = title[(title.IndexOf("-", StringComparison.Ordinal) + 1)..];
+//    string metadata2 = PathHelper.GetFileName(d)[PathHelper.GetFileName(d).IndexOf("[", StringComparison.Ordinal)..];
 //    int index = tailTitle.IndexOfOrdinal(Video.InstallmentSeparator);
 //    string postfix = string.Empty;
 //    if (index > 0)
@@ -815,14 +817,14 @@ static void RenameFilesWithDuplicateTitle(
 //   (f, i) =>
 //       Regex.Replace(f, @"S([0-9]{1})EP([0-9]{2}) Red Shoe Diaries ", "Red Shoe Diaries.S0$1E$2.", RegexOptions.IgnoreCase)
 //       //f.ReplaceIgnoreCase("-BDYS.", "-BDYS.watermark.")
-//   //Regex.Replace(f, @" [0-9]+GB", "")
+//       //Regex.Replace(f, @" [0-9]+GB", "")
 //       );
 
 
 //await TorrentHelper.AddDefaultTrackersAsync(@"E:\Files\MonoTorrentDownload", Logger.WriteLine);
 
 //Directory.GetFiles(@"Q:\Files\Movies.Raw3\Korean")
-//    .ForEach(f=>FileHelper.MoveToDirectory(f, Path.Combine(@"Q:\Files\Movies.Raw3\Korean", PathHelper.GetFileNameWithoutExtension(f))));
+//    .ForEach(f => FileHelper.MoveToDirectory(f, Path.Combine(@"Q:\Files\Movies.Raw3\Korean", PathHelper.GetFileNameWithoutExtension(f))));
 
 //string[] allDownloadedTitles = new string[]
 //{
@@ -832,24 +834,24 @@ static void RenameFilesWithDuplicateTitle(
 //   settings.MovieTemp1,
 //   settings.MovieTemp2,
 //   settings.MovieTemp3,
-//   settings.MovieTemp,
+//   settings.MovieTemp4,
 //   settings.MovieControversial,
 //   settings.MovieControversialWithoutSubtitle,
-//   settings.MovieControversialTemp3,
+//   settings.MovieControversialTemp4,
 //   @"Q:\Files\Movies.Raw"
 //}.SelectMany(d => Directory.EnumerateFiles(d, "*.mp4", SearchOption.AllDirectories))
-//    .Select(f=>PathHelper.GetFileNameWithoutExtension(f)!)
-//    .Where(f => f.ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopEnglishKeyword}") || f.ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopForeignKeyword}"))
+//    .Select(PathHelper.GetFileNameWithoutExtension)
+//    .Where(f => f.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") || f.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}"))
 //    .Select(f =>
 //    {
-//        if (f.ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopEnglishKeyword}"))
+//        if (f.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}"))
 //        {
-//            return f[..(f.IndexOfIgnoreCase($"{Video.VersionSeparator}{Video.TopEnglishKeyword}") + $"{Video.VersionSeparator}{Video.TopEnglishKeyword}".Length)];
+//            return f[..(f.IndexOfIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") + $"{Video.VersionSeparator}{settings.TopEnglishKeyword}".Length)];
 //        }
 
-//        if (f.ContainsIgnoreCase($"{Video.VersionSeparator}{Video.TopForeignKeyword}"))
+//        if (f.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}"))
 //        {
-//            return f[..(f.IndexOfIgnoreCase($"{Video.VersionSeparator}{Video.TopForeignKeyword}") + $"{Video.VersionSeparator}{Video.TopForeignKeyword}".Length)];
+//            return f[..(f.IndexOfIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}") + $"{Video.VersionSeparator}{settings.TopForeignKeyword}".Length)];
 //        }
 
 //        throw new InvalidOperationException(f);
@@ -858,18 +860,15 @@ static void RenameFilesWithDuplicateTitle(
 
 //File.WriteAllLines(@"e:\AllDownloadedTitles.txt", allDownloadedTitles);
 
-//HashSet<string> allDownloadedTitles = new(File.ReadAllLines(@"e:\AllDownloadedTitles.txt"), StringComparer.OrdinalIgnoreCase);
+//HashSet<string> allDownloadedTitlesHashSet = new(File.ReadAllLines(@"e:\AllDownloadedTitles.txt"), StringComparer.OrdinalIgnoreCase);
 
 //Directory.GetDirectories(@"\\beyond-x\E\Files\Downloading")
-//    .Where(d => allDownloadedTitles.Contains(PathHelper.GetFileName(d)))
+//    .Where(d => allDownloadedTitlesHashSet.Contains(PathHelper.GetFileName(d)))
 //    .ToArray()
 //    .ForEach(d => DirectoryHelper.MoveToDirectory(d, @"\\beyond-x\E\Files\New folder"));
 
 
-//Directory.EnumerateDirectories(@"\\beyond-x\E\Files\Move").Where(d=>allDownloadedTitles.Contains(PathHelper.GetFileName(d))).ForEach(d=>DirectoryHelper.MoveToDirectory(d, @"\\beyond-x\E\Files\Move.Delete"));
-
-//Directory.GetDirectories(@"E:\Files\Move").Where(d => downloaded.Contains(PathHelper.GetFileName(d))).ToArray()
-//    .ForEach(d => DirectoryHelper.MoveToDirectory(d, @"E:\Files\Move.Delete"));
+//Directory.EnumerateDirectories(@"\\beyond-x\E\Files\Move").Where(d => allDownloadedTitles.Contains(PathHelper.GetFileName(d))).ForEach(d => DirectoryHelper.MoveToDirectory(d, @"\\beyond-x\E\Files\Move.Delete"));
 
 //Video.EnumerateDirectories(@"Q:\Files\Movies\_", 1)
 //    .GroupBy(d => XDocument.Load(Directory.EnumerateFiles(d, Video.XmlMetadataSearchPattern).First(f => f.EndsWithIgnoreCase(".backup.nfo"))).Root!.Element("imdbid")!.Value)
@@ -883,9 +882,9 @@ static void RenameFilesWithDuplicateTitle(
 //        }
 
 //        string destinationDirectory;
-//        if (g.All(dd => !dd.ContainsIgnoreCase(".DUBBED.")) && g.Any(dd => dd.EndsWithIgnoreCase($"{Video.VersionSeparator}{Video.TopForeignKeyword}")))
+//        if (g.All(dd => !dd.ContainsIgnoreCase(".DUBBED.")) && g.Any(dd => dd.EndsWithIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}")))
 //        {
-//            destinationDirectory = g.First(dd => dd.EndsWithIgnoreCase($"{Video.VersionSeparator}{Video.TopForeignKeyword}"));
+//            destinationDirectory = g.First(dd => dd.EndsWithIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}"));
 //        }
 //        else if (g.Any(dd => dd.ContainsIgnoreCase(".DUBBED.")) && g.Any(dd => !dd.ContainsIgnoreCase(".DUBBED.")))
 //        {
@@ -931,18 +930,7 @@ static void RenameFilesWithDuplicateTitle(
 //await TorrentHelper.PrintNotDownloadedAsync(@"D:\User\Downloads\ToDownload.txt", @"E:\Files\Torrents", addTrackers: true, log: Logger.WriteLine);
 //await TorrentHelper.AddDefaultTrackersAsync(@"E:\Files\Torrents", log: Logger.WriteLine);
 
-//Dictionary<string, Dictionary<string, VideoMetadata>> libraryMetadata = ;
-//HashSet<string> titles = new(libraryMetadata.Values.AsParallel().SelectMany(d=>d.Keys).Select(f=>PathHelper.GetFileNameWithoutExtension(f)!).Distinct(StringComparer.InvariantCultureIgnoreCase));
-//downloadedTitles.AsParallel().Where(downloadedTitle => titles.Any(t=>t.StartsWith(downloadedTitle, StringComparison.OrdinalIgnoreCase))).ForEach(Logger.WriteLine);
-//HashSet<string> xx = new(Directory.EnumerateDirectories(@"E:\Files\Delete").Select(Path.GetFileName), StringComparer.OrdinalIgnoreCase);
-
-//Video.EnumerateDirectories(@"\\Beyond-r\f\Files\Library\Movies Temp3.电影3")
-//    .Select(d => (d, Directory.EnumerateFiles(d, "*.nfo").Select(f => XDocument.Load(f).Root!.Element("tmdbid")?.Value ?? string.Empty).Distinct().Single()))
-//    .GroupBy(m => m.Item2)
-//    .Where(g => g.Count() > 1)
-//    .ForEach(g => g.Select(m => m.d).Order().Append(string.Empty).Prepend(g.Key).ForEach(Logger.WriteLine));
-
-//await Video.WriteNikkatsMetadataAsync(@"D:\Files\Library\Movie.Nikkatsu..txt", @"D:\Files\Library\Movie.Nikkatsu..json");
+//await Video.WriteNikkatsuMetadataAsync(@"D:\Files\Library\Movie.Nikkatsu..txt", @"D:\Files\Library\Movie.Nikkatsu..json");
 
 //Video.EnumerateDirectories(@"\\Beyond-r\f\Files\Library\Movies Temp3.2.电影3.2")
 //    .ToArray()
@@ -974,10 +962,10 @@ static void RenameFilesWithDuplicateTitle(
 //        string title = XDocument.Load(metadata).Root!.Element("title")!.Value;
 //        string name = PathHelper.GetFileNameWithoutExtension(metadata);
 //        string year = Regex.Match(name, @"\.[0-9]{4}").Value;
-//        string newName = title.Replace(": ", "-").Replace(":", "-") + name.Substring(name.IndexOf(year));
+//        string newName = title.Replace(": ", "-").Replace(":", "-") + name[name.IndexOf(year, StringComparison.Ordinal)..];
 //        FileHelper.ReplaceFileNameWithoutExtension(metadata, newName);
 
-//        string d = PathHelper.GetDirectoryName(metadata)!;
+//        string d = PathHelper.GetDirectoryName(metadata);
 //        Directory
 //            .EnumerateFiles(d)
 //            .Where(f => PathHelper.GetFileNameWithoutExtension(f).StartsWith(name, StringComparison.InvariantCultureIgnoreCase))
@@ -990,21 +978,22 @@ static void RenameFilesWithDuplicateTitle(
 //Video.FormatVideoFileNames(@"\\beyond-r\F\Files\Library\Movies", SearchOption.AllDirectories, isDryRun: true);
 //Directory.GetFiles(settings.MovieTemp3, "*.2Audio.mp4", SearchOption.AllDirectories)
 //    .Select(v => Video.ReadVideoMetadataAsync(v).Result)
-//    .Where(v => !(v.AudioStreams.Length == 2 
+//    .Where(v => !(v.AudioStreams.Length == 2
 //        && v.AudioStreams[0].Language != v.AudioStreams[1].Language
 //        && v.AudioStreams[0].Language is not "eng"
 //        && v.AudioStreams[1].Language is "eng"))
 //    .ForEach(v => Logger.WriteLine(v.File));
 
 
-//Torrent t =Torrent.Load(@"\\beyond-r\J\Files\Library\MovieMetadataCache\tt7491128.3333D9F8BC4009FA809B0AF2464E6972636CD506.ami-ami-2018.1080p BluRay BluRay.[FR] Ami ami.torrent");
-//t.Files.ForEach(f=>Logger.WriteLine(f.Path));
+//Torrent t = Torrent.Load(@"\\beyond-r\J\Files\Library\MovieMetadataCache\tt7491128.3333D9F8BC4009FA809B0AF2464E6972636CD506.ami-ami-2018.1080p BluRay BluRay.[FR] Ami ami.torrent");
+//t.Files.ForEach(f => Logger.WriteLine(f.Path));
 
 //await Preferred.DownloadAllTorrentsAsync(settings, false);
 //await Preferred.WriteFileMetadataAsync(settings, true);
-//ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata?>> existingMetadata = await ;
 //ConcurrentDictionary<string, PreferredFileMetadata[]> allFileMetadata = await JsonHelper
 //    .DeserializeFromFileAsync<ConcurrentDictionary<string, PreferredFileMetadata[]>>(settings.MoviePreferredFileMetadata, new(), cancellationTokenSource.Token);
+//ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata?>> existingMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationTokenSource.Token);
+
 //Dictionary<string, (string ImdbId, PreferredFileMetadata metadata)[]> allTitleToImdbIds = allFileMetadata.Values
 //    .SelectMany(group => group)
 //    .ToLookup(
@@ -1033,7 +1022,7 @@ static void RenameFilesWithDuplicateTitle(
 //    .ToDictionary(group => group.Title, group => group.ImdbIds, StringComparer.OrdinalIgnoreCase);
 //existingMetadata
 //    .SelectMany(group => group.Value.Keys, (group, file) => (File: file, ImdbId: group.Key, Title: PathHelper.GetFileNameWithoutExtension(file), Parsed: VideoMovieFileInfo.Parse(file)))
-//    .Where(file => file.Parsed.GetEncoderType() is EncoderType.XY or EncoderType.Y)
+//    .Where(file => file.Parsed.GetEncoderType() is EncoderType.PreferredX265 or EncoderType.PreferredH264)
 //    .ForEach(file =>
 //    {
 //        string title = Regex.Replace(file.Title, @"\.[0-9]+Audio", string.Empty);
@@ -1083,10 +1072,9 @@ static void RenameFilesWithDuplicateTitle(
 //await Preferred.DownloadAllTorrentsAsync(settings);
 //await Preferred.WriteFileMetadataAsync(settings);
 //Video.EnumerateDirectories(settings.MovieTemp41)
-//    .Where(d=>d.Contains("`"))
+//    .Where(d => d.Contains("`"))
 //    .ToArray()
-//    .ForEach(d=>DirectoryHelper.MoveToDirectory(d, Path.Combine(settings.MovieTemp41, "Franchise")));
-//ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata?>> existingMetadata = await ;
+//    .ForEach(d => DirectoryHelper.MoveToDirectory(d, Path.Combine(settings.MovieTemp41, "Franchise")));
 //string[] downloadingTitles = @"".Split(Environment.NewLine);
 //string[] existingTitles = existingMetadata.Values.SelectMany(group => group.Keys).Select(PathHelper.GetFileNameWithoutExtension).ToArray();
 
@@ -1104,16 +1092,15 @@ static void RenameFilesWithDuplicateTitle(
 //    .Do(cells => Debug.Assert(cells[1].ContainsIgnoreCase($"-{settings.TopEnglishKeyword}") || cells[1].ContainsIgnoreCase($"-{settings.TopForeignKeyword}")))
 //    .ToLookup(cells => cells[1], cells => cells[^3]);
 
-//ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata?>> existingMetadata = await ;
-//string[] existingTitles = existingMetadata.Values.SelectMany(group=>group.Keys).Select(PathHelper.GetFileNameWithoutExtension).ToArray();
+//existingTitles = existingMetadata.Values.SelectMany(group => group.Keys).Select(PathHelper.GetFileNameWithoutExtension).ToArray();
 //string[] titles = File.ReadAllLines(settings.TempFile);
-//titles.Where(title=> !existingTitles.Any(existingTitle=>existingTitle.StartsWithIgnoreCase(title)))
-//    .SelectMany(title=> topDatabase[title])
+//titles.Where(title => !existingTitles.Any(existingTitle => existingTitle.StartsWithIgnoreCase(title)))
+//    .SelectMany(title => topDatabase[title])
 //    .ForEach(Logger.WriteLine);
 
 //await MoveSharedMoviesAsync(settings);
 
-static async Task MoveSharedMoviesAsync(ISettings settings, CancellationToken cancellationToken, Action<string>? log = null)
+static async Task MoveSharedMoviesAsync(ISettings settings, CancellationToken cancellationToken = default, Action<string>? log = null)
 {
     log ??= Logger.WriteLine;
 
@@ -1301,7 +1288,7 @@ static async Task MoveSharedMoviesAsync(ISettings settings, CancellationToken ca
 //Video.FormatVideoFileNames(@"\\beyond-r\J\Files\Library\new folder", SearchOption.AllDirectories, false);
 
 //Video.PrintDirectoriesWithMultipleVideos(@"\\beyond-r\J\Files\Library\New folder");
-//Video.RenameFiles(@"\\beyond-r\J\Files\Library\Movies", (f,i)=>f.Replace(".2Audio.SUBBED", ".SUBBED.2Audio"));
+//Video.RenameFiles(@"\\beyond-r\J\Files\Library\Movies", (f, i) => f.Replace(".2Audio.SUBBED", ".SUBBED.2Audio"));
 //Directory.EnumerateFiles(@"\\beyond-r\J\Files\Library\Movies", "*", SearchOption.AllDirectories)
 //    .Where(f => f.IsVideo() && !VideoMovieFileInfo.TryParse(f, out _))
 //    .ForEach(Logger.WriteLine);
@@ -1310,7 +1297,7 @@ static async Task MoveSharedMoviesAsync(ISettings settings, CancellationToken ca
 //    .ToArray()
 //    .ForEach(d =>
 //    {
-//        var subs = Directory.GetDirectories(d);
+//        string[] subs = Directory.GetDirectories(d);
 //        if (subs.Any())
 //        {
 //            subs.Append("").ForEach(Logger.WriteLine);
@@ -1321,7 +1308,7 @@ static async Task MoveSharedMoviesAsync(ISettings settings, CancellationToken ca
 //    .ForEach(d =>
 //    {
 //        string[] files = Directory.GetFiles(d);
-//        string[] subtitleFiles = files.Where(f=>f.IsSubtitle()).ToArray();
+//        string[] subtitleFiles = files.Where(f => f.IsSubtitle()).ToArray();
 //        //string currentDirectory = PathHelper.GetDirectoryName(video);
 //        //string videoName = PathHelper.GetFileNameWithoutExtension(video);
 //        subtitleFiles
@@ -1440,4 +1427,3 @@ const string Subdirectory = "HD.Encode.Crop";
 //    cropTimestampCount: 7, maxDegreeOfParallelism: 3, sample: false, cancellationToken: cancellationTokenSource.Token);
 
 //Video.RenameFiles(@"E:\Encode\Balthazar", (f, i) => f.Replace(".HDTV.1080p.x264.AAC.BGAUDiO-4PLAY.ffmpeg", ".RUSSIAN.DUBBED.1080p.HDTV.H264.AAC-BGAUDiO@4PLAY.watermark.ffmpeg"));
-

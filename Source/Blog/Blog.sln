@@ -51,6 +51,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaManager", "MediaManage
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MediaManager.Service", "MediaManager.Service\MediaManager.Service.csproj", "{477C61CE-FC83-4031-8FE0-183AC7CD40F3}"
 EndProject
+Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "Examples.Nodejs", "Examples.Nodejs\Examples.Nodejs.esproj", "{6F563D1B-43DF-4E78-9C16-BADB09B7B89D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -228,7 +230,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {3970DD61-4F33-45E3-8BBD-B43AAF9C07F9}
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;iseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8
+		SolutionGuid = {3970DD61-4F33-45E3-8BBD-B43AAF9C07F9}
 	EndGlobalSection
 EndGlobal
