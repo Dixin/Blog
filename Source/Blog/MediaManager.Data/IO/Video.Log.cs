@@ -1497,7 +1497,7 @@ internal static partial class Video
             .SelectMany(pair => pair.Value)
             .ToLookup(
                 metadata => metadata.File
-                    .ReplaceIgnoreCase(".YIFY", "-YIFY")
+                    .ReplaceIgnoreCase($".{settings.PreferredOldKeyword}", $"{VersionSeparator}{settings.PreferredOldKeyword}")
                     .ReplaceIgnoreCase(".BRRip.", ".BluRay.")
                     .ReplaceIgnoreCase(".1080.BluRay.", ".1080p.BluRay."),
                 metadata => metadata.ImdbId);
@@ -1988,7 +1988,7 @@ internal static partial class Video
                                 {
                                     if (File.Exists(file))
                                     {
-                                        FileHelper.CopyToDirectory(file, @"E:\Files\Yts", true, true);
+                                        FileHelper.CopyToDirectory(file, @"E:\Files\", true, true);
                                     }
                                     else
                                     {

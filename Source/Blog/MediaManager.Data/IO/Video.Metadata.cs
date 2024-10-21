@@ -555,7 +555,7 @@ internal static partial class Video
                 .Where(group => group
                     .Value
                     .Select(video => PathHelper.GetFileNameWithoutExtension(video.Key))
-                    .Any(name => name.ContainsIgnoreCase(".1080p.") && (name.EndsWithIgnoreCase("-RARBG") || name.EndsWithIgnoreCase("-VXT"))))
+                    .Any(name => name.ContainsIgnoreCase(".1080p.") && (name.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || name.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}"))))
                 .Select(group => group.Key),
             StringComparer.OrdinalIgnoreCase);
         Action<string> recycleMetadata = settings.MovieMetadataBackupDirectory.IsNullOrWhiteSpace()

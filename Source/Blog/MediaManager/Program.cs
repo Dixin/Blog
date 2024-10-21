@@ -998,7 +998,7 @@ static void RenameFilesWithDuplicateTitle(
 //    .SelectMany(group => group)
 //    .ToLookup(
 //        metadata => metadata.File
-//        .ReplaceIgnoreCase(".YIFY", "-YIFY")
+//        .ReplaceIgnoreCase($".{settings.PreferredOldKeyword}", $"{Video.VersionSeparator}{settings.PreferredOldKeyword}")
 //        .ReplaceIgnoreCase(".BRRip.", ".BluRay.")
 //        .ReplaceIgnoreCase(".1080.BluRay.", ".1080p.BluRay."),
 //        metadata => (metadata.ImdbId, metadata), StringComparer.OrdinalIgnoreCase)
