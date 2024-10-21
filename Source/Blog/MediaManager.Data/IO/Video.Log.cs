@@ -555,88 +555,6 @@ internal static partial class Video
         }
     }
 
-    internal static void PrintTitlesWithDifferences(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null)
-    {
-        log ??= Logger.WriteLine;
-
-        EnumerateDirectories(directory, level)
-            .ForEach(movie =>
-            {
-                string[] movieName = PathHelper.GetFileName(movie).Split(Delimiter);
-                string movieTitle = movieName[0].Split("=")[0];
-                string movieYear = movieName[1];
-                string? videoYear = null;
-                string? videoTitle = null;
-                if (ImdbMetadata.TryLoad(movie, out ImdbMetadata? jsonMetadata))
-                {
-                    videoYear = jsonMetadata.Year;
-                    videoTitle = jsonMetadata.Title;
-                    Debug.Assert(videoYear.Length == 4);
-                }
-
-                if (videoYear.IsNullOrWhiteSpace())
-                {
-                    (videoTitle, videoYear) = Directory
-                        .GetFiles(movie, XmlMetadataSearchPattern, SearchOption.TopDirectoryOnly)
-                        .Select(metadata =>
-                        {
-                            XElement root = XDocument.Load(metadata).Root ?? throw new InvalidOperationException(metadata);
-                            return (Title: root.Element("title")?.Value, Year: root.Element("year")?.Value);
-                        })
-                        .Distinct()
-                        .Single();
-                }
-
-                if (!movieYear.EqualsOrdinal(videoYear))
-                {
-                    log(movie);
-                    movieName[1] = videoYear!;
-                    string newMovie = Path.Combine(PathHelper.GetDirectoryName(movie), string.Join(Delimiter, movieName));
-                    log(newMovie);
-                    // Directory.Move(movie, newMovie);
-                    string backMovie = movie.Replace(@"E:\", @"F:\");
-                    if (Directory.Exists(backMovie))
-                    {
-                        log(backMovie);
-                        string backupNewMovie = newMovie.Replace(@"E:\", @"F:\");
-                        log(backupNewMovie);
-                        // Directory.Move(backMovie, backupNewMovie);
-                    }
-                    log($"{movieYear}-{movieTitle}");
-                    log($"{videoYear}-{videoTitle}");
-
-                    log(Environment.NewLine);
-                }
-
-                if (Math.Abs(int.Parse(movieYear) - int.Parse(videoYear!)) > 0)
-                {
-                    log(movie);
-                    log(movieYear);
-                    log(videoYear ?? string.Empty);
-                }
-
-                videoTitle = videoTitle?.Replace(Delimiter, string.Empty).Replace(":", string.Empty);
-                if (videoTitle.EqualsIgnoreCase(movieName[0].Split("=").Last().Replace(TitleSeparator, " ")))
-                {
-                    return;
-                }
-
-                if (videoTitle.EqualsIgnoreCase(movieTitle.Split(TitleSeparator).Last()))
-                {
-                    return;
-                }
-
-                movieTitle = movieTitle.Replace(TitleSeparator, " ");
-                if (!videoTitle.EqualsIgnoreCase(movieTitle))
-                {
-                    log(movie);
-                    log(movieTitle);
-                    log(videoTitle ?? string.Empty);
-                    log(Environment.NewLine);
-                }
-            });
-    }
-
     internal static async Task PrintMovieVersions(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default, params (string Directory, int Level)[] directories)
     {
         log ??= Logger.WriteLine;
@@ -1698,10 +1616,6 @@ internal static partial class Video
         //string[] cacheFiles = Directory.GetFiles(settings.MovieMetadataCacheDirectory);
         HashSet<string> keywords = new(settings.AllImdbKeywords, StringComparer.OrdinalIgnoreCase);
         //Dictionary<string, string> metadataFilesByImdbId = metadataFiles.ToDictionary(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty);
-        //MagnetUri[] downloadingLinks = (await File.ReadAllLinesAsync(@"D:\Files\Library\Movie.Downloading.txt"))
-        //    .Select(line => (MagnetUri.TryParse(line, out MagnetUri? result), result))
-        //    .Where(result => result.Item1)
-        //    .Select(result => result.result!).ToArray();
 
         ImdbMetadata[] imdbIds = x265Metadata.Keys
             .Concat(h264Metadata.Keys)
@@ -1732,7 +1646,6 @@ internal static partial class Video
         //HashSet<string> downloadedTitles = new(
         //    new string[] { }.SelectMany(Directory.GetDirectories).Select(Path.GetFileName)!,
         //    StringComparer.OrdinalIgnoreCase);
-        //HashSet<string> downloadedTorrentHashes = new(/*Directory.GetFiles(@"E:\Files\MonoTorrent").Concat(Directory.GetFiles(@"E:\Files\MonoTorrentDownload")).Select(torrent => PathHelper.GetFileNameWithoutExtension(torrent).Split("@").Last()), StringComparer.OrdinalIgnoreCase*/);
         //using WebDriverWrapper? webDriver = isDryRun ? null : new(() => WebDriverHelper.Start(isLoadingAll: true), initialUrl);
         using HttpClient? httpClient = isDryRun ? null : new HttpClient().AddEdgeHeaders();
         //if (!isDryRun && initialUrl.IsNotNullOrWhiteSpace())
@@ -2269,7 +2182,6 @@ internal static partial class Video
         //.Do(log)
         //.ForEach(directory =>
         //{
-        //    DirectoryHelper.CopyToDirectory(directory, @"D:\Temp2");
         //    DirectoryHelper.Delete(directory);
         //});
 
