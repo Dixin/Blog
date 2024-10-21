@@ -86,7 +86,7 @@ internal static class Preferred
         await DownloadMetadataAsync(settings, downloadedSummaries, degreeOfParallelism, log, cancellationToken);
     }
 
-    internal static async Task DownloadMetadataAsync(ISettings settings, ConcurrentQueue<PreferredSummary>? summaries = null, int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
+    private static async Task DownloadMetadataAsync(ISettings settings, ConcurrentQueue<PreferredSummary>? summaries = null, int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         degreeOfParallelism ??= MaxDegreeOfParallelism;
         log ??= Logger.WriteLine;

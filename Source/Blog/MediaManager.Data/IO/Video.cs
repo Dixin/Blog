@@ -49,7 +49,7 @@ internal static partial class Video
 
     internal const string NotExistingFlag = "-";
 
-    private const string InstallmentSeparator = "`";
+    internal const string InstallmentSeparator = "`";
 
     internal const string TitleSeparator = "-";
 

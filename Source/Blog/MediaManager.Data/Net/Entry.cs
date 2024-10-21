@@ -12,8 +12,7 @@ internal static class Entry
 
     internal static async Task DownloadMetadataAsync(
         ISettings settings,
-        string baseUrl, int startIndex, int count,
-        string entryJsonPath, string libraryJsonPath, string x265JsonPath, string h264JsonPath, string preferredJsonPath, string h264720PJsonPath,
+        string baseUrl, int startIndex, int count, string entryJsonPath,
         int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         degreeOfParallelism ??= MaxDegreeOfParallelism;
