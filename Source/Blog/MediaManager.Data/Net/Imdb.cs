@@ -707,6 +707,29 @@ internal static class Imdb
             .Where(advisory => advisory.Severity.IsNotNullOrWhiteSpace() || advisory.Details.Any())
             .ToArray();
 
+        Dictionary<string, string> certifications = parentalGuideCQ
+            .Find("section[data-testid='certificates'] ul li[data-testid='certificates-item']")
+            .SelectMany(regionDom =>
+            {
+                CQ regionCQ = regionDom.Cq();
+                string region = regionCQ.Find("span.ipc-metadata-list-item__label").Text().Trim();
+                return regionCQ
+                    .Find("ul li")
+                    .Select(certificationDom =>
+                    {
+                        CQ certificationCQ = certificationDom.Cq();
+                        CQ certificationLinkCQ = certificationCQ.Find("a");
+                        string certification = certificationLinkCQ.Text().Trim();
+                        string link = certificationLinkCQ.Attr("href");
+                        string remark = certificationCQ.Find("span").Text().Trim();
+                        return (
+                            Certification: $"{region}:{certification}{(remark.IsNullOrWhiteSpace() ? string.Empty : $" ({remark})")})",
+                            Link: link
+                        );
+                    });
+            })
+            .ToDictionary(certification => certification.Certification, certification => certification.Link);
+
         imdbMetadata = imdbMetadata with
         {
             Parent = parentMetadata,
@@ -733,7 +756,8 @@ internal static class Imdb
             Companies = companies
                 .Distinct()
                 .ToLookup(item => item.Text, item => item.Url)
-                .ToDictionary(group => HttpUtility.HtmlDecode(group.Key), group => group.ToArray())
+                .ToDictionary(group => HttpUtility.HtmlDecode(group.Key), group => group.ToArray()),
+            Certifications = certifications
         };
 
         return (
