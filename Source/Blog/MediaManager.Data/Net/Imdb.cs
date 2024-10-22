@@ -723,11 +723,12 @@ internal static class Imdb
                         string link = certificationLinkCQ.Attr("href");
                         string remark = certificationCQ.Find("span").Text().Trim();
                         return (
-                            Certification: $"{region}:{certification}{(remark.IsNullOrWhiteSpace() ? string.Empty : $" ({remark})")})",
+                            Certification: $"{region}:{certification}{(remark.IsNullOrWhiteSpace() ? string.Empty : $" ({remark})")}",
                             Link: link
                         );
                     });
             })
+            .DistinctBy(certification => certification.Certification)
             .ToDictionary(certification => certification.Certification, certification => certification.Link);
 
         imdbMetadata = imdbMetadata with
