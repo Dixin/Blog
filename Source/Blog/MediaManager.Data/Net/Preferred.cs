@@ -345,8 +345,7 @@ internal static class Preferred
 
         HashSet<string> existingFiles = new(Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory, TorrentHelper.TorrentSearchPattern), StringComparer.OrdinalIgnoreCase);
 
-        ConcurrentDictionary<string, PreferredMetadata[]> preferredMetadata = await JsonHelper
-            .DeserializeFromFileAsync<ConcurrentDictionary<string, PreferredMetadata[]>>(settings.MoviePreferredMetadata, new(), cancellationToken);
+        ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
 
         PreferredMetadata[] metadataToDownload = preferredMetadata
             .SelectMany(group => group.Value)
@@ -442,13 +441,11 @@ internal static class Preferred
     {
         log ??= Logger.WriteLine;
 
-        ConcurrentDictionary<string, List<PreferredFileMetadata>> allFileMetadata = await JsonHelper
-            .DeserializeFromFileAsync<ConcurrentDictionary<string, List<PreferredFileMetadata>>>(settings.MoviePreferredFileMetadata, new(), cancellationToken);
+        ConcurrentDictionary<string, List<PreferredFileMetadata>> allFileMetadata = await settings.LoadMoviePreferredFileMetadataAsync(cancellationToken);
 
         HashSet<string> existingFiles = new(Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory, TorrentHelper.TorrentSearchPattern), StringComparer.OrdinalIgnoreCase);
 
-        Dictionary<string, PreferredMetadata[]> allMetadata = await JsonHelper
-            .DeserializeFromFileAsync<Dictionary<string, PreferredMetadata[]>>(settings.MoviePreferredMetadata, new(), cancellationToken);
+        ConcurrentDictionary<string, List<PreferredMetadata>> allMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
 
         (string Quality, string Link, PreferredMetadata Metadata)[] allVideos = allMetadata
             .SelectMany(group => group.Value)

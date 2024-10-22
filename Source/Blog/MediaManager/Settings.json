@@ -44,10 +44,10 @@
 
     "TempFile": "D:\\Files\\Library\\Temp.txt",
 
-    "MovieMetadataDirectory": "\\\\beyond-r\\J\\Files\\Library\\MovieMetadata",
-    "MovieMetadataBackupDirectory": "\\\\beyond-r\\J\\Files\\Library\\MovieMetadataBackup",
-    "MovieMetadataCacheDirectory": "\\\\beyond-r\\J\\Files\\Library\\MovieMetadataCache",
-    "MovieMetadataCacheBackupDirectory": "\\\\beyond-r\\J\\Files\\Library\\MovieMetadataCacheBackup",
+    "MovieMetadataDirectory": "\\\\box-l\\J\\Files\\Library\\MovieMetadata",
+    "MovieMetadataBackupDirectory": "\\\\box-l\\J\\Files\\Library\\MovieMetadataBackup",
+    "MovieMetadataCacheDirectory": "\\\\box-l\\J\\Files\\Library\\MovieMetadataCache",
+    "MovieMetadataCacheBackupDirectory": "\\\\box-l\\J\\Files\\Library\\MovieMetadataCacheBackup",
 
     "TVMetadataDirectory": "D:\\Files\\Library\\TVMetadata",
     "TVMetadataCacheDirectory": "D:\\Files\\Library\\TVMetadataCache",

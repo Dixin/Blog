@@ -34,7 +34,7 @@ using TextWriterTraceListener textTraceListener = new(Path.Combine(Path.GetTempP
 using ConsoleTraceListener consoleTraceListener = new();
 Trace.Listeners.Add(consoleTraceListener);
 Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
-FFmpeg.SetExecutablesPath(@"C:\Users\User\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-7.1.0-full_build\bin");
+//FFmpeg.SetExecutablesPath(@"C:\Users\User\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-7.1-full_build\bin");
 Action<string> log = Logger.WriteLine;
 
 //Video.PrintDirectoriesWithMultipleVideos(settings.MovieControversial);
@@ -389,7 +389,7 @@ Action<string> log = Logger.WriteLine;
 //    //rename: (f, t) => Regex.Replace(f, @"(\.S[0-9]{2}E[0-9]{2})", $"{"$1".ToUpperInvariant()}.{t}"),
 //    isDryRun: false);
 
-//await Video.PrintMovieImdbIdErrorsAsync(settings, true, log, cancellationTokenSource.Token, settings.MovieTemp41);
+//await Video.PrintMovieImdbIdErrorsAsync(settings, true, log, cancellationTokenSource.Token, settings.MovieTemp42);
 //await Video.ConvertToUtf8Async(settings.MovieTemp4, true);
 //Video.MoveSubtitleToParentDirectory(settings.MovieTemp41, settings.MovieSubtitleBackupDirectory, false);
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp41, 2, overwrite: false, useCache: true, useBrowser: true);
@@ -989,7 +989,7 @@ static void RenameFilesWithDuplicateTitle(
 //t.Files.ForEach(f => Logger.WriteLine(f.Path));
 
 //await Preferred.DownloadAllTorrentsAsync(settings, false);
-//await Preferred.WriteFileMetadataAsync(settings, true);
+//await Preferred.WriteFileMetadataAsync(settings, false);
 //ConcurrentDictionary<string, PreferredFileMetadata[]> allFileMetadata = await JsonHelper
 //    .DeserializeFromFileAsync<ConcurrentDictionary<string, PreferredFileMetadata[]>>(settings.MoviePreferredFileMetadata, new(), cancellationTokenSource.Token);
 //ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata?>> existingMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationTokenSource.Token);
@@ -1427,3 +1427,19 @@ const string Subdirectory = "HD.Encode.Crop";
 //    cropTimestampCount: 7, maxDegreeOfParallelism: 3, sample: false, cancellationToken: cancellationTokenSource.Token);
 
 //Video.RenameFiles(@"E:\Encode\Balthazar", (f, i) => f.Replace(".HDTV.1080p.x264.AAC.BGAUDiO-4PLAY.ffmpeg", ".RUSSIAN.DUBBED.1080p.HDTV.H264.AAC-BGAUDiO@4PLAY.watermark.ffmpeg"));
+//Video.PrintVideosWithErrors(@"E:\Files\New folder (2)\SD", searchOption: SearchOption.AllDirectories);
+
+// Video.EnumerateDirectories(settings.MovieTemp42)
+//     .ForEach(movie =>
+//     {
+//         string[] files = Directory.GetFiles(movie);
+//         string xmlMetadataFile = files.SingleOrDefault(file => PathHelper.GetFileName(file).EqualsIgnoreCase("movie.nfo"), string.Empty);
+//         if (xmlMetadataFile.IsNullOrWhiteSpace())
+//         {
+//             return;
+//         }
+
+//         string video = files.Single(file => file.IsVideo());
+//         string videoName = PathHelper.GetFileNameWithoutExtension(video);
+//         FileHelper.ReplaceFileNameWithoutExtension(xmlMetadataFile, videoName);
+//     });
