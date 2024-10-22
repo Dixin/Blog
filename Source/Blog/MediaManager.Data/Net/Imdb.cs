@@ -1,6 +1,7 @@
 ﻿namespace MediaManager.Net;
 
 using System;
+using System.Collections.ObjectModel;
 using System.Web;
 using CsQuery;
 using Examples.Common;
@@ -665,16 +666,42 @@ internal static class Imdb
             ? await File.ReadAllTextAsync(advisoriesFile, cancellationToken)
             : webDriver?.GetString(advisoriesUrl) ?? await Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(advisoriesUrl, cancellationToken), cancellationToken: cancellationToken);
         CQ parentalGuideCQ = advisoriesHtml;
-        string mpaaRating = parentalGuideCQ.Find("#mpaa-rating td").Last().Text().Trim();
-        ImdbAdvisory[] advisories = parentalGuideCQ
-            .Find("#main section.content-advisories-index section")
-            .Where(section => section.Id.StartsWithIgnoreCase("advisory-"))
-            .Select(section =>
+        string mpaaRating = parentalGuideCQ.Find("section[data-testid='content-rating'] ul li div.ipc-metadata-list-item__content-container").First().Text().Trim();
+
+        if (webDriver is not null)
+        {
+            ReadOnlyCollection<IWebElement> spoilerButtons = webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElements(By.CssSelector("section span.ipc-see-more button")));
+            spoilerButtons.ForEach(spoilerButton =>
             {
-                CQ sectionCQ = section.Cq();
-                string category = sectionCQ.Find("h4").Text().Trim();
-                string severity = sectionCQ.Find("li.advisory-severity-vote span.ipl-status-pill").Text().Trim();
-                string[] details = sectionCQ.Find("li.ipl-zebra-list__item").Select(li => li.ChildNodes.First().NodeValue.Trim()).ToArray();
+                try
+                {
+                    Retry.FixedInterval(spoilerButton.Click);
+                }
+                catch (Exception exception) when (exception.IsNotCritical())
+                {
+                    spoilerButton.SendKeys(Keys.Space);
+                }
+            });
+            webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver =>
+            {
+                Thread.Sleep(WebDriverHelper.DefaultNetworkWait);
+                advisoriesHtml = webDriver.PageSource;
+                parentalGuideCQ = advisoriesHtml;
+                return parentalGuideCQ.Find("section span.ipc-see-more button:contains('Spoilers')").IsEmpty()
+                    && parentalGuideCQ.Find("section > div.ipc-signpost > div.ipc-signpost__text:contains('Spoilers')").Length == spoilerButtons.Count;
+            });
+        }
+
+        ImdbAdvisory[] advisories = parentalGuideCQ
+            .Find("div.ipc-page-grid__item > section[data-testid='content-rating']")
+            .Siblings()
+            .TakeWhile(sectionDom => sectionDom.GetAttribute("data-testid").IsNullOrEmpty())
+            .Select(sectionDom =>
+            {
+                CQ sectionCQ = sectionDom.Cq();
+                string category = sectionCQ.Find("h3").Text().Trim();
+                string severity = sectionCQ.Find("div[data-testid='severity_component']").Children().First().Text().Trim();
+                string[] details = sectionCQ.Find("div[data-testid^='sub-section-'] div[data-testid='item-html']").Select(item => item.TextContent.Trim()).ToArray();
                 return new ImdbAdvisory(category, severity, details);
             })
             .Where(advisory => advisory.Severity.IsNotNullOrWhiteSpace() || advisory.Details.Any())
@@ -1017,14 +1044,14 @@ internal static class Imdb
                 {
                     await Retry.FixedIntervalAsync(
                         async () => await Video.DownloadImdbMetadataAsync(imdbId, metadataDirectory, cacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log, cancellationToken: cancellationToken),
-                        isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError }, 
+                        isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError },
                         cancellationToken: cancellationToken);
                 }
                 catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
                 {
                     log($"!!!{imdbId} {exception.ToString()}");
                 }
-            }, 
+            },
             cancellationToken);
     }
 
@@ -1067,14 +1094,14 @@ internal static class Imdb
                 {
                     await Retry.FixedIntervalAsync(
                         async () => await Video.DownloadImdbMetadataAsync(imdbId, metadataDirectory, cacheDirectory, metadataFiles, cacheFiles, webDriver, overwrite: false, useCache: true, log: log, cancellationToken: cancellationToken),
-                        isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError }, 
+                        isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError },
                         cancellationToken: cancellationToken);
                 }
                 catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
                 {
                     log($"!!!{imdbId} {exception}");
                 }
-            }, 
+            },
             cancellationToken: cancellationToken);
     }
 }

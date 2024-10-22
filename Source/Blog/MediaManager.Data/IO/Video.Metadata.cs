@@ -977,6 +977,11 @@ internal static partial class Video
                     .ForAll(file =>
                     {
                         ImdbMetadata imdbMetadata = JsonHelper.DeserializeFromFile<ImdbMetadata>(file.MetadataFile);
+                        if (imdbMetadata.Certifications is not null && imdbMetadata.Certifications.Any())
+                        {
+                            return;
+                        }
+
                         CQ advisoriesCQ = File.ReadAllText(file.AdvisoriesFile);
                         Dictionary<string, string> certifications = advisoriesCQ
                             .Find("#certificates li.ipl-inline-list__item")
@@ -985,11 +990,16 @@ internal static partial class Video
                                 Link: certificationDom.Cq().Find("a").Attr("href").Trim()))
                             .DistinctBy(certification => certification.Certification)
                             .ToDictionary(certification => certification.Certification, certification => certification.Link);
+                        if (certifications.IsEmpty())
+                        {
+                            return;
+                        }
+
+                        log(file.MetadataFile);
                         log(string.Join(Environment.NewLine, certifications.Keys));
                         imdbMetadata = imdbMetadata with { Certifications = certifications };
                         JsonHelper.SerializeToFile(imdbMetadata, file.MetadataFile);
                     });
             });
-
     }
 }
