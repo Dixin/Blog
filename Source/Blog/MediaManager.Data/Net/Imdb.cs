@@ -670,25 +670,32 @@ internal static class Imdb
 
         if (webDriver is not null)
         {
-            ReadOnlyCollection<IWebElement> spoilerButtons = webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElements(By.CssSelector("section span.ipc-see-more button")));
-            spoilerButtons.ForEach(spoilerButton =>
-            {
-                try
+            (IWebElement Element, string Text)[] seeMoreButtons = webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver
+                .FindElements(By.CssSelector("section span.ipc-see-more button"))
+                .Select(element => (element, element.Text))
+                .ToArray());
+            (IWebElement Element, string Text)[] spoilersButtons = seeMoreButtons.Where(button => button.Text.ContainsIgnoreCase("Spoilers")).ToArray();
+            seeMoreButtons = seeMoreButtons.Where(button => !button.Text.ContainsIgnoreCase("Spoilers")).ToArray();
+            seeMoreButtons
+                .Concat(spoilersButtons)
+                .ForEach(spoilerButton =>
                 {
-                    Retry.FixedInterval(spoilerButton.Click);
-                }
-                catch (Exception exception) when (exception.IsNotCritical())
-                {
-                    spoilerButton.SendKeys(Keys.Space);
-                }
-            });
+                    try
+                    {
+                        Retry.FixedInterval(spoilerButton.Element.Click);
+                    }
+                    catch (Exception exception) when (exception.IsNotCritical())
+                    {
+                        spoilerButton.Element.SendKeys(Keys.Space);
+                    }
+                });
             webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver =>
             {
                 Thread.Sleep(WebDriverHelper.DefaultNetworkWait);
                 advisoriesHtml = webDriver.PageSource;
                 parentalGuideCQ = advisoriesHtml;
                 return parentalGuideCQ.Find("section span.ipc-see-more button:contains('Spoilers')").IsEmpty()
-                    && parentalGuideCQ.Find("section > div.ipc-signpost > div.ipc-signpost__text:contains('Spoilers')").Length == spoilerButtons.Count;
+                    && parentalGuideCQ.Find("section > div.ipc-signpost > div.ipc-signpost__text:contains('Spoilers')").Length == spoilersButtons.Length;
             });
         }
 
