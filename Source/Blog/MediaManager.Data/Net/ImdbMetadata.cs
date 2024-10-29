@@ -57,9 +57,9 @@ public partial record ImdbMetadata(
         ? "NA"
         : this.ContentRating.Replace("-", string.Empty).Replace(" ", string.Empty).Replace("/", string.Empty).Replace(":", string.Empty);
 
-    internal const string FileNameSeparator = "-";
+    internal const string FileNameSeparator = Video.Delimiter;
 
-    internal const string FileNameMetadataSeparator = ",";
+    internal const string FileNameMetadataSeparator = Video.VersionSeparator;
 
     internal const string Extension = ".json";
 
