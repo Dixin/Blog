@@ -39,28 +39,80 @@ Action<string> log = Logger.WriteLine;
 
 string[][] movieDrives = [
    [
-       settings.MovieMainstream,
-       settings.MovieMainstreamWithoutSubtitle,
-       settings.MovieTemp1,
+        settings.MovieMainstream,
+        settings.MovieMainstreamWithoutSubtitle,
+        settings.MovieTemp1,
    ],
    [
-       settings.MovieControversial,
-       settings.MovieControversialWithoutSubtitle,
-       settings.MovieTemp2,
-       settings.MovieMusical,
+        settings.Movie3D,
+        settings.MovieHdr,
+        settings.MovieControversial,
+        settings.MovieControversialWithoutSubtitle,
+        settings.MovieTemp2,
+        settings.MovieMusical,
    ],
    [
-       settings.MovieTemp3,
-       settings.MovieTemp31,
-       settings.MovieTemp32
+        settings.MovieTemp3,
+        settings.MovieTemp31,
+        settings.MovieTemp32
    ],
    [
-       settings.MovieControversialTemp4,
-       settings.MovieTemp4,
-       settings.MovieTemp41,
-       settings.MovieTemp42,
-       settings.MovieTemp4Encode
+        settings.MovieControversialTemp4,
+        settings.MovieTemp4,
+        settings.MovieTemp41,
+        settings.MovieTemp42,
+        settings.MovieTemp4Encode
    ]
+];
+
+string[][] sdrMovieDrives = [
+   [
+        settings.MovieMainstream,
+        settings.MovieMainstreamWithoutSubtitle,
+        settings.MovieTemp1,
+   ],
+   [
+        settings.MovieControversial,
+        settings.MovieControversialWithoutSubtitle,
+        settings.MovieTemp2,
+        settings.MovieMusical,
+   ],
+   [
+        settings.MovieTemp3,
+        settings.MovieTemp31,
+        settings.MovieTemp32
+   ],
+   [
+        settings.MovieControversialTemp4,
+        settings.MovieTemp4,
+        settings.MovieTemp41,
+        settings.MovieTemp42,
+        settings.MovieTemp4Encode
+   ]
+];
+
+string[][] tvDrives = [
+    [
+        settings.TVTutorial
+    ],
+    [
+        settings.TVControversial,
+        settings.TVDocumentary,
+        settings.TVMainstream,
+        settings.TVMainstreamWithoutSubtitle,
+        settings.TVHdr
+    ],
+    [
+        settings.TVTemp4
+    ]
+];
+
+string[][] metadataDrives = [
+    [
+        settings.MovieMetadataDirectory,
+        settings.MovieMetadataBackupDirectory,
+        settings.TVMetadataDirectory
+    ]
 ];
 
 //Video.PrintDirectoriesWithMultipleVideos(settings.MovieControversial);
