@@ -37,6 +37,32 @@ Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
 //FFmpeg.SetExecutablesPath(@"C:\Users\User\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-7.1-full_build\bin");
 Action<string> log = Logger.WriteLine;
 
+string[][] movieDrives = [
+   [
+       settings.MovieMainstream,
+       settings.MovieMainstreamWithoutSubtitle,
+       settings.MovieTemp1,
+   ],
+   [
+       settings.MovieControversial,
+       settings.MovieControversialWithoutSubtitle,
+       settings.MovieTemp2,
+       settings.MovieMusical,
+   ],
+   [
+       settings.MovieTemp3,
+       settings.MovieTemp31,
+       settings.MovieTemp32
+   ],
+   [
+       settings.MovieControversialTemp4,
+       settings.MovieTemp4,
+       settings.MovieTemp41,
+       settings.MovieTemp42,
+       settings.MovieTemp4Encode
+   ]
+];
+
 //Video.PrintDirectoriesWithMultipleVideos(settings.MovieControversial);
 //Video.PrintDirectoriesWithMultipleVideos(settings.MovieMainstream);
 
@@ -225,6 +251,9 @@ Action<string> log = Logger.WriteLine;
 //   settings.MovieTemp3,
 //   settings.MovieTemp31,
 //   settings.MovieTemp32,
+//   settings.MovieTemp4,
+//   settings.MovieTemp41,
+//   settings.MovieTemp42,
 //   settings.MovieTemp4Encode,
 //   settings.MovieControversial,
 //   settings.MovieControversialWithoutSubtitle,

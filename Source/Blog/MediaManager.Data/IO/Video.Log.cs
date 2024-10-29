@@ -197,8 +197,17 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
 
+        List<string> noImdbId = [];
         directories
             .SelectMany(directory => Directory.EnumerateFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories))
+            .Where(metadata => !metadata.ContainsIgnoreCase($"{Path.DirectorySeparatorChar}Delete{Path.DirectorySeparatorChar}"))
+            .Do(metadata =>
+            {
+                if (PathHelper.GetFileNameWithoutExtension(metadata).EqualsOrdinal(NotExistingFlag))
+                {
+                    noImdbId.Add(metadata);
+                }
+            })
             .GroupBy(metadata => ImdbMetadata.TryGet(metadata, out string? imdbId) ? imdbId : string.Empty)
             .Where(group => group.Count() > 1)
             .ForEach(group => group
@@ -206,6 +215,34 @@ internal static partial class Video
                 .OrderBy(metadata => metadata.Movie)
                 .ThenBy(metadata => metadata.metadata)
                 .Select(metadata => $"{metadata.Movie} - {metadata.metadata}")
+                .Append(string.Empty)
+                .Prepend(group.Key)
+                .ForEach(log));
+
+        noImdbId
+            .Select(metadata => PathHelper.GetDirectoryName(metadata))
+            .Select(movie =>
+            {
+                string[] metadataFiles = Directory
+                    .EnumerateFiles(movie, XmlMetadataSearchPattern)
+                    .Order()
+                    .ToArray();
+                string tmdbId = metadataFiles
+                    .Select(metadata => XDocument.Load(metadata).Root?.Element("tmdbid")?.Value ?? string.Empty)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Single();
+                return (
+                    Movie: PathHelper.GetFileName(movie),
+                    Metadata: metadataFiles.First(),
+                    TmdbId: tmdbId
+                );
+            })
+            .GroupBy(metadata => metadata.TmdbId)
+            .Where(group => group.Count() > 1)
+            .ForEach(group => group
+                .OrderBy(metadata => metadata.Movie)
+                .ThenBy(metadata => metadata.Metadata)
+                .Select(metadata => $"{PathHelper.GetFileName(metadata.Movie)} - {metadata.Metadata}")
                 .Append(string.Empty)
                 .Prepend(group.Key)
                 .ForEach(log));
@@ -1598,7 +1635,7 @@ internal static partial class Video
     }
 
     internal static async Task PrintMovieLinksAsync(
-        ISettings settings, Func<ImdbMetadata, HashSet<string>, bool> predicate, string initialUrl = "", bool updateMetadata = false, bool isDryRun = false, Action<string>? log = null,CancellationToken cancellationToken = default)
+        ISettings settings, Func<ImdbMetadata, HashSet<string>, bool> predicate, string initialUrl = "", bool updateMetadata = false, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
@@ -2233,7 +2270,7 @@ internal static partial class Video
                 .SelectMany(directory => EnumerateDirectories(directory))
                 .ForEach(movie =>
                 {
-                    
+
                     //string newMovie = Regex.Replace(movie, @"[ ]{2,}", " ");
                     if (movie.ContainsOrdinal(".."))
                     {
