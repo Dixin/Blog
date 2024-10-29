@@ -120,6 +120,10 @@
         "Directory": "D:\\Files\\Library\\Movies Encode4.电影4",
         "Level": 2
     },
+    "MovieDisk": {
+        "Directory": "D:\\Files\\Library\\Movies Disk.电影原盘",
+        "Level": 2
+    },
 
     "MovieExternalNew": {
         "Directory": "D:\\Files\\Library\\Movies New",
@@ -152,6 +156,10 @@
     },
     "TVTemp4": {
         "Directory": "D:\\Files\\Library\\TV Temp4.电视剧4",
+        "Level": 1
+    },
+    "TVHdr": {
+        "Directory": "TV HDR.高动态范围电视剧",
         "Level": 1
     },
 

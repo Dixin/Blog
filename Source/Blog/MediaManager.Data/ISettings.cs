@@ -53,6 +53,8 @@ public interface ISettings
     DirectorySettings MovieTemp42 { get; init; }
 
     DirectorySettings MovieTemp4Encode { get; init; }
+    
+    DirectorySettings MovieDisk { get; init; }
 
     DirectorySettings MovieExternalNew { get; init; }
 
@@ -65,6 +67,8 @@ public interface ISettings
     DirectorySettings TVMainstream { get; init; }
 
     DirectorySettings TVTutorial { get; init; }
+
+    DirectorySettings TVHdr { get; init; }
 
     DirectorySettings TVMainstreamWithoutSubtitle { get; init; }
 

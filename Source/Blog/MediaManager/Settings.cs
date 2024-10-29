@@ -89,6 +89,8 @@ public partial record Settings(
 
     public DirectorySettings MovieTemp4Encode { get; init; }
 
+    public DirectorySettings MovieDisk { get; init; }
+
     public DirectorySettings MovieExternalNew { get; init; }
 
     public DirectorySettings MovieExternalDelete { get; init; }
@@ -104,6 +106,8 @@ public partial record Settings(
     public DirectorySettings TVMainstreamWithoutSubtitle { get; init; }
 
     public DirectorySettings TVTemp4 { get; init; }
+
+    public DirectorySettings TVHdr { get; init; }
 
     public DirectorySettings AudioControversial { get; init; }
 
