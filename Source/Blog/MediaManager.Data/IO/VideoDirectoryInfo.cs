@@ -141,8 +141,8 @@ internal record VideoDirectoryInfo(
                 EncoderType.NvidiaX265 => "N",
                 EncoderType.HandbrakeH264BluRay => "b",
                 EncoderType.HandbrakeH264 => "B",
-                EncoderType.Korean => "k",
-                EncoderType.KoreanFfmpegX265 => "K",
+                EncoderType.KoreanPremium => "k",
+                EncoderType.Korean => "K",
                 EncoderType.HDBluRay => "p",
                 EncoderType.HD => "P",
                 _ => throw new ArgumentOutOfRangeException(nameof(videos))
@@ -166,8 +166,8 @@ internal record VideoDirectoryInfo(
                 EncoderType.NvidiaX265 => $"N{videos.Max(video => video.FormatAudioCount())}",
                 EncoderType.HandbrakeH264BluRay => $"b{videos.Max(video => video.FormatAudioCount())}",
                 EncoderType.HandbrakeH264 => $"B{videos.Max(video => video.FormatAudioCount())}",
-                EncoderType.Korean => $"k{videos.Max(video => video.FormatAudioCount())}",
-                EncoderType.KoreanFfmpegX265 => $"K{videos.Max(video => video.FormatAudioCount())}",
+                EncoderType.KoreanPremium => $"k{videos.Max(video => video.FormatAudioCount())}",
+                EncoderType.Korean => $"K{videos.Max(video => video.FormatAudioCount())}",
                 EncoderType.HDBluRay => string.Empty,
                 EncoderType.HD => string.Empty,
                 _ => throw new ArgumentOutOfRangeException(nameof(videos))

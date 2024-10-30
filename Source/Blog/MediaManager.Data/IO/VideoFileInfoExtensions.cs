@@ -10,7 +10,7 @@ internal static class VideoFileInfoExtensions
         string origin = video.Origin.TrimStart('.');
         if (origin.EqualsIgnoreCase("HDRip"))
         {
-            return encoder.EqualsIgnoreCase(FfmpegHelper.Executable) ? EncoderType.KoreanFfmpegX265 : EncoderType.Korean;
+            return video.Version.EqualsIgnoreCase("KOOK") ? EncoderType.KoreanPremium : EncoderType.Korean;
         }
 
         bool isBluRay = origin.EqualsIgnoreCase("BluRay");

@@ -21,8 +21,8 @@ internal enum EncoderType
 {
     HD = 0,
     HDBluRay,
-    KoreanFfmpegX265,
     Korean,
+    KoreanPremium,
     HandbrakeH264,
     HandbrakeH264BluRay,
     NvidiaX265,
