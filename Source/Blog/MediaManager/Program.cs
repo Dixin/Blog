@@ -369,7 +369,11 @@ string[][] metadataDrives = [
 //await Top.DownloadMetadataAsync(settings.MovieTopH264720PUrl, settings.MovieTopH264720PMetadata, index => index <= 10);
 //await Top.DownloadMetadataAsync(settings.TVTopX265Url, settings.TVTopX265Metadata, index => index <= 5);
 
-//await Preferred.DownloadMetadataAsync(settings, index => index <= 100);
+await Preferred.DownloadMetadataAsync(settings, index => index <= 1000);
+await Preferred.DownloadAllTorrentsAsync(settings, false);
+await Preferred.WriteFileMetadataAsync(settings, false);
+//await Preferred.CleanUpMetadataErrorsAsync(settings);
+//await Preferred.CleanUpFiles(settings);
 
 //await Video.PrintMovieVersions(settings, log, cancellationTokenSource.Token,
 //   settings.MovieMainstream,
@@ -424,8 +428,6 @@ string[][] metadataDrives = [
 //        .Any(advisory => advisory.FormattedSeverity == ImdbAdvisorySeverity.Severe)
 //        || imdbMetadata.AllKeywords.Any(keywords.Contains),
 //    isDryRun: true);
-
-//await Preferred.DownloadMetadataAsync(settings);
 
 //Audio.ReplaceTraditionalChinese(settings.AudioMainstream, true);
 
@@ -1069,8 +1071,6 @@ static void RenameFilesWithDuplicateTitle(
 //Torrent t = Torrent.Load(@"\\beyond-r\J\Files\Library\MovieMetadataCache\tt7491128.3333D9F8BC4009FA809B0AF2464E6972636CD506.ami-ami-2018.1080p BluRay BluRay.[FR] Ami ami.torrent");
 //t.Files.ForEach(f => Logger.WriteLine(f.Path));
 
-//await Preferred.DownloadAllTorrentsAsync(settings, false);
-//await Preferred.WriteFileMetadataAsync(settings, false);
 //ConcurrentDictionary<string, PreferredFileMetadata[]> allFileMetadata = await JsonHelper
 //    .DeserializeFromFileAsync<ConcurrentDictionary<string, PreferredFileMetadata[]>>(settings.MoviePreferredFileMetadata, new(), cancellationTokenSource.Token);
 //ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata?>> existingMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationTokenSource.Token);
@@ -1147,11 +1147,6 @@ static void RenameFilesWithDuplicateTitle(
 //             """);
 //    });
 
-
-//await Preferred.CleanUpMetadataErrorsAsync(settings);
-//await Preferred.CleanUpFiles(settings);
-//await Preferred.DownloadAllTorrentsAsync(settings);
-//await Preferred.WriteFileMetadataAsync(settings);
 //Video.EnumerateDirectories(settings.MovieTemp41)
 //    .Where(d => d.Contains("`"))
 //    .ToArray()

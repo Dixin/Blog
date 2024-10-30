@@ -163,7 +163,7 @@ public static class FileHelper
         File.WriteAllText(tempFile, text, encoding);
         if (File.Exists(file))
         {
-            Delete(file);
+            Recycle(file);
         }
 
         File.Move(tempFile, file);
