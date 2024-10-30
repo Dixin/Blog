@@ -11,7 +11,7 @@ using MonoTorrent;
 
 internal static class Preferred
 {
-    private const int WriteCount = 200;
+    private const int WriteCount = 800;
 
     private static readonly int MaxDegreeOfParallelism = Environment.ProcessorCount;
 
