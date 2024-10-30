@@ -41,7 +41,7 @@ string[][] movieDrives = [
    [
         settings.MovieMainstream,
         settings.MovieMainstreamWithoutSubtitle,
-        settings.MovieTemp1,
+        settings.MovieTemp1
    ],
    [
         settings.Movie3D,
@@ -50,6 +50,7 @@ string[][] movieDrives = [
         settings.MovieControversialWithoutSubtitle,
         settings.MovieTemp2,
         settings.MovieMusical,
+        settings.MovieDisk
    ],
    [
         settings.MovieTemp3,
@@ -69,13 +70,13 @@ string[][] sdrMovieDrives = [
    [
         settings.MovieMainstream,
         settings.MovieMainstreamWithoutSubtitle,
-        settings.MovieTemp1,
+        settings.MovieTemp1
    ],
    [
         settings.MovieControversial,
         settings.MovieControversialWithoutSubtitle,
         settings.MovieTemp2,
-        settings.MovieMusical,
+        settings.MovieMusical
    ],
    [
         settings.MovieTemp3,
@@ -135,6 +136,7 @@ string[][] metadataDrives = [
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp41, 2, overwrite: true, useCache: false, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp42, 2, overwrite: true, useCache: false, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp4Encode, 2, overwrite: true, useCache: false, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.MovieDisk, 2, overwrite: true, useCache: false, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(Path.Combine(settings.MovieMainstream, "Test"), 1, overwrite: false, useCache: true, useBrowser: true, degreeOfParallelism:16);
 
 //await Video.DownloadImdbMetadataAsync(settings.TVControversial, 1, overwrite: false, useCache: true, useBrowser: true);
@@ -215,6 +217,7 @@ string[][] metadataDrives = [
 //Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp41, isDryRun: true);
 //Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp42, isDryRun: true);
 //Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp4Encode, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieDisk, isDryRun: true);
 
 //Video.RenameDirectoriesWithImdbMetadata(settings, settings.TVControversial, level: 1, isTV: true, isDryRun: true);
 //Video.RenameDirectoriesWithImdbMetadata(settings, settings.TVDocumentary, level: 1, isTV: true, isDryRun: true);
