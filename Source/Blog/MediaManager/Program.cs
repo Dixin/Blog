@@ -135,7 +135,7 @@ string[][] metadataDrives = [
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp41, 2, overwrite: true, useCache: false, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp42, 2, overwrite: true, useCache: false, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp4Encode, 2, overwrite: true, useCache: false, useBrowser: true);
-//await Video.DownloadImdbMetadataAsync(@"D:\Files\Library\Movies Mainstream.主流电影\Test", 1, overwrite: true, useCache: false, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(Path.Combine(settings.MovieMainstream, "Test"), 1, overwrite: false, useCache: true, useBrowser: true, degreeOfParallelism:16);
 
 //await Video.DownloadImdbMetadataAsync(settings.TVControversial, 1, overwrite: false, useCache: true, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.TVDocumentary, 1, overwrite: false, useCache: true, useBrowser: true);
