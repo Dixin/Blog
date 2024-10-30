@@ -13,7 +13,7 @@ internal static class Preferred
 {
     private const int WriteCount = 800;
 
-    private static readonly int MaxDegreeOfParallelism = Environment.ProcessorCount;
+    private static readonly int MaxDegreeOfParallelism = int.Min(16, Environment.ProcessorCount);
 
     internal static async Task<ConcurrentQueue<PreferredSummary>> DownloadSummariesAsync(
         ISettings settings, Func<int, bool>? predicate = null, int initialPageIndex = 1, int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)

@@ -369,9 +369,9 @@ string[][] metadataDrives = [
 //await Top.DownloadMetadataAsync(settings.MovieTopH264720PUrl, settings.MovieTopH264720PMetadata, index => index <= 10);
 //await Top.DownloadMetadataAsync(settings.TVTopX265Url, settings.TVTopX265Metadata, index => index <= 5);
 
-await Preferred.DownloadMetadataAsync(settings, index => index <= 1000);
-await Preferred.DownloadAllTorrentsAsync(settings, false);
-await Preferred.WriteFileMetadataAsync(settings, false);
+//await Preferred.DownloadMetadataAsync(settings, index => index <= 1000);
+//await Preferred.DownloadAllTorrentsAsync(settings, false);
+//await Preferred.WriteFileMetadataAsync(settings, false);
 //await Preferred.CleanUpMetadataErrorsAsync(settings);
 //await Preferred.CleanUpFiles(settings);
 
