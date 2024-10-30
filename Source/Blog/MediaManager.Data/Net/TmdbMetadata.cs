@@ -12,7 +12,7 @@ internal static class TmdbMetadata
     private const string Extension = ".xml";
     private const string SearchPattern = $"{PathHelper.AllSearchPattern}{Extension}";
 
-    internal static void WriteTmdbMetadataAsync(string movie, bool overwrite = false, Action<string>? log = null)
+    internal static async Task WriteTmdbMetadataAsync(string movie, bool overwrite = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
@@ -90,6 +90,6 @@ internal static class TmdbMetadata
         }
 
         log(newPath);
-        File.WriteAllText(newPath, string.Empty);
+        await File.WriteAllTextAsync(newPath, string.Empty, cancellationToken);
     }
 }

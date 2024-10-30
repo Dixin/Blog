@@ -617,7 +617,7 @@ internal static partial class Video
                     .Select(file => (file, PathHelper.GetFileNameWithoutExtension(file), VideoMovieFileInfo.Parse(file)))
                     .ToArray();
                 (string File, string Name, VideoMovieFileInfo Info)[] preferredVideos = videos
-                    .Where(video => video.Info.GetEncoderType() is EncoderType.PreferredH264 or EncoderType.PreferredX265)
+                    .Where(video => video.Info.GetEncoderType() is EncoderType.PreferredH264 or EncoderType.PreferredX265 or EncoderType.PreferredH264BluRay or EncoderType.PreferredX265BluRay)
                     .ToArray();
 
                 PreferredMetadata[] availablePreferredMetadata = preferredMetadata
@@ -628,7 +628,7 @@ internal static partial class Video
                     : [];
                 (PreferredMetadata Metadata, KeyValuePair<string, string> Version)[] otherPreferredMetadata = availablePreferredMetadata
                     .SelectMany(metadata => metadata.Availabilities, (metadata, version) => (metadata, version))
-                    .Where(metadataVersion => !metadataVersion.version.Key.Contains("2160p"))
+                    .Where(metadataVersion => !metadataVersion.version.Key.ContainsIgnoreCase("2160p"))
                     .ToArray();
                 (PreferredMetadata Metadata, KeyValuePair<string, string> Version)[] bluRayPreferredMetadata = otherPreferredMetadata
                     .Where(metadataVersion => metadataVersion.Version.Key.ContainsIgnoreCase("BluRay"))
@@ -668,9 +668,9 @@ internal static partial class Video
                     availableX265Metadata = availableX265Metadata
                         .Where(metadata =>
                         {
-                            if (VideoMovieFileInfo.TryParse(metadata.Title, out VideoMovieFileInfo? video))
+                            if (VideoMovieFileInfo.TryParseIgnoreCase(metadata.Title, out VideoMovieFileInfo? video))
                             {
-                                return video.GetEncoderType() is EncoderType.TopX265 or EncoderType.TopH264;
+                                return video.GetEncoderType() is EncoderType.TopX265 or EncoderType.TopX265BluRay;
                             }
 
                             log($"!Fail to parse metadata {metadata.Title} {metadata.Link}");
@@ -692,7 +692,7 @@ internal static partial class Video
                             string metadataTitle = metadata.Title;
                             string[] videoEditions = video.Info.Edition.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries);
                             // (Not any) Local is equal to or better than remote metadata.
-                            return video.Info.GetEncoderType() is EncoderType.TopX265
+                            return video.Info.GetEncoderType() is EncoderType.TopX265 or EncoderType.TopX265BluRay
                                 && (video.Name.StartsWithIgnoreCase(metadata.Title)
                                     || video.Info.Origin.ContainsIgnoreCase(".BluRay") && metadataTitle.ContainsIgnoreCase(".WEBRip.")
                                     || !video.Info.Edition.ContainsIgnoreCase("PREVIEW") && metadataTitle.ContainsIgnoreCase(".PREVIEW.")
@@ -702,7 +702,7 @@ internal static partial class Video
                                     || video.Info.Edition.ContainsIgnoreCase("EXTENDED") && !metadataTitle.ContainsIgnoreCase(".EXTENDED.")
                                     || video.Info.Edition.IsNotNullOrWhiteSpace() && (video.Info with { Edition = string.Empty }).Name.StartsWithIgnoreCase(metadataTitle)
                                     || video.Info.Edition.ContainsIgnoreCase(".Part") && metadataTitle.ContainsIgnoreCase(".Part")
-                                    || VideoMovieFileInfo.TryParse(metadataTitle, out VideoMovieFileInfo? metadataInfo)
+                                    || VideoMovieFileInfo.TryParseIgnoreCase(metadataTitle, out VideoMovieFileInfo? metadataInfo)
                                     && video.Info.Origin.EqualsIgnoreCase(metadataInfo.Origin)
                                     && video.Info.Edition.IsNotNullOrWhiteSpace()
                                     && metadataInfo
@@ -733,8 +733,8 @@ internal static partial class Video
 
                     return;
                 }
-
-                if (videos.Any(video => video.Info.GetEncoderType() is EncoderType.TopX265))
+                
+                if (videos.Any(video => video.Info.GetEncoderType() is EncoderType.TopX265)) // Top X265 but not BluRay.
                 {
                     if (videos.All(video => !video.Info.Origin.ContainsIgnoreCase("BluRay")) && bluRayPreferredMetadata.Any())
                     {
@@ -750,13 +750,18 @@ internal static partial class Video
                     return;
                 }
 
+                if (videos.Any(video => video.Info.GetEncoderType() is EncoderType.TopX265BluRay or EncoderType.TopX265))
+                {
+                    return;
+                }
+
                 TopMetadata[] availableH264Metadata = h264Metadata.ContainsKey(imdbId)
                     ? h264Metadata[imdbId]
                         .Where(metadata =>
                         {
-                            if (VideoMovieFileInfo.TryParse(metadata.Title, out VideoMovieFileInfo? video))
+                            if (VideoMovieFileInfo.TryParseIgnoreCase(metadata.Title, out VideoMovieFileInfo? video))
                             {
-                                return video.GetEncoderType() is EncoderType.TopX265 or EncoderType.TopH264;
+                                return video.GetEncoderType() is EncoderType.TopH264 or EncoderType.TopH264BluRay;
                             }
 
                             log($"!Fail to parse metadata {metadata.Title} {metadata.Link}");
@@ -773,7 +778,7 @@ internal static partial class Video
                             string metadataTitle = metadata.Title;
                             string[] videoEditions = video.Info.Edition.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries);
                             // (Not any) Local is equal to or better than remote metadata.
-                            return video.Info.GetEncoderType() is EncoderType.TopH264
+                            return video.Info.GetEncoderType() is EncoderType.TopH264 or EncoderType.TopH264BluRay
                                 && (video.Name.StartsWithIgnoreCase(metadata.Title)
                                     || video.Info.Origin.ContainsIgnoreCase(".BluRay") && metadataTitle.ContainsIgnoreCase(".WEBRip.")
                                     || !video.Info.Edition.ContainsIgnoreCase("PREVIEW") && metadataTitle.ContainsIgnoreCase(".PREVIEW.")
@@ -783,7 +788,7 @@ internal static partial class Video
                                     || video.Info.Edition.ContainsIgnoreCase("EXTENDED") && !metadataTitle.ContainsIgnoreCase(".EXTENDED.")
                                     || video.Info.Edition.IsNotNullOrWhiteSpace() && (video.Info with { Edition = string.Empty }).Name.StartsWithIgnoreCase(metadataTitle)
                                     || video.Info.Edition.ContainsIgnoreCase(".Part") && metadataTitle.ContainsIgnoreCase(".Part")
-                                    || VideoMovieFileInfo.TryParse(metadataTitle, out VideoMovieFileInfo? metadataInfo)
+                                    || VideoMovieFileInfo.TryParseIgnoreCase(metadataTitle, out VideoMovieFileInfo? metadataInfo)
                                     && video.Info.Origin.EqualsIgnoreCase(metadataInfo.Origin)
                                     && video.Info.Edition.IsNotNullOrWhiteSpace()
                                     && metadataInfo
@@ -815,7 +820,7 @@ internal static partial class Video
                     return;
                 }
 
-                if (videos.Any(video => video.Info.GetEncoderType() is EncoderType.TopH264))
+                if (videos.Any(video => video.Info.GetEncoderType() is EncoderType.TopH264)) // Top H264 but not BluRay.
                 {
                     if (videos.All(video => !video.Info.Origin.ContainsIgnoreCase("BluRay")) && bluRayPreferredMetadata.Any())
                     {
@@ -829,6 +834,11 @@ internal static partial class Video
                         });
                     }
 
+                    return;
+                }
+
+                if (videos.Any(video => video.Info.GetEncoderType() is EncoderType.TopH264BluRay or EncoderType.TopH264))
+                {
                     return;
                 }
 

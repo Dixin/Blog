@@ -260,6 +260,7 @@ internal static partial class Video
         }
 
         log($"Start {directory}");
+        await TmdbMetadata.WriteTmdbMetadataAsync(directory, overwrite, log, cancellationToken);
         return await DownloadImdbMetadataAsync(imdbId, directory, directory, [jsonFile], files, webDriver, overwrite, useCache, log, cancellationToken);
     }
 
