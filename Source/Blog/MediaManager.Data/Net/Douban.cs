@@ -5,7 +5,7 @@ using CsQuery;
 
 internal static class Douban
 {
-    internal static readonly int MaxDegreeOfParallelism = int.Min(4, Environment.ProcessorCount);
+    internal static readonly int MaxDegreeOfParallelism = 1;
 
     internal static async Task<string> GetTitleAsync(WebDriverWrapper webDriver, string imdbId, CancellationToken cancellationToken = default)
     {
