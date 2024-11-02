@@ -1661,7 +1661,7 @@ internal static partial class Video
         //Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(rareJsonPath);
         //string[] metadataFiles = Directory.GetFiles(settings.MovieMetadataDirectory);
         //string[] cacheFiles = Directory.GetFiles(settings.MovieMetadataCacheDirectory);
-        HashSet<string> keywords = new(settings.AllImdbKeywords, StringComparer.OrdinalIgnoreCase);
+        HashSet<string> keywords = new(settings.ImdbKeywords, StringComparer.OrdinalIgnoreCase);
         //Dictionary<string, string> metadataFilesByImdbId = metadataFiles.ToDictionary(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty);
 
         ImdbMetadata[] imdbIds = x265Metadata.Keys
@@ -1948,7 +1948,7 @@ internal static partial class Video
                                 {
                                     if (File.Exists(file))
                                     {
-                                        FileHelper.CopyToDirectory(file, @"E:\Files\", true, true);
+                                        FileHelper.CopyToDirectory(file, settings.LibraryDirectory, true, true);
                                     }
                                     else
                                     {

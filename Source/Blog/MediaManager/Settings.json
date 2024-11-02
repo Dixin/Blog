@@ -5,8 +5,8 @@
     "PreferredNewKeyword": "",
 
     "LibraryDirectory": "D:\\Files\\Library",
-    "MovieSubtitleBackupDirectory": "D:\\Files\\Library\\Movies Subtitle",
-    "TVSubtitleBackupDirectory": "D:\\Files\\Library\\TV Subtitle",
+    "MovieSubtitleBackupDirectory": "D:\\Files\\Library\\MovieSubtitle",
+    "TVSubtitleBackupDirectory": "D:\\Files\\Library\\TVSubtitle",
 
     "Drive115Url": "",
     "MovieTopX265Url": "",

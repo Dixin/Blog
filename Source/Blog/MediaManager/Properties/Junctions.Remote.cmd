@@ -38,3 +38,6 @@ mklink /D "D:\Files\Library\MovieMetadataCache" "\\box-l\J\Files\Library\MovieMe
 mklink /D "D:\Files\Library\MovieMetadataCacheBackup" "\\box-l\J\Files\Library\MovieMetadataCacheBackup"
 mklink /D "D:\Files\Library\TVMetadata" "\\box-l\J\Files\Library\TVMetadata"
 mklink /D "D:\Files\Library\TVMetadataCache" "\\box-l\J\Files\Library\TVMetadataCache"
+
+mklink /D "D:\Files\Library\MovieSubtitle" "\\box-l\J\Files\Library\MovieSubtitle"
+mklink /D "D:\Files\Library\TVSubtitle" "\\box-l\J\Files\Library\TVSubtitle"

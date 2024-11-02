@@ -186,14 +186,13 @@ internal static partial class Video
         EnumerateDirectories(directory, level).ForEach(movie =>
         {
             string[] files = Directory.GetFiles(movie);
-            if (!ImdbMetadata.TryGet(files, out string? _, out string? imdbId))
-            {
-                return;
-            }
+            string? imdbId = files
+                .Where(IsXmlMetadata)
+                .Select(xml => XDocument.Load(xml).Root?.Element("imdbid")?.Value ?? string.Empty)
+                .Distinct()
+                .SingleOrDefault(string.Empty);
 
-            if (!files
-                    .Where(IsXmlMetadata)
-                    .All(xmlMetadata => xmlMetadata.TryLoadXmlImdbId(out string? xmlImdbId) && imdbId.EqualsIgnoreCase(xmlImdbId)))
+            if (imdbId.IsNullOrWhiteSpace() && !ImdbMetadata.TryGet(files, out string? _, out imdbId))
             {
                 return;
             }
