@@ -182,6 +182,7 @@ string[][] metadataDrives = [
 //await Video.DownloadImdbMetadataAsync(settings.TVDocumentary, 1, overwrite: false, useCache: true, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.TVMainstream, 1, overwrite: false, useCache: true, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.TVMainstreamWithoutSubtitle, 1, overwrite: false, useCache: true, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.TVTutorial, 1, overwrite: false, useCache: true, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.TVTemp4, 1, overwrite: false, useCache: true, useBrowser: true);
 
 //Video.MoveFanArt(settings.Movie3D);
