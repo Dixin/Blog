@@ -661,7 +661,10 @@ internal static partial class Video
                     using WebDriverWrapper webDriver = new(() => WebDriverHelper.Start(webDriverIndex, keepExisting: true));
                     while (movies.TryDequeue(out string? movie))
                     {
-                        string[] metadataFiles = Directory.GetFiles(movie, XmlMetadataSearchPattern);
+                        string[] metadataFiles = Directory
+                            .EnumerateFiles(movie, XmlMetadataSearchPattern)
+                            .Where(file => !PathHelper.GetFileNameWithoutExtension(file).EqualsIgnoreCase("movie"))
+                            .ToArray();
                         string backupMetadataFile = metadataFiles.First(file => file.EndsWithIgnoreCase($"{Delimiter}{DefaultBackupFlag}{XmlMetadataExtension}"));
                         string metadataFile = metadataFiles.First(file => !file.EndsWithIgnoreCase($"{Delimiter}{DefaultBackupFlag}{XmlMetadataExtension}"));
                         XDocument metadataDocument = XDocument.Load(metadataFile);
@@ -728,6 +731,8 @@ internal static partial class Video
                         {
                             noTranslation.Add((backupEnglishTitle, year, movie));
                         }
+
+                        await Task.Delay(TimeSpan.FromSeconds(15));
                     }
                 },
                 Douban.MaxDegreeOfParallelism,
