@@ -2,6 +2,7 @@
 using Examples.IO;
 using Examples.Linq;
 using Examples.Net;
+using Examples.Text;
 using MediaManager;
 using MediaManager.IO;
 using MediaManager.Net;
@@ -34,7 +35,7 @@ using TextWriterTraceListener textTraceListener = new(Path.Combine(Path.GetTempP
 using ConsoleTraceListener consoleTraceListener = new();
 Trace.Listeners.Add(consoleTraceListener);
 Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
-//FFmpeg.SetExecutablesPath(@"C:\Users\User\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-7.1-full_build\bin");
+FFmpeg.SetExecutablesPath(@"C:\Users\User\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-7.1-full_build\bin");
 Action<string> log = Logger.WriteLine;
 
 string[][] movieDrives = [
@@ -475,20 +476,60 @@ string[][] metadataDrives = [
 //    //rename: (f, t) => Regex.Replace(f, @"(\.S[0-9]{2}E[0-9]{2})", $"{"$1".ToUpperInvariant()}.{t}"),
 //    isDryRun: false);
 
+// Video
+//     .EnumerateDirectories(settings.MovieTemp42)
+//     .ForEach(movie =>
+//     {
+//         string[] files = Directory.GetFiles(movie);
+//         string xmlMetadataFile = files.SingleOrDefault(file => PathHelper.GetFileName(file).EqualsIgnoreCase("movie.nfo"), string.Empty);
+//         if (xmlMetadataFile.IsNullOrWhiteSpace())
+//         {
+//             return;
+//         }
+
+//         string video = files.Single(file => file.IsVideo());
+//         string videoName = PathHelper.GetFileNameWithoutExtension(video);
+//         FileHelper.ReplaceFileNameWithoutExtension(xmlMetadataFile, videoName, true);
+//     });
 //await Video.PrintMovieImdbIdErrorsAsync(settings, true, log, cancellationTokenSource.Token, settings.MovieTemp42);
-//await Video.ConvertToUtf8Async(settings.MovieTemp4, true);
-//Video.MoveSubtitleToParentDirectory(settings.MovieTemp41, settings.MovieSubtitleBackupDirectory, false);
-//await Video.DownloadImdbMetadataAsync(settings.MovieTemp41, 2, overwrite: false, useCache: true, useBrowser: true);
-//FfmpegHelper.MergeAllDubbedMovies(settings.MovieTemp41, isDryRun: true);
-//Video.PrintDuplicateImdbId(null, settings.MovieTemp41, settings.MovieTemp3, settings.MovieTemp4);
-//Video.PrintVideosWithErrors(settings.MovieTemp41, searchOption: SearchOption.AllDirectories);
-//Video.BackupMetadata(settings.MovieTemp41);
-//await Video.DownloadMissingTitlesFromDoubanAsync(settings, settings.MovieTemp41);
-//Video.RenameDirectoriesWithMetadata(settings, settings.MovieTemp41, isDryRun: false, skipRenamed: true);
-//Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp41, isDryRun: false);
-//Video.MoveFanArt(settings.MovieTemp41);
-//Video.RestoreMetadata(settings.MovieTemp41);
-//Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp41);
+//await Video.ConvertToUtf8Async(settings.MovieTemp42, true);
+//Video.MoveSubtitleToParentDirectory(settings.MovieTemp42, settings.MovieSubtitleBackupDirectory, false);
+//Video.MoveMetadata(settings.MovieTemp42, settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory);
+//await Video.DownloadImdbMetadataAsync(settings.MovieTemp42, 2, overwrite: false, useCache: true, useBrowser: true);
+//FfmpegHelper.MergeAllDubbedMovies(settings.MovieTemp42, isDryRun: true);
+//Video.PrintDuplicateImdbId(null, settings.MovieTemp41, settings.MovieTemp42, settings.MovieTemp3, settings.MovieTemp4);
+//Video.PrintVideosWithErrors(settings.MovieTemp42, searchOption: SearchOption.AllDirectories);
+//Video.BackupMetadata(settings.MovieTemp42);
+// Video
+//     .EnumerateDirectories(settings.MovieTemp42)
+//     .ForEach(movie =>
+//     {
+//         string[] files = Directory.GetFiles(movie);
+//         string videoFile = files.Single(f => f.IsVideo());
+//         string metadataFile = Path.Combine(movie, "movie.nfo");
+//         string videoMetadataFile = Path.Combine(movie, $"{PathHelper.GetFileNameWithoutExtension(videoFile)}.nfo");
+//         XDocument videoMetadata = XDocument.Load(videoMetadataFile);
+//         string videoTitle = videoMetadata.Root?.Element("title")?.Value ?? string.Empty;
+//         if (videoTitle.ContainsChineseCharacter())
+//         {
+//             return;
+//         }
+
+//         XDocument metadata = XDocument.Load(metadataFile);
+//         string title = metadata.Root?.Element("title")?.Value ?? string.Empty;
+//         if (title.ContainsChineseCharacter())
+//         {
+//             log(title);
+//             videoMetadata.Root!.Element("title")!.Value = title;
+//             videoMetadata.Save(videoMetadataFile);
+//         }
+//     });
+//await Video.DownloadMissingTitlesFromDoubanAsync(settings, settings.MovieTemp42);
+//Video.RenameDirectoriesWithMetadata(settings, settings.MovieTemp42, isDryRun: false, skipRenamed: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp42, isDryRun: false);
+//Video.MoveFanArt(settings.MovieTemp42);
+//Video.RestoreMetadata(settings.MovieTemp42);
+//Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp42);
 
 //Directory.GetFiles(@"D:\User\Downloads\New folder", "*", SearchOption.AllDirectories)
 //    .ForEach(f => File.Move(f, f
@@ -1522,3 +1563,16 @@ const string Subdirectory = "HD.Encode.Crop";
 //         string videoName = PathHelper.GetFileNameWithoutExtension(video);
 //         FileHelper.ReplaceFileNameWithoutExtension(xmlMetadataFile, videoName);
 //     });
+
+// ILookup<string, (string, string)> top = (await File.ReadAllLinesAsync(settings.TopDatabase, cancellationTokenSource.Token))
+//             .AsParallel()
+//             .Where(line => (line.ContainsIgnoreCase("|movies_x265_4k_hdr|"))
+//                 && (!line.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}")))
+//             .Select(line => line.Split('|'))
+//             .Do(cells => Debug.Assert(string.IsNullOrEmpty(cells[^2]) || cells[^2].IsImdbId()))
+//             //.Do(cells => Debug.Assert(cells[1].ContainsIgnoreCase($"-{settings.TopEnglishKeyword}") || cells[1].ContainsIgnoreCase($"-{settings.TopForeignKeyword}")))
+//             .ToLookup(cells => cells[^2], cells => (cells[1], cells[^3]));
+
+// HashSet<string> imdbIds = new(Directory.EnumerateFiles(settings.MovieHdr, "*.json", SearchOption.AllDirectories).Select(f => (f.GetImdbId())));
+// top.Where(group => imdbIds.Contains(group.Key))
+//     .ForEach(group => group.Select(item => item.Item1).Prepend(group.Key).Append("").ForEach(log));
