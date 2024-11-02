@@ -9,7 +9,8 @@ internal static class TmdbMetadata
 
     private const string FileNameMetadataSeparator = ImdbMetadata.FileNameMetadataSeparator;
 
-    private const string Extension = ".xml";
+    internal const string Extension = ".xml";
+
     private const string SearchPattern = $"{PathHelper.AllSearchPattern}{Extension}";
 
     internal static async Task WriteTmdbMetadataAsync(string movie, bool overwrite = false, Action<string>? log = null, CancellationToken cancellationToken = default)

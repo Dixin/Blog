@@ -451,20 +451,29 @@ internal static partial class Video
                 }
 
                 string[] videos = topFiles.Where(IsVideo).ToArray();
-                VideoMovieFileInfo[] videoFileInfos = videos
-                    .Select(video =>
-                    {
-                        if (VideoMovieFileInfo.TryParse(video, out VideoMovieFileInfo? videoFileInfo))
-                        {
-                            return videoFileInfo;
-                        }
-
-                        throw new InvalidOperationException(video);
-                    })
-                    .ToArray();
+                VideoMovieFileInfo[] videoFileInfos = videos.Select(video => VideoMovieFileInfo.Parse(video)).ToArray();
                 string[] subtitles = topFiles.Where(IsSubtitle).ToArray();
                 string[] metadataFiles = topFiles.Where(IsXmlMetadata).ToArray();
-                string[] otherFiles = topFiles.Except(videos).Except(subtitles).Except(metadataFiles).Except(imdbFiles).Except(cacheFiles).ToArray();
+                string[] tmdbFiles = topFiles.Where(file => file.HasExtension(TmdbMetadata.Extension)).ToArray();
+                string[] otherFiles = topFiles.Except(videos).Except(subtitles).Except(metadataFiles).Except(imdbFiles).Except(cacheFiles).Except(tmdbFiles).ToArray();
+
+                if (tmdbFiles.Length < 1)
+                {
+                    log($"!TMDB file is missing.");
+                }
+                else if (tmdbFiles.Length > 1)
+                {
+                    log($"!TMDB file has duplicate. {movie}");
+                }
+                else
+                {
+                    string tmdbFile = tmdbFiles.Single();
+                    string tmdbFileName = PathHelper.GetFileNameWithoutExtension(tmdbFile);
+                    if (!tmdbFileName.EqualsOrdinal(NotExistingFlag) && tmdbFileName.Count(@char => @char == Delimiter.Single()) != 3)
+                    {
+                        log($"!TMDB file has wrong format. {tmdbFile}");
+                    }
+                }
 
                 if (directoryInfo.Is2160P && !videoFileInfos.Any(video => video.GetDefinitionType() is DefinitionType.P2160))
                 {
@@ -568,7 +577,7 @@ internal static partial class Video
                     {
                         if (metadataImdbId.IsNotNullOrWhiteSpace())
                         {
-                            log($"!Metadata https://www.imdb.com/title/{metadataImdbId}/ should have no imdb id: {metadataFile}");
+                            log($"!Metadata https://www.imdb.com/title/{metadataImdbId}/ should have no imdb id: {Path.Combine(movie, metadataFile)}");
                         }
 
                         // if (metadataImdbRating.IsNotNullOrWhiteSpace())
@@ -580,7 +589,7 @@ internal static partial class Video
                     {
                         if (!imdbMetadata.ImdbId.EqualsOrdinal(metadataImdbId))
                         {
-                            log($"!Metadata imdb id {metadataImdbId} should be {imdbMetadata.ImdbId}: {metadataFile}");
+                            log($"!Metadata imdb id {metadataImdbId} should be {imdbMetadata.ImdbId}: {Path.Combine(movie, metadataFile)}");
                         }
                     }
                 });
@@ -733,7 +742,7 @@ internal static partial class Video
 
                     return;
                 }
-                
+
                 if (videos.Any(video => video.Info.GetEncoderType() is EncoderType.TopX265)) // Top X265 but not BluRay.
                 {
                     if (videos.All(video => !video.Info.Origin.ContainsIgnoreCase("BluRay")) && bluRayPreferredMetadata.Any())
