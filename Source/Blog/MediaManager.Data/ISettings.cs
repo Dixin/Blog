@@ -102,6 +102,8 @@ public interface ISettings
 
     string MovieSubtitleBackupDirectory { get; init; }
 
+    string TVSubtitleBackupDirectory { get; init; }
+
     string Drive115Url { get; init; }
 
     string MovieTopX265Url { get; init; }

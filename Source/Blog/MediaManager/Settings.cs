@@ -12,6 +12,7 @@ public partial record Settings(
 
     string LibraryDirectory,
     string MovieSubtitleBackupDirectory,
+    string TVSubtitleBackupDirectory,
 
     string Drive115Url,
     string MovieTopX265Url,

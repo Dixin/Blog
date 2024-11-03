@@ -584,14 +584,14 @@ string[][] metadataDrives = [
 //    .Replace(".srt", ".chs&eng.srt")
 //    ));
 //Video.MoveSubtitlesForEpisodes(
-//    @"D:\User\Downloads\TV\Sex & Violence.2013.性与暴力[7.3-159][NA][1080x]",
-//    @"N:\Files\Library\TV Controversial.非主流电视剧\Sex & Violence.2013.性与暴力[7.3-159][NA][720p]",
+//    @"",
+//    @"",
 //    //".mkv",
 //    overwrite: false);
 
 //Video.CreateTVEpisodeMetadata(@"H:\Downloads7\New folder (6)\阅读\_1", f => PathHelper.GetFileNameWithoutExtension(f).Split(".").Last());
 
-//Video.MoveTopTVEpisodes(settings, @"", @"\\beyond-r\j\Files\Library\TV.Subtitles", isDryRun: false);
+//Video.MoveTopTVEpisodes(settings, @"", settings.TVSubtitleBackupDirectory, isDryRun: false);
 //Video.FormatTV(
 //    @"E:\Files\TV",
 //    @"",
@@ -1156,7 +1156,7 @@ static void RenameFilesWithDuplicateTitle(
 
 //ConcurrentDictionary<string, PreferredFileMetadata[]> allFileMetadata = await JsonHelper
 //    .DeserializeFromFileAsync<ConcurrentDictionary<string, PreferredFileMetadata[]>>(settings.MoviePreferredFileMetadata, new(), cancellationTokenSource.Token);
-//ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata?>> existingMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationTokenSource.Token);
+//ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> existingMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationTokenSource.Token);
 
 //Dictionary<string, (string ImdbId, PreferredFileMetadata metadata)[]> allTitleToImdbIds = allFileMetadata.Values
 //    .SelectMany(group => group)
@@ -1606,7 +1606,7 @@ const string Subdirectory = "HD.Encode.Crop";
 // ILookup<string, (string, string)> top = (await File.ReadAllLinesAsync(settings.TopDatabase, cancellationTokenSource.Token))
 //             .AsParallel()
 //             .Where(line => (line.ContainsIgnoreCase("|movies_x265_4k_hdr|"))
-//                 && (!line.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}")))
+//                 && line.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") && line.ContainsIgnoreCase(".DDP"))
 //             .Select(line => line.Split('|'))
 //             .Do(cells => Debug.Assert(string.IsNullOrEmpty(cells[^2]) || cells[^2].IsImdbId()))
 //             //.Do(cells => Debug.Assert(cells[1].ContainsIgnoreCase($"-{settings.TopEnglishKeyword}") || cells[1].ContainsIgnoreCase($"-{settings.TopForeignKeyword}")))
