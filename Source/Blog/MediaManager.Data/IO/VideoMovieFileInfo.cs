@@ -40,7 +40,28 @@ internal record VideoMovieFileInfo(
             value = PathHelper.GetFileName(value);
         }
 
-        nameRegex ??= new Regex(@$"^(.+?)\.([0-9\-]{{4}})(\.3D(\.HSBS)?)?(\.4K)?((\.Part[1-9])?(\.[A-Z\.\-]+?)?(\.Part[\.]{{0,1}}[1-9]|\.PART[\.]{{0,1}}[1-9])?|\.RE\-EDIT|\.BLURAY\.10BIT|\.88F|\.S[0-9]{{2}}E[0-9]{{2}}\.[a-zA-Z\.]+?)?(\.2160p|\.1080p|\.720p|\.540p|\.480p|\.360p)?(\.BOOTLEG|\.US|\.RESTORED)?(\.WEBRip|\.BluRay|\.DVDRip|\.HDRip|\.HDTV|\.VHSRip|\.LDRip|\.DVD|\.LDVDRip|\.LDDVDRip|\.HQDVDRip|\.TV|\.VCD|\.VCDRip|\.TS)?(\.H264|\.x264|\.x265|\.x265\.10bit|\.DivX|\.Xvid)?(\.AAC|\.AAC5\.1|\.AC3|\.DD|\.DDP|\.DDP5\.1|\.DTS|.DTS\-HD\.MA\.5\.1|\.MP3|\.TrueHD\.7\.1\.Atmos)?(\{Video.VersionSeparator}({Settings.TopEnglishKeyword}|{Settings.TopForeignKeyword}|\[{Settings.PreferredNewKeyword}\.(AG|AM|LT|ME|MX)\]|[a-zA-Z0-9@]+?))?(\.[2-9]Audio)?(\.watermark)?(\.{FfmpegHelper.Executable}|\.nvenc|\.handbrake)?(\.bul|\.chs|\.cht|\.cht&eng|\.chs&eng|\.dut|\.eng|\.eng&cht|\.fre|\.heb|\.jpn|\.kor|\.pol|\.por|\.rus|\.spa|\.swe)?(\.cd[0-9]{{1,2}})?(\.mp4|\.avi|\.iso|\.m2ts|\.mkv|\.mpg|\.rmvb|\.wmv|\.m4v|\.ts|\.m2ts)?$", isCaseIgnored ? RegexOptions.IgnoreCase : RegexOptions.None);
+        nameRegex ??= new Regex(
+            string.Join(
+                string.Empty,
+                [
+                    @$"^",
+                    @$"(.+?)\.([0-9\-]{{4}})",
+                    @$"(\.3D(\.HSBS)?)?(\.4K)?((\.Part[1-9])?(\.[A-Z\.\-]+?)?(\.Part[\.]{{0,1}}[1-9]|\.PART[\.]{{0,1}}[1-9])?|\.RE\-EDIT|\.BLURAY\.10BIT|\.88F|\.S[0-9]{{2}}E[0-9]{{2}}\.[a-zA-Z\.]+?)?",
+                    @$"(\.2160p|\.1080p|\.720p|\.540p|\.480p|\.360p)?",
+                    @$"(\.BOOTLEG|\.GBR|\.RESTORED|\.US)?",
+                    @$"(\.BluRay|\.DVD|\.DVDRip|\.HDRip|\.HDTV|\.HQDVDRip|\.LDRip|\.LDDVDRip|\.LDVDRip|\.TV|\.TS|\.UHD\.BluRay|\.UHD\.WEBRip|\.VCD|\.VCDRip|\.VHSRip|\.WEBRip)?",
+                    @$"(\.DivX|\.H264|\.x264|\.x265|\.x265\.10bit|\.x265\.10bit\.HDR|\.Xvid)?",
+                    @$"(\.AAC|\.AAC5\.1|\.AC3|\.DD|\.DDP|\.DDP1\.0|\.DDP2\.0|\.DDP5\.1|\.DDP5\.1\.Atmos|\.DTS|\.DTS\-HD\.MA\.2\.0|\.DTS\-HD\.MA\.5\.0|\.DTS\-HD\.MA\.5\.1|\.DTS\-HD\.MA\.6\.1|\.DTS\-HD\.MA\.7\.1|\.DTS\-HR\.5\.1|\.DTS\-X\.7\.1|\.DTS\.5\.1|\.LPCM\.1\.0|\.LPCM\.2\.0|\.MP3|\.TrueHD\.2\.0|\.TrueHD\.5\.1|\.TrueHD\.7\.1|\.TrueHD\.7\.1\.Atmos)?",
+                    @$"(\{Video.VersionSeparator}({Settings.TopEnglishKeyword}|{Settings.TopForeignKeyword}|{Settings.PreferredOldKeyword}|\[{Settings.PreferredNewKeyword}\.(AG|AM|LT|ME|MX)\]|[a-zA-Z0-9@]+?))?",
+                    @$"(\.[2-9]Audio)?",
+                    @$"(\.watermark)?",
+                    @$"(\.{FfmpegHelper.Executable}|\.nvenc|\.handbrake)?",
+                    @$"(\.bul|\.chs|\.cht|\.cht&eng|\.chs&eng|\.dut|\.eng|\.eng&cht|\.fre|\.heb|\.jpn|\.kor|\.pol|\.por|\.rus|\.spa|\.swe)?",
+                    @$"(\.cd[0-9]{{1,2}})?",
+                    @$"(\.avi|\.iso|\.m2ts|\.m4v|\.mkv|\.mp4|\.mpg|\.rmvb|\.wmv|\.ts)?",
+                    @$"$",
+                ]),
+            isCaseIgnored ? RegexOptions.IgnoreCase : RegexOptions.None);
         Match match = nameRegex.Match(value);
         if (!match.Success)
         {

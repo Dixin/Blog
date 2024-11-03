@@ -37,8 +37,27 @@ internal record VideoEpisodeFileInfo(
         {
             value = PathHelper.GetFileName(value);
         }
-
-        nameRegex ??= new Regex(@$"^(.+?)(\.([0-9]{{4}}))?\.S([0-9]{{2,4}})E([0-9]{{2,3}})(E([0-9]{{2,3}}))?(\.[A-Z\.\-]+?)?(\.HDR)?(\.2160p|\.1080p|\.720p|\.540p|\.480p|\.360p)?(\.WEBRip|\.BluRay|\.DVDRip|\.HDRip|\.HDTV|\.VHSRip|\.LDRip|\.DVD|\.LDVDRip|\.LDDVDRip|\.HQDVDRip|\.TV|\.VCD|\.VCDRip)?(\.H264|\.x264|\.x265|\.DivX|\.Xvid)?(\.AAC|\.AC3|\.MP3|\.AAC5\.1|\.DTS|\.DDP)?(\{Video.VersionSeparator}({Settings.TopEnglishKeyword}|{Settings.TopForeignKeyword}|\[{Settings.PreferredNewKeyword}\.(MX|AM|AG|LT)\]|[a-zA-Z0-9@]+?))?(\.[2-9]Audio)?(\.watermark)?(\.{FfmpegHelper.Executable}|\.nvenc|\.handbrake)?(\.bul|\.chs|\.cht|\.cht&eng|\.chs&eng|\.dut|\.eng|\.fre|\.heb|\.jap|\.kor|\.pol|\.dut|\.spa|\.swe|\.por)?(\.(.+))?(\.mp4|\.avi|\.rmvb|\.mkv|\.ts)$");
+        
+        nameRegex ??= new Regex(string.Join(
+            string.Empty,
+            [
+                @$"^",
+                @$"(.+?)(\.([0-9]{{4}}))?",
+                @$"\.S([0-9]{{2,4}})E([0-9]{{2,3}})(E([0-9]{{2,3}}))?",
+                @$"(\.[A-Z\.\-]+?)?(\.HDR)?",
+                @$"(\.2160p|\.1080p|\.720p|\.540p|\.480p|\.360p)?",
+                @$"(\.BluRay|\.DVD|\.DVDRip|\.HDRip|\.HDTV|\.HQDVDRip|\.LDRip|\.LDDVDRip|\.LDVDRip|\.TV|\.TS|\.UHD\.BluRay|\.UHD\.WEBRip|\.VCD|\.VCDRip|\.VHSRip|\.WEBRip)?",
+                @$"(\.DivX|\.H264|\.x264|\.x265|\.x265\.10bit|\.x265\.10bit\.HDR|\.Xvid)?",
+                @$"(\.AAC|\.AAC5\.1|\.AC3|\.DD|\.DDP|\.DDP1\.0|\.DDP2\.0|\.DDP5\.1|\.DDP5\.1\.Atmos|\.DTS|\.DTS\-HD\.MA\.2\.0|\.DTS\-HD\.MA\.5\.0|\.DTS\-HD\.MA\.5\.1|\.DTS\-HD\.MA\.6\.1|\.DTS\-HD\.MA\.7\.1|\.DTS\-HR\.5\.1|\.DTS\-X\.7\.1|\.DTS\.5\.1|\.LPCM\.1\.0|\.LPCM\.2\.0|\.MP3|\.TrueHD\.2\.0|\.TrueHD\.5\.1|\.TrueHD\.7\.1|\.TrueHD\.7\.1\.Atmos)?",
+                @$"(\{Video.VersionSeparator}({Settings.TopEnglishKeyword}|{Settings.TopForeignKeyword}|{Settings.PreferredOldKeyword}|\[{Settings.PreferredNewKeyword}\.(AG|AM|LT|ME|MX)\]|[a-zA-Z0-9@]+?))?",
+                @$"(\.[2-9]Audio)?",
+                @$"(\.watermark)?",
+                @$"(\.{FfmpegHelper.Executable}|\.nvenc|\.handbrake)?",
+                @$"(\.bul|\.chs|\.cht|\.cht&eng|\.chs&eng|\.dut|\.eng|\.eng&cht|\.fre|\.heb|\.jpn|\.kor|\.pol|\.por|\.rus|\.spa|\.swe)?",
+                @$"(\.(.+))?",
+                @$"(\.avi|\.mkv|\.mp4|\.rmvb|\.ts)",
+                @$"$"
+            ]));
         Match match = nameRegex.Match(value);
         if (!match.Success)
         {
