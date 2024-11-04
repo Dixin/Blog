@@ -275,7 +275,7 @@ public static class FfmpegHelper
                 string[] messages = output.Concat(errors).ToArray();
                 (string, string, string, string)[] timestampCrops = messages
                     .Where(message => message.IsNotNullOrWhiteSpace())
-                    .Select(message => Regex.Match(message!, @" crop=([0-9]+):([0-9]+):([0-9]+):([0-9]+)$"))
+                    .Select(message => Regex.Match(message, @" crop=([0-9]+):([0-9]+):([0-9]+):([0-9]+)$"))
                     .Where(match => match.Success)
                     .Select(match => (match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Value, match.Groups[4].Value))
                     .ToArray();
@@ -353,7 +353,7 @@ public static class FfmpegHelper
     }
 
     internal static async Task EncodeAllAsync(
-        string inputDirectory, string outputDirectory = "", VideoCropMode videoCropMode = VideoCropMode.NoCrop, bool overwrite = false, bool isTV = false,
+        string inputDirectory, Func<string, VideoCropMode>? videoCropMode = null, string outputDirectory = "", bool overwrite = false, bool isTV = false,
         Func<string, bool>? inputPredicate = null, Func<string, string>? getOutput = null,
         int? maxDegreeOfParallelism = null, int? cropTimestampCount = DefaultTimestampCount, bool sample = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
@@ -401,7 +401,7 @@ public static class FfmpegHelper
                     {
                         string output = getOutput(input);
                         outputVideos.Add(output);
-                        await EncodeAsync(input, output, overwrite: overwrite, videoCropMode: videoCropMode, cropTimestampCount: cropTimestampCount, sample: sample, log: log, cancellationToken: token);
+                        await EncodeAsync(input, output, overwrite: overwrite, videoCropMode: videoCropMode?.Invoke(input) ?? VideoCropMode.NoCrop, cropTimestampCount: cropTimestampCount, sample: sample, log: log, cancellationToken: token);
                     }
                     catch (Exception exception) when (exception.IsNotCritical())
                     {
