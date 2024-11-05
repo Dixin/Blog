@@ -84,6 +84,8 @@ public interface ISettings
 
     Dictionary<string, string[]> MovieRegions { get; init; }
 
+    Dictionary<string, string> MovieRegionDirectories { get; init; }
+
     string[] ImdbKeywords { get; init; }
 
     string[] AllImdbKeywords { get; init; }

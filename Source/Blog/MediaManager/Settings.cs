@@ -120,6 +120,8 @@ public partial record Settings(
 
     public Dictionary<string, string[]> MovieRegions { get; init; } = new();
 
+    public Dictionary<string, string> MovieRegionDirectories { get; init; } = new();
+
     public string[] ImdbKeywords { get; init; } = [];
 
     public string[] AllImdbKeywords { get; init; } = [];

@@ -1365,59 +1365,79 @@ internal static partial class Video
             .ForEach(metadata => log($"{PathHelper.GetDirectoryName(metadata.File)}"));
     }
 
-    internal static void PrintMovieRegionsWithErrors(Dictionary<string, string[]> allLocalRegions, Action<string>? log = null, params (string Directory, int Level)[] directories)
+    internal static void PrintMovieRegionsWithErrors(ISettings settings, Action<string>? log = null, params (string Directory, int Level)[] directories)
     {
         log ??= Logger.WriteLine;
         directories
             .SelectMany(directory => EnumerateDirectories(directory.Directory, directory.Level - 1))
-            .OrderBy(localRegionDirectory => localRegionDirectory)
-            .ForEach(localRegionDirectory =>
+            .OrderBy(subDirectory => subDirectory)
+            .ForEach(subDirectory =>
             {
-                string localRegionText = PathHelper.GetFileNameWithoutExtension(localRegionDirectory);
-                if (localRegionText.ContainsIgnoreCase("Delete") || localRegionText.ContainsIgnoreCase("Temp"))
+                string subDirectoryName = PathHelper.GetFileName(subDirectory);
+                if (subDirectoryName.ContainsIgnoreCase("Delete") || subDirectoryName.ContainsIgnoreCase("Temp") || subDirectoryName.ContainsIgnoreCase("Test"))
                 {
                     return;
                 }
 
-                if (!allLocalRegions.TryGetValue(localRegionText, out string[]? currentLocalRegion))
+                if (!settings.MovieRegions.TryGetValue(subDirectoryName, out string[]? allowed))
                 {
-                    int lastIndex = localRegionText.LastIndexOfOrdinal(" ");
-                    if (lastIndex >= 0)
-                    {
-                        localRegionText = localRegionText[..lastIndex];
-                        if (allLocalRegions.TryGetValue(localRegionText, out currentLocalRegion))
-                        {
-                        }
-                        else
-                        {
-                            currentLocalRegion = [localRegionText];
-                        }
-                    }
-                    else
-                    {
-                        currentLocalRegion = [localRegionText];
-                    }
+                    log($"!Unkown directory {subDirectory}");
+                    return;
                 }
 
-                log($"==={localRegionDirectory}==={string.Join(", ", currentLocalRegion)}");
-                string[] currentRegions = currentLocalRegion.Where(region => !region.EndsWithOrdinal(NotExistingFlag)).ToArray();
-                string[] ignorePrefixes = currentLocalRegion.Where(prefix => prefix.EndsWithOrdinal(NotExistingFlag)).Select(prefix => prefix.TrimEnd(NotExistingFlag.Single())).ToArray();
+                log($"==={subDirectory}==={string.Join(", ", allowed)}");
+                List<string> allowedRegions = [];
+                List<string> allowedGenres = [];
+                List<string> allowedLanguages = [];
+                List<string> ignoredFranchises = [];
+                allowed.ForEach(item =>
+                {
+                    if (item.StartsWithIgnoreCase("Genre:"))
+                    {
+                        allowedGenres.Add(item.Split(":").Last());
+                        return;
+                    }
+
+                    if (item.StartsWithIgnoreCase("Language:"))
+                    {
+                        allowedLanguages.Add(item.Split(":").Last());
+                        return;
+                    }
+
+                    if (item.StartsWithIgnoreCase("Franchise:"))
+                    {
+                        ignoredFranchises.Add(item.Split(":").Last());
+                        return;
+                    }
+
+                    allowedRegions.Add(item);
+                });
+
                 Directory
-                    .GetDirectories(localRegionDirectory)
+                    .GetDirectories(subDirectory)
                     .ForEach(movie =>
                     {
                         string movieName = PathHelper.GetFileName(movie);
-                        if (ignorePrefixes.Any(movieName.StartsWithOrdinal))
+                        if (ignoredFranchises.Any(movieName.StartsWithIgnoreCase))
                         {
                             return;
                         }
 
                         if (ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata))
                         {
-                            if (!imdbMetadata.Regions.Any(imdbRegion => currentRegions.Any(localRegion => imdbRegion.EqualsOrdinal(localRegion) || $"{imdbRegion}n".EqualsOrdinal(localRegion))))
+                            if (imdbMetadata.Regions.Any() && imdbMetadata.Regions.Intersect(allowedRegions).IsEmpty()
+                                && imdbMetadata.Languages.Intersect(allowedLanguages).IsEmpty())
                             {
                                 log(movie);
-                                log($"{string.Join(", ", currentRegions)}==={string.Join(", ", imdbMetadata.Regions)}");
+                                log($"{string.Join(", ", allowedRegions)}==={string.Join(", ", imdbMetadata.Regions)}");
+                                log(string.Empty);
+                                return;
+                            }
+
+                            if (allowedGenres.Any() && imdbMetadata.Genres.Intersect(allowedGenres).IsEmpty())
+                            {
+                                log(movie);
+                                log($"{string.Join(", ", allowedGenres)}==={string.Join(", ", imdbMetadata.Genres)}");
                                 log(string.Empty);
                             }
                         }
@@ -1483,6 +1503,7 @@ internal static partial class Video
             {
                 Dictionary<string, (string File, string XmlImdbId, string XmlTitle)> xmlDocuments = Directory
                     .EnumerateFiles(movie.Directory, XmlMetadataSearchPattern, SearchOption.TopDirectoryOnly)
+                    .Where(file => !PathHelper.GetFileNameWithoutExtension(file).EqualsIgnoreCase("movie"))
                     .Select(file => (Metadata: XDocument.Load(file), file))
                     .Select(xml => (
                         xml.file,
@@ -1511,9 +1532,9 @@ internal static partial class Video
                     return;
                 }
 
-                VideoMovieFileInfo[] x265Videos = videos.Where(video => video.GetEncoderType() is EncoderType.TopX265).ToArray();
-                VideoMovieFileInfo[] h264Videos = videos.Where(video => video.GetEncoderType() is EncoderType.TopH264 && video.GetDefinitionType() == DefinitionType.P1080).ToArray();
-                VideoMovieFileInfo[] preferredVideos = videos.Where(video => video.GetEncoderType() is EncoderType.PreferredH264 or EncoderType.PreferredX265).ToArray();
+                VideoMovieFileInfo[] x265Videos = videos.Where(video => video.GetEncoderType() is EncoderType.TopX265 or EncoderType.TopX265BluRay).ToArray();
+                VideoMovieFileInfo[] h264Videos = videos.Where(video => (video.GetEncoderType() is EncoderType.TopH264 or EncoderType.TopH264BluRay) && video.GetDefinitionType() == DefinitionType.P1080).ToArray();
+                VideoMovieFileInfo[] preferredVideos = videos.Where(video => video.GetEncoderType() is EncoderType.PreferredH264 or EncoderType.PreferredH264BluRay or EncoderType.PreferredX265 or EncoderType.PreferredX265BluRay).ToArray();
 
                 if (x265Videos.Any())
                 {

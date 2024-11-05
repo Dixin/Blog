@@ -79,12 +79,15 @@ public static class DirectoryHelper
     public static void AddPostfix(string directory, string postfix) =>
         Directory.Move(directory, PathHelper.AddDirectoryPostfix(directory, postfix));
 
-    public static void RenameFileExtensionToLowerCase(string directory) =>
-        Directory
-            .GetFiles(directory, "*", SearchOption.AllDirectories)
-            .Where(file => Regex.IsMatch(Path.GetExtension(file), @"[A-Z]+"))
-            .ToArray()
-            .ForEach(file => File.Move(file, PathHelper.ReplaceFileName(file, PathHelper.GetExtension(file).ToLowerInvariant())));
+    public static void RenameFileExtensionToLowerCase(params string[][] drives) =>
+        drives
+            .AsParallel()
+            .ForAll(drive => drive
+                .ForEach(directory => Directory
+                    .EnumerateFiles(directory, "*", SearchOption.AllDirectories)
+                    .Where(file => Path.GetExtension(file)?.Any(@char => @char >= 'A' && @char <= 'Z') ?? false)
+                    .ToArray()
+                    .ForEach(file => FileHelper.ReplaceFileName(file, $"{PathHelper.GetFileNameWithoutExtension(file)}{PathHelper.GetExtension(file).ToLowerInvariant()}"))));
 
     public static void MoveFiles(string sourceDirectory, string destinationDirectory, string searchPattern = "*", SearchOption searchOption = SearchOption.AllDirectories) =>
         Directory

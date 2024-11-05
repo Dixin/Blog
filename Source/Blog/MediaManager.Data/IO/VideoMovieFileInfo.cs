@@ -59,7 +59,7 @@ internal record VideoMovieFileInfo(
                     @$"(\.bul|\.chs|\.cht|\.cht&eng|\.chs&eng|\.dut|\.eng|\.eng&cht|\.fre|\.heb|\.jpn|\.kor|\.pol|\.por|\.rus|\.spa|\.swe)?",
                     @$"(\.cd[0-9]{{1,2}})?",
                     @$"(\.avi|\.iso|\.m2ts|\.m4v|\.mkv|\.mp4|\.mpg|\.rmvb|\.wmv|\.ts)?",
-                    @$"$",
+                    @$"$"
                 ]),
             isCaseIgnored ? RegexOptions.IgnoreCase : RegexOptions.None);
         Match match = nameRegex.Match(value);

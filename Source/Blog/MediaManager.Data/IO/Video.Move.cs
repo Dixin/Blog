@@ -1241,4 +1241,66 @@ internal static partial class Video
                 log(newMovie);
             });
     }
+
+    static void MoveDirectoriesByRegions(ISettings settings, string directory, bool isDryRun = false, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+
+        ILookup<string, (string[] Genres, string SubDirectory)> regionWithGenres = settings.MovieRegionDirectories.Where(pair => pair.Key.ContainsOrdinal("."))
+            .Select(pair =>
+            {
+                string[] keys = pair.Key.Split(".");
+                string region = keys.First();
+                string[] genres = keys.Last().Split("|");
+                return (region, genres, pair.Value);
+            })
+            .ToLookup(pair => pair.region, pair => (pair.genres, pair.Value), StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, string> regionWithoutGenres = settings.MovieRegionDirectories.Where(pair => !pair.Key.ContainsOrdinal("."))
+            .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
+        EnumerateDirectories(directory)
+            .ToArray()
+            .ForEach(movie =>
+            {
+                string metadataFile = Directory.EnumerateFiles(movie, ImdbMetadataSearchPattern).Single();
+                if (ImdbMetadata.TryGet(metadataFile, out _, out _, out string[]? regions, out string[]? languages, out string[]? genres))
+                {
+                    string region = regions.First();
+                    if (regionWithGenres.Contains(region))
+                    {
+                        (string[] Genres, string SubDirectory)[] matches = regionWithGenres[region]
+                            .Where(group => group.Genres.Intersect(genres, StringComparer.OrdinalIgnoreCase).Any())
+                            .ToArray();
+                        if (matches.Any())
+                        {
+                            string subDirectory = Path.Combine(directory, matches.First().SubDirectory);
+                            log(movie);
+                            log(subDirectory);
+                            if (!isDryRun)
+                            {
+                                DirectoryHelper.MoveToDirectory(movie, subDirectory);
+                            }
+
+                            log(string.Empty);
+                            return;
+                        }
+                    }
+                    
+                    if (regionWithoutGenres.TryGetValue(region, out string? value))
+                    {
+                        string subDirectory = Path.Combine(settings.MovieMainstreamWithoutSubtitle, value);
+                        log(movie);
+                        log(subDirectory);
+                        if (!isDryRun)
+                        {
+                            DirectoryHelper.MoveToDirectory(movie, subDirectory);
+                        }
+
+                        log(string.Empty);
+                        return;
+                    }
+
+                    log($"!{movie}");
+                }
+            });
+    }
 }
