@@ -388,16 +388,6 @@ internal static partial class Video
                             }
                         }
 
-                        if (postfix is "jpn")
-                        {
-                            return "jap";
-                        }
-
-                        if (postfix is "ram")
-                        {
-                            return "rom";
-                        }
-
                         if (postfix is "deu")
                         {
                             return "ger";

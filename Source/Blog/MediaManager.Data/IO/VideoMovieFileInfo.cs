@@ -50,7 +50,7 @@ internal record VideoMovieFileInfo(
                     @$"(\.2160p|\.1080p|\.720p|\.540p|\.480p|\.360p)?",
                     @$"(\.BOOTLEG|\.GBR|\.RESTORED|\.US)?",
                     @$"(\.BluRay|\.DVD|\.DVDRip|\.HDRip|\.HDTV|\.HQDVDRip|\.LDRip|\.LDDVDRip|\.LDVDRip|\.TV|\.TS|\.UHD\.BluRay|\.UHD\.WEBRip|\.VCD|\.VCDRip|\.VHSRip|\.WEBRip)?",
-                    @$"(\.DivX|\.H264|\.x264|\.x265|\.x265\.10bit|\.x265\.10bit\.HDR|\.Xvid)?",
+                    @$"(\.AV1|\.DivX|\.H264|\.x264|\.x265|\.x265\.10bit|\.x265\.10bit\.HDR|\.Xvid)?",
                     @$"(\.AAC|\.AAC5\.1|\.AC3|\.DD|\.DDP|\.DDP1\.0|\.DDP2\.0|\.DDP5\.1|\.DDP5\.1\.Atmos|\.DTS|\.DTS\-HD\.MA\.2\.0|\.DTS\-HD\.MA\.5\.0|\.DTS\-HD\.MA\.5\.1|\.DTS\-HD\.MA\.6\.1|\.DTS\-HD\.MA\.7\.1|\.DTS\-HR\.5\.1|\.DTS\-X\.7\.1|\.DTS\.5\.1|\.LPCM\.1\.0|\.LPCM\.2\.0|\.MP3|\.TrueHD\.2\.0|\.TrueHD\.5\.1|\.TrueHD\.7\.1|\.TrueHD\.7\.1\.Atmos)?",
                     @$"(\{Video.VersionSeparator}({Settings.TopEnglishKeyword}|{Settings.TopForeignKeyword}|{Settings.PreferredOldKeyword}|\[{Settings.PreferredNewKeyword}\.(AG|AM|LT|ME|MX)\]|[a-zA-Z0-9@]+?))?",
                     @$"(\.[2-9]Audio)?",

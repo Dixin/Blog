@@ -16,7 +16,7 @@ mklink /D "D:\Files\Library\Movies Controversial.非主流电影" "\\box-l\H\Fil
 mklink /D "D:\Files\Library\Movies Controversial.非主流电影[未抓取字幕]" "\\box-l\H\Files\Library\Movies Controversial.非主流电影[未抓取字幕]"
 mklink /D "D:\Files\Library\Movies Musical.音乐" "\\box-l\H\Files\Library\Movies Musical.音乐"
 mklink /D "D:\Files\Library\Movies Disk.电影原盘" "\\box-l\H\Files\Library\Movies Disk.电影原盘"
-mklink /D "D:\Files\Library\TV HDR.高动态范围电视剧" "\\box-l\H\Files\Library\TV HDR.高动态范围电视剧"
+mklink /D "D:\Files\Library\TV 4K HDR.高动态范围电视剧" "\\box-l\H\Files\Library\TV 4K HDR.高动态范围电视剧"
 mklink /D "D:\Files\Library\TV Tutorial.教程" "\\box-l\H\Files\Library\TV Tutorial.教程"
 
 mklink /D "D:\Files\Library\Movies Mainstream Temp1.主流电影1" "\\box-l\G\Files\Library\Movies Mainstream Temp1.主流电影1"
