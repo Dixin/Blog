@@ -504,7 +504,7 @@ string[][] metadataDrives = [
 //        string postfix = $"{Video.VersionSeparator}{settings.TopEnglishKeyword}";
 //        //Debug.Assert(!f.IsVideo() || PathHelper.GetFileNameWithoutExtension(f).EndsWithIgnoreCase(postfix));
 //        string name = PathHelper.GetFileNameWithoutExtension(f);
-//        return name.EndsWithOrdinal(postfix) || name.EndsWithOrdinal($"{postfix}-thumb") || Regex.IsMatch(name, $@"{postfix.Replace(".", @"\.").Replace("-", @"\-")}\.[a-z]{{3}}(&[a-z]{{3}})?$")
+//        return name.EndsWithOrdinal(postfix) || name.EndsWithOrdinal($"{postfix}-thumb") || Regex.IsMatch(name, $@"{postfix.Replace(".", @"\.").Replace("-", @"\-")}\.[a-z]{{3}}(&[a-z]{{3}})?(\-[0-9]{1,2})?$")
 //            ? f.Replace(postfix, $"{postfix}.{t}")
 //            : f;
 //        //return Regex.Replace(f, @"(S[0-9]{2}E[0-9]{2})", $"$1.{t}");
@@ -909,7 +909,6 @@ static void RenameFilesWithDuplicateTitle(
 //    f
 //        .Replace(".chi-3.", ".chs.")
 //        .Replace(".chi-4.", ".cht.")
-//        .Replace(".jpn-5.", ".jap.")
 //        .Replace("红楼梦.", "A Dream in Red Mansions.S01E")
 //);
 
@@ -1585,7 +1584,6 @@ const string Subdirectory = "HD.Encode.Crop";
 //    inputPredicate: input => PathHelper.GetFileNameWithoutExtension(input).ContainsIgnoreCase(".ffmpeg") || input.ContainsIgnoreCase("Featurettes"),
 //    cropTimestampCount: 7, maxDegreeOfParallelism: 3, sample: false, cancellationToken: cancellationTokenSource.Token);
 
-//Video.RenameFiles(@"E:\Encode\Balthazar", (f, i) => f.Replace(".HDTV.1080p.x264.AAC.BGAUDiO-4PLAY.ffmpeg", ".RUSSIAN.DUBBED.1080p.HDTV.H264.AAC-BGAUDiO@4PLAY.watermark.ffmpeg"));
 //Video.PrintVideosWithErrors(@"E:\Files\New folder (2)\SD", searchOption: SearchOption.AllDirectories);
 
 // Video.EnumerateDirectories(settings.MovieTemp42)
@@ -1603,15 +1601,21 @@ const string Subdirectory = "HD.Encode.Crop";
 //         FileHelper.ReplaceFileNameWithoutExtension(xmlMetadataFile, videoName);
 //     });
 
-// ILookup<string, (string, string)> top = (await File.ReadAllLinesAsync(settings.TopDatabase, cancellationTokenSource.Token))
+// Dictionary<string, (string, string)[]> top = (await File.ReadAllLinesAsync(settings.TopDatabase, cancellationTokenSource.Token))
 //             .AsParallel()
-//             .Where(line => (line.ContainsIgnoreCase("|movies_x265_4k_hdr|"))
-//                 && line.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") && line.ContainsIgnoreCase(".DDP"))
+//             .Where(line => (line.ContainsIgnoreCase("|movies_x265|"))
+//                 && (line.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") || line.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}")))
 //             .Select(line => line.Split('|'))
 //             .Do(cells => Debug.Assert(string.IsNullOrEmpty(cells[^2]) || cells[^2].IsImdbId()))
 //             //.Do(cells => Debug.Assert(cells[1].ContainsIgnoreCase($"-{settings.TopEnglishKeyword}") || cells[1].ContainsIgnoreCase($"-{settings.TopForeignKeyword}")))
-//             .ToLookup(cells => cells[^2], cells => (cells[1], cells[^3]));
+//             .ToLookup(cells => cells[^2], cells => (cells[1], cells[^3]))
+//             .ToDictionary(group => group.Key, group => group.ToArray());
 
 // HashSet<string> imdbIds = new(Directory.EnumerateFiles(settings.MovieHdr, "*.json", SearchOption.AllDirectories).Select(f => (f.GetImdbId())));
 // top.Where(group => imdbIds.Contains(group.Key))
 //     .ForEach(group => group.Select(item => item.Item1).Prepend(group.Key).Append("").ForEach(log));
+
+// string[] imdbIds = File.ReadAllLines(@"d:\temp\2.txt");
+
+// ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> existingMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationTokenSource.Token);
+// imdbIds.Intersect(existingMetadata.Keys).ForEach(log);
