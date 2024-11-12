@@ -492,7 +492,7 @@ string[][] metadataDrives = [
 //Video.RenameDirectoriesWithMetadata(settings, settings.MovieTemp4, 2);
 //Video.RestoreMetadata(settings.MovieTemp4);
 
-//Video.PrintMovieRegionsWithErrors(settings.MovieRegions, log, settings.MovieControversial, settings.MovieMainstream, settings.MovieMainstreamWithoutSubtitle);
+//Video.PrintMovieRegionsWithErrors(settings, log, [settings.MovieMainstream]);
 
 //Video.RenameEpisodesWithTitle(
 //    @"",
@@ -528,7 +528,7 @@ string[][] metadataDrives = [
 
 //         string video = files.Single(file => file.IsVideo());
 //         string videoName = PathHelper.GetFileNameWithoutExtension(video);
-//         FileHelper.ReplaceFileNameWithoutExtension(xmlMetadataFile, videoName, true);
+//         FileHelper.ReplaceFileNameWithoutExtension(xmlMetadataFile, videoName, true, true);
 //     });
 //await Video.PrintMovieImdbIdErrorsAsync(settings, true, log, cancellationTokenSource.Token, settings.MovieTemp42);
 //await Video.ConvertToUtf8Async(settings.MovieTemp42, true);
@@ -569,6 +569,16 @@ string[][] metadataDrives = [
 //Video.MoveFanArt(settings.MovieTemp42);
 //Video.RestoreMetadata(settings.MovieTemp42);
 //Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp42);
+// Video
+//     .EnumerateDirectories(settings.MovieTemp42)
+//     .ForEach(movie =>
+//     {
+//         string[] files = Directory.GetFiles(movie);
+//         string videoFile = files.Single(f => f.IsVideo());
+//         string metadataFile = Path.Combine(movie, "movie.nfo");
+//         string videoMetadataFile = Path.Combine(movie, $"{PathHelper.GetFileNameWithoutExtension(videoFile)}.nfo");
+//         FileHelper.Copy(videoMetadataFile, metadataFile, true, true);
+//     });
 
 //Directory.GetFiles(@"D:\User\Downloads\New folder", "*", SearchOption.AllDirectories)
 //    .ForEach(f => File.Move(f, f
