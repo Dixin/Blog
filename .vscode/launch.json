@@ -13,7 +13,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/Source/Blog/MediaManager/bin/Debug/net8.0/MediaManager.dll",
+            "program": "${workspaceFolder}/Source/Blog/MediaManager/bin/Debug/net9.0/MediaManager.dll",
             "args": [],
             "cwd": "${workspaceFolder}/Source/Blog/MediaManager",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
