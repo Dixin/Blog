@@ -1590,9 +1590,9 @@ const string Subdirectory = "HD.Encode.Crop";
 ;
 
 //await FfmpegHelper.EncodeAllAsync(
-//    @"\\beyond-r\G\Delete\Balthazar.2018.巴尔塔扎尔[7.6-2.5K][TV14][1080F]\Season 04", Path.Combine(@"E:\Encode", "Balthazar"), VideoCropMode.NoCrop,
-//    inputPredicate: input => PathHelper.GetFileNameWithoutExtension(input).ContainsIgnoreCase(".ffmpeg") || input.ContainsIgnoreCase("Featurettes"),
-//    cropTimestampCount: 7, maxDegreeOfParallelism: 3, sample: false, cancellationToken: cancellationTokenSource.Token);
+//    @"", _=> VideoCropMode.AdaptiveCropWithoutLimit, Path.Combine(@"E:\Encode", "2"),
+//    inputPredicate: input => true,
+//    cropTimestampCount: 7, maxDegreeOfParallelism: 1, sample: true, cancellationToken: cancellationTokenSource.Token);
 
 //Video.PrintVideosWithErrors(@"E:\Files\New folder (2)\SD", searchOption: SearchOption.AllDirectories);
 
