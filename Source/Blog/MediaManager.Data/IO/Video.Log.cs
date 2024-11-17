@@ -29,8 +29,10 @@ internal static partial class Video
     private static void PrintVideosWithErrors(IEnumerable<string> files, bool isNoAudioAllowed = false, Action<string>? is720 = null, Action<string>? is1080 = null, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
+
+        ConcurrentBag<(VideoMetadata Video, (string? Message, Action<string>? Action) Error)> results = [];
+
         files
-            .ToArray()
             .AsParallel()
             .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
             .Select((video, index) =>
@@ -45,7 +47,9 @@ internal static partial class Video
             .NotNull()
             .Select(videoMetadata => (Video: videoMetadata, Error: GetVideoError(videoMetadata, isNoAudioAllowed, is720, is1080)))
             .Where(result => result.Error.Message.IsNotNullOrWhiteSpace())
-            .AsSequential()
+            .ForAll(results.Add);
+
+        results
             .OrderBy(result => result.Video.File)
             .ForEach(result =>
             {
