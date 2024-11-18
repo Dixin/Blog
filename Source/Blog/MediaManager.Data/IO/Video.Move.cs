@@ -131,8 +131,10 @@ internal static partial class Video
                 }
 
                 string title = XDocument.Load(file).Root?.Element("title")?.Value.FilterForFileSystem().Trim() ?? throw new InvalidOperationException($"{file} has no title.");
+                string currentDirectory = PathHelper.GetDirectoryName(file);
+                string relative = Path.GetRelativePath(mediaDirectory, currentDirectory);
                 Directory
-                    .GetFiles(mediaDirectory, $"*{match}*", SearchOption.AllDirectories)
+                    .GetFiles(Path.IsPathRooted(relative) || relative.StartsWithOrdinal($"..{Path.PathSeparator}") ? mediaDirectory : currentDirectory, $"*{match}*", SearchOption.AllDirectories)
                     .ForEach(file =>
                     {
                         log(file);
@@ -914,19 +916,19 @@ internal static partial class Video
                         }
                 }
 
-                subtitles.Except(string.IsNullOrWhiteSpace(englishSubtitle) ? chineseSubtitles : chineseSubtitles.Append(englishSubtitle))
-                    .ForEach(subtitle =>
-                    {
-                        string newSubtitle = Path.Combine(subtitleBackupDirectory, PathHelper.GetFileName(subtitle));
-                        log($"Move {subtitle}");
-                        if (!isDryRun)
-                        {
-                            FileHelper.Move(subtitle, newSubtitle);
-                        }
+                //subtitles.Except(string.IsNullOrWhiteSpace(englishSubtitle) ? chineseSubtitles : chineseSubtitles.Append(englishSubtitle))
+                //    .ForEach(subtitle =>
+                //    {
+                //        string newSubtitle = Path.Combine(subtitleBackupDirectory, PathHelper.GetFileName(subtitle));
+                //        log($"Move {subtitle}");
+                //        if (!isDryRun)
+                //        {
+                //            FileHelper.Move(subtitle, newSubtitle);
+                //        }
 
-                        log(newSubtitle);
-                        log(string.Empty);
-                    });
+                //        log(newSubtitle);
+                //        log(string.Empty);
+                //    });
             });
 
         Directory
