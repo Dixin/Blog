@@ -187,7 +187,7 @@ internal static partial class Video
         {
             string[] files = Directory.GetFiles(movie);
             string? imdbId = files
-                .Where(IsXmlMetadata)
+                .Where(file => file.IsXmlMetadata() && !PathHelper.GetFileName(file).EqualsIgnoreCase(MovieMetadataFile))
                 .Select(xml => XDocument.Load(xml).Root?.Element("imdbid")?.Value ?? string.Empty)
                 .Distinct()
                 .SingleOrDefault(string.Empty);
