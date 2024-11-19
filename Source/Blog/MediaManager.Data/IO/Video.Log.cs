@@ -13,28 +13,41 @@ using OpenQA.Selenium;
 
 internal static partial class Video
 {
-    internal static void PrintVideosWithErrors(string directory, bool isNoAudioAllowed = false, SearchOption searchOption = SearchOption.TopDirectoryOnly, Func<string, bool>? predicate = null, Action<string>? is720 = null, Action<string>? is1080 = null, Action<string>? log = null)
+    internal static void PrintVideosWithErrors(ISettings settings, string directory, bool isNoAudioAllowed = false, bool skipTopPreferred = false, SearchOption searchOption = SearchOption.TopDirectoryOnly, Func<string, bool>? predicate = null, Action<string>? is720 = null, Action<string>? is1080 = null, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         PrintVideosWithErrors(
+            settings,
             Directory
                 .EnumerateFiles(directory, PathHelper.AllSearchPattern, searchOption)
                 .Where(file => predicate?.Invoke(file) ?? file.HasAnyExtension(AllVideoExtensions.Except([DiskImageExtension]))),
             isNoAudioAllowed,
+            skipTopPreferred,
             is720,
             is1080,
             log);
     }
 
-    private static void PrintVideosWithErrors(IEnumerable<string> files, bool isNoAudioAllowed = false, Action<string>? is720 = null, Action<string>? is1080 = null, Action<string>? log = null)
+    private static void PrintVideosWithErrors(ISettings settings, IEnumerable<string> files, bool isNoAudioAllowed = false, bool skipTopPreferred = false, Action<string>? is720 = null, Action<string>? is1080 = null, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
-        ConcurrentBag<(VideoMetadata Video, (string? Message, Action<string>? Action) Error)> results = [];
+        ConcurrentBag<(string Video, (string? Message, Action<string>? Action) Error)> results = [];
 
-        files
+        ParallelQuery<string> parallelFiles = files
             .AsParallel()
-            .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
+            .WithDegreeOfParallelism(IOMaxDegreeOfParallelism);
+        if(skipTopPreferred)
+        {
+            parallelFiles = parallelFiles
+                .Where(video =>
+                {
+                    string name = PathHelper.GetFileNameWithoutExtension(video);
+                    return !name.ContainsIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") && !name.ContainsIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}") && !name.ContainsIgnoreCase(settings.PreferredNewKeyword) && !name.ContainsIgnoreCase(settings.PreferredOldKeyword);
+                });
+        }
+
+        parallelFiles
             .Select((video, index) =>
             {
                 if (!TryReadVideoMetadata(video, out VideoMetadata? videoMetadata, log: message => log($"{index} {message}")))
@@ -42,19 +55,24 @@ internal static partial class Video
                     log($"!Failed {video}");
                 }
 
-                return videoMetadata;
+                return (video, videoMetadata);
             })
-            .NotNull()
-            .Select(videoMetadata => (Video: videoMetadata, Error: GetVideoError(videoMetadata, isNoAudioAllowed, is720, is1080)))
+            .Select(videoMetadata => (
+                Video: videoMetadata.video,
+                Error: videoMetadata.videoMetadata is null ? (null, null) : GetVideoError(videoMetadata.videoMetadata, isNoAudioAllowed, is720, is1080)))
             .Where(result => result.Error.Message.IsNotNullOrWhiteSpace())
-            .ForAll(results.Add);
+            .ForAll(result =>
+            {
+                results.Add(result);
+                File.AppendAllLines(@"d:\temp\errors.txt", [result.Video, result.Error.Message ?? string.Empty, string.Empty]);
+            });
 
         results
-            .OrderBy(result => result.Video.File)
+            .OrderBy(result => result.Video)
             .ForEach(result =>
             {
-                log(result.Error.Message ?? string.Empty);
-                result.Error.Action?.Invoke(result.Video.File);
+                log(result.Error.Message ?? result.Video);
+                result.Error.Action?.Invoke(result.Video);
             });
     }
 
@@ -601,7 +619,7 @@ internal static partial class Video
 
         if (isLoadingVideo)
         {
-            PrintVideosWithErrors(allVideos!, isNoAudioAllowed, log);
+            PrintVideosWithErrors(settings, allVideos!, isNoAudioAllowed, false, log);
         }
     }
 
