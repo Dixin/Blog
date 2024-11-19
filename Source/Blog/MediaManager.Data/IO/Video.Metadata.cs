@@ -663,10 +663,9 @@ internal static partial class Video
                     {
                         string[] metadataFiles = Directory
                             .EnumerateFiles(movie, XmlMetadataSearchPattern)
-                            .Where(file => !PathHelper.GetFileNameWithoutExtension(file).EqualsIgnoreCase("movie"))
                             .ToArray();
-                        string backupMetadataFile = metadataFiles.First(file => file.EndsWithIgnoreCase($"{Delimiter}{DefaultBackupFlag}{XmlMetadataExtension}"));
-                        string metadataFile = metadataFiles.First(file => !file.EndsWithIgnoreCase($"{Delimiter}{DefaultBackupFlag}{XmlMetadataExtension}"));
+                        string backupMetadataFile = metadataFiles.Single(file => PathHelper.GetFileName(file).EqualsIgnoreCase($"movie{Delimiter}{DefaultBackupFlag}{XmlMetadataExtension}"));
+                        string metadataFile = metadataFiles.Single(file => PathHelper.GetFileName(file).EqualsIgnoreCase($"movie{XmlMetadataExtension}"));
                         XDocument metadataDocument = XDocument.Load(metadataFile);
                         string translatedTitle = metadataDocument.Root!.Element("title")!.Value;
                         if (translatedTitle.ContainsChineseCharacter() || Regex.IsMatch(translatedTitle, @"^[0-9]+$"))
@@ -755,7 +754,7 @@ internal static partial class Video
             string year = translatedTitle[^5..^1];
             Debug.Assert(movie.Year.EqualsOrdinal(year));
             Directory.EnumerateFiles(movie.Directory, XmlMetadataSearchPattern)
-                .Where(file => !file.EndsWithIgnoreCase($"{Delimiter}{DefaultBackupFlag}{XmlMetadataExtension}"))
+                .Where(file => PathHelper.GetFileName(file).EqualsIgnoreCase(MovieMetadataFile))
                 .ToArray()
                 .ForEach(metadataFile =>
                 {
@@ -1006,5 +1005,36 @@ internal static partial class Video
                         JsonHelper.SerializeToFile(imdbMetadata, file.MetadataFile);
                     });
             });
+    }
+
+    internal static void CopyMovieMetadata(string directory, bool overwrite = false, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+
+        EnumerateDirectories(directory)
+        .ForEach(movie =>
+        {
+            string[] files = Directory.GetFiles(movie);
+            string xmlMetadataFile = files.SingleOrDefault(file => PathHelper.GetFileName(file).EqualsIgnoreCase(MovieMetadataFile), string.Empty);
+            if (xmlMetadataFile.IsNullOrWhiteSpace())
+            {
+                return;
+            }
+
+            files
+                .Where(file => file.IsVideo())
+                .ForEach(video =>
+                {
+                    string videoName = PathHelper.GetFileNameWithoutExtension(video);
+                    string fileMetadata = PathHelper.ReplaceFileNameWithoutExtension(xmlMetadataFile, videoName);
+                    if (!overwrite && File.Exists(fileMetadata))
+                    {
+                        return;
+                    }
+
+                    FileHelper.Copy(xmlMetadataFile, fileMetadata, overwrite, true);
+                    log(fileMetadata);
+                });
+        });
     }
 }

@@ -515,21 +515,7 @@ string[][] metadataDrives = [
 //    //rename: (f, t) => Regex.Replace(f, @"(\.S[0-9]{2}E[0-9]{2})", $"{"$1".ToUpperInvariant()}.{t}"),
 //    isDryRun: false);
 
-// Video
-//     .EnumerateDirectories(settings.MovieTemp42)
-//     .ForEach(movie =>
-//     {
-//         string[] files = Directory.GetFiles(movie);
-//         string xmlMetadataFile = files.SingleOrDefault(file => PathHelper.GetFileName(file).EqualsIgnoreCase("movie.nfo"), string.Empty);
-//         if (xmlMetadataFile.IsNullOrWhiteSpace())
-//         {
-//             return;
-//         }
-
-//         string video = files.Single(file => file.IsVideo());
-//         string videoName = PathHelper.GetFileNameWithoutExtension(video);
-//         FileHelper.ReplaceFileNameWithoutExtension(xmlMetadataFile, videoName, true, true);
-//     });
+//Video.CopyMovieMetadata(settings.MovieTemp42);
 //await Video.PrintMovieImdbIdErrorsAsync(settings, true, log, cancellationTokenSource.Token, settings.MovieTemp42);
 //await Video.ConvertToUtf8Async(settings.MovieTemp42, true);
 //Video.MoveSubtitleToParentDirectory(settings.MovieTemp42, settings.MovieSubtitleBackupDirectory, false);
@@ -537,48 +523,15 @@ string[][] metadataDrives = [
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp42, 2, overwrite: false, useCache: true, useBrowser: true);
 //FfmpegHelper.MergeAllDubbedMovies(settings.MovieTemp42, isDryRun: true);
 //Video.PrintDuplicateImdbId(null, settings.MovieTemp41, settings.MovieTemp42, settings.MovieTemp3, settings.MovieTemp4);
-//Video.PrintVideosWithErrors(settings.MovieTemp42, searchOption: SearchOption.AllDirectories);
+//Video.PrintVideosWithErrors(settings, settings.MovieTemp42, searchOption: SearchOption.AllDirectories);
 //Video.BackupMetadata(settings.MovieTemp42);
-// Video
-//     .EnumerateDirectories(settings.MovieTemp42)
-//     .ForEach(movie =>
-//     {
-//         string[] files = Directory.GetFiles(movie);
-//         string videoFile = files.Single(f => f.IsVideo());
-//         string metadataFile = Path.Combine(movie, "movie.nfo");
-//         string videoMetadataFile = Path.Combine(movie, $"{PathHelper.GetFileNameWithoutExtension(videoFile)}.nfo");
-//         XDocument videoMetadata = XDocument.Load(videoMetadataFile);
-//         string videoTitle = videoMetadata.Root?.Element("title")?.Value ?? string.Empty;
-//         if (videoTitle.ContainsChineseCharacter())
-//         {
-//             return;
-//         }
-
-//         XDocument metadata = XDocument.Load(metadataFile);
-//         string title = metadata.Root?.Element("title")?.Value ?? string.Empty;
-//         if (title.ContainsChineseCharacter())
-//         {
-//             log(title);
-//             videoMetadata.Root!.Element("title")!.Value = title;
-//             videoMetadata.Save(videoMetadataFile);
-//         }
-//     });
 //await Video.DownloadMissingTitlesFromDoubanAsync(settings, settings.MovieTemp42);
+//Video.CopyMovieMetadata(settings.MovieTemp42, true);
 //Video.RenameDirectoriesWithMetadata(settings, settings.MovieTemp42, isDryRun: false, skipRenamed: true);
 //Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp42, isDryRun: false);
 //Video.MoveFanArt(settings.MovieTemp42);
 //Video.RestoreMetadata(settings.MovieTemp42);
 //Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp42);
-// Video
-//     .EnumerateDirectories(settings.MovieTemp42)
-//     .ForEach(movie =>
-//     {
-//         string[] files = Directory.GetFiles(movie);
-//         string videoFile = files.Single(f => f.IsVideo());
-//         string metadataFile = Path.Combine(movie, "movie.nfo");
-//         string videoMetadataFile = Path.Combine(movie, $"{PathHelper.GetFileNameWithoutExtension(videoFile)}.nfo");
-//         FileHelper.Copy(videoMetadataFile, metadataFile, true, true);
-//     });
 
 //Directory.GetFiles(@"D:\User\Downloads\New folder", "*", SearchOption.AllDirectories)
 //    .ForEach(f => File.Move(f, f

@@ -31,6 +31,7 @@ internal static partial class Video
 
     private static readonly string[] AllVideoExtensions = UncommonVideoExtensions.Union(CommonVideoExtensions).ToArray();
 
+    private static readonly string MovieMetadataFile = $"movie{XmlMetadataExtension}";
     private static readonly string TVShowMetadataFile = $"tvshow{XmlMetadataExtension}";
 
     private static readonly string TVSeasonMetadataFile = $"season{XmlMetadataExtension}";

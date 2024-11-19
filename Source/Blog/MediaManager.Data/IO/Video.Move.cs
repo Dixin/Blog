@@ -225,7 +225,7 @@ internal static partial class Video
             });
     }
 
-    internal static void RenameDirectoriesWithMetadata(ISettings settings, string directory, int level = DefaultDirectoryLevel, bool additionalInfo = false, bool overwrite = false, bool isDryRun = false, string backupFlag = "backup", bool isTV = false, bool skipRenamed = false, Action<string>? log = null)
+    internal static void RenameDirectoriesWithMetadata(ISettings settings, string directory, int level = DefaultDirectoryLevel, bool additionalInfo = false, bool overwrite = false, bool isDryRun = false, string backupFlag = DefaultBackupFlag, bool isTV = false, bool skipRenamed = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
@@ -253,14 +253,14 @@ internal static partial class Video
                 }
                 else
                 {
-                    if (xmlMetadataFiles.Any(file => file.EndsWithIgnoreCase($"{Delimiter}{backupFlag}{XmlMetadataExtension}")) && xmlMetadataFiles.Any(file => !file.EndsWithIgnoreCase($"{Delimiter}{backupFlag}{XmlMetadataExtension}")))
+                    if (xmlMetadataFiles.Any(file => PathHelper.GetFileName(file).EqualsIgnoreCase(MovieMetadataFile)) && xmlMetadataFiles.Any(file => PathHelper.GetFileName(file).EqualsIgnoreCase(PathHelper.AddFilePostfix(MovieMetadataFile, $"{Delimiter}{backupFlag}"))))
                     {
-                        english = XDocument.Load(xmlMetadataFiles.First(file => file.EndsWithIgnoreCase($"{Delimiter}{backupFlag}{XmlMetadataExtension}")));
-                        translated = XDocument.Load(xmlMetadataFiles.First(file => !file.EndsWithIgnoreCase($"{Delimiter}{backupFlag}{XmlMetadataExtension}")));
+                        english = XDocument.Load(xmlMetadataFiles.Single(file => PathHelper.GetFileName(file).EqualsIgnoreCase(PathHelper.AddFilePostfix(MovieMetadataFile, $"{Delimiter}{backupFlag}"))));
+                        translated = XDocument.Load(xmlMetadataFiles.Single(file => PathHelper.GetFileName(file).EqualsIgnoreCase(MovieMetadataFile)));
                     }
                     else
                     {
-                        english = XDocument.Load(xmlMetadataFiles.First());
+                        english = XDocument.Load(xmlMetadataFiles.Single(file => PathHelper.GetFileName(file).EqualsIgnoreCase(MovieMetadataFile)));
                         translated = null;
                     }
                 }
@@ -1286,7 +1286,7 @@ internal static partial class Video
                             return;
                         }
                     }
-                    
+
                     if (regionWithoutGenres.TryGetValue(region, out string? value))
                     {
                         string subDirectory = Path.Combine(settings.MovieMainstreamWithoutSubtitle, value);
