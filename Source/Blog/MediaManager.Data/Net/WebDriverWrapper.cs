@@ -105,6 +105,8 @@ public class WebDriverWrapper(Func<IWebDriver>? webDriverFactory = null, string 
 
     public string PageSource => this.WebDriver.PageSource;
 
+    public string Title => this.WebDriver.Title;
+
     public ReadOnlyCollection<IWebElement> FindElements(By by) => this.WebDriver.FindElements(by);
 
     public WebDriverWait Wait(TimeSpan timeout) => new(this.WebDriver, timeout);

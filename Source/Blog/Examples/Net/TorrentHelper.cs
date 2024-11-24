@@ -43,13 +43,12 @@ public class TorrentHelper
         string[] magnetUrls = (await File.ReadAllTextAsync(magnetUrlPath, cancellationToken))
             .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        IEnumerable<Task> tasks = await DownloadAllAsync(magnetUrls, torrentDirectory, log, cancellationToken);
-        await Task.WhenAll(tasks);
+        await DownloadAllAsync(magnetUrls, torrentDirectory, log, cancellationToken);
     }
 
-    public static async Task<IEnumerable<Task>> DownloadAllAsync(IEnumerable<string> magnetUrls, string torrentDirectory, Action<string>? log = null, CancellationToken cancellationToken = default)
+    public static async Task DownloadAllAsync(IEnumerable<string> magnetUrls, string torrentDirectory, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
-        if (Directory.Exists(torrentDirectory))
+        if (!Directory.Exists(torrentDirectory))
         {
             Directory.CreateDirectory(torrentDirectory);
         }
@@ -57,6 +56,7 @@ public class TorrentHelper
         IEnumerable<string> downloadedHashes = Directory
             .EnumerateFiles(torrentDirectory, TorrentSearchPattern, SearchOption.AllDirectories)
             .Select(torrent => PathHelper.GetFileNameWithoutExtension(torrent).Split(HashSeparator).Last());
+        IEnumerable<(MagnetUri magnetUri, MagnetLink)> links = ;
 
         EngineSettingsBuilder engineSettingsBuilder = new()
         {
@@ -65,7 +65,7 @@ public class TorrentHelper
 
         using ClientEngine clientEngine = new(engineSettingsBuilder.ToSettings());
         await clientEngine.StartAllAsync();
-        return magnetUrls
+        await magnetUrls
             .Select(magnetUrl => MagnetUri.Parse(magnetUrl).AddDefaultTrackers())
             .ExceptBy(downloadedHashes, uri => uri.ExactTopic, StringComparer.OrdinalIgnoreCase)
             .Select(magnetUri =>
@@ -73,13 +73,15 @@ public class TorrentHelper
                 magnetUri,
                 new MagnetLink(InfoHash.FromHex(magnetUri.ExactTopic), magnetUri.DisplayName, magnetUri.Trackers.ToArray())
             ))
-            .Select(async task =>
-            {
-                byte[] torrent = (await clientEngine.DownloadMetadataAsync(task.Item2, cancellationToken)).ToArray();
-                string torrentPath = Path.Combine(torrentDirectory, $"{task.magnetUri.DisplayName}{HashSeparator}{task.magnetUri.ExactTopic}{TorrentExtension}");
-                log?.Invoke(torrentPath);
-                await File.WriteAllBytesAsync(torrentPath, torrent, cancellationToken);
-            });
+            .ForEachAsync(
+                async link =>
+                {
+                    byte[] torrent = (await clientEngine.DownloadMetadataAsync(link.Item2, cancellationToken)).ToArray();
+                    string torrentPath = Path.Combine(torrentDirectory, $"{link.magnetUri.DisplayName}{HashSeparator}{link.magnetUri.ExactTopic}{TorrentExtension}");
+                    log?.Invoke(torrentPath);
+                    await File.WriteAllBytesAsync(torrentPath, torrent, cancellationToken);
+                },
+                cancellationToken);
     }
 
     public static async Task DownloadAllFromCacheAsync(string magnetUrlPath, string torrentDirectory, bool useBrowser = false, int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
@@ -231,7 +233,7 @@ public class TorrentHelper
 
                             log?.Invoke(magnetUri.ExactTopic);
                             await Task.Delay(TimeSpan.FromSeconds(2), cancellationToken);
-                        }, 
+                        },
                         cancellationToken: cancellationToken);
                 }
                 catch (Exception exception) when (exception.IsNotCritical())

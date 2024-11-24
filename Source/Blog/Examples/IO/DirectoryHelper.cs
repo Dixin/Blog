@@ -89,19 +89,19 @@ public static class DirectoryHelper
                     .ToArray()
                     .ForEach(file => FileHelper.ReplaceFileName(file, $"{PathHelper.GetFileNameWithoutExtension(file)}{PathHelper.GetExtension(file).ToLowerInvariant()}"))));
 
-    public static void MoveFiles(string sourceDirectory, string destinationDirectory, string searchPattern = "*", SearchOption searchOption = SearchOption.AllDirectories) =>
+    public static void MoveFiles(string sourceDirectory, string destinationDirectory, string searchPattern = "*", SearchOption searchOption = SearchOption.AllDirectories, bool overwrite = false, bool skipDestinationDirectory = false) =>
         Directory
             .GetFiles(sourceDirectory, searchPattern, searchOption)
             .ForEach(sourceFile =>
             {
                 string destinationFile = Path.Combine(destinationDirectory, Path.GetRelativePath(sourceDirectory, sourceFile));
                 string newDirectory = PathHelper.GetDirectoryName(destinationFile);
-                if (!Directory.Exists(newDirectory))
+                if (!skipDestinationDirectory && !Directory.Exists(newDirectory))
                 {
                     Directory.CreateDirectory(newDirectory);
                 }
 
-                File.Move(sourceFile, destinationFile);
+                File.Move(sourceFile, destinationFile, overwrite);
             });
 
     public static void Recycle(string directory)

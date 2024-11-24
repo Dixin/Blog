@@ -17,6 +17,10 @@ internal static class Drive115
 
         using IWebDriver parentFrame = WebDriverHelper.Start(isLoadingAll: true);
         parentFrame.Url = url;
+        if (Debugger.IsAttached)
+        {
+            Debugger.Break();
+        }
 
         using IWebDriver? offlineTasksFrame = new WebDriverWait(parentFrame, WebDriverHelper.DefaultManualWait).Until(driver => driver.SwitchTo().Frame("wangpan"));
         List<Drive115OfflineTask> offlineTasks = [];

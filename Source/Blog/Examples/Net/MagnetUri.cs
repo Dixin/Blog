@@ -34,6 +34,7 @@ public record MagnetUri(string ExactTopic, string DisplayName, string[] Trackers
             return false;
         }
 
+        value = value.TrimEnd('&');
         Match match = UriRegex.Match(value);
         if (!match.Success)
         {
