@@ -28,7 +28,7 @@ public static class EncodingHelper
 
         byte[] fromBytes = await File.ReadAllBytesAsync(fromPath.ThrowIfNullOrWhiteSpace());
         byte[] toBytes = Encoding.Convert(from, to, fromBytes);
-        await File.WriteAllBytesAsync(toPath ?? fromPath, toBytes);
+        //await File.WriteAllBytesAsync(toPath ?? fromPath, toBytes);
         await using FileStream fileStream = new(toPath ?? fromPath, FileMode.Create, FileAccess.Write, FileShare.Read);
         if (bom is not null && !bom.SequenceEqual(toBytes.Take(bom.Length)))
         {
@@ -36,6 +36,23 @@ public static class EncodingHelper
         }
 
         await fileStream.WriteAsync(toBytes);
+    }
+
+    public static void Convert(Encoding from, Encoding to, string fromPath, string? toPath = null, byte[]? bom = null)
+    {
+        from.ThrowIfNull();
+        to.ThrowIfNull();
+
+        byte[] fromBytes = File.ReadAllBytes(fromPath.ThrowIfNullOrWhiteSpace());
+        byte[] toBytes = Encoding.Convert(from, to, fromBytes);
+        //File.WriteAllBytes(toPath ?? fromPath, toBytes);
+        using FileStream fileStream = new(toPath ?? fromPath, FileMode.Create, FileAccess.Write, FileShare.Read);
+        if (bom is not null && !bom.SequenceEqual(toBytes.Take(bom.Length)))
+        {
+            fileStream.Write(bom);
+        }
+
+        fileStream.Write(toBytes);
     }
 
     public static bool TryDetect(string file, [NotNullWhen(true)] out Encoding? encoding)

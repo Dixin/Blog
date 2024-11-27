@@ -84,8 +84,14 @@ internal static partial class Video
                         case "UTF-16LE":
                             encoding = Encoding.Unicode;
                             break;
+                        case "UTF-16BE":
+                            encoding = Encoding.BigEndianUnicode;
+                            break;
                         case "GB18030":
                             encoding = Encoding.GetEncoding("gb18030");
+                            break;
+                        case "EUC-KR":
+                            encoding = Encoding.GetEncoding("EUC-KR");
                             break;
                         case "WINDOWS-1251":
                             encoding = Encoding.GetEncoding(1251);
