@@ -56,7 +56,6 @@ public class TorrentHelper
         IEnumerable<string> downloadedHashes = Directory
             .EnumerateFiles(torrentDirectory, TorrentSearchPattern, SearchOption.AllDirectories)
             .Select(torrent => PathHelper.GetFileNameWithoutExtension(torrent).Split(HashSeparator).Last());
-        IEnumerable<(MagnetUri magnetUri, MagnetLink)> links = ;
 
         EngineSettingsBuilder engineSettingsBuilder = new()
         {
@@ -65,7 +64,7 @@ public class TorrentHelper
 
         using ClientEngine clientEngine = new(engineSettingsBuilder.ToSettings());
         await clientEngine.StartAllAsync();
-        await magnetUrls
+        await Task.WhenAll(magnetUrls
             .Select(magnetUrl => MagnetUri.Parse(magnetUrl).AddDefaultTrackers())
             .ExceptBy(downloadedHashes, uri => uri.ExactTopic, StringComparer.OrdinalIgnoreCase)
             .Select(magnetUri =>
@@ -73,15 +72,13 @@ public class TorrentHelper
                 magnetUri,
                 new MagnetLink(InfoHash.FromHex(magnetUri.ExactTopic), magnetUri.DisplayName, magnetUri.Trackers.ToArray())
             ))
-            .ForEachAsync(
-                async link =>
-                {
-                    byte[] torrent = (await clientEngine.DownloadMetadataAsync(link.Item2, cancellationToken)).ToArray();
-                    string torrentPath = Path.Combine(torrentDirectory, $"{link.magnetUri.DisplayName}{HashSeparator}{link.magnetUri.ExactTopic}{TorrentExtension}");
-                    log?.Invoke(torrentPath);
-                    await File.WriteAllBytesAsync(torrentPath, torrent, cancellationToken);
-                },
-                cancellationToken);
+            .Select(async link =>
+            {
+                byte[] torrent = (await clientEngine.DownloadMetadataAsync(link.Item2, cancellationToken)).ToArray();
+                string torrentPath = Path.Combine(torrentDirectory, $"{link.magnetUri.DisplayName}{HashSeparator}{link.magnetUri.ExactTopic}{TorrentExtension}");
+                log?.Invoke(torrentPath);
+                await File.WriteAllBytesAsync(torrentPath, torrent, cancellationToken);
+            }));
     }
 
     public static async Task DownloadAllFromCacheAsync(string magnetUrlPath, string torrentDirectory, bool useBrowser = false, int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
