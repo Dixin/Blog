@@ -38,7 +38,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\MediaInfoLib\MediaInfoLib.csproj" />
         <ProjectReference Include="..\MediaManager.Data\MediaManager.Data.csproj" />
     </ItemGroup>
 

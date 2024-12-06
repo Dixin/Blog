@@ -1,6 +1,8 @@
 ﻿namespace MediaManager.IO;
 
+using Examples.Common;
 using Examples.IO;
+using MediaInfoLib;
 using MediaManager.Net;
 
 internal static partial class Video
@@ -91,5 +93,22 @@ internal static partial class Video
                     .Where(_ => !isDryRun)
                     .ForEach(FileHelper.Delete);
             });
+    }
+
+    internal static bool IsDolbyVision(string video)
+    {
+        MediaInfo mediaInfo = new();
+        mediaInfo.Open(video);
+        mediaInfo.Option("Complete"); //or Option("Complete", "1") or Option("Info_Parameters")
+        string inform = mediaInfo.Inform();
+        string hdrFormat = mediaInfo.Get(StreamKind.Video, 0, "HDR_Format");
+        mediaInfo.Close();
+        if (!inform.ContainsIgnoreCase("Dolby Vision") && !inform.ContainsIgnoreCase("DolbyVision"))
+        {
+            return false;
+        }
+
+        Debug.Assert(hdrFormat.ContainsIgnoreCase("Dolby Vision") || hdrFormat.ContainsIgnoreCase("DolbyVision"));
+        return true;
     }
 }

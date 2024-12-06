@@ -25,6 +25,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Examples\Examples.csproj" />
+      <ProjectReference Include="..\MediaInfoLib\MediaInfoLib.csproj" />
     </ItemGroup>
 
 </Project>
