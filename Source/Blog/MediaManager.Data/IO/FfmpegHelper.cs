@@ -540,7 +540,7 @@ public static class FfmpegHelper
             });
     }
 
-    internal static async Task ExtractMkvAsync(string inputVideo, string outputVideo = "", Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task ExtractMkvAsync(string inputVideo, string mergeVideo = "", string outputVideo = "", bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
         Debug.Assert(inputVideo.EndsWithIgnoreCase(".mkv"));
@@ -549,8 +549,8 @@ public static class FfmpegHelper
         {
             outputVideo = PathHelper.ReplaceExtension(inputVideo, ".mp4");
         }
-        IMediaInfo mediaInfo = await FFmpeg.GetMediaInfo(inputVideo, cancellationToken);
-        (int Index, string File)[] subtitles = mediaInfo
+        IMediaInfo inputMediaInfo = await FFmpeg.GetMediaInfo(inputVideo, cancellationToken);
+        (int Index, string File)[] subtitles = inputMediaInfo
             .SubtitleStreams
             .GroupBy(subtitle => subtitle.Language)
             .Select(subtitleGroup => subtitleGroup.OrderBy(subtitle => subtitle.Index).ToArray())
@@ -574,7 +574,22 @@ public static class FfmpegHelper
         if (duplicateSubtitles.Any())
         {
             duplicateSubtitles.ForEach(group => group.Select(subtitle => $"{subtitle.Index} {subtitle.File}").Append(string.Empty).ForEach(log));
-            throw new InvalidOperationException(inputVideo);
+            throw new ArgumentOutOfRangeException(nameof(inputVideo), inputVideo);
+        }
+
+        if (mergeVideo.IsNotNullOrWhiteSpace() && !mergeVideo.ContainsIgnoreCase("Ex.Machina.2014") && !mergeVideo.ContainsIgnoreCase("Jurassic.Park.III.2001") && !mergeVideo.ContainsIgnoreCase("X-Men.The.Last.Stand.2006"))
+        {
+            IMediaInfo mergeMediaInfo = await FFmpeg.GetMediaInfo(mergeVideo, cancellationToken);
+            TimeSpan inputDuration = inputMediaInfo.VideoStreams.Single(videoStream => !videoStream.Codec.EqualsIgnoreCase("mjpeg") && !videoStream.Codec.EqualsIgnoreCase("png")).Duration;
+            TimeSpan mergeDuration = mergeMediaInfo.VideoStreams.Single(videoStream => !videoStream.Codec.EqualsIgnoreCase("mjpeg") && !videoStream.Codec.EqualsIgnoreCase("png")).Duration;
+            TimeSpan difference = inputDuration - mergeDuration;
+            if (difference > TimeSpan.FromSeconds(1) || difference < TimeSpan.FromSeconds(-1))
+            {
+                log($"{inputDuration} {inputVideo}");
+                log($"{mergeDuration} {mergeVideo}");
+                log(string.Empty);
+                throw new ArgumentOutOfRangeException(nameof(mergeVideo), mergeVideo);
+            }
         }
 
         string subtitleArguments = string.Join(
@@ -582,12 +597,20 @@ public static class FfmpegHelper
             subtitles.Select(subtitle => $"""
                 -c copy -map 0:s:{subtitle.Index} "{subtitle.File}"
                 """));
-        string arguments = $"""
-            -i "{inputVideo}" -c copy -map_metadata 0 -map 0:v -ma 0:a "{outputVideo}" {subtitleArguments}
+        string arguments = mergeVideo.IsNullOrWhiteSpace()
+            ? $"""
+            -i "{inputVideo}" -c copy -map_metadata 0 -map 0:v -map 0:a "{outputVideo}" {subtitleArguments}
+            """
+            : $"""
+            -i "{inputVideo}" -i "{mergeVideo}" -c copy -map_metadata 0 -map 0:v -map 0:a -map 1:a "{outputVideo}" {subtitleArguments}
             """;
         log(arguments);
         log(string.Empty);
-        await ProcessHelper.StartAndWaitAsync(Executable, arguments, null, null, null, true, cancellationToken);
+
+        if (!isDryRun)
+        {
+            await ProcessHelper.StartAndWaitAsync(Executable, arguments, null, null, null, true, cancellationToken);
+        }
 
         static string GetSubtitleExtension(string codec) => codec.ToUpperInvariant() switch
         {
