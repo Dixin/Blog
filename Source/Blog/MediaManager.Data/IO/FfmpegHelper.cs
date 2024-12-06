@@ -539,4 +539,75 @@ public static class FfmpegHelper
                 cleanDirectory(PathHelper.GetDirectoryName(match.DubbedVideo));
             });
     }
+
+    internal static async Task ExtractMkvAsync(string inputVideo, string outputVideo = "", Action<string>? log = null, CancellationToken cancellationToken = default)
+    {
+        log ??= Logger.WriteLine;
+        Debug.Assert(inputVideo.EndsWithIgnoreCase(".mkv"));
+
+        if (outputVideo.IsNullOrWhiteSpace())
+        {
+            outputVideo = PathHelper.ReplaceExtension(inputVideo, ".mp4");
+        }
+        IMediaInfo mediaInfo = await FFmpeg.GetMediaInfo(inputVideo, cancellationToken);
+        (int Index, string File)[] subtitles = mediaInfo
+            .SubtitleStreams
+            .GroupBy(subtitle => subtitle.Language)
+            .Select(subtitleGroup => subtitleGroup.OrderBy(subtitle => subtitle.Index).ToArray())
+            .Do(subtitleArray =>
+            {
+                Debug.Assert(subtitleArray.Count(subtitle => Regex.IsMatch(subtitle.Title, @"\bForced\b", RegexOptions.IgnoreCase)) <= 1);
+                Debug.Assert(subtitleArray.Count(subtitle => Regex.IsMatch(subtitle.Title, @"\bSDH\b", RegexOptions.IgnoreCase)) <= 1);
+                Debug.Assert(subtitleArray.Count(subtitle => !Regex.IsMatch(subtitle.Title, @"\bForced\b", RegexOptions.IgnoreCase) && !Regex.IsMatch(subtitle.Title, @"\bSDH\b", RegexOptions.IgnoreCase)) <= 1);
+            })
+            .Concat()
+            .ToArray()
+            .Select(subtitle => (subtitle.Index, File: PathHelper.ReplaceExtension(PathHelper.AddFilePostfix(outputVideo, $"-{subtitle.Language}{GetSubtitleTitle(subtitle.Title)}"), GetSubtitleExtension(subtitle.Codec))))
+            .Do(subtitle => log(subtitle.File))
+            .ToArray();
+
+        IGrouping<string, (int Index, string File)>[] duplicateSubtitles = subtitles
+            .GroupBy(subtitle => subtitle.File, StringComparer.OrdinalIgnoreCase)
+            .Where(group => group.Count() > 1)
+            .ToArray();
+
+        if (duplicateSubtitles.Any())
+        {
+            duplicateSubtitles.ForEach(group => group.Select(subtitle => $"{subtitle.Index} {subtitle.File}").Append(string.Empty).ForEach(log));
+            throw new InvalidOperationException(inputVideo);
+        }
+
+        string subtitleArguments = string.Join(
+            " ",
+            subtitles.Select(subtitle => $"""
+                -c copy -map 0:s:{subtitle.Index} "{subtitle.File}"
+                """));
+        string arguments = $"""
+            -i "{inputVideo}" -c copy -map_metadata 0 -map 0:v -ma 0:a "{outputVideo}" {subtitleArguments}
+            """;
+        log(arguments);
+        log(string.Empty);
+        await ProcessHelper.StartAndWaitAsync(Executable, arguments, null, null, null, true, cancellationToken);
+
+        static string GetSubtitleExtension(string codec) => codec.ToUpperInvariant() switch
+        {
+            "SUBRIP" => ".srt",
+            _ => throw new InvalidOperationException(codec)
+        };
+
+        static string GetSubtitleTitle(string title)
+        {
+            string[] words = Regex.Matches(title, @"\b\w+\b").Select(match => match.Value.Trim()).ToArray();
+            if (words.ContainsIgnoreCase("Forced"))
+            {
+                return "-forced";
+            }
+            if (words.ContainsIgnoreCase("SDH"))
+            {
+                return "-sdh";
+            }
+
+            return "";
+        }
+    }
 }

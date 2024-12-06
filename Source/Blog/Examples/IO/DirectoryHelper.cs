@@ -125,4 +125,19 @@ public static class DirectoryHelper
 
     public static void CopyToDirectory(string sourceDirectory, string destinationParentDirectory, bool overwrite = false) =>
         FileSystem.CopyDirectory(sourceDirectory, Path.Combine(destinationParentDirectory, Path.GetFileName(sourceDirectory)), overwrite);
+
+    public static bool IsHidden(string directory) =>
+        new DirectoryInfo(directory.ThrowIfNullOrWhiteSpace()).Attributes.HasFlag(FileAttributes.Hidden);
+
+    public static void SetHidden(string directory, bool isHidden = false)
+    {
+        if (isHidden)
+        {
+            new DirectoryInfo(directory.ThrowIfNullOrWhiteSpace()).Attributes |= FileAttributes.Hidden;
+        }
+        else
+        {
+            new DirectoryInfo(directory.ThrowIfNullOrWhiteSpace()).Attributes &= ~FileAttributes.Hidden;
+        }
+    }
 }
