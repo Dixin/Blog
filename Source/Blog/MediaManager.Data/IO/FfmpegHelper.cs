@@ -600,10 +600,10 @@ public static class FfmpegHelper
                 """));
         string arguments = mergeVideo.IsNullOrWhiteSpace()
             ? $"""
-            -i "{inputVideo}" -c copy -map_metadata 0 -map 0:v -map 0:a "{outputVideo}" {subtitleArguments}
+            -i "{inputVideo}" -c copy -map_metadata 0 -map 0:v -map 0:a "{outputVideo}" {subtitleArguments} -n
             """
             : $"""
-            -i "{inputVideo}" -i "{mergeVideo}" -c copy -map_metadata 0 -map 0:v -map 0:a -map 1:a "{outputVideo}" {subtitleArguments}
+            -i "{inputVideo}" -i "{mergeVideo}" -c copy -map_metadata 0 -map 0:v -map 0:a -map 1:a "{outputVideo}" {subtitleArguments} -n
             """;
         log(arguments);
         log(string.Empty);
