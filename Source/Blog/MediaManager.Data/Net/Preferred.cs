@@ -565,19 +565,32 @@ internal static class Preferred
             .ToArray()
             .ForEach(groupByExactTopic =>
             {
-                PreferredMetadata? metadataNotFound = groupByExactTopic
+                PreferredMetadata[] metadataNotFound = groupByExactTopic
                     .Select(a => a.Metadata)
-                    .FirstOrDefault(metadata => ReadStatus(metadata.Link, httpClient) == HttpStatusCode.NotFound);
-                if (metadataNotFound is not null)
+                    .Where(metadata => ReadStatus(metadata.Link, httpClient) == HttpStatusCode.NotFound)
+                    .ToArray();
+                if (metadataNotFound.IsEmpty())
                 {
-                    details[metadataNotFound.ImdbId].RemoveAll(metadata => metadata.ImdbId.EqualsIgnoreCase(metadataNotFound.ImdbId));
-                    Logger.WriteLine($"Remove not found: {metadataNotFound.Link}");
-                    if (details[metadataNotFound.ImdbId].IsEmpty())
-                    {
-                        Debug.Assert(details.Remove(metadataNotFound.ImdbId, out _));
-                    }
+                    return;
                 }
+
+                Debug.Assert(metadataNotFound.Length < groupByExactTopic.Count());
+                metadataNotFound.ForEach(metadata =>
+                {
+                    details[metadata.ImdbId].RemoveAll(item => item.Link.EqualsIgnoreCase(metadata.Link));
+                    Logger.WriteLine($"Remove not found: {metadata.Link}");
+                    Debug.Assert(details[metadata.ImdbId].Any());
+                    // if (details[metadata.ImdbId].IsEmpty())
+                    // {
+                    //     Debug.Assert(details.Remove(metadata.ImdbId, out _));
+                    // }
+                });
             });
+
+        if (!isDryRun)
+        {
+            await settings.WriteMoviePreferredMetadataAsync(details, cancellationToken);
+        }
 
         details
             .Where(group => group.Value.Count > 1)
@@ -590,18 +603,21 @@ internal static class Preferred
             .ToArray()
             .ForEach(groupByImdbId =>
             {
-                PreferredMetadata? metadataNotFound = groupByImdbId
+                PreferredMetadata[] metadataNotFound = groupByImdbId
                     .Value
-                    .FirstOrDefault(metadata => ReadStatus(metadata.Link, httpClient) == HttpStatusCode.NotFound);
-                if (metadataNotFound is not null)
+                    .Where(metadata => ReadStatus(metadata.Link, httpClient) == HttpStatusCode.NotFound)
+                    .ToArray();
+                Debug.Assert(metadataNotFound.Length < groupByImdbId.Value.Count);
+                if (metadataNotFound.IsEmpty())
                 {
-                    details[metadataNotFound.ImdbId].RemoveAll(metadata => metadata.ImdbId.EqualsIgnoreCase(metadataNotFound.ImdbId));
-                    Logger.WriteLine($"Remove not found: {metadataNotFound.Link}");
-                    if (details[metadataNotFound.ImdbId].IsEmpty())
-                    {
-                        Debug.Assert(details.Remove(metadataNotFound.ImdbId, out _));
-                    }
+                    return;
                 }
+                metadataNotFound.ForEach(metadata =>
+                {
+                    details[metadata.ImdbId].RemoveAll(item => item.Link.EqualsIgnoreCase(metadata.Link));
+                    Logger.WriteLine($"Remove not found: {metadata.Link}");
+                    Debug.Assert(details[metadata.ImdbId].Any());
+                });
             });
 
         details

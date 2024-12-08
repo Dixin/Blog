@@ -56,10 +56,11 @@ public static class DirectoryHelper
         }
     }
 
-    public static void MoveToDirectory(string source, string destinationParentDirectory, bool overwrite = false)
+    public static string MoveToDirectory(string source, string destinationParentDirectory, bool overwrite = false)
     {
         string destination = Path.Combine(destinationParentDirectory, PathHelper.GetFileName(source));
         Move(source, destination, overwrite);
+        return destination;
     }
 
     public static void Empty(DirectoryInfo directory)
@@ -73,11 +74,19 @@ public static class DirectoryHelper
     public static void SetAttributes(string directory, FileAttributes fileAttributes) =>
         new DirectoryInfo(directory.ThrowIfNull()).Attributes = fileAttributes;
 
-    public static void AddPrefix(string directory, string prefix) =>
-        Directory.Move(directory, PathHelper.AddDirectoryPrefix(directory, prefix));
+    public static string AddPrefix(string directory, string prefix)
+    {
+        string destinationDirectory = PathHelper.AddDirectoryPrefix(directory, prefix);
+        Directory.Move(directory, destinationDirectory);
+        return destinationDirectory;
+    }
 
-    public static void AddPostfix(string directory, string postfix) =>
-        Directory.Move(directory, PathHelper.AddDirectoryPostfix(directory, postfix));
+    public static string AddPostfix(string directory, string postfix)
+    {
+        string destinationDirectory = PathHelper.AddDirectoryPostfix(directory, postfix);
+        Directory.Move(directory, destinationDirectory);
+        return destinationDirectory;
+    }
 
     public static void RenameFileExtensionToLowerCase(params string[][] drives) =>
         drives

@@ -61,8 +61,12 @@ public static class FileHelper
         return true;
     }
 
-    public static void MoveToDirectory(string source, string destinationParentDirectory, bool overwrite = false, bool skipDestinationDirectory = false) =>
-        Move(source, Path.Combine(destinationParentDirectory, Path.GetFileName(source)), overwrite, skipDestinationDirectory);
+    public static string MoveToDirectory(string source, string destinationParentDirectory, bool overwrite = false, bool skipDestinationDirectory = false)
+    {
+        string destinationFile = Path.Combine(destinationParentDirectory, Path.GetFileName(source));
+        Move(source, destinationFile, overwrite, skipDestinationDirectory);
+        return destinationFile;
+    }
 
     public static bool TryMoveToDirectory(string source, string destinationParentDirectory, bool overwrite = false) =>
         TryMove(source, Path.Combine(destinationParentDirectory, Path.GetFileName(source)), overwrite);
@@ -105,11 +109,19 @@ public static class FileHelper
         await fromStream.CopyToAsync(toStream);
     }
 
-    public static void AddPrefix(string file, string prefix) =>
-        File.Move(file, PathHelper.AddFilePrefix(file, prefix));
+    public static string AddPrefix(string file, string prefix)
+    {
+        string destinationFile = PathHelper.AddFilePrefix(file, prefix);
+        File.Move(file, destinationFile);
+        return destinationFile;
+    }
 
-    public static void AddPostfix(string file, string postfix) =>
-        File.Move(file, PathHelper.AddFilePostfix(file, postfix));
+    public static string AddPostfix(string file, string postfix)
+    {
+        string destinationFile = PathHelper.AddFilePostfix(file, postfix);
+        File.Move(file, destinationFile);
+        return destinationFile;
+    }
 
     public static void MoveAll(string sourceDirectory, string destinationDirectory, string searchPattern = PathHelper.AllSearchPattern, SearchOption searchOption = SearchOption.TopDirectoryOnly, Func<string, bool>? predicate = null, bool overwrite = false) =>
         Directory

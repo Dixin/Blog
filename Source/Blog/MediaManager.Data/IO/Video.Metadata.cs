@@ -204,12 +204,12 @@ internal static partial class Video
                     return name.EqualsIgnoreCase(imdbId) || name.StartsWithIgnoreCase($"{imdbId}{Delimiter}");
                 })
                 .ToArray()
-                .ForEach(file => FileHelper.MoveToDirectory(file, movie));
+                .ForEach(file => FileHelper.TryMoveToDirectory(file, movie));
 
             metadataFiles
                 .Where(file => file.HasImdbId(imdbId))
                 .ToArray()
-                .ForEach(file => FileHelper.MoveToDirectory(file, movie));
+                .ForEach(file => FileHelper.TryMoveToDirectory(file, movie));
         });
     }
 
@@ -1007,34 +1007,53 @@ internal static partial class Video
             });
     }
 
-    internal static void CopyMovieMetadata(string directory, bool overwrite = false, Action<string>? log = null)
+    internal static void CopyMovieMetadata(string directory, int level = DefaultDirectoryLevel, bool overwrite = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
-        EnumerateDirectories(directory)
-        .ForEach(movie =>
+        EnumerateDirectories(directory, level).ForEach(movie =>
         {
             string[] files = Directory.GetFiles(movie);
-            string xmlMetadataFile = files.SingleOrDefault(file => PathHelper.GetFileName(file).EqualsIgnoreCase(MovieMetadataFile), string.Empty);
-            if (xmlMetadataFile.IsNullOrWhiteSpace())
+            string metadata = files.SingleOrDefault(file => PathHelper.GetFileName(file).EqualsIgnoreCase(MovieMetadataFile), string.Empty);
+            if (metadata.IsNullOrWhiteSpace())
             {
-                return;
+                metadata = files.FirstOrDefault(IsXmlMetadata, string.Empty);
+                if (metadata.IsNullOrWhiteSpace())
+                {
+                    return;
+                }
             }
 
-            files
-                .Where(file => file.IsVideo())
-                .ForEach(video =>
+            string[] videos = files
+                .Where(file =>
                 {
-                    string videoName = PathHelper.GetFileNameWithoutExtension(video);
-                    string fileMetadata = PathHelper.ReplaceFileNameWithoutExtension(xmlMetadataFile, videoName);
-                    if (!overwrite && File.Exists(fileMetadata))
+                    if (!file.IsVideo())
                     {
-                        return;
+                        return false;
                     }
 
-                    FileHelper.Copy(xmlMetadataFile, fileMetadata, overwrite, true);
-                    log(fileMetadata);
-                });
+                    Match match = Regex.Match(PathHelper.GetFileNameWithoutExtension(file), @"\.cd([0-9]{1,2})$");
+                    if (!match.Success)
+                    {
+                        return true;
+                    }
+
+                    int cd = int.Parse(match.Groups[1].Value);
+                    return cd == 1;
+                })
+                .ToArray();
+            videos.ForEach(video =>
+            {
+                string videoName = PathHelper.GetFileNameWithoutExtension(video);
+                string videoMetadata = PathHelper.ReplaceFileNameWithoutExtension(metadata, videoName);
+                if (!overwrite && File.Exists(videoMetadata))
+                {
+                    return;
+                }
+
+                FileHelper.Copy(metadata, videoMetadata, overwrite, true);
+                log(videoMetadata);
+            });
         });
     }
 }

@@ -832,6 +832,7 @@ internal static partial class Video
             .ToArray()
             .ForEach(seasonSubtitleDirectory =>
             {
+                Debug.Assert(Directory.EnumerateFiles(seasonSubtitleDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories).IsEmpty());
                 log($"Delete {seasonSubtitleDirectory}");
                 if (!isDryRun && Directory.Exists(seasonSubtitleDirectory))
                 {
@@ -853,14 +854,15 @@ internal static partial class Video
             .ForEach(group =>
             {
                 string[] subtitles = group.ToArray();
-                string? englishSubtitle = group
+                string[] englishSubtitles = group
                     .Where(subtitle => PathHelper.GetFileNameWithoutExtension(subtitle).ContainsIgnoreCase("_eng"))
-                    .MaxBy(subtitle => new FileInfo(subtitle).Length);
-                if (!string.IsNullOrWhiteSpace(englishSubtitle))
+                    .OrderByDescending(subtitle => new FileInfo(subtitle).Length)
+                    .ToArray();
+                if (englishSubtitles.Any())
                 {
-                    const string Language = "eng";
+                    string englishSubtitle = englishSubtitles.First();
                     string englishSubtitleName = PathHelper.GetFileNameWithoutExtension(englishSubtitle);
-                    string newEnglishSubtitle = Path.Combine(PathHelper.GetDirectoryName(englishSubtitle), $"{englishSubtitleName[..englishSubtitleName.LastIndexOf(Delimiter, StringComparison.Ordinal)]}.{Language}{PathHelper.GetExtension(englishSubtitle)}");
+                    string newEnglishSubtitle = Path.Combine(PathHelper.GetDirectoryName(englishSubtitle), $"{englishSubtitleName[..englishSubtitleName.LastIndexOf(Delimiter, StringComparison.Ordinal)]}{PathHelper.GetExtension(englishSubtitle)}");
                     log($"Move {englishSubtitle}");
                     if (!isDryRun)
                     {
@@ -869,71 +871,102 @@ internal static partial class Video
 
                     log(newEnglishSubtitle);
                     log(string.Empty);
+
+                    if (englishSubtitles.Length > 1)
+                    {
+                        englishSubtitle = englishSubtitles[1];
+                        englishSubtitleName = PathHelper.GetFileNameWithoutExtension(englishSubtitle);
+                        const string Language = "eng";
+                        newEnglishSubtitle = Path.Combine(PathHelper.GetDirectoryName(englishSubtitle), $"{englishSubtitleName[..englishSubtitleName.LastIndexOf(Delimiter, StringComparison.Ordinal)]}.{Language}{PathHelper.GetExtension(englishSubtitle)}");
+                        log($"Move {englishSubtitle}");
+                        if (!isDryRun)
+                        {
+                            FileHelper.Move(englishSubtitle, newEnglishSubtitle);
+                        }
+
+                        log(newEnglishSubtitle);
+                        log(string.Empty);
+                    }
                 }
 
                 string[] chineseSubtitles = group
                     .Where(subtitle => PathHelper.GetFileNameWithoutExtension(subtitle).ContainsIgnoreCase("_chi"))
                     .ToArray();
-                switch (chineseSubtitles.Length)
+                string[] simplifiedChineseSubtitles = chineseSubtitles
+                    .Where(subtitle => EncodingHelper.TryRead(subtitle, out string? content, out _) && !content.ContainsCommonTraditionalChineseCharacter())
+                    .OrderByDescending(subtitle => new FileInfo(subtitle).Length)
+                    .ToArray();
+                if (simplifiedChineseSubtitles.Any())
                 {
-                    case 1:
-                        {
-                            string chineseSubtitle = chineseSubtitles.Single();
+                    string chineseSubtitle = simplifiedChineseSubtitles.First();
+                    const string Language = "chs";
+                    string chineseSubtitleName = PathHelper.GetFileNameWithoutExtension(chineseSubtitle);
+                    string newChineseSubtitle = Path.Combine(PathHelper.GetDirectoryName(chineseSubtitle), $"{chineseSubtitleName[..chineseSubtitleName.LastIndexOf(Delimiter, StringComparison.Ordinal)]}.{Language}{PathHelper.GetExtension(chineseSubtitle)}");
+                    log($"Move {chineseSubtitle}");
+                    if (!isDryRun)
+                    {
+                        FileHelper.Move(chineseSubtitle, newChineseSubtitle);
+                    }
 
-                            string language = EncodingHelper.TryRead(chineseSubtitle, out string? content, out _) && content.ContainsCommonTraditionalChineseCharacter() ? "cht" : "chs";
-                            string chineseSubtitleName = PathHelper.GetFileNameWithoutExtension(chineseSubtitle);
-                            string newChineseSubtitle = Path.Combine(PathHelper.GetDirectoryName(chineseSubtitle), $"{chineseSubtitleName[..chineseSubtitleName.LastIndexOf(Delimiter, StringComparison.Ordinal)]}.{language}{PathHelper.GetExtension(chineseSubtitle)}");
-                            log($"Move {chineseSubtitle}");
-                            if (!isDryRun)
-                            {
-                                FileHelper.Move(chineseSubtitle, newChineseSubtitle);
-                            }
-
-                            log(newChineseSubtitle);
-                            log(string.Empty);
-                            break;
-                        }
-                    case > 1:
-                        {
-                            string chineseSubtitle = chineseSubtitles
-                                .Where(subtitle => EncodingHelper.TryRead(subtitle, out string? content, out _) && !content.ContainsCommonTraditionalChineseCharacter())
-                                .OrderByDescending(subtitle => new FileInfo(subtitle).Length)
-                                .First();
-                            chineseSubtitles = [chineseSubtitle];
-
-                            const string Language = "chs";
-                            string chineseSubtitleName = PathHelper.GetFileNameWithoutExtension(chineseSubtitle);
-                            string newChineseSubtitle = Path.Combine(PathHelper.GetDirectoryName(chineseSubtitle), $"{chineseSubtitleName[..chineseSubtitleName.LastIndexOf(Delimiter, StringComparison.Ordinal)]}.{Language}{PathHelper.GetExtension(chineseSubtitle)}");
-                            log($"Move {chineseSubtitle}");
-                            if (!isDryRun)
-                            {
-                                FileHelper.Move(chineseSubtitle, newChineseSubtitle);
-                            }
-
-                            log(newChineseSubtitle);
-                            log(string.Empty);
-                            break;
-                        }
+                    log(newChineseSubtitle);
+                    log(string.Empty);
                 }
 
-                //subtitles.Except(string.IsNullOrWhiteSpace(englishSubtitle) ? chineseSubtitles : chineseSubtitles.Append(englishSubtitle))
-                //    .ForEach(subtitle =>
-                //    {
-                //        string newSubtitle = Path.Combine(subtitleBackupDirectory, PathHelper.GetFileName(subtitle));
-                //        log($"Move {subtitle}");
-                //        if (!isDryRun)
-                //        {
-                //            FileHelper.Move(subtitle, newSubtitle);
-                //        }
+                string[] traditionalChineseSubtitles = chineseSubtitles
+                    .Except(simplifiedChineseSubtitles)
+                    .OrderByDescending(subtitle => new FileInfo(subtitle).Length)
+                    .ToArray();
+                if (traditionalChineseSubtitles.Any())
+                {
+                    string chineseSubtitle = traditionalChineseSubtitles.First();
+                    const string Language = "cht";
+                    string chineseSubtitleName = PathHelper.GetFileNameWithoutExtension(chineseSubtitle);
+                    string newChineseSubtitle = Path.Combine(PathHelper.GetDirectoryName(chineseSubtitle), $"{chineseSubtitleName[..chineseSubtitleName.LastIndexOf(Delimiter, StringComparison.Ordinal)]}.{Language}{PathHelper.GetExtension(chineseSubtitle)}");
+                    log($"Move {chineseSubtitle}");
+                    if (!isDryRun)
+                    {
+                        FileHelper.Move(chineseSubtitle, newChineseSubtitle);
+                    }
 
-                //        log(newSubtitle);
-                //        log(string.Empty);
-                //    });
+                    log(newChineseSubtitle);
+                    log(string.Empty);
+                }
             });
 
         Directory
-            .GetFiles(directory, "*.eng.srt", SearchOption.AllDirectories)
-            .ForEach(f => FileHelper.Move(f, f.ReplaceIgnoreCase(".eng.srt", ".srt")));
+            .GetFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
+            .Where(IsSubtitle)
+            .ToArray()
+            .ForEach(file =>
+            {
+                string extensionName = PathHelper.GetExtension(file).TrimStart(Delimiter.Single());
+                Match match = Regex.Match(file, @$"\.[0-9]{1,2}_([A-Za-z]+)\.{extensionName}$");
+                if (!match.Success)
+                {
+                    return;
+                }
+                string language = match.Groups[1].Value.ToLowerInvariant()[..3];
+                language = language switch
+                {
+                    "jap" => "jpn",
+                    "rom" => "rum",
+                    _ => language
+                };
+
+                string newFile = Regex.Replace(file, @$"\.[0-9]{1,2}_[A-Za-z]+\.{extensionName}$", $".{language}.srt");
+                log(file);
+                if (File.Exists(newFile))
+                {
+                    newFile = FileHelper.MoveToDirectory(file, settings.TVSubtitleBackupDirectory);
+                }
+                else
+                {
+                    FileHelper.Move(file, newFile);
+                }
+
+                log(newFile);
+                log("");
+            });
     }
 
     internal static void MoveFanArt(string directory, int level = DefaultDirectoryLevel, bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
