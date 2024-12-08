@@ -562,7 +562,8 @@ public static class FfmpegHelper
             })
             .Concat()
             .ToArray()
-            .Select(subtitle => (subtitle.Index, File: PathHelper.ReplaceExtension(PathHelper.AddFilePostfix(outputVideo, $"-{subtitle.Language}{GetSubtitleTitle(subtitle.Title)}"), GetSubtitleExtension(subtitle.Codec))))
+            .Select(subtitle => (subtitle.Index, File: PathHelper.ReplaceExtension(PathHelper.AddFilePostfix(outputVideo, $".{subtitle.Language}{GetSubtitleTitle(subtitle.Title)}"), GetSubtitleExtension(subtitle.Codec))))
+            .OrderBy(subtitle => subtitle.Index)
             .Do(subtitle => log(subtitle.File))
             .ToArray();
 
@@ -595,7 +596,7 @@ public static class FfmpegHelper
         string subtitleArguments = string.Join(
             " ",
             subtitles.Select(subtitle => $"""
-                -c copy -map 0:s:{subtitle.Index} "{subtitle.File}"
+                -c copy -map 0:{subtitle.Index} "{subtitle.File}"
                 """));
         string arguments = mergeVideo.IsNullOrWhiteSpace()
             ? $"""
