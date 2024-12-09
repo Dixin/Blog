@@ -9,12 +9,14 @@ using MediaManager.Net;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using MonoTorrent;
 using Xabe.FFmpeg;
 using SearchOption = System.IO.SearchOption;
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddHttpClient();
+builder.Services.AddLogging(loggingBuilder => loggingBuilder.AddConsole());
 using IHost host = builder.Build();
 
 IConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
@@ -412,7 +414,7 @@ string[][] metadataDrives = [
 //await Top.DownloadMetadataAsync(settings.MovieTopH264720PUrl, settings.MovieTopH264720PMetadata, index => index <= 10);
 //await Top.DownloadMetadataAsync(settings.TVTopX265Url, settings.TVTopX265Metadata, index => index <= 5);
 
-//await Preferred.DownloadMetadataAsync(settings, index => index <= 1000);
+//await Preferred.DownloadMetadataAsync(settings, index => index <= 3206);
 //await Preferred.DownloadAllTorrentsAsync(settings, false);
 //await Preferred.WriteFileMetadataAsync(settings, false);
 //await Preferred.CleanUpMetadataErrorsAsync(settings);
@@ -515,7 +517,8 @@ string[][] metadataDrives = [
 //    //rename: (f, t) => Regex.Replace(f, @"(\.S[0-9]{2}E[0-9]{2})", $"{"$1".ToUpperInvariant()}.{t}"),
 //    isDryRun: false);
 
-//Video.CopyMovieMetadata(settings.MovieTemp42);
+//Video.PrintVideosWithErrors(settings, settings.MovieTemp42, searchOption: SearchOption.AllDirectories);
+//Video.CopyMovieMetadata(settings.MovieTemp42, 2);
 //await Video.PrintMovieImdbIdErrorsAsync(settings, true, log, cancellationTokenSource.Token, settings.MovieTemp42);
 //await Video.ConvertToUtf8Async(settings.MovieTemp42, true);
 //Video.MoveSubtitleToParentDirectory(settings.MovieTemp42, settings.MovieSubtitleBackupDirectory, false);
@@ -523,10 +526,9 @@ string[][] metadataDrives = [
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp42, 2, overwrite: false, useCache: true, useBrowser: true);
 //FfmpegHelper.MergeAllDubbedMovies(settings.MovieTemp42, isDryRun: true);
 //Video.PrintDuplicateImdbId(null, settings.MovieTemp41, settings.MovieTemp42, settings.MovieTemp3, settings.MovieTemp4);
-//Video.PrintVideosWithErrors(settings, settings.MovieTemp42, searchOption: SearchOption.AllDirectories);
 //Video.BackupMetadata(settings.MovieTemp42);
 //await Video.DownloadMissingTitlesFromDoubanAsync(settings, settings.MovieTemp42);
-//Video.CopyMovieMetadata(settings.MovieTemp42, true);
+//Video.CopyMovieMetadata(settings.MovieTemp42, 2, true);
 //Video.RenameDirectoriesWithMetadata(settings, settings.MovieTemp42, isDryRun: false, skipRenamed: true);
 //Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp42, isDryRun: false);
 //Video.MoveFanArt(settings.MovieTemp42);
