@@ -540,7 +540,7 @@ public static class FfmpegHelper
             });
     }
 
-    internal static async Task ExtractMkvAsync(string inputVideo, string mergeVideo = "", string outputVideo = "", bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task<int> ExtractMkvAsync(string inputVideo, string mergeVideo = "", string outputVideo = "", bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
         Debug.Assert(inputVideo.EndsWithIgnoreCase(".mkv"));
@@ -593,6 +593,7 @@ public static class FfmpegHelper
             }
         }
 
+        string strict = inputVideo.ContainsIgnoreCase(".TrueHD") ? "-strict -2" : "";
         string subtitleArguments = string.Join(
             " ",
             subtitles.Select(subtitle => $"""
@@ -600,18 +601,20 @@ public static class FfmpegHelper
                 """));
         string arguments = mergeVideo.IsNullOrWhiteSpace()
             ? $"""
-            -i "{inputVideo}" -c copy -map_metadata 0 -map 0:v -map 0:a "{outputVideo}" {subtitleArguments} -n
+            -i "{inputVideo}" -c copy -map_metadata 0 -map 0:v -map 0:a {strict} "{outputVideo}" {subtitleArguments} -n
             """
             : $"""
-            -i "{inputVideo}" -i "{mergeVideo}" -c copy -map_metadata 0 -map 0:v -map 0:a -map 1:a "{outputVideo}" {subtitleArguments} -n
+            -i "{inputVideo}" -i "{mergeVideo}" -c copy -map_metadata 0 -map 0:v -map 0:a -map 1:a {strict} "{outputVideo}" {subtitleArguments} -n
             """;
         log(arguments);
         log(string.Empty);
 
         if (!isDryRun)
         {
-            await ProcessHelper.StartAndWaitAsync(Executable, arguments, null, null, null, true, cancellationToken);
+            return await ProcessHelper.StartAndWaitAsync(Executable, arguments, null, null, null, true, cancellationToken);
         }
+
+        return 0;
 
         static string GetSubtitleExtension(string codec) => codec.ToUpperInvariant() switch
         {
