@@ -37,7 +37,7 @@ using TextWriterTraceListener textTraceListener = new(Path.Combine(Path.GetTempP
 using ConsoleTraceListener consoleTraceListener = new();
 Trace.Listeners.Add(consoleTraceListener);
 Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
-FFmpeg.SetExecutablesPath(@"C:\Users\User\AppData\Local\Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-7.1-full_build\bin");
+FFmpeg.SetExecutablesPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-7.1-full_build\bin"));
 Action<string> log = Logger.WriteLine;
 
 string[][] mediaDrives = [
