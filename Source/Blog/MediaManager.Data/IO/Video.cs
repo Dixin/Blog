@@ -4,6 +4,7 @@ using Examples.Common;
 using Examples.IO;
 using MediaInfoLib;
 using MediaManager.Net;
+using Xabe.FFmpeg;
 
 internal static partial class Video
 {
@@ -97,7 +98,7 @@ internal static partial class Video
 
     internal static bool IsDolbyVision(string video)
     {
-        MediaInfo mediaInfo = new();
+        MediaInfoLib.MediaInfo mediaInfo = new();
         mediaInfo.Open(video);
         mediaInfo.Option("Complete"); //or Option("Complete", "1") or Option("Info_Parameters")
         string inform = mediaInfo.Inform();
@@ -110,5 +111,23 @@ internal static partial class Video
 
         Debug.Assert(hdrFormat.ContainsIgnoreCase("Dolby Vision") || hdrFormat.ContainsIgnoreCase("DolbyVision"));
         return true;
+    }
+
+    internal static async Task<bool> AreSameDurationAsync(string video1, string video2, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+
+        TimeSpan duration1 = (await FFmpeg.GetMediaInfo(video1)).Duration;
+        TimeSpan duration2 = (await FFmpeg.GetMediaInfo(video2)).Duration;
+        TimeSpan difference = duration1 - duration2;
+        if (difference > TimeSpan.FromSeconds(-1) && difference < TimeSpan.FromSeconds(1))
+        {
+            return true;
+        }
+
+        log($"{duration1} {video1}");
+        log($"{duration1} {video1}");
+        log(string.Empty);
+        return false;
     }
 }
