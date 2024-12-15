@@ -126,7 +126,7 @@ internal static partial class Video
         }
 
         log($"{duration1} {video1}");
-        log($"{duration1} {video1}");
+        log($"{duration2} {video2}");
         log(string.Empty);
         return false;
     }
