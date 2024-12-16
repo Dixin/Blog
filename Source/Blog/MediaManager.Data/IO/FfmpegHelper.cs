@@ -540,7 +540,7 @@ public static class FfmpegHelper
             });
     }
 
-    internal static async Task<int> ExtractMkvAsync(string inputVideo, string mergeVideo = "", string outputVideo = "", bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task<int> ExtractMkvAsync(ISettings settings, string inputVideo, string mergeVideo = "", string outputVideo = "", bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
         Debug.Assert(inputVideo.EndsWithIgnoreCase(".mkv"));
@@ -556,9 +556,12 @@ public static class FfmpegHelper
             .Select(subtitleGroup => subtitleGroup.OrderBy(subtitle => subtitle.Index).ToArray())
             .Do(subtitleArray =>
             {
-                Debug.Assert(subtitleArray.Count(subtitle => Regex.IsMatch(subtitle.Title, @"\bForced\b", RegexOptions.IgnoreCase)) <= 1);
-                Debug.Assert(subtitleArray.Count(subtitle => Regex.IsMatch(subtitle.Title, @"\bSDH\b", RegexOptions.IgnoreCase)) <= 1);
-                Debug.Assert(subtitleArray.Count(subtitle => !Regex.IsMatch(subtitle.Title, @"\bForced\b", RegexOptions.IgnoreCase) && !Regex.IsMatch(subtitle.Title, @"\bSDH\b", RegexOptions.IgnoreCase)) <= 1);
+                if (inputVideo.Contains($"{Video.VersionSeparator}{settings.TopEnglishKeyword}"))
+                {
+                    Debug.Assert(subtitleArray.Count(subtitle => Regex.IsMatch(subtitle.Title, @"\bForced\b", RegexOptions.IgnoreCase)) <= 1);
+                    Debug.Assert(subtitleArray.Count(subtitle => Regex.IsMatch(subtitle.Title, @"\bSDH\b", RegexOptions.IgnoreCase)) <= 1);
+                    Debug.Assert(subtitleArray.Count(subtitle => !Regex.IsMatch(subtitle.Title, @"\bForced\b", RegexOptions.IgnoreCase) && !Regex.IsMatch(subtitle.Title, @"\bSDH\b", RegexOptions.IgnoreCase)) <= 1);
+                }
             })
             .Concat()
             .ToArray()
@@ -619,6 +622,7 @@ public static class FfmpegHelper
         static string GetSubtitleExtension(string codec) => codec.ToUpperInvariant() switch
         {
             "SUBRIP" => ".srt",
+            "HDMV_PGS_SUBTITLE" => ".sup",
             _ => throw new InvalidOperationException(codec)
         };
 
@@ -634,7 +638,7 @@ public static class FfmpegHelper
                 return "-sdh";
             }
 
-            return "";
+            return $"-{title.Replace(" ", "_").Replace(@"\", "_").Replace("/", "_")}";
         }
     }
 }
