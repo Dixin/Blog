@@ -1,5 +1,4 @@
-﻿#nullable enable
-namespace Examples.Management;
+﻿namespace Examples.Management;
 
 using System.Management;
 using System.Runtime.Versioning;

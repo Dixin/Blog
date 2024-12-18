@@ -1,5 +1,4 @@
-﻿#nullable enable
-namespace Examples.Diagnostics;
+﻿namespace Examples.Diagnostics;
 
 using System.Management;
 using System.Runtime.Versioning;
@@ -42,10 +41,10 @@ public static partial class Win32ProcessHelper
         uint? parentProcessId = ById(childProcessId, managementScope)?.ParentProcessId;
         Win32Process? parentProcess = parentProcessId is null ? null : ById(parentProcessId.Value, managementScope);
         return parentProcess is null
-            ? Enumerable.Empty<Win32Process>()
+            ? []
             : Enumerable.Repeat(parentProcess, 1).Concat(parentProcess.ProcessId.HasValue
                 ? AllParentProcess(parentProcess.ProcessId.Value)
-                : Enumerable.Empty<Win32Process>());
+                : []);
     }
 }
 
@@ -61,12 +60,13 @@ public static partial class Win32ProcessHelper
     public static IEnumerable<Win32Process> AllChildProcesses(
         uint parentProcessId, ManagementScope? managementScope = null)
     {
-        IEnumerable<Win32Process> childProcesses = Wmi.Query(
-            $"SELECT * FROM {Win32Process.WmiClassName} WHERE {nameof(Win32Process.ParentProcessId)} = {parentProcessId}",
-            managementScope).Select(process => new Win32Process(process));
-        return childProcesses.Concat(childProcesses.SelectMany(process => process.ProcessId.HasValue
-            ? AllChildProcesses(process.ProcessId.Value, managementScope)
-            : Enumerable.Empty<Win32Process>()));
+        Win32Process[] childProcesses = Wmi
+            .Query($"SELECT * FROM {Win32Process.WmiClassName} WHERE {nameof(Win32Process.ParentProcessId)} = {parentProcessId}", managementScope)
+            .Select(process => new Win32Process(process))
+            .ToArray();
+        return childProcesses
+            .Concat(childProcesses
+                .SelectMany(process => process.ProcessId.HasValue ? AllChildProcesses(process.ProcessId.Value, managementScope) : []));
     }
 
     public static bool TryKillAll(string name, params string[] arguments)

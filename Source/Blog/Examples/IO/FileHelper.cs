@@ -159,7 +159,7 @@ public static class FileHelper
         WriteTextImplementation(file, tempFile, text, encoding);
     }
 
-    public static void WriteText(string file, string text, ref readonly object @lock, Encoding? encoding = null)
+    public static void WriteText(string file, string text, ref readonly Lock @lock, Encoding? encoding = null)
     {
         encoding ??= Encoding.UTF8;
         string tempFile = $"{file}.tmp";

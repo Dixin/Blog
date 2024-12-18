@@ -225,7 +225,7 @@ internal static partial class Video
                 .Value
                 .Keys
                 .Where(video => !video.ContainsIgnoreCase(@"\Delete\"))
-                .DistinctBy(f => PathHelper.GetDirectoryName(f), StringComparer.OrdinalIgnoreCase)
+                .DistinctBy(PathHelper.GetDirectoryName, StringComparer.OrdinalIgnoreCase)
                 .Count() > 1)
             .ForEach(pair => pair
                 .Value
@@ -263,7 +263,7 @@ internal static partial class Video
                 .ForEach(log));
 
         noImdbId
-            .Select(metadata => PathHelper.GetDirectoryName(metadata))
+            .Select(PathHelper.GetDirectoryName)
             .Select(movie =>
             {
                 string[] metadataFiles = Directory
@@ -339,7 +339,7 @@ internal static partial class Video
                     directoryInfo.TranslatedTitle3.TrimStart('-')
                 ];
 
-                if (Regex.IsMatch(trimmedMovie, @"·[0-9]"))
+                if (Regex.IsMatch(trimmedMovie, "·[0-9]"))
                 {
                     log($"!Special character ·: {trimmedMovie}");
                 }
@@ -494,7 +494,7 @@ internal static partial class Video
                 }
 
                 string[] videos = topFiles.Where(IsVideo).ToArray();
-                VideoMovieFileInfo[] videoFileInfos = videos.Select(video => VideoMovieFileInfo.Parse(video)).ToArray();
+                VideoMovieFileInfo[] videoFileInfos = videos.Select(VideoMovieFileInfo.Parse).ToArray();
                 string[] subtitles = topFiles.Where(IsSubtitle).ToArray();
                 string[] metadataFiles = topFiles.Where(IsXmlMetadata).ToArray();
                 string[] tmdbFiles = topFiles.Where(file => file.HasExtension(TmdbMetadata.Extension)).ToArray();
@@ -502,7 +502,7 @@ internal static partial class Video
 
                 if (tmdbFiles.Length < 1)
                 {
-                    log($"!TMDB file is missing.");
+                    log("!TMDB file is missing.");
                 }
                 else if (tmdbFiles.Length > 1)
                 {
@@ -1576,7 +1576,7 @@ internal static partial class Video
                 }
 
                 VideoMovieFileInfo[] x265Videos = videos.Where(video => video.GetEncoderType() is EncoderType.TopX265 or EncoderType.TopX265BluRay).ToArray();
-                VideoMovieFileInfo[] h264Videos = videos.Where(video => (video.GetEncoderType() is EncoderType.TopH264 or EncoderType.TopH264BluRay) && video.GetDefinitionType() == DefinitionType.P1080).ToArray();
+                VideoMovieFileInfo[] h264Videos = videos.Where(video => video.GetEncoderType() is EncoderType.TopH264 or EncoderType.TopH264BluRay && video.GetDefinitionType() == DefinitionType.P1080).ToArray();
                 VideoMovieFileInfo[] preferredVideos = videos.Where(video => video.GetEncoderType() is EncoderType.PreferredH264 or EncoderType.PreferredH264BluRay or EncoderType.PreferredX265 or EncoderType.PreferredX265BluRay).ToArray();
 
                 if (x265Videos.Any())

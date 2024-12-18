@@ -1,5 +1,4 @@
-﻿#nullable enable
-namespace Examples.Management;
+﻿namespace Examples.Management;
 
 using System.Management;
 using System.Runtime.Versioning;
@@ -12,7 +11,7 @@ public static class Wmi
     {
         using ManagementObjectSearcher searcher = new(
             managementScope ?? new(), // Default ManagementPath: \\.\root\cimv2.
-            objectQuery.ThrowIfNull()); // Default QueryLangauge: WQL.
+            objectQuery.ThrowIfNull()); // Default Query Language: WQL.
         using ManagementObjectCollection processes = searcher.Get();
         return processes.OfType<ManagementObject>().ToArray();
     }

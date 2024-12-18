@@ -40,7 +40,7 @@ internal static class Top
         log ??= Logger.WriteLine;
         @continue ??= _ => true;
 
-        object writeJsonLock = new();
+        Lock writeJsonLock = new();
         try
         {
             using IWebDriver webDriver = WebDriverHelper.Start(partitionIndex, true);

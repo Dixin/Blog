@@ -24,7 +24,7 @@ internal static class Preferred
         ConcurrentDictionary<string, PreferredSummary> allSummaries = await settings.LoadMoviePreferredSummaryAsync(cancellationToken);
         ConcurrentQueue<PreferredSummary> downloadedSummaries = [];
         ConcurrentQueue<int> pageIndexes = new(Enumerable.Range(initialPageIndex, int.MaxValue).Where(predicate));
-        object writeJsonLock = new();
+        Lock writeJsonLock = new();
         await Enumerable
             .Range(0, degreeOfParallelism.Value)
             .ParallelForEachAsync(
@@ -97,7 +97,7 @@ internal static class Preferred
 
         int summaryIndex = 0;
         int summaryCount = summaries.Count;
-        object writeJsonLock = new();
+        Lock writeJsonLock = new();
         await Enumerable
             .Range(0, degreeOfParallelism.Value)
             .ParallelForEachAsync(

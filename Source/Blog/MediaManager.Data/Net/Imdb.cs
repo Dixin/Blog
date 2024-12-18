@@ -60,7 +60,7 @@ internal static class Imdb
         string parentKeywordsHtml = string.Empty;
         string parentAdvisoriesUrl = string.Empty;
         string parentAdvisoriesHtml = string.Empty;
-        string parentHref = imdbCQ.Find(@"div.titleParent a").FirstOrDefault()?.GetAttribute("href")
+        string parentHref = imdbCQ.Find("div.titleParent a").FirstOrDefault()?.GetAttribute("href")
             ?? imdbCQ.Find("div").FirstOrDefault(div => div.Classes.Any(@class => @class.StartsWithOrdinal("TitleBlock__SeriesParentLinkWrapper")))?.Cq().Find("a").Attr("href")
             ?? imdbCQ.Find("section.ipc-page-section > div:first > a:first").FirstOrDefault()?.GetAttribute("href")
             ?? string.Empty;
@@ -85,17 +85,17 @@ internal static class Imdb
             }
         }
 
-        string htmlTitle = imdbCQ.Find(@"title").Text();
+        string htmlTitle = imdbCQ.Find("title").Text();
         string htmlTitleYear = htmlTitle.ContainsOrdinal("(")
             ? htmlTitle[(htmlTitle.LastIndexOfOrdinal("(") + 1)..htmlTitle.LastIndexOfOrdinal(")")]
             : string.Empty;
         htmlTitleYear = Regex.Match(htmlTitleYear, "[0-9]{4}").Value;
 
-        string htmlYear = imdbCQ.Find(@"h1[data-testid='hero__pageTitle']").NextAll().Find("li:first").Text().Trim();
+        string htmlYear = imdbCQ.Find("h1[data-testid='hero__pageTitle']").NextAll().Find("li:first").Text().Trim();
         htmlYear = Regex.Match(htmlYear, "[0-9]{4}").Value;
         if (!Regex.IsMatch(htmlYear, "[0-9]{4}"))
         {
-            htmlYear = imdbCQ.Find(@"h1[data-testid='hero__pageTitle']").NextAll().Find("li:eq(1)").Text().Trim();
+            htmlYear = imdbCQ.Find("h1[data-testid='hero__pageTitle']").NextAll().Find("li:eq(1)").Text().Trim();
             htmlYear = Regex.Match(htmlYear, "[0-9]{4}").Value;
         }
 
@@ -452,7 +452,7 @@ internal static class Imdb
                      .Trim();
             }
 
-            originalTitle = imdbCQ.Find(@"h1[data-testid='hero__pageTitle']").Next("div").Text().Trim();
+            originalTitle = imdbCQ.Find("h1[data-testid='hero__pageTitle']").Next("div").Text().Trim();
             if (originalTitle.StartsWithIgnoreCase("Original title: "))
             {
                 originalTitle = originalTitle["Original title: ".Length..].Trim();

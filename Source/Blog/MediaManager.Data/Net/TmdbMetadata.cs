@@ -1,7 +1,8 @@
 using Examples.Common;
 using Examples.IO;
 using MediaManager.IO;
-using MediaManager.Net;
+
+namespace MediaManager.Net;
 
 internal static class TmdbMetadata
 {
@@ -30,15 +31,15 @@ internal static class TmdbMetadata
             throw new InvalidOperationException($"No XML metadata: {movie}.");
         }
 
-        XDocument[] documents = files.Select(f => XDocument.Load(f)).ToArray();
+        XDocument[] documents = files.Select(XDocument.Load).ToArray();
 
-        string[] tmdbids = documents.Select(doc => doc.Root?.Element("tmdbid")?.Value ?? string.Empty).Distinct().ToArray();
-        if (tmdbids.Length != 1)
+        string[] tmdbIds = documents.Select(doc => doc.Root?.Element("tmdbid")?.Value ?? string.Empty).Distinct().ToArray();
+        if (tmdbIds.Length != 1)
         {
             throw new InvalidOperationException($"Inconsistent TMDB id: {movie}.");
         }
 
-        string tmdbId = tmdbids.Single();
+        string tmdbId = tmdbIds.Single();
         string newMetadataFileName;
         if (tmdbId.IsNullOrWhiteSpace())
         {

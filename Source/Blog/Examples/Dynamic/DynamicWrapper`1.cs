@@ -1,5 +1,4 @@
-﻿#nullable enable
-namespace Examples.Dynamic;
+﻿namespace Examples.Dynamic;
 
 using System.Dynamic;
 

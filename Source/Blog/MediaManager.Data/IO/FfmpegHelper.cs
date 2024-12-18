@@ -275,7 +275,7 @@ public static class FfmpegHelper
                 string[] messages = output.Concat(errors).ToArray();
                 (string, string, string, string)[] timestampCrops = messages
                     .Where(message => message.IsNotNullOrWhiteSpace())
-                    .Select(message => Regex.Match(message, @" crop=([0-9]+):([0-9]+):([0-9]+):([0-9]+)$"))
+                    .Select(message => Regex.Match(message, " crop=([0-9]+):([0-9]+):([0-9]+):([0-9]+)$"))
                     .Where(match => match.Success)
                     .Select(match => (match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Value, match.Groups[4].Value))
                     .ToArray();
@@ -582,7 +582,7 @@ public static class FfmpegHelper
         if (duplicateSubtitles.Any())
         {
             duplicateSubtitles.ForEach(group => group.Select(subtitle => $"{subtitle.Index} {subtitle.File}").Append(string.Empty).ForEach(log));
-            HashSet<int> duplicateSubtitleIndexes = new(duplicateSubtitles.Concat().Select(subtitle => subtitle.Index));
+            HashSet<int> duplicateSubtitleIndexes = [..duplicateSubtitles.Concat().Select(subtitle => subtitle.Index)];
             Enumerable
                 .Range(0, subtitles.Length)
                 .Where(index => duplicateSubtitleIndexes.Contains(subtitles[index].Index))

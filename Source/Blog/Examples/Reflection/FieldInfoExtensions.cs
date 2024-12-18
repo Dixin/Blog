@@ -1,5 +1,4 @@
-﻿#nullable enable
-namespace Examples.Reflection;
+﻿namespace Examples.Reflection;
 
 using Examples.Common;
 
@@ -15,7 +14,7 @@ public static class FieldInfoExtensions
         if (typeof(T).IsValueType)
         {
             // Cannot use SetValue, which boxes obj.
-            field.SetValueDirect(__makeref(obj), value);
+            field.SetValueDirect(__makeref(obj), value!);
         }
         else
         {

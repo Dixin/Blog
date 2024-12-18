@@ -668,7 +668,7 @@ internal static partial class Video
                         string metadataFile = metadataFiles.Single(file => PathHelper.GetFileName(file).EqualsIgnoreCase($"movie{XmlMetadataExtension}"));
                         XDocument metadataDocument = XDocument.Load(metadataFile);
                         string translatedTitle = metadataDocument.Root!.Element("title")!.Value;
-                        if (translatedTitle.ContainsChineseCharacter() || Regex.IsMatch(translatedTitle, @"^[0-9]+$"))
+                        if (translatedTitle.ContainsChineseCharacter() || Regex.IsMatch(translatedTitle, "^[0-9]+$"))
                         {
                             continue;
                         }
@@ -731,7 +731,7 @@ internal static partial class Video
                             noTranslation.Add((backupEnglishTitle, year, movie));
                         }
 
-                        await Task.Delay(TimeSpan.FromSeconds(15));
+                        await Task.Delay(TimeSpan.FromSeconds(15), token);
                     }
                 },
                 Douban.MaxDegreeOfParallelism,

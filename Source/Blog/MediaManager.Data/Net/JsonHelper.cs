@@ -59,7 +59,7 @@ internal class JsonHelper
         FileHelper.WriteText(file, jsonContent);
     }
 
-    public static void SerializeToFile<TValue>(TValue value, string file, ref readonly object @lock)
+    public static void SerializeToFile<TValue>(TValue value, string file, ref readonly Lock @lock)
     {
         string jsonContent = Serialize(value);
         FileHelper.WriteText(file, jsonContent, in @lock);
