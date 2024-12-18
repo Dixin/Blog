@@ -37,7 +37,7 @@ internal static partial class Video
         ParallelQuery<string> parallelFiles = files
             .AsParallel()
             .WithDegreeOfParallelism(IOMaxDegreeOfParallelism);
-        if(skipTopPreferred)
+        if (skipTopPreferred)
         {
             parallelFiles = parallelFiles
                 .Where(video =>
@@ -213,6 +213,27 @@ internal static partial class Video
             .Where(movie => movie.ContainsOrdinal("="))
             .Where(movie => !Regex.IsMatch(movie.Split("=")[1], "^[a-z]{1}.", RegexOptions.IgnoreCase))
             .ForEach(log);
+    }
+
+    internal static async Task PrintLibraryDuplicateImdbIdAsync(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default)
+    {
+        log ??= Logger.WriteLine;
+
+        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> existingMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
+        existingMetadata
+            .Where(pair => pair.Value.Count > 1 && pair
+                .Value
+                .Keys
+                .Where(video => !video.ContainsIgnoreCase(@"\Delete\"))
+                .DistinctBy(f => PathHelper.GetDirectoryName(f), StringComparer.OrdinalIgnoreCase)
+                .Count() > 1)
+            .ForEach(pair => pair
+                .Value
+                .Keys
+                .Select(video => Path.Combine(settings.LibraryDirectory, video))
+                .Order()
+                .Append(string.Empty)
+                .ForEach(log));
     }
 
     internal static void PrintDuplicateImdbId(Action<string>? log = null, params string[] directories)
