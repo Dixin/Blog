@@ -52,7 +52,12 @@ public static class DirectoryHelper
 
         if (!source.EqualsOrdinal(destination))
         {
-            Directory.Move(source, destination);
+            bool isHidden = IsHidden(source);
+            FileSystem.MoveDirectory(source, destination);
+            if (isHidden)
+            {
+                SetHidden(destination, isHidden);
+            }
         }
     }
 
