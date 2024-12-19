@@ -72,7 +72,7 @@ internal static class Shared
             downloadingUrls = downloadingUrls.Where(item => !results.ContainsKey(item.Key));
         }
 
-        object writeJsonLock = new();
+        Lock writeJsonLock = new();
         await downloadingUrls
             .ParallelForEachAsync(
                 async (url, index, token) =>

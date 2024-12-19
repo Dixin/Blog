@@ -159,7 +159,7 @@ public static class FileHelper
         WriteTextImplementation(file, tempFile, text, encoding);
     }
 
-    public static void WriteText(string file, string text, ref readonly object @lock, Encoding? encoding = null)
+    public static void WriteText(string file, string text, ref readonly Lock @lock, Encoding? encoding = null)
     {
         encoding ??= Encoding.UTF8;
         string tempFile = $"{file}.tmp";
@@ -193,12 +193,31 @@ public static class FileHelper
         FileSystem.DeleteFile(file, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
     }
 
-    public static void ReplaceFileName(string file, string newFileName, bool overwrite = false) =>
-        Move(file, PathHelper.ReplaceFileName(file, newFileName), overwrite);
+    public static string ReplaceFileName(string file, string newFileName, bool overwrite = false, bool skipDestinationDirectory = false)
+    {
+        string destination = PathHelper.ReplaceFileName(file, newFileName);
+        Move(file, destination, overwrite, skipDestinationDirectory);
+        return destination;
+    }
 
-    public static void ReplaceFileNameWithoutExtension(string file, string newFileNameWithoutExtension, bool overwrite = false, bool skipDestinationDirectory = false) =>
-        Move(file, PathHelper.ReplaceFileNameWithoutExtension(file, newFileNameWithoutExtension), overwrite, skipDestinationDirectory);
+    public static string ReplaceFileName(string file, Func<string, string> replace, bool overwrite = false, bool skipDestinationDirectory = false)
+    {
+        string destination = PathHelper.ReplaceFileName(file, replace);
+        Move(file, destination, overwrite, skipDestinationDirectory);
+        return destination;
+    }
 
-    public static void ReplaceFileNameWithoutExtension(string file, Func<string, string> replace, bool overwrite = false, bool skipDestinationDirectory = false) =>
-        Move(file, PathHelper.ReplaceFileNameWithoutExtension(file, replace), overwrite, skipDestinationDirectory);
+    public static string ReplaceFileNameWithoutExtension(string file, string newFileNameWithoutExtension, bool overwrite = false, bool skipDestinationDirectory = false)
+    {
+        string destination = PathHelper.ReplaceFileNameWithoutExtension(file, newFileNameWithoutExtension);
+        Move(file, destination, overwrite, skipDestinationDirectory);
+        return destination;
+    }
+
+    public static string ReplaceFileNameWithoutExtension(string file, Func<string, string> replace, bool overwrite = false, bool skipDestinationDirectory = false)
+    {
+        string destination = PathHelper.ReplaceFileNameWithoutExtension(file, replace);
+        Move(file, destination, overwrite, skipDestinationDirectory);
+        return destination;
+    }
 }

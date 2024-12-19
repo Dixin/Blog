@@ -61,7 +61,8 @@ public record MagnetUri(string ExactTopic, string DisplayName, string[] Trackers
         Trackers = this.Trackers.Union(DefaultTrackers, StringComparer.OrdinalIgnoreCase).ToArray()
     };
 
-    public static ImmutableArray<string> DefaultTrackers { get; } = ImmutableArray.Create(
+    public static ImmutableArray<string> DefaultTrackers { get; } =
+    [
         "https://1337.abcvg.info:443/announce",
         "http://1337.abcvg.info:80/announce",
         "udp://1c.premierzal.ru:6969/announce",
@@ -193,5 +194,6 @@ public record MagnetUri(string ExactTopic, string DisplayName, string[] Trackers
         "udp://v2.iperson.xyz:6969/announce",
         "http://www.peckservers.com:9000/announce",
         "https://www.peckservers.com:9443/announce",
-        "udp://yahor.of.by:6969/announce");
+        "udp://yahor.of.by:6969/announce"
+    ];
 }

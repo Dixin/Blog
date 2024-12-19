@@ -25,7 +25,7 @@ internal static class Rare
         int linkCount = links.Length;
         log($"Total: {linkCount}");
         ConcurrentDictionary<string, RareMetadata> rareMetadata = new();
-        object writeJsonLock = new();
+        Lock writeJsonLock = new();
         await links.ParallelForEachAsync(
             async (link, index, token) =>
             {

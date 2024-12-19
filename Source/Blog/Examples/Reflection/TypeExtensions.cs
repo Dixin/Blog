@@ -1,5 +1,4 @@
-﻿#nullable enable
-namespace Examples.Reflection;
+﻿namespace Examples.Reflection;
 
 using Examples.Common;
 

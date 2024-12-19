@@ -660,14 +660,7 @@ internal static partial class Video
                 List<string> languages = [];
                 if (content.ContainsChineseCharacter())
                 {
-                    if (content.ContainsCommonTraditionalChineseCharacter())
-                    {
-                        languages.Add("cht");
-                    }
-                    else
-                    {
-                        languages.Add("chs");
-                    }
+                    languages.Add(content.ContainsCommonTraditionalChineseCharacter() ? "cht" : "chs");
                 }
 
                 if (content.ContainsCommonEnglish())

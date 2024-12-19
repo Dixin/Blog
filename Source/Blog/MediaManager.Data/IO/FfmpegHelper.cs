@@ -275,7 +275,7 @@ public static class FfmpegHelper
                 string[] messages = output.Concat(errors).ToArray();
                 (string, string, string, string)[] timestampCrops = messages
                     .Where(message => message.IsNotNullOrWhiteSpace())
-                    .Select(message => Regex.Match(message, @" crop=([0-9]+):([0-9]+):([0-9]+):([0-9]+)$"))
+                    .Select(message => Regex.Match(message, " crop=([0-9]+):([0-9]+):([0-9]+):([0-9]+)$"))
                     .Where(match => match.Success)
                     .Select(match => (match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Value, match.Groups[4].Value))
                     .ToArray();
@@ -540,7 +540,7 @@ public static class FfmpegHelper
             });
     }
 
-    internal static async Task<int> ExtractMkvAsync(string inputVideo, string mergeVideo = "", string outputVideo = "", bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task<int> ExtractMkvAsync(ISettings settings, string inputVideo, string mergeVideo = "", string outputVideo = "", bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
         Debug.Assert(inputVideo.EndsWithIgnoreCase(".mkv"));
@@ -550,24 +550,31 @@ public static class FfmpegHelper
             outputVideo = PathHelper.ReplaceExtension(inputVideo, ".mp4");
         }
         IMediaInfo inputMediaInfo = await FFmpeg.GetMediaInfo(inputVideo, cancellationToken);
-        (int Index, string File)[] subtitles = inputMediaInfo
+        (int Index, int SubtitleIndex, string Title, string File)[] subtitles = inputMediaInfo
             .SubtitleStreams
             .GroupBy(subtitle => subtitle.Language)
             .Select(subtitleGroup => subtitleGroup.OrderBy(subtitle => subtitle.Index).ToArray())
             .Do(subtitleArray =>
             {
-                Debug.Assert(subtitleArray.Count(subtitle => Regex.IsMatch(subtitle.Title, @"\bForced\b", RegexOptions.IgnoreCase)) <= 1);
-                Debug.Assert(subtitleArray.Count(subtitle => Regex.IsMatch(subtitle.Title, @"\bSDH\b", RegexOptions.IgnoreCase)) <= 1);
-                Debug.Assert(subtitleArray.Count(subtitle => !Regex.IsMatch(subtitle.Title, @"\bForced\b", RegexOptions.IgnoreCase) && !Regex.IsMatch(subtitle.Title, @"\bSDH\b", RegexOptions.IgnoreCase)) <= 1);
+                if (inputVideo.Contains($"{Video.VersionSeparator}{settings.TopEnglishKeyword}"))
+                {
+                    Debug.Assert(subtitleArray.Count(subtitle => Regex.IsMatch(subtitle.Title, @"\bForced\b", RegexOptions.IgnoreCase)) <= 1);
+                    Debug.Assert(subtitleArray.Count(subtitle => Regex.IsMatch(subtitle.Title, @"\bSDH\b", RegexOptions.IgnoreCase)) <= 1);
+                    Debug.Assert(subtitleArray.Count(subtitle => !Regex.IsMatch(subtitle.Title, @"\bForced\b", RegexOptions.IgnoreCase) && !Regex.IsMatch(subtitle.Title, @"\bSDH\b", RegexOptions.IgnoreCase)) <= 1);
+                }
             })
             .Concat()
             .ToArray()
-            .Select(subtitle => (subtitle.Index, File: PathHelper.ReplaceExtension(PathHelper.AddFilePostfix(outputVideo, $".{subtitle.Language}{GetSubtitleTitle(subtitle.Title)}"), GetSubtitleExtension(subtitle.Codec))))
+            .Select((subtitle, index) => (
+                subtitle.Index,
+                SubtitleIndex: index,
+                Title: GetSubtitleTitle(subtitle.Title),
+                File: PathHelper.ReplaceExtension(PathHelper.AddFilePostfix(outputVideo, $".{subtitle.Language}{GetSubtitleTitle(subtitle.Title)}"), GetSubtitleExtension(subtitle.Codec))))
             .OrderBy(subtitle => subtitle.Index)
             .Do(subtitle => log(subtitle.File))
             .ToArray();
 
-        IGrouping<string, (int Index, string File)>[] duplicateSubtitles = subtitles
+        IGrouping<string, (int Index, int SubtitleIndex, string Title, string File)>[] duplicateSubtitles = subtitles
             .GroupBy(subtitle => subtitle.File, StringComparer.OrdinalIgnoreCase)
             .Where(group => group.Count() > 1)
             .ToArray();
@@ -575,7 +582,20 @@ public static class FfmpegHelper
         if (duplicateSubtitles.Any())
         {
             duplicateSubtitles.ForEach(group => group.Select(subtitle => $"{subtitle.Index} {subtitle.File}").Append(string.Empty).ForEach(log));
-            throw new ArgumentOutOfRangeException(nameof(inputVideo), inputVideo);
+            HashSet<int> duplicateSubtitleIndexes = [..duplicateSubtitles.Concat().Select(subtitle => subtitle.Index)];
+            Enumerable
+                .Range(0, subtitles.Length)
+                .Where(index => duplicateSubtitleIndexes.Contains(subtitles[index].Index))
+                .ForEach(index => subtitles[index] = subtitles[index] with
+                {
+                    File = PathHelper.AddFilePostfix(
+                        subtitles[index].File,
+                        $"{(subtitles[index].Title.IsNullOrWhiteSpace() ? "-" : "_")}{subtitles[index].SubtitleIndex}")
+                });
+            Debug.Assert(subtitles
+                .GroupBy(subtitle => subtitle.File, StringComparer.OrdinalIgnoreCase)
+                .Where(group => group.Count() > 1)
+                .IsEmpty());
         }
 
         if (mergeVideo.IsNotNullOrWhiteSpace() && !mergeVideo.ContainsIgnoreCase("Ex.Machina.2014") && !mergeVideo.ContainsIgnoreCase("Jurassic.Park.III.2001") && !mergeVideo.ContainsIgnoreCase("X-Men.The.Last.Stand.2006"))
@@ -619,11 +639,18 @@ public static class FfmpegHelper
         static string GetSubtitleExtension(string codec) => codec.ToUpperInvariant() switch
         {
             "SUBRIP" => ".srt",
+            "HDMV_PGS_SUBTITLE" => ".sup",
+            "ASS" => ".ass",
             _ => throw new InvalidOperationException(codec)
         };
 
-        static string GetSubtitleTitle(string title)
+        static string GetSubtitleTitle(string? title)
         {
+            if (title.IsNullOrWhiteSpace())
+            {
+                return string.Empty;
+            }
+
             string[] words = Regex.Matches(title, @"\b\w+\b").Select(match => match.Value.Trim()).ToArray();
             if (words.ContainsIgnoreCase("Forced"))
             {
@@ -634,7 +661,7 @@ public static class FfmpegHelper
                 return "-sdh";
             }
 
-            return "";
+            return $"-{title.Replace(" ", "_").Replace(@"\", "_").Replace("/", "_")}";
         }
     }
 }

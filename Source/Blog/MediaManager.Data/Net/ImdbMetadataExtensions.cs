@@ -1,6 +1,8 @@
 ﻿namespace MediaManager.Net;
 
 using Examples.Common;
+using Examples.IO;
+using MediaManager.IO;
 
 internal static class ImdbMetadataExtensions
 {
@@ -10,7 +12,14 @@ internal static class ImdbMetadataExtensions
     internal static bool HasImdbId(this string file, string? imdbId) =>
         ImdbMetadata.TryGet(file, out string? fileImdbId) && fileImdbId.EqualsIgnoreCase(imdbId);
 
-    internal static string GetImdbId(this string file) => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : throw new ArgumentOutOfRangeException(nameof(file), file, null);
+    internal static string GetImdbId(this string path) =>
+        ImdbMetadata.TryGet(
+            path.HasExtension(ImdbMetadata.Extension)
+                ? path
+                : Directory.EnumerateFiles(path, Video.ImdbMetadataSearchPattern).Single(),
+            out string? imdbId)
+            ? imdbId
+            : throw new ArgumentOutOfRangeException(nameof(path), path, null);
 
     internal static bool IsImdbId([NotNullWhen(true)] this string? value) => value.IsNotNullOrWhiteSpace() && Regex.IsMatch(value, "^tt[0-9]+$");
 

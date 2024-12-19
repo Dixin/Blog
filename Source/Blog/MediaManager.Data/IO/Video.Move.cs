@@ -1278,7 +1278,7 @@ internal static partial class Video
             });
     }
 
-    static void MoveDirectoriesByRegions(ISettings settings, string directory, bool isDryRun = false, Action<string>? log = null)
+    internal static void MoveDirectoriesByRegions(ISettings settings, string directory, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
