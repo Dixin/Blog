@@ -667,15 +667,16 @@ public static class FfmpegHelper
         }
     }
 
-    internal static void ExtractAllMkvAsync(ISettings settings, string inputDirectory, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default, params Func<string, string>[] outputVideos)
+    internal static async Task ExtractAllMkvAsync(ISettings settings, string inputDirectory, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default, params Func<string, string>[] outputVideos)
     {
         log ??= Logger.WriteLine;
 
         ConcurrentQueue<string> inputVideos = new(Directory.EnumerateFiles(inputDirectory, "*.mkv", SearchOption.AllDirectories));
         Lock destinationCheckLock = new();
-        outputVideos
-            .AsParallel()
-            .ForAll(output =>
+        await Parallel.ForEachAsync(
+            outputVideos,
+            cancellationToken,
+            async (output, cancellation) =>
             {
                 if (!inputVideos.TryDequeue(out string? inputVideo))
                 {
@@ -691,7 +692,7 @@ public static class FfmpegHelper
                     }
                 }
 
-                int result = ExtractMkvAsync(settings, inputVideo, string.Empty, outputVideo, isDryRun, log, cancellationToken).Result;
+                int result = await ExtractMkvAsync(settings, inputVideo, string.Empty, outputVideo, isDryRun, log, cancellation);
                 log($"{result} {inputVideo}");
                 log("");
             });
