@@ -688,23 +688,23 @@ public static class FfmpegHelper
             cancellationToken,
             async (output, cancellation) =>
             {
-                if (!inputVideos.TryDequeue(out string? inputVideo))
+                while (inputVideos.TryDequeue(out string? inputVideo))
                 {
-                    return;
-                }
-
-                string outputVideo = output(inputVideo);
-                lock (destinationCheckLock)
-                {
-                    if (outputVideos.Any(outputVideo => File.Exists(outputVideo(inputVideo))))
+                    string outputVideo = output(inputVideo);
+                    lock (destinationCheckLock)
                     {
-                        return;
+                        string[] destinationVideos = outputVideos.Select(outputVideo => outputVideo(inputVideo)).Where(File.Exists).ToArray();
+                        if (destinationVideos.Any())
+                        {
+                            destinationVideos.Append(string.Empty).ForEach(log);
+                            continue;
+                        }
                     }
-                }
 
-                int result = await ExtractMkvAsync(settings, inputVideo, string.Empty, outputVideo, isDryRun, log, cancellation);
-                log($"{result} {inputVideo}");
-                log("");
+                    int result = await ExtractMkvAsync(settings, inputVideo, string.Empty, outputVideo, isDryRun, log, cancellation);
+                    log($"{result} {inputVideo}");
+                    log("");
+                }
             });
     }
 }
