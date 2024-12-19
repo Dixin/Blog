@@ -94,7 +94,7 @@ internal record VideoDirectoryInfo(
     public static VideoDirectoryInfo Parse(string value) =>
         TryParse(value, out VideoDirectoryInfo? result) ? result : throw new ArgumentOutOfRangeException(nameof(value), value, "The input is invalid");
 
-    internal static IEnumerable<VideoMovieFileInfo> GetVideos(string path) =>
+    internal static IEnumerable<VideoMovieFileInfo> GetMovies(string path) =>
         Directory
             .EnumerateFiles(path, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
             .Where(Video.IsVideo)
@@ -107,7 +107,7 @@ internal record VideoDirectoryInfo(
             .Where(Video.IsVideo)
             .Select(VideoEpisodeFileInfo.Parse);
 
-    internal static string GetResolution(VideoMovieFileInfo[] videos, ISettings settings)
+    internal static string GetResolution(VideoMovieFileInfo[] videos)
     {
         return videos.Select(video => video.GetDefinitionType()).Max() switch
         {
@@ -119,7 +119,7 @@ internal record VideoDirectoryInfo(
         };
     }
 
-    internal static string GetResolution(VideoEpisodeFileInfo[] videos, ISettings settings)
+    internal static string GetResolution(VideoEpisodeFileInfo[] videos)
     {
         int total2160P = videos.Count(video => video.GetDefinitionType() is DefinitionType.P2160);
         int total1080P = videos.Count(video => video.GetDefinitionType() is DefinitionType.P1080);
@@ -137,7 +137,7 @@ internal record VideoDirectoryInfo(
         };
     }
 
-    internal static string GetSource(VideoMovieFileInfo[] videos, ISettings settings)
+    internal static string GetSource(VideoMovieFileInfo[] videos)
     {
         VideoMovieFileInfo[] hdVideos = videos.Where(video => video.IsHD()).ToArray();
         if (hdVideos.Any())
@@ -196,7 +196,7 @@ internal record VideoDirectoryInfo(
         }
     }
 
-    internal static string GetSource(VideoEpisodeFileInfo[] videos, ISettings settings)
+    internal static string GetSource(VideoEpisodeFileInfo[] videos)
     {
         IGrouping<EncoderType, VideoEpisodeFileInfo> maxGroup = videos
             .GroupBy(video => video.GetEncoderType())
@@ -233,5 +233,25 @@ internal record VideoDirectoryInfo(
             .First()
             .Key;
         return $"{encoder}{maxAudio}";
+    }
+
+    internal static string Get3D(VideoMovieFileInfo[] videos) =>
+        videos.Any(video => video.Is3D()) ? "[3D]" : string.Empty;
+
+    internal static string Get3D(VideoEpisodeFileInfo[] videos)
+    {
+        int is3DCount = videos.Count(video => video.Is3D());
+        int sdrCount = videos.Length - is3DCount;
+        return is3DCount >= sdrCount ? "[3D]" : string.Empty;
+    }
+
+    internal static string GetHdr(VideoMovieFileInfo[] videos) =>
+        videos.Any(video => video.IsHdr()) ? "[HDR]" : string.Empty;
+
+    internal static string GetHdr(VideoEpisodeFileInfo[] videos)
+    {
+        int hdrCount = videos.Count(video => video.IsHdr());
+        int sdrCount = videos.Length - hdrCount;
+        return hdrCount >= sdrCount ? "[HDR]" : string.Empty;
     }
 }

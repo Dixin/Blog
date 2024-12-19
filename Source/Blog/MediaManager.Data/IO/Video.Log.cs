@@ -80,7 +80,7 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
-            .Where(movie => !VideoDirectoryInfo.GetVideos(movie).Any(video => video.IsHD()))
+            .Where(movie => !VideoDirectoryInfo.GetMovies(movie).Any(video => video.IsHD()))
             .ForEach(log);
     }
 
@@ -90,7 +90,7 @@ internal static partial class Video
         EnumerateDirectories(directory, level)
             .ForEach(movie =>
             {
-                VideoMovieFileInfo[] videos = VideoDirectoryInfo.GetVideos(movie).ToArray();
+                VideoMovieFileInfo[] videos = VideoDirectoryInfo.GetMovies(movie).ToArray();
                 if (videos.Length <= 1 || videos.All(video => video.Part.IsNotNullOrWhiteSpace()))
                 {
                     return;
@@ -119,7 +119,7 @@ internal static partial class Video
             .OrderBy(movie => movie)
             .ForEach(movie =>
             {
-                VideoMovieFileInfo[] videos = VideoDirectoryInfo.GetVideos(movie).ToArray();
+                VideoMovieFileInfo[] videos = VideoDirectoryInfo.GetMovies(movie).ToArray();
                 if (videos.Any())
                 {
                     log(movie);
@@ -570,7 +570,7 @@ internal static partial class Video
                         .ForEach(file => log($"!Attachment: {Path.Combine(movie, file)}"));
                 }
 
-                string source = VideoDirectoryInfo.GetSource(videoFileInfos, settings);
+                string source = VideoDirectoryInfo.GetSource(videoFileInfos);
                 if (!source.EqualsOrdinal(directoryInfo.Source))
                 {
                     log($"!Source {directoryInfo.Source} should be {source}: {movie}");
@@ -1559,7 +1559,7 @@ internal static partial class Video
                     return;
                 }
 
-                VideoMovieFileInfo[] videos = VideoDirectoryInfo.GetVideos(movie.Directory).ToArray();
+                VideoMovieFileInfo[] videos = VideoDirectoryInfo.GetMovies(movie.Directory).ToArray();
                 if (videos.IsEmpty())
                 {
                     log($"!Video is missing: {movie.Directory}");

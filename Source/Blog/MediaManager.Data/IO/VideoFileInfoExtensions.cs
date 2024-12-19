@@ -55,6 +55,15 @@ internal static class VideoFileInfoExtensions
     internal static bool IsHD(this IVideoFileInfo video) =>
         video.Definition is ".2160p" or ".1080p" or ".720p" && !video.Edition.EndsWithIgnoreCase(Video.UpScaleDefinition);
 
+    internal static bool IsHdr(this IVideoFileInfo video) =>
+        video.VideoCodec.ContainsIgnoreCase(".HDR") || video.Edition.ContainsOrdinal(".HDR");
+
+    internal static bool IsHdrDolbyVision(this IVideoFileInfo video) =>
+        video.VideoCodec.ContainsIgnoreCase(".HDR.DV");
+
+    internal static bool Is3D(this IVideoFileInfo video) =>
+        video.Edition.ContainsOrdinal(".3D");
+
     internal static string FormatAudioCount(this IVideoFileInfo video) =>
         video.MultipleAudio.IsNullOrWhiteSpace() ? string.Empty : Regex.Match(video.MultipleAudio, @"\.([2-9])Audio").Groups[1].Value;
 }
