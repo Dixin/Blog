@@ -143,7 +143,7 @@ public static class DirectoryHelper
     public static bool IsHidden(string directory) =>
         new DirectoryInfo(directory.ThrowIfNullOrWhiteSpace()).Attributes.HasFlag(FileAttributes.Hidden);
 
-    public static void SetHidden(string directory, bool isHidden = false)
+    public static void SetHidden(string directory, bool isHidden)
     {
         if (isHidden)
         {

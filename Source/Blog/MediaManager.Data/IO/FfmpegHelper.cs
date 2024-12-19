@@ -272,10 +272,10 @@ public static class FfmpegHelper
                     throw new InvalidOperationException(file);
                 }
 
-                string[] messages = output.Concat(errors).ToArray();
+                string?[] messages = output.Concat(errors).ToArray();
                 (string, string, string, string)[] timestampCrops = messages
                     .Where(message => message.IsNotNullOrWhiteSpace())
-                    .Select(message => Regex.Match(message, " crop=([0-9]+):([0-9]+):([0-9]+):([0-9]+)$"))
+                    .Select(message => Regex.Match(message!, " crop=([0-9]+):([0-9]+):([0-9]+):([0-9]+)$"))
                     .Where(match => match.Success)
                     .Select(match => (match.Groups[1].Value, match.Groups[2].Value, match.Groups[3].Value, match.Groups[4].Value))
                     .ToArray();
@@ -549,6 +549,7 @@ public static class FfmpegHelper
         {
             outputVideo = PathHelper.ReplaceExtension(inputVideo, ".mp4");
         }
+
         IMediaInfo inputMediaInfo = await FFmpeg.GetMediaInfo(inputVideo, cancellationToken);
         (int Index, int SubtitleIndex, string Title, string File)[] subtitles = inputMediaInfo
             .SubtitleStreams
@@ -582,7 +583,7 @@ public static class FfmpegHelper
         if (duplicateSubtitles.Any())
         {
             duplicateSubtitles.ForEach(group => group.Select(subtitle => $"{subtitle.Index} {subtitle.File}").Append(string.Empty).ForEach(log));
-            HashSet<int> duplicateSubtitleIndexes = [..duplicateSubtitles.Concat().Select(subtitle => subtitle.Index)];
+            HashSet<int> duplicateSubtitleIndexes = [.. duplicateSubtitles.Concat().Select(subtitle => subtitle.Index)];
             Enumerable
                 .Range(0, subtitles.Length)
                 .Where(index => duplicateSubtitleIndexes.Contains(subtitles[index].Index))
@@ -631,6 +632,12 @@ public static class FfmpegHelper
 
         if (!isDryRun)
         {
+            string outputDirectory = PathHelper.GetDirectoryName(outputVideo);
+            if (!Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
+
             return await ProcessHelper.StartAndWaitAsync(Executable, arguments, null, null, null, true, cancellationToken);
         }
 
@@ -652,16 +659,41 @@ public static class FfmpegHelper
             }
 
             string[] words = Regex.Matches(title, @"\b\w+\b").Select(match => match.Value.Trim()).ToArray();
-            if (words.ContainsIgnoreCase("Forced"))
-            {
-                return "-forced";
-            }
-            if (words.ContainsIgnoreCase("SDH"))
-            {
-                return "-sdh";
-            }
-
-            return $"-{title.Replace(" ", "_").Replace(@"\", "_").Replace("/", "_")}";
+            return words.ContainsIgnoreCase("Forced")
+                ? "-forced"
+                : words.ContainsIgnoreCase("SDH")
+                    ? "-sdh"
+                    : $"-{title.Replace(" ", "_").Replace(@"\", "_").Replace("/", "_")}";
         }
+    }
+
+    internal static void ExtractAllMkvAsync(ISettings settings, string inputDirectory, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default, params Func<string, string>[] outputVideos)
+    {
+        log ??= Logger.WriteLine;
+
+        ConcurrentQueue<string> inputVideos = new(Directory.EnumerateFiles(inputDirectory, "*.mkv", SearchOption.AllDirectories));
+        Lock destinationCheckLock = new();
+        outputVideos
+            .AsParallel()
+            .ForAll(output =>
+            {
+                if (!inputVideos.TryDequeue(out string? inputVideo))
+                {
+                    return;
+                }
+
+                string outputVideo = output(inputVideo);
+                lock (destinationCheckLock)
+                {
+                    if (outputVideos.Any(outputVideo => File.Exists(outputVideo(inputVideo))))
+                    {
+                        return;
+                    }
+                }
+
+                int result = ExtractMkvAsync(settings, inputVideo, string.Empty, outputVideo, isDryRun, log, cancellationToken).Result;
+                log($"{result} {inputVideo}");
+                log("");
+            });
     }
 }
