@@ -13,7 +13,7 @@ internal static class VideoFileInfoExtensions
             return video.Version.EqualsIgnoreCase("KOOK") ? EncoderType.KoreanPremium : EncoderType.Korean;
         }
 
-        bool isBluRay = origin.EqualsIgnoreCase("BluRay");
+        bool isBluRay = origin.ContainsIgnoreCase(".BluRay");
         switch (encoder)
         {
             case FfmpegHelper.Executable:
@@ -26,14 +26,14 @@ internal static class VideoFileInfoExtensions
 
         if (video.Version.EqualsOrdinal(T.Settings.TopEnglishKeyword) || video.Version.EqualsOrdinal(T.Settings.TopForeignKeyword))
         {
-            return video.VideoCodec.EqualsOrdinal(".x265")
+            return video.VideoCodec.ContainsIgnoreCase(".x265")
                 ? isBluRay ? EncoderType.TopX265BluRay : EncoderType.TopX265
                 : isBluRay ? EncoderType.TopH264BluRay : EncoderType.TopH264;
         }
 
         if (video.Version.EqualsIgnoreCase(T.Settings.PreferredOldKeyword) || video.Version.StartsWithIgnoreCase($"[{T.Settings.PreferredNewKeyword}."))
         {
-            return video.VideoCodec.StartsWithOrdinal(".x265")
+            return video.VideoCodec.ContainsIgnoreCase(".x265")
                 ? isBluRay ? EncoderType.PreferredX265BluRay : EncoderType.PreferredX265
                 : isBluRay ? EncoderType.PreferredH264BluRay : EncoderType.PreferredH264;
         }

@@ -168,11 +168,12 @@ internal static partial class Video
 
     internal static IEnumerable<string> EnumerateDirectories(string directory, int level = DefaultDirectoryLevel)
     {
-        IEnumerable<string> directories = Directory.EnumerateDirectories(directory, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
-        while (--level > 0)
+        level.ThrowIfNegative();
+
+        IEnumerable<string> directories = [directory];
+        for (int pass = 1; pass <= level; pass++)
         {
-            directories = directories.SelectMany(d => Directory.EnumerateDirectories(d, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly));
-            level--;
+            directories = directories.SelectMany(Directory.EnumerateDirectories);
         }
 
         return directories.Order();

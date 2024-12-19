@@ -295,8 +295,8 @@ internal static partial class Video
                     ContentRating: contentRating,
                     Resolution: isTV ? string.Empty : VideoDirectoryInfo.GetResolution(videoFileInfos, settings),
                     Source: isTV ? string.Empty : VideoDirectoryInfo.GetSource(videoFileInfos, settings),
-                    Is3D: string.Empty,
-                    Hdr: string.Empty
+                    Is3D: videoFileInfos.Any(video => video.Edition.ContainsOrdinal(".3D")) ? "[3D]" : string.Empty,
+                    Hdr: videoFileInfos.Any(video => video.VideoCodec.ContainsOrdinal(".HDR") || video.Edition.ContainsOrdinal(".HDR")) ? "[HDR]" : string.Empty
                 );
                 string additional = additionalInfo
                     ? $"{{{string.Join(",", imdbMetadata?.Regions.Take(5) ?? [])};{string.Join(",", imdbMetadata?.Genres.Take(3) ?? [])}}}"
@@ -397,10 +397,11 @@ internal static partial class Video
                     parsed = parsed with
                     {
                         Resolution = VideoDirectoryInfo.GetResolution(videos, settings),
-                        Source = VideoDirectoryInfo.GetSource(videos, settings)
+                        Source = VideoDirectoryInfo.GetSource(videos, settings),
+                        Is3D = videos.Any(video => video.Edition.ContainsOrdinal(".3D")) ? "[3D]" : string.Empty,
+                        Hdr = videos.Any(video => video.VideoCodec.ContainsOrdinal(".HDR") || video.Edition.ContainsOrdinal(".HDR")) ? "[HDR]" : string.Empty
                     };
                 }
-
 
                 string newMovie = Path.Combine(PathHelper.GetDirectoryName(movie), parsed.ToString());
 
