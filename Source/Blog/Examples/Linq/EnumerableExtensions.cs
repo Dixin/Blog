@@ -2,10 +2,10 @@
 
 public static class EnumerableExtensions
 {
-    public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> asyncAction, CancellationToken cancellationToken = default) =>
+    public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, ValueTask> asyncAction, CancellationToken cancellationToken = default) =>
         await source.ForEachAsync((T value, CancellationToken token) => asyncAction(value), cancellationToken);
 
-    public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, CancellationToken, Task> asyncAction, CancellationToken cancellationToken = default)
+    public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, CancellationToken, ValueTask> asyncAction, CancellationToken cancellationToken = default)
     {
         foreach (T value in source)
         {
@@ -14,10 +14,10 @@ public static class EnumerableExtensions
         }
     }
 
-    public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, int, Task> asyncAction, CancellationToken cancellationToken = default) =>
+    public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, int, ValueTask> asyncAction, CancellationToken cancellationToken = default) =>
         await source.ForEachAsync((value, index, token) => asyncAction(value, index), cancellationToken);
 
-    public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, int, CancellationToken, Task> asyncAction, CancellationToken cancellationToken = default)
+    public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, int, CancellationToken, ValueTask> asyncAction, CancellationToken cancellationToken = default)
     {
         int index = -1;
         foreach (T value in source)
@@ -27,7 +27,20 @@ public static class EnumerableExtensions
         }
     }
 
-    public static async Task ForEachAsync<T>(this IEnumerator<T> iterator, Func<T, int, CancellationToken, Task> asyncAction, CancellationToken cancellationToken = default)
+    public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, int, CancellationToken, ValueTask<bool>> asyncAction, CancellationToken cancellationToken = default)
+    {
+        int index = -1;
+        foreach (T value in source)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!await asyncAction(value, checked(++index), cancellationToken))
+            {
+                break;
+            }
+        }
+    }
+
+    public static async Task ForEachAsync<T>(this IEnumerator<T> iterator, Func<T, int, CancellationToken, ValueTask> asyncAction, CancellationToken cancellationToken = default)
     {
         int index = -1;
         while (iterator.MoveNext())
