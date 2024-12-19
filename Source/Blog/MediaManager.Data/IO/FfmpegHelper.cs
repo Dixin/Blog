@@ -550,6 +550,11 @@ public static class FfmpegHelper
             outputVideo = PathHelper.ReplaceExtension(inputVideo, ".mp4");
         }
 
+        if (File.Exists(outputVideo))
+        {
+            return 0;
+        }
+
         IMediaInfo inputMediaInfo = await FFmpeg.GetMediaInfo(inputVideo, cancellationToken);
         (int Index, int SubtitleIndex, string Title, string File)[] subtitles = inputMediaInfo
             .SubtitleStreams
@@ -636,6 +641,11 @@ public static class FfmpegHelper
             if (!Directory.Exists(outputDirectory))
             {
                 Directory.CreateDirectory(outputDirectory);
+            }
+
+            if (File.Exists(outputVideo))
+            {
+                return 0;
             }
 
             return await ProcessHelper.StartAndWaitAsync(Executable, arguments, null, null, null, true, cancellationToken);
