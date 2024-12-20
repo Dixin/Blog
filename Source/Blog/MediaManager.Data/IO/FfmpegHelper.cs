@@ -155,6 +155,11 @@ public static class FfmpegHelper
             sampleDuration = string.Empty;
         }
 
+        if (!output.HasExtension(Video.VideoExtension))
+        {
+            throw new ArgumentOutOfRangeException(nameof(output), output);
+        }
+
         string outputDirectory = PathHelper.GetDirectoryName(output);
         if (!Directory.Exists(outputDirectory))
         {
@@ -218,6 +223,11 @@ public static class FfmpegHelper
 
         log(input);
         log(dubbed);
+        if (!output.HasExtension(Video.VideoExtension))
+        {
+            throw new ArgumentOutOfRangeException(nameof(output), output);
+        }
+
         int result = 0;
         if (!isDryRun)
         {
@@ -548,6 +558,11 @@ public static class FfmpegHelper
         if (outputVideo.IsNullOrWhiteSpace())
         {
             outputVideo = PathHelper.ReplaceExtension(inputVideo, ".mp4");
+        }
+
+        if (!outputVideo.HasExtension(Video.VideoExtension))
+        {
+            throw new ArgumentOutOfRangeException(nameof(outputVideo), outputVideo);
         }
 
         if (File.Exists(outputVideo))

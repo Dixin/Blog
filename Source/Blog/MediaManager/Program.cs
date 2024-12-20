@@ -766,7 +766,7 @@ static void RenameFilesWithDuplicateTitle(
 //        string sourceDirectory = sourceDirectories.Single(d => PathHelper.GetFileName(d).StartsWithOrdinal(prefix));
 //        string destinationDirectory = destinationDirectories.Single(d => PathHelper.GetFileName(d).StartsWithOrdinal(prefix));
 //        string sourceNfo = Directory.EnumerateFiles(sourceDirectory).First(f => f.EndsWithOrdinal(".nfo"));
-//        string destinationVideo = Directory.EnumerateFiles(destinationDirectory).Single(f => f.EndsWithOrdinal(".mp4"));
+//        string destinationVideo = Directory.EnumerateFiles(destinationDirectory).Single(f => f.HasExtension(Video.VideoExtension));
 //        string destinationName = PathHelper.GetFileNameWithoutExtension(destinationVideo);
 //        string destinationNfo = Path.Combine(destinationDirectory, $"{destinationName}.nfo");
 //        File.Copy(sourceNfo, destinationNfo, true);
@@ -828,12 +828,12 @@ static void RenameFilesWithDuplicateTitle(
 //Directory.GetDirectories(@"T:\New folder (2)")
 //    .ForEach(m =>
 //    {
-//        string video = Directory.EnumerateFiles(m).First(f => f.EndsWithIgnoreCase(".mp4"));
+//        string video = Directory.EnumerateFiles(m).First(f => f.HasExtension(Video.VideoExtension));
 //        string name = PathHelper.GetFileName(m);
 //        string source = sources.First(d => PathHelper.GetFileName(d).EqualsIgnoreCase(name));
 //        Directory.GetFiles(source).ForEach(f =>
 //        {
-//            if (f.EndsWithIgnoreCase(".mp4"))
+//            if (f.HasExtension(Video.VideoExtension))
 //            {
 //                return;
 //            }
@@ -969,7 +969,7 @@ static void RenameFilesWithDuplicateTitle(
 //   settings.MovieControversialWithoutSubtitle,
 //   settings.MovieControversialTemp4,
 //   @"Q:\Files\Movies.Raw"
-//}.SelectMany(d => Directory.EnumerateFiles(d, "*.mp4", SearchOption.AllDirectories))
+//}.SelectMany(d => Directory.EnumerateFiles(d, Video.VideoSearchPattern, SearchOption.AllDirectories))
 //    .Select(PathHelper.GetFileNameWithoutExtension)
 //    .Where(f => f.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") || f.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}"))
 //    .Select(f =>
@@ -1584,3 +1584,24 @@ const string Subdirectory = "HD.Encode.Crop";
 
 // ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> existingMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationTokenSource.Token);
 // imdbIds.Intersect(existingMetadata.Keys).ForEach(log);
+
+// Directory.GetDirectories(@"L:\Hdr3")
+// .ForEach(sourceDirectory =>
+// {
+//     string sourceVideo = Directory.EnumerateFiles(sourceDirectory, "*.mkv").Single();
+
+//     string destinationDirectory = sourceDirectory.Replace(@"L:\", @"N:\");
+//     if (!Directory.Exists(destinationDirectory))
+//     {
+//         Directory.CreateDirectory(destinationDirectory);
+//     }
+
+//     string destinationVideo = Path.Combine(destinationDirectory, PathHelper.GetFileNameWithoutExtension(sourceVideo) + ".mp4");
+//     if (File.Exists(destinationVideo))
+//     {
+//         return;
+//     }
+//     int result = FfmpegHelper.ExtractMkvAsync(settings, sourceVideo, "", destinationVideo).Result;
+//     log($"{result} {sourceVideo}");
+//     log("");
+// });
