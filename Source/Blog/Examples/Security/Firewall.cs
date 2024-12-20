@@ -145,7 +145,7 @@ public static class Firewall
         }
     }
 
-    public static async Task DeleteRuleAsync(string ruleName, Action<string?>? output = null, Action<string?>? error = null, CancellationToken cancellationToken = default)
+    public static async ValueTask DeleteRuleAsync(string ruleName, Action<string?>? output = null, Action<string?>? error = null, CancellationToken cancellationToken = default)
     {
         int exitCode = await ProcessHelper.StartAndWaitAsync(
             "netsh",

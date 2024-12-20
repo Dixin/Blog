@@ -125,11 +125,11 @@ public static class FfmpegHelper
 
         VideoMetadata videoMetadata = await Video.ReadVideoMetadataAsync(input, null, relativePath, retryCount, cancellationToken);
 
-        string mapAudio = videoMetadata.AudioStreams.Any() ? "-map 0:a " : string.Empty;
+        string mapAudio = videoMetadata.AudioBitRates.Any() ? "-map 0:a " : string.Empty;
 
-        int bitRate = videoMetadata.DefinitionType is DefinitionType.P1080 ? 2048 : 1280;
+        int bitRate = videoMetadata.PhysicalDefinitionType is DefinitionType.P1080 ? 2048 : 1280;
         List<string> videoFilters = [];
-        if (videoMetadata.DefinitionType is DefinitionType.P480)
+        if (videoMetadata.PhysicalDefinitionType is DefinitionType.P480)
         {
             videoFilters.Add("bwdif=mode=send_field:parity=auto:deint=all");
         }
@@ -166,7 +166,7 @@ public static class FfmpegHelper
             Directory.CreateDirectory(outputDirectory);
         }
 
-        string audio = videoMetadata.AudioStreams.All(audio => audio.BitRate > 260_000) ? "aac -ar 48000 -b:a 256k -ac 6" : "copy";
+        string audio = videoMetadata.AudioBitRates.All(bitRate => bitRate > 260_000) ? "aac -ar 48000 -b:a 256k -ac 6" : "copy";
         string videoFilter = videoFilters.Any() ? $" -filter:v {string.Join(",", videoFilters)}" : string.Empty;
         string arguments = $"""
             -hwaccel auto{sampleDuration} -i "{input}" -loglevel verbose -c:v libx265 -profile:v main10 -pix_fmt yuv420p10le -preset slow -x265-params wpp=1:no-pmode=1:no-pe=1:no-psnr=1:no-ssim=1:log-level=info:input-csp=1:interlace=0:total-frames=0:level-idc=0:high-tier=1:uhd-bd=0:ref=4:no-allow-non-conformance=1:no-repeat-headers=1:annexb=1:no-aud=1:no-hrd=1:info=1:hash=0:no-temporal-layers=1:open-gop=1:min-keyint=23:keyint=250:gop-lookahead=0:bframes=4:b-adapt=2:b-pyramid=1:bframe-bias=0:rc-lookahead=25:lookahead-slices=4:scenecut=40:hist-scenecut=0:radl=0:no-splice=1:no-intra-refresh=1:ctu=64:min-cu-size=8:rect=1:no-amp=1:max-tu-size=32:tu-inter-depth=1:tu-intra-depth=1:limit-tu=0:rdoq-level=2:dynamic-rd=0.00:no-ssim-rd=1:signhide=1:no-tskip=1:nr-intra=0:nr-inter=0:no-constrained-intra=1:strong-intra-smoothing=1:max-merge=3:limit-refs=3:limit-modes=1:me=3:subme=3:merange=57:temporal-mvp=1:no-frame-dup=1:no-hme=1:weightp=1:no-weightb=1:no-analyze-src-pics=1:deblock=0\:0:no-sao=1:no-sao-non-deblock=1:rd=4:selective-sao=0:no-early-skip=1:rskip=1:no-fast-intra=1:no-tskip-fast=1:no-cu-lossless=1:no-b-intra=1:no-splitrd-skip=1:rdpenalty=0:psy-rd=2.00:psy-rdoq=1.00:no-rd-refine=1:no-lossless=1:cbqpoffs=0:crqpoffs=0:rc=abr:qcomp=0.60:qpstep=4:stats-write=0:stats-read=2:cplxblur=20.0:qblur=0.5:ipratio=1.40:pbratio=1.30:aq-mode=3:aq-strength=1.00:cutree=1:zone-count=0:no-strict-cbr=1:qg-size=32:no-rc-grain=1:qpmax=69:qpmin=0:no-const-vbv=1:sar=1:overscan=0:videoformat=5:range=0:colorprim=2:transfer=2:colormatrix=2:chromaloc=0:display-window=0:cll=0,0:min-luma=0:max-luma=1023:log2-max-poc-lsb=8:vui-timing-info=1:vui-hrd-info=1:slices=1:no-opt-qp-pps=1:no-opt-ref-list-length-pps=1:no-multi-pass-opt-rps=1:scenecut-bias=0.05:hist-threshold=0.01:no-opt-cu-delta-qp=1:no-aq-motion=1:no-hdr10=1:no-hdr10-opt=1:no-dhdr10-opt=1:no-idr-recovery-sei=1:analysis-reuse-level=0:analysis-save-reuse-level=0:analysis-load-reuse-level=0:scale-factor=0:refine-intra=0:refine-inter=0:refine-mv=1:refine-ctu-distortion=0:no-limit-sao=1:ctu-info=0:no-lowpass-dct=1:refine-analysis-type=0:copy-pic=1:max-ausize-factor=1.0:no-dynamic-refine=1:no-single-sei=1:no-hevc-aq=1:no-svt=1:no-field=1:qp-adaptation-range=1.00:no-scenecut-aware-qpconformance-window-offsets=1:bitrate={bitRate} -b:v {bitRate}k -map 0:v:0 {mapAudio}-map_metadata 0 -c:a {audio}{videoFilter} "{output}" -{(overwrite ? "y" : "n")}
@@ -550,7 +550,7 @@ public static class FfmpegHelper
             });
     }
 
-    internal static async Task<int> ExtractMkvAsync(ISettings settings, string inputVideo, string mergeVideo = "", string outputVideo = "", bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task<int> ExtractVideoAndSubtitlesAsync(ISettings settings, string inputVideo, string mergeAudio = "", string outputVideo = "", bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
         Debug.Assert(inputVideo.EndsWithIgnoreCase(".mkv"));
@@ -619,18 +619,18 @@ public static class FfmpegHelper
                 .IsEmpty());
         }
 
-        if (mergeVideo.IsNotNullOrWhiteSpace() && !mergeVideo.ContainsIgnoreCase("Ex.Machina.2014") && !mergeVideo.ContainsIgnoreCase("Jurassic.Park.III.2001") && !mergeVideo.ContainsIgnoreCase("X-Men.The.Last.Stand.2006"))
+        if (mergeAudio.IsNotNullOrWhiteSpace())
         {
-            IMediaInfo mergeMediaInfo = await FFmpeg.GetMediaInfo(mergeVideo, cancellationToken);
-            TimeSpan inputDuration = inputMediaInfo.VideoStreams.Single(videoStream => !videoStream.Codec.EqualsIgnoreCase("mjpeg") && !videoStream.Codec.EqualsIgnoreCase("png")).Duration;
-            TimeSpan mergeDuration = mergeMediaInfo.VideoStreams.Single(videoStream => !videoStream.Codec.EqualsIgnoreCase("mjpeg") && !videoStream.Codec.EqualsIgnoreCase("png")).Duration;
+            IMediaInfo mergeMediaInfo = await FFmpeg.GetMediaInfo(mergeAudio, cancellationToken);
+            TimeSpan inputDuration = inputMediaInfo.Duration;
+            TimeSpan mergeDuration = mergeMediaInfo.Duration;
             TimeSpan difference = inputDuration - mergeDuration;
             if (difference > TimeSpan.FromSeconds(1) || difference < TimeSpan.FromSeconds(-1))
             {
                 log($"{inputDuration} {inputVideo}");
-                log($"{mergeDuration} {mergeVideo}");
+                log($"{mergeDuration} {mergeAudio}");
                 log(string.Empty);
-                throw new ArgumentOutOfRangeException(nameof(mergeVideo), mergeVideo);
+                throw new ArgumentOutOfRangeException(nameof(mergeAudio), mergeAudio);
             }
         }
 
@@ -640,12 +640,12 @@ public static class FfmpegHelper
             subtitles.Select(subtitle => $"""
                 -c copy -map 0:{subtitle.Index} "{subtitle.File}"
                 """));
-        string arguments = mergeVideo.IsNullOrWhiteSpace()
+        string arguments = mergeAudio.IsNullOrWhiteSpace()
             ? $"""
             -i "{inputVideo}" -c copy -map_metadata 0 -map 0:v -map 0:a {strict} "{outputVideo}" {subtitleArguments} -n
             """
             : $"""
-            -i "{inputVideo}" -i "{mergeVideo}" -c copy -map_metadata 0 -map 0:v -map 0:a -map 1:a {strict} "{outputVideo}" {subtitleArguments} -n
+            -i "{inputVideo}" -i "{mergeAudio}" -c copy -map_metadata 0 -map 0:v -map 0:a -map 1:a {strict} "{outputVideo}" {subtitleArguments} -n
             """;
         log(arguments);
         log(string.Empty);
@@ -692,7 +692,7 @@ public static class FfmpegHelper
         }
     }
 
-    internal static async Task ExtractAllMkvAsync(ISettings settings, string inputDirectory, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default, params Func<string, string>[] outputVideos)
+    internal static async Task ExtractAllAsync(ISettings settings, string inputDirectory, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default, params Func<string, string>[] outputVideos)
     {
         log ??= Logger.WriteLine;
 
@@ -716,7 +716,7 @@ public static class FfmpegHelper
                         }
                     }
 
-                    int result = await ExtractMkvAsync(settings, inputVideo, string.Empty, outputVideo, isDryRun, log, cancellation);
+                    int result = await ExtractVideoAndSubtitlesAsync(settings, inputVideo, string.Empty, outputVideo, isDryRun, log, cancellation);
                     log($"{result} {inputVideo}");
                     log("");
                 }

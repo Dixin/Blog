@@ -285,7 +285,8 @@ internal static partial class Video
                 string ratingCount = imdbMetadata?.FormattedAggregateRatingCount ?? NotExistingFlag;
                 string[] videos = files.Where(IsVideo).ToArray();
                 string contentRating = imdbMetadata?.FormattedContentRating ?? NotExistingFlag;
-                VideoMovieFileInfo[] videoFileInfos = videos.Select(VideoMovieFileInfo.Parse).ToArray();
+                VideoMovieFileInfo[] movies = isTV ? [] : videos.Select(VideoMovieFileInfo.Parse).ToArray();
+                VideoEpisodeFileInfo[] episodes = isTV ? VideoDirectoryInfo.GetEpisodes(movie).ToArray() : [];
                 VideoDirectoryInfo videoDirectoryInfo = new(
                     DefaultTitle1: defaultTitle.ReplaceOrdinal(" - ", " ").ReplaceOrdinal(TitleSeparator, " ").ReplaceOrdinal(".", " ").FilterForFileSystem().Trim(), DefaultTitle2: string.Empty, DefaultTitle3: string.Empty,
                     OriginalTitle1: originalTitle.ReplaceOrdinal(" - ", " ").ReplaceOrdinal(TitleSeparator, " ").ReplaceOrdinal(".", " ").FilterForFileSystem().Trim(), OriginalTitle2: string.Empty, OriginalTitle3: string.Empty,
@@ -293,11 +294,12 @@ internal static partial class Video
                     TranslatedTitle1: translatedTitle.ReplaceOrdinal(" - ", " ").ReplaceOrdinal(TitleSeparator, " ").ReplaceOrdinal(".", " ").ReplaceIgnoreCase("：", TitleSeparator).FilterForFileSystem().Trim(), TranslatedTitle2: string.Empty, TranslatedTitle3: string.Empty, TranslatedTitle4: string.Empty,
                     AggregateRating: rating, AggregateRatingCount: ratingCount,
                     ContentRating: contentRating,
-                    Resolution: isTV ? string.Empty : VideoDirectoryInfo.GetResolution(videoFileInfos, settings),
-                    Source: isTV ? string.Empty : VideoDirectoryInfo.GetSource(videoFileInfos, settings),
-                    Is3D: videoFileInfos.Any(video => video.Edition.ContainsOrdinal(".3D")) ? "[3D]" : string.Empty,
-                    Hdr: videoFileInfos.Any(video => video.VideoCodec.ContainsOrdinal(".HDR") || video.Edition.ContainsOrdinal(".HDR")) ? "[HDR]" : string.Empty
+                    Resolution: isTV ? VideoDirectoryInfo.GetResolution(episodes) : VideoDirectoryInfo.GetResolution(movies),
+                    Source: isTV ? VideoDirectoryInfo.GetSource(episodes) : VideoDirectoryInfo.GetSource(movies),
+                    Is3D: isTV ? VideoDirectoryInfo.Get3D(episodes) : VideoDirectoryInfo.Get3D(movies),
+                    Hdr: isTV ? VideoDirectoryInfo.GetHdr(episodes) : VideoDirectoryInfo.GetHdr(movies)
                 );
+
                 string additional = additionalInfo
                     ? $"{{{string.Join(",", imdbMetadata?.Regions.Take(5) ?? [])};{string.Join(",", imdbMetadata?.Genres.Take(3) ?? [])}}}"
                     : string.Empty;
@@ -387,19 +389,21 @@ internal static partial class Video
                     VideoEpisodeFileInfo[] episodes = VideoDirectoryInfo.GetEpisodes(movie).ToArray();
                     parsed = parsed with
                     {
-                        Resolution = VideoDirectoryInfo.GetResolution(episodes, settings),
-                        Source = VideoDirectoryInfo.GetSource(episodes, settings)
+                        Resolution = VideoDirectoryInfo.GetResolution(episodes),
+                        Source = VideoDirectoryInfo.GetSource(episodes),
+                        Is3D = VideoDirectoryInfo.Get3D(episodes),
+                        Hdr = VideoDirectoryInfo.GetHdr(episodes)
                     };
                 }
                 else
                 {
-                    VideoMovieFileInfo[] videos = VideoDirectoryInfo.GetVideos(movie).ToArray();
+                    VideoMovieFileInfo[] movies = VideoDirectoryInfo.GetMovies(movie).ToArray();
                     parsed = parsed with
                     {
-                        Resolution = VideoDirectoryInfo.GetResolution(videos, settings),
-                        Source = VideoDirectoryInfo.GetSource(videos, settings),
-                        Is3D = videos.Any(video => video.Edition.ContainsOrdinal(".3D")) ? "[3D]" : string.Empty,
-                        Hdr = videos.Any(video => video.VideoCodec.ContainsOrdinal(".HDR") || video.Edition.ContainsOrdinal(".HDR")) ? "[HDR]" : string.Empty
+                        Resolution = VideoDirectoryInfo.GetResolution(movies),
+                        Source = VideoDirectoryInfo.GetSource(movies),
+                        Is3D = VideoDirectoryInfo.Get3D(movies),
+                        Hdr = VideoDirectoryInfo.GetHdr(movies)
                     };
                 }
 
@@ -515,15 +519,16 @@ internal static partial class Video
                     return;
                 }
 
-                if (Math.Abs(toVideoMetadata.TotalMilliseconds - fromVideoMetadata.TotalMilliseconds) > 1100)
+                TimeSpan difference = toVideoMetadata.Duration - fromVideoMetadata.Duration;
+                if (difference < TimeSpan.FromSeconds(-1) || difference > TimeSpan.FromSeconds(1))
                 {
-                    log($"Duration {fromVideoMetadata.TotalMilliseconds}ms to old {toVideoMetadata.TotalMilliseconds}ms: {fromVideoMetadata.File}.");
+                    log($"Duration {fromVideoMetadata.Duration} to old {toVideoMetadata.Duration}: {fromVideoMetadata.File}.");
                     return;
                 }
 
-                if (toVideoMetadata.AudioStreams.Length - fromVideoMetadata.AudioStreams.Length > 0)
+                if (toVideoMetadata.AudioBitRates.Length - fromVideoMetadata.AudioBitRates.Length > 0)
                 {
-                    log($"Audio {fromVideoMetadata.File} {fromVideoMetadata.AudioStreams.Length} {toVideoMetadata.AudioStreams.Length}");
+                    log($"Audio {fromVideoMetadata.File} {fromVideoMetadata.AudioBitRates.Length} {toVideoMetadata.AudioBitRates.Length}");
                     return;
                 }
 
@@ -729,7 +734,7 @@ internal static partial class Video
                             throw new InvalidOperationException(video);
                         }
 
-                        prefix = videoMetadata.DefinitionType switch
+                        prefix = videoMetadata.PhysicalDefinitionType switch
                         {
                             DefinitionType.P1080 => $"{prefix}1080p{Delimiter}",
                             DefinitionType.P720 => $"{prefix}720p{Delimiter}",

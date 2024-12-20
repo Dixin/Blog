@@ -1,7 +1,7 @@
 ﻿namespace Examples.Sql;
 
-using System.Data.SqlClient;
 using Examples.Common;
+using Microsoft.Data.SqlClient;
 
 internal static class Warehouses
 {

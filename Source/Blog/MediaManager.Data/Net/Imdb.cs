@@ -1,7 +1,6 @@
 ﻿namespace MediaManager.Net;
 
 using System;
-using System.Collections.ObjectModel;
 using System.Web;
 using CsQuery;
 using Examples.Common;

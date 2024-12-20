@@ -22,15 +22,19 @@ internal static partial class Video
             async () =>
             {
                 IMediaInfo mediaInfo = await FFmpeg.GetMediaInfo(file, cancellationToken);
-                IVideoStream videoStream = mediaInfo.VideoStreams.Single(videoStream => !videoStream.Codec.EqualsIgnoreCase("mjpeg") && !videoStream.Codec.EqualsIgnoreCase("png"));
+                IVideoStream videoStream = mediaInfo
+                    .VideoStreams
+                    .Single(videoStream => !videoStream.Codec.EqualsIgnoreCase("mjpeg") && !videoStream.Codec.EqualsIgnoreCase("png"));
                 return new VideoMetadata()
                 {
                     File = relativePath.IsNullOrWhiteSpace() ? file : Path.GetRelativePath(relativePath, file),
                     VideoWidth = videoStream.Width,
                     VideoHeight = videoStream.Height,
-                    AudioStreams = mediaInfo.AudioStreams?.OrderBy(audio => audio.Index).Select(audio => (audio.Language, audio.Title, (int)audio.Bitrate)).ToArray() ?? [],
+                    AudioBitRates = mediaInfo.AudioStreams?.OrderBy(audio => audio.Index).Select(audio => audio.Bitrate).ToArray() ?? [],
+                    AudioLanguages = mediaInfo.AudioStreams?.OrderBy(audio => audio.Index).Select(audio => audio.Language).ToArray() ?? [],
+                    AudioTitles = mediaInfo.AudioStreams?.OrderBy(audio => audio.Index).Select(audio => audio.Title).ToArray() ?? [],
                     SubtitleStreams = mediaInfo.SubtitleStreams?.OrderBy(subtitle => subtitle.Index).Select(subtitle => (subtitle.Language, subtitle.Title, subtitle.Path)).ToArray() ?? [],
-                    TotalMilliseconds = mediaInfo.Duration.TotalMilliseconds,
+                    Duration = mediaInfo.Duration,
                     Imdb = imdbMetadata,
                     VideoFrameRate = videoStream.Framerate
                 };
@@ -59,7 +63,7 @@ internal static partial class Video
             }
 
             videoMetadata = task.Result;
-            log($"{videoMetadata.VideoWidth}x{videoMetadata.VideoHeight}, {videoMetadata.AudioStreams.Length} audio, {file}");
+            log($"{videoMetadata.VideoWidth}x{videoMetadata.VideoHeight}, {videoMetadata.AudioBitRates.Length} audio, {file}");
             return true;
         }
         catch (Exception exception) when (exception.IsNotCritical())
@@ -102,36 +106,36 @@ internal static partial class Video
 
     private static (string? Message, Action<string>? Action) GetVideoError(VideoMetadata videoMetadata, bool isNoAudioAllowed, Action<string>? is720 = null, Action<string>? is1080 = null)
     {
-        if (videoMetadata.VideoWidth <= 0 || videoMetadata.VideoHeight <= 0 || isNoAudioAllowed || videoMetadata.AudioStreams.IsEmpty())
+        if (videoMetadata.VideoWidth <= 0 || videoMetadata.VideoHeight <= 0 || isNoAudioAllowed || videoMetadata.AudioBitRates.IsEmpty())
         {
-            return ($"Failed {videoMetadata.VideoWidth}x{videoMetadata.VideoHeight} {videoMetadata.AudioStreams.Length}Audio {videoMetadata.File}", null);
+            return ($"Failed {videoMetadata.VideoWidth}x{videoMetadata.VideoHeight} {videoMetadata.AudioBitRates.Length}Audio {videoMetadata.File}", null);
         }
 
         string fileName = PathHelper.GetFileNameWithoutExtension(videoMetadata.File);
         if (fileName.ContainsIgnoreCase("1080p"))
         {
-            if (videoMetadata.DefinitionType is not DefinitionType.P1080)
+            if (videoMetadata.PhysicalDefinitionType is not DefinitionType.P1080)
             {
                 return ($"!Not 1080p: {videoMetadata.VideoWidth}x{videoMetadata.VideoHeight} {videoMetadata.File}", null);
             }
         }
         else
         {
-            if (videoMetadata.DefinitionType is DefinitionType.P1080)
+            if (videoMetadata.PhysicalDefinitionType is DefinitionType.P1080)
             {
                 return ($"!1080p: {videoMetadata.VideoWidth}x{videoMetadata.VideoHeight} {videoMetadata.File}", is1080);
             }
 
             if (fileName.ContainsIgnoreCase("720p"))
             {
-                if (videoMetadata.DefinitionType is not DefinitionType.P720)
+                if (videoMetadata.PhysicalDefinitionType is not DefinitionType.P720)
                 {
                     return ($"!Not 720p: {videoMetadata.VideoWidth}x{videoMetadata.VideoHeight} {videoMetadata.File}", null);
                 }
             }
             else
             {
-                if (videoMetadata.DefinitionType is DefinitionType.P720)
+                if (videoMetadata.PhysicalDefinitionType is DefinitionType.P720)
                 {
                     return ($"!720p: {videoMetadata.VideoWidth}x{videoMetadata.VideoHeight} {videoMetadata.File}", is720);
                 }
@@ -145,20 +149,20 @@ internal static partial class Video
 
         if (Regex.IsMatch(fileName, "[1-9]Audio"))
         {
-            if (videoMetadata.AudioStreams.Length < 2)
+            if (videoMetadata.AudioBitRates.Length < 2)
             {
-                return ($"!Not multiple audio: {videoMetadata.AudioStreams.Length} {videoMetadata.File}", null);
+                return ($"!Not multiple audio: {videoMetadata.AudioBitRates.Length} {videoMetadata.File}", null);
             }
         }
         else
         {
-            if (videoMetadata.AudioStreams.Length >= 2)
+            if (videoMetadata.AudioBitRates.Length >= 2)
             {
-                return ($"!Multiple audio: {videoMetadata.AudioStreams.Length} {videoMetadata.File}", null);
+                return ($"!Multiple audio: {videoMetadata.AudioBitRates.Length} {videoMetadata.File}", null);
             }
         }
 
-        if (videoMetadata.AudioStreams.Any(audio => audio.BitRate < 192000))
+        if (videoMetadata.AudioBitRates.Any(bitRate => bitRate < 192000))
         {
             //return ($"!Bad audio: Bit rate is only {string.Join(',', videoMetadata.AudioBitRates)} {videoMetadata.File}", null);
         }

@@ -12,19 +12,21 @@ public record VideoMetadata
 
     public int VideoHeight { get; init; }
 
-    public double TotalMilliseconds { get; init; }
-
-    public (string Language, string Title, int BitRate)[] AudioStreams { get; init; } = [];
-
-    public (string Language, string Title, string Path)[] SubtitleStreams { get; init; } = [];
-
     public double VideoFrameRate { get; init; }
+
+    public string[] AudioLanguages { get; init; } = [];
+
+    public string[] AudioTitles { get; init; } = [];
+
+    public long[] AudioBitRates { get; init; } = [];
+
+    internal (string Language, string Title, string Path)[] SubtitleStreams { get; init; } = [];
 
     internal int Subtitle { get; init; }
 
-    internal TimeSpan Duration => TimeSpan.FromSeconds(this.TotalMilliseconds);
+    public TimeSpan Duration { get; init; }
 
-    internal DefinitionType DefinitionType =>
+    internal DefinitionType PhysicalDefinitionType =>
         this.VideoWidth >= 3800 || this.VideoHeight >= 2150
             ? DefinitionType.P2160
             : this.VideoWidth >= 1900 || this.VideoHeight >= 1070
