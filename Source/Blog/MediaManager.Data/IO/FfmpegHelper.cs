@@ -127,9 +127,9 @@ public static class FfmpegHelper
 
         string mapAudio = videoMetadata.AudioStreams.Any() ? "-map 0:a " : string.Empty;
 
-        int bitRate = videoMetadata.DefinitionType is DefinitionType.P1080 ? 2048 : 1280;
+        int bitRate = videoMetadata.PhysicalDefinitionType is DefinitionType.P1080 ? 2048 : 1280;
         List<string> videoFilters = [];
-        if (videoMetadata.DefinitionType is DefinitionType.P480)
+        if (videoMetadata.PhysicalDefinitionType is DefinitionType.P480)
         {
             videoFilters.Add("bwdif=mode=send_field:parity=auto:deint=all");
         }
@@ -607,8 +607,8 @@ public static class FfmpegHelper
         if (mergeAudio.IsNotNullOrWhiteSpace())
         {
             IMediaInfo mergeMediaInfo = await FFmpeg.GetMediaInfo(mergeAudio, cancellationToken);
-            TimeSpan inputDuration = inputMediaInfo.GetSingleVideoStream().Duration;
-            TimeSpan mergeDuration = mergeMediaInfo.GetSingleVideoStream().Duration;
+            TimeSpan inputDuration = inputMediaInfo.Duration;
+            TimeSpan mergeDuration = mergeMediaInfo.Duration;
             TimeSpan difference = inputDuration - mergeDuration;
             if (difference > TimeSpan.FromSeconds(1) || difference < TimeSpan.FromSeconds(-1))
             {
@@ -707,9 +707,4 @@ public static class FfmpegHelper
                 }
             });
     }
-    
-    internal static IVideoStream GetSingleVideoStream(this IMediaInfo mediaInfo) => 
-        mediaInfo
-            .VideoStreams
-            .Single(videoStream => !videoStream.Codec.EqualsIgnoreCase("mjpeg") && !videoStream.Codec.EqualsIgnoreCase("png"));
 }

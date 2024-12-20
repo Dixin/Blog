@@ -1531,8 +1531,8 @@ const string Subdirectory = "HD.Encode.Crop";
 //    })
 //    .ForEach(ff =>
 //    {
-//        TimeSpan remote = FFmpeg.GetMediaInfo(ff.Remote).Result.VideoStreams.GetSingleVideoStream().Duration;
-//        TimeSpan local = FFmpeg.GetMediaInfo(ff.LocalEncoded).Result.VideoStreams.GetSingleVideoStream().Duration;
+//        TimeSpan remote = FFmpeg.GetMediaInfo(ff.Remote).Result.Duration;
+//        TimeSpan local = FFmpeg.GetMediaInfo(ff.LocalEncoded).Result.Duration;
 //        TimeSpan difference = remote - local;
 //        if (difference > TimeSpan.FromSeconds(1) || difference < TimeSpan.FromSeconds(-1))
 //        {

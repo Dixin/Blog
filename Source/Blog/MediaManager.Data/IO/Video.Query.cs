@@ -22,7 +22,9 @@ internal static partial class Video
             async () =>
             {
                 IMediaInfo mediaInfo = await FFmpeg.GetMediaInfo(file, cancellationToken);
-                IVideoStream videoStream = mediaInfo.GetSingleVideoStream();
+                IVideoStream videoStream = mediaInfo
+                    .VideoStreams
+                    .Single(videoStream => !videoStream.Codec.EqualsIgnoreCase("mjpeg") && !videoStream.Codec.EqualsIgnoreCase("png"));
                 return new VideoMetadata()
                 {
                     File = relativePath.IsNullOrWhiteSpace() ? file : Path.GetRelativePath(relativePath, file),
@@ -30,7 +32,7 @@ internal static partial class Video
                     VideoHeight = videoStream.Height,
                     AudioStreams = mediaInfo.AudioStreams?.OrderBy(audio => audio.Index).Select(audio => (audio.Language, audio.Title, (int)audio.Bitrate)).ToArray() ?? [],
                     SubtitleStreams = mediaInfo.SubtitleStreams?.OrderBy(subtitle => subtitle.Index).Select(subtitle => (subtitle.Language, subtitle.Title, subtitle.Path)).ToArray() ?? [],
-                    TotalMilliseconds = mediaInfo.Duration.TotalMilliseconds,
+                    Duration = mediaInfo.Duration,
                     Imdb = imdbMetadata,
                     VideoFrameRate = videoStream.Framerate
                 };
@@ -110,28 +112,28 @@ internal static partial class Video
         string fileName = PathHelper.GetFileNameWithoutExtension(videoMetadata.File);
         if (fileName.ContainsIgnoreCase("1080p"))
         {
-            if (videoMetadata.DefinitionType is not DefinitionType.P1080)
+            if (videoMetadata.PhysicalDefinitionType is not DefinitionType.P1080)
             {
                 return ($"!Not 1080p: {videoMetadata.VideoWidth}x{videoMetadata.VideoHeight} {videoMetadata.File}", null);
             }
         }
         else
         {
-            if (videoMetadata.DefinitionType is DefinitionType.P1080)
+            if (videoMetadata.PhysicalDefinitionType is DefinitionType.P1080)
             {
                 return ($"!1080p: {videoMetadata.VideoWidth}x{videoMetadata.VideoHeight} {videoMetadata.File}", is1080);
             }
 
             if (fileName.ContainsIgnoreCase("720p"))
             {
-                if (videoMetadata.DefinitionType is not DefinitionType.P720)
+                if (videoMetadata.PhysicalDefinitionType is not DefinitionType.P720)
                 {
                     return ($"!Not 720p: {videoMetadata.VideoWidth}x{videoMetadata.VideoHeight} {videoMetadata.File}", null);
                 }
             }
             else
             {
-                if (videoMetadata.DefinitionType is DefinitionType.P720)
+                if (videoMetadata.PhysicalDefinitionType is DefinitionType.P720)
                 {
                     return ($"!720p: {videoMetadata.VideoWidth}x{videoMetadata.VideoHeight} {videoMetadata.File}", is720);
                 }

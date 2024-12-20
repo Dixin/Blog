@@ -519,9 +519,10 @@ internal static partial class Video
                     return;
                 }
 
-                if (Math.Abs(toVideoMetadata.TotalMilliseconds - fromVideoMetadata.TotalMilliseconds) > 1100)
+                TimeSpan difference = toVideoMetadata.Duration - fromVideoMetadata.Duration
+                if (difference < TimeSpan.FromSeconds(-1) || difference > TimeSpan.FromSeconds(1))
                 {
-                    log($"Duration {fromVideoMetadata.TotalMilliseconds}ms to old {toVideoMetadata.TotalMilliseconds}ms: {fromVideoMetadata.File}.");
+                    log($"Duration {fromVideoMetadata.Duration} to old {toVideoMetadata.Duration}: {fromVideoMetadata.File}.");
                     return;
                 }
 
@@ -733,7 +734,7 @@ internal static partial class Video
                             throw new InvalidOperationException(video);
                         }
 
-                        prefix = videoMetadata.DefinitionType switch
+                        prefix = videoMetadata.PhysicalDefinitionType switch
                         {
                             DefinitionType.P1080 => $"{prefix}1080p{Delimiter}",
                             DefinitionType.P720 => $"{prefix}720p{Delimiter}",
