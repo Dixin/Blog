@@ -12,11 +12,15 @@ public record VideoMetadata
 
     public int VideoHeight { get; init; }
 
-    public (string Language, string Title, int BitRate)[] AudioStreams { get; init; } = [];
-
-    public (string Language, string Title, string Path)[] SubtitleStreams { get; init; } = [];
-
     public double VideoFrameRate { get; init; }
+
+    public string[] AudioLanguages { get; init; } = [];
+
+    public string[] AudioTitles { get; init; } = [];
+
+    public long[] AudioBitRates { get; init; } = [];
+
+    internal (string Language, string Title, string Path)[] SubtitleStreams { get; init; } = [];
 
     internal int Subtitle { get; init; }
 

@@ -519,16 +519,16 @@ internal static partial class Video
                     return;
                 }
 
-                TimeSpan difference = toVideoMetadata.Duration - fromVideoMetadata.Duration
+                TimeSpan difference = toVideoMetadata.Duration - fromVideoMetadata.Duration;
                 if (difference < TimeSpan.FromSeconds(-1) || difference > TimeSpan.FromSeconds(1))
                 {
                     log($"Duration {fromVideoMetadata.Duration} to old {toVideoMetadata.Duration}: {fromVideoMetadata.File}.");
                     return;
                 }
 
-                if (toVideoMetadata.AudioStreams.Length - fromVideoMetadata.AudioStreams.Length > 0)
+                if (toVideoMetadata.AudioBitRates.Length - fromVideoMetadata.AudioBitRates.Length > 0)
                 {
-                    log($"Audio {fromVideoMetadata.File} {fromVideoMetadata.AudioStreams.Length} {toVideoMetadata.AudioStreams.Length}");
+                    log($"Audio {fromVideoMetadata.File} {fromVideoMetadata.AudioBitRates.Length} {toVideoMetadata.AudioBitRates.Length}");
                     return;
                 }
 
