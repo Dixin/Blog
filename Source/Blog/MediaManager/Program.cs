@@ -1531,13 +1531,13 @@ const string Subdirectory = "HD.Encode.Crop";
 //    })
 //    .ForEach(ff =>
 //    {
-//        IVideoStream[] remote = FFmpeg.GetMediaInfo(ff.Remote).Result.VideoStreams.Where(v => v.Codec is not ("png" or "mjpeg")).ToArray();
-//        IVideoStream[] local = FFmpeg.GetMediaInfo(ff.LocalEncoded).Result.VideoStreams.Where(v => v.Codec is not ("png" or "mjpeg")).ToArray();
-//        TimeSpan difference = remote.Single().Duration - local.Single().Duration;
+//        TimeSpan remote = FFmpeg.GetMediaInfo(ff.Remote).Result.VideoStreams.GetSingleVideoStream().Duration;
+//        TimeSpan local = FFmpeg.GetMediaInfo(ff.LocalEncoded).Result.VideoStreams.GetSingleVideoStream().Duration;
+//        TimeSpan difference = remote - local;
 //        if (difference > TimeSpan.FromSeconds(1) || difference < TimeSpan.FromSeconds(-1))
 //        {
-//            Logger.WriteLine($"{remote.Single().Duration} {ff.Remote}");
-//            Logger.WriteLine($"{local.Single().Duration} {ff.LocalEncoded}");
+//            Logger.WriteLine($"{remote} {ff.Remote}");
+//            Logger.WriteLine($"{local} {ff.LocalEncoded}");
 //            Logger.WriteLine("");
 //        }
 //    });

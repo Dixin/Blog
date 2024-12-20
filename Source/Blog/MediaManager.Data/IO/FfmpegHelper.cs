@@ -540,7 +540,7 @@ public static class FfmpegHelper
             });
     }
 
-    internal static async Task<int> ExtractMkvAsync(ISettings settings, string inputVideo, string mergeVideo = "", string outputVideo = "", bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task<int> ExtractVideoAndSubtitlesAsync(ISettings settings, string inputVideo, string mergeAudio = "", string outputVideo = "", bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
         Debug.Assert(inputVideo.EndsWithIgnoreCase(".mkv"));
@@ -604,18 +604,18 @@ public static class FfmpegHelper
                 .IsEmpty());
         }
 
-        if (mergeVideo.IsNotNullOrWhiteSpace() && !mergeVideo.ContainsIgnoreCase("Ex.Machina.2014") && !mergeVideo.ContainsIgnoreCase("Jurassic.Park.III.2001") && !mergeVideo.ContainsIgnoreCase("X-Men.The.Last.Stand.2006"))
+        if (mergeAudio.IsNotNullOrWhiteSpace())
         {
-            IMediaInfo mergeMediaInfo = await FFmpeg.GetMediaInfo(mergeVideo, cancellationToken);
-            TimeSpan inputDuration = inputMediaInfo.VideoStreams.Single(videoStream => !videoStream.Codec.EqualsIgnoreCase("mjpeg") && !videoStream.Codec.EqualsIgnoreCase("png")).Duration;
-            TimeSpan mergeDuration = mergeMediaInfo.VideoStreams.Single(videoStream => !videoStream.Codec.EqualsIgnoreCase("mjpeg") && !videoStream.Codec.EqualsIgnoreCase("png")).Duration;
+            IMediaInfo mergeMediaInfo = await FFmpeg.GetMediaInfo(mergeAudio, cancellationToken);
+            TimeSpan inputDuration = inputMediaInfo.GetSingleVideoStream().Duration;
+            TimeSpan mergeDuration = mergeMediaInfo.GetSingleVideoStream().Duration;
             TimeSpan difference = inputDuration - mergeDuration;
             if (difference > TimeSpan.FromSeconds(1) || difference < TimeSpan.FromSeconds(-1))
             {
                 log($"{inputDuration} {inputVideo}");
-                log($"{mergeDuration} {mergeVideo}");
+                log($"{mergeDuration} {mergeAudio}");
                 log(string.Empty);
-                throw new ArgumentOutOfRangeException(nameof(mergeVideo), mergeVideo);
+                throw new ArgumentOutOfRangeException(nameof(mergeAudio), mergeAudio);
             }
         }
 
@@ -625,12 +625,12 @@ public static class FfmpegHelper
             subtitles.Select(subtitle => $"""
                 -c copy -map 0:{subtitle.Index} "{subtitle.File}"
                 """));
-        string arguments = mergeVideo.IsNullOrWhiteSpace()
+        string arguments = mergeAudio.IsNullOrWhiteSpace()
             ? $"""
             -i "{inputVideo}" -c copy -map_metadata 0 -map 0:v -map 0:a {strict} "{outputVideo}" {subtitleArguments} -n
             """
             : $"""
-            -i "{inputVideo}" -i "{mergeVideo}" -c copy -map_metadata 0 -map 0:v -map 0:a -map 1:a {strict} "{outputVideo}" {subtitleArguments} -n
+            -i "{inputVideo}" -i "{mergeAudio}" -c copy -map_metadata 0 -map 0:v -map 0:a -map 1:a {strict} "{outputVideo}" {subtitleArguments} -n
             """;
         log(arguments);
         log(string.Empty);
@@ -677,7 +677,7 @@ public static class FfmpegHelper
         }
     }
 
-    internal static async Task ExtractAllMkvAsync(ISettings settings, string inputDirectory, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default, params Func<string, string>[] outputVideos)
+    internal static async Task ExtractAllAsync(ISettings settings, string inputDirectory, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default, params Func<string, string>[] outputVideos)
     {
         log ??= Logger.WriteLine;
 
@@ -701,10 +701,15 @@ public static class FfmpegHelper
                         }
                     }
 
-                    int result = await ExtractMkvAsync(settings, inputVideo, string.Empty, outputVideo, isDryRun, log, cancellation);
+                    int result = await ExtractVideoAndSubtitlesAsync(settings, inputVideo, string.Empty, outputVideo, isDryRun, log, cancellation);
                     log($"{result} {inputVideo}");
                     log("");
                 }
             });
     }
+    
+    internal static IVideoStream GetSingleVideoStream(this IMediaInfo mediaInfo) => 
+        mediaInfo
+            .VideoStreams
+            .Single(videoStream => !videoStream.Codec.EqualsIgnoreCase("mjpeg") && !videoStream.Codec.EqualsIgnoreCase("png"));
 }
