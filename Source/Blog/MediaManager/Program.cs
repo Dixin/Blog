@@ -521,7 +521,7 @@ string[][] metadataDrives = [
 //Video.CopyMovieMetadata(settings.MovieTemp42, 2);
 //await Video.PrintMovieImdbIdErrorsAsync(settings, true, log, cancellationTokenSource.Token, settings.MovieTemp42);
 //await Video.ConvertToUtf8Async(settings.MovieTemp42, true);
-//Video.MoveSubtitleToParentDirectory(settings.MovieTemp42, settings.MovieSubtitleBackupDirectory, false);
+//Video.MoveMovieSubtitleToParent(settings.MovieTemp42, settings.MovieSubtitleBackupDirectory, false);
 //Video.MoveMetadata(settings.MovieTemp42, settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory);
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp42, 2, overwrite: false, useCache: true, useBrowser: true);
 //FfmpegHelper.MergeAllDubbedMovies(settings.MovieTemp42, isDryRun: true);
@@ -549,9 +549,10 @@ string[][] metadataDrives = [
 //    .Replace(".srt", ".chs&eng.srt")
 //    ));
 //Video.MoveSubtitlesForEpisodes(
+//    settings,
 //    @"",
 //    @"",
-//    //".mkv",
+//    isDryRun: false,
 //    overwrite: false);
 
 //Video.CreateTVEpisodeMetadata(@"H:\Downloads7\New folder (6)\阅读\_1", f => PathHelper.GetFileNameWithoutExtension(f).Split(".").Last());

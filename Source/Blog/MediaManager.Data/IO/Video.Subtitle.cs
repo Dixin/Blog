@@ -40,8 +40,8 @@ internal static partial class Video
                 detector.DataEnd();
                 return detector.Charset is not null ? (detector.Charset, detector.Confidence, File: file) : (Charset: (string?)null, Confidence: (float?)null, File: file);
             });
-            //.OrderBy(result => result.Charset)
-            //.ThenByDescending(result => result.Confidence);
+    //.OrderBy(result => result.Charset)
+    //.ThenByDescending(result => result.Confidence);
 
     internal static void DeleteSubtitle(string directory, bool isDryRun = false, Action<string>? log = null, params string[] encodings)
     {
@@ -138,92 +138,272 @@ internal static partial class Video
     internal static void CopyAllSubtitles(string fromDirectory, string toDirectory, bool overwrite = false, Action<string>? log = null) =>
         FileHelper.CopyAll(fromDirectory, toDirectory, searchOption: SearchOption.AllDirectories, predicate: file => file.HasAnyExtension(AllSubtitleExtensions), overwrite: overwrite);
 
-    internal static void MoveSubtitlesForEpisodes(string mediaDirectory, string subtitleDirectory, string mediaExtension = VideoExtension, bool overwrite = false, Func<string, string, string>? rename = null, bool isDryRun = false, Action<string>? log = null)
+    internal static void MoveSubtitlesForEpisodes(ISettings settings, string mediaDirectory, string subtitleDirectory, bool overwrite = false, Func<string, string, string>? rename = null, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
-        Directory
-            .EnumerateFiles(mediaDirectory, $"{PathHelper.AllSearchPattern}{mediaExtension}", SearchOption.AllDirectories)
-            .ToArray()
-            .ForEach(video =>
+        if (subtitleDirectory.IsNullOrEmpty())
+        {
+            subtitleDirectory = mediaDirectory;
+        }
+
+        Regex episodeRegex = new("S[0-9]{2}E[0-9]{2}");
+
+        string[] mediaDirectoryFiles = Directory.GetFiles(mediaDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories);
+        Dictionary<string, string> episodeToVideos = mediaDirectoryFiles
+            .Where(IsVideo)
+            .Select(video => (video, episodeRegex.Match(PathHelper.GetFileNameWithoutExtension(video))))
+            .Where(videoMatch => videoMatch.Item2.Success)
+            .ToDictionary(videoMatch => videoMatch.Item2.Value, videoMatch => videoMatch.video);
+
+        ILookup<string, string> episodeToSubtitles = (subtitleDirectory.EqualsIgnoreCase(mediaDirectory)
+                ? mediaDirectoryFiles.AsEnumerable()
+                : Directory.EnumerateFiles(subtitleDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories))
+            .Where(IsSubtitle)
+            .ToLookup(subtitle =>
             {
-                string match = Regex.Match(PathHelper.GetFileNameWithoutExtension(video), @"S[\d]+E[\d]+", RegexOptions.IgnoreCase).Value.ToLowerInvariant();
-                string[] files = Directory
-                    .GetFiles(subtitleDirectory, $"{PathHelper.AllSearchPattern}{match}{PathHelper.AllSearchPattern}", SearchOption.AllDirectories);
-                string subtitleBase = string.Empty;
-                string subtitleVideo = files.SingleOrDefault(IsVideo, string.Empty);
-                if (subtitleBase.IsNotNullOrWhiteSpace())
+                Match match = episodeRegex.Match(PathHelper.GetFileNameWithoutExtension(subtitle));
+                if (match.Success)
                 {
-                    subtitleBase = PathHelper.GetFileNameWithoutExtension(subtitleVideo);
-                }
-                else
-                {
-                    string subtitleMetadata = files.SingleOrDefault(IsXmlMetadata, string.Empty);
-                    if (subtitleMetadata.IsNotNullOrWhiteSpace())
-                    {
-                        subtitleBase = PathHelper.GetFileNameWithoutExtension(subtitleMetadata);
-                    }
+                    return match.Value;
                 }
 
-                files
-                    .Where(IsSubtitle)
-                    .ToArray()
-                    .ForEach(subtitle =>
+                string subtitleDirectory = PathHelper.GetDirectoryName(subtitle);
+                match = episodeRegex.Match(PathHelper.GetFileName(subtitleDirectory));
+                return match.Success ? match.Value : string.Empty;
+            });
+
+        episodeToVideos
+            .Where(pair => episodeToSubtitles.Contains(pair.Key))
+            .ForEach(pair =>
+            {
+                string videoDirectory = PathHelper.GetDirectoryName(pair.Value);
+                string videoName = PathHelper.GetFileNameWithoutExtension(pair.Value);
+                episodeToSubtitles[pair.Key]
+                    .Select(subtitle =>
                     {
-                        string subtitleName = PathHelper.GetFileNameWithoutExtension(subtitle);
-                        string language = subtitleBase.IsNotNullOrWhiteSpace() && subtitleName.StartsWithIgnoreCase(subtitleBase)
-                            ? subtitleName[subtitleBase.Length..].TrimStart(Delimiter.Single())
-                            : subtitleName.Split(Delimiter).Last();
-                        if (!Regex.IsMatch(language, @"^([a-z]{3}(\&[a-z]{3})?(\-[a-z0-9]+)?)?$"))
+                        string name = PathHelper.GetFileNameWithoutExtension(subtitle);
+                        string title = name.StartsWithIgnoreCase(videoName)
+                            ? name[videoName.Length..].Trim(Delimiter.Single())
+                            : episodeRegex.IsMatch(name) ? name.Split(Delimiter).Last() : name;
+                        Match match = Regex.Match(title, "[A-Za-z]{3}");
+                        string language = match.Success ? match.Value.ToLowerInvariant() : "eng";
+                        language = language switch
                         {
-                            language = string.Empty;
-                        }
+                            "jap" => "jpn",
+                            "rom" => "rum",
+                            "und" => "eng",
+                            "chi" when title.ContainsIgnoreCase("Simplified") => "chs",
+                            "chi" when title.ContainsIgnoreCase("Traditional") => "cht",
+                            "chi" => EncodingHelper.TryRead(subtitle, out string? content, out _) && !content.ContainsCommonTraditionalChineseCharacter() ? "chs" : "cht",
+                            _ => language
+                        };
+                        log($"{language} | {title} | {name}");
+                        string extension = PathHelper.GetExtension(subtitle);
+                        string newSubtitleName = $"{videoName}{Delimiter}{language}{extension}";
+                        string newBackupName = $"{videoName}{Delimiter}{title}{extension}";
+                        log(newSubtitleName);
+                        log(newBackupName);
+                        log(string.Empty);
+                        return (subtitle, language, newSubtitleName, newBackupName, extension);
+                    })
+                    .GroupBy(subtitle => subtitle.language)
+                    .ForEach(group =>
+                    {
+                        Debug.Assert(group.Key is not "chi");
 
-                        string newSubtitleName = $"{PathHelper.GetFileNameWithoutExtension(video)}{(language.IsNullOrWhiteSpace() ? string.Empty : Delimiter)}{language}{PathHelper.GetExtension(subtitle)}";
-                        string newSubtitle = Path.Combine(PathHelper.GetDirectoryName(video), newSubtitleName);
-                        if (rename is not null)
+                        if (group.Count() == 1)
                         {
-                            newSubtitle = rename(subtitle, newSubtitle);
-                        }
-
-                        if (overwrite)
-                        {
-                            log($"Move {subtitle}");
+                            (string subtitle, string language, string newSubtitleName, string newBackupName, string extension) = group.Single();
+                            string newSubtitle = group.Key is "eng"
+                                ? PathHelper.ReplaceExtension(pair.Value, extension)
+                                : Path.Combine(videoDirectory, newSubtitleName);
+                            log(subtitle);
                             if (!isDryRun)
                             {
-                                FileHelper.Move(subtitle, newSubtitle, true);
+                                if (overwrite || !File.Exists(newSubtitle))
+                                {
+                                    FileHelper.Move(subtitle, newSubtitle, overwrite, true);
+                                }
+                                else
+                                {
+                                    FileHelper.Move(subtitle, Path.Combine(settings.TVSubtitleBackupDirectory, newBackupName), overwrite, true);
+                                }
                             }
 
                             log(newSubtitle);
-                            log(string.Empty);
-                        }
-                        else if (!File.Exists(newSubtitle))
-                        {
-                            log($"Move {subtitle}");
-                            if (!isDryRun)
-                            {
-                                File.Move(subtitle, newSubtitle, false);
-                            }
-
-                            log(newSubtitle);
-                            log(string.Empty);
                         }
                         else
                         {
-                            log($"Ignore {subtitle}");
-                            log(string.Empty);
+                            (string subtitle, string language, string newSubtitleName, string newBackupName, string extension)[] subtitles = group
+                                .OrderByDescending(item => new FileInfo(item.subtitle).Length)
+                                .ToArray();
+                            if (group.Key is "eng")
+                            {
+                                (string subtitle, string language, string newSubtitleName, string newBackupName, string extension) = subtitles[0];
+                                string newSubtitle = PathHelper.ReplaceExtension(pair.Value, extension);
+                                log(subtitle);
+                                if (!isDryRun)
+                                {
+                                    if (overwrite || !File.Exists(newSubtitle))
+                                    {
+                                        FileHelper.Move(subtitle, newSubtitle, overwrite, true);
+                                    }
+                                    else
+                                    {
+                                        FileHelper.Move(subtitle, Path.Combine(settings.TVSubtitleBackupDirectory, newBackupName), overwrite, true);
+                                    }
+                                }
+
+                                log(newSubtitle);
+
+                                (subtitle, language, newSubtitleName, newBackupName, extension) = subtitles[1];
+                                newSubtitle = Path.Combine(videoDirectory, newSubtitleName);
+                                log(subtitle);
+                                if (!isDryRun)
+                                {
+                                    if (overwrite || !File.Exists(newSubtitle))
+                                    {
+                                        FileHelper.Move(subtitle, newSubtitle, overwrite, true);
+                                    }
+                                    else
+                                    {
+                                        FileHelper.Move(subtitle, Path.Combine(settings.TVSubtitleBackupDirectory, newBackupName), overwrite, true);
+                                    }
+                                }
+
+                                log(newSubtitle);
+
+                                subtitles = subtitles.Skip(2).ToArray();
+                            }
+                            else
+                            {
+                                (string subtitle, string language, string newSubtitleName, string newBackupName, string extension) = group
+                                    .OrderByDescending(item => new FileInfo(item.subtitle).Length)
+                                    .First();
+                                string newSubtitle = Path.Combine(videoDirectory, newSubtitleName);
+                                log(subtitle);
+                                if (!isDryRun)
+                                {
+                                    if (overwrite || !File.Exists(newSubtitle))
+                                    {
+                                        FileHelper.Move(subtitle, newSubtitle, overwrite, true);
+                                    }
+                                    else
+                                    {
+                                        FileHelper.Move(subtitle, Path.Combine(settings.TVSubtitleBackupDirectory, newBackupName), overwrite, true);
+                                    }
+                                }
+
+                                log(newSubtitle);
+
+                                subtitles = subtitles.Skip(1).ToArray();
+                            }
+
+                            if (!isDryRun)
+                            {
+                                subtitles.ForEach(subtitle => FileHelper.Move(subtitle.subtitle, Path.Combine(settings.TVSubtitleBackupDirectory, subtitle.newBackupName), overwrite, true));
+                            }
                         }
                     });
             });
+
+        if (episodeToSubtitles.Contains(string.Empty))
+        {
+            episodeToSubtitles[string.Empty].ForEach(subtitle => log($"!No match {subtitle}"));
+        }
+
+        if (!isDryRun)
+        {
+            Directory
+                .EnumerateDirectories(subtitleDirectory)
+                .Where(directory => Directory.EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories).IsEmpty())
+                .ToArray()
+                .ForEach(DirectoryHelper.Recycle);
+        }
+
+        //Directory
+        //    .EnumerateFiles(mediaDirectory, $"{PathHelper.AllSearchPattern}{mediaExtension}", SearchOption.AllDirectories)
+        //    .ToArray()
+        //    .ForEach(video =>
+        //    {
+        //        string match = Regex.Match(PathHelper.GetFileNameWithoutExtension(video), @"S[\d]+E[\d]+", RegexOptions.IgnoreCase).Value.ToLowerInvariant();
+        //        string[] files = Directory
+        //            .GetFiles(subtitleDirectory, $"{PathHelper.AllSearchPattern}{match}{PathHelper.AllSearchPattern}", SearchOption.AllDirectories);
+        //        string subtitleBase = string.Empty;
+        //        string subtitleVideo = files.SingleOrDefault(IsVideo, string.Empty);
+        //        if (subtitleBase.IsNotNullOrWhiteSpace())
+        //        {
+        //            subtitleBase = PathHelper.GetFileNameWithoutExtension(subtitleVideo);
+        //        }
+        //        else
+        //        {
+        //            string subtitleMetadata = files.SingleOrDefault(IsXmlMetadata, string.Empty);
+        //            if (subtitleMetadata.IsNotNullOrWhiteSpace())
+        //            {
+        //                subtitleBase = PathHelper.GetFileNameWithoutExtension(subtitleMetadata);
+        //            }
+        //        }
+
+        //        files
+        //            .Where(IsSubtitle)
+        //            .ToArray()
+        //            .ForEach(subtitle =>
+        //            {
+        //                string subtitleName = PathHelper.GetFileNameWithoutExtension(subtitle);
+        //                string language = subtitleBase.IsNotNullOrWhiteSpace() && subtitleName.StartsWithIgnoreCase(subtitleBase)
+        //                    ? subtitleName[subtitleBase.Length..].TrimStart(Delimiter.Single())
+        //                    : subtitleName.Split(Delimiter).Last();
+        //                if (!Regex.IsMatch(language, @"^([a-z]{3}(\&[a-z]{3})?(\-[a-z0-9]+)?)?$"))
+        //                {
+        //                    language = string.Empty;
+        //                }
+
+        //                string newSubtitleName = $"{PathHelper.GetFileNameWithoutExtension(video)}{(language.IsNullOrWhiteSpace() ? string.Empty : Delimiter)}{language}{PathHelper.GetExtension(subtitle)}";
+        //                string newSubtitle = Path.Combine(PathHelper.GetDirectoryName(video), newSubtitleName);
+        //                if (rename is not null)
+        //                {
+        //                    newSubtitle = rename(subtitle, newSubtitle);
+        //                }
+
+        //                if (overwrite)
+        //                {
+        //                    log($"Move {subtitle}");
+        //                    if (!isDryRun)
+        //                    {
+        //                        FileHelper.Move(subtitle, newSubtitle, true);
+        //                    }
+
+        //                    log(newSubtitle);
+        //                    log(string.Empty);
+        //                }
+        //                else if (!File.Exists(newSubtitle))
+        //                {
+        //                    log($"Move {subtitle}");
+        //                    if (!isDryRun)
+        //                    {
+        //                        File.Move(subtitle, newSubtitle, false);
+        //                    }
+
+        //                    log(newSubtitle);
+        //                    log(string.Empty);
+        //                }
+        //                else
+        //                {
+        //                    log($"Ignore {subtitle}");
+        //                    log(string.Empty);
+        //                }
+        //            });
+        //    });
     }
 
-    internal static void MoveSubtitleToParentDirectory(string directory, string subtitleDirectory, bool isDryRun = false, Action<string>? log = null)
+    internal static void MoveMovieSubtitleToParent(string directory, string subtitleBackupDirectory, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
-        if (!Directory.Exists(subtitleDirectory))
+        if (!Directory.Exists(subtitleBackupDirectory))
         {
-            Directory.CreateDirectory(subtitleDirectory);
+            Directory.CreateDirectory(subtitleBackupDirectory);
         }
 
         Directory
@@ -502,7 +682,7 @@ internal static partial class Video
                                 }
                                 else if (firstSubtitle.Length == destinationFirstSubtitleLength)
                                 {
-                                    FileHelper.Move(firstSubtitle.Subtitle, Path.Combine(subtitleDirectory, $"{videoName}{Delimiter}{firstSubtitle.OriginalName}.srt"), true, true);
+                                    FileHelper.Move(firstSubtitle.Subtitle, Path.Combine(subtitleBackupDirectory, $"{videoName}{Delimiter}{firstSubtitle.OriginalName}.srt"), true, true);
                                 }
                                 else
                                 {
@@ -511,12 +691,12 @@ internal static partial class Video
                                         long destinationSecondSubtitleLength = new FileInfo(destinationSecondSubtitle).Length;
                                         if (firstSubtitle.Length > destinationSecondSubtitleLength)
                                         {
-                                            FileHelper.MoveToDirectory(destinationSecondSubtitle, subtitleDirectory);
+                                            FileHelper.MoveToDirectory(destinationSecondSubtitle, subtitleBackupDirectory);
                                             FileHelper.Move(firstSubtitle.Subtitle, destinationSecondSubtitle, false, true);
                                         }
                                         else
                                         {
-                                            FileHelper.Move(firstSubtitle.Subtitle, Path.Combine(subtitleDirectory, $"{videoName}{Delimiter}{firstSubtitle.OriginalName}.srt"), false, true);
+                                            FileHelper.Move(firstSubtitle.Subtitle, Path.Combine(subtitleBackupDirectory, $"{videoName}{Delimiter}{firstSubtitle.OriginalName}.srt"), false, true);
                                         }
                                     }
                                     else
@@ -550,12 +730,12 @@ internal static partial class Video
                                     long destinationSecondSubtitleLength = new FileInfo(destinationSecondSubtitle).Length;
                                     if (secondSubtitle.Length > destinationSecondSubtitleLength)
                                     {
-                                        FileHelper.MoveToDirectory(destinationSecondSubtitle, subtitleDirectory, false, true);
+                                        FileHelper.MoveToDirectory(destinationSecondSubtitle, subtitleBackupDirectory, false, true);
                                         FileHelper.Move(secondSubtitle.Subtitle, destinationSecondSubtitle, false, true);
                                     }
                                     else
                                     {
-                                        FileHelper.Move(secondSubtitle.Subtitle, Path.Combine(subtitleDirectory, $"{videoName}{Delimiter}{secondSubtitle.OriginalName}.srt"), false, true);
+                                        FileHelper.Move(secondSubtitle.Subtitle, Path.Combine(subtitleBackupDirectory, $"{videoName}{Delimiter}{secondSubtitle.OriginalName}.srt"), false, true);
                                     }
                                 }
                                 else
@@ -574,7 +754,7 @@ internal static partial class Video
                             .ForEach(subtitle =>
                             {
                                 log(subtitle.Subtitle);
-                                string destinationSubtitle = Path.Combine(subtitleDirectory, $"{videoName}{Delimiter}{subtitle.OriginalName}.srt");
+                                string destinationSubtitle = Path.Combine(subtitleBackupDirectory, $"{videoName}{Delimiter}{subtitle.OriginalName}.srt");
                                 if (!isDryRun)
                                 {
                                     FileHelper.Move(subtitle.Subtitle, destinationSubtitle, false, true);
@@ -601,12 +781,12 @@ internal static partial class Video
                                 long destinationFirstSubtitleLength = new FileInfo(destinationFirstSubtitle).Length;
                                 if (firstSubtitle.Length > destinationFirstSubtitleLength)
                                 {
-                                    FileHelper.MoveToDirectory(destinationFirstSubtitle, subtitleDirectory, false, true);
+                                    FileHelper.MoveToDirectory(destinationFirstSubtitle, subtitleBackupDirectory, false, true);
                                     FileHelper.Move(firstSubtitle.Subtitle, destinationFirstSubtitle, false, true);
                                 }
                                 else
                                 {
-                                    FileHelper.Move(firstSubtitle.Subtitle, Path.Combine(subtitleDirectory, $"{videoName}{Delimiter}{subtitleGroup.Subtitles.First().OriginalName}.srt"), false, true);
+                                    FileHelper.Move(firstSubtitle.Subtitle, Path.Combine(subtitleBackupDirectory, $"{videoName}{Delimiter}{subtitleGroup.Subtitles.First().OriginalName}.srt"), false, true);
                                 }
                             }
                             else
@@ -624,7 +804,7 @@ internal static partial class Video
                             .ForEach(subtitle =>
                             {
                                 log(subtitle.Subtitle);
-                                string destinationSubtitle = Path.Combine(subtitleDirectory, $"{videoName}{Delimiter}{subtitle.OriginalName}.srt");
+                                string destinationSubtitle = Path.Combine(subtitleBackupDirectory, $"{videoName}{Delimiter}{subtitle.OriginalName}.srt");
                                 if (!isDryRun)
                                 {
                                     FileHelper.Move(subtitle.Subtitle, destinationSubtitle, false, true);
@@ -753,6 +933,40 @@ internal static partial class Video
                 else
                 {
                     FileHelper.Move(subtitle, newSubtitle);
+                }
+            });
+    }
+
+    private static void MoveSeasonSubtitlesToParent(string directory, string subtitleBackupDirectory, bool isDryRun = false, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+
+        Directory
+            .EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
+            .Where(IsSubtitle)
+            .ToArray()
+            .ForEach(subtitle =>
+            {
+                string name = PathHelper.GetFileNameWithoutExtension(subtitle);
+                if (Regex.IsMatch(name, "S[0-9]{2}E[0-9]{2}"))
+                {
+                    return;
+                }
+
+                string subtitleDirectory = PathHelper.GetDirectoryName(subtitle);
+                string subtitleDirectoryName = PathHelper.GetFileName(subtitleDirectory);
+                if (Regex.IsMatch(subtitleDirectoryName, "S[0-9]{2}E[0-9]{2}"))
+                {
+                    string parentDirectory = PathHelper.GetDirectoryName(subtitleDirectory);
+                    string newSubtitle = Path.Combine(parentDirectory, $"{subtitleDirectoryName}{Delimiter}{PathHelper.GetFileName(subtitle)}");
+                    log(subtitle);
+                    if (!isDryRun)
+                    {
+                        FileHelper.Move(subtitle, newSubtitle);
+                    }
+
+                    log(newSubtitle);
+                    log(string.Empty);
                 }
             });
     }
