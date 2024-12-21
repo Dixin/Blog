@@ -194,6 +194,8 @@ internal static partial class Video
                             "rom" => "rum",
                             "und" => "eng",
                             "sdh" => "eng",
+                            "tra" => "cht",
+                            "sim" => "chs",
                             "chi" when title.ContainsIgnoreCase("Simplified") => "chs",
                             "chi" when title.ContainsIgnoreCase("Traditional") => "cht",
                             "chi" => EncodingHelper.TryRead(subtitle, out string? content, out _) && !content.ContainsCommonTraditionalChineseCharacter() ? "chs" : "cht",

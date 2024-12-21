@@ -13,7 +13,7 @@ internal static class VideoFileInfoExtensions
             return video.Version.EqualsIgnoreCase("KOOK") ? EncoderType.KoreanPremium : EncoderType.Korean;
         }
 
-        bool isBluRay = origin.ContainsIgnoreCase(".BluRay");
+        bool isBluRay = origin.ContainsIgnoreCase("BluRay");
         switch (encoder)
         {
             case FfmpegHelper.Executable:
