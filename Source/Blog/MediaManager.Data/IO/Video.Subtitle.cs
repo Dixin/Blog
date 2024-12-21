@@ -138,7 +138,7 @@ internal static partial class Video
     internal static void CopyAllSubtitles(string fromDirectory, string toDirectory, bool overwrite = false, Action<string>? log = null) =>
         FileHelper.CopyAll(fromDirectory, toDirectory, searchOption: SearchOption.AllDirectories, predicate: file => file.HasAnyExtension(AllSubtitleExtensions), overwrite: overwrite);
 
-    internal static void MoveSubtitlesForEpisodes(ISettings settings, string mediaDirectory, string subtitleDirectory, bool overwrite = false, Func<string, string, string>? rename = null, bool isDryRun = false, Action<string>? log = null)
+    internal static void MoveSubtitlesForEpisodes(ISettings settings, string mediaDirectory, string subtitleDirectory = "", bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
@@ -193,6 +193,7 @@ internal static partial class Video
                             "jap" => "jpn",
                             "rom" => "rum",
                             "und" => "eng",
+                            "sdh" => "eng",
                             "chi" when title.ContainsIgnoreCase("Simplified") => "chs",
                             "chi" when title.ContainsIgnoreCase("Traditional") => "cht",
                             "chi" => EncodingHelper.TryRead(subtitle, out string? content, out _) && !content.ContainsCommonTraditionalChineseCharacter() ? "chs" : "cht",

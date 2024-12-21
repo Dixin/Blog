@@ -20,7 +20,7 @@ internal static partial class Video
             settings,
             Directory
                 .EnumerateFiles(directory, PathHelper.AllSearchPattern, searchOption)
-                .Where(file => predicate?.Invoke(file) ?? file.HasAnyExtension(AllVideoExtensions.Except([DiskImageExtension]))),
+                .Where(file => file.IsVideo() && !file.HasExtension(DiskImageExtension) && (predicate is null || predicate(file))),
             isNoAudioAllowed,
             skipTopPreferred,
             is720,
