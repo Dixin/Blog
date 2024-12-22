@@ -3,7 +3,6 @@
 using System.Linq;
 using Examples.Common;
 using Examples.IO;
-using Examples.Text;
 using MediaManager.Net;
 
 internal static partial class Video

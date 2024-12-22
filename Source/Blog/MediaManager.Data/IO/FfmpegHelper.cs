@@ -550,7 +550,7 @@ public static class FfmpegHelper
             });
     }
 
-    internal static async Task<int> ExtractVideoAndSubtitlesAsync(ISettings settings, string inputVideo, string mergeAudio = "", string outputVideo = "", bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task<int> ExtractAndCompareAsync(ISettings settings, string inputVideo, string mergeAudio = "", string outputVideo = "", bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
         Debug.Assert(inputVideo.EndsWithIgnoreCase(".mkv"));
@@ -664,12 +664,20 @@ public static class FfmpegHelper
             }
 
             int result = await ProcessHelper.StartAndWaitAsync(Executable, arguments, null, null, null, true, cancellationToken);
-            if (result == 0 && !await AreSameDurationAsync(inputVideo, outputVideo))
+            if (result != 0)
             {
-                log($"!!! {outputVideo}");
+                return 1;
             }
 
+            result = await CompareDurationAsync(inputVideo, outputVideo);
+            if (result == 0)
+            {
+                return result;
+            }
+
+            log($"!!! {outputVideo}");
             return result;
+
         }
 
         return 0;
@@ -722,14 +730,14 @@ public static class FfmpegHelper
                         }
                     }
 
-                    int result = await ExtractVideoAndSubtitlesAsync(settings, inputVideo, string.Empty, outputVideo, isDryRun, log, cancellation);
+                    int result = await ExtractAndCompareAsync(settings, inputVideo, string.Empty, outputVideo, isDryRun, log, cancellation);
                     log($"{result} {inputVideo}");
                     log("");
                 }
             });
     }
 
-    internal static async Task<bool> AreSameDurationAsync(string video1, string video2, Action<string>? log = null)
+    internal static async Task<int> CompareDurationAsync(string video1, string video2, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
@@ -738,12 +746,12 @@ public static class FfmpegHelper
         TimeSpan difference = duration1 - duration2;
         if (difference >= TimeSpan.FromSeconds(-1) && difference <= TimeSpan.FromSeconds(1))
         {
-            return true;
+            return 0;
         }
 
         log($"{duration1} {video1}");
         log($"{duration2} {video2}");
         log(string.Empty);
-        return false;
+        return duration1.CompareTo(duration2);
     }
 }
