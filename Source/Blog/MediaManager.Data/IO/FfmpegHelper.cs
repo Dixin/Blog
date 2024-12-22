@@ -634,7 +634,7 @@ public static class FfmpegHelper
             }
         }
 
-        string strict = inputVideo.ContainsIgnoreCase(".TrueHD") ? "-strict -2" : "";
+        string strict = inputMediaInfo.AudioStreams.Any(audio => audio.Codec.ContainsIgnoreCase("TrueHD")) ? "-strict -2" : "";
         string subtitleArguments = string.Join(
             " ",
             subtitles.Select(subtitle => $"""
