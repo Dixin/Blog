@@ -656,7 +656,7 @@ public static class FfmpegHelper
             {
                 return 0;
             }
-            
+
             string driveName = PathHelper.GetPathRoot(outputVideo);
             string outputDirectory = PathHelper.GetDirectoryName(outputVideo);
             if (new FileInfo(inputVideo).Length >= DriveHelper.GetAvailableFreeSpace(driveName) * 1.1)
@@ -734,6 +734,14 @@ public static class FfmpegHelper
                         {
                             destinationVideos.Append(string.Empty).ForEach(log);
                             continue;
+                        }
+
+                        string driveName = PathHelper.GetPathRoot(outputVideo);
+                        if (new FileInfo(inputVideo).Length >= DriveHelper.GetAvailableFreeSpace(driveName) * 1.1)
+                        {
+                            log($"!!! {driveName} does not has enough free available free space for {inputVideo}.");
+                            inputVideos.Enqueue(inputVideo);
+                            break;
                         }
                     }
 
