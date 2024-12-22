@@ -663,7 +663,13 @@ public static class FfmpegHelper
                 return 0;
             }
 
-            return await ProcessHelper.StartAndWaitAsync(Executable, arguments, null, null, null, true, cancellationToken);
+            int result = await ProcessHelper.StartAndWaitAsync(Executable, arguments, null, null, null, true, cancellationToken);
+            if (result == 0 && !await AreSameDurationAsync(inputVideo, outputVideo))
+            {
+                log($"!!! {outputVideo}");
+            }
+
+            return result;
         }
 
         return 0;
@@ -721,5 +727,23 @@ public static class FfmpegHelper
                     log("");
                 }
             });
+    }
+
+    internal static async Task<bool> AreSameDurationAsync(string video1, string video2, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+
+        TimeSpan duration1 = (await FFmpeg.GetMediaInfo(video1)).Duration;
+        TimeSpan duration2 = (await FFmpeg.GetMediaInfo(video2)).Duration;
+        TimeSpan difference = duration1 - duration2;
+        if (difference >= TimeSpan.FromSeconds(-1) && difference <= TimeSpan.FromSeconds(1))
+        {
+            return true;
+        }
+
+        log($"{duration1} {video1}");
+        log($"{duration2} {video2}");
+        log(string.Empty);
+        return false;
     }
 }
