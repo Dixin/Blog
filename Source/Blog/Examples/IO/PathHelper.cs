@@ -88,7 +88,7 @@ public static class PathHelper
         return parent.IsNullOrWhiteSpace() ? newFileName : Path.Combine(parent, newFileName);
     }
 
-    public static string ReplaceFileName(string file, Func<string, string> replace) => 
+    public static string ReplaceFileName(string file, Func<string, string> replace) =>
         ReplaceFileName(file, replace(GetFileName(file)));
 
     public static string ReplaceFileNameWithoutExtension(string file, string newFileNameWithoutExtension) =>
@@ -168,12 +168,13 @@ public static class PathHelper
         throw new InvalidOperationException(string.Join(Environment.NewLine, error.Concat(output)));
     }
 
-    public static string GetDirectoryName(string path) => Path.GetDirectoryName(path) ?? throw new ArgumentOutOfRangeException(nameof(path), path, null);
+    public static string GetDirectoryName(string path) => Path.GetDirectoryName(path) ?? throw new ArgumentOutOfRangeException(nameof(path), path, string.Empty);
 
-    public static string GetFileName(string path) => Path.GetFileName(path) ?? throw new ArgumentOutOfRangeException(nameof(path), path, null);
+    public static string GetFileName(string path) => Path.GetFileName(path) ?? throw new ArgumentOutOfRangeException(nameof(path), path, string.Empty);
 
-    public static string GetFileNameWithoutExtension(string path) => Path.GetFileNameWithoutExtension(path) ?? throw new ArgumentOutOfRangeException(nameof(path), path, null);
+    public static string GetFileNameWithoutExtension(string path) => Path.GetFileNameWithoutExtension(path) ?? throw new ArgumentOutOfRangeException(nameof(path), path, string.Empty);
 
-    public static string GetExtension(string path) => Path.GetExtension(path) ?? throw new ArgumentOutOfRangeException(nameof(path), path, null);
+    public static string GetExtension(string path) => Path.GetExtension(path) ?? throw new ArgumentOutOfRangeException(nameof(path), path, string.Empty);
 
+    public static string GetPathRoot(string path) => Path.GetPathRoot(path) ?? throw new ArgumentOutOfRangeException(nameof(path), path, string.Empty);
 }

@@ -157,7 +157,7 @@ public static class FfmpegHelper
 
         if (!output.HasExtension(Video.VideoExtension))
         {
-            throw new ArgumentOutOfRangeException(nameof(output), output);
+            throw new ArgumentOutOfRangeException(nameof(output), output, string.Empty);
         }
 
         string outputDirectory = PathHelper.GetDirectoryName(output);
@@ -225,7 +225,7 @@ public static class FfmpegHelper
         log(dubbed);
         if (!output.HasExtension(Video.VideoExtension))
         {
-            throw new ArgumentOutOfRangeException(nameof(output), output);
+            throw new ArgumentOutOfRangeException(nameof(output), output, string.Empty);
         }
 
         int result = 0;
@@ -562,7 +562,7 @@ public static class FfmpegHelper
 
         if (!outputVideo.HasExtension(Video.VideoExtension))
         {
-            throw new ArgumentOutOfRangeException(nameof(outputVideo), outputVideo);
+            throw new ArgumentOutOfRangeException(nameof(outputVideo), outputVideo, string.Empty);
         }
 
         if (File.Exists(outputVideo))
@@ -630,7 +630,7 @@ public static class FfmpegHelper
                 log($"{inputDuration} {inputVideo}");
                 log($"{mergeDuration} {mergeAudio}");
                 log(string.Empty);
-                throw new ArgumentOutOfRangeException(nameof(mergeAudio), mergeAudio);
+                throw new ArgumentOutOfRangeException(nameof(mergeAudio), mergeAudio, string.Empty);
             }
         }
 
@@ -652,15 +652,22 @@ public static class FfmpegHelper
 
         if (!isDryRun)
         {
-            string outputDirectory = PathHelper.GetDirectoryName(outputVideo);
-            if (!Directory.Exists(outputDirectory))
-            {
-                Directory.CreateDirectory(outputDirectory);
-            }
-
             if (File.Exists(outputVideo))
             {
                 return 0;
+            }
+            
+            string driveName = PathHelper.GetPathRoot(outputVideo);
+            string outputDirectory = PathHelper.GetDirectoryName(outputVideo);
+            if (new FileInfo(inputVideo).Length >= DriveHelper.GetAvailableFreeSpace(driveName) * 1.1)
+            {
+                log($"!!! {outputDirectory} does not has enough free available free space for {inputVideo}.");
+                return 1;
+            }
+
+            if (!Directory.Exists(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
             }
 
             int result = await ProcessHelper.StartAndWaitAsync(Executable, arguments, null, null, null, true, cancellationToken);

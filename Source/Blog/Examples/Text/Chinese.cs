@@ -285,12 +285,12 @@ public static partial class Chinese
     public static bool IsSingleChineseCharacter([NotNullWhen(true)] this string? value) =>
         IsSingleChineseCharacter(value, out _, out _, out _, out _);
 
-    public static bool IsSingleCharacter([NotNullWhen(true)] this string? value, out bool isSingleSurrogatePair, [NotNullWhen(false)] out Exception? error, [CallerArgumentExpression(nameof(value))] string argument = "")
+    public static bool IsSingleCharacter([NotNullWhen(true)] this string? value, out bool isSingleSurrogatePair, [NotNullWhen(false)] out Exception? error, [CallerArgumentExpression(nameof(value))] string valueExpression = "")
     {
         // Equivalent to: !string.IsNullOrEmpty(text) && new StringInfo(text).LengthInTextElements == 1.
         if (string.IsNullOrEmpty(value))
         {
-            error = new ArgumentNullException(argument, "Input is null or empty.");
+            error = new ArgumentNullException(nameof(value), $"Input '{valueExpression}' is null or empty.");
             isSingleSurrogatePair = false;
             return false;
         }
@@ -298,7 +298,7 @@ public static partial class Chinese
         int length = value.Length;
         if (length > 2)
         {
-            error = new ArgumentOutOfRangeException(argument, "Input is more than a single character.");
+            error = new ArgumentOutOfRangeException(nameof(value), value, $"Input '{valueExpression}' is more than a single character.");
             isSingleSurrogatePair = false;
             return false;
         }
@@ -310,7 +310,7 @@ public static partial class Chinese
             // length must be 2.
             if (length != 2)
             {
-                error = new ArgumentException("Input is a single surrogate character and missing another character in the pair.", argument);
+                error = new ArgumentException($"Input '{valueExpression}' is a single surrogate character and missing another character in the pair.", nameof(value));
                 isSingleSurrogatePair = false;
                 return false;
             }
@@ -320,7 +320,7 @@ public static partial class Chinese
             // length must be 1.
             if (length != 1)
             {
-                error = new ArgumentOutOfRangeException(argument, "Input is more than a single character.");
+                error = new ArgumentOutOfRangeException(nameof(value), value, $"Input '{valueExpression}' is more than a single character.");
                 // isSingleSurrogatePair = false;
                 return false;
             }
@@ -337,12 +337,12 @@ public static partial class Chinese
         [NotNullWhen(true)] out string? unicodeBlockUri,
         [NotNullWhen(true)] out string? unicodeBlockChart,
         [NotNullWhen(false)] out Exception? error,
-        [CallerArgumentExpression(nameof(value))] string argument = "")
+        [CallerArgumentExpression(nameof(value))] string valueExpression = "")
     {
         unicodeBlockName = null;
         unicodeBlockUri = null;
         unicodeBlockChart = null;
-        if (!IsSingleCharacter(value, out isSingleSurrogatePair, out error, argument))
+        if (!IsSingleCharacter(value, out isSingleSurrogatePair, out error, valueExpression))
         {
             return false;
         }
@@ -352,7 +352,7 @@ public static partial class Chinese
             return true;
         }
 
-        error = new ArgumentOutOfRangeException(argument, "Input is a single character but not Chinese.");
+        error = new ArgumentOutOfRangeException(nameof(value), value, $"Input '{valueExpression}' is a single character but not Chinese.");
         return false;
     }
 
@@ -428,6 +428,6 @@ public static partial class Chinese
         return new string(characters);
     }
 
-    public static bool ContainsCommonTraditionalChineseCharacter([NotNullWhen(true)] this string? value) => 
+    public static bool ContainsCommonTraditionalChineseCharacter([NotNullWhen(true)] this string? value) =>
         value.IsNotNullOrWhiteSpace() && value.AsSpan().ContainsAny(CommonTraditionalChinese);
 }

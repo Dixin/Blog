@@ -166,7 +166,7 @@ internal record VideoDirectoryInfo(
                 EncoderType.Korean => "K",
                 EncoderType.HDBluRay => "p",
                 EncoderType.HD => "P",
-                _ => throw new ArgumentOutOfRangeException(nameof(videos))
+                _ => throw new ArgumentOutOfRangeException(nameof(videos), videos, string.Empty)
             };
 
             return $"{encoder}{videos.Max(video => video.FormatAudioCount())}";
@@ -191,7 +191,7 @@ internal record VideoDirectoryInfo(
                 EncoderType.Korean => $"K{videos.Max(video => video.FormatAudioCount())}",
                 EncoderType.HDBluRay => string.Empty,
                 EncoderType.HD => string.Empty,
-                _ => throw new ArgumentOutOfRangeException(nameof(videos))
+                _ => throw new ArgumentOutOfRangeException(nameof(videos), videos, string.Empty)
             };
         }
     }

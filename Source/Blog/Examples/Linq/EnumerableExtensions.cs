@@ -73,7 +73,7 @@ public static class EnumerableExtensions
         //maxDegreeOfParallelism ??= DefaultMaxDegreeOfParallelism;
         //if (maxDegreeOfParallelism <= 0)
         //{
-        //    throw new ArgumentOutOfRangeException(nameof(maxDegreeOfParallelism));
+        //    throw new ArgumentOutOfRangeException(nameof(maxDegreeOfParallelism), maxDegreeOfParallelism, string.Empty);
         //}
 
         //int index = -1;
@@ -116,7 +116,7 @@ public static class EnumerableExtensions
         //maxDegreeOfParallelism ??= DefaultMaxDegreeOfParallelism;
         //if (maxDegreeOfParallelism <= 0)
         //{
-        //    throw new ArgumentOutOfRangeException(nameof(maxDegreeOfParallelism));
+        //    throw new ArgumentOutOfRangeException(nameof(maxDegreeOfParallelism), maxDegreeOfParallelism, string.Empty);
         //}
 
         //if (maxDegreeOfParallelism == 1)

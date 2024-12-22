@@ -19,7 +19,7 @@ internal static class ImdbMetadataExtensions
                 : Directory.EnumerateFiles(path, Video.ImdbMetadataSearchPattern).Single(),
             out string? imdbId)
             ? imdbId
-            : throw new ArgumentOutOfRangeException(nameof(path), path, null);
+            : throw new ArgumentOutOfRangeException(nameof(path), path, string.Empty);
 
     internal static bool IsImdbId([NotNullWhen(true)] this string? value) => value.IsNotNullOrWhiteSpace() && Regex.IsMatch(value, "^tt[0-9]+$");
 

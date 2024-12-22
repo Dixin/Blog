@@ -111,19 +111,19 @@ public static partial class TypeExtensions
     [return: MaybeNull]
     public static TValue GetField<TValue>(this object @object, string name)
     {
-        object? value = (@object.ThrowIfNull().GetType().GetTypeField(name) ?? throw new ArgumentOutOfRangeException(nameof(name))).GetValue(@object);
+        object? value = (@object.ThrowIfNull().GetType().GetTypeField(name) ?? throw new ArgumentOutOfRangeException(nameof(name), name, string.Empty)).GetValue(@object);
         return value is null ? default : (TValue)value;
     }
 
     public static void SetField(this object @object, string name, object value) => 
-        (@object.ThrowIfNull().GetType().GetTypeField(name) ?? throw new ArgumentOutOfRangeException(nameof(name))).SetValue(@object, value);
+        (@object.ThrowIfNull().GetType().GetTypeField(name) ?? throw new ArgumentOutOfRangeException(nameof(name), name, string.Empty)).SetValue(@object, value);
 
     public static TValue? GetProperty<TValue>(this object @object, string name)
     {
-        object? value = (@object.ThrowIfNull().GetType().GetTypeProperty(name) ?? throw new ArgumentOutOfRangeException(nameof(name))).GetValue(@object);
+        object? value = (@object.ThrowIfNull().GetType().GetTypeProperty(name) ?? throw new ArgumentOutOfRangeException(nameof(name), name, string.Empty)).GetValue(@object);
         return value is null ? default : (TValue)value;
     }
 
     public static void SetProperty(this object @object, string name, object value) => 
-        (@object.ThrowIfNull().GetType().GetTypeProperty(name) ?? throw new ArgumentOutOfRangeException(nameof(name))).SetValue(@object, value);
+        (@object.ThrowIfNull().GetType().GetTypeProperty(name) ?? throw new ArgumentOutOfRangeException(nameof(name), name, string.Empty)).SetValue(@object, value);
 }

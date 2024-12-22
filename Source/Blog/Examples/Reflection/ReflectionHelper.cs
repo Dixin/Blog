@@ -9,7 +9,7 @@ public static class ReflectionHelper
         (Expression<Action> methodCall) => ((MethodCallExpression)methodCall.Body).Method;
 
     public static ConstructorInfo ConstructorOf<T>
-        (Expression<Func<T>> constructorCall) => ((NewExpression)constructorCall.Body).Constructor ?? throw new ArgumentOutOfRangeException(nameof(constructorCall));
+        (Expression<Func<T>> constructorCall) => ((NewExpression)constructorCall.Body).Constructor ?? throw new ArgumentOutOfRangeException(nameof(constructorCall), constructorCall, string.Empty);
 
     public static PropertyInfo PropertyOf<T>
         (Expression<Func<T>> getterCall) => (PropertyInfo)((MemberExpression)getterCall.Body).Member;
