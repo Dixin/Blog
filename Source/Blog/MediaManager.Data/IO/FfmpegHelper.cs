@@ -624,8 +624,7 @@ public static class FfmpegHelper
             IMediaInfo mergeMediaInfo = await FFmpeg.GetMediaInfo(mergeAudio, cancellationToken);
             TimeSpan inputDuration = inputMediaInfo.Duration;
             TimeSpan mergeDuration = mergeMediaInfo.Duration;
-            TimeSpan difference = inputDuration - mergeDuration;
-            if (difference > TimeSpan.FromSeconds(1) || difference < TimeSpan.FromSeconds(-1))
+            if (CompareDuration(inputDuration, mergeDuration) != 0)
             {
                 log($"{inputDuration} {inputVideo}");
                 log($"{mergeDuration} {mergeAudio}");
@@ -659,9 +658,9 @@ public static class FfmpegHelper
 
             string driveName = PathHelper.GetPathRoot(outputVideo);
             string outputDirectory = PathHelper.GetDirectoryName(outputVideo);
-            if (new FileInfo(inputVideo).Length >= DriveHelper.GetAvailableFreeSpace(driveName) * 1.1)
+            if (new FileInfo(inputVideo).Length >= DriveHelper.GetAvailableFreeSpace(driveName) * 1.2)
             {
-                log($"!!! {outputDirectory} does not has enough free available free space for {inputVideo}.");
+                log($"!!! {outputDirectory} does not has enough available free space for {inputVideo}.");
                 return 1;
             }
 
@@ -713,20 +712,48 @@ public static class FfmpegHelper
         }
     }
 
-    internal static async Task ExtractAllAsync(ISettings settings, string inputDirectory, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default, params Func<string, string>[] outputVideos)
+    internal static async Task ExtractAllAsync(ISettings settings, string inputDirectory, Func<string, bool>? predicate = null, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default, params Func<string, string>[] outputVideos)
     {
         log ??= Logger.WriteLine;
 
-        ConcurrentQueue<string> inputVideos = new(Directory.EnumerateFiles(inputDirectory, "*.mkv", SearchOption.AllDirectories));
+        (string Input, string Dubbed)[] videoPairs = Directory
+            .EnumerateFiles(inputDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
+            .Where(file => file.IsVideo() && (predicate is null || predicate(file)))
+            .Select(video => (File: video, Parsed: VideoMovieFileInfo.Parse(video)))
+            .GroupBy(video => $"{video.Parsed.Title}{Video.Delimiter}{video.Parsed.Year}", StringComparer.OrdinalIgnoreCase)
+            .Select(group =>
+            {
+                if (group.Count() == 1)
+                {
+                    return [(Input: group.Single().File, Dubbed: string.Empty)];
+                }
+
+                if (group.Count() == 2)
+                {
+                    (string File, VideoMovieFileInfo Parsed)[] input = group.Where(video => !video.Parsed.Edition.ContainsIgnoreCase(".DUBBED")).ToArray();
+                    (string File, VideoMovieFileInfo Parsed)[] dubbed = group.Where(video => video.Parsed.Edition.ContainsIgnoreCase(".DUBBED")).ToArray();
+                    if (input.Any() && dubbed.Any())
+                    {
+                        return [(Input: input.Single().File, Dubbed: dubbed.Single().File)];
+                    }
+                }
+
+                return group.Select(video => (Input: video.File, Dubbed: string.Empty));
+            })
+            .Concat()
+            .ToArray();
+
+        ConcurrentQueue<(string Input, string Dubbed)> tasks = new(videoPairs);
         Lock destinationCheckLock = new();
         await Parallel.ForEachAsync(
             outputVideos,
             cancellationToken,
             async (output, cancellation) =>
             {
-                while (inputVideos.TryDequeue(out string? inputVideo))
+                while (tasks.TryDequeue(out (string Input, string Dubbed) task))
                 {
-                    string outputVideo = output(inputVideo);
+                    (string inputVideo, string dubbedVideo) = task;
+                    string outputVideo = output(task.Input);
                     lock (destinationCheckLock)
                     {
                         string[] destinationVideos = outputVideos.Select(outputVideo => outputVideo(inputVideo)).Where(File.Exists).ToArray();
@@ -737,16 +764,16 @@ public static class FfmpegHelper
                         }
 
                         string driveName = PathHelper.GetPathRoot(outputVideo);
-                        if (new FileInfo(inputVideo).Length >= DriveHelper.GetAvailableFreeSpace(driveName) * 1.1)
+                        if (new FileInfo(inputVideo).Length >= DriveHelper.GetAvailableFreeSpace(driveName) * 1.2)
                         {
-                            log($"!!! {driveName} does not has enough free available free space for {inputVideo}.");
-                            inputVideos.Enqueue(inputVideo);
+                            log($"!!! {driveName} does not have enough available free space for {task}.");
+                            tasks.Enqueue(task);
                             break;
                         }
                     }
 
-                    int result = await ExtractAndCompareAsync(settings, inputVideo, string.Empty, outputVideo, isDryRun, log, cancellation);
-                    log($"{result} {inputVideo}");
+                    int result = await ExtractAndCompareAsync(settings, inputVideo, dubbedVideo, outputVideo, isDryRun, log, cancellation);
+                    log($"{result} {task}");
                     log("");
                 }
             });
@@ -758,15 +785,20 @@ public static class FfmpegHelper
 
         TimeSpan duration1 = (await FFmpeg.GetMediaInfo(video1)).Duration;
         TimeSpan duration2 = (await FFmpeg.GetMediaInfo(video2)).Duration;
-        TimeSpan difference = duration1 - duration2;
-        if (difference >= TimeSpan.FromSeconds(-1) && difference <= TimeSpan.FromSeconds(1))
+        int result = CompareDuration(duration1, duration2);
+        if (result != 0)
         {
-            return 0;
+            log($"{duration1} {video1}");
+            log($"{duration2} {video2}");
+            log(string.Empty);
         }
 
-        log($"{duration1} {video1}");
-        log($"{duration2} {video2}");
-        log(string.Empty);
-        return duration1.CompareTo(duration2);
+        return result;
+    }
+
+    private static int CompareDuration(TimeSpan duration1, TimeSpan duration2)
+    {
+        TimeSpan difference = duration1 - duration2;
+        return difference >= TimeSpan.FromSeconds(-1) && difference <= TimeSpan.FromSeconds(1) ? 0 : duration1.CompareTo(duration2);
     }
 }
