@@ -4,7 +4,6 @@ using Examples.Common;
 using Examples.IO;
 using MediaInfoLib;
 using MediaManager.Net;
-using Xabe.FFmpeg;
 
 internal static partial class Video
 {
@@ -98,18 +97,32 @@ internal static partial class Video
 
     internal static bool IsDolbyVision(string video)
     {
-        MediaInfoLib.MediaInfo mediaInfo = new();
+        using MediaInfo mediaInfo = new();
         mediaInfo.Open(video);
         mediaInfo.Option("Complete"); //or Option("Complete", "1") or Option("Info_Parameters")
-        string inform = mediaInfo.Inform();
         string hdrFormat = mediaInfo.Get(StreamKind.Video, 0, "HDR_Format");
-        mediaInfo.Close();
-        if (!inform.ContainsIgnoreCase("Dolby Vision") && !inform.ContainsIgnoreCase("DolbyVision"))
-        {
-            return false;
-        }
+        bool isDolbyVision = hdrFormat.ContainsIgnoreCase("Dolby Vision") || hdrFormat.ContainsIgnoreCase("DolbyVision");
+#if DEBUG
+        string inform = mediaInfo.Inform();
+        Debug.Assert(isDolbyVision == inform.ContainsIgnoreCase("Dolby Vision") || inform.ContainsIgnoreCase("DolbyVision"));
+#endif
+        return isDolbyVision;
+    }
 
-        Debug.Assert(hdrFormat.ContainsIgnoreCase("Dolby Vision") || hdrFormat.ContainsIgnoreCase("DolbyVision"));
-        return true;
-    }    
+    internal static bool IsAtmos(string video)
+    {
+        using MediaInfo mediaInfo = new();
+        mediaInfo.Open(video);
+        mediaInfo.Option("Complete");
+        int audioCount = mediaInfo.Count_Get(StreamKind.Audio);
+        bool isAtmos = Enumerable
+            .Range(0, audioCount)
+            .Select(index => mediaInfo.Get(StreamKind.Audio, 0, "Format_Commercial_IfAny"))
+            .Any(audio => audio.ContainsIgnoreCase("Atmos"));
+#if DEBUG
+        string inform = mediaInfo.Inform();
+        Debug.Assert(isAtmos == inform.ContainsIgnoreCase("Atmos"));
+#endif
+        return isAtmos;
+    }
 }
