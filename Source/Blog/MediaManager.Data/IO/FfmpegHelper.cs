@@ -733,7 +733,7 @@ public static class FfmpegHelper
                 ? "-forced"
                 : words.ContainsIgnoreCase("SDH")
                     ? "-sdh"
-                    : $"-{title.Replace(" ", "_").Replace(@"\", "_").Replace("/", "_")}";
+                    : $"-{title.Replace(" ", "_").Replace(@"\", "_").Replace("/", "_").Replace("-", "_").Replace(".", "_")}";
         }
     }
 
