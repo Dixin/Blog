@@ -636,7 +636,7 @@ public static class FfmpegHelper
         string strict = inputMediaInfo.AudioStreams.Any(audio => audio.Codec.ContainsIgnoreCase("TrueHD")) ? "-strict -2" : "";
         string subtitleArguments = string.Join(
             " ",
-            subtitles.Select(subtitle => $"""
+            subtitles.Where(subtitle => !subtitle.File.HasExtension(".idx")).Select(subtitle => $"""
                 -c copy -map 0:{subtitle.Index} "{subtitle.File}"
                 """));
         string arguments = mergeAudio.IsNullOrWhiteSpace()
@@ -649,19 +649,21 @@ public static class FfmpegHelper
         log(arguments);
         log(string.Empty);
 
+        int compare = 0;
         if (!isDryRun)
         {
             if (File.Exists(outputVideo))
             {
-                return 0;
+                compare = await CompareDurationAsync(inputVideo, outputVideo);
+                return compare;
             }
 
-            string driveName = PathHelper.GetPathRoot(outputVideo);
             string outputDirectory = PathHelper.GetDirectoryName(outputVideo);
-            if (new FileInfo(inputVideo).Length >= DriveHelper.GetAvailableFreeSpace(driveName) * 1.2)
+            if (new FileInfo(inputVideo).Length >= DriveHelper.GetAvailableFreeSpace(outputVideo) * 1.2)
             {
                 log($"!!! {outputDirectory} does not has enough available free space for {inputVideo}.");
-                return 1;
+                compare = 1;
+                return compare;
             }
 
             if (!Directory.Exists(outputDirectory))
@@ -672,27 +674,50 @@ public static class FfmpegHelper
             int result = await ProcessHelper.StartAndWaitAsync(Executable, arguments, null, null, null, true, cancellationToken);
             if (result != 0)
             {
-                return 1;
+                compare = 1;
+                return compare;
             }
 
-            result = await CompareDurationAsync(inputVideo, outputVideo);
-            if (result == 0)
+            compare = await CompareDurationAsync(inputVideo, outputVideo);
+            if (compare != 0)
             {
-                return result;
+                log($"!!! ffmpeg failed {outputVideo}");
+                return compare;
             }
-
-            log($"!!! {outputVideo}");
-            return result;
-
         }
 
-        return 0;
+        (int Index, int SubtitleIndex, string Title, string File)[] dvdSubtitles = subtitles.Where(subtitle => subtitle.File.HasExtension(".idx")).ToArray();
+        if (dvdSubtitles.Any())
+        {
+            subtitleArguments = string.Join(" ",
+                dvdSubtitles.Select(subtitle => $"""
+                    "{subtitle.Index}:{subtitle.File}"
+                    """));
+            arguments = $"""
+                "{inputVideo}" tracks {subtitleArguments}
+                """;
+            log(arguments);
+            if (!isDryRun)
+            {
+                int result = await ProcessHelper.StartAndWaitAsync("mkvextract", arguments, null, null, null, true, cancellationToken);
+                if (result != 0)
+                {
+                    log($"!!! mkvextract failed {outputVideo}");
+                    compare = 1;
+                }
+
+                return compare;
+            }
+        }
+
+        return compare;
 
         static string GetSubtitleExtension(string codec) => codec.ToUpperInvariant() switch
         {
             "SUBRIP" => ".srt",
             "HDMV_PGS_SUBTITLE" => ".sup",
             "ASS" => ".ass",
+            "DVD_SUBTITLE" => ".idx",
             _ => throw new InvalidOperationException(codec)
         };
 
@@ -763,10 +788,9 @@ public static class FfmpegHelper
                             continue;
                         }
 
-                        string driveName = PathHelper.GetPathRoot(outputVideo);
-                        if (new FileInfo(inputVideo).Length >= DriveHelper.GetAvailableFreeSpace(driveName) * 1.2)
+                        if (new FileInfo(inputVideo).Length >= DriveHelper.GetAvailableFreeSpace(outputVideo) * 1.2)
                         {
-                            log($"!!! {driveName} does not have enough available free space for {task}.");
+                            log($"!!! Output drive does not have enough available free space for {outputVideo}.");
                             tasks.Enqueue(task);
                             break;
                         }
