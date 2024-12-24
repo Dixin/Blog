@@ -95,7 +95,7 @@ internal static partial class Video
             });
     }
 
-    internal static bool IsDolbyVision(string video)
+        internal static bool IsDolbyVision(string video)
     {
         using MediaInfo mediaInfo = new();
         mediaInfo.Open(video);
@@ -103,8 +103,8 @@ internal static partial class Video
         string hdrFormat = mediaInfo.Get(StreamKind.Video, 0, "HDR_Format");
         bool isDolbyVision = hdrFormat.ContainsIgnoreCase("Dolby Vision") || hdrFormat.ContainsIgnoreCase("DolbyVision");
 #if DEBUG
-        string inform = mediaInfo.Inform();
-        Debug.Assert(isDolbyVision == inform.ContainsIgnoreCase("Dolby Vision") || inform.ContainsIgnoreCase("DolbyVision"));
+        string informWithoutFilePath = mediaInfo.Inform().ReplaceIgnoreCase(video, string.Empty);
+        Debug.Assert(isDolbyVision == informWithoutFilePath.ContainsIgnoreCase("Dolby Vision") || informWithoutFilePath.ContainsIgnoreCase("DolbyVision"));
 #endif
         return isDolbyVision;
     }
@@ -117,11 +117,11 @@ internal static partial class Video
         int audioCount = mediaInfo.Count_Get(StreamKind.Audio);
         bool isAtmos = Enumerable
             .Range(0, audioCount)
-            .Select(index => mediaInfo.Get(StreamKind.Audio, 0, "Format_Commercial_IfAny"))
+            .Select(index => mediaInfo.Get(StreamKind.Audio, index, "Format_Commercial_IfAny"))
             .Any(audio => audio.ContainsIgnoreCase("Atmos"));
 #if DEBUG
-        string inform = mediaInfo.Inform();
-        Debug.Assert(isAtmos == inform.ContainsIgnoreCase("Atmos"));
+        string informWithoutFilePath = mediaInfo.Inform().ReplaceIgnoreCase(video, string.Empty);
+        Debug.Assert(isAtmos == informWithoutFilePath.ContainsIgnoreCase("Atmos"));
 #endif
         return isAtmos;
     }
