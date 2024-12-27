@@ -10,7 +10,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using MonoTorrent;
 using Xabe.FFmpeg;
 using SearchOption = System.IO.SearchOption;
 
@@ -31,7 +30,7 @@ VideoMovieFileInfo.Settings = settings;
 VideoEpisodeFileInfo.Settings = settings;
 
 using CancellationTokenSource cancellationTokenSource = new();
-AppDomainData.DataDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\Data");
+CancellationToken cancellationToken = cancellationTokenSource.Token;
 using TextWriterTraceListener textTraceListener = new(Path.Combine(Path.GetTempPath(), "Trace.txt"));
 //Trace.Listeners.Add(textTraceListener);
 using ConsoleTraceListener consoleTraceListener = new();
@@ -507,7 +506,7 @@ string[][] metadataDrives = [
 //        //Debug.Assert(!f.IsVideo() || PathHelper.GetFileNameWithoutExtension(f).EndsWithIgnoreCase(postfix));
 //        string name = PathHelper.GetFileNameWithoutExtension(f);
 //        return name.EndsWithOrdinal(postfix) || name.EndsWithOrdinal($"{postfix}-thumb") || Regex.IsMatch(name, $@"{postfix.Replace(".", @"\.").Replace("-", @"\-")}\.[a-z]{{3}}(&[a-z]{{3}})?(\-[0-9]{1,2})?$")
-//            ? f.Replace(postfix, $"{postfix}.{t}")
+//            ? PathHelper.ReplaceFileNameWithoutExtension(f, n => n.Replace(postfix, $"{postfix}.{t}"))
 //            : f;
 //        //return Regex.Replace(f, @"(S[0-9]{2}E[0-9]{2})", $"$1.{t}");
 //        //return f.Replace(".ffmpeg", $".ffmpeg.{t}");
@@ -608,13 +607,13 @@ static void RenameEpisode(ISettings settings, string mediaDirectory, string meta
         string[] episodeNumbers = seasons
             .SelectMany(Directory.EnumerateFiles)
             .Where(Video.IsVideo)
-            .Select(episode => Regex.Match(PathHelper.GetFileNameWithoutExtension(episode), @"\.(S[0-9]{2}E[0-9]{2}(E[0-9]{2})?)\.").Groups[1].Value)
+            .Select(episode => Video.SeasonEpisodeRegex.Match(PathHelper.GetFileNameWithoutExtension(episode)).Value)
             .OrderBy(number => number)
             .ToArray();
         string[] metadataEpisodeNumbers = metadataSeasons
             .SelectMany(Directory.EnumerateFiles)
             .Where(Video.IsVideo)
-            .Select(episode => Regex.Match(PathHelper.GetFileNameWithoutExtension(episode), @"\.(S[0-9]{2}E[0-9]{2}(E[0-9]{2})?)\.").Groups[1].Value)
+            .Select(episode => Video.SeasonEpisodeRegex.Match(PathHelper.GetFileNameWithoutExtension(episode)).Value)
             .OrderBy(number => number)
             .ToArray();
         string[] episodeMismatches = episodeNumbers.Except(metadataEpisodeNumbers).ToArray();
@@ -638,6 +637,7 @@ static void RenameEpisode(ISettings settings, string mediaDirectory, string meta
         tv,
         Path.Combine(metadataDirectory, PathHelper.GetFileName(tv)),
         (file, title) => PathHelper.GetFileNameWithoutExtension(file).ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") ? file.ReplaceIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}", $"{Video.VersionSeparator}{settings.TopEnglishKeyword}.{title}") : file.ReplaceIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}", $"{Video.VersionSeparator}{settings.TopForeignKeyword}.{title}"),
+        false,
         isDryRun,
         log));
     //tvs.ForEach(tv => Video.MoveSubtitlesForEpisodes(tv, Path.Combine(metadataDirectory, PathHelper.GetFileName(tv)), isDryRun: isDryRun, log: log));
