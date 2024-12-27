@@ -19,7 +19,11 @@ internal record VideoMovieFileInfo(
 {
     private static ISettings? settings;
 
-    private static readonly Regex NameRegex = RegexHelper.Create(
+    private static Regex? nameRegex;
+
+    private static Regex? nameRegexIgnoreCase;
+
+    private static Regex NameRegex() => nameRegex ??= RegexHelper.Create(
         @"^",
         @"(.+?)\.([0-9\-]{4})",
         @"(\.3D(\.HSBS)?)?(\.4K)?((\.Part[1-9])?(\.[A-Z\.\-]+?)?(\.Part[\.]{0,1}[1-9]|\.PART[\.]{0,1}[1-9])?|\.RE\-EDIT|\.BLURAY\.10BIT|\.88F|\.S[0-9]{2}E[0-9]{2}\.[a-zA-Z\.]{2,}?)?",
@@ -37,7 +41,7 @@ internal record VideoMovieFileInfo(
         @"(\.avi|\.iso|\.m2ts|\.m4v|\.mkv|\.mp4|\.mpg|\.rmvb|\.wmv|\.ts)?",
         @"$");
 
-    private static readonly Regex NameRegexIgnoreCase = new(NameRegex.ToString(), RegexOptions.IgnoreCase);
+    private static Regex NameRegexIgnoreCase() => nameRegexIgnoreCase ??= new Regex(NameRegex().ToString(), RegexOptions.IgnoreCase);
 
     public override string ToString() => this.Name;
 
@@ -60,7 +64,7 @@ internal record VideoMovieFileInfo(
             value = PathHelper.GetFileName(value);
         }
 
-        Match match = isCaseIgnored ? NameRegexIgnoreCase.Match(value) : NameRegex.Match(value);
+        Match match = (isCaseIgnored ? NameRegexIgnoreCase() : NameRegex()).Match(value);
         if (!match.Success)
         {
             result = null;

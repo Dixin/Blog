@@ -20,7 +20,9 @@ internal record VideoEpisodeFileInfo(
 {
     private static ISettings? settings;
 
-    private static readonly Regex NameRegex = RegexHelper.Create(
+    private static Regex? nameRegex;
+
+    private static Regex NameRegex() => nameRegex ??= RegexHelper.Create(
         @"^",
         @"(.+?)(\.([0-9]{4}))?",
         @"\.S([0-9]{2,4})E([0-9]{2,3})(E([0-9]{2,3}))?",
@@ -55,7 +57,7 @@ internal record VideoEpisodeFileInfo(
             value = PathHelper.GetFileName(value);
         }
 
-        Match match = NameRegex.Match(value);
+        Match match = NameRegex().Match(value);
         if (!match.Success)
         {
             result = null;
