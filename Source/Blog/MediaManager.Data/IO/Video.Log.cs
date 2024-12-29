@@ -47,6 +47,7 @@ internal static partial class Video
                 });
         }
 
+        Lock errorLock = new();
         parallelFiles
             .Select((video, index) =>
             {
@@ -64,7 +65,10 @@ internal static partial class Video
             .ForAll(result =>
             {
                 results.Add(result);
-                File.AppendAllLines(@"d:\temp\errors.txt", [result.Video, result.Error.Message ?? string.Empty, string.Empty]);
+                lock (errorLock)
+                {
+                    File.AppendAllLines(@"d:\temp\errors.txt", [result.Video, result.Error.Message ?? string.Empty, string.Empty]);
+                }
             });
 
         results
