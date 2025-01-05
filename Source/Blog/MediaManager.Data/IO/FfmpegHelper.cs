@@ -46,28 +46,28 @@ public static class FfmpegHelper
             string output = getOutputVideo is not null ? getOutputVideo(originalVideo) : string.Empty;
             MergeDubbed(originalVideo, ref output, getDubbedVideo is not null ? getDubbedVideo(originalVideo) : string.Empty, overwrite, isTV, ignoreDurationDifference, isDryRun, log);
 
-            string originalVideoName = PathHelper.GetFileNameWithoutExtension(originalVideo);
-            Directory
-                .GetFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
-                .ForEach(attachment =>
-                {
-                    string renamedAttachment = renameAttachment is not null
-                        ? renameAttachment(attachment)
-                        : PathHelper.GetFileName(attachment).StartsWithIgnoreCase(originalVideoName)
-                            ? PathHelper.ReplaceFileNameWithoutExtension(attachment, attachmentName => attachmentName.ReplaceIgnoreCase(originalVideoName, PathHelper.GetFileNameWithoutExtension(output)))
-                            : attachment;
-                    if (attachment.EqualsIgnoreCase(renamedAttachment))
-                    {
-                        return;
-                    }
+            // string originalVideoName = PathHelper.GetFileNameWithoutExtension(originalVideo);
+            // Directory
+            //     .GetFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
+            //     .ForEach(attachment =>
+            //     {
+            //         string renamedAttachment = renameAttachment is not null
+            //             ? renameAttachment(attachment)
+            //             : PathHelper.GetFileName(attachment).StartsWithIgnoreCase(originalVideoName)
+            //                 ? PathHelper.ReplaceFileNameWithoutExtension(attachment, attachmentName => attachmentName.ReplaceIgnoreCase(originalVideoName, PathHelper.GetFileNameWithoutExtension(output)))
+            //                 : attachment;
+            //         if (attachment.EqualsIgnoreCase(renamedAttachment))
+            //         {
+            //             return;
+            //         }
 
-                    log(attachment);
-                    if (!isDryRun)
-                    {
-                        FileHelper.Move(attachment, renamedAttachment);
-                    }
-                    log(renamedAttachment);
-                });
+            //         log(attachment);
+            //         if (!isDryRun)
+            //         {
+            //             FileHelper.Move(attachment, renamedAttachment);
+            //         }
+            //         log(renamedAttachment);
+            //     });
         });
     }
 
@@ -550,7 +550,7 @@ public static class FfmpegHelper
             });
     }
 
-    internal static async Task<int> ExtractAndCompareAsync(ISettings settings, string inputVideo, string mergeAudio = "", string outputVideo = "", bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task<int> ExtractAndCompareAsync(ISettings settings, string inputVideo, string mergeAudio = "", string outputVideo = "", bool isSubtitleOnly = false, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
         Debug.Assert(inputVideo.EndsWithIgnoreCase(".mkv"));
@@ -639,20 +639,24 @@ public static class FfmpegHelper
             subtitles.Where(subtitle => !subtitle.File.HasExtension(".idx")).Select(subtitle => $"""
                 -c copy -map 0:{subtitle.Index} "{subtitle.File}"
                 """));
-        string arguments = mergeAudio.IsNullOrWhiteSpace()
+        string arguments = isSubtitleOnly
             ? $"""
-            -i "{inputVideo}" -c copy -map_metadata 0 -map 0:v -map 0:a {strict} "{outputVideo}" {subtitleArguments} -n
+            -i "{inputVideo}" {subtitleArguments} -n
             """
-            : $"""
-            -i "{inputVideo}" -i "{mergeAudio}" -c copy -map_metadata 0 -map 0:v -map 0:a -map 1:a {strict} "{outputVideo}" {subtitleArguments} -n
-            """;
+            : mergeAudio.IsNullOrWhiteSpace()
+                ? $"""
+                -i "{inputVideo}" -c copy -map_metadata 0 -map 0:v -map 0:a {strict} "{outputVideo}" {subtitleArguments} -n
+                """
+                : $"""
+                -i "{inputVideo}" -i "{mergeAudio}" -c copy -map_metadata 0 -map 0:v -map 0:a -map 1:a {strict} "{outputVideo}" {subtitleArguments} -n
+                """;
         log(arguments);
         log(string.Empty);
 
         int compare = 0;
         if (!isDryRun)
         {
-            if (File.Exists(outputVideo))
+            if (!isSubtitleOnly && File.Exists(outputVideo))
             {
                 compare = await CompareDurationAsync(inputVideo, outputVideo);
                 return compare;
@@ -678,6 +682,12 @@ public static class FfmpegHelper
                 return compare;
             }
 
+            if (isSubtitleOnly)
+            {
+                compare = 0;
+                return compare;
+            }
+
             compare = await CompareDurationAsync(inputVideo, outputVideo);
             if (compare != 0)
             {
@@ -699,7 +709,9 @@ public static class FfmpegHelper
             log(arguments);
             if (!isDryRun)
             {
-                int result = await ProcessHelper.StartAndWaitAsync("mkvextract", arguments, null, null, null, true, cancellationToken);
+                int result = await ProcessHelper.StartAndWaitAsync("""
+                    "C:\Program Files\MKVToolNix\mkvextract.exe"
+                    """, arguments, null, null, null, true, cancellationToken);
                 if (result != 0)
                 {
                     log($"!!! mkvextract failed {outputVideo}");
@@ -796,7 +808,7 @@ public static class FfmpegHelper
                         }
                     }
 
-                    int result = await ExtractAndCompareAsync(settings, inputVideo, dubbedVideo, outputVideo, isDryRun, log, cancellation);
+                    int result = await ExtractAndCompareAsync(settings, inputVideo, dubbedVideo, outputVideo, false, isDryRun, log, cancellation);
                     log($"{result} {task}");
                     log("");
                 }
