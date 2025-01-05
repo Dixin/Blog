@@ -179,7 +179,7 @@ public static class FfmpegHelper
     internal static bool MergeDubbed(string input, ref string output, string dubbed = "", bool overwrite = false, bool? isTV = null, bool ignoreDurationDifference = false, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
-        isTV ??= Regex.IsMatch(PathHelper.GetFileNameWithoutExtension(input), @"(\.|\s)S[0-9]{2}E[0-9]{2}(\.|\s)", RegexOptions.IgnoreCase);
+        isTV ??= Video.SeasonEpisodeRegex.IsMatch(PathHelper.GetFileNameWithoutExtension(input));
         if (isTV.Value)
         {
             VideoEpisodeFileInfo inputVideo = VideoEpisodeFileInfo.Parse(input);
