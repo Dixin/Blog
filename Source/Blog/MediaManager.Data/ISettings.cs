@@ -128,6 +128,8 @@ public interface ISettings
 
     string TVTopX265Url { get; init; }
 
+    string TVContrastUrl { get; init; }
+
     string Drive115Metadata { get; init; }
 
     string MovieLibraryMetadata { get; init; }
@@ -161,6 +163,8 @@ public interface ISettings
     string MovieMergedMetadata { get; init; }
 
     string TVTopX265Metadata { get; init; }
+
+    string TVContrastMetadata { get; init; }
 
     string MovieMetadataDirectory { get; init; }
 

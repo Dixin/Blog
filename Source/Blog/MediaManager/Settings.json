@@ -19,6 +19,7 @@
     "MoviePreferredUrl": "",
     "MovieSharedUrl": "",
     "TVTopX265Url": "",
+    "TVContrastUrl": "",
 
     "MovieTopDuplications": [],
 
@@ -39,6 +40,7 @@
     "MovieImdbSpecialMetadata": "D:\\Files\\Library\\Movie.ImdbSpecial.json",
     "MovieMergedMetadata": "D:\\Files\\Library\\Movie.MergedMetadata.json",
     "TVTopX265Metadata": "D:\\Files\\Library\\TV.TopMetadata.x265.json",
+    "TVContrastMetadata": "D:\\Files\\Library\\TV.ContrastMetadata.json",
     "TopMagnetUrls": "D:\\Files\\Library\\Top.MagnetUrls.txt",
     "TopDatabase": "D:\\Files\\Library\\Top.Database.txt",
 
@@ -863,9 +865,9 @@
         ],
         "Yugoslavian.南斯拉夫": [
             "Bosnia and Herzegovina",
-            "Federal Republic of Yugoslavia", 
-            "Serbia", 
-            "Slovenia", 
+            "Federal Republic of Yugoslavia",
+            "Serbia",
+            "Slovenia",
             "Yugoslavia"
         ]
     },
