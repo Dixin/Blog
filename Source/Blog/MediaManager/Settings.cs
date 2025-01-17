@@ -9,6 +9,7 @@ public partial record Settings(
     string TopForeignKeyword,
     string PreferredOldKeyword,
     string PreferredNewKeyword,
+    string ContrastKeyword,
 
     string LibraryDirectory,
     string MovieSubtitleBackupDirectory,

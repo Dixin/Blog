@@ -100,6 +100,8 @@ public interface ISettings
 
     string PreferredNewKeyword { get; init; }
 
+    string ContrastKeyword { get; init; }
+
     string LibraryDirectory { get; init; }
 
     string MovieSubtitleBackupDirectory { get; init; }
