@@ -645,13 +645,15 @@ internal static partial class Video
         await settings.WriteMovieMergedMetadataAsync(mergedMetadata, cancellationToken);
     }
 
-    internal static async Task DownloadMissingTitlesFromDoubanAsync(ISettings settings, string directory, int level = DefaultDirectoryLevel, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task DownloadMissingTitlesFromDoubanAsync(ISettings settings, string directory, int level = DefaultDirectoryLevel, bool skipFormatted = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
         WebDriverHelper.DisposeAll();
 
-        ConcurrentQueue<string> movies = new(EnumerateDirectories(directory, level));
+        ConcurrentQueue<string> movies = new(skipFormatted
+            ? EnumerateDirectories(directory, level).Where(movie => !VideoDirectoryInfo.TryParse(movie, out _))
+            : EnumerateDirectories(directory, level));
         List<(string Title, string Year, string Directory)> noTranslation = [];
         await Enumerable
             .Range(0, Douban.MaxDegreeOfParallelism)
