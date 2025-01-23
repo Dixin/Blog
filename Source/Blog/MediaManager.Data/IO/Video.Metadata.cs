@@ -1058,4 +1058,41 @@ internal static partial class Video
             });
         });
     }
+
+    internal static void SyncTmdbMetadata(string directory, int level = 2)
+    {
+        EnumerateDirectories(directory, level)
+        .ForEach(movie =>
+        {
+            string[] movieMetadata = Directory.GetFiles(movie, XmlMetadataSearchPattern);
+            XDocument[] documents = movieMetadata.Select(XDocument.Load).ToArray();
+            Debug.Assert(movieMetadata.Length >= 2);
+            Debug.Assert(documents.Select(document => document.Root!.Element("imdbid")?.Value).Distinct(StringComparer.OrdinalIgnoreCase).Count() == 1);
+            Debug.Assert(documents.Select(document => document.Root!.Element("tmdbid")?.Value).Distinct(StringComparer.OrdinalIgnoreCase).Count() == 1);
+            Debug.Assert(documents.Select(document => document.Root!.Element("id")?.Value).Distinct(StringComparer.OrdinalIgnoreCase).Count() == 1);
+            Debug.Assert(!movieMetadata.Select(PathHelper.GetFileNameWithoutExtension).Any(name => name.ContainsIgnoreCase(".cd2") || name.ContainsIgnoreCase(".cd02")));
+
+            string[] years = documents.Select(document => document.Root?.Element("year")?.Value ?? string.Empty).Distinct().ToArray();
+            string[][] countries = documents.Select(document => document.Root!.Elements("country").Select(element => element.Value).Order().ToArray()).ToArray();
+            string[][] genres = documents.Select(document => document.Root!.Elements("genre").Select(element => element.Value).Order().ToArray()).ToArray();
+
+            if (years.Length == 1
+                && countries.Select(country => string.Join("|", country)).Distinct().Count() == 1
+                && genres.Select(genre => string.Join("|", genre)).Distinct().Count() == 1)
+            {
+                return;
+            }
+
+            string latestMetadata = movieMetadata.OrderByDescending(metadata => new FileInfo(metadata).LastWriteTimeUtc).First();
+            if (!PathHelper.GetFileName(latestMetadata).EqualsIgnoreCase(MovieMetadataFile))
+            {
+                Debugger.Break();
+            }
+
+            movieMetadata
+                .Except([latestMetadata])
+                .ToArray()
+                .ForEach(metadata => FileHelper.Copy(latestMetadata, metadata, true, true));
+        });
+    }
 }
