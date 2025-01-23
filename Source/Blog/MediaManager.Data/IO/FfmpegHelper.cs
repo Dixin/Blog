@@ -223,6 +223,11 @@ public static class FfmpegHelper
 
         log(input);
         log(dubbed);
+        if (CompareDurationAsync(input, dubbed, log).Result != 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(dubbed), dubbed, string.Empty);
+        }
+
         if (!output.HasExtension(Video.VideoExtension))
         {
             throw new ArgumentOutOfRangeException(nameof(output), output, string.Empty);
