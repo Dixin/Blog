@@ -342,32 +342,34 @@ internal static partial class Video
     internal static void RenameDirectoriesWithoutAdditionalMetadata(string directory, int level = DefaultDirectoryLevel, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
+
         EnumerateDirectories(directory, level)
             .ToArray()
             .ForEach(movie =>
             {
-                string movieName = PathHelper.GetFileName(movie);
+                string name = PathHelper.GetFileName(movie);
                 bool isRenamed = false;
-                if (movieName.StartsWithOrdinal("0."))
+                if (name.StartsWithOrdinal("0."))
                 {
-                    movieName = movieName["0.".Length..];
+                    name = name["0.".Length..];
                     isRenamed = true;
                 }
 
-                if (movieName.ContainsOrdinal("]@"))
+                if (name.ContainsOrdinal(AdditionalMetadataSeparator))
                 {
-                    movieName = movieName[..(movieName.IndexOfOrdinal("]@") + 1)];
+                    name = name[..name.IndexOfOrdinal(AdditionalMetadataSeparator)];
                     isRenamed = true;
                 }
 
                 if (isRenamed)
                 {
-                    string newMovie = Path.Combine(PathHelper.GetDirectoryName(movie), movieName);
                     log(movie);
+                    string newMovie = PathHelper.ReplaceDirectoryName(movie, name);
                     if (!isDryRun)
                     {
-                        Directory.Move(movie, newMovie);
+                        DirectoryHelper.Move(movie, newMovie);
                     }
+
                     log(newMovie);
                 }
             });
@@ -1130,48 +1132,41 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
 
-        ILookup<string, (string[] Genres, string SubDirectory)> regionWithGenres = settings.MovieRegionDirectories.Where(pair => pair.Key.ContainsOrdinal("."))
+        ILookup<string, (string[] Genres, string SubDirectory)> regionWithGenres = settings
+            .MovieRegionDirectories
+            .Where(pair => pair.Key.ContainsOrdinal(Delimiter))
             .Select(pair =>
             {
-                string[] keys = pair.Key.Split(".");
+                string[] keys = pair.Key.Split(Delimiter);
                 string region = keys.First();
                 string[] genres = keys.Last().Split("|");
                 return (region, genres, pair.Value);
             })
             .ToLookup(pair => pair.region, pair => (pair.genres, pair.Value), StringComparer.OrdinalIgnoreCase);
-        Dictionary<string, string> regionWithoutGenres = settings.MovieRegionDirectories.Where(pair => !pair.Key.ContainsOrdinal("."))
+        Dictionary<string, string> regionWithoutGenres = settings
+            .MovieRegionDirectories
+            .Where(pair => !pair.Key.ContainsOrdinal(Delimiter))
             .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
         EnumerateDirectories(directory, level)
             .ToArray()
             .ForEach(movie =>
             {
                 string metadataFile = Directory.EnumerateFiles(movie, ImdbMetadataSearchPattern).Single();
-                if (ImdbMetadata.TryGet(metadataFile, out _, out _, out string[]? regions, out string[]? languages, out string[]? genres))
+                if (!ImdbMetadata.TryGet(metadataFile, out _, out _, out string[]? regions, out string[]? languages, out string[]? genres))
                 {
-                    string region = regions.First();
-                    if (regionWithGenres.Contains(region))
-                    {
-                        (string[] Genres, string SubDirectory)[] matches = regionWithGenres[region]
-                            .Where(group => group.Genres.Intersect(genres, StringComparer.OrdinalIgnoreCase).Any())
-                            .ToArray();
-                        if (matches.Any())
-                        {
-                            string subDirectory = Path.Combine(directory, matches.First().SubDirectory);
-                            log(movie);
-                            log(subDirectory);
-                            if (!isDryRun)
-                            {
-                                DirectoryHelper.MoveToDirectory(movie, subDirectory);
-                            }
+                    return;
+                }
 
-                            log(string.Empty);
-                            return;
-                        }
-                    }
-
-                    if (regionWithoutGenres.TryGetValue(region, out string? value))
+                string region = regions.First();
+                if (regionWithGenres.Contains(region))
+                {
+                    (string[] Genres, string SubDirectory)[] matches = regionWithGenres[region]
+                        .Where(group => genres.Intersect(group.Genres, StringComparer.OrdinalIgnoreCase).Any())
+                        .ToArray();
+                    if (matches.Any())
                     {
-                        string subDirectory = Path.Combine(settings.MovieMainstreamWithoutSubtitle, value);
+                        (string[] Genres, string SubDirectory)[] matchesWithoutDrama = matches.Where(match => !match.Genres.ContainsIgnoreCase("Drama")).ToArray();
+                        string subDirectory = Path.Combine(directory, (matchesWithoutDrama.Any() ? matchesWithoutDrama : matches).First().SubDirectory);
                         log(movie);
                         log(subDirectory);
                         if (!isDryRun)
@@ -1182,9 +1177,23 @@ internal static partial class Video
                         log(string.Empty);
                         return;
                     }
-
-                    log($"!{movie}");
                 }
+
+                if (regionWithoutGenres.TryGetValue(region, out string? value))
+                {
+                    string subDirectory = Path.Combine(directory, value);
+                    log(movie);
+                    log(subDirectory);
+                    if (!isDryRun)
+                    {
+                        DirectoryHelper.MoveToDirectory(movie, subDirectory);
+                    }
+
+                    log(string.Empty);
+                    return;
+                }
+
+                log($"!{movie}");
             });
     }
 }
