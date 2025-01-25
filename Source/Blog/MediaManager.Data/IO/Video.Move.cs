@@ -195,29 +195,45 @@ internal static partial class Video
             });
     }
 
-    internal static void RenameDirectoriesWithAdditionalMetadata(string directory, int level = DefaultDirectoryLevel, bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
+    private const string AdditionalMetadataSeparator = "@";
+
+    internal static void RenameDirectoriesWithAdditionalMetadata(ISettings settings, string directory, int level = DefaultDirectoryLevel, bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
             .ToArray()
             .ForEach(movie =>
             {
-                string movieName = PathHelper.GetFileName(movie);
-                if (!overwrite && movieName.ContainsOrdinal("{"))
+                string name = PathHelper.GetFileName(movie);
+                int index = name.IndexOfOrdinal(AdditionalMetadataSeparator);
+                if (index >= 0)
+                {
+                    name = name[..index];
+                }
+
+                if (!ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata))
                 {
                     return;
                 }
 
-                ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata);
-                string additional = $"@{string.Join(",", imdbMetadata?.Regions.Take(4) ?? [])}#{string.Join(",", imdbMetadata?.Languages.Take(3) ?? [])}";
-                string originalMovie = movieName.ContainsOrdinal("{")
-                    ? PathHelper.ReplaceFileName(movie, movieName[..movieName.IndexOfOrdinal("@")])
-                    : movie;
-                string newMovie = $"{originalMovie}{additional}";
+                string[] languages = Directory
+                    .EnumerateFiles(movie)
+                    .Where(file => file.IsVideo())
+                    .Select(VideoMovieFileInfo.Parse)
+                    .Where(video => video.Version.Contains($"{VersionSeparator}{settings.TopForeignKeyword}"))
+                    .Select(video => video.Edition)
+                    .ToArray();
+                if (languages.IsEmpty())
+                {
+                    languages = imdbMetadata.Languages;
+                }
+
+                string additional = $"{AdditionalMetadataSeparator}{string.Join(VersionSeparator, languages.Take(4))}{Delimiter}{string.Join(VersionSeparator, imdbMetadata.Regions.Take(4))}{Delimiter}{string.Join(VersionSeparator, imdbMetadata.Genres.Take(4))}";
+                string newMovie = PathHelper.ReplaceDirectoryName(movie, $"{name}{additional}");
                 log(movie);
                 if (!isDryRun)
                 {
-                    Directory.Move(movie, newMovie);
+                    DirectoryHelper.Move(movie, newMovie, overwrite);
                 }
 
                 log(newMovie);
@@ -1120,7 +1136,7 @@ internal static partial class Video
             });
     }
 
-    internal static void MoveDirectoriesByRegions(ISettings settings, string directory, bool isDryRun = false, Action<string>? log = null)
+    internal static void MoveDirectoriesByRegions(ISettings settings, string directory, int level = DefaultDirectoryLevel, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
@@ -1135,7 +1151,7 @@ internal static partial class Video
             .ToLookup(pair => pair.region, pair => (pair.genres, pair.Value), StringComparer.OrdinalIgnoreCase);
         Dictionary<string, string> regionWithoutGenres = settings.MovieRegionDirectories.Where(pair => !pair.Key.ContainsOrdinal("."))
             .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.OrdinalIgnoreCase);
-        EnumerateDirectories(directory)
+        EnumerateDirectories(directory, level)
             .ToArray()
             .ForEach(movie =>
             {
