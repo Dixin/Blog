@@ -109,7 +109,7 @@ internal static partial class Video
         });
     }
 
-    internal static void RenameEpisodesWithTitle(string mediaDirectory, string metadataDirectory = "", Func<string, string, string>? rename = null, bool isDryRun = false, Action<string>? log = null)
+    internal static void RenameEpisodesWithTitle(string mediaDirectory, string metadataDirectory = "", Func<string, string, string>? rename = null, bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
         if (metadataDirectory.IsNullOrWhiteSpace())
@@ -117,14 +117,16 @@ internal static partial class Video
             metadataDirectory = mediaDirectory;
         }
 
-        rename ??= (file, title) => PathHelper.AddFilePostfix(file, $".{title}");
+        rename ??= (file, title) => PathHelper.AddFilePostfix(file, $"{Delimiter}{title.TrimStart(Delimiter.Single())}");
+
+        string[] mediaFiles = Directory.GetFiles(mediaDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories);
 
         Directory
-            .GetFiles(metadataDirectory, XmlMetadataSearchPattern, SearchOption.AllDirectories)
+            .EnumerateFiles(metadataDirectory, XmlMetadataSearchPattern, SearchOption.AllDirectories)
             .ForEach(file =>
             {
-                string match = Regex.Match(PathHelper.GetFileNameWithoutExtension(file), @"S[\d]+E[\d]+", RegexOptions.IgnoreCase).Value.ToLowerInvariant();
-                if (match.IsNullOrWhiteSpace() || !File.Exists(file))
+                string seasonEpisode = SeasonEpisodeRegex.Match(PathHelper.GetFileNameWithoutExtension(file)).Value;
+                if (seasonEpisode.IsNullOrWhiteSpace() || !File.Exists(file))
                 {
                     return;
                 }
@@ -132,15 +134,16 @@ internal static partial class Video
                 string title = XDocument.Load(file).Root?.Element("title")?.Value.FilterForFileSystem().Trim() ?? throw new InvalidOperationException($"{file} has no title.");
                 string currentDirectory = PathHelper.GetDirectoryName(file);
                 string relative = Path.GetRelativePath(mediaDirectory, currentDirectory);
-                Directory
-                    .GetFiles(Path.IsPathRooted(relative) || relative.StartsWithOrdinal($"..{Path.PathSeparator}") ? mediaDirectory : currentDirectory, $"*{match}*", SearchOption.AllDirectories)
+                mediaFiles
+                    .Where(file => PathHelper.GetFileNameWithoutExtension(file).ContainsIgnoreCase(seasonEpisode))
+                    .ToArray()
                     .ForEach(file =>
                     {
                         log(file);
                         string newFile = rename(file, title).Trim();
                         if (!isDryRun)
                         {
-                            File.Move(file, newFile);
+                            FileHelper.Move(file, newFile, overwrite, true);
                         }
 
                         log(newFile);
@@ -629,19 +632,6 @@ internal static partial class Video
             });
     }
 
-    internal static void RenameTVAttachment(IEnumerable<string> videos, Action<string>? log = null)
-    {
-        log ??= Logger.WriteLine;
-        videos.ForEach(video =>
-        {
-            string match = Regex.Match(PathHelper.GetFileNameWithoutExtension(video), @"s[\d]+e[\d]+", RegexOptions.IgnoreCase).Value.ToLowerInvariant();
-            Directory
-                .EnumerateFiles(PathHelper.GetDirectoryName(video), $"*{match}*", SearchOption.TopDirectoryOnly)
-                .Where(file => !file.EqualsIgnoreCase(video))
-                .ForEach(log);
-        });
-    }
-
     internal static void RenameWithUpdatedRatings(string directory, int level = DefaultDirectoryLevel, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
@@ -967,7 +957,7 @@ internal static partial class Video
             .ToArray();
         tvs
             .Select(tv => (tv.Path, tv.Name, Metadata: existingMetadataTVs.Single(existingTV => tv.Name.Equals(PathHelper.GetFileName(existingTV)))))
-            .ForEach(match => RenameEpisodesWithTitle(match.Path, match.Metadata, renameForTitle, isDryRun, log));
+            .ForEach(match => RenameEpisodesWithTitle(match.Path, match.Metadata, renameForTitle, false, isDryRun, log));
 
         string[] existingSubtitleTVs = subtitleDirectory.IsNullOrWhiteSpace()
             ? existingMetadataTVs

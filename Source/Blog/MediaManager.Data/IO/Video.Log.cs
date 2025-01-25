@@ -47,6 +47,7 @@ internal static partial class Video
                 });
         }
 
+        Lock errorLock = new();
         parallelFiles
             .Select((video, index) =>
             {
@@ -64,7 +65,10 @@ internal static partial class Video
             .ForAll(result =>
             {
                 results.Add(result);
-                File.AppendAllLines(@"d:\temp\errors.txt", [result.Video, result.Error.Message ?? string.Empty, string.Empty]);
+                lock (errorLock)
+                {
+                    File.AppendAllLines(@"d:\temp\errors.txt", [result.Video, result.Error.Message ?? string.Empty, string.Empty]);
+                }
             });
 
         results
@@ -2402,6 +2406,92 @@ internal static partial class Video
                     .Prepend($"https://www.themoviedb.org/collection/{group.Key}")
                     .Append(string.Empty)
                     .ForEach(log);
+            });
+    }
+
+    internal static async Task PrintTVContrast(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default)
+    {
+        log ??= Logger.WriteLine;
+
+        ILookup<string, ContrastMetadata> contrastMetadata = (await JsonHelper.DeserializeFromFileAsync<ContrastMetadata[]>(settings.TVContrastMetadata, cancellationToken))
+            .Where(metadata => metadata.ImdbId.IsNotNullOrWhiteSpace()
+                && metadata.Title.ContainsIgnoreCase($"{VersionSeparator}{settings.ContrastKeyword}")
+                && metadata.Title.ContainsIgnoreCase("1080p"))
+            .ToLookup(metadata => metadata.ImdbId);
+
+        string[] tvDirectories =
+        [
+            settings.TVControversial,
+            settings.TVDocumentary,
+            settings.TVMainstream,
+            settings.TVMainstreamWithoutSubtitle,
+            settings.TVTemp4
+        ];
+
+        tvDirectories
+            .SelectMany(tvDirectory => EnumerateDirectories(tvDirectory, 1))
+            .Select(tv => (
+                tv,
+                Imdb: Directory.EnumerateFiles(tv, ImdbMetadataSearchPattern).Single()))
+            .Where(tv => !PathHelper.GetFileNameWithoutExtension(tv.Imdb).EqualsOrdinal(NotExistingFlag))
+            .Select(tv => (tv.tv, ImdbId: tv.Imdb.GetImdbId()))
+            .Where(tv => contrastMetadata.Contains(tv.ImdbId))
+            .Select(tv => (
+                TV: tv.tv,
+                ImdbId: tv.ImdbId,
+                Seasons: Directory
+                    .EnumerateDirectories(tv.tv, "Season *")
+                    .Select(season => (
+                        season,
+                        SeasonNumber: PathHelper.GetFileName(season).Split(Delimiter).First().Split(" ").Last(),
+                        Episodes: Directory.EnumerateFiles(season).Where(file =>
+                        {
+                            string name = Path.GetFileNameWithoutExtension(file);
+                            return file.IsVideo()
+                                && !name.ContainsIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}")
+                                && !name.ContainsIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}")
+                                && !name.ContainsIgnoreCase($"{VersionSeparator}{settings.ContrastKeyword}");
+                        }).ToArray()))
+                    .ToArray()))
+            .Where(tv => tv.Seasons.Any())
+            .ForEach(tv =>
+            {
+                ContrastMetadata[] tvMetadata = contrastMetadata[tv.ImdbId].ToArray();
+                tv
+                    .Seasons
+                    .Where(season => season.Episodes.Any())
+                    .ForEach(season =>
+                    {
+                        if (Regex.IsMatch(season.SeasonNumber, "^[0-9]{2}$"))
+                        {
+                            tvMetadata
+                                .Where(seasonMetadata => seasonMetadata.Title.Contains($".S{season.SeasonNumber}."))
+                                .ForEach(seasonMetadata =>
+                                {
+                                    if (season.Episodes.Any(e => e.ContainsIgnoreCase("BluRay")) && !seasonMetadata.Title.ContainsIgnoreCase("BluRay"))
+                                    {
+                                        log("!!!");
+                                    }
+
+                                    log(PathHelper.GetFileName(season.Episodes.First()));
+                                    log(seasonMetadata.Title);
+                                    log(seasonMetadata.Magnet);
+                                    log(string.Empty);
+                                });
+                        }
+                    });
+
+                tvMetadata
+                    .Where(seasonMetadata => tv
+                        .Seasons
+                        .Select(season => season.SeasonNumber)
+                        .All(seasonNumber => !seasonMetadata.Title.ContainsIgnoreCase($".S{seasonNumber}.")))
+                    .ForEach(seasonMetadata =>
+                    {
+                        log(seasonMetadata.Title);
+                        log(seasonMetadata.Magnet);
+                        log(string.Empty);
+                    });
             });
     }
 }

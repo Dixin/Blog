@@ -147,12 +147,10 @@ internal static partial class Video
             subtitleDirectory = mediaDirectory;
         }
 
-        Regex episodeRegex = new("S[0-9]{2}E[0-9]{2}");
-
         string[] mediaDirectoryFiles = Directory.GetFiles(mediaDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories);
         Dictionary<string, string> episodeToVideos = mediaDirectoryFiles
             .Where(IsVideo)
-            .Select(video => (video, episodeRegex.Match(PathHelper.GetFileNameWithoutExtension(video))))
+            .Select(video => (video, SeasonEpisodeRegex.Match(PathHelper.GetFileNameWithoutExtension(video))))
             .Where(videoMatch => videoMatch.Item2.Success)
             .ToDictionary(videoMatch => videoMatch.Item2.Value, videoMatch => videoMatch.video);
 
@@ -162,14 +160,14 @@ internal static partial class Video
             .Where(IsSubtitle)
             .ToLookup(subtitle =>
             {
-                Match match = episodeRegex.Match(PathHelper.GetFileNameWithoutExtension(subtitle));
+                Match match = SeasonEpisodeRegex.Match(PathHelper.GetFileNameWithoutExtension(subtitle));
                 if (match.Success)
                 {
                     return match.Value;
                 }
 
                 string subtitleDirectory = PathHelper.GetDirectoryName(subtitle);
-                match = episodeRegex.Match(PathHelper.GetFileName(subtitleDirectory));
+                match = SeasonEpisodeRegex.Match(PathHelper.GetFileName(subtitleDirectory));
                 return match.Success ? match.Value : string.Empty;
             });
 
@@ -185,7 +183,7 @@ internal static partial class Video
                         string name = PathHelper.GetFileNameWithoutExtension(subtitle);
                         string title = name.StartsWithIgnoreCase(videoName)
                             ? name[videoName.Length..].Trim(Delimiter.Single())
-                            : episodeRegex.IsMatch(name) ? name.Split(Delimiter).Last() : name;
+                            : SeasonEpisodeRegex.IsMatch(name) ? name.Split(Delimiter).Last() : name;
                         Match match = Regex.Match(title, "[A-Za-z]{3}");
                         string language = match.Success ? match.Value.ToLowerInvariant() : "eng";
                         language = language switch
@@ -951,14 +949,14 @@ internal static partial class Video
             .ForEach(subtitle =>
             {
                 string name = PathHelper.GetFileNameWithoutExtension(subtitle);
-                if (Regex.IsMatch(name, "S[0-9]{2}E[0-9]{2}"))
+                if (SeasonEpisodeRegex.IsMatch(name))
                 {
                     return;
                 }
 
                 string subtitleDirectory = PathHelper.GetDirectoryName(subtitle);
                 string subtitleDirectoryName = PathHelper.GetFileName(subtitleDirectory);
-                if (Regex.IsMatch(subtitleDirectoryName, "S[0-9]{2}E[0-9]{2}"))
+                if (SeasonEpisodeRegex.IsMatch(subtitleDirectoryName))
                 {
                     string parentDirectory = PathHelper.GetDirectoryName(subtitleDirectory);
                     string newSubtitle = Path.Combine(parentDirectory, $"{subtitleDirectoryName}{Delimiter}{PathHelper.GetFileName(subtitle)}");

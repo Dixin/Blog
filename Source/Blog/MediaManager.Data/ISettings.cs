@@ -100,6 +100,8 @@ public interface ISettings
 
     string PreferredNewKeyword { get; init; }
 
+    string ContrastKeyword { get; init; }
+
     string LibraryDirectory { get; init; }
 
     string MovieSubtitleBackupDirectory { get; init; }
@@ -127,6 +129,8 @@ public interface ISettings
     string MovieSharedUrl { get; init; }
 
     string TVTopX265Url { get; init; }
+
+    string TVContrastUrl { get; init; }
 
     string Drive115Metadata { get; init; }
 
@@ -161,6 +165,8 @@ public interface ISettings
     string MovieMergedMetadata { get; init; }
 
     string TVTopX265Metadata { get; init; }
+
+    string TVContrastMetadata { get; init; }
 
     string MovieMetadataDirectory { get; init; }
 

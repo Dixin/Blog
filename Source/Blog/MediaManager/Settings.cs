@@ -9,6 +9,7 @@ public partial record Settings(
     string TopForeignKeyword,
     string PreferredOldKeyword,
     string PreferredNewKeyword,
+    string ContrastKeyword,
 
     string LibraryDirectory,
     string MovieSubtitleBackupDirectory,
@@ -25,6 +26,7 @@ public partial record Settings(
     string MoviePreferredUrl,
     string MovieSharedUrl,
     string TVTopX265Url,
+    string TVContrastUrl,
 
     string Drive115Metadata,
     string MovieLibraryMetadata,
@@ -43,6 +45,7 @@ public partial record Settings(
     string MovieImdbSpecialMetadata,
     string MovieMergedMetadata,
     string TVTopX265Metadata,
+    string TVContrastMetadata,
 
     string MovieMetadataDirectory,
     string MovieMetadataBackupDirectory,

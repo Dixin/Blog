@@ -33,7 +33,7 @@ internal static class TmdbMetadata
 
         XDocument[] documents = files.Select(XDocument.Load).ToArray();
 
-        string[] tmdbIds = documents.Select(doc => doc.Root?.Element("tmdbid")?.Value ?? string.Empty).Distinct().ToArray();
+        string[] tmdbIds = documents.Select(doc => doc.Root?.Element("tmdbid")?.Value ?? string.Empty).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
         if (tmdbIds.Length != 1)
         {
             throw new InvalidOperationException($"Inconsistent TMDB id: {movie}.");

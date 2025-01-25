@@ -62,7 +62,7 @@ internal static class VideoFileInfoExtensions
         video.VideoCodec.ContainsIgnoreCase(".HDR.DV");
 
     internal static bool Is3D(this IVideoFileInfo video) =>
-        video.Edition.ContainsOrdinal(".3D");
+        video is VideoMovieFileInfo movie && movie.ThreeD.IsNotNullOrWhiteSpace() || video.Edition.ContainsOrdinal(".3D");
 
     internal static string FormatAudioCount(this IVideoFileInfo video) =>
         video.MultipleAudio.IsNullOrWhiteSpace() ? string.Empty : Regex.Match(video.MultipleAudio, @"\.([2-9])Audio").Groups[1].Value;

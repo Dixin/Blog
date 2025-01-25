@@ -66,6 +66,8 @@ internal static partial class Video
 
     private const string SubtitleDirectory = "Subs";
 
+    internal static readonly Regex SeasonEpisodeRegex = new("S[0-9]{2,4}E[0-9]{2,3}(E[0-9]{2})?");
+
     internal static string FilterForFileSystem(this string value)
     {
         value = value.Replace(": ", TitleSeparator).Replace(":", TitleSeparator).Replace("*", "_").Replace("/", "_");
