@@ -1196,4 +1196,55 @@ internal static partial class Video
                 log($"!{movie}");
             });
     }
+
+    private static readonly string[] OrderedKeywords =
+    [
+        "bottomless",
+        "closeup penetration",
+        "female full frontal nudity",
+        "female frontal nudity",
+        "female explicit nudity",
+        "female genitalia",
+        "female topless nudity",
+        "female nipple",
+        "female nipples",
+        "female pubic hair",
+        "female nudity",
+        "female exhibitionist",
+        "female star appears nude",
+        "clothed male naked female scene",
+        "clothed female naked female scene",
+        "blindfolded nude woman",
+        "female star appears topless",
+    ];
+
+    internal static void RenameDirectoriesWithGraphicMetadata(string directory, int level = DefaultDirectoryLevel)
+    {
+        EnumerateDirectories(directory, level)
+            .ToArray()
+            .ForEach(movie =>
+            {
+                if (!ImdbMetadata.TryLoad(movie, out ImdbMetadata? metadata))
+                {
+                    return;
+                }
+
+                string name = PathHelper.GetFileName(movie);
+                int index = name.LastIndexOfOrdinal(AdditionalMetadataSeparator);
+                if (index >= 0)
+                {
+                    name = name[..index];
+                }
+
+                string severity = string.Join(
+                    VersionSeparator,
+                    metadata.
+                        Advisories
+                        .Where(advisory => advisory.Key.ContainsIgnoreCase("sex"))
+                        .SelectMany(advisory => advisory.Value)
+                        .Select(advisory => advisory.Severity));
+                string keywords = string.Join(VersionSeparator, OrderedKeywords.Intersect(metadata.AllKeywords).Take(3));
+                DirectoryHelper.ReplaceDirectoryName(movie, $"{name}{AdditionalMetadataSeparator}{severity}{Delimiter}{keywords}");
+            });
+    }
 }
