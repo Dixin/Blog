@@ -349,6 +349,7 @@ internal static partial class Video
             {
                 string name = PathHelper.GetFileName(movie);
                 bool isRenamed = false;
+                bool isHidden = DirectoryHelper.IsHidden(movie);
                 if (name.StartsWithOrdinal("0."))
                 {
                     name = name["0.".Length..];
@@ -368,6 +369,10 @@ internal static partial class Video
                     if (!isDryRun)
                     {
                         DirectoryHelper.Move(movie, newMovie);
+                        if (isHidden && !DirectoryHelper.IsHidden(newMovie))
+                        {
+                            DirectoryHelper.SetHidden(newMovie, true);
+                        }
                     }
 
                     log(newMovie);
