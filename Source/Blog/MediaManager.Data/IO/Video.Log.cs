@@ -297,7 +297,7 @@ internal static partial class Video
 
     private static readonly string[] TitlesWithNoTranslation = ["Beyond", "IMAX", "Paul & Wing", "Paul & Steve", "Paul", "Wing", "Steve", "GEM", "Metro", "TVB"];
 
-    private static readonly char[] DirectorySpecialCharacters = "：@#(){}".ToCharArray();
+    private static readonly char[] DirectorySpecialCharacters = "：@#(){}—".ToCharArray();
 
     internal static void PrintDirectoriesWithErrors(ISettings settings, string directory, int level = DefaultDirectoryLevel, bool isLoadingVideo = false, bool isNoAudioAllowed = false, bool isTV = false, Action<string>? log = null)
     {

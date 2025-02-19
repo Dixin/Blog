@@ -214,11 +214,6 @@ internal static partial class Video
                     name = name[..index];
                 }
 
-                if (!ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata))
-                {
-                    return;
-                }
-
                 string[] languages = Directory
                     .EnumerateFiles(movie)
                     .Where(file => file.IsVideo())
@@ -226,17 +221,52 @@ internal static partial class Video
                     .Where(video => video.Version.Contains($"{VersionSeparator}{settings.TopForeignKeyword}"))
                     .Select(video => video.Edition)
                     .ToArray();
-                if (languages.IsEmpty())
+                string[] regions = [];
+                string[] genres = [];
+                bool hasImdbMetadata = ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata);
+                if(hasImdbMetadata)
                 {
-                    languages = imdbMetadata.Languages;
+                    if (languages.IsEmpty())
+                    {
+                        languages = imdbMetadata.Languages;
+                    }
+
+                    regions = imdbMetadata.Regions;
+                    genres = imdbMetadata.Genres;
                 }
 
-                string additional = $"{AdditionalMetadataSeparator}{string.Join(VersionSeparator, languages.Take(4))}{Delimiter}{string.Join(VersionSeparator, imdbMetadata.Regions.Take(4))}{Delimiter}{string.Join(VersionSeparator, imdbMetadata.Genres.Take(4))}";
+                if (languages.IsEmpty() || regions.IsEmpty() || genres.IsEmpty())
+                {
+                    if (TmdbMetadata.TryRead(movie, out string? tmdbId, out string? year, out string[]? tmdbRegions, out string[]? tmdbGenres))
+                    {
+                        if (regions.IsEmpty())
+                        {
+                            regions = tmdbRegions;
+                        }
+
+                        if(genres.IsEmpty())
+                        {
+                            genres = tmdbGenres;
+                        }
+                    }
+                    else if(!hasImdbMetadata)
+                    {
+                        return;
+                    }
+                }
+
+                string additional = $"{AdditionalMetadataSeparator}{string.Join(VersionSeparator, regions.Take(4))}{Delimiter}{string.Join(VersionSeparator, languages.Take(4))}{Delimiter}{string.Join(VersionSeparator, genres.Take(4))}";
                 string newMovie = PathHelper.ReplaceDirectoryName(movie, $"{name}{additional}");
+                bool isHidden = DirectoryHelper.IsHidden(movie);
+
                 log(movie);
                 if (!isDryRun)
                 {
                     DirectoryHelper.Move(movie, newMovie, overwrite);
+                    if (!isHidden && !DirectoryHelper.IsHidden(newMovie))
+                    {
+                        DirectoryHelper.SetHidden(newMovie, true);
+                    }
                 }
 
                 log(newMovie);
