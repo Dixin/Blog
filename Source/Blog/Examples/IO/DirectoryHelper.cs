@@ -128,11 +128,19 @@ public static class DirectoryHelper
         FileSystem.DeleteDirectory(directory, UIOption.OnlyErrorDialogs, RecycleOption.SendToRecycleBin);
     }
 
-    public static void ReplaceDirectoryName(string directory, string newName, bool overwrite = false) =>
-        Move(directory, PathHelper.ReplaceDirectoryName(directory, newName), overwrite);
+    public static string ReplaceDirectoryName(string directory, string newName, bool overwrite = false)
+    {
+        string destination = PathHelper.ReplaceDirectoryName(directory, newName);
+        Move(directory, destination, overwrite);
+        return destination;
+    }
 
-    public static void ReplaceDirectoryName(string directory, Func<string, string> replace, bool overwrite = false) =>
-        Move(directory, PathHelper.ReplaceDirectoryName(directory, replace), overwrite);
+    public static string ReplaceDirectoryName(string directory, Func<string, string> replace, bool overwrite = false)
+    {
+        string destination = PathHelper.ReplaceDirectoryName(directory, replace);
+        Move(directory, destination, overwrite);
+        return destination;
+    }
 
     public static void Copy(string sourceDirectory, string destinationDirectory, bool overwrite = false) =>
         FileSystem.CopyDirectory(sourceDirectory, destinationDirectory, overwrite);

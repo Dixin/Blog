@@ -203,15 +203,18 @@ internal static partial class Video
     internal static void RenameDirectoriesWithAdditionalMetadata(ISettings settings, string directory, int level = DefaultDirectoryLevel, bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
-        EnumerateDirectories(directory, level)
-            .ToArray()
+
+        string[] directories = EnumerateDirectories(directory, level).ToArray();
+        directories.Where(DirectoryHelper.IsHidden).Prepend("Hidden backup").Append(string.Empty).ForEach(log);
+        directories
             .ForEach(movie =>
             {
                 string name = PathHelper.GetFileName(movie);
                 int index = name.IndexOfOrdinal(AdditionalMetadataSeparator);
                 if (index >= 0)
                 {
-                    name = name[..index];
+                    //name = name[..index];
+                    return;
                 }
 
                 string[] languages = Directory
@@ -257,16 +260,11 @@ internal static partial class Video
 
                 string additional = $"{AdditionalMetadataSeparator}{string.Join(VersionSeparator, regions.Take(4))}{Delimiter}{string.Join(VersionSeparator, languages.Take(4))}{Delimiter}{string.Join(VersionSeparator, genres.Take(4))}";
                 string newMovie = PathHelper.ReplaceDirectoryName(movie, $"{name}{additional}");
-                bool isHidden = DirectoryHelper.IsHidden(movie);
 
                 log(movie);
                 if (!isDryRun)
                 {
                     DirectoryHelper.Move(movie, newMovie, overwrite);
-                    if (!isHidden && !DirectoryHelper.IsHidden(newMovie))
-                    {
-                        DirectoryHelper.SetHidden(newMovie, true);
-                    }
                 }
 
                 log(newMovie);
@@ -1253,9 +1251,13 @@ internal static partial class Video
         "female star appears topless",
     ];
 
-    internal static void RenameDirectoriesWithGraphicMetadata(string directory, int level = DefaultDirectoryLevel)
+    internal static void RenameDirectoriesWithGraphicMetadata(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null)
     {
-        EnumerateDirectories(directory, level)
+        log ??= Logger.WriteLine;
+
+        string[] directories = EnumerateDirectories(directory, level).ToArray();
+        directories.Where(DirectoryHelper.IsHidden).Prepend("Hidden backup").Append(string.Empty).ForEach(log);
+        directories
             .ToArray()
             .ForEach(movie =>
             {
@@ -1279,7 +1281,9 @@ internal static partial class Video
                         .SelectMany(advisory => advisory.Value)
                         .Select(advisory => advisory.Severity));
                 string keywords = string.Join(VersionSeparator, OrderedKeywords.Intersect(metadata.AllKeywords).Take(3));
-                DirectoryHelper.ReplaceDirectoryName(movie, $"{name}{AdditionalMetadataSeparator}{severity}{Delimiter}{keywords}");
+                log(movie);
+                string newMovie = DirectoryHelper.ReplaceDirectoryName(movie, $"{name}{AdditionalMetadataSeparator}{severity}{Delimiter}{keywords}");
+                log(newMovie);
             });
     }
 }
