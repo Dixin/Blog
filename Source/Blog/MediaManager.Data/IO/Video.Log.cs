@@ -297,7 +297,7 @@ internal static partial class Video
 
     private static readonly string[] TitlesWithNoTranslation = ["Beyond", "IMAX", "Paul & Wing", "Paul & Steve", "Paul", "Wing", "Steve", "GEM", "Metro", "TVB"];
 
-    private static readonly char[] DirectorySpecialCharacters = "：@#(){}".ToCharArray();
+    private static readonly char[] DirectorySpecialCharacters = "：@#(){}—".ToCharArray();
 
     internal static void PrintDirectoriesWithErrors(ISettings settings, string directory, int level = DefaultDirectoryLevel, bool isLoadingVideo = false, bool isNoAudioAllowed = false, bool isTV = false, Action<string>? log = null)
     {
@@ -368,6 +368,13 @@ internal static partial class Video
                     .Select(PathHelper.GetFileName)
                     //.Where(file => !file.EndsWithIgnoreCase(".temp") && !file.EndsWithIgnoreCase(".tmp") && !file.EndsWithIgnoreCase(".tmp.txt"))
                     .ToArray();
+
+                if (!topFiles.Any(file => PathHelper.GetFileName(file).EqualsIgnoreCase(MovieMetadataFile)))
+                {
+                    log($"!Missing {MovieMetadataFile} in {movie}");
+                }
+
+                topFiles = topFiles.Where(file => !PathHelper.GetFileName(file).EqualsIgnoreCase(MovieMetadataFile)).ToArray();
 
                 string imdbRating = ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata)
                     ? imdbMetadata.FormattedAggregateRating

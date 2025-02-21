@@ -6,9 +6,9 @@ namespace MediaManager.Net;
 
 internal static class TmdbMetadata
 {
-    private const string FileNameSeparator = ImdbMetadata.FileNameSeparator;
+    private const string FileNameSeparator = Video.Delimiter;
 
-    private const string FileNameMetadataSeparator = ImdbMetadata.FileNameMetadataSeparator;
+    private const string FileNameMetadataSeparator = Video.VersionSeparator;
 
     internal const string Extension = ".xml";
 
@@ -93,5 +93,66 @@ internal static class TmdbMetadata
 
         log(newPath);
         await File.WriteAllTextAsync(newPath, string.Empty, cancellationToken);
+    }
+
+    internal static bool TryRead(string path, [NotNullWhen(true)] out string? tmdbId, [NotNullWhen(true)] out string? year, [NotNullWhen(true)] out string[]? regions, [NotNullWhen(true)] out string[]? genres)
+    {
+        if (TryRead(path, out string? file))
+        {
+            return TryGet(file, out tmdbId, out year, out regions, out genres);
+        }
+
+        tmdbId = null;
+        year = null;
+        regions = null;
+        genres = null;
+        return false;
+    }
+
+    private static bool TryRead(string? path, [NotNullWhen(true)] out string? file)
+    {
+        if (Directory.Exists(path))
+        {
+            file = Directory.GetFiles(path, Video.TmdbMetadataSearchPattern, SearchOption.TopDirectoryOnly).SingleOrDefault();
+            Debug.Assert(file.IsNullOrWhiteSpace() || PathHelper.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.NotExistingFlag) || PathHelper.GetFileNameWithoutExtension(file).Split(FileNameSeparator).Length == 4);
+            return file.IsNotNullOrWhiteSpace();
+        }
+
+        if (path.IsNotNullOrWhiteSpace() && path.EndsWith(Extension) && File.Exists(path))
+        {
+            file = path;
+            Debug.Assert(file.IsNullOrWhiteSpace() || PathHelper.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.NotExistingFlag) || PathHelper.GetFileNameWithoutExtension(file).Split(FileNameSeparator).Length == 4);
+            return true;
+        }
+
+        file = null;
+        return false;
+    }
+
+    internal static bool TryGet(string file, [NotNullWhen(true)] out string? tmdbId, [NotNullWhen(true)] out string? year, [NotNullWhen(true)] out string[]? regions, [NotNullWhen(true)] out string[]? genres)
+    {
+        tmdbId = null;
+        year = null;
+        regions = null;
+        genres = null;
+
+        if (!file.HasExtension(Extension))
+        {
+            return false;
+        }
+
+        string name = PathHelper.GetFileNameWithoutExtension(file);
+        if (name.EqualsOrdinal(Video.NotExistingFlag))
+        {
+            return false;
+        }
+
+        string[] info = name.Split(FileNameSeparator, StringSplitOptions.TrimEntries);
+        Debug.Assert(info.Length == 4 && info[0].IsTmdbId());
+        tmdbId = info[0];
+        year = info[1];
+        regions = info[2].Split(FileNameMetadataSeparator);
+        genres = info[3].Split(FileNameMetadataSeparator);
+        return true;
     }
 }

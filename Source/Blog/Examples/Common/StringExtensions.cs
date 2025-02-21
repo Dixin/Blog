@@ -2,16 +2,16 @@ namespace Examples.Common;
 
 public static class StringExtensions
 {
-    public static string With(this string format, params object[] args) => 
+    public static string With(this string format, params object[] args) =>
         string.Format(CultureInfo.InvariantCulture, format, args);
 
-    public static bool ContainsIgnoreCase(this string value, string substring) => 
+    public static bool ContainsIgnoreCase(this string value, string substring) =>
         value.ThrowIfNull().Contains(substring, StringComparison.OrdinalIgnoreCase);
 
-    public static bool StartsWithIgnoreCase(this string value, string substring) => 
+    public static bool StartsWithIgnoreCase(this string value, string substring) =>
         value.ThrowIfNull().StartsWith(substring, StringComparison.OrdinalIgnoreCase);
 
-    public static bool IsNullOrWhiteSpace([NotNullWhen(false)] this string? value) => 
+    public static bool IsNullOrWhiteSpace([NotNullWhen(false)] this string? value) =>
         string.IsNullOrWhiteSpace(value);
 
     public static bool IsNullOrEmpty([NotNullWhen(false)] this string? value) =>
@@ -20,19 +20,19 @@ public static class StringExtensions
     public static string IfNullOrWhiteSpace(this string? value, string alternative) =>
         string.IsNullOrWhiteSpace(value) ? alternative : value;
 
-    public static bool IsNotNullOrWhiteSpace([NotNullWhen(true)] this string? value) => 
+    public static bool IsNotNullOrWhiteSpace([NotNullWhen(true)] this string? value) =>
         !string.IsNullOrWhiteSpace(value);
 
-    public static bool EqualsIgnoreCase(this string? value1, string? value2) => 
+    public static bool EqualsIgnoreCase(this string? value1, string? value2) =>
         string.Equals(value1, value2, StringComparison.OrdinalIgnoreCase);
 
-    public static bool EqualsOrdinal(this string? value1, string? value2) => 
+    public static bool EqualsOrdinal(this string? value1, string? value2) =>
         string.Equals(value1, value2, StringComparison.Ordinal);
 
     public static string Left(this string value, int count) =>
         string.IsNullOrEmpty(value) || count < 1 ? string.Empty : value[..Math.Min(count, value.Length)];
 
-    public static void LogWith(this string? message, TextWriter? logger) => 
+    public static void LogWith(this string? message, TextWriter? logger) =>
         logger?.WriteLine(message);
 
     public static string GetTitleFromHtml(this string html)
@@ -78,4 +78,25 @@ public static class StringExtensions
     public static int CompareOrdinal(this string? value1, string? value2) => string.Compare(value1, value2, StringComparison.Ordinal);
 
     public static bool StartsWithOrdinal(this string value, string substring) => value.StartsWith(substring, StringComparison.Ordinal);
+
+    public static IEnumerable<int> AllIndexesOf(this string value, string substring, StringComparison stringComparison)
+    {
+        value.ThrowIfNullOrEmpty();
+        substring.ThrowIfNullOrEmpty();
+
+        for (int index = 0; ; index += substring.Length)
+        {
+            index = value.IndexOf(substring, index, stringComparison);
+            if (index < 0)
+            {
+                break;
+            }
+
+            yield return index;
+        }
+    }
+
+    public static IEnumerable<int> AllIndexesOfOrdinal(this string value, string substring) => value.AllIndexesOf(substring, StringComparison.Ordinal);
+
+    public static IEnumerable<int> AllIndexesOfIgnoreCase(this string value, string substring) => value.AllIndexesOf(substring, StringComparison.OrdinalIgnoreCase);
 }

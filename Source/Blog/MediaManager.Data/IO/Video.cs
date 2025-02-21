@@ -34,6 +34,7 @@ internal static partial class Video
     private static readonly string[] AllVideoExtensions = UncommonVideoExtensions.Union(CommonVideoExtensions).ToArray();
 
     private static readonly string MovieMetadataFile = $"movie{XmlMetadataExtension}";
+
     private static readonly string TVShowMetadataFile = $"tvshow{XmlMetadataExtension}";
 
     private static readonly string TVSeasonMetadataFile = $"season{XmlMetadataExtension}";
@@ -45,6 +46,8 @@ internal static partial class Video
     internal const string ImdbCacheExtension = ".log";
 
     internal const string ImdbMetadataSearchPattern = $"{PathHelper.AllSearchPattern}{ImdbMetadata.Extension}";
+
+    internal const string TmdbMetadataSearchPattern = $"{PathHelper.AllSearchPattern}{TmdbMetadata.Extension}";
 
     private const string ImdbCacheSearchPattern = $"{PathHelper.AllSearchPattern}{ImdbCacheExtension}";
 
