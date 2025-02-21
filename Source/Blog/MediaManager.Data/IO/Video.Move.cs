@@ -213,8 +213,7 @@ internal static partial class Video
                 int index = name.IndexOfOrdinal(AdditionalMetadataSeparator);
                 if (index >= 0)
                 {
-                    //name = name[..index];
-                    return;
+                    name = name[..index];
                 }
 
                 string[] languages = Directory
@@ -371,13 +370,13 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
 
-        EnumerateDirectories(directory, level)
-            .ToArray()
+        string[] directories = EnumerateDirectories(directory, level).ToArray();
+        directories.Where(DirectoryHelper.IsHidden).Prepend("Hidden backup").Append(string.Empty).ForEach(log);
+        directories
             .ForEach(movie =>
             {
                 string name = PathHelper.GetFileName(movie);
                 bool isRenamed = false;
-                bool isHidden = DirectoryHelper.IsHidden(movie);
                 if (name.StartsWithOrdinal("0."))
                 {
                     name = name["0.".Length..];
@@ -397,10 +396,6 @@ internal static partial class Video
                     if (!isDryRun)
                     {
                         DirectoryHelper.Move(movie, newMovie);
-                        if (isHidden && !DirectoryHelper.IsHidden(newMovie))
-                        {
-                            DirectoryHelper.SetHidden(newMovie, true);
-                        }
                     }
 
                     log(newMovie);

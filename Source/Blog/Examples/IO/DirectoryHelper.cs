@@ -53,8 +53,16 @@ public static class DirectoryHelper
         if (!source.EqualsOrdinal(destination))
         {
             bool isHidden = IsHidden(source);
-            FileSystem.MoveDirectory(source, destination);
-            if (isHidden)
+            try
+            {
+                FileSystem.MoveDirectory(source, destination);
+            }
+            catch (IOException ioException) when (ioException.Message.EqualsIgnoreCase("Could not complete operation since source directory and target directory are the same."))
+            {
+                return;
+            }
+
+            if (isHidden != IsHidden(destination))
             {
                 SetHidden(destination, isHidden);
             }
