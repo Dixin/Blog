@@ -513,7 +513,7 @@ internal static partial class Video
 
                 if (tmdbFiles.Length < 1)
                 {
-                    log("!TMDB file is missing.");
+                    log($"!TMDB file is missing. {movie}");
                 }
                 else if (tmdbFiles.Length > 1)
                 {

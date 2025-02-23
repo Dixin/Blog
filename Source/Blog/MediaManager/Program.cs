@@ -31,6 +31,7 @@ VideoEpisodeFileInfo.Settings = settings;
 
 using CancellationTokenSource cancellationTokenSource = new();
 CancellationToken cancellationToken = cancellationTokenSource.Token;
+AppDomainData.DataDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\..\..\Data");
 using TextWriterTraceListener textTraceListener = new(Path.Combine(Path.GetTempPath(), "Trace.txt"));
 //Trace.Listeners.Add(textTraceListener);
 using ConsoleTraceListener consoleTraceListener = new();
@@ -299,6 +300,7 @@ string[][] metadataDrives = [
 //Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp2);
 //Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp3);
 //Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp4);
+//Video.PrintDirectoriesWithErrors(settings, settings.MovieDisk);
 
 //Video.PrintDirectoriesWithErrors(settings, settings.TVControversial, 1, isTV: true);
 //Video.PrintDirectoriesWithErrors(settings, settings.TVDocumentary, 1, isTV: true);
@@ -1586,12 +1588,10 @@ const string Subdirectory = "HD.Encode.Crop";
 // ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> existingMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationTokenSource.Token);
 // imdbIds.Intersect(existingMetadata.Keys).ForEach(log);
 
-// Directory.GetDirectories(@"L:\Hdr3")
-// .ForEach(sourceDirectory =>
+// Directory.GetFiles(@"P:\New folder (3)", "*.mkv", SearchOption.AllDirectories)
+// .ForEach(sourceVideo =>
 // {
-//     string sourceVideo = Directory.EnumerateFiles(sourceDirectory, "*.mkv").Single();
-
-//     string destinationDirectory = sourceDirectory.Replace(@"L:\", @"N:\");
+//     string destinationDirectory = @"N:\";
 //     if (!Directory.Exists(destinationDirectory))
 //     {
 //         Directory.CreateDirectory(destinationDirectory);
@@ -1602,7 +1602,7 @@ const string Subdirectory = "HD.Encode.Crop";
 //     {
 //         return;
 //     }
-//     int result = FfmpegHelper.ExtractMkvAsync(settings, sourceVideo, "", destinationVideo).Result;
+//     int result = FfmpegHelper.ExtractAndCompareAsync(settings, sourceVideo, "", destinationVideo).Result;
 //     log($"{result} {sourceVideo}");
 //     log("");
 // });
