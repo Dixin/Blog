@@ -526,10 +526,10 @@ string[][] metadataDrives = [
 //FfmpegHelper.MergeAllDubbedMovies(settings.MovieTemp42, isDryRun: true);
 //Video.PrintDuplicateImdbId(null, settings.MovieTemp41, settings.MovieTemp42, settings.MovieTemp3, settings.MovieTemp4);
 //Video.BackupMetadata(settings.MovieTemp42);
-//await Video.DownloadMissingTitlesFromDoubanAsync(settings, settings.MovieTemp42);
+//await Video.DownloadMissingTitlesFromDoubanAsync(settings, settings.MovieTemp42, skipFormatted: true);
 //Video.CopyMovieMetadata(settings.MovieTemp42, 2, true);
 //Video.RenameDirectoriesWithMetadata(settings, settings.MovieTemp42, isDryRun: false, skipRenamed: true);
-//Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp42, isDryRun: false);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp42);
 //Video.MoveFanArt(settings.MovieTemp42);
 //Video.RestoreMetadata(settings.MovieTemp42);
 //Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp42);
@@ -1106,7 +1106,7 @@ static void RenameFilesWithDuplicateTitle(
 //            });
 //    });
 
-//Video.FormatVideoFileNames(@"\\beyond-r\F\Files\Library\Movies", SearchOption.AllDirectories, isDryRun: true);
+//Video.FormatVideoFileNames(@"", SearchOption.AllDirectories, isDryRun: true);
 //Directory.GetFiles(settings.MovieTemp3, "*.2Audio.mp4", SearchOption.AllDirectories)
 //    .Select(v => Video.ReadVideoMetadataAsync(v).Result)
 //    .Where(v => !(v.AudioStreams.Length == 2
