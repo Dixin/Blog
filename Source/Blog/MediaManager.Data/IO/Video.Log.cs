@@ -237,6 +237,7 @@ internal static partial class Video
                 .Select(video => Path.Combine(settings.LibraryDirectory, video))
                 .Order()
                 .Append(string.Empty)
+                .Prepend(pair.Key)
                 .ForEach(log));
     }
 
@@ -270,6 +271,15 @@ internal static partial class Video
             .Select(PathHelper.GetDirectoryName)
             .Select(movie =>
             {
+                if (Directory
+                    .EnumerateFiles(movie, XmlMetadataSearchPattern)
+                    .Select(metadata => XDocument.Load(metadata).Root?.Element("tmdbid")?.Value ?? string.Empty)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .Count() > 1)
+                {
+                    Debugger.Break();
+                }
+                
                 string[] metadataFiles = Directory
                     .EnumerateFiles(movie, XmlMetadataSearchPattern)
                     .Order()
