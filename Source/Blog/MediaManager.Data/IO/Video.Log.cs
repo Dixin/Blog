@@ -1711,23 +1711,6 @@ internal static partial class Video
             });
     }
 
-    internal static void PrintNikkatsu(Action<string>? log = null, params (string Directory, int Level)[] directories)
-    {
-        log ??= Logger.WriteLine;
-        directories.SelectMany(directory => EnumerateDirectories(directory.Directory, directory.Level))
-            .Where(movie => !PathHelper.GetFileName(movie).StartsWithIgnoreCase("Nikkatsu") && !PathHelper.GetFileName(movie).StartsWithIgnoreCase("Oniroku Dan") && !PathHelper.GetFileName(movie).StartsWithIgnoreCase("Angel Guts"))
-            .Select(movie => (movie, XDocument.Load(Directory.EnumerateFiles(movie, XmlMetadataSearchPattern).First())))
-            .Where(movie => movie.Item2.Root?.Elements("studio").Any(element => element.Value.ContainsIgnoreCase("Nikkatsu")) is true && movie.Item2.Root.Elements("tag").Any(element => element.Value.ContainsIgnoreCase("pink")))
-            .ForEach(movie =>
-            {
-                log(movie.Item1);
-                log(string.Join(", ", movie.Item2.Root!.Elements("studio").Select(element => element.Value)));
-                log(string.Join(", ", movie.Item2.Root.Elements("tag").Select(element => element.Value)));
-                // DirectoryHelper.AddPrefix(movie.Item1, "Nikkatsu Pink-");
-                log(string.Empty);
-            });
-    }
-
     internal static async Task PrintMovieLinksAsync(
         ISettings settings, Func<ImdbMetadata, HashSet<string>, bool> predicate, string initialUrl = "", bool updateMetadata = false, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
@@ -2500,5 +2483,39 @@ internal static partial class Video
                         log(string.Empty);
                     });
             });
+    }
+
+    internal static async Task PrintHdrMoviesWithInconsistentNamingAsync(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default)
+    {
+        log ??= Logger.WriteLine;
+        const int CompareLevel = 1; // Should be 2.
+
+        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> library = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
+        string[] hdrMovies = EnumerateDirectories(settings.MovieHdr).ToArray();
+        hdrMovies.ForEach(destinationDirectory =>
+        {
+            if (!ImdbMetadata.TryRead(destinationDirectory, out string? imdbId, out _, out _, out _, out _))
+            {
+                return;
+            }
+
+            if (!library.TryGetValue(imdbId, out ConcurrentDictionary<string, VideoMetadata>? group))
+            {
+                return;
+            }
+
+            string sourceVideo = group.Keys.OrderByDescending(video => (int)VideoMovieFileInfo.Parse(video).GetEncoderType()).First();
+            string sourceDirectory = PathHelper.GetDirectoryName(sourceVideo);
+            string source = sourceDirectory[..sourceDirectory.IndexOfOrdinal("[")];
+            string destination = destinationDirectory[..destinationDirectory.IndexOfOrdinal("[")];
+            if (source.Split(Path.PathSeparator).TakeLast(CompareLevel).SequenceEqual(destination.Split(Path.PathSeparator).TakeLast(CompareLevel), StringComparer.Ordinal))
+            {
+                return;
+            }
+
+            log(destinationDirectory);
+            log(sourceDirectory);
+            log(string.Empty);
+        });
     }
 }

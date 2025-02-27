@@ -28,23 +28,31 @@ internal static class Imdb
         string imdbId,
         string imdbFile, string releaseFile, string keywordsFile, string advisoriesFile,
         string parentImdbFile, string parentReleaseFile, string parentKeywordsFile, string parentAdvisoriesFile,
-        WebDriverWrapper? webDriver, CancellationToken cancellationToken = default)
+        WebDriverWrapper? webDriver, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
+        log ??= Logger.WriteLine;
+
         using HttpClient? httpClient = webDriver is null ? new() : null;
         httpClient?.AddEdgeHeaders();
 
         string imdbUrl = $"https://www.imdb.com/title/{imdbId}/";
-        string imdbHtml = File.Exists(imdbFile)
+        bool hasImdbFile = File.Exists(imdbFile);
+        string imdbHtml = hasImdbFile
             ? await File.ReadAllTextAsync(imdbFile, cancellationToken)
             : webDriver?.GetString(imdbUrl) ?? await Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(imdbUrl, cancellationToken), cancellationToken: cancellationToken);
+        if (!hasImdbFile && webDriver is not null && !webDriver.Url.ContainsIgnoreCase(imdbUrl))
+        {
+            log($"Redirected {imdbId} to {webDriver.Url}");
+        }
+
         CQ imdbCQ = imdbHtml;
         string json = imdbCQ.Find("""script[type="application/ld+json"]""").Text();
-        if (imdbCQ.Find("title").Text().Trim().StartsWithIgnoreCase("500 Error"))
+        if (imdbCQ.Find("title").Text().Trim().StartsWithIgnoreCase("500 Error") || imdbCQ.Find("h1[data-testid='error-page-title']").Text().ContainsIgnoreCase("500 Error"))
         {
             throw new HttpRequestException(HttpRequestError.InvalidResponse, imdbUrl, null, HttpStatusCode.InternalServerError);
         }
 
-        if (imdbCQ.Find("title").Text().Trim().StartsWithIgnoreCase("404 Error"))
+        if (imdbCQ.Find("title").Text().Trim().StartsWithIgnoreCase("404 Error") || imdbCQ.Find("h1[data-testid='error-page-title']").Text().ContainsIgnoreCase("404 Error"))
         {
             throw new HttpRequestException(HttpRequestError.InvalidResponse, imdbUrl, null, HttpStatusCode.NotFound);
         }
@@ -80,7 +88,7 @@ internal static class Imdb
                     parentImdbId,
                     parentImdbFile, parentReleaseFile, parentKeywordsFile, parentAdvisoriesFile,
                     string.Empty, string.Empty, string.Empty, string.Empty,
-                    webDriver, cancellationToken);
+                    webDriver, log, cancellationToken);
             }
         }
 
@@ -782,8 +790,9 @@ internal static class Imdb
         );
     }
 
-    internal static async Task DownloadAllMoviesAsync(ISettings settings, Func<int, Range>? getRange = null, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task DownloadAllMoviesAsync(ISettings settings, Func<int, Range>? getRange = null, int? maxDegreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
+        maxDegreeOfParallelism ??= MaxDegreeOfParallelism;
         log ??= Logger.WriteLine;
 
         WebDriverHelper.DisposeAll();
@@ -835,8 +844,9 @@ internal static class Imdb
             .ToArray();
         int trimmedLength = imdbIds.Length;
         ConcurrentQueue<string> imdbIdQueue = new(imdbIds);
+        ConcurrentBag<string> imdbIdWithErrors = [];
         await Enumerable
-            .Range(0, MaxDegreeOfParallelism)
+            .Range(0, maxDegreeOfParallelism.Value)
             .ParallelForEachAsync(
                 async (webDriverIndex, _, token) =>
                 {
@@ -854,12 +864,15 @@ internal static class Imdb
                         }
                         catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
                         {
-                            log($"!!!{imdbId} {exception.ToString()}");
+                            log($"!!!{imdbId} {exception}");
+                            imdbIdWithErrors.Add(imdbId);
                         }
                     }
                 },
-                MaxDegreeOfParallelism,
+                maxDegreeOfParallelism,
                 cancellationToken);
+
+        imdbIdWithErrors.Prepend("IMDB ids with errors:").ForEach(log);
     }
 
     internal static async Task UpdateAllMoviesKeywordsAsync(ISettings settings, Func<int, Range>? getRange = null, int? maxDegreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
