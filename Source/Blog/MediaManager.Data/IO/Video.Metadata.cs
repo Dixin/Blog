@@ -327,11 +327,24 @@ internal static partial class Video
             useCache ? parentReleaseFile : string.Empty,
             useCache ? parentKeywordsFile : string.Empty,
             useCache ? parentAdvisoriesFile : string.Empty,
-            webDriver, cancellationToken);
+            webDriver, log, cancellationToken);
         Debug.Assert(imdbHtml.IsNotNullOrWhiteSpace());
         if (imdbMetadata.Regions.IsEmpty())
         {
             log($"!Location is missing for {imdbId}: {cacheDirectory}");
+        }
+
+        if (!imdbId.EqualsIgnoreCase(imdbMetadata.ImdbId))
+        {
+            log($"Redirected {imdbId} to {imdbMetadata.ImdbId}.");
+            imdbFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{ImdbCacheExtension}");
+            releaseFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}.Release{ImdbCacheExtension}");
+            keywordsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}.Keywords{ImdbCacheExtension}");
+            advisoriesFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}.Advisories{ImdbCacheExtension}");
+            parentImdbFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}.Parent{ImdbCacheExtension}");
+            parentReleaseFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}.Parent.Release{ImdbCacheExtension}");
+            parentKeywordsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}.Parent.Keywords{ImdbCacheExtension}");
+            parentAdvisoriesFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}.Parent.Advisories{ImdbCacheExtension}");
         }
 
         bool isDownloaded = false;

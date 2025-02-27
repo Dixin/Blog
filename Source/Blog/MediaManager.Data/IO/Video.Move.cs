@@ -1281,4 +1281,36 @@ internal static partial class Video
                 log(newMovie);
             });
     }
+
+    internal static void RenameNikkatsuDirectories(bool isDryRun = false, Action<string>? log = null, params (string Directory, int Level)[] directories)
+    {
+        log ??= Logger.WriteLine;
+        directories.SelectMany(directory => EnumerateDirectories(directory.Directory, directory.Level))
+            .Where(movie => !PathHelper.GetFileName(movie).StartsWithIgnoreCase("Nikkatsu") && !PathHelper.GetFileName(movie).StartsWithIgnoreCase("Oniroku Dan"))
+            .Select(movie =>
+            {
+                ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata);
+                return (movie, XDocument.Load(Path.Combine(movie, MovieMetadataFile)), imdbMetadata);
+            })
+            .Where(movie => movie.Item2.Root?.Elements("studio").Any(element => element.Value.ContainsIgnoreCase("Nikkatsu")) is true
+                && movie.Item2.Root?.Elements("tag").Any(element => element.Value.ContainsIgnoreCase("pink")) is true
+                || movie.Item3?.Companies?.Keys.Any(company => company.ContainsIgnoreCase("Nikkatsu")) is true
+                && movie.Item3?.AllKeywords.Any(keyword => keyword.ContainsIgnoreCase("roman porno") || keyword.ContainsIgnoreCase("pink")) is true)
+            .ForEach(movie =>
+            {
+                log(string.Join(", ", movie.Item2.Root?.Elements("studio").Select(element => element.Value) ?? []));
+                log(string.Join(", ", movie.Item2.Root?.Elements("tag").Select(element => element.Value) ?? []));
+                log(string.Join(", ", movie.Item3?.Companies?.Keys.AsEnumerable() ?? []));
+                log(string.Join(", ", movie.Item3?.AllKeywords.Where(keyword => keyword.ContainsIgnoreCase("roman porno") || keyword.ContainsIgnoreCase("pink")) ?? []));
+                log(movie.Item1);
+                string newMovie = PathHelper.ReplaceDirectoryName(movie.Item1, name => "Nikkatsu Pink-" + Regex.Replace(name, @"\.[0-9]{4}\.", "$0日活粉画-"));
+                if (!isDryRun)
+                {
+                    DirectoryHelper.Move(movie.Item1, newMovie);
+                }
+
+                log(newMovie);
+                log(string.Empty);
+            });
+    }
 }
