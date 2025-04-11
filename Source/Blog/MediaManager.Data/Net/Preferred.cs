@@ -79,10 +79,12 @@ internal static class Preferred
         return downloadedSummaries;
     }
 
-    internal static async Task DownloadMetadataAsync(ISettings settings, Func<int, bool>? @continue = null, int index = 1, int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task DownloadMetadataAsync(ISettings settings, Func<int, bool>? @continue = null, int index = 1, int? degreeOfParallelism = null, bool skipSummaries = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         degreeOfParallelism ??= MaxDegreeOfParallelism;
-        ConcurrentQueue<PreferredSummary> downloadedSummaries = await DownloadSummariesAsync(settings, @continue, index, degreeOfParallelism, log, cancellationToken);
+        ConcurrentQueue<PreferredSummary> downloadedSummaries = skipSummaries
+            ? new((await settings.LoadMoviePreferredSummaryAsync(cancellationToken)).Values)
+            : await DownloadSummariesAsync(settings, @continue, index, degreeOfParallelism, log, cancellationToken);
         await DownloadMetadataAsync(settings, downloadedSummaries, degreeOfParallelism, log, cancellationToken);
     }
 
@@ -184,7 +186,15 @@ internal static class Preferred
                                     });
                                     newDetail.Availabilities.Clear();
                                     mergedAvailabilities.ForEach(mergedAvailability => newDetail.Availabilities.Add(mergedAvailability.Key, mergedAvailability.Value));
-                                    group.RemoveAll(detail => detail.Link.EqualsIgnoreCase(newDetail.Link));
+                                    group.RemoveAll(detail =>
+                                    {
+                                        if (detail is null)
+                                        {
+                                            Debugger.Break();
+                                        }
+
+                                        return detail.Link.EqualsIgnoreCase(newDetail.Link);
+                                    });
                                     group.Add(newDetail);
                                     return group;
                                 });
@@ -193,7 +203,6 @@ internal static class Preferred
                         {
                             log($"{summary.Link} {exception}");
                         }
-
 
                         if (Interlocked.Increment(ref summaryIndex) % WriteCount == 0)
                         {
@@ -658,7 +667,7 @@ internal static class Preferred
                 .GroupBy(availability => availability.Availability.Value.Split("/").Last())
                 .ToDictionary(
                     groupByExactTopic => groupByExactTopic.Key,
-                    groupByExactTopic => groupByExactTopic.Single().Metadata.ImdbId);
+                    groupByExactTopic => groupByExactTopic.Select(item => item.Metadata.ImdbId).Distinct().Single());
 
         allFiles.ForEach(fileGroup =>
         {

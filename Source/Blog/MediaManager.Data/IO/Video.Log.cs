@@ -279,7 +279,7 @@ internal static partial class Video
                 {
                     Debugger.Break();
                 }
-                
+
                 string[] metadataFiles = Directory
                     .EnumerateFiles(movie, XmlMetadataSearchPattern)
                     .Order()
@@ -1438,14 +1438,14 @@ internal static partial class Video
             .ForEach(subDirectory =>
             {
                 string subDirectoryName = PathHelper.GetFileName(subDirectory);
-                if (subDirectoryName.ContainsIgnoreCase("Delete") || subDirectoryName.ContainsIgnoreCase("Temp") || subDirectoryName.ContainsIgnoreCase("Test"))
+                if (subDirectoryName.ContainsIgnoreCase("Delete") || subDirectoryName.ContainsIgnoreCase("Test"))
                 {
                     return;
                 }
 
                 if (!settings.MovieRegions.TryGetValue(subDirectoryName, out string[]? allowed))
                 {
-                    log($"!Unkown directory {subDirectory}");
+                    log($"!Unknown directory {subDirectory}");
                     return;
                 }
 
@@ -1487,21 +1487,51 @@ internal static partial class Video
                             return;
                         }
 
-                        if (ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata))
+                        if (ImdbMetadata.TryRead(movie, out string? imdbId, out _, out string[]? regions, out string[]? languages, out string[]? genres))
                         {
-                            if (imdbMetadata.Regions.Any() && imdbMetadata.Regions.Intersect(allowedRegions).IsEmpty()
-                                && imdbMetadata.Languages.Intersect(allowedLanguages).IsEmpty())
+                            if ((regions.IsEmpty() || genres.IsEmpty()) && TmdbMetadata.TryRead(Path.Combine(movie, MovieMetadataFile), out _, out string? _, out string[]? tmdbRegions, out string[]? tmdbGenres))
+                            {
+                                if (regions.IsEmpty())
+                                {
+                                    regions = tmdbRegions;
+                                }
+
+                                if (genres.IsEmpty())
+                                {
+                                    genres = tmdbGenres;
+                                }
+                            }
+
+                            if (regions.Any() && regions.Intersect(allowedRegions).IsEmpty()
+                                && languages.Intersect(allowedLanguages).IsEmpty())
                             {
                                 log(movie);
-                                log($"{string.Join(", ", allowedRegions)}==={string.Join(", ", imdbMetadata.Regions)}");
+                                log($"{string.Join(", ", allowedRegions)}==={string.Join(", ", regions)}");
                                 log(string.Empty);
                                 return;
                             }
 
-                            if (allowedGenres.Any() && imdbMetadata.Genres.Intersect(allowedGenres).IsEmpty())
+                            if (allowedGenres.Any() && genres.Intersect(allowedGenres).IsEmpty())
                             {
                                 log(movie);
-                                log($"{string.Join(", ", allowedGenres)}==={string.Join(", ", imdbMetadata.Genres)}");
+                                log($"{string.Join(", ", allowedGenres)}==={string.Join(", ", genres)}");
+                                log(string.Empty);
+                            }
+                        }
+                        else if (TmdbMetadata.TryRead(Path.Combine(movie, MovieMetadataFile), out _, out string? _, out regions, out genres))
+                        {
+                            if (regions.Any() && regions.Intersect(allowedRegions).IsEmpty())
+                            {
+                                log(movie);
+                                log($"{string.Join(", ", allowedRegions)}==={string.Join(", ", regions)}");
+                                log(string.Empty);
+                                return;
+                            }
+
+                            if (allowedGenres.Any() && genres.Intersect(allowedGenres).IsEmpty())
+                            {
+                                log(movie);
+                                log($"{string.Join(", ", allowedGenres)}==={string.Join(", ", genres)}");
                                 log(string.Empty);
                             }
                         }
