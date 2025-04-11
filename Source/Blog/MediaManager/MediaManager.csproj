@@ -34,7 +34,7 @@
          <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.2" />
          <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.2" />
          <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="134.0.6998.2300-beta" />
-         <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="132.0.2953-pre" /> 
+         <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="133.0.3065.82" /> 
     </ItemGroup>
 
     <ItemGroup>
