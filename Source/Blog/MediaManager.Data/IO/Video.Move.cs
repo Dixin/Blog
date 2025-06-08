@@ -198,7 +198,7 @@ internal static partial class Video
             });
     }
 
-    private const string AdditionalMetadataSeparator = "@";
+    internal const string AdditionalMetadataSeparator = "@";
 
     internal static void RenameDirectoriesWithAdditionalMetadata(ISettings settings, string directory, int level = DefaultDirectoryLevel, bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
     {
@@ -824,7 +824,7 @@ internal static partial class Video
         Directory
             .GetDirectories(directory)
             .Where(season => season.ContainsIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}"))
-            .ForEach(season => MoveSubtitlesForEpisodes(settings, season, season, false, isDryRun: isDryRun, log: log));
+            .ForEach(season => MoveSubtitlesForEpisodes(settings, season, season, subtitleBackupDirectory, false, isDryRun: isDryRun, log: log));
 
         Directory
             .GetDirectories(directory)

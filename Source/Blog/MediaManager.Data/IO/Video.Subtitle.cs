@@ -138,13 +138,18 @@ internal static partial class Video
     internal static void CopyAllSubtitles(string fromDirectory, string toDirectory, bool overwrite = false, Action<string>? log = null) =>
         FileHelper.CopyAll(fromDirectory, toDirectory, searchOption: SearchOption.AllDirectories, predicate: file => file.HasAnyExtension(AllSubtitleExtensions), overwrite: overwrite);
 
-    internal static void MoveSubtitlesForEpisodes(ISettings settings, string mediaDirectory, string subtitleDirectory = "", bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
+    internal static void MoveSubtitlesForEpisodes(ISettings settings, string mediaDirectory, string subtitleDirectory = "", string subtitleBackupDirectory = "", bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
         if (subtitleDirectory.IsNullOrEmpty())
         {
             subtitleDirectory = mediaDirectory;
+        }
+
+        if (subtitleBackupDirectory.IsNullOrWhiteSpace())
+        {
+            subtitleBackupDirectory = settings.TVSubtitleBackupDirectory;
         }
 
         string[] mediaDirectoryFiles = Directory.GetFiles(mediaDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories);
@@ -228,7 +233,7 @@ internal static partial class Video
                                 }
                                 else
                                 {
-                                    FileHelper.Move(subtitle, Path.Combine(settings.TVSubtitleBackupDirectory, newBackupName), overwrite, true);
+                                    FileHelper.Move(subtitle, Path.Combine(subtitleBackupDirectory, newBackupName), overwrite, true);
                                 }
                             }
 
@@ -252,7 +257,7 @@ internal static partial class Video
                                     }
                                     else
                                     {
-                                        FileHelper.Move(subtitle, Path.Combine(settings.TVSubtitleBackupDirectory, newBackupName), overwrite, true);
+                                        FileHelper.Move(subtitle, Path.Combine(subtitleBackupDirectory, newBackupName), overwrite, true);
                                     }
                                 }
 
@@ -269,7 +274,7 @@ internal static partial class Video
                                     }
                                     else
                                     {
-                                        FileHelper.Move(subtitle, Path.Combine(settings.TVSubtitleBackupDirectory, newBackupName), overwrite, true);
+                                        FileHelper.Move(subtitle, Path.Combine(subtitleBackupDirectory, newBackupName), overwrite, true);
                                     }
                                 }
 
@@ -292,7 +297,7 @@ internal static partial class Video
                                     }
                                     else
                                     {
-                                        FileHelper.Move(subtitle, Path.Combine(settings.TVSubtitleBackupDirectory, newBackupName), overwrite, true);
+                                        FileHelper.Move(subtitle, Path.Combine(subtitleBackupDirectory, newBackupName), overwrite, true);
                                     }
                                 }
 
@@ -303,7 +308,7 @@ internal static partial class Video
 
                             if (!isDryRun)
                             {
-                                subtitles.ForEach(subtitle => FileHelper.Move(subtitle.subtitle, Path.Combine(settings.TVSubtitleBackupDirectory, subtitle.newBackupName), overwrite, true));
+                                subtitles.ForEach(subtitle => FileHelper.Move(subtitle.subtitle, Path.Combine(subtitleBackupDirectory, subtitle.newBackupName), overwrite, true));
                             }
                         }
                     });

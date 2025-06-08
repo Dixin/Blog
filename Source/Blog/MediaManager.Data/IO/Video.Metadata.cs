@@ -705,7 +705,7 @@ internal static partial class Video
                         }
 
                         string doubanTitle = await Douban.GetTitleAsync(webDriver, imdbId, token);
-                        int lastIndex = doubanTitle.LastIndexOf(backupEnglishTitle, StringComparison.InvariantCultureIgnoreCase);
+                        int lastIndex = doubanTitle.LastIndexOfIgnoreCase(backupEnglishTitle);
                         if (lastIndex >= 0)
                         {
                             doubanTitle = doubanTitle[..lastIndex].Trim();
@@ -714,7 +714,7 @@ internal static partial class Video
                         string originalTitle = backupMetadataDocument.Root!.Element("originaltitle")?.Value ?? string.Empty;
                         if (originalTitle.IsNotNullOrWhiteSpace())
                         {
-                            lastIndex = doubanTitle.LastIndexOf(originalTitle, StringComparison.InvariantCultureIgnoreCase);
+                            lastIndex = doubanTitle.LastIndexOfIgnoreCase(originalTitle);
                             if (lastIndex >= 0)
                             {
                                 doubanTitle = doubanTitle[..lastIndex].Trim();
