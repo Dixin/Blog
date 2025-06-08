@@ -317,6 +317,12 @@
         "Azerbaijan.阿塞拜疆": [
             "Azerbaijan"
         ],
+        "Bahamian.巴哈马": [
+            "Bahamas"
+        ],
+        "Belarusian.白俄罗斯": [
+            "Belarus"
+        ],
         "Belgian Disability.比利时": [
             "Belgium",
             "Franchise:Come As You Are"
@@ -473,10 +479,16 @@
         "Cuban.古巴": [
             "Cuba"
         ],
+        "Cypriot.塞浦路斯": [
+            "Cyprus"
+        ],
         "Czech.捷克": [
             "Czech Republic",
             "Czechoslovakia",
             "Franchise:Bound Heat"
+        ],
+        "Slovakian.斯洛伐克": [
+            "Slovakia"
         ],
         "Danish Action.丹麦动作": [
             "Denmark",
@@ -514,6 +526,9 @@
         "Dutch.荷兰": [
             "Netherlands",
             "Franchise:Peter Greenaway"
+        ],
+        "Ecuadorian.厄瓜多尔": [
+            "Ecuador"
         ],
         "Egyptian.埃及": [
             "Egypt"
@@ -606,10 +621,17 @@
         "German.德国": [
             "Germany",
             "West Germany",
+            "East Germany",
             "Franchise:The Experiment"
         ],
         "Greek.希腊": [
             "Greece"
+        ],
+        "Guatemalan.危地马拉": [
+            "Guatemala"
+        ],
+        "Haitian.海地": [
+            "Haiti"
         ],
         "Hungarian.匈牙利": [
             "Hungary"
@@ -639,6 +661,9 @@
         "Indonesian Documentary.印度尼西亚记录": [
             "Indonesia",
             "Genre:Documentary"
+        ],
+        "Indonesian.印度尼西亚": [
+            "Indonesia"
         ],
         "Iran.伊朗": [
             "Iran"
@@ -695,6 +720,9 @@
         "Japanese.日本": [
             "Japan"
         ],
+        "Kazakhstani.哈萨克斯坦": [
+            "Kazakhstan"
+        ],
         "Korean Action.韩国动作": [
             "South Korea",
             "Genre:Action",
@@ -724,6 +752,9 @@
             "Latvia",
             "Genre:Documentary"
         ],
+        "Latvian.拉脱维亚": [
+            "Latvia"
+        ],
         "Lebanon.黎巴嫩": [
             "Lebanon"
         ],
@@ -733,8 +764,14 @@
         "Luxembourg.卢森堡": [
             "Luxembourg"
         ],
+        "Malian.马里": [
+            "Mali"
+        ],
         "Mexican.墨西哥": [
             "Mexico"
+        ],
+        "Mongolian.蒙古": [
+            "Mongolia"
         ],
         "New Zealand Documentary.新西兰记录": [
             "New Zealand",
@@ -742,6 +779,9 @@
         ],
         "New Zealand.新西兰": [
             "New Zealand"
+        ],
+        "Nigerian.尼日利亚": [
+            "Nigeria"
         ],
         "Norwegian.挪威": [
             "Norway"
@@ -754,6 +794,15 @@
             "Pakistan",
             "Genre:Biography"
         ],
+        "Pakistani.巴基斯坦": [
+            "Pakistan"
+        ],
+        "Panamanian.巴拿马": [
+            "Panama"
+        ],
+        "Peruvian.秘鲁": [
+            "Peru"
+        ],
         "Polish Biography.波兰传记": [
             "Poland",
             "Genre:Biography"
@@ -763,6 +812,9 @@
         ],
         "Portuguese.葡萄牙": [
             "Portugal"
+        ],
+        "Puerto Rican.波多黎各": [
+            "Puerto Rico"
         ],
         "Romanian.罗马尼亚": [
             "Romania"
@@ -775,6 +827,9 @@
         "Russian Soviet Union.苏俄": [
             "Russia",
             "Soviet Union"
+        ],
+        "Senegalese.塞内加尔": [
+            "Senegal"
         ],
         "South African Documentary.南非记录": [
             "South Africa",
@@ -842,6 +897,9 @@
         "Thai.泰国": [
             "Thailand"
         ],
+        "Tunisian.突尼斯": [
+            "Tunisia"
+        ],
         "Turkish.土耳其": [
             "Turkey"
         ],
@@ -858,15 +916,36 @@
         "Ukrainian.乌克兰": [
             "Ukraine"
         ],
+        "United Arab Emirates Action.阿联酋": [
+            "United Arab Emirates",
+            "Genre:Action"
+        ],
+        "United Arab Emirates.阿联酋": [
+            "United Arab Emirates"
+        ],
+        "Uraguayan Documentary.乌拉圭记录": [
+            "Uruguay",
+            "Genre:Documentary"
+        ],
+        "Uraguayan.乌拉圭": [
+            "Uruguay"
+        ],
         "Venezuela.委内瑞拉": [
             "Venezuela"
+        ],
+        "Vietnamese Action.越南动作": [
+            "Vietnam",
+            "Genre:Action"
         ],
         "Vietnamese.越南": [
             "Vietnam"
         ],
         "Yugoslavian.南斯拉夫": [
             "Bosnia and Herzegovina",
+            "Croatia",
             "Federal Republic of Yugoslavia",
+            "Kosovo",
+            "North Macedonia",
             "Serbia",
             "Slovenia",
             "Yugoslavia"
@@ -921,6 +1000,10 @@
         "Austria": "Austrian.奥地利",
 
         "Azerbaijan": "Azerbaijan.阿塞拜疆",
+
+        "Bahamas": "Bahamian.巴哈马",
+
+        "Belarus": "Belarusian.白俄罗斯",
 
         "Belgium": "Belgian.比利时",
 
@@ -978,8 +1061,11 @@
 
         "Cuba": "Cuban.古巴",
 
+        "Cyprus": "Cypriot.塞浦路斯",
+
         "Czech Republic": "Czech.捷克",
         "Czechoslovakia": "Czech.捷克",
+        "Slovakia": "Slovakian.斯洛伐克",
 
         "Denmark.Action": "Danish Action.丹麦动作",
 
@@ -998,6 +1084,8 @@
         "Netherlands.Documentary": "Dutch Documentary.荷兰记录",
 
         "Netherlands": "Dutch.荷兰",
+
+        "Ecuador": "Ecuadorian.厄瓜多尔",
 
         "Egypt": "Egyptian.埃及",
 
@@ -1036,6 +1124,10 @@
 
         "Greece": "Greek.希腊",
 
+        "Guatemala": "Guatemalan.危地马拉",
+
+        "Haiti": "Haitian.海地",
+
         "Hungary": "Hungarian.匈牙利",
 
         "Iceland": "Icelandic.冰岛",
@@ -1049,6 +1141,8 @@
         "Indonesia.Action": "Indonesian Action.印度尼西亚动作",
 
         "Indonesia.Documentary": "Indonesian Documentary.印度尼西亚记录",
+
+        "Indonesia": "Indonesian.印度尼西亚",
 
         "Iran": "Iran.伊朗",
 
@@ -1074,11 +1168,15 @@
 
         "Japan": "Japanese.日本",
 
+        "Kazakhstan": "Kazakhstani.哈萨克斯坦",
+
         "South Korea.Action": "Korean Action.韩国动作",
 
         "South Korea.Biography": "Korean Biography.韩国传记",
 
         "South Korea": "Korean.韩国",
+
+        "Latvia": "Latvian.拉脱维亚",
 
         "Lebanon": "Lebanon.黎巴嫩",
 
@@ -1086,11 +1184,17 @@
 
         "Luxembourg": "Luxembourg.卢森堡",
 
+        "Mali": "Malian.马里",
+
         "Mexico": "Mexican.墨西哥",
+
+        "Mongolia": "Mongolian.蒙古",
 
         "New Zealand.Documentary": "New Zealand Documentary.新西兰记录",
 
         "New Zealand": "New Zealand.新西兰",
+
+        "Nigeria": "Nigerian.尼日利亚",
 
         "Norway": "Norwegian.挪威",
 
@@ -1098,11 +1202,19 @@
 
         "Pakistan.Biography": "Pakistani Biography.巴基斯坦传记",
 
+        "Pakistan": "Pakistani.巴基斯坦",
+
+        "Panama": "Panamanian.巴拿马",
+
+        "Peru": "Peruvian.秘鲁",
+
         "Poland.Biography": "Polish Biography.波兰传记",
 
         "Poland": "Polish.波兰",
 
         "Portugal": "Portuguese.葡萄牙",
+
+        "Puerto Rico": "Puerto Rican.波多黎各",
 
         "Romania": "Romanian.罗马尼亚",
 
@@ -1111,6 +1223,8 @@
 
         "Russia": "Russian Soviet Union.苏俄",
         "Soviet Union": "Russian Soviet Union.苏俄",
+
+        "Senegal": "Senegalese.塞内加尔",
 
         "South Africa.Documentary": "South African Documentary.南非记录",
 
@@ -1140,18 +1254,31 @@
 
         "Thailand": "Thai.泰国",
 
+        "Tunisia": "Tunisian.突尼斯",
+
         "Turkey": "Turkish.土耳其",
 
         "Ukraine": "Ukrainian.乌克兰",
 
         "United Arab Emirates.Action": "United Arab Emirates Action.阿联酋动作",
 
+        "United Arab Emirates": "United Arab Emirates.阿联酋",
+
+        "Uraguay": "Uruguayan.乌拉圭",
+
+        "Uraguay.Documentary": "Uruguayan Documentary.乌拉圭记录",
+
         "Venezuela": "Venezuela.委内瑞拉",
+
+        "Vietnam.Action": "Vietnamese Action.越南动作",
 
         "Vietnam": "Vietnamese.越南",
 
         "Bosnia and Herzegovina": "Yugoslavian.南斯拉夫",
+        "Croatia": "Yugoslavian.南斯拉夫",
         "Federal Republic of Yugoslavia": "Yugoslavian.南斯拉夫",
+        "Kosovo": "Yugoslavian.南斯拉夫",
+        "North Macedonia": "Yugoslavian.南斯拉夫",
         "Serbia": "Yugoslavian.南斯拉夫",
         "Slovenia": "Yugoslavian.南斯拉夫",
         "Yugoslavia": "Yugoslavian.南斯拉夫"
