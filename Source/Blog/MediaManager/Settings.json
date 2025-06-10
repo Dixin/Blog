@@ -195,8 +195,12 @@
         "American Adult.美国成人": [
             "USA",
             "Genre:Adult",
-            "Franchise:XXX",
-            "Franchise:Private Gold"
+            "Franchise:Andrew Blake",
+            "Franchise:Lesbian Workout",
+            "Franchise:Private",
+            "Franchise:Private Gold",
+            "Franchise:The World's Biggest Gang Bang",
+            "Franchise:XXX"
         ],
         "American Biography.美国传记": [
             "USA",
@@ -231,10 +235,13 @@
         ],
         "American Drama.美国剧情": [
             "USA",
+            "Franchise:Friend of the Family",
+            "Franchise:Masseuse",
             "Genre:Drama"
         ],
         "American Erotic.美国情色": [
-            "USA"
+            "USA",
+            "Franchise:Electric Blue"
         ],
         "American Fantasy.美国神话": [
             "USA",
@@ -254,6 +261,8 @@
         "American Horror.美国恐怖": [
             "USA",
             "Franchise:Lake Placid",
+            "Franchise:Sorority House Massacre",
+            "Franchise:Witchcraft",
             "Genre:Horror"
         ],
         "American Musical.美国音乐": [
@@ -279,6 +288,7 @@
         "American Thriller.美国惊悚": [
             "USA",
             "Franchise:Christopher Nolan",
+            "Franchise:Secret Games",
             "Genre:Thriller"
         ],
         "American War.美国战争": [
@@ -400,6 +410,12 @@
         ],
         "Chilean.智利": [
             "Chile"
+        ],
+        "Chinese Adult.中文成人": [
+            "Hong Kong",
+            "Taiwan",
+            "China",
+            "Genre:Adult"
         ],
         "Chinese American Action.合拍动作": [
             "Hong Kong",
@@ -581,26 +597,31 @@
         "German Adult.德国成人": [
             "Germany",
             "West Germany",
+            "Franchise:Josefine Mutzenbacher",
             "Genre:Adult"
         ],
         "German Biography.德国传记": [
-            "West Germany",
             "Germany",
+            "West Germany",
             "Genre:Biography"
         ],
         "German Disability.德国": [
-            "Germany"
+            "Germany",
+            "West Germany"
         ],
         "German Document.德国记录": [
             "Germany",
+            "West Germany",
             "Genre:Documentary"
         ],
         "German Documentary.德国记录": [
             "Germany",
+            "West Germany",
             "Genre:Documentary"
         ],
         "German Politics.德国政治": [
             "Germany",
+            "West Germany",
             "Genre:Documentary"
         ],
         "German.德国": [
@@ -640,6 +661,9 @@
             "Indonesia",
             "Genre:Documentary"
         ],
+        "Indonesian.印度尼西亚": [
+            "Indonesia"
+        ],
         "Iran.伊朗": [
             "Iran"
         ],
@@ -670,6 +694,10 @@
         ],
         "Italian Disability.意大利": [
             "Italy"
+        ],
+        "Italian Document.意大利记录": [
+            "Italy",
+            "Genre:Documentary"
         ],
         "Italian Erotic.意大利情色": [
             "Italy"
@@ -753,6 +781,13 @@
         "Pakistani Biography.巴基斯坦传记": [
             "Pakistan",
             "Genre:Biography"
+        ],
+        "Peruvian Action.秘鲁动作": [
+            "Peru",
+            "Genre:Action"
+        ],
+        "Peruvian.秘鲁": [
+            "Peru"
         ],
         "Polish Biography.波兰传记": [
             "Poland",
@@ -858,7 +893,7 @@
         "Ukrainian.乌克兰": [
             "Ukraine"
         ],
-        "Venezuela.委内瑞拉": [
+        "Venezuelan.委内瑞拉": [
             "Venezuela"
         ],
         "Vietnamese.越南": [
