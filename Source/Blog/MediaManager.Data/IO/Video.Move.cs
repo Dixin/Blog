@@ -198,7 +198,7 @@ internal static partial class Video
             });
     }
 
-    private const string AdditionalMetadataSeparator = "@";
+    internal const string AdditionalMetadataSeparator = "@";
 
     internal static void RenameDirectoriesWithAdditionalMetadata(ISettings settings, string directory, int level = DefaultDirectoryLevel, bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
     {
@@ -824,7 +824,7 @@ internal static partial class Video
         Directory
             .GetDirectories(directory)
             .Where(season => season.ContainsIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}"))
-            .ForEach(season => MoveSubtitlesForEpisodes(settings, season, season, false, isDryRun: isDryRun, log: log));
+            .ForEach(season => MoveSubtitlesForEpisodes(settings, season, season, subtitleBackupDirectory, false, isDryRun: isDryRun, log: log));
 
         Directory
             .GetDirectories(directory)
@@ -1312,5 +1312,43 @@ internal static partial class Video
                 log(newMovie);
                 log(string.Empty);
             });
+    }
+
+    internal static void RenameDirectoriesWithDigits(string directory, int level = DefaultDirectoryLevel, bool isDryRun = false, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+
+        int count = 0;
+        EnumerateDirectories(directory, level)
+            .ToArray()
+            .ForEach(movie =>
+            {
+                Debug.Assert(VideoDirectoryInfo.TryParse(movie, out _));
+
+                string name = PathHelper.GetFileName(movie);
+                string title = name[..name.IndexOfOrdinal(".")];
+                title = title[..(title.IndexOfOrdinal("=") > 0 ? title.IndexOfOrdinal("=") : title.Length)];
+                if (!StringHelper.TryReplaceNumbers(title, out string newTitle))
+                {
+                    return;
+                }
+
+                if (isDryRun)
+                {
+                    log(title);
+                    log(newTitle);
+                }
+                else
+                {
+                    log(movie);
+                    string newMovie = DirectoryHelper.ReplaceDirectoryName(movie, movieName => newTitle + name[title.Length..]);
+                    log(newMovie);
+                }
+
+                log(string.Empty);
+                count++;
+            });
+
+        log(count.ToString());
     }
 }
