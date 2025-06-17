@@ -122,7 +122,7 @@ internal static partial class Video
         string[] mediaFiles = Directory.GetFiles(mediaDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories);
 
         Directory
-            .EnumerateFiles(metadataDirectory, XmlMetadataSearchPattern, SearchOption.AllDirectories)
+            .GetFiles(metadataDirectory, XmlMetadataSearchPattern, SearchOption.AllDirectories)
             .ForEach(file =>
             {
                 string seasonEpisode = SeasonEpisodeRegex.Match(PathHelper.GetFileNameWithoutExtension(file)).Value;

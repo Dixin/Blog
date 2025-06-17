@@ -38,6 +38,11 @@ internal static class VideoFileInfoExtensions
                 : isBluRay ? EncoderType.PreferredH264BluRay : EncoderType.PreferredH264;
         }
 
+        if (video.Version.EqualsOrdinal(T.Settings.ContrastKeyword))
+        {
+            return isBluRay ? EncoderType.ContrastBluRay : EncoderType.Contrast;
+        }
+
         return isBluRay ? EncoderType.HDBluRay : EncoderType.HD;
     }
 

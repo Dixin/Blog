@@ -754,38 +754,58 @@ public static class FfmpegHelper
         }
     }
 
-    internal static async Task ExtractAllAsync(ISettings settings, string inputDirectory, Func<string, bool>? predicate = null, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default, params Func<string, string>[] outputVideos)
+    internal static async Task ExtractAllAsync(ISettings settings, string inputDirectory, Func<string, bool>? predicate = null, bool isTV = false, bool skipParsing = false, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default, params Func<string, string>[] outputVideos)
     {
         log ??= Logger.WriteLine;
 
-        (string Input, string Dubbed)[] videoPairs = Directory
-            .EnumerateFiles(inputDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
-            .Where(file => file.IsVideo() && (predicate is null || predicate(file)))
-            .Select(video => (File: video, Parsed: VideoMovieFileInfo.Parse(video)))
-            .GroupBy(video => $"{video.Parsed.Title}{Video.Delimiter}{video.Parsed.Year}", StringComparer.OrdinalIgnoreCase)
-            .Select(group =>
-            {
-                if (group.Count() == 1)
+        ConcurrentQueue<(string Input, string Dubbed)> tasks;
+        if (skipParsing)
+        {
+            tasks = new(Directory
+                .EnumerateFiles(inputDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
+                .Where(file => file.IsVideo() && (predicate is null || predicate(file)))
+                .Select(video => (video, string.Empty)));
+        }
+        else
+        {
+            IEnumerable<(string Input, string Dubbed)> videoPairs = Directory
+                .EnumerateFiles(inputDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
+                .Where(file => file.IsVideo() && (predicate is null || predicate(file)))
+                .Select(video =>
                 {
-                    return [(Input: group.Single().File, Dubbed: string.Empty)];
-                }
-
-                if (group.Count() == 2)
-                {
-                    (string File, VideoMovieFileInfo Parsed)[] input = group.Where(video => !video.Parsed.Edition.ContainsIgnoreCase(".DUBBED")).ToArray();
-                    (string File, VideoMovieFileInfo Parsed)[] dubbed = group.Where(video => video.Parsed.Edition.ContainsIgnoreCase(".DUBBED")).ToArray();
-                    if (input.Any() && dubbed.Any())
+                    if (isTV)
                     {
-                        return [(Input: input.Single().File, Dubbed: dubbed.Single().File)];
+                        VideoEpisodeFileInfo episode = VideoEpisodeFileInfo.Parse(video);
+                        return (File: video, Title: episode.TVTitle, Year: string.Empty, Edition: episode.Edition);
                     }
-                }
 
-                return group.Select(video => (Input: video.File, Dubbed: string.Empty));
-            })
-            .Concat()
-            .ToArray();
+                    VideoMovieFileInfo movie = VideoMovieFileInfo.Parse(video);
+                    return (File: video, movie.Title, movie.Year, movie.Edition);
+                })
+                .GroupBy(video => $"{video.Title}{Video.Delimiter}{video.Year}", StringComparer.OrdinalIgnoreCase)
+                .Select(group =>
+                {
+                    if (group.Count() == 1)
+                    {
+                        return [(Input: group.Single().File, Dubbed: string.Empty)];
+                    }
 
-        ConcurrentQueue<(string Input, string Dubbed)> tasks = new(videoPairs);
+                    if (group.Count() == 2)
+                    {
+                        (string File, string Title, string Year, string Edition)[] input = group.Where(video => !video.Edition.ContainsIgnoreCase(".DUBBED")).ToArray();
+                        (string File, string Title, string Year, string Edition)[] dubbed = group.Where(video => video.Edition.ContainsIgnoreCase(".DUBBED")).ToArray();
+                        if (input.Any() && dubbed.Any())
+                        {
+                            return [(Input: input.Single().File, Dubbed: dubbed.Single().File)];
+                        }
+                    }
+
+                    return group.Select(video => (Input: video.File, Dubbed: string.Empty));
+                })
+                .Concat();
+            tasks = new(videoPairs);
+        }
+
         Lock destinationCheckLock = new();
         await Parallel.ForEachAsync(
             outputVideos,
