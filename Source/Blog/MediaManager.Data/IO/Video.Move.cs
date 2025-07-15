@@ -1253,7 +1253,6 @@ internal static partial class Video
         string[] directories = EnumerateDirectories(directory, level).ToArray();
         directories.Where(DirectoryHelper.IsHidden).Prepend("Hidden backup").Append(string.Empty).ForEach(log);
         directories
-            .ToArray()
             .ForEach(movie =>
             {
                 if (!ImdbMetadata.TryLoad(movie, out ImdbMetadata? metadata))
