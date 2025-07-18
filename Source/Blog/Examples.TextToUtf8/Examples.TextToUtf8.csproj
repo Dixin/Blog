@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Interactive" Version="6.0.1" />
+    <PackageReference Include="System.Interactive" Version="6.0.3" />
     <PackageReference Include="Ude.NetStandard" Version="1.2.0" />
   </ItemGroup>
 
