@@ -116,7 +116,7 @@
         "Level": 2
     },
     "MovieTemp42": {
-        "Directory": "D:\\Files\\Library\\Movies Temp4.2.电影4.2",
+        "Directory": "K:\\Files\\Library\\Movie",
         "Level": 2
     },
     "MovieTemp4Encode": {
@@ -423,7 +423,7 @@
             "China",
             "Genre:Adult"
         ],
-        "Chinese American Action.合拍动作": [
+        "Chinese American Action.中美合拍动作": [
             "Hong Kong",
             "Taiwan",
             "USA",
@@ -433,59 +433,59 @@
         "Chinese American.中美合拍": [
             "USA"
         ],
-        "Chinese Biography.中国传记": [
+        "Chinese Biography.中文传记": [
             "China",
             "Hong Kong",
             "Language:Mandarin",
             "Genre:Biography"
         ],
-        "Chinese Animation.中国动画": [
+        "Chinese Animation.中文动画": [
             "China",
             "Genre:Animation"
         ],
-        "Chinese Disability.中国": [
+        "Chinese Disability.中文": [
             "Hong Kong",
             "China"
         ],
-        "Chinese Documentary.中国记录": [
+        "Chinese Documentary.中文记录": [
             "China",
             "Taiwan",
             "Genre:Documentary"
         ],
-        "Chinese Hongkong Action.香港动作": [
+        "Chinese Hongkong Action.中文香港动作": [
             "Hong Kong",
             "China",
             "Taiwan",
             "Franchise:Once Upon a Time in China",
             "Genre:Action"
         ],
-        "Chinese Hongkong.香港": [
+        "Chinese Hongkong.中文香港": [
             "Hong Kong",
             "Franchise:Stephen Chow-A Chinese Odyssey",
             "Franchise:Erotic Ghost Story",
             "Language:Cantonese"
         ],
-        "Chinese Mainland Action.大陆动作": [
+        "Chinese Mainland Action.中文大陆动作": [
             "China",
             "Genre:Action"
         ],
-        "Chinese Mainland.大陆": [
+        "Chinese Mainland.中文大陆": [
             "China"
         ],
-        "Chinese Politics.中国政治": [
+        "Chinese Politics.中文政治": [
             "USA",
             "UK",
             "China",
             "Genre:Documentary"
         ],
-        "Chinese Singapore.新加坡": [
+        "Chinese Singapore.中文新加坡": [
             "Singapore"
         ],
-        "Chinese Taiwan Action.台湾动作": [
+        "Chinese Taiwan Action.中文台湾动作": [
             "Taiwan",
             "Genre:Action"
         ],
-        "Chinese Taiwan.台湾": [
+        "Chinese Taiwan.中文台湾": [
             "Taiwan",
             "Franchise:New Jin Ping Mei"
         ],
@@ -1064,27 +1064,27 @@
 
         "Chile": "Chilean.智利",
 
-        "China.Animation": "Chinese Animation.中国动画",
+        "China.Animation": "Chinese Animation.中文动画",
 
-        "China.Biography": "Chinese Biography.中国传记",
-        "Hong Kong.Biography": "Chinese Biography.中国传记",
+        "China.Biography": "Chinese Biography.中文传记",
+        "Hong Kong.Biography": "Chinese Biography.中文传记",
 
-        "China.Documentary": "Chinese Documentary.中国记录",
-        "Taiwan.Documentary": "Chinese Documentary.中国记录",
+        "China.Documentary": "Chinese Documentary.中文记录",
+        "Taiwan.Documentary": "Chinese Documentary.中文记录",
 
-        "Hong Kong.Action": "Chinese Hongkong Action.香港动作",
+        "Hong Kong.Action": "Chinese Hongkong Action.中文香港动作",
 
-        "Hong Kong": "Chinese Hongkong.香港",
+        "Hong Kong": "Chinese Hongkong.中文香港",
 
-        "China.Action": "Chinese Mainland Action.大陆动作",
+        "China.Action": "Chinese Mainland Action.中文大陆动作",
 
-        "China": "Chinese Mainland.大陆",
+        "China": "Chinese Mainland.中文大陆",
 
-        "Singapore": "Chinese Singapore.新加坡",
+        "Singapore": "Chinese Singapore.中文新加坡",
 
-        "Taiwan.Action": "Chinese Taiwan Action.台湾动作",
+        "Taiwan.Action": "Chinese Taiwan Action.中文台湾动作",
 
-        "Taiwan": "Chinese Taiwan.台湾",
+        "Taiwan": "Chinese Taiwan.中文台湾",
 
         "Colombia": "Colombian.哥伦比亚",
 
