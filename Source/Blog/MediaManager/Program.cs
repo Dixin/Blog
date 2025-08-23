@@ -506,10 +506,17 @@ string[][] metadataDrives = [
 //    {
 //        //t = t.Substring(0, 1).ToUpper() + t.Substring(1);
 //        //string postfix = PathHelper.GetFileNameWithoutExtension(f).EndsWithIgnoreCase($"{Video.VersionSeparator}{Video.TopEnglishKeyword}.2Audio") ? $"{Video.VersionSeparator}{Video.TopEnglishKeyword}.2Audio" : $"{Video.VersionSeparator}{Video.TopEnglishKeyword}";
-//        string postfix = $"{Video.VersionSeparator}{settings.TopEnglishKeyword}";
+
+//        string postfix = $"{Video.VersionSeparator}{settings.ContrastKeyword}";
 //        //Debug.Assert(!f.IsVideo() || PathHelper.GetFileNameWithoutExtension(f).EndsWithIgnoreCase(postfix));
 //        string name = PathHelper.GetFileNameWithoutExtension(f);
-//        return name.EndsWithOrdinal(postfix) || name.EndsWithOrdinal($"{postfix}-thumb") || Regex.IsMatch(name, $@"{postfix.Replace(".", @"\.").Replace("-", @"\-")}\.[a-z]{{3}}(&[a-z]{{3}})?(\-[0-9]{1,2})?$")
+//        Match match = Regex.Match(name, @"\.[2-9]Audio");
+//        if (match.Success)
+//        {
+//            postfix += match.Value;
+//        }
+
+//        return name.EndsWithOrdinal(postfix) || name.EndsWithOrdinal($"{postfix}-thumb") || Regex.IsMatch(name, $@"{postfix.Replace(".", @"\.").Replace("-", @"\-")}\.[a-z]{{3}}(&[a-z]{{3}})?(\-[0-9]{{1,2}}|\-[a-z]+)?$")
 //            ? PathHelper.ReplaceFileNameWithoutExtension(f, n => n.Replace(postfix, $"{postfix}.{t}"))
 //            : f;
 //        //return Regex.Replace(f, @"(S[0-9]{2}E[0-9]{2})", $"$1.{t}");
@@ -537,6 +544,10 @@ string[][] metadataDrives = [
 //Video.MoveFanArt(settings.MovieTemp42);
 //Video.RestoreMetadata(settings.MovieTemp42);
 //Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp42);
+//Video.RenameDirectoriesWithDigits(settings.MovieTemp42);
+//Video.RenameDirectoriesWithGraphicMetadata(settings.MovieTemp42);
+//Video.MoveDirectoriesByRegions(settings, settings.MovieTemp42, isDryRun: false);
+//Video.RenameDirectoriesWithoutAdditionalMetadata(settings.MovieTemp42);
 
 //Directory.GetFiles(@"D:\User\Downloads\New folder", "*", SearchOption.AllDirectories)
 //    .ForEach(f => File.Move(f, f
@@ -1608,3 +1619,139 @@ const string Subdirectory = "HD.Encode.Crop";
 //     log($"{result} {sourceVideo}");
 //     log("");
 // });
+
+//Directory.GetFiles(@"K:\Files\Library\Kontrast", "*.srt", SearchOption.AllDirectories)
+//    .ForEach(f =>
+//    {
+//        string name = PathHelper.GetFileNameWithoutExtension(f);
+//        string language = name[name.LastIndexOfOrdinal(".")..];
+//        if (language.EqualsIgnoreCase(".x265-KONTRAST") || language.EqualsIgnoreCase(".cht-cantonese") || !language.ContainsOrdinal("-"))
+//        {
+//            return;
+//        }
+
+//        if (!language.ContainsIgnoreCase("-sdh"))
+//        {
+//            return;
+//        }
+
+//        string newFile = PathHelper.ReplaceFileNameWithoutExtension(f, n =>
+//            language.StartsWithIgnoreCase(".eng") ? n[..n.LastIndexOfOrdinal(".")] : n[..n.LastIndexOfOrdinal("-")]);
+//        //if (File.Exists(newFile))
+//        //{
+//        //    return;
+//        //}
+
+//        log(f);
+//        File.Move(f, newFile, true);
+//        log(newFile);
+
+//        //if (language.EqualsIgnoreCase(".eng-sdh"))
+//        //{
+//        //    log(f);
+//        //    f = FileHelper.ReplaceFileNameWithoutExtension(f, n =>
+//        //        n[..n.LastIndexOfOrdinal(".eng-sdh")]);
+//        //    log(f);
+//        //    return;
+//        //}
+
+//        //if (!language.StartsWithIgnoreCase(".chi-"))
+//        //{
+//        //    return;
+//        //}
+
+//        //string detail = language[".chi-".Length..];
+//        //if (detail.ContainsIgnoreCase("Simplified") || detail.ContainsIgnoreCase("简"))
+//        //{
+//        //    log(f);
+//        //    f = FileHelper.ReplaceFileNameWithoutExtension(f, n =>
+//        //        n[..n.LastIndexOfOrdinal(".")] + ".chs");
+//        //    log(f);
+//        //    return;
+//        //}
+
+//        //if (detail.ContainsIgnoreCase("Cantonese") || detail.ContainsIgnoreCase("Hong") && detail.ContainsIgnoreCase("Kong"))
+//        //{
+//        //    log(f);
+//        //    f = FileHelper.ReplaceFileNameWithoutExtension(f, n =>
+//        //        n[..n.LastIndexOfOrdinal(".")] + ".cht-cantonese");
+//        //    log(f);
+//        //    return;
+//        //}
+
+//        //if (detail.ContainsIgnoreCase("Traditional") || detail.ContainsIgnoreCase("繁"))
+//        //{
+//        //    log(f);
+//        //    f = FileHelper.ReplaceFileNameWithoutExtension(f, n =>
+//        //        n[..n.LastIndexOfOrdinal(".")] + ".cht");
+//        //    log(f);
+//        //    return;
+//        //}
+
+
+//    });
+static void MoveSubtitles(string sourceDirectory, string destinationDirectory, bool isDryRun = false, Action<string>? log = null)
+{
+    log ??= Logger.WriteLine;
+
+    string[] sourceFiles = Directory.GetFiles(sourceDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories);
+    Dictionary<string, string[]> sourceVideos = sourceFiles
+        .Where(file => file.IsVideo())
+        .ToLookup(file =>
+        {
+            Match match = Regex.Match(PathHelper.GetFileNameWithoutExtension(file), @"\.(?<seasonEpisode>S[0-9]{2}E[0-9]{2}(E[0-9]{2})?)\.", RegexOptions.IgnoreCase);
+            return match.Success ? match.Groups["seasonEpisode"].Value : string.Empty;
+        })
+        .ToDictionary(group => group.Key, group => group.ToArray());
+    ILookup<string, string> sourceSubtitles = sourceFiles
+        .Where(file => file.IsSubtitle())
+        .ToLookup(file =>
+        {
+            Match match = Regex.Match(PathHelper.GetFileNameWithoutExtension(file), @"\.(?<seasonEpisode>S[0-9]{2}E[0-9]{2}(E[0-9]{2})?)\.", RegexOptions.IgnoreCase);
+            return match.Success ? match.Groups["seasonEpisode"].Value : string.Empty;
+        });
+    HashSet<string> destinationFiles = new(
+        Directory.EnumerateFiles(destinationDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories),
+        StringComparer.OrdinalIgnoreCase);
+    Dictionary<string, string[]> destinationVideos = destinationFiles
+        .Where(file => file.IsVideo())
+        .ToLookup(file =>
+        {
+            Match match = Regex.Match(PathHelper.GetFileNameWithoutExtension(file), @"\.(?<seasonEpisode>S[0-9]{2}E[0-9]{2}(E[0-9]{2})?)\.", RegexOptions.IgnoreCase);
+            string key = match.Success ? match.Groups["seasonEpisode"].Value : string.Empty;
+            log(key);
+            return key;
+        })
+        .ToDictionary(group => group.Key, group => group.ToArray());
+    sourceSubtitles
+        .Where(sourceSubtitles => sourceSubtitles.Key.IsNotNullOrWhiteSpace())
+        .ForEach(sourceSubtitles =>
+        {
+            string seasonEpisode = sourceSubtitles.Key;
+            Debug.Assert(sourceVideos.TryGetValue(seasonEpisode, out string[]? sourceVideoGroup));
+            string sourceVideo = sourceVideoGroup.Single();
+            string sourceVideoName = PathHelper.GetFileNameWithoutExtension(sourceVideo);
+            sourceSubtitles.ForEach(sourceSubtitle =>
+            {
+                string sourceSubtitleName = PathHelper.GetFileNameWithoutExtension(sourceSubtitle);
+                Debug.Assert(sourceSubtitleName.StartsWithIgnoreCase(sourceVideoName));
+                string sourceSubtitleLanguage = sourceSubtitleName[sourceVideoName.Length..];
+                Debug.Assert(destinationVideos.TryGetValue(seasonEpisode, out string[]? destinationVideoGroup));
+                string destinationVideo = destinationVideoGroup.Single();
+                string destinationSubtitle = PathHelper.AddFilePostfix(destinationVideo, sourceSubtitleLanguage);
+                destinationSubtitle = PathHelper.ReplaceExtension(destinationSubtitle, PathHelper.GetExtension(sourceSubtitle));
+                if (destinationFiles.Contains(destinationSubtitle))
+                {
+                    return;
+                }
+
+                log(sourceSubtitle);
+                if (!isDryRun)
+                {
+                    File.Move(sourceSubtitle, destinationSubtitle);
+                }
+
+                log(destinationSubtitle);
+            });
+        });
+}
