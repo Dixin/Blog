@@ -2248,13 +2248,13 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
 
-        ILookup<string, string> topMagnetUris = (await File.ReadAllLinesAsync(settings.TopMagnetUrls, cancellationToken))
-            .ToLookup(line => MagnetUri.Parse(line).DisplayName, StringComparer.OrdinalIgnoreCase);
+        //ILookup<string, string> topMagnetUris = (await File.ReadAllLinesAsync(settings.TopMagnetUrls, cancellationToken))
+        //    .ToLookup(line => MagnetUri.Parse(line).DisplayName, StringComparer.OrdinalIgnoreCase);
         ConcurrentDictionary<string, ImdbMetadata> mergedMetadata = await settings.LoadMovieMergedMetadataAsync(cancellationToken);
 
-        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
-        Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadMovieTopX265MetadataAsync(cancellationToken);
-        Dictionary<string, TopMetadata[]> h264Metadata = await settings.LoadMovieTopH264MetadataAsync(cancellationToken);
+        //ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
+        //Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadMovieTopX265MetadataAsync(cancellationToken);
+        //Dictionary<string, TopMetadata[]> h264Metadata = await settings.LoadMovieTopH264MetadataAsync(cancellationToken);
         //Dictionary<string, TopMetadata[]> h264720PMetadata = await settings.LoadMovieTopH264720PMetadataAsync(cancellationToken);
         ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
         //Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(rareJsonPath);
@@ -2268,12 +2268,10 @@ internal static partial class Video
             .Select(metadata => ImdbMetadata.TryGet(metadata, out string? imdbId) ? imdbId : string.Empty)
             .Where(imdbId => imdbId.IsNotNullOrWhiteSpace())
             .ToArray();
-        ImdbMetadata[] imdbIds = x265Metadata.Keys
-            .Concat(h264Metadata.Keys)
-            .Concat(preferredMetadata.Keys)
+        ImdbMetadata[] imdbIds = preferredMetadata.Keys
             //.Concat(h264720PMetadata.Keys)
             .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Except(libraryMetadata.Keys, StringComparer.OrdinalIgnoreCase)
+            //.Except(libraryMetadata.Keys, StringComparer.OrdinalIgnoreCase)
             .Except(localImdbIds)
             //.Intersect(rareMetadata
             //    .SelectMany(rare => Regex
@@ -2288,7 +2286,7 @@ internal static partial class Video
             .ToArray();
         int length = imdbIds.Length;
         log(length.ToString());
-        log(x265Metadata.Keys.Intersect(imdbIds.Select(metadata => metadata.ImdbId)).Count().ToString());
+        //log(x265Metadata.Keys.Intersect(imdbIds.Select(metadata => metadata.ImdbId)).Count().ToString());
 
         keywords
             .Select(keyword => (keyword, imdbIds.Count(imdbId => imdbId.AllKeywords.ContainsIgnoreCase(keyword))))
@@ -2553,7 +2551,8 @@ internal static partial class Video
                                 {
                                     if (File.Exists(file))
                                     {
-                                        FileHelper.CopyToDirectory(file, settings.LibraryDirectory, true, true);
+                                        //FileHelper.CopyToDirectory(file, settings.LibraryDirectory, true, true);
+                                        log($"magnet:?xt=urn:btih:{PathHelper.GetFileNameWithoutExtension(file).Split(".").Last()}");
                                     }
                                     else
                                     {

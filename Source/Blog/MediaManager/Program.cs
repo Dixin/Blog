@@ -475,7 +475,8 @@ string[][] metadataDrives = [
 //        .SelectMany(advisory => advisory.Value)
 //        .Any(advisory => advisory.FormattedSeverity == ImdbAdvisorySeverity.Severe)
 //        || imdbMetadata.AllKeywords.Any(keywords.Contains),
-//    isDryRun: true);
+//    isDryRun: true,
+//    drives: []);
 
 //Audio.ReplaceTraditionalChinese(settings.AudioMainstream, true);
 
