@@ -37,7 +37,7 @@ using TextWriterTraceListener textTraceListener = new(Path.Combine(Path.GetTempP
 using ConsoleTraceListener consoleTraceListener = new();
 Trace.Listeners.Add(consoleTraceListener);
 Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
-FFmpeg.SetExecutablesPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-7.1-full_build\bin"));
+FFmpeg.SetExecutablesPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-7.1.1-full_build\bin"));
 Action<string> log = Logger.WriteLine;
 
 string[][] mediaDrives = [
@@ -415,7 +415,7 @@ string[][] metadataDrives = [
 //await Top.DownloadMetadataAsync(settings.MovieTopH264720PUrl, settings.MovieTopH264720PMetadata, index => index <= 10);
 //await Top.DownloadMetadataAsync(settings.TVTopX265Url, settings.TVTopX265Metadata, index => index <= 5);
 
-//await Preferred.DownloadMetadataAsync(settings, index => index <= 3206);
+//await Preferred.DownloadMetadataAsync(settings, index => index <= 3286);
 //await Preferred.DownloadAllTorrentsAsync(settings, false);
 //await Preferred.WriteFileMetadataAsync(settings, false);
 //await Preferred.CleanUpMetadataErrorsAsync(settings);
@@ -437,6 +437,8 @@ string[][] metadataDrives = [
 //   settings.MovieTemp42,
 //   settings.MovieTemp4Encode,
 //   settings.MovieControversialTemp4);
+
+//await Video.PrintLibraryMovieVersions(settings, log, cancellationToken, (@"\\box-a\K\Files\Library\Movie", 2));
 
 //await Video.PrintTVVersions(settings, log, cancellationTokenSource.Token,
 //    settings.TVControversial,

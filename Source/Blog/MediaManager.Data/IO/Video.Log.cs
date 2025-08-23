@@ -982,6 +982,349 @@ internal static partial class Video
             });
     }
 
+    internal static async Task PrintLibraryMovieVersions(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default, params (string Directory, int Level)[] directories)
+    {
+        log ??= Logger.WriteLine;
+        Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadMovieTopX265MetadataAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> h264Metadata = await settings.LoadMovieTopH264MetadataAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> h264720PMetadata = await settings.LoadMovieTopH264720PMetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
+        HashSet<string> ignore = await settings.LoadIgnoredAsync(cancellationToken);
+        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> library = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
+
+        directories
+            .SelectMany(directory => EnumerateDirectories(directory.Directory, directory.Level))
+            .ForEach(movie =>
+            {
+                string[] files = Directory.GetFiles(movie);
+                if (!ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata))
+                {
+                    log($"Missing or no JSON IMDB id: {movie}");
+                    return;
+                }
+
+                Dictionary<string, VideoMetadata> videos = files
+                    .Where(file => file.IsVideo())
+                    .ToDictionary(
+                        video => video,
+                        video =>
+                        {
+                            Debug.Assert(TryReadVideoMetadata(video, out VideoMetadata? videoMetadata, imdbMetadata, settings.LibraryDirectory, log: log));
+                            return videoMetadata;
+                        });
+
+                library.AddOrUpdate(
+                    imdbMetadata.ImdbId,
+                    key => new ConcurrentDictionary<string, VideoMetadata>(videos),
+                    (key, existingVideos) =>
+                    {
+                        videos.ForEach(pair => existingVideos[pair.Key] = pair.Value);
+                        return existingVideos;
+                    });
+            });
+
+        library
+            .Keys
+            .Where(key => key.IsNotNullOrWhiteSpace())
+            .ForEach(imdbId =>
+            {
+                (string File, string Name, VideoMovieFileInfo Info)[] videos = library[imdbId].Keys
+                    .Where(file => file.IsVideo())
+                    .Select(file => (file, PathHelper.GetFileNameWithoutExtension(file), VideoMovieFileInfo.Parse(file)))
+                    .ToArray();
+                (string File, string Name, VideoMovieFileInfo Info)[] preferredVideos = videos
+                    .Where(video => video.Info.GetEncoderType() is EncoderType.PreferredH264 or EncoderType.PreferredX265 or EncoderType.PreferredH264BluRay or EncoderType.PreferredX265BluRay)
+                    .ToArray();
+
+                PreferredMetadata[] availablePreferredMetadata = preferredMetadata
+                    .TryGetValue(imdbId, out List<PreferredMetadata>? preferredResult)
+                    ? preferredResult
+                        .Where(metadata => !ignore.Contains(metadata.Link))
+                        .ToArray()
+                    : [];
+                (PreferredMetadata Metadata, KeyValuePair<string, string> Version)[] otherPreferredMetadata = availablePreferredMetadata
+                    .SelectMany(metadata => metadata.Availabilities, (metadata, version) => (metadata, version))
+                    .Where(metadataVersion => !metadataVersion.version.Key.ContainsIgnoreCase("2160p"))
+                    .ToArray();
+                (PreferredMetadata Metadata, KeyValuePair<string, string> Version)[] bluRayPreferredMetadata = otherPreferredMetadata
+                    .Where(metadataVersion => metadataVersion.Version.Key.ContainsIgnoreCase("BluRay"))
+                    .ToArray();
+
+                (PreferredMetadata Metadata, KeyValuePair<string, string> Version)[] hdPreferredMetadata = otherPreferredMetadata
+                    .Where(metadataVersion => metadataVersion.Version.Key.ContainsIgnoreCase("1080p"))
+                    .ToArray();
+                if (hdPreferredMetadata.Any())
+                {
+                    otherPreferredMetadata = hdPreferredMetadata;
+                }
+
+                (PreferredMetadata Metadata, KeyValuePair<string, string> Version)[] blueRayHDPreferredMetadata = otherPreferredMetadata
+                    .Where(metadataVersion => metadataVersion.Version.Key.ContainsIgnoreCase("BluRay"))
+                    .ToArray();
+                if (blueRayHDPreferredMetadata.Any())
+                {
+                    otherPreferredMetadata = blueRayHDPreferredMetadata;
+                }
+
+                if (preferredVideos.Any())
+                {
+                    otherPreferredMetadata = otherPreferredMetadata
+                        .Where(metadataVersion => preferredVideos.Any(preferredVideo =>
+                            metadataVersion.Version.Key.Split(Delimiter).All(keyword => !preferredVideo.Name.ContainsIgnoreCase(keyword))))
+                        .ToArray();
+                }
+
+                if (videos.All(video => video.Info.GetDefinitionType() is DefinitionType.P2160))
+                {
+                    return;
+                }
+
+                if (x265Metadata.TryGetValue(imdbId, out TopMetadata[]? availableX265Metadata))
+                {
+                    availableX265Metadata = availableX265Metadata
+                        .Where(metadata =>
+                        {
+                            if (VideoMovieFileInfo.TryParseIgnoreCase(metadata.Title, out VideoMovieFileInfo? video))
+                            {
+                                return video.GetEncoderType() is EncoderType.TopX265 or EncoderType.TopX265BluRay;
+                            }
+
+                            log($"!Fail to parse metadata {metadata.Title} {metadata.Link}");
+                            return false;
+                        })
+                        .ToArray();
+                }
+                else
+                {
+                    availableX265Metadata = [];
+                }
+
+                if (availableX265Metadata.Any())
+                {
+                    TopMetadata[] otherX265Metadata = availableX265Metadata
+                        .Where(metadata => !ignore.Contains(metadata.Title))
+                        .Where(metadata => !videos.Any(video =>
+                        {
+                            string metadataTitle = metadata.Title;
+                            string[] videoEditions = video.Info.Edition.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries);
+                            // (Not any) Local is equal to or better than remote metadata.
+                            return video.Info.GetEncoderType() is EncoderType.TopX265 or EncoderType.TopX265BluRay
+                                && (video.Name.StartsWithIgnoreCase(metadata.Title)
+                                    || video.Info.Origin.ContainsIgnoreCase(".BluRay") && metadataTitle.ContainsIgnoreCase(".WEBRip.")
+                                    || !video.Info.Edition.ContainsIgnoreCase("PREVIEW") && metadataTitle.ContainsIgnoreCase(".PREVIEW.")
+                                    || !video.Info.Edition.ContainsIgnoreCase("DUBBED") && metadataTitle.ContainsIgnoreCase(".DUBBED.")
+                                    || !video.Info.Edition.ContainsIgnoreCase("SUBBED") && (metadataTitle.ContainsIgnoreCase(".SUBBED.") || metadataTitle.ContainsIgnoreCase(".ENSUBBED."))
+                                    || video.Info.Edition.ContainsIgnoreCase("DC") && metadataTitle.ContainsIgnoreCase(".THEATRICAL.")
+                                    || video.Info.Edition.ContainsIgnoreCase("EXTENDED") && !metadataTitle.ContainsIgnoreCase(".EXTENDED.")
+                                    || video.Info.Edition.IsNotNullOrWhiteSpace() && (video.Info with { Edition = string.Empty }).Name.StartsWithIgnoreCase(metadataTitle)
+                                    || video.Info.Edition.ContainsIgnoreCase(".Part") && metadataTitle.ContainsIgnoreCase(".Part")
+                                    || VideoMovieFileInfo.TryParseIgnoreCase(metadataTitle, out VideoMovieFileInfo? metadataInfo)
+                                    && video.Info.Origin.EqualsIgnoreCase(metadataInfo.Origin)
+                                    && video.Info.Edition.IsNotNullOrWhiteSpace()
+                                    && metadataInfo
+                                        .Edition
+                                        .Split(Delimiter, StringSplitOptions.RemoveEmptyEntries)
+                                        .All(metadataEdition => videoEditions.ContainsIgnoreCase(metadataEdition)));
+                        }))
+                        .ToArray();
+                    if (otherX265Metadata.Any())
+                    {
+                        if (otherX265Metadata.All(metadata => metadata.Title.Contains(".WEBRip."))
+                            && preferredVideos.Any(video => video.Info.GetDefinitionType() == DefinitionType.P1080 && video.Info.Origin.ContainsIgnoreCase("BluRay")))
+                        {
+
+                        }
+                        else
+                        {
+                            log(imdbId);
+                            videos.ForEach(video => log(video.Name));
+                            otherX265Metadata.ForEach(metadata =>
+                            {
+                                log($"x265 {metadata.Link}");
+                                log(metadata.Title);
+                                log(string.Empty);
+                            });
+                        }
+                    }
+
+                    return;
+                }
+
+                if (videos.Any(video => video.Info.GetEncoderType() is EncoderType.TopX265)) // Top X265 but not BluRay.
+                {
+                    if (videos.All(video => !video.Info.Origin.ContainsIgnoreCase("BluRay")) && bluRayPreferredMetadata.Any())
+                    {
+                        log(imdbId);
+                        videos.ForEach(video => log(video.Name));
+                        bluRayPreferredMetadata.ForEach(metadataVersion =>
+                        {
+                            log($"Preferred {metadataVersion.Metadata.Link}");
+                            log($"{metadataVersion.Version.Key} {metadataVersion.Version.Value}");
+                            log(string.Empty);
+                        });
+                    }
+                    return;
+                }
+
+                if (videos.Any(video => video.Info.GetEncoderType() is EncoderType.TopX265BluRay or EncoderType.TopX265))
+                {
+                    return;
+                }
+
+                TopMetadata[] availableH264Metadata = h264Metadata.ContainsKey(imdbId)
+                    ? h264Metadata[imdbId]
+                        .Where(metadata =>
+                        {
+                            if (VideoMovieFileInfo.TryParseIgnoreCase(metadata.Title, out VideoMovieFileInfo? video))
+                            {
+                                return video.GetEncoderType() is EncoderType.TopH264 or EncoderType.TopH264BluRay;
+                            }
+
+                            log($"!Fail to parse metadata {metadata.Title} {metadata.Link}");
+                            return false;
+                        })
+                        .ToArray()
+                    : [];
+                if (availableH264Metadata.Any())
+                {
+                    TopMetadata[] otherH264Metadata = availableH264Metadata
+                        .Where(metadata => !ignore.Contains(metadata.Title))
+                        .Where(metadata => !videos.Any(video =>
+                        {
+                            string metadataTitle = metadata.Title;
+                            string[] videoEditions = video.Info.Edition.Split(Delimiter, StringSplitOptions.RemoveEmptyEntries);
+                            // (Not any) Local is equal to or better than remote metadata.
+                            return video.Info.GetEncoderType() is EncoderType.TopH264 or EncoderType.TopH264BluRay
+                                && (video.Name.StartsWithIgnoreCase(metadata.Title)
+                                    || video.Info.Origin.ContainsIgnoreCase(".BluRay") && metadataTitle.ContainsIgnoreCase(".WEBRip.")
+                                    || !video.Info.Edition.ContainsIgnoreCase("PREVIEW") && metadataTitle.ContainsIgnoreCase(".PREVIEW.")
+                                    || !video.Info.Edition.ContainsIgnoreCase("DUBBED") && metadataTitle.ContainsIgnoreCase(".DUBBED.")
+                                    || !video.Info.Edition.ContainsIgnoreCase("SUBBED") && (metadataTitle.ContainsIgnoreCase(".SUBBED.") || metadataTitle.ContainsIgnoreCase(".ENSUBBED."))
+                                    || video.Info.Edition.ContainsIgnoreCase("DC") && metadataTitle.ContainsIgnoreCase(".THEATRICAL.")
+                                    || video.Info.Edition.ContainsIgnoreCase("EXTENDED") && !metadataTitle.ContainsIgnoreCase(".EXTENDED.")
+                                    || video.Info.Edition.IsNotNullOrWhiteSpace() && (video.Info with { Edition = string.Empty }).Name.StartsWithIgnoreCase(metadataTitle)
+                                    || video.Info.Edition.ContainsIgnoreCase(".Part") && metadataTitle.ContainsIgnoreCase(".Part")
+                                    || VideoMovieFileInfo.TryParseIgnoreCase(metadataTitle, out VideoMovieFileInfo? metadataInfo)
+                                    && video.Info.Origin.EqualsIgnoreCase(metadataInfo.Origin)
+                                    && video.Info.Edition.IsNotNullOrWhiteSpace()
+                                    && metadataInfo
+                                        .Edition
+                                        .Split(Delimiter, StringSplitOptions.RemoveEmptyEntries)
+                                        .All(metadataEdition => videoEditions.ContainsIgnoreCase(metadataEdition)));
+                        }))
+                        .ToArray();
+                    if (otherH264Metadata.Any())
+                    {
+                        if (otherH264Metadata.All(metadata => metadata.Title.Contains(".WEBRip."))
+                            && preferredVideos.Any(video => video.Info.GetDefinitionType() == DefinitionType.P1080 && video.Info.Origin.ContainsIgnoreCase("BluRay")))
+                        {
+
+                        }
+                        else
+                        {
+                            log(imdbId);
+                            videos.ForEach(video => log(video.Name));
+                            otherH264Metadata.ForEach(metadata =>
+                            {
+                                log($"H264 {metadata.Link}");
+                                log(metadata.Title);
+                                log(string.Empty);
+                            });
+                        }
+                    }
+
+                    return;
+                }
+
+                if (videos.Any(video => video.Info.GetEncoderType() is EncoderType.TopH264)) // Top H264 but not BluRay.
+                {
+                    if (videos.All(video => !video.Info.Origin.ContainsIgnoreCase("BluRay")) && bluRayPreferredMetadata.Any())
+                    {
+                        log(imdbId);
+                        videos.ForEach(video => log(video.Name));
+                        bluRayPreferredMetadata.ForEach(metadataVersion =>
+                        {
+                            log($"Preferred {metadataVersion.Metadata.Link}");
+                            log($"{metadataVersion.Version.Key} {metadataVersion.Version.Value}");
+                            log(string.Empty);
+                        });
+                    }
+
+                    return;
+                }
+
+                if (videos.Any(video => video.Info.GetEncoderType() is EncoderType.TopH264BluRay or EncoderType.TopH264))
+                {
+                    return;
+                }
+
+                if (availablePreferredMetadata.Any())
+                {
+                    Debug.Assert(preferredVideos.Length <= 1 || imdbId is "tt2208216");
+
+                    if (otherPreferredMetadata.Any())
+                    {
+                        log(imdbId);
+                        videos.ForEach(video => log(video.Name));
+                        otherPreferredMetadata.ForEach(metadataVersion =>
+                        {
+                            log($"Preferred {metadataVersion.Metadata.Link}");
+                            log($"{metadataVersion.Version.Key} {metadataVersion.Version.Value}");
+                            log(string.Empty);
+                        });
+                    }
+
+                    return;
+                }
+
+                TopMetadata[] availableOtherMetadata = [];
+                if (videos.Any(video => video.Info.GetDefinitionType() is DefinitionType.P1080))
+                {
+                    return;
+                }
+
+                availableOtherMetadata = x265Metadata.ContainsKey(imdbId)
+                    ? x265Metadata[imdbId]
+                    : availableOtherMetadata;
+                availableOtherMetadata = h264Metadata.ContainsKey(imdbId)
+                    ? availableOtherMetadata.Concat(h264Metadata[imdbId]).ToArray()
+                    : availableOtherMetadata;
+                if (availableOtherMetadata.Any())
+                {
+                    log(imdbId);
+                    videos.ForEach(video => log(video.Name));
+                    availableOtherMetadata.ForEach(metadata =>
+                    {
+                        log($"HD {metadata.Link}");
+                        log(metadata.Title);
+                        log(string.Empty);
+                    });
+
+                    return;
+                }
+
+                if (videos.Any(video => video.Info.GetDefinitionType() is DefinitionType.P720))
+                {
+                    return;
+                }
+
+                availableOtherMetadata = h264720PMetadata.ContainsKey(imdbId)
+                    ? availableOtherMetadata.Concat(h264720PMetadata[imdbId]).ToArray()
+                    : availableOtherMetadata;
+                if (availableOtherMetadata.Any())
+                {
+                    log(imdbId);
+                    videos.ForEach(video => log(video.Name));
+                    availableOtherMetadata.ForEach(metadata =>
+                    {
+                        log($"HD {metadata.Link}");
+                        log(metadata.Title);
+                        log(string.Empty);
+                    });
+                }
+            });
+    }
+
     internal static async Task PrintTVVersions(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default, params (string Directory, int Level)[] directories)
     {
         log ??= Logger.WriteLine;
