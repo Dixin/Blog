@@ -668,7 +668,7 @@ public static class FfmpegHelper
             }
 
             string outputDirectory = PathHelper.GetDirectoryName(outputVideo);
-            if (new FileInfo(inputVideo).Length >= DriveHelper.GetAvailableFreeSpace(outputVideo) * 1.2)
+            if (DriveHelper.TryGetAvailableFreeSpace(outputVideo, out long? availableFreeSpace) && new FileInfo(inputVideo).Length >= availableFreeSpace * 1.2)
             {
                 log($"!!! {outputDirectory} does not has enough available free space for {inputVideo}.");
                 compare = 1;
@@ -825,7 +825,7 @@ public static class FfmpegHelper
                             continue;
                         }
 
-                        if (new FileInfo(inputVideo).Length >= DriveHelper.GetAvailableFreeSpace(outputVideo) * 1.2)
+                        if (DriveHelper.TryGetAvailableFreeSpace(inputVideo, out long? availableFreeSpace) && new FileInfo(inputVideo).Length >= availableFreeSpace * 1.2)
                         {
                             log($"!!! Output drive does not have enough available free space for {outputVideo}.");
                             tasks.Enqueue(task);
