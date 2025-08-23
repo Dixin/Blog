@@ -7,6 +7,7 @@ using Examples.IO;
 using Examples.Net;
 using MediaManager.IO;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+using MemoryExtensions = System.MemoryExtensions;
 
 internal static class Cool
 {
