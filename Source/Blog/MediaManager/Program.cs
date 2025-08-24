@@ -415,7 +415,7 @@ string[][] metadataDrives = [
 //await Top.DownloadMetadataAsync(settings.MovieTopH264720PUrl, settings.MovieTopH264720PMetadata, index => index <= 10);
 //await Top.DownloadMetadataAsync(settings.TVTopX265Url, settings.TVTopX265Metadata, index => index <= 5);
 
-//await Preferred.DownloadMetadataAsync(settings, index => index <= 3206);
+//await Preferred.DownloadMetadataAsync(settings, index => index <= 3286);
 //await Preferred.DownloadAllTorrentsAsync(settings, false);
 //await Preferred.WriteFileMetadataAsync(settings, false);
 //await Preferred.CleanUpMetadataErrorsAsync(settings);
@@ -437,6 +437,8 @@ string[][] metadataDrives = [
 //   settings.MovieTemp42,
 //   settings.MovieTemp4Encode,
 //   settings.MovieControversialTemp4);
+
+//await Video.PrintLibraryMovieVersions(settings, log, cancellationToken, (@"\\box-a\K\Files\Library\Movie", 2));
 
 //await Video.PrintTVVersions(settings, log, cancellationTokenSource.Token,
 //    settings.TVControversial,
@@ -473,7 +475,8 @@ string[][] metadataDrives = [
 //        .SelectMany(advisory => advisory.Value)
 //        .Any(advisory => advisory.FormattedSeverity == ImdbAdvisorySeverity.Severe)
 //        || imdbMetadata.AllKeywords.Any(keywords.Contains),
-//    isDryRun: true);
+//    isDryRun: true,
+//    drives: []);
 
 //Audio.ReplaceTraditionalChinese(settings.AudioMainstream, true);
 

@@ -26,6 +26,7 @@ internal static class Cool
                 await DownloadThreadAsync(threadId, directory, log, token);
             });
     }
+
     internal static async Task DownloadAllThreadsWithTemplateAsync(int start, int end, string directory, bool overwrite = false, int? maxDegreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
@@ -234,6 +235,17 @@ internal static class Cool
             dom.Remove();
         });
 
+        preCQ
+            .Find("font")
+            .Where(dom => !(dom.TryGetAttribute("color", out string color) && color.EndsWithIgnoreCase("E6E6DD")))
+            .ForEach(dom => dom.Cq().ReplaceWith(dom.ChildNodes));
+
+        CQ preNonLinkChildren = preCQ.Find(":not(a)");
+        if (preNonLinkChildren.Length is > 0 and < 3 && preNonLinkChildren.All(dom => dom.OuterHTML.EqualsIgnoreCase("<p></p>")))
+        {
+            preNonLinkChildren.Each(dom => dom.Cq().ReplaceWith("\n\n"));
+        }
+
         string contentHtml = WebUtility.HtmlDecode(preCQ.Html())
             .Replace("\t", "\u3000\u3000")
             .Replace("\n    ", "\n\u3000\u3000")
@@ -303,7 +315,15 @@ internal static class Cool
                 CQ preChildrenCQ = preCQ.Find(":not(a)");
                 if (preChildrenCQ.Any())
                 {
-                    preChildrenCQ.Each(dom => dom.Cq().ReplaceWith(dom.ChildNodes));
+                    if (preChildrenCQ.All(dom => dom.NodeName.EqualsIgnoreCase("span")))
+                    {
+                        preChildrenCQ.Each(dom => dom.Cq().ReplaceWith($"\n\n{dom.TextContent}\n\n"));
+                    }
+                    else
+                    {
+                        preChildrenCQ.Each(dom => dom.Cq().ReplaceWith(dom.ChildNodes));
+                    }
+
                     //Debug.Assert(preCQ.Find(":not(a)").IsEmpty());
                     contentHtml = WebUtility.HtmlDecode(preCQ.Html())
                         .TrimStart(' ', '\n')
@@ -352,30 +372,32 @@ internal static class Cool
                     }
                 }
 
-                MemoryExtensions.SpanSplitEnumerator<char> linesEnumerator = contentHtml.AsSpan().Split('\n');
-                List<(Range, (int Offset, int Length))> lines = new();
-                while (linesEnumerator.MoveNext())
+                List<(Range Range, int Offset, int Length)> lines = contentHtml.AsSpan().Split('\n').ToList(contentHtml.Length);
+
+                while (true)
                 {
-                    lines.Add((linesEnumerator.Current, linesEnumerator.Current.GetOffsetAndLength(contentHtml.Length)));
+                    (Range Range, int Offset, int Length)[] linesWithLeadingWhiteSpace = lines.Where(line => line.Length > 0 && contentHtml[line.Offset] == ' ').ToArray();
+                    if (linesWithLeadingWhiteSpace.Length > 0 && linesWithLeadingWhiteSpace.Length >= lines.Count * 9 / 10)
+                    {
+                        contentHtml = contentHtml.Replace("\n ", "\n");
+                        lines = contentHtml.AsSpan().Split('\n').ToList(contentHtml.Length);
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
 
-                if (lines.Any(line => line.Item2.Length >= 500))
+                if (lines.Any(line => line.Length >= 500))
                 {
                     if (contentHtml.ContainsOrdinal("\u3000\u3000"))
                     {
                         contentHtml = Regex.Replace(contentHtml, @"[\u3000]{2,}", "\n\n\u3000\u3000");
-
-                        linesEnumerator = contentHtml.AsSpan().Split('\n');
-                        lines.Clear();
-                        while (linesEnumerator.MoveNext())
-                        {
-                            lines.Add((linesEnumerator.Current, linesEnumerator.Current.GetOffsetAndLength(contentHtml.Length)));
-                        }
+                        lines = contentHtml.AsSpan().Split('\n').ToList(contentHtml.Length);
                     }
                     else
                     {
                         log($"{threadId}: large paragraph is not processed.");
-                        ;
                         //Debugger.Break();
                     }
                 }
@@ -383,15 +405,15 @@ internal static class Cool
                 int[] nonEmptyLinesWithoutLink = lines
                     .Where(line =>
                     {
-                        if (line.Item2.Length == 0)
+                        if (line.Length == 0)
                         {
                             return false;
                         }
-
-                        ReadOnlySpan<char> lineSpan = contentHtml.AsSpan(line.Item1);
+ 
+                        ReadOnlySpan<char> lineSpan = contentHtml.AsSpan(line.Range);
                         return !lineSpan.Contains("<a", StringComparison.OrdinalIgnoreCase) && !Regex.IsMatch(lineSpan, @"[\p{P}\u3000 ]{10,}");
                     })
-                    .Select(line => line.Item2.Length)
+                    .Select(line => line.Length)
                     .OrderDescending()
                     .ToArray();
                 if (nonEmptyLinesWithoutLink.Length > 1)
@@ -406,13 +428,13 @@ internal static class Cool
                         || sameLengthCount > 1 && sameLengthCount >= nonEmptyLinesWithoutLink.Length / 5 && trimmedNonEmptyLinesWithoutLink.All(length => sameLength + 15 >= length))
                     {
                         int leadingWhiteSpaceCount = lines
-                            .Count(line => line.Item2.Length > 2 && contentHtml[line.Item2.Offset] == '\u3000' && contentHtml[line.Item2.Offset + 1] == '\u3000');
+                            .Count(line => line.Length > 2 && contentHtml[line.Offset] == '\u3000' && contentHtml[line.Offset + 1] == '\u3000');
                         if (leadingWhiteSpaceCount >= 10 || leadingWhiteSpaceCount >= trimmedNonEmptyLinesWithoutLink.Length / 5)
                         {
                             contentHtml = Regex.Replace(contentHtml, @"([^\n^>])[\n]{1,2}([^\n^<])", "$1$2");
                             contentHtml = Regex.Replace(contentHtml, @"[\u3000]{2,}", "\n\n\u3000\u3000");
                         }
-                        else if (lines.Skip(1).SkipLast(1).Any(line => line.Item2.Length == 0))
+                        else if (lines.Skip(1).SkipLast(1).Any(line => line.Length == 0))
                         {
                             contentHtml = Regex.Replace(contentHtml, @"([^\n^>])\n([^\n^<])", "$1$2");
                         }
@@ -510,7 +532,7 @@ internal static class Cool
 
         Directory
             .EnumerateFiles(directory)
-            .Select(file=>(file, int.Parse(PathHelper.GetFileNameWithoutExtension(file))))
+            .Select(file => (file, int.Parse(PathHelper.GetFileNameWithoutExtension(file))))
             .Where(file => file.Item2 >= startThreadId && file.Item2 <= endThreadId)
             .Select(file =>
             {
@@ -518,17 +540,11 @@ internal static class Cool
                 int startIndex = text.IndexOfOrdinal($"<pre>{Environment.NewLine}") + $"<pre>{Environment.NewLine}".Length;
                 int endIndex = text.LastIndexOfOrdinal($"{Environment.NewLine}</pre>");
                 ReadOnlySpan<char> contentSpan = text.AsSpan(startIndex..endIndex);
-                MemoryExtensions.SpanSplitEnumerator<char> lineEnumerator = contentSpan.Split('\n');
-                List<(Range, (int Offset, int Length))> lines = new();
-                while (lineEnumerator.MoveNext())
-                {
-                    lines.Add((lineEnumerator.Current, lineEnumerator.Current.GetOffsetAndLength(contentSpan.Length)));
-                }
-
+                List<(Range Range, int Offset, int Length)> lines = contentSpan.Split('\n').ToList(text.Length);
                 return (file.file, file.Item2, text, lines);
             })
-            .Where(thread => thread.lines.Any(line => line.Item2.Length >= 1000)
-                && thread.lines.Where(line => line.Item2.Length == 0).Take(10).Count() < 10)
+            .Where(thread => thread.lines.Any(line => line.Length >= 1000)
+                && thread.lines.Where(line => line.Length == 0).Take(10).Count() < 10)
             .ForEach(thread =>
             {
                 Debugger.Break();
