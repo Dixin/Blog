@@ -1,4 +1,4 @@
-namespace MediaManager.IO;
+﻿namespace MediaManager.IO;
 
 using Examples.Common;
 using Examples.IO;
@@ -974,6 +974,54 @@ internal static partial class Video
                     log(newSubtitle);
                     log(string.Empty);
                 }
+            });
+    }
+
+    internal static void FormatSubtitleSuffix(string directory, Action<string>? log = null, int level = DefaultDirectoryLevel)
+    {
+        log ??= Logger.WriteLine;
+
+        RenameFiles(directory, (file, index) => file
+            .ReplaceIgnoreCase(".chi-中文（简体）", ".chs")
+            .ReplaceIgnoreCase(".chi-中文_(繁體)", ".cht")
+            .ReplaceIgnoreCase(".eng-English", ".eng"));
+
+        EnumerateDirectories(directory, level)
+            .Where(season => !season.ContainsIgnoreCase(Featurettes))
+            .ForEach(season =>
+            {
+                string[] files = Directory.GetFiles(season);
+                string[] videoFiles = files.Where(f => f.IsVideo()).ToArray();
+                (string nonVideo, string Name)[] nonVideoFiles = files.Except(videoFiles)
+                    .Select(nonVideo => (nonVideo, Name: PathHelper.GetFileNameWithoutExtension(nonVideo)))
+                    .ToArray();
+                videoFiles.ForEach(video =>
+                {
+                    string videoName = PathHelper.GetFileNameWithoutExtension(video);
+                    nonVideoFiles
+                        .Where(nonVideo => nonVideo.Name.Length > videoName.Length && nonVideo.Name.StartsWith(videoName))
+                        .ToArray()
+                        .ForEach(nonVideo =>
+                        {
+                            string suffix = nonVideo.Name[videoName.Length..];
+                            if (suffix.StartsWithIgnoreCase(".eng") || suffix.StartsWithIgnoreCase(".cht") || suffix.StartsWithIgnoreCase(".chs")
+                                || Regex.IsMatch(suffix, @"^\.[a-z]{3}$"))
+                            {
+                                return;
+                            }
+
+                            if (Regex.IsMatch(suffix, @"^\.[a-z]{3}\-.+"))
+                            {
+                                string newSuffix = suffix[..4];
+                                log(nonVideo.nonVideo);
+                                log(FileHelper.ReplaceFileNameWithoutExtension(nonVideo.nonVideo, videoName + newSuffix));
+                            }
+                            else
+                            {
+                                log("!" + nonVideo.nonVideo);
+                            }
+                        });
+                });
             });
     }
 }
