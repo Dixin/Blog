@@ -438,7 +438,14 @@ string[][] metadataDrives = [
 //   settings.MovieTemp4Encode,
 //   settings.MovieControversialTemp4);
 
-//await Video.PrintLibraryMovieVersions(settings, log, cancellationToken, (@"\\box-a\K\Files\Library\Movie", 2));
+//await Video.PrintMovieVersions(settings, log, cancellationTokenSource.Token,
+//    (@"G:\Files\Library", 3),
+//    (@"H:\Files\Library", 3),
+//    (@"I:\Files\Library", 3),
+//    (@"K:\Files\Library\_Movies Encode4.电影4", 2));
+
+//await Video.PrintLibraryMovieVersions(settings, log, cancellationToken,
+//    @"G:\Files\Library", @"H:\Files\Library", @"I:\Files\Library", @"K:\Files\Library\_Movies Encode4.电影4");
 
 //await Video.PrintTVVersions(settings, log, cancellationTokenSource.Token,
 //    settings.TVControversial,
@@ -476,7 +483,7 @@ string[][] metadataDrives = [
 //        .Any(advisory => advisory.FormattedSeverity == ImdbAdvisorySeverity.Severe)
 //        || imdbMetadata.AllKeywords.Any(keywords.Contains),
 //    isDryRun: true,
-//    drives: []);
+//    drives: [@"G:\Files\Library", @"H:\Files\Library", @"I:\Files\Library", @"K:\Files\Library\_Movies Encode4.电影4"]);
 
 //Audio.ReplaceTraditionalChinese(settings.AudioMainstream, true);
 
@@ -671,12 +678,12 @@ static void RenameFilesWithDuplicateTitle(
     (string Path, string Number)[] files = Directory.GetFiles(directory, PathHelper.AllSearchPattern, searchOption)
         .Select(file => (file, Regex.Match(PathHelper.GetFileNameWithoutExtension(file), @"\.S\d+E\d+")))
         .Where(file => file.Item2.Success)
-        .Select(file => (file.Item1, file.Item2.Value))
-        .OrderBy(file => file.Item1)
+        .Select(file => (file.file, file.Item2.Value))
+        .OrderBy(file => file.file)
         .ToArray();
 
     files
-        .Where(file => Video.IsVideo(file.Path))
+        .Where(file => file.Path.IsVideo())
         .ToArray()
         .ForEach(video =>
         {
@@ -1756,3 +1763,20 @@ static void MoveSubtitles(string sourceDirectory, string destinationDirectory, b
             });
         });
 }
+
+//Video.PrintDuplicateImdbId(null, @"G:\Files\Library",
+//    @"H:\Files\Library",
+//    @"I:\Files\Library",
+//    @"K:\Files\Library\_Movies Encode4.电影4");
+
+//new Action[]
+//{
+//    () => Video.RenameDirectoriesWithImdbMetadata(settings, @"G:\Files\Library", 3),
+//    () => Video.RenameDirectoriesWithImdbMetadata(settings, @"H:\Files\Library", 3),
+//    () => Video.RenameDirectoriesWithImdbMetadata(settings, @"I:\Files\Library", 3),
+//    () => Video.RenameDirectoriesWithImdbMetadata(settings, @"K:\Files\Library\_Movies Encode4.电影4", 2)
+//}
+//.AsParallel()
+//.ForAll(action => action());
+
+//await FfmpegHelper.ExtractAllAsync(settings, @"I:\Yts\BluRay.1080p\Thank You For Smoking (2005)", outputVideos: [input=>PathHelper.ReplaceExtension(input, ".mp4")]);

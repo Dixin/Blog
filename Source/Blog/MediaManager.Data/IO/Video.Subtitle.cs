@@ -109,25 +109,25 @@ internal static partial class Video
                             encoding = Encoding.UTF8;
                             break;
                         default:
-                            log($"!Not supported {result.Item1}, file {result.Item3}");
+                            log($"!Not supported {result.Charset}, file {result.File}");
                             return;
                     }
 
-                    FileInfo fileInfo = new(result.Item3);
+                    FileInfo fileInfo = new(result.File);
                     if (fileInfo.IsReadOnly)
                     {
                         fileInfo.IsReadOnly = false;
                     }
                     if (backup)
                     {
-                        FileHelper.Backup(result.Item3);
+                        FileHelper.Backup(result.File);
                     }
                     await EncodingHelper.ConvertAsync(encoding, Utf8Encoding, result.File, null, Utf8Bom);
                     log($"Charset: {result.Charset}, confidence: {result.Confidence}, file {result.File}");
                 }
                 catch (Exception exception)
                 {
-                    log($"{result.Item3} {exception}");
+                    log($"{result.File} {exception}");
                 }
             });
     }

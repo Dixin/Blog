@@ -13,7 +13,7 @@ internal static partial class Video
 
     internal const string VideoExtension = ".mp4";
 
-    private const string ThumbExtension = ".jpg";
+    private static readonly string[] ThumbExtensions = [".jpg", ".png"];
 
     internal const string XmlMetadataSearchPattern = $"{PathHelper.AllSearchPattern}{XmlMetadataExtension}";
 
