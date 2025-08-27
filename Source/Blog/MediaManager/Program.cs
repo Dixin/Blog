@@ -543,7 +543,10 @@ string[][] metadataDrives = [
 //Video.MoveMetadata(settings.MovieTemp42, settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory);
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp42, 2, overwrite: false, useCache: true, useBrowser: true);
 //FfmpegHelper.MergeAllDubbedMovies(settings.MovieTemp42, isDryRun: true);
-//Video.PrintDuplicateImdbId(null, settings.MovieTemp41, settings.MovieTemp42, settings.MovieTemp3, settings.MovieTemp4);
+//Video.PrintDuplicateImdbId(null, @"G:\Files\Library",
+//    @"H:\Files\Library",
+//    @"I:\Files\Library",
+//    @"K:\Files\Library\_Movies Encode4.电影4");
 //Video.BackupMetadata(settings.MovieTemp42);
 //await Video.DownloadMissingTitlesFromDoubanAsync(settings, settings.MovieTemp42, skipFormatted: true);
 //Video.CopyMovieMetadata(settings.MovieTemp42, 2, true);
