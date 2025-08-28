@@ -782,6 +782,39 @@ internal static partial class Video
                                 log($"magnet:?xt=urn:btih:{exactTopic}");
                             });
 
+                            return;
+                        }
+
+                        (string File, string Name, VideoMovieFileInfo Info)[] webPreferredVideos = preferredOrTopVideos.Where(video => video.Name.ContainsIgnoreCase("YTS") || video.Name.ContainsIgnoreCase("YIFY")).ToArray();
+                        if (webPreferredVideos.Any())
+                        {
+                            (string File, string Name, VideoMovieFileInfo Info)[] webX265PreferredVideos = webPreferredVideos.Where(video => video.Name.ContainsIgnoreCase("265")).ToArray();
+                            if (webX265PreferredVideos.Any())
+                            {
+                                return;
+                            }
+
+                            (PreferredMetadata Metadata, KeyValuePair<string, string> Version)[] x265Preferred = availablePreferredMetadata
+                                .SelectMany(metadata => metadata.Availabilities, (metadata, version) => (metadata, version))
+                                .Where(metadataVersion => metadataVersion.version.Key.ContainsIgnoreCase("265") && !metadataVersion.version.Key.ContainsIgnoreCase("2160p"))
+                                .ToArray();
+
+                            if (x265Preferred.Any())
+                            {
+                                x265Preferred.ForEach(x265Metadata =>
+                                {
+                                    string exactTopic = x265Metadata.Version.Value.Split("/", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last();
+                                    if (preferredExactTopicToDirectory.TryGetValue(exactTopic, out string? d) && localDisplayNames.Contains(d))
+                                    {
+                                        return;
+                                    }
+                                    log(movie);
+                                    log(x265Metadata.Version.Key);
+                                    log($"magnet:?xt=urn:btih:{exactTopic}");
+                                });
+
+                                return;
+                            }
                         }
                     }
                     else if (!bluRayPreferredOrTopVideos.Any(video => video.Info.GetDefinitionType() is DefinitionType.P1080))
@@ -3061,5 +3094,49 @@ internal static partial class Video
             log(sourceDirectory);
             log(string.Empty);
         });
+    }
+
+    internal static void PrintTopForeignMoviesWithRegionErrors(string directory, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+
+        Directory.EnumerateFiles(directory, "*VXT*.mp4", SearchOption.AllDirectories)
+            .Where(video => !video.ContainsIgnoreCase($"{Path.DirectorySeparatorChar}Delete"))
+            .Order()
+            .ForEach(video =>
+            {
+                VideoMovieFileInfo parsed = VideoMovieFileInfo.Parse(video);
+                string videoLanguage = parsed.Edition.Trim('.');
+                string movie = PathHelper.GetDirectoryName(video);
+                string region = Path.GetFileName(PathHelper.GetDirectoryName(movie));
+                string regionLanguage = region.Split(".").First().Split(" ").First();
+                regionLanguage = region.Split(".").First().Split(" ").First() switch
+                {
+                    "Venezuelan" or "Mexican" or "Dominican" or "Cuban" or "Colombian" or "Chilean" or "Argentinan" or "Uruguayan" or "Puerto" or "Panamanian" or "Guatemalan" or "Ecuadorian" or "Haitian" or "Bolivian" or "Peruvian" => "Spanish",
+                    "Brazilian" => "Portuguese",
+                    "Austrian" => "German",
+                    "Canadian" => "French",
+                    "Kazakhstani" => "Kazakh",
+                    "Israel" => "Hebrew",
+                    "Iranian" => "Persian",
+                    "Filipino" => "Tagalog",
+                    "Egyptian" => "Arabic",
+                    _ => regionLanguage
+                };
+
+                if (videoLanguage.ContainsIgnoreCase(regionLanguage))
+                {
+                    return;
+                }
+
+                log($"{region} | {videoLanguage}");
+                log(video);
+                if (ImdbMetadata.TryRead(movie, out string? imdbId, out string? year, out string[]? regions, out string[]? languages, out string[]? genres))
+                {
+                    log($"{string.Join(",", regions)} | {string.Join(",", languages)}");
+                }
+
+                log("");
+            });
     }
 }

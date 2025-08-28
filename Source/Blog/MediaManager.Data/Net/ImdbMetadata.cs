@@ -121,9 +121,9 @@ public partial record ImdbMetadata(
         Debug.Assert(info.Length == 5 && info[0].IsImdbId());
         imdbId = info[0];
         year = info[1];
-        regions = info[2].Split(FileNameMetadataSeparator);
-        languages = info[3].Split(FileNameMetadataSeparator);
-        genres = info[4].Split(FileNameMetadataSeparator);
+        regions = info[2].Split(FileNameMetadataSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        languages = info[3].Split(FileNameMetadataSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        genres = info[4].Split(FileNameMetadataSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         return true;
     }
 

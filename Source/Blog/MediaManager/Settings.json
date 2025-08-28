@@ -423,14 +423,14 @@
             "China",
             "Genre:Adult"
         ],
-        "Chinese American Action.中美合拍动作": [
+        "Chinese Foreign Action.中外合拍动作": [
             "Hong Kong",
             "Taiwan",
             "USA",
             "China",
             "Genre:Action"
         ],
-        "Chinese American.中美合拍": [
+        "Chinese Foreign.中外合拍": [
             "USA"
         ],
         "Chinese Biography.中文传记": [
@@ -686,7 +686,7 @@
         "Indonesian.印度尼西亚": [
             "Indonesia"
         ],
-        "Iran.伊朗": [
+        "Iranian.伊朗": [
             "Iran"
         ],
         "Irish Documentary.爱尔兰记录": [
@@ -1173,7 +1173,7 @@
 
         "Indonesia": "Indonesian.印度尼西亚",
 
-        "Iran": "Iran.伊朗",
+        "Iran": "Iranian.伊朗",
 
         "Ireland.Documentary": "Irish Documentary.爱尔兰记录",
 
