@@ -463,7 +463,7 @@ internal static partial class Video
                         Directory.EnumerateDirectories(season).ForEach(seasonDirectory => log($"!Season directory: {seasonDirectory}"));
 
                         string[] seasonFiles = Directory.GetFiles(season, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly).Select(PathHelper.GetFileName).ToArray();
-                        string[] videos = seasonFiles.Where(IsCommonVideo).ToArray();
+                        string[] videos = seasonFiles.Where(IsVideo).ToArray();
                         string[] videoMetadataFiles = videos.Select(video => $"{PathHelper.GetFileNameWithoutExtension(video)}{XmlMetadataExtension}").ToArray();
                         string[] videoThumbFiles = videos.SelectMany(video => ThumbExtensions.Select(extension => $"{PathHelper.GetFileNameWithoutExtension(video)}-thumb{extension}")).ToArray();
                         VideoEpisodeFileInfo?[] allVideoFileInfos = videos
@@ -485,7 +485,7 @@ internal static partial class Video
                             }
                         });
 
-                        videos.Where(video => !Regex.IsMatch(video, @"S[0-9]{2,4}E[0-9]{2,3}[\.E]")).ForEach(video => log($"!Video name: {video}"));
+                        videos.Where(video => !Regex.IsMatch(video, @"S[0-9]{2,4}E[0-9]{2,3}[\.\-E]")).ForEach(video => log($"!Video name: {video}"));
 
                         string[] allowedSubtitles = videos
                             .Select(PathHelper.GetFileNameWithoutExtension)
@@ -499,6 +499,26 @@ internal static partial class Video
                             .Except(videoThumbFiles)
                             .Except(allowedSubtitles)
                             .Except(EnumerableEx.Return(TVSeasonMetadataFile))
+                            .Where(file =>
+                            {
+                                if (file.IsSubtitle())
+                                {
+                                    string subtitleName = PathHelper.GetFileNameWithoutExtension(file);
+                                    string subTitleExtension = PathHelper.GetExtension(file);
+                                    int lastIndex = subtitleName.LastIndexOfOrdinal(VersionSeparator);
+                                    if (lastIndex - 1 > 0 && lastIndex + 1 < subtitleName.Length)
+                                    {
+                                        string subtitleInitial = subtitleName[..lastIndex];
+                                        string subtitleTail = subtitleName[(lastIndex + 1)..];
+                                        if (allowedSubtitles.ContainsIgnoreCase(subtitleInitial + subTitleExtension) && Regex.IsMatch(subtitleTail, @"[0-9a-z]+"))
+                                        {
+                                            return false;
+                                        }
+                                    }
+                                }
+
+                                return true;
+                            })
                             .ForEach(file => log($"!File: {file}"));
                     });
 

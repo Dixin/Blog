@@ -130,8 +130,8 @@ internal record VideoDirectoryInfo(
         int total2160P = videos.Count(video => video.GetDefinitionType() is DefinitionType.P2160);
         int total1080P = videos.Count(video => video.GetDefinitionType() is DefinitionType.P1080);
         int total720P = videos.Count(video => video.GetDefinitionType() is DefinitionType.P720);
-        int total480PWithEncoder = videos.Count(video => !video.IsHD() && video.GetEncoderType() is not EncoderType.HD);
-        int total480P = videos.Count(video => !video.IsHD() && video.GetEncoderType() is EncoderType.HD);
+        int total480PWithEncoder = videos.Count(video => !video.IsHD() && video.GetEncoderType() is not (EncoderType.HD or EncoderType.HDBluRay));
+        int total480P = videos.Count(video => !video.IsHD() && video.GetEncoderType() is (EncoderType.HD or EncoderType.HDBluRay));
         int max = new int[] { total2160P, total1080P, total720P, total480PWithEncoder, total480P }.Max();
         return max switch
         {

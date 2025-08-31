@@ -1439,4 +1439,74 @@ internal static partial class Video
             }, 
             cancellationToken);
     }
+
+    internal static void DeleteSpecialCharacters(string directory, bool isDryRun = false, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+
+        char[] directorySpecialCharacters = ['_', '~', '#', '^', '(', ')', '{', '}', '@', '\u3000'];
+        char[] fileSpecialCharacters = ['_', '~', '#', '^', '(', ')', '{', '}', '\u3000'];
+
+        string[] subDirectories = Directory.GetDirectories(directory);
+        bool hasSubDirectoryRenamed = false;
+        subDirectories
+            .ForEach(subDirectory =>
+            {
+                string subDirectoryName = PathHelper.GetFileName(subDirectory);
+                string newSubDirectoryName = subDirectoryName;
+                directorySpecialCharacters.ForEach(character => newSubDirectoryName = newSubDirectoryName.Replace(character, ' '));
+                newSubDirectoryName = newSubDirectoryName.Replace('–', '-');
+                newSubDirectoryName = newSubDirectoryName.Trim(' ').Trim('.');
+                newSubDirectoryName = Regex.Replace(newSubDirectoryName, @"([ ])+", "$1");
+                newSubDirectoryName = Regex.Replace(newSubDirectoryName, @"([\.])+", "$1");
+                //newSubDirectoryName = Regex.Replace(newSubDirectoryName, @"([\-])+", "$1");
+                newSubDirectoryName = Regex.Replace(newSubDirectoryName, @"[\s]+([\-\=\.\]\[])[\s]+", "$1");
+                newSubDirectoryName = Regex.Replace(newSubDirectoryName, @"[\s]+([\-\=\.\]\[])", "$1");
+                newSubDirectoryName = Regex.Replace(newSubDirectoryName, @"([\-\=\.\]\[])[\s]+", "$1");
+                if (newSubDirectoryName.EqualsIgnoreCase(subDirectoryName))
+                {
+                    return;
+                }
+
+                log(subDirectory);
+                log(isDryRun ? PathHelper.ReplaceDirectoryName(subDirectory, newSubDirectoryName) : DirectoryHelper.ReplaceDirectoryName(subDirectory, newSubDirectoryName));
+                log("");
+                hasSubDirectoryRenamed = true;
+            });
+
+        Directory.EnumerateFiles(directory)
+            .Where(file => !file.IsImdbMetadata() && !file.IsTmdbMetadata())
+            .ToArray()
+            .ForEach(file =>
+            {
+                string fileName = PathHelper.GetFileNameWithoutExtension(file);
+                string extension = PathHelper.GetExtension(file);
+                string newFileName = fileName;
+                fileSpecialCharacters.ForEach(character => newFileName = newFileName.Replace(character, ' '));
+                newFileName = newFileName.Replace('–', '-');
+                newFileName = newFileName.Trim(' ').Trim('.');
+                newFileName = Regex.Replace(newFileName, @"([ ])+", "$1");
+                //newFileName = Regex.Replace(newFileName, @"([\.])+", "$1");
+                newFileName = Regex.Replace(newFileName, @"([\-])+", "$1");
+                newFileName = Regex.Replace(newFileName, @"[\s]+([\-\=\.\]\[])[\s]+", "$1");
+                newFileName = Regex.Replace(newFileName, @"[\s]+([\-\=\.\]\[])", "$1");
+                newFileName = Regex.Replace(newFileName, @"([\-\=\.\]\[])[\s]+", "$1");
+                if (newFileName.EqualsIgnoreCase(fileName))
+                {
+                    return;
+                }
+
+                log(file);
+                string newFile = isDryRun ? PathHelper.ReplaceFileNameWithoutExtension(file, newFileName) : FileHelper.ReplaceFileNameWithoutExtension(file, newFileName);
+                log(newFileName.EndsWithIgnoreCase(extension) ? $"!{newFile}" : newFile);
+                log("");
+            });
+
+        if (hasSubDirectoryRenamed)
+        {
+            subDirectories = Directory.GetDirectories(directory);
+        }
+
+        subDirectories.ForEach(subDirectory => DeleteSpecialCharacters(subDirectory, isDryRun, log));
+    }
 }
