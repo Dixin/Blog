@@ -106,8 +106,8 @@ public static class DirectoryHelper
             .AsParallel()
             .ForAll(drive => drive
                 .ForEach(directory => Directory
-                    .EnumerateFiles(directory, "*", SearchOption.AllDirectories)
-                    .Where(file => Path.GetExtension(file)?.Any(@char => @char >= 'A' && @char <= 'Z') ?? false)
+                    .EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
+                    .Where(file => PathHelper.GetExtension(file).Any(@char => @char is >= 'A' and <= 'Z'))
                     .ToArray()
                     .ForEach(file => FileHelper.ReplaceFileName(file, $"{PathHelper.GetFileNameWithoutExtension(file)}{PathHelper.GetExtension(file).ToLowerInvariant()}"))));
 

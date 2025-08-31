@@ -31,7 +31,7 @@ internal static partial class Video
     internal static IEnumerable<(string? Charset, float? Confidence, string File)> EnumerateSubtitles(string directory) =>
         Directory
             .EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
-            .Where(file => file.HasAnyExtension(TextExtensions))
+            .Where(file => file.IsTextSubtitle())
             .Select(file =>
             {
                 using FileStream fileStream = File.OpenRead(file);
@@ -118,10 +118,12 @@ internal static partial class Video
                     {
                         fileInfo.IsReadOnly = false;
                     }
+
                     if (backup)
                     {
                         FileHelper.Backup(result.File);
                     }
+
                     await EncodingHelper.ConvertAsync(encoding, Utf8Encoding, result.File, null, Utf8Bom);
                     log($"Charset: {result.Charset}, confidence: {result.Confidence}, file {result.File}");
                 }

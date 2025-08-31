@@ -442,7 +442,8 @@ string[][] metadataDrives = [
 //    (@"G:\Files\Library", 3),
 //    (@"H:\Files\Library", 3),
 //    (@"I:\Files\Library", 3),
-//    (@"K:\Files\Library\_Movies Encode4.电影4", 2));
+//    (@"K:\Files\Library\_Movies Encode4.电影4", 2),
+//    (@"K:\Files\Library\Movies Controversial.非主流电影", 2));
 
 //await Video.PrintLibraryMovieVersions(settings, log, cancellationToken,
 //    @"G:\Files\Library", @"H:\Files\Library", @"I:\Files\Library", @"K:\Files\Library\_Movies Encode4.电影4");
