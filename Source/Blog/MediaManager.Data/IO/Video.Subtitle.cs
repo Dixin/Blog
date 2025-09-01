@@ -979,14 +979,21 @@ internal static partial class Video
             });
     }
 
-    internal static void FormatSubtitleSuffix(string directory, Action<string>? log = null, int level = DefaultDirectoryLevel)
+    internal static void FormatSubtitleSuffix(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
-        RenameFiles(directory, (file, index) => file
-            .ReplaceIgnoreCase(".chi-中文（简体）", ".chs")
-            .ReplaceIgnoreCase(".chi-中文_(繁體)", ".cht")
-            .ReplaceIgnoreCase(".eng-English", ".eng"));
+        RenameFiles(
+            directory, 
+            (file, index) => file
+                .ReplaceIgnoreCase(".chi-中文（简体）", ".chs")
+                .ReplaceIgnoreCase(".chi-中文_(繁體)", ".cht")
+                .ReplaceIgnoreCase(".chi-中文（简体）", ".chs")
+                .ReplaceIgnoreCase(".chi-中文（繁體）", ".cht")
+                .ReplaceIgnoreCase(".chi-Chinese_Simplified", ".chs")
+                .ReplaceIgnoreCase(".chi-Chinese_Traditional", ".cht")
+                .ReplaceIgnoreCase(".eng-sdh", "")
+                .ReplaceIgnoreCase(".eng-English", ".eng"));
 
         EnumerateDirectories(directory, level)
             .Where(season => !season.ContainsIgnoreCase(Featurettes))
@@ -1017,10 +1024,12 @@ internal static partial class Video
                                 string newSuffix = suffix[..4];
                                 log(nonVideo.nonVideo);
                                 log(FileHelper.ReplaceFileNameWithoutExtension(nonVideo.nonVideo, videoName + newSuffix));
+                                log(string.Empty);
                             }
                             else
                             {
                                 log("!" + nonVideo.nonVideo);
+                                log(string.Empty);
                             }
                         });
                 });
