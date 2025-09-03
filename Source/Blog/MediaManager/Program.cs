@@ -37,7 +37,7 @@ using TextWriterTraceListener textTraceListener = new(Path.Combine(Path.GetTempP
 using ConsoleTraceListener consoleTraceListener = new();
 Trace.Listeners.Add(consoleTraceListener);
 Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
-FFmpeg.SetExecutablesPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-7.1.1-full_build\bin"));
+FFmpeg.SetExecutablesPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0-full_build\bin"));
 Action<string> log = Logger.WriteLine;
 
 string[][] mediaDrives = [
@@ -1783,4 +1783,5 @@ static void MoveSubtitles(string sourceDirectory, string destinationDirectory, b
 //.AsParallel()
 //.ForAll(action => action());
 
-//await FfmpegHelper.ExtractAllAsync(settings, @"I:\Yts\BluRay.1080p\Thank You For Smoking (2005)", outputVideos: [input=>PathHelper.ReplaceExtension(input, ".mp4")]);
+//await FfmpegHelper.ExtractAllAsync(settings, @"\\box-x\E\Files\New folder (2)\New folder", outputVideos: [input => PathHelper.ReplaceExtension(input, ".mp4")
+//    .ReplaceIgnoreCase(@"\\box-x\E\Files\New folder (2)\New folder", @"G:\Files\Library\Movies\New folder")]);
