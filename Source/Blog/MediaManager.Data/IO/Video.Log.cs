@@ -3159,4 +3159,49 @@ internal static partial class Video
                 log("");
             });
     }
+
+    internal static void PrintHdrErrorsFromSdr(string hdrDirectory, string sdrDirectory, Action<string>? log = null)
+    {
+        ILookup<string, string> sdrImdbIdToPaths = Directory.EnumerateFiles(sdrDirectory, ImdbMetadataSearchPattern, SearchOption.AllDirectories)
+            .ToLookup(f => ImdbMetadata.TryGet(f, out string? imdbId) ? imdbId : string.Empty, f => f);
+        ILookup<string, string> hdrImdbIdToPaths = Directory.EnumerateFiles(hdrDirectory, ImdbMetadataSearchPattern, SearchOption.AllDirectories)
+            .ToLookup(f => ImdbMetadata.TryGet(f, out string? imdbId) ? imdbId : string.Empty, f => f);
+        hdrImdbIdToPaths.ForEach(group =>
+        {
+            string imdbId = group.Key;
+            if (!sdrImdbIdToPaths.Contains(imdbId))
+            {
+                return;
+            }
+
+            group.ForEach(hdrFile =>
+            {
+                string hdrDirectory = PathHelper.GetDirectoryName(hdrFile);
+                string hdrDirectoryName = PathHelper.GetFileName(hdrDirectory).ReplaceIgnoreCase("[HDR]", "");
+                hdrDirectoryName = hdrDirectoryName[..hdrDirectoryName.LastIndexOfOrdinal("[")];
+                string[] sdrFiles = sdrImdbIdToPaths[imdbId].ToArray();
+                string[] sdrDirectories = sdrFiles.Select(PathHelper.GetDirectoryName).ToArray();
+                string[] sdrDirectoryNames = sdrDirectories.Select(PathHelper.GetFileName).Select(sdrDirectoryName => sdrDirectoryName[..sdrDirectoryName.LastIndexOfOrdinal("[")]).ToArray();
+                if (!sdrDirectoryNames.ContainsOrdinal(hdrDirectoryName))
+                {
+                    sdrDirectoryNames.ForEach(log);
+                    log(hdrDirectoryName);
+                    sdrDirectories.ForEach(log);
+                    log(hdrDirectory);
+                    log("");
+                }
+
+                string hdrRegion = PathHelper.GetFileName(PathHelper.GetDirectoryName(hdrDirectory));
+                string sdrRegion = sdrDirectories.Select(PathHelper.GetDirectoryName).Select(PathHelper.GetFileName).Single();
+                if (!hdrRegion.EqualsOrdinal(sdrRegion))
+                {
+                    log(sdrRegion);
+                    log(hdrRegion);
+                    sdrDirectories.ForEach(log);
+                    log(hdrDirectory);
+                    log("");
+                }
+            });
+        });
+    }
 }
