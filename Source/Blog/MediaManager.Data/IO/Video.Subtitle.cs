@@ -992,6 +992,11 @@ internal static partial class Video
                 .ReplaceIgnoreCase(".chi-中文（繁體）", ".cht")
                 .ReplaceIgnoreCase(".chi-Chinese_Simplified", ".chs")
                 .ReplaceIgnoreCase(".chi-Chinese_Traditional", ".cht")
+                .ReplaceIgnoreCase(".chi-Chinese_(Hong_Kong_SAR_China)", ".cht-cantonese")
+                .ReplaceIgnoreCase(".chi-Hong_Kong", ".cht-cantonese")
+                .ReplaceIgnoreCase(".chi-Traditional", ".cht")
+                .ReplaceIgnoreCase(".chi-Chinese_(Traditional)", ".cht")
+                .ReplaceIgnoreCase(".chi-Chinese_(Hong_Kong)", ".cht-cantonese")
                 .ReplaceIgnoreCase(".eng-sdh", "")
                 .ReplaceIgnoreCase(".eng-English", ".eng"));
 

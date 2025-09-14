@@ -214,7 +214,8 @@ internal static partial class Video
                 int index = name.IndexOfOrdinal(AdditionalMetadataSeparator);
                 if (index >= 0)
                 {
-                    name = name[..index];
+                    name = name[(index + 1)..];
+                    Debug.Assert(VideoDirectoryInfo.TryParse(name, out _));
                 }
 
                 string[] languages = Directory
@@ -258,8 +259,8 @@ internal static partial class Video
                     }
                 }
 
-                string additional = $"{AdditionalMetadataSeparator}{string.Join(VersionSeparator, regions.Take(4))}{Delimiter}{string.Join(VersionSeparator, languages.Take(4))}{Delimiter}{string.Join(VersionSeparator, genres.Take(4))}";
-                string newMovie = PathHelper.ReplaceDirectoryName(movie, $"{name}{additional}");
+                string additional = $"{string.Join(VersionSeparator, regions.Take(4))}{Delimiter}{string.Join(VersionSeparator, languages.Take(4))}{Delimiter}{string.Join(VersionSeparator, genres.Take(4))}";
+                string newMovie = PathHelper.ReplaceDirectoryName(movie, $"{additional}{AdditionalMetadataSeparator}{name}");
 
                 log(movie);
                 if (!isDryRun)
@@ -386,7 +387,9 @@ internal static partial class Video
 
                 if (name.ContainsOrdinal(AdditionalMetadataSeparator))
                 {
-                    name = name[..name.IndexOfOrdinal(AdditionalMetadataSeparator)];
+                    name = name
+                        .Split(AdditionalMetadataSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        .Single(segment => VideoDirectoryInfo.TryParse(segment, out _));
                     isRenamed = true;
                 }
 
@@ -1411,32 +1414,32 @@ internal static partial class Video
                         log(DirectoryHelper.MoveToDirectory(displayName.Item1, PathHelper.AddDirectoryPostfix(directory, ".Shorter")));
                         break;
                     default:
-                    {
-                        log(displayName.Movie);
-                        log(destinationDirectory);
-
-                        string destinationDirectoryName = PathHelper.GetFileName(destinationDirectory);
-                        string deletedDirectory = Path.Combine(deleteParentDirectory, destinationDirectoryName);
-                        Directory.CreateDirectory(deletedDirectory);
-                        if (DirectoryHelper.IsHidden(destinationDirectory))
                         {
-                            DirectoryHelper.SetHidden(deletedDirectory, true);
-                        }
+                            log(displayName.Movie);
+                            log(destinationDirectory);
 
-                        string[] destinationFilesToMove = destinationFiles.Where(destinationFile => destinationFile.IsSubtitle() || destinationFile.IsVideo()).Order().ToArray();
-                        string[] destinationFilesToCopy = destinationFiles.Except(destinationFilesToMove).ToArray();
-                        destinationFilesToCopy.ForEach(destinationFile => FileHelper.CopyToDirectory(destinationFile, deletedDirectory));
-                        string destinationXmlMetadata = destinationFiles.Single(destinationFile => destinationFile.IsXmlMetadata() && PathHelper.GetFileNameWithoutExtension(destinationFile).EqualsOrdinal(PathHelper.GetFileNameWithoutExtension(destinationVideo)));
-                        FileHelper.ReplaceFileNameWithoutExtension(destinationXmlMetadata, PathHelper.GetFileNameWithoutExtension(sourceVideo));
-                        sourceFiles.ForEach(sourceFile => FileHelper.MoveToDirectory(sourceFile, destinationDirectory));
-                        destinationFilesToMove
-                            .Do(destinationFile => log($"Move {destinationFile}"))
-                            .ForEach(destinationFile => FileHelper.MoveToDirectory(destinationFile, deletedDirectory));
-                        log("");
-                        break;
-                    }
+                            string destinationDirectoryName = PathHelper.GetFileName(destinationDirectory);
+                            string deletedDirectory = Path.Combine(deleteParentDirectory, destinationDirectoryName);
+                            Directory.CreateDirectory(deletedDirectory);
+                            if (DirectoryHelper.IsHidden(destinationDirectory))
+                            {
+                                DirectoryHelper.SetHidden(deletedDirectory, true);
+                            }
+
+                            string[] destinationFilesToMove = destinationFiles.Where(destinationFile => destinationFile.IsSubtitle() || destinationFile.IsVideo()).Order().ToArray();
+                            string[] destinationFilesToCopy = destinationFiles.Except(destinationFilesToMove).ToArray();
+                            destinationFilesToCopy.ForEach(destinationFile => FileHelper.CopyToDirectory(destinationFile, deletedDirectory));
+                            string destinationXmlMetadata = destinationFiles.Single(destinationFile => destinationFile.IsXmlMetadata() && PathHelper.GetFileNameWithoutExtension(destinationFile).EqualsOrdinal(PathHelper.GetFileNameWithoutExtension(destinationVideo)));
+                            FileHelper.ReplaceFileNameWithoutExtension(destinationXmlMetadata, PathHelper.GetFileNameWithoutExtension(sourceVideo));
+                            sourceFiles.ForEach(sourceFile => FileHelper.MoveToDirectory(sourceFile, destinationDirectory));
+                            destinationFilesToMove
+                                .Do(destinationFile => log($"Move {destinationFile}"))
+                                .ForEach(destinationFile => FileHelper.MoveToDirectory(destinationFile, deletedDirectory));
+                            log("");
+                            break;
+                        }
                 }
-            }, 
+            },
             cancellationToken);
     }
 
