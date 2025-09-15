@@ -692,7 +692,7 @@ internal static class Preferred
                 log($"Rename {file} to {imdbId}.{fileGroup.Key}");
                 if (!isDryRun)
                 {
-                    FileHelper.ReplaceFileNameWithoutExtension(file, $"{imdbId}.{fileGroup.Key}", true, true);
+                    FileHelper.ReplaceFileNameWithoutExtension(file, $"{imdbId}.{fileGroup.Key}", true);
                 }
             });
         });

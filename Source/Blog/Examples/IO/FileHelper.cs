@@ -207,17 +207,17 @@ public static class FileHelper
         return destination;
     }
 
-    public static string ReplaceFileNameWithoutExtension(string file, string newFileNameWithoutExtension, bool overwrite = false, bool skipDestinationDirectory = false)
+    public static string ReplaceFileNameWithoutExtension(string file, string newFileNameWithoutExtension, bool overwrite = false)
     {
         string destination = PathHelper.ReplaceFileNameWithoutExtension(file, newFileNameWithoutExtension);
-        Move(file, destination, overwrite, skipDestinationDirectory);
+        Move(file, destination, overwrite, true);
         return destination;
     }
 
-    public static string ReplaceFileNameWithoutExtension(string file, Func<string, string> replace, bool overwrite = false, bool skipDestinationDirectory = false)
+    public static string ReplaceFileNameWithoutExtension(string file, Func<string, string> replace, bool overwrite = false)
     {
         string destination = PathHelper.ReplaceFileNameWithoutExtension(file, replace);
-        Move(file, destination, overwrite, skipDestinationDirectory);
+        Move(file, destination, overwrite, true);
         return destination;
     }
 }

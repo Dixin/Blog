@@ -35,17 +35,18 @@ public static class DirectoryHelper
         return false;
     }
 
-    public static void Move(string source, string destination, bool overwrite = false)
+    public static void Move(string source, string destination, bool overwrite = false, bool skipDestinationDirectory = false)
     {
         source.ThrowIfNullOrWhiteSpace();
+        destination.ThrowIfNullOrWhiteSpace();
 
-        if (overwrite && Directory.Exists(destination.ThrowIfNullOrWhiteSpace()))
+        if (overwrite && (skipDestinationDirectory || Directory.Exists(destination)))
         {
             Directory.Delete(destination);
         }
 
         string? parent = Path.GetDirectoryName(destination);
-        if (!string.IsNullOrWhiteSpace(parent) && !Directory.Exists(parent))
+        if (!skipDestinationDirectory && !string.IsNullOrWhiteSpace(parent) && !Directory.Exists(parent))
         {
             Directory.CreateDirectory(parent);
         }
@@ -69,7 +70,7 @@ public static class DirectoryHelper
         }
     }
 
-    public static string MoveToDirectory(string source, string destinationParentDirectory, bool overwrite = false)
+    public static string MoveToDirectory(string source, string destinationParentDirectory, bool overwrite = false, bool skipDestinationDirectory = false)
     {
         string destination = Path.Combine(destinationParentDirectory, PathHelper.GetFileName(source));
         Move(source, destination, overwrite);
