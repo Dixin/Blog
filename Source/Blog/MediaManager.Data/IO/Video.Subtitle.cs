@@ -979,28 +979,46 @@ internal static partial class Video
             });
     }
 
-    internal static void FormatSubtitleSuffix(string directory, int level = DefaultDirectoryLevel, Action<string>? log = null)
+    internal static void FormatSubtitleSuffix(string directory, int seasonLevel = DefaultDirectoryLevel, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
         RenameFiles(
             directory, 
             (file, index) => file
-                .ReplaceIgnoreCase(".chi-中文（简体）", ".chs")
                 .ReplaceIgnoreCase(".chi-中文_(繁體)", ".cht")
-                .ReplaceIgnoreCase(".chi-中文（简体）", ".chs")
+                .ReplaceIgnoreCase(".chi-中文_(简體)", ".chs")
+                .ReplaceIgnoreCase(".chi-中文 (繁体)", ".cht")
+                .ReplaceIgnoreCase(".chi-中文 (简体)", ".chs")
+                .ReplaceIgnoreCase(".chi-中文(繁体)", ".cht")
+                .ReplaceIgnoreCase(".chi-中文(简体)", ".chs")
                 .ReplaceIgnoreCase(".chi-中文（繁體）", ".cht")
-                .ReplaceIgnoreCase(".chi-Chinese_Simplified", ".chs")
+                .ReplaceIgnoreCase(".chi-中文（简體）", ".chs")
                 .ReplaceIgnoreCase(".chi-Chinese_Traditional", ".cht")
-                .ReplaceIgnoreCase(".chi-Chinese_(Hong_Kong_SAR_China)", ".cht-cantonese")
-                .ReplaceIgnoreCase(".chi-Hong_Kong", ".cht-cantonese")
-                .ReplaceIgnoreCase(".chi-Traditional", ".cht")
+                .ReplaceIgnoreCase(".chi-Chinese_Simplified", ".chs")
                 .ReplaceIgnoreCase(".chi-Chinese_(Traditional)", ".cht")
+                .ReplaceIgnoreCase(".chi-Chinese_(Simplified)", ".chs")
+                .ReplaceIgnoreCase(".chi-Chinese_(Hong_Kong_SAR_China)", ".cht-cantonese")
                 .ReplaceIgnoreCase(".chi-Chinese_(Hong_Kong)", ".cht-cantonese")
+                .ReplaceIgnoreCase(".chi-Hong_Kong", ".cht-cantonese")
+                .ReplaceIgnoreCase(".chi-Traditional_Chinese", ".cht")
+                .ReplaceIgnoreCase(".chi-Simplified_Chinese", ".chs")
+                .ReplaceIgnoreCase(".chi-Traditional", ".cht")
+                .ReplaceIgnoreCase(".chi-Simplified", ".chs")
+                .ReplaceIgnoreCase(".chi-Cht_SUP__原盘繁体", ".cht")
+                .ReplaceIgnoreCase(".chi-Chs_SUP__原盘简体", ".chs")
+                .ReplaceIgnoreCase(".chi-CHT&ENG", ".cht&eng")
+                .ReplaceIgnoreCase(".chi-CHS&ENG", ".chs&eng")
+                .ReplaceIgnoreCase(".chi-CHT", ".cht")
+                .ReplaceIgnoreCase(".chi-CHS", ".chs")
                 .ReplaceIgnoreCase(".eng-sdh", "")
-                .ReplaceIgnoreCase(".eng-English", ".eng"));
+                .ReplaceIgnoreCase(".eng-English", ".eng")
+                .ReplaceIgnoreCase(".eng-Eng_SUP", ".eng")
+                .ReplaceIgnoreCase(".eng-English_Regular___OCR", ".eng-ocr")
+                .ReplaceIgnoreCase(".eng_Regular___OCR", ".eng-ocr")
+        );
 
-        EnumerateDirectories(directory, level)
+        EnumerateDirectories(directory, seasonLevel)
             .Where(season => !season.ContainsIgnoreCase(Featurettes))
             .ForEach(season =>
             {
