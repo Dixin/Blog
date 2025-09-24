@@ -208,11 +208,17 @@ internal record VideoDirectoryInfo(
 
     internal static string GetSource(VideoEpisodeFileInfo[] videos)
     {
-        IGrouping<EncoderType, VideoEpisodeFileInfo> maxGroup = videos
+        IGrouping<EncoderType, VideoEpisodeFileInfo>? maxGroup = videos
             .GroupBy(video => video.GetEncoderType())
             .OrderByDescending(group => group.Count())
             .ThenByDescending(group => group.Key)
-            .First();
+            .FirstOrDefault();
+
+        if (maxGroup is null)
+        {
+            return string.Empty;
+        }
+
         string encoder = maxGroup.Key switch
         {
             EncoderType.TopX265BluRay => "x",

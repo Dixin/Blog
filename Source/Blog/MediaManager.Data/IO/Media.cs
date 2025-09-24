@@ -26,6 +26,11 @@ internal class Media
     {
         log ??= Logger.WriteLine;
 
+        if (!Directory.Exists(directory))
+        {
+            return;
+        }
+
         string newDirectory = KeywordsToRemove
             .Aggregate(directory, (accumulation, keywordToRemove) => keywordToRemove.Replace(accumulation, string.Empty));
 

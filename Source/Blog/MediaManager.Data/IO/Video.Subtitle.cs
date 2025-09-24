@@ -986,6 +986,7 @@ internal static partial class Video
         RenameFiles(
             directory, 
             (file, index) => file
+                .ReplaceIgnoreCase(".chi-廣東話", ".cht-cantonese")
                 .ReplaceIgnoreCase(".chi-中文_(繁體)", ".cht")
                 .ReplaceIgnoreCase(".chi-中文_(简體)", ".chs")
                 .ReplaceIgnoreCase(".chi-中文 (繁体)", ".cht")
@@ -994,14 +995,18 @@ internal static partial class Video
                 .ReplaceIgnoreCase(".chi-中文(简体)", ".chs")
                 .ReplaceIgnoreCase(".chi-中文（繁體）", ".cht")
                 .ReplaceIgnoreCase(".chi-中文（简體）", ".chs")
+                .ReplaceIgnoreCase(".chi-中文（繁体）", ".cht")
+                .ReplaceIgnoreCase(".chi-中文（简体）", ".chs")
                 .ReplaceIgnoreCase(".chi-Chinese_Traditional", ".cht")
+                .ReplaceIgnoreCase(".chi-Chinese_Yue", ".cht-cantonese")
                 .ReplaceIgnoreCase(".chi-Chinese_Simplified", ".chs")
                 .ReplaceIgnoreCase(".chi-Chinese_(Traditional)", ".cht")
+                .ReplaceIgnoreCase(".chi-Chinese_(Yue)", ".cht-cantonese")
                 .ReplaceIgnoreCase(".chi-Chinese_(Simplified)", ".chs")
                 .ReplaceIgnoreCase(".chi-Chinese_(Hong_Kong_SAR_China)", ".cht-cantonese")
                 .ReplaceIgnoreCase(".chi-Chinese_(Hong_Kong)", ".cht-cantonese")
-                .ReplaceIgnoreCase(".chi-Hong_Kong", ".cht-cantonese")
                 .ReplaceIgnoreCase(".chi-Traditional_Chinese", ".cht")
+                .ReplaceIgnoreCase(".chi-Hong_Kong", ".cht-cantonese")
                 .ReplaceIgnoreCase(".chi-Simplified_Chinese", ".chs")
                 .ReplaceIgnoreCase(".chi-Traditional", ".cht")
                 .ReplaceIgnoreCase(".chi-Simplified", ".chs")
@@ -1012,10 +1017,12 @@ internal static partial class Video
                 .ReplaceIgnoreCase(".chi-CHT", ".cht")
                 .ReplaceIgnoreCase(".chi-CHS", ".chs")
                 .ReplaceIgnoreCase(".eng-sdh", "")
+                .ReplaceIgnoreCase(".eng-English_(dub)", ".eng-dubbed")
                 .ReplaceIgnoreCase(".eng-English", ".eng")
                 .ReplaceIgnoreCase(".eng-Eng_SUP", ".eng")
                 .ReplaceIgnoreCase(".eng-English_Regular___OCR", ".eng-ocr")
                 .ReplaceIgnoreCase(".eng_Regular___OCR", ".eng-ocr")
+                .ReplaceIgnoreCase(".eng_(dub)", ".eng-dubbed")
         );
 
         EnumerateDirectories(directory, seasonLevel)
