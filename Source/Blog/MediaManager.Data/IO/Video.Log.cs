@@ -485,7 +485,7 @@ internal static partial class Video
                             }
                         });
 
-                        videos.Where(video => !Regex.IsMatch(video, @"S[0-9]{2,4}E[0-9]{2,3}[\.\-E]")).ForEach(video => log($"!Video name: {video}"));
+                        videos.Where(video => !Regex.IsMatch(video, @"S[0-9]{2,4}E[0-9]{2,4}[\.\-E]")).ForEach(video => log($"!Video name: {video}"));
 
                         string[] allowedSubtitles = videos
                             .Select(PathHelper.GetFileNameWithoutExtension)

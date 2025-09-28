@@ -171,4 +171,26 @@ public static class DirectoryHelper
             new DirectoryInfo(directory.ThrowIfNullOrWhiteSpace()).Attributes &= ~FileAttributes.Hidden;
         }
     }
+
+    public static void DeleteEmptySubDirectory(string directory, bool isPermanent = false)
+    {
+        Directory.GetDirectories(directory).ForEach(subDirectory =>
+        {
+            DeleteEmptySubDirectory(subDirectory);
+
+            if (Directory.EnumerateFileSystemEntries(subDirectory).Any())
+            {
+                return;
+            }
+
+            if (isPermanent)
+            {
+                Directory.Delete(subDirectory);
+            }
+            else
+            {
+                Recycle(subDirectory);
+            }
+        });
+    }
 }

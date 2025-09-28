@@ -6,20 +6,20 @@ using System.Linq;
 
 internal class Media
 {
-    private static readonly Regex[] KeywordsToRemove = 
+    private static readonly Regex[] KeywordsToRemove =
     [
-        new(@"gc2048\.com[\-]*", RegexOptions.IgnoreCase), 
-        new(@"www\.98T\.la[@]*", RegexOptions.IgnoreCase), 
-        new(@"guochan2048\.com[\-]*", RegexOptions.IgnoreCase), 
-        new(@"【 5d86\.shop】", RegexOptions.IgnoreCase), 
-        new(@"【7d68\.xyz】", RegexOptions.IgnoreCase), 
-        new(@"2048\.cc[\-]*", RegexOptions.IgnoreCase), 
-        new(@"fun2048\.com[@]*", RegexOptions.IgnoreCase), 
-        new(@"2048社区[\-]*", RegexOptions.IgnoreCase), 
-        new(@"kcf9\.com[\-]*", RegexOptions.IgnoreCase), 
-        new(@"[\.]*com[\-]+", RegexOptions.IgnoreCase), 
-        new(@"\(R18\)", RegexOptions.IgnoreCase), 
-        new(@"^[\-_]+"), 
+        new(@"gc2048\.com[\-]*", RegexOptions.IgnoreCase),
+        new(@"www\.98T\.la[@]*", RegexOptions.IgnoreCase),
+        new(@"guochan2048\.com[\-]*", RegexOptions.IgnoreCase),
+        new(@"【 5d86\.shop】", RegexOptions.IgnoreCase),
+        new(@"【7d68\.xyz】", RegexOptions.IgnoreCase),
+        new(@"2048\.cc[\-]*", RegexOptions.IgnoreCase),
+        new(@"fun2048\.com[@]*", RegexOptions.IgnoreCase),
+        new(@"2048社区[\-]*", RegexOptions.IgnoreCase),
+        new(@"kcf9\.com[\-]*", RegexOptions.IgnoreCase),
+        new(@"[\.]*com[\-]+", RegexOptions.IgnoreCase),
+        new(@"\(R18\)", RegexOptions.IgnoreCase),
+        new(@"^[\-_]+"),
         new(@"[\-]+$")];
 
     internal static void SimplifyDirectories(string directory, Action<string>? log = null)
@@ -31,8 +31,7 @@ internal class Media
             return;
         }
 
-        string newDirectory = KeywordsToRemove
-            .Aggregate(directory, (accumulation, keywordToRemove) => keywordToRemove.Replace(accumulation, string.Empty));
+        string newDirectory = FormatDirectory(directory);
 
         if (!newDirectory.EqualsIgnoreCase(directory))
         {
@@ -42,7 +41,7 @@ internal class Media
 
         string[] subDirectories = Directory.GetDirectories(directory);
         string[] newSubDirectories = subDirectories
-            .Select(subDirectory => KeywordsToRemove.Aggregate(subDirectory, (accumulation, keywordToRemove) => keywordToRemove.Replace(accumulation, string.Empty)))
+            .Select(FormatDirectory)
             .ToArray();
         (string First, string Second)[] subDirectoriesToRename = subDirectories
             .Zip(newSubDirectories)
@@ -56,7 +55,7 @@ internal class Media
 
         string[] files = Directory.GetFiles(directory);
         string[] newFiles = files
-            .Select(file => KeywordsToRemove.Aggregate(file, (accumulation, keywordToRemove) => keywordToRemove.Replace(accumulation, string.Empty)))
+            .Select(FormatFile)
             .ToArray();
         (string First, string Second)[] filesToRename = files
             .Zip(newFiles)
@@ -141,7 +140,7 @@ internal class Media
             string parentDirectory = PathHelper.GetDirectoryName(directory);
             log(file);
             string newFile = Path.Combine(parentDirectory, fileName);
-            if(File.Exists(newFile) && new FileInfo(file).Length == new FileInfo(newFile).Length)
+            if (File.Exists(newFile) && new FileInfo(file).Length == new FileInfo(newFile).Length)
             {
                 FileHelper.Recycle(newFile);
                 log($"Delete {newFile}");
@@ -195,7 +194,7 @@ internal class Media
             files.ForEach(file =>
             {
                 string fileNameWithoutExtension = PathHelper.GetFileNameWithoutExtension(file);
-                Match match = Regex.Match(fileNameWithoutExtension, @" \([0-9]+\)$");
+                Match match = Regex.Match(fileNameWithoutExtension, @"( \([0-9]+\)|_[0-9]+| [0-9]+)$");
                 if (match.Success)
                 {
                     string originalFileNameWithoutExtension = fileNameWithoutExtension[..match.Index];
@@ -217,5 +216,35 @@ internal class Media
         }
 
         subDirectories.ForEach(subDirectory => SimplifyDirectories(subDirectory, log));
+
+        static string FormatDirectory(string path)
+        {
+            string newPath = KeywordsToRemove
+                .Aggregate(path, (accumulation, keywordToRemove) => keywordToRemove.Replace(accumulation, string.Empty));
+            string name = PathHelper.GetFileName(path);
+            name = name.Trim();
+            char[] nameSeparators = name.Where((character, index) => index % 2 != 0).Distinct().ToArray();
+            if (nameSeparators.Count() == 1 && (name.Length > 6 || nameSeparators.Single() == '變'))
+            {
+                name = new string(name.Where((character, index) => index % 2 == 0).ToArray());
+            }
+
+            return PathHelper.ReplaceDirectoryName(newPath, name);
+        }
+
+        static string FormatFile(string path)
+        {
+            string newPath = KeywordsToRemove
+                .Aggregate(path, (accumulation, keywordToRemove) => keywordToRemove.Replace(accumulation, string.Empty));
+            string name = PathHelper.GetFileNameWithoutExtension(path);
+            name = name.Trim();
+            char[] nameSeparators = name.Where((character, index) => index % 2 != 0).Distinct().ToArray();
+            if (nameSeparators.Count() == 1 && (name.Length > 6 || nameSeparators.Single() == '變'))
+            {
+                name = new string(name.Where((character, index) => index % 2 == 0).ToArray());
+            }
+
+            return PathHelper.ReplaceFileNameWithoutExtension(newPath, name);
+        }
     }
 }

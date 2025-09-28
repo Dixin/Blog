@@ -25,7 +25,7 @@ internal record VideoEpisodeFileInfo(
     private static Regex NameRegex => nameRegex ??= RegexHelper.Create(
         @"^",
         @"(.+?)(\.([0-9]{4}))?",
-        @"\.S([0-9]{2,4})E([0-9]{2,3})(E([0-9]{2,3}))?",
+        @"\.S([0-9]{2,4})E([0-9]{2,4})(E([0-9]{2,4}))?",
         @"(\.[A-Z\.\-]{2,})?(\.FAKE)?",
         @"(\.2160p|\.1080p|\.720p|\.540p|\.480p|\.360p|\.Upscale\.2160p|\.Upscale\.1080p|\.Upscale\.720p)?",
         @"(\.4K\.WEB|\.BluRay|\.CAM|\.DVD|\.DVDRip|\.HDRip|\.HDTV|\.HQDVDRip|\.LDRip|\.LDDVDRip|\.LDVDRip|\.TV|\.TVRip|\.TS|\.UHD\.BluRay|\.UHD\.WEBRip|\.VCD|\.VCDRip|\.VHSRip|\.WEBRip)?",
