@@ -8,19 +8,12 @@ internal class Media
 {
     private static readonly Regex[] KeywordsToRemove =
     [
-        new(@"gc2048\.com[\-]*", RegexOptions.IgnoreCase),
-        new(@"www\.98T\.la[@]*", RegexOptions.IgnoreCase),
-        new(@"guochan2048\.com[\-]*", RegexOptions.IgnoreCase),
-        new(@"【 5d86\.shop】", RegexOptions.IgnoreCase),
-        new(@"【7d68\.xyz】", RegexOptions.IgnoreCase),
-        new(@"2048\.cc[\-]*", RegexOptions.IgnoreCase),
-        new(@"fun2048\.com[@]*", RegexOptions.IgnoreCase),
-        new(@"2048社区[\-]*", RegexOptions.IgnoreCase),
-        new(@"kcf9\.com[\-]*", RegexOptions.IgnoreCase),
-        new(@"[\.]*com[\-]+", RegexOptions.IgnoreCase),
-        new(@"\(R18\)", RegexOptions.IgnoreCase),
-        new(@"^[\-_]+"),
-        new(@"[\-]+$")];
+        new(@"[_\-@ ]*(www\.)?[a-z0-9]+\.(com|net|xyz|cc|nl|cool|org|live|vip|me|la|so|club|top|tv)[\-@ ]*", RegexOptions.IgnoreCase),
+        new(@"[_\-@ ]*[0-9a-z]+\,com[\-@ ]*", RegexOptions.IgnoreCase),
+        new(@"[_\-@ ]*(村花论坛|2048论坛|2048社区|sehuatang|98tang|98t|guochan2048|U3C3|www\.98T|\(R18\)|\[S\]|\[BT\])[\-@ ]*", RegexOptions.IgnoreCase),
+        new(@"[_\-@ ]*(\[\]|\(\)|【】|（）|《》)[\-@ ]*", RegexOptions.IgnoreCase),
+        new(@"[\^]*auto_create@[0-9\. \,]+ (AM|PM) \([0-9]+\)[\^]*", RegexOptions.IgnoreCase),
+    ];
 
     internal static void SimplifyDirectories(string directory, Action<string>? log = null)
     {
@@ -35,7 +28,7 @@ internal class Media
 
         if (!newDirectory.EqualsIgnoreCase(directory))
         {
-            Directory.Move(directory, newDirectory);
+            DirectoryHelper.Move(directory, newDirectory);
             directory = newDirectory;
         }
 
@@ -49,7 +42,7 @@ internal class Media
             .ToArray();
         if (subDirectoriesToRename.Any())
         {
-            subDirectoriesToRename.ForEach(subDirectoryToRename => Directory.Move(subDirectoryToRename.First, subDirectoryToRename.Second));
+            subDirectoriesToRename.ForEach(subDirectoryToRename => DirectoryHelper.Move(subDirectoryToRename.First, subDirectoryToRename.Second));
             subDirectories = newSubDirectories;
         }
 
@@ -71,7 +64,20 @@ internal class Media
                     log($"Delete {fileToRename.Second}");
                 }
 
-                File.Move(fileToRename.First, fileToRename.Second);
+                bool overwrite = false;
+                if (File.Exists(fileToRename.Second))
+                {
+                    if (new FileInfo(fileToRename.First).Length == new FileInfo(fileToRename.Second).Length)
+                    {
+                        overwrite = true;
+                    }
+                    else
+                    {
+                        FileHelper.AddPostfix(fileToRename.Second, "_");
+                    }
+                }
+
+                FileHelper.Move(fileToRename.First, fileToRename.Second, overwrite);
             });
 
             files = newFiles;
@@ -140,10 +146,17 @@ internal class Media
             string parentDirectory = PathHelper.GetDirectoryName(directory);
             log(file);
             string newFile = Path.Combine(parentDirectory, fileName);
-            if (File.Exists(newFile) && new FileInfo(file).Length == new FileInfo(newFile).Length)
+            if (File.Exists(newFile))
             {
-                FileHelper.Recycle(newFile);
-                log($"Delete {newFile}");
+                if (new FileInfo(file).Length == new FileInfo(newFile).Length)
+                {
+                    FileHelper.Recycle(newFile);
+                    log($"Delete {newFile}");
+                }
+                else
+                {
+                    FileHelper.AddPostfix(newFile, "_");
+                }
             }
 
             file = FileHelper.MoveToDirectory(file, parentDirectory, skipDestinationDirectory: true);
@@ -159,13 +172,26 @@ internal class Media
                 }
 
                 log(file);
+                string destinationFile = PathHelper.ReplaceFileNameWithoutExtension(file, directoryName);
+                if (!file.EqualsIgnoreCase(destinationFile) && File.Exists(destinationFile))
+                {
+                    if (new FileInfo(file).Length == new FileInfo(destinationFile).Length)
+                    {
+                        FileHelper.Recycle(destinationFile);
+                        log($"Delete {destinationFile}");
+                    }
+                    else
+                    {
+                        FileHelper.AddPostfix(destinationFile, "_");
+                    }
+                }
+
                 file = FileHelper.ReplaceFileNameWithoutExtension(file, directoryName);
                 log(file);
                 log(string.Empty);
             }
             else if (fileName.ContainsIgnoreCase(directoryName) || fileNameWithoutExtension.ContainsIgnoreCase(directoryName))
             {
-
             }
             else
             {
@@ -194,7 +220,7 @@ internal class Media
             files.ForEach(file =>
             {
                 string fileNameWithoutExtension = PathHelper.GetFileNameWithoutExtension(file);
-                Match match = Regex.Match(fileNameWithoutExtension, @"( \([0-9]+\)|_[0-9]+| [0-9]+)$");
+                Match match = Regex.Match(fileNameWithoutExtension, @"( \([0-9]+\)|_[0-9]+| [0-9]+|_)$");
                 if (match.Success)
                 {
                     string originalFileNameWithoutExtension = fileNameWithoutExtension[..match.Index];
@@ -219,10 +245,10 @@ internal class Media
 
         static string FormatDirectory(string path)
         {
-            string newPath = KeywordsToRemove
-                .Aggregate(path, (accumulation, keywordToRemove) => keywordToRemove.Replace(accumulation, string.Empty));
-            string name = PathHelper.GetFileName(path);
-            name = name.Trim();
+            string newPath = path;
+            KeywordsToRemove.ForEach(keywordToRemove => newPath = keywordToRemove.Replace(newPath, string.Empty));
+            string name = PathHelper.GetFileName(newPath);
+            name = name.Trim().TrimStart('-', '_', '@', ',', '.').TrimEnd('-', '@', ',', '.').Trim();
             char[] nameSeparators = name.Where((character, index) => index % 2 != 0).Distinct().ToArray();
             if (nameSeparators.Count() == 1 && (name.Length > 6 || nameSeparators.Single() == '變'))
             {
@@ -234,10 +260,10 @@ internal class Media
 
         static string FormatFile(string path)
         {
-            string newPath = KeywordsToRemove
-                .Aggregate(path, (accumulation, keywordToRemove) => keywordToRemove.Replace(accumulation, string.Empty));
-            string name = PathHelper.GetFileNameWithoutExtension(path);
-            name = name.Trim();
+            string newPath = path;
+            KeywordsToRemove.ForEach(keywordToRemove => newPath = keywordToRemove.Replace(newPath, string.Empty));
+            string name = PathHelper.GetFileNameWithoutExtension(newPath);
+            name = name.Trim().TrimStart('-', '_', '@', ',', '.').TrimEnd('-', '@', ',', '.').Trim();
             char[] nameSeparators = name.Where((character, index) => index % 2 != 0).Distinct().ToArray();
             if (nameSeparators.Count() == 1 && (name.Length > 6 || nameSeparators.Single() == '變'))
             {
