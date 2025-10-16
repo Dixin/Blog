@@ -541,8 +541,10 @@ string[][] metadataDrives = [
 //await Video.PrintMovieImdbIdErrorsAsync(settings, true, log, cancellationTokenSource.Token, settings.MovieTemp42);
 //await Video.ConvertToUtf8Async(settings.MovieTemp42, false);
 //Video.MoveMovieSubtitleToParent(settings.MovieTemp42, settings.MovieSubtitleBackupDirectory, false);
+//Video.FormatSubtitleSuffix(@"L:\Files\Library\TV");
 //Video.MoveMetadata(settings.MovieTemp42, settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory);
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp42, 2, overwrite: false, useCache: true, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.MovieTemp42, 1, overwrite: false, useCache: true, useBrowser: true);
 //FfmpegHelper.MergeAllDubbedMovies(settings.MovieTemp42, isDryRun: true);
 //Video.PrintDuplicateImdbId(null, @"G:\Files\Library",
 //    @"H:\Files\Library",
@@ -553,13 +555,46 @@ string[][] metadataDrives = [
 //Video.CopyMovieMetadata(settings.MovieTemp42, 2, true);
 //Video.RenameDirectoriesWithMetadata(settings, settings.MovieTemp42, isDryRun: false, skipRenamed: true);
 //Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp42);
+//Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp42, 1, isTV:true);
 //Video.MoveFanArt(settings.MovieTemp42);
 //Video.RestoreMetadata(settings.MovieTemp42);
 //Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp42);
+//Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp42, 1, isTV: true);
 //Video.RenameDirectoriesWithDigits(settings.MovieTemp42);
+//Video.RenameDirectoriesWithAdditionalMetadata(settings, @"K:\Files\Library\1TV Encode");
+//Video.RenameDirectoriesWithoutAdditionalMetadata(@"K:\Files\Library\1TV Encode");
 //Video.RenameDirectoriesWithGraphicMetadata(settings.MovieTemp42);
-//Video.MoveDirectoriesByRegions(settings, settings.MovieTemp42, isDryRun: false);
+//Video.MoveDirectoriesByRegions(settings, settings.MovieTemp42, 2, isDryRun: false);
 //Video.RenameDirectoriesWithoutAdditionalMetadata(settings.MovieTemp42);
+
+//Video.EnumerateDirectories(@"L:\Files\Library\TV Mainstream.主流电视剧")
+//    .GroupBy(d => PathHelper.GetFileName(d)
+//        .Split(".", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).First()
+//        .Split("`", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).First()
+//        .Split("-", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).First()
+//        .Split("=", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).First())
+//    .Where(g => g.Count() > 1)
+//    .ForEach(g => g.Prepend(g.Key).Append("").ForEach(log));
+//var tvByRegions = Video.EnumerateDirectories(@"L:\Files\Library\TV Mainstream.主流电视剧", 2)
+//    //.Concat(Video.EnumerateDirectories(@"K:\Files\Library\TV Controversial.非主流电视剧", 2))
+//    //.Concat(Video.EnumerateDirectories(@"K:\Files\Library\TV Documentary.记录电视剧", 1))
+//    //.Concat(Video.EnumerateDirectories(@"K:\Files\Library\TV Mainstream Overflow.主流电视剧", 2))
+//    .ToDictionary(PathHelper.GetFileName);
+
+//var tvs = Video.EnumerateDirectories(@"O:\Files\Library\TV Mainstream.主流电视剧", 1)
+//    .ToDictionary(PathHelper.GetFileName);
+
+//tvs.Keys
+//    .ForEach(name =>
+//    {
+//        string d = tvs[name];
+//        string parent = PathHelper.GetFileName(PathHelper.GetDirectoryName(tvByRegions[name]));
+//        string newParent = Path.Combine(@"O:\Files\Library\TV Mainstream.主流电视剧", parent);
+//        DirectoryHelper.MoveToDirectory(d, newParent);
+//    });
+//Video.EnumerateDirectories(@"L:\Files\Library\TV Mainstream.主流电视剧")
+//    .Where(d=>!d.ContainsIgnoreCase("[1080") && !d.ContainsIgnoreCase("[720"))
+//    .ForEach(d => Logger.WriteLine(d));
 
 //Directory.GetFiles(@"D:\User\Downloads\New folder", "*", SearchOption.AllDirectories)
 //    .ForEach(f => File.Move(f, f
@@ -1783,5 +1818,3 @@ static void MoveSubtitles(string sourceDirectory, string destinationDirectory, b
 //.AsParallel()
 //.ForAll(action => action());
 
-//await FfmpegHelper.ExtractAllAsync(settings, @"\\box-x\E\Files\New folder (2)\New folder", outputVideos: [input => PathHelper.ReplaceExtension(input, ".mp4")
-//    .ReplaceIgnoreCase(@"\\box-x\E\Files\New folder (2)\New folder", @"G:\Files\Library\Movies\New folder")]);
