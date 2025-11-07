@@ -55,117 +55,6 @@
     "TVMetadataDirectory": "D:\\Files\\Library\\TVMetadata",
     "TVMetadataCacheDirectory": "D:\\Files\\Library\\TVMetadataCache",
 
-    "Movie3D": {
-        "Directory": "D:\\Files\\Library\\Movies 3D.立体电影",
-        "Level": 2
-    },
-    "MovieHdr": {
-        "Directory": "D:\\Files\\Library\\Movies 4K HDR.高动态范围电影",
-        "Level": 2
-    },
-    "MovieControversial": {
-        "Directory": "D:\\Files\\Library\\Movies Controversial.非主流电影",
-        "Level": 2
-    },
-    "MovieControversialWithoutSubtitle": {
-        "Directory": "D:\\Files\\Library\\Movies Controversial.非主流电影[未抓取字幕]",
-        "Level": 2
-    },
-    "MovieControversialTemp4": {
-        "Directory": "D:\\Files\\Library\\Movies Controversial Temp4.非主流电影4",
-        "Level": 2
-    },
-    "MovieMainstream": {
-        "Directory": "D:\\Files\\Library\\Movies Mainstream.主流电影",
-        "Level": 2
-    },
-    "MovieMainstreamWithoutSubtitle": {
-        "Directory": "D:\\Files\\Library\\Movies Mainstream.主流电影[未抓取字幕]",
-        "Level": 2
-    },
-    "MovieTemp1": {
-        "Directory": "D:\\Files\\Library\\Movies Mainstream Temp1.主流电影1",
-        "Level": 2
-    },
-    "MovieTemp2": {
-        "Directory": "D:\\Files\\Library\\Movies Mainstream Temp2.主流电影2",
-        "Level": 2
-    },
-    "MovieMusical": {
-        "Directory": "D:\\Files\\Library\\Movies Musical.音乐",
-        "Level": 2
-    },
-    "MovieTemp3": {
-        "Directory": "D:\\Files\\Library\\Movies Mainstream Temp3.主流电影3",
-        "Level": 2
-    },
-    "MovieTemp31": {
-        "Directory": "D:\\Files\\Library\\Movies Temp3.电影3",
-        "Level": 2
-    },
-    "MovieTemp32": {
-        "Directory": "D:\\Files\\Library\\Movies Temp3.2.电影3.2",
-        "Level": 2
-    },
-    "MovieTemp4": {
-        "Directory": "D:\\Files\\Library\\Movies Mainstream Temp4.主流电影4",
-        "Level": 2
-    },
-    "MovieTemp41": {
-        "Directory": "D:\\Files\\Library\\Movies Temp4.电影4",
-        "Level": 2
-    },
-    "MovieTemp42": {
-        "Directory": "D:\\Files\\Library\\Movies Temp4.2.电影4.2",
-        "Level": 2
-    },
-    "MovieTemp4Encode": {
-        "Directory": "D:\\Files\\Library\\Movies Encode4.电影4",
-        "Level": 2
-    },
-    "MovieDisk": {
-        "Directory": "D:\\Files\\Library\\Movies Disk.电影原盘",
-        "Level": 2
-    },
-
-    "MovieExternalNew": {
-        "Directory": "D:\\Files\\Library\\Movies New",
-        "Level": 1
-    },
-    "MovieExternalDelete": {
-        "Directory": "D:\\Files\\Library\\Movies Delete",
-        "Level": 1
-    },
-
-    "TVControversial": {
-        "Directory": "D:\\Files\\Library\\TV Controversial.非主流电视剧",
-        "Level": 1
-    },
-    "TVDocumentary": {
-        "Directory": "D:\\Files\\Library\\TV Documentary.记录电视剧",
-        "Level": 1
-    },
-    "TVMainstream": {
-        "Directory": "D:\\Files\\Library\\TV Mainstream.主流电视剧",
-        "Level": 1
-    },
-    "TVTutorial": {
-        "Directory": "D:\\Files\\Library\\TV Tutorial.教程",
-        "Level": 1
-    },
-    "TVMainstreamWithoutSubtitle": {
-        "Directory": "D:\\Files\\Library\\TV Mainstream.主流电视剧[未抓取字幕]",
-        "Level": 1
-    },
-    "TVTemp4": {
-        "Directory": "D:\\Files\\Library\\TV Temp4.电视剧4",
-        "Level": 1
-    },
-    "TVHdr": {
-        "Directory": "D:\\Files\\Library\\TV 4K HDR.高动态范围电视剧",
-        "Level": 1
-    },
-
     "AudioControversial": {
         "Directory": "D:\\Files\\Library\\Audio Controversial.非主流音乐",
         "Level": 1
@@ -180,6 +69,112 @@
     },
     "AudioSoundtrack": {
         "Directory": "D:\\Files\\Library\\Audio Soundtrack.电影音乐",
+        "Level": 1
+    },
+
+    "Movie3D": {
+        "Directory": "D:\\Files\\Library\\Movies 3D.立体电影",
+        "Level": 2
+    },
+    "Movie4KHdr": {
+        "Directory": "D:\\Files\\Library\\Movies 4K HDR.高动态范围电影",
+        "Level": 2
+    },
+    "Movie4KHdrOverflow": {
+        "Directory": "D:\\Files\\Library\\Movies 4K HDR Overflow.高动态范围电影",
+        "Level": 2
+    },
+    "MovieControversial": {
+        "Directory": "D:\\Files\\Library\\Movies Controversial.非主流电影",
+        "Level": 2
+    },
+    "MovieControversialWithoutSubtitle": {
+        "Directory": "D:\\Files\\Library\\Movies Controversial.非主流电影[未抓取字幕]",
+        "Level": 2
+    },
+    "MovieDisk": {
+        "Directory": "D:\\Files\\Library\\Movies Disk.电影原盘",
+        "Level": 2
+    },
+    "MovieFranchise": {
+        "Directory": "D:\\Files\\Library\\Movies Franchise.系列电影",
+        "Level": 2
+    },
+    "MovieFranchiseWithoutSubtitle": {
+        "Directory": "D:\\Files\\Library\\Movies Franchise.系列电影[未抓取字幕]",
+        "Level": 2
+    },
+    "MovieMainstream1": {
+        "Directory": "D:\\Files\\Library\\Movies Mainstream 1.主流电影1",
+        "Level": 2
+    },
+    "MovieMainstream2": {
+        "Directory": "D:\\Files\\Library\\Movies Mainstream 1.主流电影2",
+        "Level": 2
+    },
+    "MovieMainstream3": {
+        "Directory": "D:\\Files\\Library\\Movies Mainstream 1.主流电影3",
+        "Level": 2
+    },
+    "MovieMusical": {
+        "Directory": "D:\\Files\\Library\\Movies Musical.音乐",
+        "Level": 2
+    },
+    "MovieTemp1": {
+        "Directory": "D:\\Files\\Library\\Movies Temp 1",
+        "Level": 2
+    },
+    "MovieTemp2": {
+        "Directory": "D:\\Files\\Library\\Movies Temp 2",
+        "Level": 2
+    },
+    "MovieTemp3": {
+        "Directory": "D:\\Files\\Library\\Movies Temp 3",
+        "Level": 2
+    },
+    "MovieTemp4KHdr1": {
+        "Directory": "D:\\Files\\Library\\Movies 4K HDR Temp 1",
+        "Level": 2
+    },
+    "MovieTemp4KHdr2": {
+        "Directory": "D:\\Files\\Library\\Movies 4K HDR Temp 2",
+        "Level": 2
+    },
+
+    "TV4KHdr": {
+        "Directory": "D:\\Files\\Library\\TV 4K HDR.高动态范围电视剧",
+        "Level": 1
+    },
+    "TVControversial": {
+        "Directory": "D:\\Files\\Library\\TV Controversial.非主流电视剧",
+        "Level": 1
+    },
+    "TVDocumentary": {
+        "Directory": "D:\\Files\\Library\\TV Documentary.记录电视剧",
+        "Level": 1
+    },
+    "TVMainstream": {
+        "Directory": "D:\\Files\\Library\\TV Mainstream.主流电视剧",
+        "Level": 1
+    },
+    "TVMainstreamChinese": {
+        "Directory": "D:\\Files\\Library\\TV Mainstream Chinese.主流电视剧",
+        "Level": 1
+    },
+    "TVMainstreamOverflow": {
+        "Directory": "D:\\Files\\Library\\TV Mainstream Overflow.主流电视剧",
+        "Level": 1
+    },
+    "TVTutorial": {
+        "Directory": "D:\\Files\\Library\\TV Tutorial.教程",
+        "Level": 1
+    },
+    "TVTemp1": {
+        "Directory": "D:\\Files\\Library\\TV Temp 1",
+        "Level": 1
+    },
+    "TVTemp2": {
+        "Directory": "D:\\Files\\Library\\TV Temp 2",
         "Level": 1
     },
 

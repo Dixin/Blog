@@ -59,19 +59,35 @@ public partial record Settings(
 
     string TempFile)
 {
+    public DirectorySettings AudioControversial { get; init; }
+
+    public DirectorySettings AudioMainstream { get; init; }
+
+    public DirectorySettings AudioShow { get; init; }
+
+    public DirectorySettings AudioSoundtrack { get; init; }
+
     public DirectorySettings Movie3D { get; init; }
 
-    public DirectorySettings MovieHdr { get; init; }
+    public DirectorySettings Movie4KHdr { get; init; }
+
+    public DirectorySettings Movie4KHdrOverflow { get; init; }
 
     public DirectorySettings MovieControversial { get; init; }
 
     public DirectorySettings MovieControversialWithoutSubtitle { get; init; }
 
-    public DirectorySettings MovieControversialTemp4 { get; init; }
+    public DirectorySettings MovieDisk { get; init; }
 
-    public DirectorySettings MovieMainstream { get; init; }
+    public DirectorySettings MovieFranchise { get; init; }
 
-    public DirectorySettings MovieMainstreamWithoutSubtitle { get; init; }
+    public DirectorySettings MovieFranchiseWithoutSubtitle { get; init; }
+
+    public DirectorySettings MovieMainstream1 { get; init; }
+
+    public DirectorySettings MovieMainstream2 { get; init; }
+
+    public DirectorySettings MovieMainstream3 { get; init; }
 
     public DirectorySettings MovieMusical { get; init; }
 
@@ -81,23 +97,11 @@ public partial record Settings(
 
     public DirectorySettings MovieTemp3 { get; init; }
 
-    public DirectorySettings MovieTemp31 { get; init; }
+    public DirectorySettings MovieTemp4KHdr1 { get; init; }
 
-    public DirectorySettings MovieTemp32 { get; init; }
+    public DirectorySettings MovieTemp4KHdr2 { get; init; }
 
-    public DirectorySettings MovieTemp4 { get; init; }
-
-    public DirectorySettings MovieTemp41 { get; init; }
-
-    public DirectorySettings MovieTemp42 { get; init; }
-
-    public DirectorySettings MovieTemp4Encode { get; init; }
-
-    public DirectorySettings MovieDisk { get; init; }
-
-    public DirectorySettings MovieExternalNew { get; init; }
-
-    public DirectorySettings MovieExternalDelete { get; init; }
+    public DirectorySettings TV4KHdr { get; init; }
 
     public DirectorySettings TVControversial { get; init; }
 
@@ -105,21 +109,15 @@ public partial record Settings(
 
     public DirectorySettings TVMainstream { get; init; }
 
+    public DirectorySettings TVMainstreamChinese { get; init; }
+
+    public DirectorySettings TVMainstreamOverflow { get; init; }
+
     public DirectorySettings TVTutorial { get; init; }
 
-    public DirectorySettings TVMainstreamWithoutSubtitle { get; init; }
+    public DirectorySettings TVTemp1 { get; init; }
 
-    public DirectorySettings TVTemp4 { get; init; }
-
-    public DirectorySettings TVHdr { get; init; }
-
-    public DirectorySettings AudioControversial { get; init; }
-
-    public DirectorySettings AudioMainstream { get; init; }
-
-    public DirectorySettings AudioShow { get; init; }
-
-    public DirectorySettings AudioSoundtrack { get; init; }
+    public DirectorySettings TVTemp2 { get; init; }
 
     public Dictionary<string, string[]> MovieRegions { get; init; } = new();
 
