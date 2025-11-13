@@ -55,12 +55,11 @@ public class DynamicWrapperTest
     }
 
     [TestMethod]
-    [ExpectedException(typeof(RuntimeBinderException))]
     public void ValueTypePropertyTest()
     {
         StructTest test2 = new(10);
         dynamic wrapper2 = new DynamicWrapper<StructTest>(ref test2);
 
-        wrapper2.Value = 30;
+        Assert.ThrowsExactly<RuntimeBinderException>(() => wrapper2.Value = 30);
     }
 }

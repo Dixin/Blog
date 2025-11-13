@@ -15,11 +15,10 @@ internal static class Contrast
         ContrastMetadata[] metadata = await AsyncEnumerable
             .Range(0, pageCount)
             .Select(pageIndex => $"{settings.TVContrastUrl}{pageIndex}")
-            .Do(log)
-            .SelectManyAwait(async pageUrl =>
+            .SelectMany(async (pageUrl, token) =>
             {
                 using HttpClient httpClient = new HttpClient().AddEdgeHeaders();
-                CQ cq = await httpClient.GetStringAsync(pageUrl, cancellationToken);
+                CQ cq = await httpClient.GetStringAsync(pageUrl, token);
                 return cq
                     .Find("div.tgxtable div.tgxtablerow")
                     .Select(rowDom =>
@@ -44,8 +43,7 @@ internal static class Contrast
                         return new ContrastMetadata(
                             link, title, string.Empty, [], image, imdbId,
                             dateAdded, size, int.Parse(seed), int.Parse(leech), uploader, torrent, magnet);
-                    })
-                    .ToAsyncEnumerable();
+                    });
             })
             .ToArrayAsync(cancellationToken);
 
