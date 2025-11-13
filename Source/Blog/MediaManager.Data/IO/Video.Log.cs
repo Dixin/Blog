@@ -3011,8 +3011,10 @@ internal static partial class Video
             settings.TVControversial,
             settings.TVDocumentary,
             settings.TVMainstream,
-            settings.TVMainstreamWithoutSubtitle,
-            settings.TVTemp4
+            settings.TVMainstreamOverflow,
+            settings.TVMainstreamChinese,
+            settings.TVTemp1,
+            settings.TVTemp2
         ];
 
         tvDirectories
@@ -3088,7 +3090,7 @@ internal static partial class Video
         const int CompareLevel = 1; // Should be 2.
 
         ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> library = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
-        string[] hdrMovies = EnumerateDirectories(settings.MovieHdr).ToArray();
+        string[] hdrMovies = EnumerateDirectories(settings.Movie4KHdr).ToArray();
         hdrMovies.ForEach(destinationDirectory =>
         {
             if (!ImdbMetadata.TryRead(destinationDirectory, out string? imdbId, out _, out _, out _, out _))
