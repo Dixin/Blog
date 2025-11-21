@@ -3012,7 +3012,9 @@ internal static partial class Video
             settings.TVDocumentary,
             settings.TVMainstream,
             settings.TVMainstreamOverflow,
-            settings.TVMainstreamChinese
+            settings.TVMainstreamChinese,
+            settings.TVTemp1,
+            settings.TVTemp2
         ];
 
         tvDirectories
