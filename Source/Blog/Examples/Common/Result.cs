@@ -1,10 +1,16 @@
 ﻿namespace Examples.Common;
 
+using System.Collections;
+
 public interface IResult<TResult> where TResult : IResult<TResult>
 {
     Exception? Exception { get; }
 
     bool IsOk { get; }
+
+    ValueTaskAwaiter GetAwaiter();
+
+    static abstract explicit operator ValueTask(in TResult result);
 
     static abstract TResult operator |(in TResult x, in TResult y);
 
@@ -17,7 +23,7 @@ public interface IResult<TResult> where TResult : IResult<TResult>
     static abstract bool operator false(in TResult result);
 }
 
-public interface IResult<T, TResult> : IResult<TResult> where TResult : IResult<T, TResult>
+public interface IResult<T, TResult> : IResult<TResult>, IEnumerable<T> where TResult : IResult<T, TResult>
 {
     T Value { get; }
 
@@ -28,6 +34,10 @@ public interface IResult<T, TResult> : IResult<TResult> where TResult : IResult<
     bool TryGet(out T? value);
 
     T? Or(T? value);
+
+    new ValueTaskAwaiter<T> GetAwaiter();
+
+    static abstract explicit operator ValueTask<T>(in TResult result);
 
     static abstract T? operator |(in TResult result, T? value);
 
@@ -69,17 +79,31 @@ public readonly struct Result<T> : IResult<T, Result<T>>
 
     public T? Or(T? value) => this.IsOk ? this.value : value;
 
-    public ValueTask<T> AsTask() =>
-        this.Exception switch
+    public ValueTaskAwaiter<T> GetAwaiter() => ((ValueTask<T>)this).GetAwaiter();
+
+    ValueTaskAwaiter IResult<Result<T>>.GetAwaiter() => ((ValueTask)this).GetAwaiter();
+
+    public IEnumerator<T> GetEnumerator()
+    {
+        if (this.IsOk)
         {
-            null => ValueTask.FromResult(this.value!),
-            OperationCanceledException operationCanceledException => ValueTask.FromCanceled<T>(operationCanceledException.CancellationToken),
-            { } exception => ValueTask.FromException<T>(exception)
-        };
+            yield return this.value!;
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
 
     public override string ToString() => this.IsOk ? this.Exception!.ToString() : this.value?.ToString() ?? "<null>";
 
-    public static explicit operator ValueTask<T>(in Result<T> result) => result.AsTask();
+    public static explicit operator ValueTask(in Result<T> result) => new(((ValueTask<T>)result).AsTask());
+
+    public static explicit operator ValueTask<T>(in Result<T> result) =>
+        result.Exception switch
+        {
+            null => ValueTask.FromResult(result.value!),
+            OperationCanceledException operationCanceledException => ValueTask.FromCanceled<T>(operationCanceledException.CancellationToken),
+            { } exception => ValueTask.FromException<T>(exception)
+        };
 
     public static T? operator |(in Result<T> result, T? value) => result.Or(value);
 
@@ -98,27 +122,23 @@ public readonly struct Result<T> : IResult<T, Result<T>>
     public static implicit operator Result<T>(T value) => new(value);
 }
 
-public readonly partial struct Result : IResult<Result>
+public readonly partial struct Result(Exception exception) : IResult<Result>
 {
-    public Result() { }
-
-    public Result(Exception exception) => this.Exception = exception ?? throw new ArgumentNullException(nameof(exception));
-
-    public Exception? Exception { get; }
+    public Exception? Exception { get; } = exception ?? throw new ArgumentNullException(nameof(exception));
 
     public bool IsOk => this.Exception is null;
 
-    public ValueTask AsTask() =>
-        this.Exception switch
-        {
-            null => new(),
-            OperationCanceledException operationCanceledException => ValueTask.FromCanceled(operationCanceledException.CancellationToken),
-            { } exception => ValueTask.FromException(exception)
-        };
+    public ValueTaskAwaiter GetAwaiter() => ((ValueTask)this).GetAwaiter();
 
     public override string ToString() => this.Exception?.ToString() ?? "<void>";
 
-    public static explicit operator ValueTask(in Result result) => result.AsTask();
+    public static explicit operator ValueTask(in Result result) =>
+        result.Exception switch
+        {
+            null => ValueTask.CompletedTask,
+            OperationCanceledException operationCanceledException => ValueTask.FromCanceled(operationCanceledException.CancellationToken),
+            { } exception => ValueTask.FromException(exception)
+        };
 
     public static Result operator |(in Result x, in Result y) => x.IsOk ? x : y;
 
@@ -133,11 +153,13 @@ public readonly partial struct Result : IResult<Result>
 
 public readonly partial struct Result
 {
+    private static readonly Result ok = new();
+
     public static Result<T> Ok<T>(T value) => new(value);
 
     public static Result<T> Error<T>(Exception exception) => new(exception);
 
-    public static Result Ok() => new();
+    public static Result Ok() => ok;
 
     public static Result Error(Exception exception) => new(exception);
 }
