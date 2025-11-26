@@ -1034,12 +1034,20 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
 
-        Directory
-            .EnumerateFiles(directory, PathHelper.AllSearchPattern, searchOption)
-            .Where(IsVideo)
-            .ToArray()
+        string[] files = Directory.GetFiles(directory, PathHelper.AllSearchPattern, searchOption);
+        string[] videos = files.Where(IsVideo).ToArray();
+        videos
             .Do(log)
-            .ForEach(video => FileHelper.MoveToDirectory(video, Path.Combine(PathHelper.GetDirectoryName(video), PathHelper.GetFileNameWithoutExtension(video))));
+            .ForEach(video =>
+            {
+                string videoDirectory = Path.Combine(PathHelper.GetDirectoryName(video), PathHelper.GetFileNameWithoutExtension(video));
+                FileHelper.MoveToDirectory(video, videoDirectory);
+                string videoWithoutExtension = video[..video.LastIndexOfOrdinal(".")];
+                files
+                    .Where(file => !file.IsVideo() && file.StartsWithIgnoreCase(videoWithoutExtension))
+                    .ToArray()
+                    .ForEach(file => FileHelper.MoveToDirectory(file, videoDirectory));
+            });
     }
 
     internal static void FormatVideoFileNames(string directory, SearchOption searchOption = SearchOption.TopDirectoryOnly, bool isDryRun = false, Action<string>? log = null)

@@ -28,8 +28,8 @@ mklink /D "D:\Files\Library\TV Mainstream.主流电视剧" "\\box-a\L\Files\Libr
 mklink /D "D:\Files\Library\TV Mainstream Chinese.主流电视剧" "\\box-a\K\Files\Library\TV Mainstream Chinese.主流电视剧"
 mklink /D "D:\Files\Library\TV Mainstream Overflow.主流电视剧" "\\box-a\K\Files\Library\TV Mainstream Overflow.主流电视剧"
 mklink /D "D:\Files\Library\TV Tutorial.教程" "\\box-a\K\Files\Library\TV Tutorial.教程"
-mklink /J "D:\Files\Library\TV Temp 1" "\\box-a\L\Files\Library\Movies Temp 1"
-mklink /J "D:\Files\Library\TV Temp 2" "\\box-a\K\Files\Library\Movies Temp 2"
+mklink /J "D:\Files\Library\TV Temp 1" "\\box-a\L\Files\Library\TV Temp 1"
+mklink /J "D:\Files\Library\TV Temp 2" "\\box-a\K\Files\Library\TV Temp 2"
 
 mklink /D "D:\Files\Library\MovieMetadata" "\\box-a\K\Files\Library\MovieMetadata"
 mklink /D "D:\Files\Library\MovieMetadataBackup" "\\box-a\K\Files\Library\MovieMetadataBackup"

@@ -558,7 +558,7 @@ public static class FfmpegHelper
     internal static async Task<int> ExtractAndCompareAsync(ISettings settings, string inputVideo, string mergeAudio = "", string outputVideo = "", bool isSubtitleOnly = false, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
-        Debug.Assert(inputVideo.EndsWithIgnoreCase(".mkv"));
+        Debug.Assert(inputVideo.EndsWithIgnoreCase(".mkv") || inputVideo.EndsWithIgnoreCase(".ts"));
 
         if (outputVideo.IsNullOrWhiteSpace())
         {

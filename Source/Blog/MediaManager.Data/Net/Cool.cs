@@ -1,37 +1,47 @@
 ﻿namespace MediaManager.Net;
 
-using System;
+
 using CsQuery;
 using Examples.Common;
 using Examples.IO;
 using Examples.Net;
 using MediaManager.IO;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
-using MemoryExtensions = System.MemoryExtensions;
 
 internal static class Cool
 {
-    internal static async Task DownloadAllThreadsAsync(int start, int end, string directory, Action<string>? log = null, CancellationToken cancellationToken = default)
-    {
-        await Parallel.ForEachAsync(
-            Enumerable.Range(start, end + 1 - start),
-            new ParallelOptions() { CancellationToken = cancellationToken, MaxDegreeOfParallelism = Environment.ProcessorCount - 1 },
-            async (threadId, token) =>
-            {
-                if (threadId % 1000 == 0)
-                {
-                    log($"Saved {threadId}.");
-                }
+    private const int ChunkLength = 100;
 
-                await DownloadThreadAsync(threadId, directory, log, token);
+    internal static async Task DownloadAllPostsAsync(int startPostId, int endPostId, string directory, bool isDetection = false, int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
+    {
+        degreeOfParallelism ??= Environment.ProcessorCount * 5;
+        log ??= Logger.WriteLine;
+
+        ConcurrentQueue<int> postIds = new(Enumerable.Range(startPostId, endPostId - startPostId).Chunk(ChunkLength).Select(chunk => chunk[0]));
+        await Parallel.ForEachAsync(
+            Enumerable.Range(0, degreeOfParallelism.Value),
+            new ParallelOptions() { CancellationToken = cancellationToken, MaxDegreeOfParallelism = degreeOfParallelism.Value },
+             async (taskIndex, token) =>
+            {
+                using HttpClient httpClient = new HttpClient().AddEdgeHeaders();
+                while (postIds.TryDequeue(out int postId))
+                {
+                    int lastPostId = postId + ChunkLength - 1;
+                    for (; postId <= lastPostId; postId++)
+                    {
+                        await DownloadPostAsync(httpClient, postId, directory, isDetection, log, token);
+                    }
+
+                    log($"===Processed {lastPostId}===");
+                }
             });
     }
 
-    internal static async Task DownloadAllThreadsWithTemplateAsync(int start, int end, string directory, bool overwrite = false, int? maxDegreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task DownloadAllPostsWithTemplateAsync(int start, int end, string directory, bool overwrite = false, int? maxDegreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
-        IEnumerable<int> threadIds = overwrite
+        IEnumerable<int> postIds = overwrite
             ? Enumerable
                 .Range(start, end - start + 1)
             : Enumerable
@@ -39,7 +49,7 @@ internal static class Cool
                 .Except(Directory
                     .EnumerateFiles(directory)
                     .Select(file => int.Parse(PathHelper.GetFileNameWithoutExtension(file))));
-        ConcurrentQueue<int> queue = new(threadIds);
+        ConcurrentQueue<int> queue = new(postIds);
         maxDegreeOfParallelism ??= Environment.ProcessorCount;
         await Parallel.ForEachAsync(
             Enumerable.Range(0, maxDegreeOfParallelism.Value),
@@ -47,83 +57,146 @@ internal static class Cool
             async (index, token) =>
             {
                 using HttpClient httpClient = new HttpClient().AddEdgeHeaders();
-                while (queue.TryDequeue(out int threadId))
+                while (queue.TryDequeue(out int postId))
                 {
-                    if (threadId % 1000 == 0)
+                    if (postId % 1000 == 0)
                     {
-                        log($"Saved {threadId}.");
+                        log($"Saved {postId}.");
                     }
 
-                    await DownloadThreadWithTemplateAsync(threadId, directory, httpClient, log, token);
+                    await DownloadPostWithTemplateAsync(postId, directory, httpClient, log, token);
                 }
             });
     }
 
-    internal static async Task DownloadThreadAsync(int threadId, string directory, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task DownloadPostAsync(HttpClient httpClient, int postId, string directory, bool isDetection = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
-        using HttpClient httpClient = new HttpClient().AddEdgeHeaders();
-        string pageHtml = await httpClient.GetStringAsync($"https://www.cool18.com/bbs4/index.php?app=forum&act=threadview&tid={threadId}", cancellationToken);
-        if (pageHtml.EqualsIgnoreCase("\r\n<script language='javascript'>window.location='index.php';</script>"))
+        if (isDetection)
         {
-            log($"Skip {threadId}");
+            HttpResponseMessage response = Retry.Incremental(
+                () => httpClient.Send(new HttpRequestMessage(HttpMethod.Head, $"https://www.cool18.com/bbs4/index.php?app=forum&act=threadview&tid={postId}"), HttpCompletionOption.ResponseHeadersRead, cancellationToken),
+                isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound });
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return;
+            }
+        }
+
+        string pageHtml;
+        try
+        {
+            pageHtml = await Retry.IncrementalAsync(
+                async () => await httpClient.GetStringAsync($"https://www.cool18.com/bbs4/index.php?app=forum&act=threadview&tid={postId}", cancellationToken),
+                isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound },
+                cancellationToken: cancellationToken);
+        }
+        catch (HttpRequestException exception) when (exception.StatusCode == HttpStatusCode.NotFound)
+        {
+            log($"Skip {postId}: 404");
             return;
         }
 
+        if (pageHtml.StartsWithIgnoreCase("<script language='javascript'>window.location='index.php';</script>")
+            || pageHtml.ContainsIgnoreCase("404 Not Found"))
+        {
+            log($"Skip {postId}: Redirection");
+            return;
+        }
+
+        string childrenJson = await Retry.IncrementalAsync(
+            async () => await httpClient.GetStringAsync($"https://www.cool18.com/bbs4/index.php?app=forum&act=achildlist&tid={postId}", cancellationToken),
+            isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound },
+            cancellationToken: cancellationToken);
+
+        await SavePost(postId, pageHtml, childrenJson, directory, log, cancellationToken);
+    }
+
+    private static async Task SavePost(int postId, string pageHtml, string childrenJson, string directory, Action<string>? log = null, CancellationToken cancellationToken = default)
+    {
         CQ pageCQ = CQ.CreateDocument(pageHtml);
         pageCQ.Children(":not(head, body)").Remove();
 
         CQ headCQ = pageCQ.Children("head");
         headCQ.Children(":not(title)").Remove();
-        headCQ.Append("""<link rel="stylesheet" href="../style/thread.css" />""");
-        headCQ.Append("""<script type="text/javascript" src="../script/thread.js"></script>""");
+        headCQ.Append("""<link rel="stylesheet" href="../style/post.css" />""");
+        headCQ.Append("""<script type="text/javascript" src="../script/post.js"></script>""");
 
         CQ bodyCQ = pageCQ.Children("body");
-        bodyCQ.Children(":not(table)").Remove();
-        bodyCQ.RemoveAttr("leftmargin").RemoveAttr("topmargin").RemoveAttr("marginwidth").RemoveAttr("marginheight").RemoveAttr("bgcolor");
+        bodyCQ.Each(bodyDom => bodyDom.Attributes.ToArray().ForEach(attribute => bodyDom.RemoveAttribute(attribute.Key)));
 
-        CQ table1CQ = bodyCQ.Children("table").Eq(0);
-        table1CQ.Children("tbody").Children("tr").Where((dom, index) => index != 1).ToArray().ForEach(dom => dom.Remove());
-        table1CQ.Find("tr table td.w5").Remove();
-        table1CQ.Find("pre").Next("center").Remove();
+        CQ mainCQ = bodyCQ.Children(".main-content").Siblings().Remove().End();
+        mainCQ.Children(":not(.title-section, .post-content, .post-list)").Remove();
 
-        CQ table2CQ = bodyCQ.Children("table").Eq(1);
-        table2CQ.Children("tbody").Children("tr").Children("td").Children(":not(ul)").Remove();
-        if (table2CQ.Text().IsNullOrWhiteSpace())
+        CQ titleCQ = mainCQ.Children(".title-section").Find(".tool-btn, .fa-envelope, .title-usergrade, .followbtn").Remove().End();
+        CQ senderCQ = titleCQ.Find(".sender");
+        string sender = senderCQ.Text();
+        string name = sender[(sender.IndexOf(':') + 1)..sender.IndexOf('[')].Trim();
+        string dateTime = sender[(sender.IndexOf('于') + 1)..].Trim();
+        senderCQ.Html($"""<a class="title-link">{name}</a> {dateTime}</span>""");
+
+        CQ postCQ = mainCQ.Children(".post-content");
+        postCQ.Children(".content-section").Siblings().Remove().End().Children(".view_ad_incontent").Remove();
+        //postCQ.Find("center:contains('最后编辑于')").NextAll(":not(.post-list)").Remove();
+
+        CQ repliesCQ = mainCQ.Find(".post-list").Children(".list-header").Remove().End();
+        if (repliesCQ.Length == 0)
         {
-            table2CQ.Remove();
+            mainCQ.Append("""<div class="post-list"><ul class="post-items thread-list"></ul></div>""");
+            repliesCQ = mainCQ.Find(".post-list");
+            Debug.Assert(repliesCQ.Length == 1);
         }
 
-        bodyCQ.Find("font:contains('cool18.com'), font:contains('6park.com'), button").Remove();
-        bodyCQ.Find("table").RemoveAttr("border").RemoveAttr("align").RemoveAttr("cellpadding").RemoveAttr("cellspacing").RemoveAttr("width");
-        bodyCQ.Find("tr").RemoveAttr("bgcolor");
-        bodyCQ.Find("td").RemoveAttr("height");
+        bodyCQ.Find("iframe, link, script, .view_ad_incontent, .vote-section, .view-gift, .view_tools_box, .view_ad_bottom, .comment-section, .bottom-nav").Remove();
 
-        bodyCQ.Find("a[href^='index.php?app=forum&act=threadview&tid=']").Each(dom =>
-        {
-            string href = dom.GetAttribute("href");
-            href = Regex.Match(href, @"^index\.php\?app=forum&act=threadview&tid=([0-9]+)$").Groups[1].Value;
-            dom.SetAttribute("href", $"{href}.htm");
-        });
+        bodyCQ.Find("a")
+            .RemoveAttr("title").RemoveAttr("target")
+            .Each(linkDom =>
+            {
+                string href = linkDom.GetAttribute("href");
+                if (href.IsNullOrWhiteSpace())
+                {
+                    return;
+                }
+
+                Match match = PostIdRegex.Match(href);
+                if (match.Success)
+                {
+                    int referencePostId = int.Parse(match.Groups[1].Value);
+                    linkDom.SetAttribute("href", $"../{GetPostDirectoryName(referencePostId)}/{GetPostFileName(referencePostId)}");
+                }
+            });
+
+        CQ repliesContentCQ = repliesCQ.Children("ul");
+        Debug.Assert(repliesContentCQ.Length == 1);
+        repliesContentCQ.Text(childrenJson);
 
         string html = pageCQ.Render(DomRenderingOptions.RemoveComments | DomRenderingOptions.QuoteAllAttributes);
         html = WebUtility.HtmlDecode(html);
-        await File.WriteAllTextAsync(Path.Combine(directory, $"{threadId}.htm"), html, cancellationToken);
+        string file = Path.Combine(directory, GetPostDirectoryName(postId), GetPostFileName(postId));
+        await File.WriteAllTextAsync(file, html, cancellationToken);
+        log($"Save {postId}: {file}");
     }
 
-    internal static async Task DownloadThreadWithTemplateAsync(int threadId, string directory, HttpClient? httpClient = null, Action<string>? log = null, CancellationToken cancellationToken = default)
+    private static string GetPostDirectoryName(int postId) => $"{postId / 100_000:00000}";
+
+    private static string GetPostFileName(int postId) => $"{postId}.htm";
+
+    private static readonly Regex PostIdRegex = new(@"^index\.php\?app=forum&act=threadview&tid=([0-9]+)$", RegexOptions.IgnoreCase);
+
+    internal static async Task DownloadPostWithTemplateAsync(int postId, string directory, HttpClient? httpClient = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
         bool dispose = httpClient is null;
         httpClient ??= new HttpClient().AddEdgeHeaders();
 
         await using Stream stream = await Retry.FixedIntervalAsync(
-            async () => await httpClient.GetStreamAsync($"https://www.cool18.com/bbs4/index.php?app=forum&act=threadview&tid={threadId}", cancellationToken),
+            async () => await httpClient.GetStreamAsync($"https://www.cool18.com/bbs4/index.php?app=forum&act=threadview&tid={postId}", cancellationToken),
             cancellationToken: cancellationToken);
         //if (pageHtml.EqualsIgnoreCase("\r\n<script language='javascript'>window.location='index.php';</script>"))
         //{
-        //    log($"Skip {threadId}");
+        //    log($"Skip {postId}");
         //    return;
         //}
 
@@ -131,7 +204,7 @@ internal static class Cool
 
         if (documentCQ["head script"].Text().EqualsIgnoreCase("window.location='index.php';") && documentCQ["body"].Children().IsEmpty())
         {
-            log($"Skip {threadId}");
+            log($"Skip {postId}");
             return;
         }
 
@@ -143,26 +216,26 @@ internal static class Cool
         string userName = userCQ.Text().Trim();
         string userLink = userTableCQ.Find("td:eq(2) a").Attr("href").Trim();
         string userId = WebUtility.UrlDecode(Regex.Match(userLink, "uname=(.+)$", RegexOptions.IgnoreCase).Groups[1].Value);
-        string threadText = userTableCQ.Find("td:eq(0)").Text().Trim();
-        string threadDateTime = Regex.Match(threadText, @"[0-9]+\-[0-9]+\-[0-9]+ [0-9]+\:[0-9]+").Value;
-        string threadView = Regex.Match(threadText, @"已读 ([0-9]+) 次").Groups[1].Value;
+        string postText = userTableCQ.Find("td:eq(0)").Text().Trim();
+        string postDateTime = Regex.Match(postText, @"[0-9]+\-[0-9]+\-[0-9]+ [0-9]+\:[0-9]+").Value;
+        string postView = Regex.Match(postText, @"已读 ([0-9]+) 次").Groups[1].Value;
         CQ parentCQ = userTableCQ.Next("p");
         string parentHtml = string.Empty;
         if (parentCQ.Any())
         {
             CQ parentLinkCQ = parentCQ.Find("a");
             string href = parentLinkCQ.Attr("href");
-            string parentThreadId = Regex.Match(href, @"tid=([0-9]+)$", RegexOptions.IgnoreCase).Groups[1].Value;
-            string parentThreadTitle = parentLinkCQ.Text().Trim();
+            string parentPostId = Regex.Match(href, @"tid=([0-9]+)$", RegexOptions.IgnoreCase).Groups[1].Value;
+            string parentPostTitle = parentLinkCQ.Text().Trim();
             string text = parentLinkCQ.Elements.Single().NextSibling.NodeValue.Trim();
             Match match = Regex.Match(text, @"由 (.+) 于 ([0-9]+\-[0-9]+\-[0-9]+ [0-9]+\:[0-9]+)$");
-            string parentThreadUserName = match.Groups[1].Value;
-            string parentThreadDateTime = match.Groups[2].Value;
+            string parentPostUserName = match.Groups[1].Value;
+            string parentPostDateTime = match.Groups[2].Value;
             parentHtml = $"""
                 <div id ="parent">
-                <p><a id="parentThread" href="{parentThreadId}.htm">{parentThreadTitle}</a></p>
-                <p id="parentThreadUserName">{parentThreadUserName}</p>
-                <p id="parentThreadDateTime">{parentThreadDateTime}</p>
+                <p><a id="parentPost" href="{parentPostId}.htm">{parentPostTitle}</a></p>
+                <p id="parentPostUserName">{parentPostUserName}</p>
+                <p id="parentPostDateTime">{parentPostDateTime}</p>
                 </div>
                 """;
         }
@@ -193,7 +266,7 @@ internal static class Cool
                 return;
             }
 
-            log($"{threadId}: Link is removed {href}");
+            log($"{postId}: Link is removed {href}");
             dom.Remove();
         });
 
@@ -231,7 +304,7 @@ internal static class Cool
 
         preCQ.Find("*[style*='E6E6DD']").Each(dom =>
         {
-            log($"{threadId}: Removed {dom.NodeName}:{dom.TextContent.Trim()}");
+            log($"{postId}: Removed {dom.NodeName}:{dom.TextContent.Trim()}");
             dom.Remove();
         });
 
@@ -267,7 +340,7 @@ internal static class Cool
         else
         {
             //IGrouping<string, IDomElement>[] groups = preCQ.Single().ChildElements.GroupBy(element => element.NodeName.ToLowerInvariant()).OrderByDescending(group => group.Count()).ToArray();
-            //log($"{threadId} Children {string.Join("|", groups.Select(group => $"{group.Key}*{group.Count()}"))}");
+            //log($"{postId} Children {string.Join("|", groups.Select(group => $"{group.Key}*{group.Count()}"))}");
 
             if (contentHtml.AllIndexesOfOrdinal("<").Any(index => index + 1 < contentHtml.Length && contentHtml[index + 1] > 'a'))
             {
@@ -397,7 +470,7 @@ internal static class Cool
                     }
                     else
                     {
-                        log($"{threadId}: large paragraph is not processed.");
+                        log($"{postId}: large paragraph is not processed.");
                         //Debugger.Break();
                     }
                 }
@@ -409,7 +482,7 @@ internal static class Cool
                         {
                             return false;
                         }
- 
+
                         ReadOnlySpan<char> lineSpan = contentHtml.AsSpan(line.Range);
                         return !lineSpan.Contains("<a", StringComparison.OrdinalIgnoreCase) && !Regex.IsMatch(lineSpan, @"[\p{P}\u3000 ]{10,}");
                     })
@@ -481,7 +554,7 @@ internal static class Cool
                 return;
             }
 
-            log($"{threadId}: Link is removed {href}");
+            log($"{postId}: Link is removed {href}");
             dom.Remove();
         });
         string childrenInnerHtml = WebUtility.HtmlDecode(childrenCQ.Html());
@@ -490,19 +563,19 @@ internal static class Cool
             <html>
             <head>
             <title>{title}</title>
-            <link rel="stylesheet" href="../styles/thread.css" />
-            <script type="text/javascript" src="../scrips/thread.js"></script>
+            <link rel="stylesheet" href="../styles/post.css" />
+            <script type="text/javascript" src="../scrips/post.js"></script>
             </head>
             <body>
             {parentHtml}
             <h1>{header}</h1>
-            <div id="thread">
+            <div id="post">
             <p id="userName">{userName}</p>
             <p><a id="userId" href="{userLink}">{userId}</a></p>
-            <p id="threadDateTime">{threadDateTime}</p>
-            <p id="threadView">{threadView}</p>
-            <p id="threadLastEditUserName">{lastEditUserName}</p>
-            <p id="threadLastEditDateTime">{lastEditDateTime}</p>
+            <p id="postDateTime">{postDateTime}</p>
+            <p id="postView">{postView}</p>
+            <p id="postLastEditUserName">{lastEditUserName}</p>
+            <p id="postLastEditDateTime">{lastEditDateTime}</p>
             </div>
             <pre>
             """;
@@ -517,7 +590,7 @@ internal static class Cool
             """;
 
         //html = WebUtility.HtmlDecode(html);
-        string file = Path.Combine(directory, $"{threadId}.htm");
+        string file = Path.Combine(directory, $"{postId}.htm");
         await File.WriteAllLinesAsync(file, [templatedHtml1, contentHtml, templatedHtml2], cancellationToken);
 
         if (dispose)
@@ -526,14 +599,14 @@ internal static class Cool
         }
     }
 
-    internal static void PrintThreadWthLargeParagraph(string directory, int startThreadId = 0, int endThreadId = int.MaxValue, Action<string>? log = null)
+    internal static void PrintPostWthLargeParagraph(string directory, int startPostId = 0, int endPostId = int.MaxValue, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
         Directory
             .EnumerateFiles(directory)
             .Select(file => (file, int.Parse(PathHelper.GetFileNameWithoutExtension(file))))
-            .Where(file => file.Item2 >= startThreadId && file.Item2 <= endThreadId)
+            .Where(file => file.Item2 >= startPostId && file.Item2 <= endPostId)
             .Select(file =>
             {
                 string text = File.ReadAllText(file.file);
@@ -543,12 +616,12 @@ internal static class Cool
                 List<(Range Range, int Offset, int Length)> lines = contentSpan.Split('\n').ToList(text.Length);
                 return (file.file, file.Item2, text, lines);
             })
-            .Where(thread => thread.lines.Any(line => line.Length >= 1000)
-                && thread.lines.Where(line => line.Length == 0).Take(10).Count() < 10)
-            .ForEach(thread =>
+            .Where(post => post.lines.Any(line => line.Length >= 1000)
+                && post.lines.Where(line => line.Length == 0).Take(10).Count() < 10)
+            .ForEach(post =>
             {
                 Debugger.Break();
-                log(thread.file);
+                log(post.file);
             });
     }
 }
