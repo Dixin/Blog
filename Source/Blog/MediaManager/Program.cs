@@ -538,19 +538,20 @@ string[][] metadataDrives = [
 //    isDryRun: false);
 
 //Video.PrintVideosWithErrors(settings, settings.MovieTemp42, searchOption: SearchOption.AllDirectories);
-//Video.CopyMovieMetadata(settings.MovieTemp42, 2);
+//Video.CopyMovieMetadata(settings.MovieTemp3, 2);
 //await Video.PrintMovieImdbIdErrorsAsync(settings, true, log, cancellationTokenSource.Token, settings.MovieTemp42);
-//await Video.ConvertToUtf8Async(settings.MovieTemp42, false);
+//await Video.ConvertToUtf8Async(settings.MovieTemp1, false);
 //await Video.ConvertToUtf8Async(@"H:\Files\Library\", false);
-//await Video.ConvertToUtf8Async(@"I:\Files\Library\Movies", false);
+//await Video.ConvertToUtf8Async(settings.MovieTemp3, false);
 //await Video.ConvertToUtf8Async(@"J:\Files\Library\", false);
 //await Video.ConvertToUtf8Async(@"K:\Files\Library\", false);
 //await Video.ConvertToUtf8Async(@"L:\Files\Library\", false);
-//Video.MoveMovieSubtitleToParent(settings.MovieTemp42, settings.MovieSubtitleBackupDirectory, false);
+//await Video.ConvertToUtf8Async(settings.MovieTemp3, false);
+//Video.MoveMovieSubtitleToParent(settings.MovieTemp3, settings.MovieSubtitleBackupDirectory, false);
 //Video.FormatSubtitleSuffix(@"L:\Files\Library\TV");
 //Video.MoveMetadata(settings.MovieTemp42, settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory);
-//await Video.DownloadImdbMetadataAsync(settings.MovieTemp42, 2, overwrite: false, useCache: true, useBrowser: true);
-//await Video.DownloadImdbMetadataAsync(settings.MovieTemp42, 1, overwrite: false, useCache: true, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.MovieTemp3, 2, overwrite: false, useCache: true, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.TVTemp1, 1, overwrite: false, useCache: true, useBrowser: true);
 //FfmpegHelper.MergeAllDubbedMovies(settings.MovieTemp42, isDryRun: true);
 //Video.PrintDuplicateImdbId(null, @"G:\Files\Library",
 //    @"H:\Files\Library",
@@ -559,8 +560,8 @@ string[][] metadataDrives = [
 //Video.BackupMetadata(settings.MovieTemp42);
 //await Video.DownloadMissingTitlesFromDoubanAsync(settings, settings.MovieTemp42, skipFormatted: true);
 //Video.CopyMovieMetadata(settings.MovieTemp42, 2, true);
-//Video.RenameDirectoriesWithMetadata(settings, settings.MovieTemp42, isDryRun: false, skipRenamed: true);
-//Video.RenameDirectoriesWithMetadata(settings, settings.MovieTemp42, 1, isDryRun: false, skipRenamed: true, isTV: true);
+//Video.RenameDirectoriesWithMetadata(settings, settings.MovieTemp3, isDryRun: false, skipRenamed: true);
+//Video.RenameDirectoriesWithMetadata(settings, settings.TVTemp1, 1, isDryRun: false, skipRenamed: true, isTV: true);
 //Video.RenameDirectoriesWithImdbMetadata(settings, @"H:\Files\Library\", 3);
 //Video.RenameDirectoriesWithImdbMetadata(settings, @"I:\Files\Library\", 3);
 //Video.RenameDirectoriesWithImdbMetadata(settings, @"J:\Files\Library\", 3);
@@ -568,14 +569,14 @@ string[][] metadataDrives = [
 //Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp42, 1, isTV:true);
 //Video.MoveFanArt(settings.MovieTemp42);
 //Video.RestoreMetadata(settings.MovieTemp42);
-//Video.DeleteSpecialCharacters(settings.MovieTemp42);
-//Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp42);
-//Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp42, 1, isTV: true);
-//Video.RenameDirectoriesWithDigits(settings.MovieTemp42);
+//Video.DeleteSpecialCharacters(@"");
+//Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp1);
+//Video.PrintDirectoriesWithErrors(settings, settings.TVTemp1, 1, isTV: true);
+//Video.RenameDirectoriesWithDigits(settings.MovieTemp3);
 //Video.RenameDirectoriesWithAdditionalMetadata(settings, @"K:\Files\Library\1TV Encode");
 //Video.RenameDirectoriesWithoutAdditionalMetadata(@"K:\Files\Library\1TV Encode");
 //Video.RenameDirectoriesWithGraphicMetadata(settings.MovieTemp42);
-//Video.MoveDirectoriesByRegions(settings, settings.MovieTemp42, 2, isDryRun: false);
+//Video.MoveDirectoriesByRegions(settings, settings.MovieTemp3, 2, isDryRun: false);
 //Video.RenameDirectoriesWithoutAdditionalMetadata(settings.MovieTemp42);
 
 //Video.EnumerateDirectories(@"L:\Files\Library\TV Mainstream.主流电视剧")
@@ -1831,8 +1832,8 @@ static void MoveSubtitles(string sourceDirectory, string destinationDirectory, b
 //Video.FormatSubtitleSuffix(@"L:\Files\Library\TV Mainstream.主流电视剧\German.德国\Germany-USA.German.Crime-Drama-Mystery@Dark.2017.暗黑[8.7-433K][TVMA][1080K2]", 1);
 
 
-//await FfmpegHelper.ExtractAllAsync(settings, @"\\box-x\E\Files\New folder (2)\Mkv", isTV: true, outputVideos: [input => PathHelper.ReplaceExtension(input, ".mp4")
-//    .ReplaceIgnoreCase(@"\\box-x\E\Files\New folder (2)\Mkv", @"L:\Files\Library\TV")]);
+//await FfmpegHelper.ExtractAllAsync(settings, settings.TVTemp2, isTV: true, outputVideos: [input => PathHelper.ReplaceExtension(input, ".mp4")
+//    .ReplaceIgnoreCase(settings.TVTemp2, settings.TVTemp1)]);
 
 //Directory.EnumerateFiles(@"G:\Files\Library\Movies Mainstream 1.主流电影1", Video.ImdbMetadataSearchPattern, SearchOption.AllDirectories)
 //    .ForEach(metadata =>
@@ -1979,3 +1980,5 @@ static void MoveSubtitles(string sourceDirectory, string destinationDirectory, b
 //                .ForEach(f => File.Move(f, Path.Combine(PathHelper.GetDirectoryName(episodeSubtitleDirectory), $"{name}.{Path.GetFileName(f)}")));
 //        })
 //);
+
+//await Cool.DownloadAllPostsAsync(14519362, 14519362 + 500, @"M:\Files\Chinese.Text.Cool18Raw\Posts", true);
