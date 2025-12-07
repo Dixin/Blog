@@ -37,7 +37,7 @@ using TextWriterTraceListener textTraceListener = new(Path.Combine(Path.GetTempP
 using ConsoleTraceListener consoleTraceListener = new();
 Trace.Listeners.Add(consoleTraceListener);
 Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
-FFmpeg.SetExecutablesPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0-full_build\bin"));
+FFmpeg.SetExecutablesPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin"));
 Action<string> log = Logger.WriteLine;
 
 string[][] mediaDrives = [
@@ -1981,4 +1981,4 @@ static void MoveSubtitles(string sourceDirectory, string destinationDirectory, b
 //        })
 //);
 
-//await Cool.DownloadAllPostsAsync(14519362, 14519362 + 500, @"M:\Files\Chinese.Text.Cool18Raw\Posts", true);
+//await Cool.DownloadAllPostsAsync(14522074, 14522074 + 100, @"M:\Files\Chinese.Text.Cool18Raw\Posts", true);

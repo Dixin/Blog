@@ -754,7 +754,7 @@ public static class FfmpegHelper
         }
     }
 
-    internal static async Task ExtractAllAsync(ISettings settings, string inputDirectory, Func<string, bool>? predicate = null, bool isTV = false, bool skipParsing = false, bool deleteInput = false, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default, params Func<string, string>[] outputVideos)
+    internal static async Task ExtractAllAsync(ISettings settings, string inputDirectory, Func<string, bool>? predicate = null, bool isTV = false, bool skipParsing = false, bool deleteInput = false, bool isSubtitleOnly = false, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default, params Func<string, string>[] outputVideos)
     {
         log ??= Logger.WriteLine;
 
@@ -833,7 +833,7 @@ public static class FfmpegHelper
                         }
                     }
 
-                    int result = await ExtractAndCompareAsync(settings, inputVideo, dubbedVideo, outputVideo, false, isDryRun, log, cancellation);
+                    int result = await ExtractAndCompareAsync(settings, inputVideo, dubbedVideo, outputVideo, isSubtitleOnly, isDryRun, log, cancellation);
 
                     log($"{result} {task}");
                     log("");

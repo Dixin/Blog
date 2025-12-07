@@ -12,12 +12,14 @@ internal static class Cool
 {
     private const int ChunkLength = 100;
 
-    internal static async Task DownloadAllPostsAsync(int startPostId, int endPostId, string directory, bool isDetection = false, int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task DownloadAllPostsAsync(int startPostId, int endPostId, string directory, bool isDetection = false, int? degreeOfParallelism = null, bool overwrite = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         degreeOfParallelism ??= Environment.ProcessorCount * 5;
         log ??= Logger.WriteLine;
 
         ConcurrentQueue<int> postIds = new(Enumerable.Range(startPostId, endPostId - startPostId).Chunk(ChunkLength).Select(chunk => chunk[0]));
+        HashSet<string> files = overwrite ? [] : new(Directory.EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories), StringComparer.OrdinalIgnoreCase);
+        
         await Parallel.ForEachAsync(
             Enumerable.Range(0, degreeOfParallelism.Value),
             new ParallelOptions() { CancellationToken = cancellationToken, MaxDegreeOfParallelism = degreeOfParallelism.Value },
@@ -29,7 +31,14 @@ internal static class Cool
                     int lastPostId = postId + ChunkLength - 1;
                     for (; postId <= lastPostId; postId++)
                     {
-                        await DownloadPostAsync(httpClient, postId, directory, isDetection, log, token);
+                        string file = Path.Combine(directory, GetPostDirectoryName(postId), GetPostFileName(postId));
+                        if (!overwrite && files.Contains(file))
+                        {
+                            log($"Skip {postId}: Exists");
+                            return;
+                        }
+
+                        await DownloadPostAsync(httpClient, postId, file, isDetection, log, token);
                     }
 
                     log($"===Processed {lastPostId}===");
@@ -69,7 +78,7 @@ internal static class Cool
             });
     }
 
-    internal static async Task DownloadPostAsync(HttpClient httpClient, int postId, string directory, bool isDetection = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    private static async Task DownloadPostAsync(HttpClient httpClient, int postId, string file, bool isDetection = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
@@ -110,10 +119,10 @@ internal static class Cool
             isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound },
             cancellationToken: cancellationToken);
 
-        await SavePost(postId, pageHtml, childrenJson, directory, log, cancellationToken);
+        await SavePost(postId, pageHtml, childrenJson, file, log, cancellationToken);
     }
 
-    private static async Task SavePost(int postId, string pageHtml, string childrenJson, string directory, Action<string>? log = null, CancellationToken cancellationToken = default)
+    private static async Task SavePost(int postId, string pageHtml, string childrenJson, string file, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         CQ pageCQ = CQ.CreateDocument(pageHtml);
         pageCQ.Children(":not(head, body)").Remove();
@@ -174,7 +183,6 @@ internal static class Cool
 
         string html = pageCQ.Render(DomRenderingOptions.RemoveComments | DomRenderingOptions.QuoteAllAttributes);
         html = WebUtility.HtmlDecode(html);
-        string file = Path.Combine(directory, GetPostDirectoryName(postId), GetPostFileName(postId));
         await File.WriteAllTextAsync(file, html, cancellationToken);
         log($"Save {postId}: {file}");
     }
