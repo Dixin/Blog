@@ -547,6 +547,7 @@ string[][] metadataDrives = [
 //await Video.ConvertToUtf8Async(@"K:\Files\Library\", false);
 //await Video.ConvertToUtf8Async(@"L:\Files\Library\", false);
 //await Video.ConvertToUtf8Async(settings.MovieTemp3, false);
+//await Video.ConvertToUtf8Async(settings.TVTemp1, false);
 //Video.MoveMovieSubtitleToParent(settings.MovieTemp3, settings.MovieSubtitleBackupDirectory, false);
 //Video.FormatSubtitleSuffix(@"L:\Files\Library\TV");
 //Video.MoveMetadata(settings.MovieTemp42, settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory);
@@ -569,8 +570,8 @@ string[][] metadataDrives = [
 //Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp42, 1, isTV:true);
 //Video.MoveFanArt(settings.MovieTemp42);
 //Video.RestoreMetadata(settings.MovieTemp42);
-//Video.DeleteSpecialCharacters(@"");
-//Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp1);
+//Video.DeleteSpecialCharacters(settings.TVTemp1);
+//Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp3);
 //Video.PrintDirectoriesWithErrors(settings, settings.TVTemp1, 1, isTV: true);
 //Video.RenameDirectoriesWithDigits(settings.MovieTemp3);
 //Video.RenameDirectoriesWithAdditionalMetadata(settings, @"K:\Files\Library\1TV Encode");
