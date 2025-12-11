@@ -1981,4 +1981,4 @@ static void MoveSubtitles(string sourceDirectory, string destinationDirectory, b
 //        })
 //);
 
-//await Cool.DownloadAllPostsAsync(14522074, 14522074 + 100, @"M:\Files\Chinese.Text.Cool18Raw\Posts", true);
+//await Cool.DownloadAllPostsAsync(14522723, 14522723 + 10000, @"M:\Files\Chinese.Text.Cool18Raw\Posts", true);
