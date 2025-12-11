@@ -19,7 +19,7 @@ internal static class Cool
 
         ConcurrentQueue<int> postIds = new(Enumerable.Range(startPostId, endPostId - startPostId).Chunk(ChunkLength).Select(chunk => chunk[0]));
         HashSet<string> files = overwrite ? [] : new(Directory.EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories), StringComparer.OrdinalIgnoreCase);
-        
+
         await Parallel.ForEachAsync(
             Enumerable.Range(0, degreeOfParallelism.Value),
             new ParallelOptions() { CancellationToken = cancellationToken, MaxDegreeOfParallelism = degreeOfParallelism.Value },
@@ -35,7 +35,7 @@ internal static class Cool
                         if (!overwrite && files.Contains(file))
                         {
                             log($"Skip {postId}: Exists");
-                            return;
+                            continue;
                         }
 
                         await DownloadPostAsync(httpClient, postId, file, isDetection, log, token);
