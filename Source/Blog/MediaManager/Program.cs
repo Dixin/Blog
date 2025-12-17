@@ -416,7 +416,7 @@ string[][] metadataDrives = [
 //await Top.DownloadMetadataAsync(settings.MovieTopH264720PUrl, settings.MovieTopH264720PMetadata, index => index <= 10);
 //await Top.DownloadMetadataAsync(settings.TVTopX265Url, settings.TVTopX265Metadata, index => index <= 5);
 
-//await Preferred.DownloadMetadataAsync(settings, index => index <= 3286);
+//await Preferred.DownloadMetadataAsync(settings, index => index <= 3547);
 //await Preferred.DownloadAllTorrentsAsync(settings, false);
 //await Preferred.WriteFileMetadataAsync(settings, false);
 //await Preferred.CleanUpMetadataErrorsAsync(settings);
@@ -443,11 +443,10 @@ string[][] metadataDrives = [
 //    (@"G:\Files\Library", 3),
 //    (@"H:\Files\Library", 3),
 //    (@"I:\Files\Library", 3),
-//    (@"K:\Files\Library\_Movies Encode4.电影4", 2),
 //    (@"K:\Files\Library\Movies Controversial.非主流电影", 2));
 
 //await Video.PrintLibraryMovieVersions(settings, log, cancellationToken,
-//    @"G:\Files\Library", @"H:\Files\Library", @"I:\Files\Library", @"K:\Files\Library\_Movies Encode4.电影4");
+//    @"G:\Files\Library", @"H:\Files\Library", @"I:\Files\Library", @"K:\Files\Library\Movies Controversial.非主流电影");
 
 //await Video.PrintTVVersions(settings, log, cancellationTokenSource.Token,
 //    settings.TVControversial,
@@ -485,7 +484,7 @@ string[][] metadataDrives = [
 //        .Any(advisory => advisory.FormattedSeverity == ImdbAdvisorySeverity.Severe)
 //        || imdbMetadata.AllKeywords.Any(keywords.Contains),
 //    isDryRun: true,
-//    drives: [@"G:\Files\Library", @"H:\Files\Library", @"I:\Files\Library", @"K:\Files\Library\_Movies Encode4.电影4"]);
+//    drives: [@"G:\Files\Library", @"H:\Files\Library", @"I:\Files\Library", @"K:\Files\Library\Movies Controversial.非主流电影"]);
 
 //Audio.ReplaceTraditionalChinese(settings.AudioMainstream, true);
 
@@ -1982,4 +1981,5 @@ static void MoveSubtitles(string sourceDirectory, string destinationDirectory, b
 //        })
 //);
 
-//await Cool.DownloadAllPostsAsync(14522723, 14522723 + 10000, @"M:\Files\Chinese.Text.Cool18Raw\Posts", true);
+//int lastPostId = await Cool.DownloadAllPostsAsync(14523909, 14523909 + 10000, @"M:\Files\Chinese.Text.Cool18Raw\Posts", true);
+//log(lastPostId.ToString());

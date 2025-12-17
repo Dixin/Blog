@@ -49,7 +49,7 @@ public static class StringExtensions
     public static bool EqualsIgnoreCase(this string? value1, string? value2) => string.Equals(value1, value2, StringComparison.OrdinalIgnoreCase);
 
     public static bool ContainsOrdinal(this string value, char character) => value.Contains(character, StringComparison.Ordinal);
-    
+
     public static bool ContainsIgnoreCase(this string value, char character) => value.Contains(character, StringComparison.OrdinalIgnoreCase);
 
     public static bool ContainsOrdinal(this string value, string substring) => value.Contains(substring, StringComparison.Ordinal);
@@ -104,4 +104,6 @@ public static class StringExtensions
             yield return index;
         }
     }
+
+    public static string GetUrlPath(this string url) => new Uri(url, UriKind.Absolute).GetLeftPart(UriPartial.Path);
 }

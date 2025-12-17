@@ -756,7 +756,7 @@ internal static partial class Video
                     {
                         bluRayPreferred.ForEach(preferredMetadata =>
                         {
-                            string exactTopic = preferredMetadata.Version.Value.Split("/", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last();
+                            string exactTopic = preferredMetadata.Version.Value.GetPreferredExtractTopic();
                             if (preferredExactTopicToDirectory.TryGetValue(exactTopic, out string? d) && localDisplayNames.Contains(d))
                             {
                                 return;
@@ -792,7 +792,7 @@ internal static partial class Video
                         {
                             bluRayPreferred.ForEach(preferredMetadata =>
                             {
-                                string exactTopic = preferredMetadata.Version.Value.Split("/", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last();
+                                string exactTopic = preferredMetadata.Version.Value.GetPreferredExtractTopic();
                                 if (preferredExactTopicToDirectory.TryGetValue(exactTopic, out string? d) && localDisplayNames.Contains(d))
                                 {
                                     return;
@@ -823,7 +823,7 @@ internal static partial class Video
                             {
                                 x265Preferred.ForEach(x265Metadata =>
                                 {
-                                    string exactTopic = x265Metadata.Version.Value.Split("/", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last();
+                                    string exactTopic = x265Metadata.Version.Value.GetPreferredExtractTopic();
                                     if (preferredExactTopicToDirectory.TryGetValue(exactTopic, out string? d) && localDisplayNames.Contains(d))
                                     {
                                         return;
@@ -847,7 +847,7 @@ internal static partial class Video
                         {
                             bluRayPreferred.ForEach(preferredMetadata =>
                             {
-                                string exactTopic = preferredMetadata.Version.Value.Split("/", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last();
+                                string exactTopic = preferredMetadata.Version.Value.GetPreferredExtractTopic();
                                 if (preferredExactTopicToDirectory.TryGetValue(exactTopic, out string? d) && localDisplayNames.Contains(d))
                                 {
                                     return;
@@ -881,7 +881,7 @@ internal static partial class Video
                     {
                         preferred.ForEach(preferredMetadata =>
                         {
-                            string exactTopic = preferredMetadata.Version.Value.Split("/", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last();
+                            string exactTopic = preferredMetadata.Version.Value.GetPreferredExtractTopic();
                             if (preferredExactTopicToDirectory.TryGetValue(exactTopic, out string? directory) && localDisplayNames.Contains(directory))
                             {
                                 return;
@@ -910,7 +910,7 @@ internal static partial class Video
                     {
                         x265Preferred.ForEach(preferredMetadata =>
                         {
-                            string exactTopic = preferredMetadata.Version.Value.Split("/", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last();
+                            string exactTopic = preferredMetadata.Version.Value.GetPreferredExtractTopic();
                             if (preferredExactTopicToDirectory.TryGetValue(exactTopic, out string? directory) && localDisplayNames.Contains(directory))
                             {
                                 return;
@@ -2605,7 +2605,7 @@ internal static partial class Video
                             await Task.Yield();
                             //await Preferred.DownloadTorrentsAsync(settings, preferredMetadata, null, isDryRun, log, token);
                             preferredMetadata.PreferredAvailabilities
-                                .Select(availability => Path.Combine(settings.MovieMetadataCacheDirectory, $"{preferredMetadata.ImdbId}.{availability.Value.Split("/").Last()}{TorrentHelper.TorrentExtension}"))
+                                .Select(availability => Path.Combine(settings.MovieMetadataCacheDirectory, $"{preferredMetadata.ImdbId}.{availability.Value.GetPreferredExtractTopic()}{TorrentHelper.TorrentExtension}"))
                                 .Do(log)
                                 .ForEach(file =>
                                 {
