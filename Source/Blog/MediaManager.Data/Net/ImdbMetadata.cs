@@ -189,13 +189,13 @@ public partial record ImdbMetadata(
                 this.Year,
                 string.Join(
                     FileNameMetadataSeparator,
-                    this.Regions.Take(5).Select(value => value.ReplaceOrdinal(FileNameSeparator, string.Empty).ReplaceOrdinal(FileNameMetadataSeparator, string.Empty))),
+                    this.Regions.Where(value => value.IsNotNullOrWhiteSpace()).Take(5).Select(value => value.ReplaceOrdinal(FileNameSeparator, string.Empty).ReplaceOrdinal(FileNameMetadataSeparator, string.Empty))),
                 string.Join(
                     FileNameMetadataSeparator,
-                    this.Languages.Take(3).Select(value => value.ReplaceOrdinal(FileNameSeparator, string.Empty).ReplaceOrdinal(FileNameMetadataSeparator, string.Empty))),
+                    this.Languages.Where(value => value.IsNotNullOrWhiteSpace()).Take(3).Select(value => value.ReplaceOrdinal(FileNameSeparator, string.Empty).ReplaceOrdinal(FileNameMetadataSeparator, string.Empty))),
                 string.Join(
                     FileNameMetadataSeparator,
-                    this.Genres.Take(5).Select(value => value.ReplaceOrdinal(FileNameSeparator, string.Empty).ReplaceOrdinal(FileNameMetadataSeparator, string.Empty)))
+                    this.Genres.Where(value => value.IsNotNullOrWhiteSpace()).Take(5).Select(value => value.ReplaceOrdinal(FileNameSeparator, string.Empty).ReplaceOrdinal(FileNameMetadataSeparator, string.Empty)))
             ]);
         return Path.Combine(directory, $"{name}{Extension}");
     }

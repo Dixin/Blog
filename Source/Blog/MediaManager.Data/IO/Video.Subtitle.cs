@@ -58,7 +58,7 @@ internal static partial class Video
             });
     }
 
-    internal static async Task ConvertToUtf8Async(string directory, bool backup = false, Action<string>? log = null)
+    internal static async Task ConvertToUtf8Async(string directory, bool backup = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
         await EnumerateSubtitles(directory)
@@ -131,7 +131,7 @@ internal static partial class Video
                 {
                     log($"{result.File} {exception}");
                 }
-            });
+            }, cancellationToken);
     }
 
     internal static void MoveAllSubtitles(string fromDirectory, string toDirectory, bool overwrite = false, Action<string>? log = null) =>
