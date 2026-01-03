@@ -61,8 +61,12 @@ internal static class VideoFileInfoExtensions
     internal static bool IsHD(this IVideoFileInfo video) =>
         video.Definition is ".2160p" or ".1080p" or ".720p" && !video.Edition.EndsWithIgnoreCase(Video.UpScaleDefinition);
 
-    internal static bool IsHdr(this IVideoFileInfo video) =>
-        video.VideoCodec.ContainsIgnoreCase(".HDR") || video.Edition.ContainsOrdinal(".HDR");
+    internal static string DynamicRange(this IVideoFileInfo video) =>
+        video.VideoCodec.ContainsIgnoreCase(".HDR.DV")
+            ? "[DV]"
+            : video.VideoCodec.ContainsIgnoreCase(".HDR")
+                ? "[HDR]"
+                : string.Empty;
 
     internal static bool IsHdrDolbyVision(this IVideoFileInfo video) =>
         video.VideoCodec.ContainsIgnoreCase(".HDR.DV");
