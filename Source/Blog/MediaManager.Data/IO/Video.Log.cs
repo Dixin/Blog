@@ -519,7 +519,7 @@ internal static partial class Video
 
                                 return true;
                             })
-                            .ForEach(file => log($"!File: {file}"));
+                            .ForEach(file => log($"!File: {Path.Combine(season, file)}"));
                     });
 
                     return;

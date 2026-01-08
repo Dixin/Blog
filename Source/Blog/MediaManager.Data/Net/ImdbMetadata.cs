@@ -172,7 +172,7 @@ public partial record ImdbMetadata(
     {
         if (TryRead(path, out string? file) && !PathHelper.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.NotExistingFlag))
         {
-            imdbMetadata = JsonHelper.DeserializeFromFile<ImdbMetadata>(file);
+            imdbMetadata = DeserializeFromFile(file);
             return true;
         }
 
@@ -305,4 +305,29 @@ public class StringOrDoubleConverter : JsonConverter<string>
 
     public override void Write(Utf8JsonWriter writer, string value, JsonSerializerOptions options) =>
         writer.WriteStringValue(value);
+}
+
+[JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+[JsonSerializable(typeof(ImdbMetadata))]
+internal partial class ImdbMetadataSourceGenerationContext : JsonSerializerContext
+{
+    internal static ImdbMetadataSourceGenerationContext Deserialization => field ??= new(JsonHelper.DeserializerOptions);
+
+    internal static ImdbMetadataSourceGenerationContext Serialization => field ??= new(JsonHelper.SerializerOptions);
+}
+
+public partial record ImdbMetadata
+{
+    internal static ImdbMetadata Deserialize(string jsonContext) =>
+        JsonSerializer.Deserialize<ImdbMetadata>(jsonContext, ImdbMetadataSourceGenerationContext.Deserialization.ImdbMetadata)
+        ?? throw new InvalidOperationException($"{jsonContext} should not be null.");
+
+    internal static string Serialize(ImdbMetadata imdbMetadata) =>
+        JsonSerializer.Serialize(imdbMetadata, ImdbMetadataSourceGenerationContext.Serialization.ImdbMetadata);
+
+    internal static ImdbMetadata DeserializeFromFile(string file) =>
+        Deserialize(File.ReadAllText(file));
+
+    internal static void SerializeToFile(ImdbMetadata imdbMetadata, string file) =>
+        FileHelper.WriteText(file, Serialize(imdbMetadata));
 }

@@ -53,7 +53,7 @@ internal static class TmdbMetadata
                 throw new InvalidOperationException($"Inconsistent year: {movie}.");
             }
 
-            string[][] countries = documents.Select(doc => doc.Root?.Elements("country").Select(element => element.Value).Order().ToArray() ?? []).ToArray();
+            string[][] countries = documents.Select(doc => doc.Root?.Elements("country").Select(element => element.Value).Where(value => value.IsNotNullOrWhiteSpace()).Order().ToArray() ?? []).ToArray();
             if (countries.Select(country => string.Join("|", country)).Distinct().Count() != 1)
             {
                 throw new InvalidOperationException($"Inconsistent countries: {movie}.");

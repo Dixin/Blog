@@ -4,16 +4,16 @@ using System.Text.Encodings.Web;
 using System.Text.Unicode;
 using Examples.IO;
 
-internal class JsonHelper
+internal static class JsonHelper
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new()
+    internal static JsonSerializerOptions SerializerOptions { get; } = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = true,
         Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
     };
 
-    private static readonly JsonSerializerOptions DeserializerOptions = new()
+    internal static JsonSerializerOptions DeserializerOptions { get; } = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         PropertyNameCaseInsensitive = true,
