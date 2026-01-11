@@ -31,7 +31,7 @@ internal static partial class Video
 
     private static readonly string[] CommonVideoExtensions = [".avi", DiskImageExtension, ".mkv", ".mpg", VideoExtension, ".wmv"];
 
-    private static readonly string[] AllVideoExtensions = UncommonVideoExtensions.Union(CommonVideoExtensions).ToArray();
+    private static readonly string[] AllVideoExtensions = [.. UncommonVideoExtensions, .. CommonVideoExtensions];
 
     private static readonly string MovieMetadataFile = $"movie{XmlMetadataExtension}";
 
