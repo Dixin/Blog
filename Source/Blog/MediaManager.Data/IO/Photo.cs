@@ -4,7 +4,7 @@ namespace MediaManager.IO;
 
 internal static partial class Photo
 {
-    private static readonly string[] CommonImageExtensions = [".avif", ".bmp", ".dng", ".gif", ".heic", ".heif", ".jfif", ".jpeg", ".jpg", ".nef", ".png", ".psd", ".tif", ".tiff", ".webp"];
+    private static readonly string[] CommonImageExtensions = [".avif", ".bmp", ".dng", ".gif", ".heic", ".heif", ".jfif", ".jpeg", ".jpg", ".nef", ".png", ".psb", ".psd", ".tif", ".tiff", ".webp"];
 
     private static readonly string[] Image360Extensions = [".insp", ".insv", ".lrv"];
 
@@ -63,9 +63,13 @@ internal static partial class Photo
     {
         log ??= Logger.WriteLine;
 
+        Lock logLock = new();
+
         Directory.EnumerateDirectories(directory)
             .Order()
-            .ForEach(album =>
+            .AsParallel()
+            .WithDegreeOfParallelism(2)
+            .ForAll(album =>
             {
                 string name = PathHelper.GetFileName(album);
                 MatchCollection matches = ExifMetadata.Date360Regex().Matches(name);
@@ -74,8 +78,7 @@ internal static partial class Photo
                     return;
                 }
 
-                Debug.Assert(matches.Count is 1 or 2);
-
+                List<string> errors = [];
                 switch (matches.Count)
                 {
                     case 1:
@@ -86,10 +89,10 @@ internal static partial class Photo
                             {
                                 if (ExifMetadata.TryGetTakenDate(file, out DateOnly? takenDate) && takenDate.Value != date)
                                 {
-                                    log($"{file} | {takenDate.Value.ToString("yyyyMMdd")}");
+                                    errors.Add($"{file} | {takenDate.Value.ToString("yyyyMMdd")}");
                                 }
                             });
-                        return;
+                        break;
                     case 2:
                         DateOnly minDate = DateOnly.ParseExact(matches.First().Value, "yyyyMMdd");
                         DateOnly maxDate = DateOnly.ParseExact(matches.Last().Value, "yyyyMMdd");
@@ -100,13 +103,23 @@ internal static partial class Photo
                             {
                                 if (ExifMetadata.TryGetTakenDate(file, out DateOnly? takenDate) && (takenDate.Value < minDate || takenDate.Value > maxDate))
                                 {
-                                    log($"{file} | {takenDate.Value.ToString("yyyyMMdd")}");
+                                    errors.Add($"{file} | {takenDate.Value.ToString("yyyyMMdd")}");
                                 }
                             });
-                        return;
+                        break;
                     default:
                         Debug.Fail(album);
                         break;
+                }
+
+                if (errors.IsEmpty())
+                {
+                    return;
+                }
+
+                lock (logLock)
+                {
+                    errors.ForEach(log);
                 }
             });
     }
