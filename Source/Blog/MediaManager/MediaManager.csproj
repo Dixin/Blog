@@ -33,7 +33,7 @@
          <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.1" />
          <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.1" />
          <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.1" />
-         <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="143.0.7499.4000" />
+         <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="143.0.7499.16900" />
          <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="141.0.3537.71" /> 
     </ItemGroup>
 

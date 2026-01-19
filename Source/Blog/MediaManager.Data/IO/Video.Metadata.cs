@@ -397,11 +397,7 @@ internal static partial class Video
         if (movies.Any())
         {
             using WebDriverWrapper? webDriver = useBrowser ? new() : null;
-            if (webDriver is not null)
-            {
-                webDriver.Url = "https://www.imdb.com/";
-            }
-
+            webDriver?.Url = "https://www.imdb.com/";
             await movies.ForEachAsync(async movie => await DownloadImdbMetadataAsync(movie, webDriver, overwrite, useCache, log, cancellationToken), cancellationToken);
         }
     }
