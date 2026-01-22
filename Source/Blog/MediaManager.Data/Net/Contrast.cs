@@ -29,7 +29,7 @@ internal static class Contrast
                         string link = linkCQ.Attr("href");
                         CQ imdbCQ = rowCellsCQ.Eq(1).Find("a").Eq(1);
                         string imdbLink = imdbCQ.Attr("href");
-                        string imdbId = imdbLink.IsNotNullOrWhiteSpace() ? Regex.Match(imdbLink, "tt[0-9]+$").Value : string.Empty;
+                        string imdbId = imdbLink.IsNotNullOrWhiteSpace() ? ImdbMetadata.ImdbIdSubstringRegex().Match(imdbLink).Value : string.Empty;
                         string torrent = rowCellsCQ.Eq(2).Find("a").Eq(0).Attr("href");
                         string magnet = rowCellsCQ.Eq(2).Find("a").Eq(1).Attr("href");
                         string uploader = rowCellsCQ.Eq(4).Text();
