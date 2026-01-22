@@ -1,15 +1,21 @@
-﻿using Examples.IO;
+﻿using System.Drawing;
+using System.Drawing.Imaging;
+using Examples.IO;
 using MetadataExtractor;
 using MetadataExtractor.Formats.Exif;
+using Directory = MetadataExtractor.Directory;
 
 namespace MediaManager.IO;
 
-using Directory = MetadataExtractor.Directory;
+using Examples.Common;
 
 internal static partial class ExifMetadata
 {
     [GeneratedRegex("[0-9]{8}")]
     internal static partial Regex Date360Regex();
+
+    [GeneratedRegex(":")]
+    private static partial Regex SeparatorRegex();
 
     internal static bool TryGetTakenDate(string file, [NotNullWhen(true)] out DateOnly? takenDate, Action<string>? log = null)
     {
@@ -40,21 +46,29 @@ internal static partial class ExifMetadata
             .OfType<ExifSubIfdDirectory>()
             .FirstOrDefault(subIfdDirectory => subIfdDirectory.TryGetDateTime(ExifDirectoryBase.TagDateTimeOriginal, out takenDateTime));
         Debug.Assert(result is null == (takenDateTime == DateTime.MinValue));
-        if (takenDateTime == DateTime.MinValue)
+        if (result is not null)
         {
+            takenDate = DateOnly.FromDateTime(takenDateTime);
+            return true;
+        }
+
+        try
+        {
+            using FileStream fileStream = new(file, FileMode.Open, FileAccess.Read);
+            using Image image = Image.FromStream(fileStream, false, false);
+            PropertyItem propertyItem = image.GetPropertyItem(36867);
+            string dateTaken = Encoding.UTF8.GetString(propertyItem.Value);
+            dateTaken = SeparatorRegex().Replace(dateTaken, "-", 2);
+            DateTime dateTime = DateTime.Parse(dateTaken);
+            takenDate = DateOnly.FromDateTime(dateTime);
+            return true;
+        }
+        catch (Exception exception) when (exception.IsNotCritical())
+        {
+            log($"! {file}");
+            log(exception.ToString());
             takenDate = null;
             return false;
         }
-
-        takenDate = DateOnly.FromDateTime(takenDateTime);
-        return true;
-
-        //using FileStream fs = new FileStream(file, FileMode.Open, FileAccess.Read);
-        //using Image myImage = Image.FromStream(fs, false, false);
-        //PropertyItem propItem = myImage.GetPropertyItem(36867);
-        //string value = Encoding.UTF8.GetString(propItem.Value);
-        //string dateTaken = new Regex(":").Replace(value, "-", 2);
-        //DateTime dateTime = DateTime.Parse(dateTaken);
-        //return DateOnly.FromDateTime(dateTime);
     }
 }
