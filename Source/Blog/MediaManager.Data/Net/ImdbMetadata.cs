@@ -1,9 +1,10 @@
 ﻿namespace MediaManager.Net;
 
-using System.Text.Json.Serialization;
 using Examples.Common;
 using Examples.IO;
 using MediaManager.IO;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 public record ImdbEntry(string Type)
 {
@@ -11,17 +12,22 @@ public record ImdbEntry(string Type)
     public string Type { get; init; } = Type;
 }
 
-public record ImdbEntity(string Type, string Url, string Name) : ImdbEntry(Type);
+public record ImdbEntity(string Type, string Name) : ImdbEntry(Type);
 
 public partial record ImdbMetadata(
-    string Context, string Type, string Url, string Name, string AlternateName, string Image, string ContentRating,
-    string[] Genres, ImdbEntity[] Actor, ImdbEntity[] Director, ImdbEntity[] Creator,
-    string Description, string DatePublished, string Keywords, ImdbAggregateRating? AggregateRating,
+    string Link, string Type, string Context, ImdbMetadata? Parent,
+    string Name, string AlternateName, string AlsoKnownAs,
+    string Title, string OriginalTitle, Dictionary<string, string[]> Titles,
+    string[]? Genres, string Description, string Duration,
+    string? Year, string DatePublished, Dictionary<string, string[]> Releases,
+    string Image, ImdbTrailer Trailer,
+    string ContentRating, ImdbAggregateRating? AggregateRating,
+    ImdbEntity[] Actor, ImdbEntity[] Director, ImdbEntity[] Creator,
+    string[] Regions, string[] Languages, string Keywords, string[] AllKeywords,
     Dictionary<string, string[]> Websites, Dictionary<string, string> FilmingLocations, Dictionary<string, string[]> Companies,
-    string Duration, ImdbTrailer Trailer,
-    string OriginalTitle, string Year, string[] Regions, string[] Languages, Dictionary<string, string[]> Titles, ImdbMetadata? Parent, string Title,
     string MpaaRating, Dictionary<string, string> Certifications, Dictionary<string, ImdbAdvisory[]> Advisories,
-    string[] AllKeywords, Dictionary<string, string[]> Releases, string AlsoKnownAs) : ImdbEntity(Type, Url, Name)
+    Dictionary<string, ImdbConnection[]> Connections
+    ) : ImdbEntity(Type, Name)
 {
     [JsonPropertyName("@context")]
     public string Context { get; init; } = Context;
@@ -34,6 +40,8 @@ public partial record ImdbMetadata(
 
     [JsonConverter(typeof(EntityOrArrayConverter))]
     public ImdbEntity[] Creator { get; init; } = Creator;
+
+    public string Year { get; init; } = Year ?? string.Empty;
 
     [JsonIgnore]
     internal string YearOfLatestRelease => DateTime.TryParse(this.DatePublished, out DateTime dateTime) ? dateTime.Year.ToString(CultureInfo.InvariantCulture) : string.Empty;
@@ -172,7 +180,7 @@ public partial record ImdbMetadata(
     {
         if (TryRead(path, out string? file) && !PathHelper.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.NotExistingFlag))
         {
-            imdbMetadata = JsonHelper.DeserializeFromFile<ImdbMetadata>(file);
+            imdbMetadata = DeserializeFromFile(file);
             return true;
         }
 
@@ -189,29 +197,36 @@ public partial record ImdbMetadata(
                 this.Year,
                 string.Join(
                     FileNameMetadataSeparator,
-                    this.Regions.Take(5).Select(value => value.ReplaceOrdinal(FileNameSeparator, string.Empty).ReplaceOrdinal(FileNameMetadataSeparator, string.Empty))),
+                    this.Regions.Where(value => value.IsNotNullOrWhiteSpace()).Take(5).Select(value => value.ReplaceOrdinal(FileNameSeparator, string.Empty).ReplaceOrdinal(FileNameMetadataSeparator, string.Empty))),
                 string.Join(
                     FileNameMetadataSeparator,
-                    this.Languages.Take(3).Select(value => value.ReplaceOrdinal(FileNameSeparator, string.Empty).ReplaceOrdinal(FileNameMetadataSeparator, string.Empty))),
+                    this.Languages.Where(value => value.IsNotNullOrWhiteSpace()).Take(3).Select(value => value.ReplaceOrdinal(FileNameSeparator, string.Empty).ReplaceOrdinal(FileNameMetadataSeparator, string.Empty))),
                 string.Join(
                     FileNameMetadataSeparator,
-                    this.Genres.Take(5).Select(value => value.ReplaceOrdinal(FileNameSeparator, string.Empty).ReplaceOrdinal(FileNameMetadataSeparator, string.Empty)))
+                    this.Genres.Where(value => value.IsNotNullOrWhiteSpace()).Take(5).Select(value => value.ReplaceOrdinal(FileNameSeparator, string.Empty).ReplaceOrdinal(FileNameMetadataSeparator, string.Empty)))
             ]);
         return Path.Combine(directory, $"{name}{Extension}");
     }
+
+    [GeneratedRegex("tt[0-9]+")]
+    internal static partial Regex ImdbIdSubstringRegex();
+
+    [GeneratedRegex("^tt[0-9]+$")]
+    internal static partial Regex ImdbIdOnlyRegex();
+
+    [GeneratedRegex(@"imdb\.com/title/(tt[0-9]+)")]
+    internal static partial Regex ImdbIdInLinkRegex();
 }
 
 public partial record ImdbMetadata : IImdbMetadata
 {
-    public string Link => $"https://www.imdb.com{this.Url}".AppendIfMissing("/");
-
-    public string ImdbId => this.Url.Split("/", StringSplitOptions.RemoveEmptyEntries).Last();
+    public string ImdbId => this.Link.GetUrlPath().Split("/", StringSplitOptions.RemoveEmptyEntries).Single(item => ImdbIdOnlyRegex().IsMatch(item));
 
     public string ImdbRating => this.AggregateRating?.RatingValue ?? string.Empty;
 
     [JsonConverter(typeof(StringOrArrayConverter))]
     [JsonPropertyName("genre")]
-    public string[] Genres { get; init; } = Genres;
+    public string[] Genres { get; init; } = Genres ?? [];
 }
 
 // public partial record ImdbMetadata : IEquatable<ImdbMetadata>
@@ -244,6 +259,8 @@ public record ImdbAdvisory(string Category, string Severity, string[] Details)
     [JsonIgnore]
     public ImdbAdvisorySeverity? FormattedSeverity => Enum.TryParse(this.Severity, out ImdbAdvisorySeverity severity) ? severity : null;
 }
+
+public record ImdbConnection(string Title, string Link, string Description);
 
 public enum ImdbAdvisorySeverity
 {
@@ -305,4 +322,54 @@ public class StringOrDoubleConverter : JsonConverter<string>
 
     public override void Write(Utf8JsonWriter writer, string value, JsonSerializerOptions options) =>
         writer.WriteStringValue(value);
+}
+
+[JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+[JsonSerializable(typeof(ImdbMetadata))]
+internal partial class ImdbMetadataSourceGenerationContext : JsonSerializerContext
+{
+    internal static ImdbMetadataSourceGenerationContext Deserialization => field ??= new(JsonHelper.DeserializerOptions);
+
+    internal static ImdbMetadataSourceGenerationContext Serialization => field ??= new ImdbMetadataAlphabeticalSourceGenerationContext(JsonHelper.SerializerOptions);
+}
+
+internal class ImdbMetadataAlphabeticalSourceGenerationContext(JsonSerializerOptions options) : ImdbMetadataSourceGenerationContext(options)
+{
+    public override JsonTypeInfo? GetTypeInfo(Type type)
+    {
+        JsonTypeInfo? typeInfo = base.GetTypeInfo(type);
+        if (typeInfo?.Kind == JsonTypeInfoKind.Object)
+        {
+            JsonPropertyInfo[] orderedProperties = typeInfo.Properties.OrderBy(property => property.Name, StringComparer.Ordinal).ToArray();
+            typeInfo.Properties.Clear();
+            foreach (JsonPropertyInfo property in orderedProperties)
+            {
+                typeInfo.Properties.Add(property);
+            }
+        }
+
+        return typeInfo;
+    }
+}
+
+public partial record ImdbMetadata
+{
+    internal static ImdbMetadata Deserialize(string jsonContext) =>
+        JsonSerializer.Deserialize<ImdbMetadata>(jsonContext, ImdbMetadataSourceGenerationContext.Deserialization.ImdbMetadata)
+        ?? throw new InvalidOperationException($"{jsonContext} should not be null.");
+
+    internal static ImdbMetadata DeserializeFromFile(string file) =>
+        Deserialize(File.ReadAllText(file));
+
+    public static async Task<ImdbMetadata> DeserializeFromFileAsync(string file, CancellationToken cancellationToken = default) =>
+        Deserialize(await File.ReadAllTextAsync(file, cancellationToken));
+
+    internal static string Serialize(ImdbMetadata imdbMetadata) =>
+        JsonSerializer.Serialize(imdbMetadata, ImdbMetadataSourceGenerationContext.Serialization.ImdbMetadata);
+
+    internal static void SerializeToFile(ImdbMetadata imdbMetadata, string file) =>
+        FileHelper.WriteText(file, Serialize(imdbMetadata));
+
+    public static async Task SerializeToFileAsync(ImdbMetadata imdbMetadata, string file, CancellationToken cancellationToken = default) =>
+        await FileHelper.WriteTextAsync(file, Serialize(imdbMetadata), cancellationToken: cancellationToken);
 }

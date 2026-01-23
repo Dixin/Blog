@@ -21,7 +21,7 @@ internal static class ImdbMetadataExtensions
             ? imdbId
             : throw new ArgumentOutOfRangeException(nameof(path), path, string.Empty);
 
-    internal static bool IsImdbId([NotNullWhen(true)] this string? value) => value.IsNotNullOrWhiteSpace() && Regex.IsMatch(value, "^tt[0-9]+$");
+    internal static bool IsImdbId([NotNullWhen(true)] this string? value) => value.IsNotNullOrWhiteSpace() && ImdbMetadata.ImdbIdOnlyRegex().IsMatch(value);
 
     internal static bool TryGetImdbId(this XDocument xml, [NotNullWhen(true)] out string? imdbId)
     {

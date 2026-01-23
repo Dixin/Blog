@@ -3,17 +3,19 @@
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
 using Examples.IO;
+using Examples.Text.Json;
 
-internal class JsonHelper
+internal static class JsonHelper
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new()
+    internal static JsonSerializerOptions SerializerOptions => new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = true,
-        Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+        Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
+        TypeInfoResolver = new AlphabeticalPropertyJsonTypeInfoResolver()
     };
 
-    private static readonly JsonSerializerOptions DeserializerOptions = new()
+    internal static JsonSerializerOptions DeserializerOptions => new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         PropertyNameCaseInsensitive = true,

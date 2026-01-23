@@ -44,6 +44,19 @@ public static class FileHelper
         File.Move(source, destination, overwrite);
     }
 
+    public static void Move(string source, string destination, Func<string, string, bool> overwrite, bool skipDestinationDirectory = false)
+    {
+        source.ThrowIfNullOrWhiteSpace();
+
+        string destinationDirectory = PathHelper.GetDirectoryName(destination);
+        if (!skipDestinationDirectory && !Directory.Exists(destinationDirectory))
+        {
+            Directory.CreateDirectory(destinationDirectory);
+        }
+
+        File.Move(source, destination, overwrite(source, destination));
+    }
+
     public static bool TryMove(string source, string destination, bool overwrite = false)
     {
         source.ThrowIfNullOrWhiteSpace();
@@ -64,6 +77,13 @@ public static class FileHelper
     }
 
     public static string MoveToDirectory(string source, string destinationParentDirectory, bool overwrite = false, bool skipDestinationDirectory = false)
+    {
+        string destinationFile = Path.Combine(destinationParentDirectory, Path.GetFileName(source));
+        Move(source, destinationFile, overwrite, skipDestinationDirectory);
+        return destinationFile;
+    }
+
+    public static string MoveToDirectory(string source, string destinationParentDirectory, Func<string, string, bool> overwrite, bool skipDestinationDirectory = false)
     {
         string destinationFile = Path.Combine(destinationParentDirectory, Path.GetFileName(source));
         Move(source, destinationFile, overwrite, skipDestinationDirectory);

@@ -60,7 +60,7 @@ internal static class Preferred
 
                         summaries
                             .Do(summary => downloadedSummaries.Enqueue(summary))
-                            .ForEach(summary => allSummaries[summary.Link] = summary);
+                            .ForEach(summary => allSummaries[summary.Link.GetUrlPath()] = summary);
 
                         if (pageIndex % WriteCount == 0)
                         {
@@ -166,7 +166,7 @@ internal static class Preferred
                                 key => [newDetail],
                                 (key, group) =>
                                 {
-                                    PreferredMetadata? oldDetail = group.SingleOrDefault(detail => detail.Link.EqualsIgnoreCase(newDetail.Link));
+                                    PreferredMetadata? oldDetail = group.SingleOrDefault(detail => detail.Link.GetUrlPath().EqualsIgnoreCase(newDetail.Link.GetUrlPath()));
                                     if (oldDetail is null)
                                     {
                                         group.Add(newDetail);
@@ -178,7 +178,7 @@ internal static class Preferred
                                     {
                                         mergedAvailabilities
                                             .Keys
-                                            .Where(key => mergedAvailabilities[key].EqualsIgnoreCase(newAvailability.Value))
+                                            .Where(key => mergedAvailabilities[key].GetUrlPath().EqualsIgnoreCase(newAvailability.Value.GetUrlPath()))
                                             .ToArray()
                                             .ForEach(key => Debug.Assert(mergedAvailabilities.Remove(key)));
 
@@ -191,9 +191,10 @@ internal static class Preferred
                                         if (detail is null)
                                         {
                                             Debugger.Break();
+                                            throw new InvalidOperationException();
                                         }
 
-                                        return detail.Link.EqualsIgnoreCase(newDetail.Link);
+                                        return detail.Link.GetUrlPath().EqualsIgnoreCase(newDetail.Link.GetUrlPath());
                                     });
                                     group.Add(newDetail);
                                     return group;
@@ -242,7 +243,7 @@ internal static class Preferred
                         switch (response.StatusCode)
                         {
                             case HttpStatusCode.NotFound:
-                                details[g.Key].RemoveAll(mm => mm.Link.EqualsOrdinal(m.Link));
+                                details[g.Key].RemoveAll(mm => mm.Link.GetUrlPath().EqualsOrdinal(m.Link.GetUrlPath()));
                                 Logger.WriteLine($"Remove {m.Link}");
                                 break;
                             case HttpStatusCode.OK:
@@ -279,16 +280,16 @@ internal static class Preferred
                     {
                         case HttpStatusCode.NotFound:
                             if (g.Value
-                                .Where(mm => !mm.Link.EqualsOrdinal(m.Link))
+                                .Where(mm => !mm.Link.GetUrlPath().EqualsOrdinal(m.Link.GetUrlPath()))
                                 .Any(mm => m.PreferredAvailabilities.All(a => mm.Availabilities.ContainsValue(a.Value))))
                             {
-                                details[g.Key].RemoveAll(mm => mm.Link.EqualsOrdinal(m.Link));
+                                details[g.Key].RemoveAll(mm => mm.Link.GetUrlPath().EqualsOrdinal(m.Link.GetUrlPath()));
                                 Logger.WriteLine($"Remove {m.Link}");
                             }
                             else if (m.PreferredAvailabilities
                                      .All(a => Retry.FixedInterval(() => httpClient.GetAsync(a.Value, HttpCompletionOption.ResponseHeadersRead).Result.StatusCode == HttpStatusCode.NotFound)))
                             {
-                                details[g.Key].RemoveAll(mm => mm.Link.EqualsOrdinal(m.Link));
+                                details[g.Key].RemoveAll(mm => mm.Link.GetUrlPath().EqualsOrdinal(m.Link.GetUrlPath()));
                                 Logger.WriteLine($"Remove {m.Link}");
                             }
                             break;
@@ -356,94 +357,47 @@ internal static class Preferred
 
         ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
 
-        PreferredMetadata[] metadataToDownload = preferredMetadata
+        ConcurrentQueue<(PreferredMetadata Metadata, string Link, string File)> metadataToDownload = new(preferredMetadata
             .SelectMany(group => group.Value)
-            .Where(metadata => metadata.PreferredAvailabilities
-                .Select(availability => availability.Value.Split("/").Last())
-                .Select(exactTopic => Path.Combine(settings.MovieMetadataCacheDirectory, $"{metadata.ImdbId}.{exactTopic}{TorrentHelper.TorrentExtension}"))
-                .Any(file => !existingFiles.Contains(file)))
-            .ToArray();
-        int length = metadataToDownload.Length;
-        log($"Estimation {length} files.");
-        await metadataToDownload
-            .ParallelForEachAsync(
-                async (metadata, index, token) =>
-                {
-                    if (index % 100 == 0)
-                    {
-                        log($"{index * 100 / length}% - {index}/{length}");
-                    }
-
-                    await DownloadTorrentsAsync(settings, metadata, f => existingFiles.Contains(f), isDryRun, log, token);
-                },
-                MaxDegreeOfParallelism,
-                cancellationToken);
-    }
-
-    internal static async Task<bool> DownloadTorrentsAsync(
-        ISettings settings, PreferredMetadata preferredMetadata, Func<string, bool>? skip = null, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
-    {
-        log ??= Logger.WriteLine;
-        skip ??= File.Exists;
-
-        Dictionary<string, string> videos = preferredMetadata.PreferredAvailabilities;
-
-        if (videos.IsEmpty())
-        {
-            log($"!{preferredMetadata.ImdbId} has no valid availability: {string.Join("|", preferredMetadata.Availabilities.Select(availability => availability.Key))}.");
-            return false;
-        }
-
-        //log($"{preferredVideos.First().ImdbId}-{imdbMetadata.FormattedAggregateRating}-{imdbMetadata.FormattedAggregateRatingCount}-{preferredVideos.First().Title} {preferredVideos.First().Link} {imdbMetadata.Link}");
-        //log($"{imdbMetadata.Link}keywords");
-        //log($"{imdbMetadata.Link}parentalguide");
-        using HttpClient? httpClient = isDryRun ? null : new HttpClient().AddEdgeHeaders();
-        bool isDownloaded = false;
-        await videos.ForEachAsync(
-            async (video, index, token) =>
+            .SelectMany(metadata => metadata
+                .PreferredAvailabilities
+                .Select(availability =>
+                    (
+                        metadata,
+                        Link: availability.Value,
+                        File: Path.Combine(settings.MovieMetadataCacheDirectory, $"{metadata.ImdbId}.{availability.Value.GetPreferredExtractTopic()}{TorrentHelper.TorrentExtension}")
+                    )))
+            .Where(task => !existingFiles.Contains(task.File)));
+        int count = metadataToDownload.Count;
+        log($"Estimation {count} files.");
+        await Parallel.ForEachAsync(
+            Enumerable.Range(0, MaxDegreeOfParallelism),
+            new ParallelOptions() { MaxDegreeOfParallelism = MaxDegreeOfParallelism, CancellationToken = cancellationToken },
+            async (taskIndex, token) =>
             {
-                //log($"{video.Key} | {video.Link} | {video.Metadata.Link}");
-                string exactTopic = video.Value.Split("/", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last().Trim().ToUpperInvariant();
-                string file = Path.Combine(settings.MovieMetadataCacheDirectory, $"{preferredMetadata.ImdbId}.{exactTopic}{TorrentHelper.TorrentExtension}");
-                if (skip(file))
+                using HttpClient httpClient = new HttpClient().AddEdgeHeaders();
+                while (metadataToDownload.TryDequeue(out (PreferredMetadata Metadata, string Link, string File) task))
                 {
-                    log($"""
-                         Skip {file}
+                    try
+                    {
+                        await Retry.FixedIntervalAsync(
+                            async () => await httpClient.GetFileAsync(task.Link, task.File, token),
+                            isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound }, 
+                            cancellationToken: token);
+                        log($"""
+                             Download {task.File}
 
-                         """);
-                    return;
+                             """);
+                    }
+                    catch (Exception exception) when (exception.IsNotCritical())
+                    {
+                        log($"""
+                             magnet:?xt=urn:btih:{task.Link.GetPreferredExtractTopic()}
+
+                             """);
+                    }
                 }
-
-                if (httpClient is null)
-                {
-                    log($"""
-                         Skip {file}
-
-                         """);
-                    return;
-                }
-
-                try
-                {
-                    await Retry.FixedIntervalAsync(
-                            async () => await httpClient.GetFileAsync(video.Value, file, token),
-                            isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound }, cancellationToken: token);
-                    isDownloaded = true;
-                    log($"""
-                         Download {file}
-
-                         """);
-                }
-                catch (Exception exception) when (exception.IsNotCritical())
-                {
-                    log($"""
-                         magnet:?xt=urn:btih:{exactTopic}
-
-                         """);
-                }
-            },
-            cancellationToken);
-        return isDownloaded;
+            });
     }
 
     internal static async Task WriteFileMetadataAsync(ISettings settings, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
@@ -466,9 +420,10 @@ internal static class Preferred
         log(length.ToString());
 
         ILookup<string, string> existingImdbIds = existingFiles
+            .Select(file => PathHelper.GetFileNameWithoutExtension(file).Split("."))
             .ToLookup(
-                file => PathHelper.GetFileNameWithoutExtension(file).Split(".").First(),
-                file => PathHelper.GetFileNameWithoutExtension(file).Split(".").Last());
+                fileNameSegments => fileNameSegments.First(),
+                fileNameSegments => fileNameSegments.Last());
 
         allFileMetadata
             .Keys
@@ -480,7 +435,7 @@ internal static class Preferred
         allFileMetadata
             .Keys
             .Where(imdbId => allFileMetadata[imdbId]
-                .RemoveAll(metadata => !existingImdbIds[imdbId].ContainsIgnoreCase(metadata.FileLink.Split("/").Last())) > 0)
+                .RemoveAll(metadata => !existingImdbIds[imdbId].ContainsIgnoreCase(metadata.FileLink.GetPreferredExtractTopic())) > 0)
             .ForEach(imdbId => log($"Remove under {imdbId}."));
 
         await allVideos
@@ -492,7 +447,7 @@ internal static class Preferred
                         log($"{index * 100 / length}% - {index}/{length}");
                     }
 
-                    string linkExactTopic = video.Link.Split("/", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last().Trim().ToUpperInvariant();
+                    string linkExactTopic = video.Link.GetPreferredExtractTopic();
                     string file = Path.Combine(settings.MovieMetadataCacheDirectory, $"{video.Metadata.ImdbId}.{linkExactTopic}{TorrentHelper.TorrentExtension}");
                     if (!existingFiles.Contains(file))
                     {
@@ -500,18 +455,30 @@ internal static class Preferred
                         return;
                     }
 
-                    if (allFileMetadata.TryGetValue(video.Metadata.ImdbId, out List<PreferredFileMetadata>? group) && group.Any(metadata => metadata.FileLink.EqualsIgnoreCase(video.Link)))
+                    if (allFileMetadata.TryGetValue(video.Metadata.ImdbId, out List<PreferredFileMetadata>? group) && group.Any(metadata => metadata.ExactTopic.EqualsIgnoreCase(linkExactTopic)))
                     {
                         return;
                     }
 
-                    Torrent torrent = await Torrent.LoadAsync(file);
+                    Torrent torrent;
+                    try
+                    {
+                        torrent = await Torrent.LoadAsync(file);
+                    }
+                    catch (TorrentException exception)
+                    {
+                        log(file);
+                        log(exception.ToString());
+                        throw;
+                    }
+
                     string torrentVideoPath = torrent.Files.OrderByDescending(file => file.Length).First().Path;
                     Debug.Assert(torrentVideoPath.HasAnyExtension(Video.VideoExtension, ".mkv"));
                     string torrentVideoName = PathHelper.GetFileNameWithoutExtension(torrentVideoPath);
                     Debug.Assert(torrentVideoName.ContainsIgnoreCase("samples") || !torrentVideoName.ContainsIgnoreCase("sample"));
                     Debug.Assert(!torrentVideoName.ContainsOrdinal("@"));
                     string actualExactTopic = torrent.InfoHashes.V1OrV2.ToHex().ToUpperInvariant();
+                    //Debug.Assert(actualExactTopic.EqualsOrdinal(linkExactTopic));
                     ITorrentFile[] torrentVideos = torrent
                         .Files
                         .Where(file => file.Path.IsVideo() && !PathHelper.GetFileNameWithoutExtension(file.Path).ContainsIgnoreCase("sample"))
@@ -534,7 +501,7 @@ internal static class Preferred
                         key => [fileMetadata],
                         (key, group) =>
                         {
-                            group.RemoveAll(metadata => metadata.FileLink.EqualsIgnoreCase(video.Link));
+                            group.RemoveAll(metadata => metadata.ExactTopic.EqualsIgnoreCase(actualExactTopic));
                             group.Add(fileMetadata);
                             return group;
                         });
@@ -564,7 +531,7 @@ internal static class Preferred
             .Values
             .SelectMany(group => group)
             .SelectMany(metadata => metadata.PreferredAvailabilities, (metadata, availability) => (Metadata: metadata, Availability: availability))
-            .GroupBy(availability => availability.Availability.Value.Split("/").Last())
+            .GroupBy(availability => availability.Availability.Value.GetPreferredExtractTopic())
             .Where(groupByExactTopic => groupByExactTopic.Count() > 1)
             .Do(groupByExactTopic => groupByExactTopic
                 .Select(a => $"{a.Availability.Key} {a.Metadata.Title} {a.Metadata.Link} https://www.imdb.com/title/{a.Metadata.ImdbId} {a.Availability.Value}")
@@ -586,7 +553,7 @@ internal static class Preferred
                 Debug.Assert(metadataNotFound.Length < groupByExactTopic.Count());
                 metadataNotFound.ForEach(metadata =>
                 {
-                    details[metadata.ImdbId].RemoveAll(item => item.Link.EqualsIgnoreCase(metadata.Link));
+                    details[metadata.ImdbId].RemoveAll(item => item.Link.GetUrlPath().EqualsIgnoreCase(metadata.Link.GetUrlPath()));
                     Logger.WriteLine($"Remove not found: {metadata.Link}");
                     Debug.Assert(details[metadata.ImdbId].Any());
                     // if (details[metadata.ImdbId].IsEmpty())
@@ -623,7 +590,7 @@ internal static class Preferred
                 }
                 metadataNotFound.ForEach(metadata =>
                 {
-                    details[metadata.ImdbId].RemoveAll(item => item.Link.EqualsIgnoreCase(metadata.Link));
+                    details[metadata.ImdbId].RemoveAll(item => item.Link.GetUrlPath().EqualsIgnoreCase(metadata.Link.GetUrlPath()));
                     Logger.WriteLine($"Remove not found: {metadata.Link}");
                     Debug.Assert(details[metadata.ImdbId].Any());
                 });
@@ -632,7 +599,7 @@ internal static class Preferred
         details
             .Values
             .SelectMany(group => group)
-            .GroupBy(metadata => metadata.Link)
+            .GroupBy(metadata => metadata.Link.GetUrlPath())
             .Where(groupByLink => groupByLink.Count() > 1)
             .ForEach(groupByLink => groupByLink
                 .Select(metadata => $"{metadata.Title} https://www.imdb.com/title/{metadata.ImdbId}")
@@ -664,7 +631,7 @@ internal static class Preferred
                 .Values
                 .SelectMany(group => group)
                 .SelectMany(metadata => metadata.PreferredAvailabilities, (metadata, availability) => (Metadata: metadata, Availability: availability))
-                .GroupBy(availability => availability.Availability.Value.Split("/").Last())
+                .GroupBy(availability => availability.Availability.Value.GetPreferredExtractTopic())
                 .ToDictionary(
                     groupByExactTopic => groupByExactTopic.Key,
                     groupByExactTopic => groupByExactTopic.Select(item => item.Metadata.ImdbId).Distinct().Single());
@@ -697,4 +664,7 @@ internal static class Preferred
             });
         });
     }
+
+    internal static string GetPreferredExtractTopic(this string url) =>
+        new Uri(url).Segments.Last().Trim().ToUpperInvariant();
 }

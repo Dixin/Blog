@@ -12,38 +12,46 @@ internal static class Cool
 {
     private const int ChunkLength = 100;
 
-    internal static async Task DownloadAllPostsAsync(int startPostId, int endPostId, string directory, bool isDetection = false, int? degreeOfParallelism = null, bool overwrite = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task<int> DownloadAllPostsAsync(int startPostId, int endPostId, string directory, bool isDetection = false, int? degreeOfParallelism = null, bool overwrite = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         degreeOfParallelism ??= Environment.ProcessorCount * 5;
         log ??= Logger.WriteLine;
 
         ConcurrentQueue<int> postIds = new(Enumerable.Range(startPostId, endPostId - startPostId).Chunk(ChunkLength).Select(chunk => chunk[0]));
         HashSet<string> files = overwrite ? [] : new(Directory.EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories), StringComparer.OrdinalIgnoreCase);
-        
+        int[] lastDownloadedPostIds = new int[degreeOfParallelism.Value];
         await Parallel.ForEachAsync(
             Enumerable.Range(0, degreeOfParallelism.Value),
             new ParallelOptions() { CancellationToken = cancellationToken, MaxDegreeOfParallelism = degreeOfParallelism.Value },
              async (taskIndex, token) =>
             {
                 using HttpClient httpClient = new HttpClient().AddEdgeHeaders();
+                int lastDownloadedTaskPostId = 0;
                 while (postIds.TryDequeue(out int postId))
                 {
-                    int lastPostId = postId + ChunkLength - 1;
-                    for (; postId <= lastPostId; postId++)
+                    int lastChunkPostId = postId + ChunkLength - 1;
+                    for (; postId <= lastChunkPostId; postId++)
                     {
                         string file = Path.Combine(directory, GetPostDirectoryName(postId), GetPostFileName(postId));
                         if (!overwrite && files.Contains(file))
                         {
                             log($"Skip {postId}: Exists");
-                            return;
+                            lastDownloadedTaskPostId = postId;
+                            continue;
                         }
 
-                        await DownloadPostAsync(httpClient, postId, file, isDetection, log, token);
+                        if (await TryDownloadPostAsync(httpClient, postId, file, isDetection, log, token))
+                        {
+                            lastDownloadedTaskPostId = postId;
+                        }
                     }
 
-                    log($"===Processed {lastPostId}===");
+                    log($"===Processed {lastChunkPostId}===");
                 }
+
+                lastDownloadedPostIds[taskIndex] = lastDownloadedTaskPostId;
             });
+        return lastDownloadedPostIds.Max();
     }
 
     internal static async Task DownloadAllPostsWithTemplateAsync(int start, int end, string directory, bool overwrite = false, int? maxDegreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
@@ -78,7 +86,7 @@ internal static class Cool
             });
     }
 
-    private static async Task DownloadPostAsync(HttpClient httpClient, int postId, string file, bool isDetection = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    private static async Task<bool> TryDownloadPostAsync(HttpClient httpClient, int postId, string file, bool isDetection = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
@@ -89,7 +97,7 @@ internal static class Cool
                 isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound });
             if (response.StatusCode == HttpStatusCode.NotFound)
             {
-                return;
+                return false;
             }
         }
 
@@ -104,14 +112,14 @@ internal static class Cool
         catch (HttpRequestException exception) when (exception.StatusCode == HttpStatusCode.NotFound)
         {
             log($"Skip {postId}: 404");
-            return;
+            return false;
         }
 
         if (pageHtml.StartsWithIgnoreCase("<script language='javascript'>window.location='index.php';</script>")
             || pageHtml.ContainsIgnoreCase("404 Not Found"))
         {
             log($"Skip {postId}: Redirection");
-            return;
+            return false;
         }
 
         string childrenJson = await Retry.IncrementalAsync(
@@ -120,6 +128,7 @@ internal static class Cool
             cancellationToken: cancellationToken);
 
         await SavePost(postId, pageHtml, childrenJson, file, log, cancellationToken);
+        return true;
     }
 
     private static async Task SavePost(int postId, string pageHtml, string childrenJson, string file, Action<string>? log = null, CancellationToken cancellationToken = default)

@@ -8,8 +8,8 @@ using Examples.IO;
 using Examples.Linq;
 using Examples.Net;
 using MediaManager.Net;
+using Microsoft.Playwright;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
-using OpenQA.Selenium;
 
 internal static partial class Video
 {
@@ -519,7 +519,7 @@ internal static partial class Video
 
                                 return true;
                             })
-                            .ForEach(file => log($"!File: {file}"));
+                            .ForEach(file => log($"!File: {Path.Combine(season, file)}"));
                     });
 
                     return;
@@ -756,7 +756,7 @@ internal static partial class Video
                     {
                         bluRayPreferred.ForEach(preferredMetadata =>
                         {
-                            string exactTopic = preferredMetadata.Version.Value.Split("/", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last();
+                            string exactTopic = preferredMetadata.Version.Value.GetPreferredExtractTopic();
                             if (preferredExactTopicToDirectory.TryGetValue(exactTopic, out string? d) && localDisplayNames.Contains(d))
                             {
                                 return;
@@ -792,7 +792,7 @@ internal static partial class Video
                         {
                             bluRayPreferred.ForEach(preferredMetadata =>
                             {
-                                string exactTopic = preferredMetadata.Version.Value.Split("/", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last();
+                                string exactTopic = preferredMetadata.Version.Value.GetPreferredExtractTopic();
                                 if (preferredExactTopicToDirectory.TryGetValue(exactTopic, out string? d) && localDisplayNames.Contains(d))
                                 {
                                     return;
@@ -823,7 +823,7 @@ internal static partial class Video
                             {
                                 x265Preferred.ForEach(x265Metadata =>
                                 {
-                                    string exactTopic = x265Metadata.Version.Value.Split("/", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last();
+                                    string exactTopic = x265Metadata.Version.Value.GetPreferredExtractTopic();
                                     if (preferredExactTopicToDirectory.TryGetValue(exactTopic, out string? d) && localDisplayNames.Contains(d))
                                     {
                                         return;
@@ -847,7 +847,7 @@ internal static partial class Video
                         {
                             bluRayPreferred.ForEach(preferredMetadata =>
                             {
-                                string exactTopic = preferredMetadata.Version.Value.Split("/", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last();
+                                string exactTopic = preferredMetadata.Version.Value.GetPreferredExtractTopic();
                                 if (preferredExactTopicToDirectory.TryGetValue(exactTopic, out string? d) && localDisplayNames.Contains(d))
                                 {
                                     return;
@@ -881,7 +881,7 @@ internal static partial class Video
                     {
                         preferred.ForEach(preferredMetadata =>
                         {
-                            string exactTopic = preferredMetadata.Version.Value.Split("/", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last();
+                            string exactTopic = preferredMetadata.Version.Value.GetPreferredExtractTopic();
                             if (preferredExactTopicToDirectory.TryGetValue(exactTopic, out string? directory) && localDisplayNames.Contains(directory))
                             {
                                 return;
@@ -910,7 +910,7 @@ internal static partial class Video
                     {
                         x265Preferred.ForEach(preferredMetadata =>
                         {
-                            string exactTopic = preferredMetadata.Version.Value.Split("/", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last();
+                            string exactTopic = preferredMetadata.Version.Value.GetPreferredExtractTopic();
                             if (preferredExactTopicToDirectory.TryGetValue(exactTopic, out string? directory) && localDisplayNames.Contains(directory))
                             {
                                 return;
@@ -2605,7 +2605,7 @@ internal static partial class Video
                             await Task.Yield();
                             //await Preferred.DownloadTorrentsAsync(settings, preferredMetadata, null, isDryRun, log, token);
                             preferredMetadata.PreferredAvailabilities
-                                .Select(availability => Path.Combine(settings.MovieMetadataCacheDirectory, $"{preferredMetadata.ImdbId}.{availability.Value.Split("/").Last()}{TorrentHelper.TorrentExtension}"))
+                                .Select(availability => Path.Combine(settings.MovieMetadataCacheDirectory, $"{preferredMetadata.ImdbId}.{availability.Value.GetPreferredExtractTopic()}{TorrentHelper.TorrentExtension}"))
                                 .Do(log)
                                 .ForEach(file =>
                                 {
@@ -2731,9 +2731,12 @@ internal static partial class Video
             log(length.ToString());
         }
 
-        using WebDriverWrapper webDriver = new(() => WebDriverHelper.Start(isLoadingAll: true));
-        webDriver.Url = initialUrl;
-        webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.Id("pager_links")));
+        using IPlaywright playwright = await Playwright.CreateAsync();
+        await using IBrowser browser = await playwright.Chromium.LaunchAsync();
+        IPage page = await browser.NewPageAsync();
+        IResponse? response = await page.GotoAsync(initialUrl);
+        Debug.Assert(response is not null && response.Ok);
+        await page.Locator("#pager_links").WaitForAsync(new LocatorWaitForOptions() { State = WaitForSelectorState.Visible });
 
         if (updateMetadata)
         {
@@ -2744,7 +2747,7 @@ internal static partial class Video
                 try
                 {
                     await Retry.FixedIntervalAsync(
-                        async () => await DownloadImdbMetadataAsync(imdbMetadata.ImdbId, settings.TVMetadataDirectory, settings.TVMetadataCacheDirectory, metadataFiles.Values.ToArray(), cacheFiles, webDriver, overwrite: true, useCache: false, log: log, cancellationToken: cancellationToken),
+                        async () => await DownloadImdbMetadataAsync(imdbMetadata.ImdbId, settings.TVMetadataDirectory, settings.TVMetadataCacheDirectory, metadataFiles.Values.ToArray(), cacheFiles, page, overwrite: true, useCache: false, log: log, cancellationToken: cancellationToken),
                     isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError }, cancellationToken: cancellationToken);
                 }
                 catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
@@ -2831,7 +2834,9 @@ internal static partial class Video
                             }
                             else
                             {
-                                html = await webDriver.GetStringAsync(metadata.Link, () => webDriver.Wait(WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.CssSelector("""img[src$="magnet.gif"]"""))), cancellationToken: token);
+                                await page.GetStringAsync(metadata.Link);
+                                await page.Locator("""img[src$="magnet.gif"]""").WaitForAsync(new LocatorWaitForOptions() { State = WaitForSelectorState.Visible });
+                                html = await page.ContentAsync();
                                 await Task.Delay(WebDriverHelper.DefaultDomWait, token);
                                 await File.WriteAllTextAsync(file, html, token);
                             }

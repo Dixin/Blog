@@ -53,7 +53,7 @@ internal static class TmdbMetadata
                 throw new InvalidOperationException($"Inconsistent year: {movie}.");
             }
 
-            string[][] countries = documents.Select(doc => doc.Root?.Elements("country").Select(element => element.Value).Order().ToArray() ?? []).ToArray();
+            string[][] countries = documents.Select(doc => doc.Root?.Elements("country").Select(element => element.Value).Where(value => value.IsNotNullOrWhiteSpace()).Order().ToArray() ?? []).ToArray();
             if (countries.Select(country => string.Join("|", country)).Distinct().Count() != 1)
             {
                 throw new InvalidOperationException($"Inconsistent countries: {movie}.");
@@ -72,14 +72,14 @@ internal static class TmdbMetadata
                     years.Single(),
                     string.Join(
                         FileNameMetadataSeparator,
-                        countries.First().Take(5).Select(country => country
+                        countries.First().Where(country => country.IsNotNullOrWhiteSpace()).Take(5).Select(country => country
                             .ReplaceOrdinal(FileNameSeparator, string.Empty)
                             .Replace(FileNameMetadataSeparator, string.Empty)
                             .ReplaceIgnoreCase("United States of America", "USA")
                             .ReplaceIgnoreCase("United Kingdom", "UK"))),
                     string.Join(
                         FileNameMetadataSeparator,
-                        genres.First().Take(5).Select(genre => genre.ReplaceOrdinal(FileNameSeparator, string.Empty).Replace(FileNameMetadataSeparator, string.Empty)))
+                        genres.First().Where(genre => genre.IsNotNullOrWhiteSpace()).Take(5).Select(genre => genre.ReplaceOrdinal(FileNameSeparator, string.Empty).Replace(FileNameMetadataSeparator, string.Empty)))
                 ]
             );
         }
@@ -151,8 +151,8 @@ internal static class TmdbMetadata
         Debug.Assert(info.Length == 4 && info[0].IsTmdbId());
         tmdbId = info[0];
         year = info[1];
-        regions = info[2].Split(FileNameMetadataSeparator);
-        genres = info[3].Split(FileNameMetadataSeparator);
+        regions = info[2].Split(FileNameMetadataSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        genres = info[3].Split(FileNameMetadataSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         return true;
     }
 }

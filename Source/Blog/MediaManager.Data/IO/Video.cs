@@ -31,7 +31,7 @@ internal static partial class Video
 
     private static readonly string[] CommonVideoExtensions = [".avi", DiskImageExtension, ".mkv", ".mpg", VideoExtension, ".wmv"];
 
-    private static readonly string[] AllVideoExtensions = UncommonVideoExtensions.Union(CommonVideoExtensions).ToArray();
+    private static readonly string[] AllVideoExtensions = [.. UncommonVideoExtensions, .. CommonVideoExtensions];
 
     private static readonly string MovieMetadataFile = $"movie{XmlMetadataExtension}";
 
@@ -51,7 +51,7 @@ internal static partial class Video
 
     private const string ImdbCacheSearchPattern = $"{PathHelper.AllSearchPattern}{ImdbCacheExtension}";
 
-    private static readonly string[] SubtitleLanguages = ["baq", "ben", "bho", "bok", "bul", "can", "cat", "chs", "cht", "cro", "cze", "dan", "dut", "eng", "est", "fil", "fin", "fre", "glg", "gre", "heb", "hin", "hrv", "ind", "ger", "hun", "ice", "ita", "jpn", "kan", "kor", "lat", "lav", "lit", "mac", "mal", "may", "nob", "nor", "pol", "por", "rum", "rus", "slo", "slv", "spa", "srp", "swe", "tam", "tel", "tgl", "tha", "tur", "ukr", "vie"];
+    private static readonly string[] SubtitleLanguages = ["baq", "ben", "bho", "bok", "bul", "can", "cat", "chs", "cht", "cro", "cze", "dan", "dut", "ekk", "eng", "est", "fil", "fin", "fre", "glg", "gre", "heb", "hin", "hrv", "ind", "ger", "hun", "ice", "ita", "jpn", "kan", "khk", "kor", "lat", "lav", "lit", "mac", "mal", "may", "nob", "nor", "pol", "por", "rum", "rus", "slo", "slv", "spa", "srp", "swe", "tam", "tel", "tgl", "tha", "ukr", "vie"];
 
     internal const string NotExistingFlag = VersionSeparator;
 
