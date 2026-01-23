@@ -180,4 +180,9 @@ public static class EnumerableExtensions
             await asyncAction(source.Current, cancellationToken);
         }
     }
+
+    extension<TSource>(IEnumerable<TSource>)
+    {
+        public static IEnumerable<TSource> operator +(IEnumerable<TSource> left, IEnumerable<TSource> right) => left.Concat(right);
+    }
 }
