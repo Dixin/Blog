@@ -31,6 +31,21 @@ internal static class TmdbMetadata
             throw new InvalidOperationException($"No XML metadata: {movie}.");
         }
 
+        string defaultFile = files.Single(file => PathHelper.GetFileName(file).EqualsOrdinal(Video.MovieMetadataFile));
+        string[] otherFiles = files.Where(file => !PathHelper.GetFileName(file).EqualsOrdinal(Video.MovieMetadataFile)).ToArray();
+        Debug.Assert(otherFiles.Length >= 1);
+        DateTime defaultFileLastWrite = new FileInfo(defaultFile).LastWriteTimeUtc;
+        if (otherFiles.Length == 1)
+        {
+            Debug.Assert(otherFiles.All(otherFile => new FileInfo(otherFile).LastWriteTimeUtc <= defaultFileLastWrite));
+            files = [defaultFile];
+        }
+        else
+        {
+            Debug.Assert(otherFiles.All(otherFile => new FileInfo(otherFile).LastWriteTimeUtc >= defaultFileLastWrite));
+            files = otherFiles;
+        }
+
         XDocument[] documents = files.Select(XDocument.Load).ToArray();
 
         string[] tmdbIds = documents.Select(doc => doc.Root?.Element("tmdbid")?.Value ?? string.Empty).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();

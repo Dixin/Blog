@@ -126,7 +126,7 @@ internal static partial class Video
             .GetFiles(metadataDirectory, XmlMetadataSearchPattern, SearchOption.AllDirectories)
             .ForEach(file =>
             {
-                string seasonEpisode = SeasonEpisodeRegex.Match(PathHelper.GetFileNameWithoutExtension(file)).Value;
+                string seasonEpisode = SeasonEpisodeRegex().Match(PathHelper.GetFileNameWithoutExtension(file)).Value;
                 if (seasonEpisode.IsNullOrWhiteSpace() || !File.Exists(file))
                 {
                     return;

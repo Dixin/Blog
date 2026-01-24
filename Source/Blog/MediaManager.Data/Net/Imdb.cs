@@ -13,7 +13,6 @@ using Microsoft.Playwright;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using OpenQA.Selenium;
 
-
 internal static partial class Imdb
 {
     internal static readonly int MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 8);
@@ -75,10 +74,6 @@ internal static partial class Imdb
                     }
 
                     await Task.Delay(PageHelper.DefaultDomWait, cancellationToken);
-                    //string[] xx = (await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = new Regex(@"[0-9]+ more") })
-                    //    .AllAsync()).Select(locator => locator.TextContentAsync().Result ?? string.Empty).ToArray();
-
-                    //log(xx.Length.ToString());
                 }
 
                 log($"{seeMoreButtonsCount} See more buttons are found.");
