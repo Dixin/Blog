@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
@@ -26,15 +26,15 @@
     </ItemGroup>
 
 	<ItemGroup>
-         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.2" />
-         <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="9.0.2" />
-         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.2" />
-         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.2" />
-         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.2" />
-         <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.2" />
-         <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.2" />
-         <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="134.0.6998.2300-beta" />
-         <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="132.0.2953-pre" /> 
+         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.2" />
+         <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.2" />
+         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.2" />
+         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.2" />
+         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.2" />
+         <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.2" />
+         <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.2" />
+         <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="144.0.7559.9600" />
+         <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="141.0.3537.71" /> 
     </ItemGroup>
 
     <ItemGroup>

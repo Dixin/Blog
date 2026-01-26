@@ -15,7 +15,7 @@ internal static class Warehouses
             .Select(databaseIndex => (databaseIndex, $"GroupData{databaseIndex}"))
             .ForEach(databaseName => Enumerable
                 .Range(1, 100)
-                .Select(tableIndex => $"Group{(databaseName.Item1 - 1) * 100 + tableIndex}")
+                .Select(tableIndex => $"Group{(databaseName.databaseIndex - 1) * 100 + tableIndex}")
                 .ForEach(tableName =>
                 {
                     Console.WriteLine($"{databaseName} => {tableName}");

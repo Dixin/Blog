@@ -14,14 +14,15 @@ internal static class VideoFileInfoExtensions
         }
 
         bool isBluRay = origin.ContainsIgnoreCase("BluRay");
+        bool isBluRayOrDvd = isBluRay || origin.ContainsIgnoreCase("DVD") || origin.ContainsIgnoreCase("DVDRip");
         switch (encoder)
         {
             case FfmpegHelper.Executable:
-                return isBluRay ? EncoderType.FfmpegX265BluRay : EncoderType.FfmpegX265;
+                return isBluRayOrDvd ? EncoderType.FfmpegX265BluRay : EncoderType.FfmpegX265;
             case "nvenc":
-                return isBluRay ? EncoderType.NvidiaX265BluRay : EncoderType.NvidiaX265;
+                return isBluRayOrDvd ? EncoderType.NvidiaX265BluRay : EncoderType.NvidiaX265;
             case "handbrake":
-                return isBluRay ? EncoderType.HandbrakeH264BluRay : EncoderType.HandbrakeH264;
+                return isBluRayOrDvd ? EncoderType.HandbrakeH264BluRay : EncoderType.HandbrakeH264;
         }
 
         if (video.Version.EqualsOrdinal(T.Settings.TopEnglishKeyword) || video.Version.EqualsOrdinal(T.Settings.TopForeignKeyword))
@@ -34,11 +35,16 @@ internal static class VideoFileInfoExtensions
         if (video.Version.EqualsIgnoreCase(T.Settings.PreferredOldKeyword) || video.Version.StartsWithIgnoreCase($"[{T.Settings.PreferredNewKeyword}."))
         {
             return video.VideoCodec.ContainsIgnoreCase(".x265")
-                ? isBluRay ? EncoderType.PreferredX265BluRay : EncoderType.PreferredX265
-                : isBluRay ? EncoderType.PreferredH264BluRay : EncoderType.PreferredH264;
+                ? isBluRayOrDvd ? EncoderType.PreferredX265BluRay : EncoderType.PreferredX265
+                : isBluRayOrDvd ? EncoderType.PreferredH264BluRay : EncoderType.PreferredH264;
         }
 
-        return isBluRay ? EncoderType.HDBluRay : EncoderType.HD;
+        if (video.Version.EqualsOrdinal(T.Settings.ContrastKeyword))
+        {
+            return isBluRay ? EncoderType.ContrastBluRay : EncoderType.Contrast;
+        }
+
+        return isBluRayOrDvd ? EncoderType.HDBluRay : EncoderType.HD;
     }
 
     internal static DefinitionType GetDefinitionType(this IVideoFileInfo video) =>
@@ -55,8 +61,12 @@ internal static class VideoFileInfoExtensions
     internal static bool IsHD(this IVideoFileInfo video) =>
         video.Definition is ".2160p" or ".1080p" or ".720p" && !video.Edition.EndsWithIgnoreCase(Video.UpScaleDefinition);
 
-    internal static bool IsHdr(this IVideoFileInfo video) =>
-        video.VideoCodec.ContainsIgnoreCase(".HDR") || video.Edition.ContainsOrdinal(".HDR");
+    internal static string DynamicRange(this IVideoFileInfo video) =>
+        video.VideoCodec.ContainsIgnoreCase(".HDR.DV")
+            ? "[DV]"
+            : video.VideoCodec.ContainsIgnoreCase(".HDR")
+                ? "[HDR]"
+                : string.Empty;
 
     internal static bool IsHdrDolbyVision(this IVideoFileInfo video) =>
         video.VideoCodec.ContainsIgnoreCase(".HDR.DV");

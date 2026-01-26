@@ -1,5 +1,7 @@
 namespace Examples.IO;
 
+using System.Buffers;
+using System.Threading;
 using Examples.Common;
 using Microsoft.VisualBasic.FileIO;
 using SearchOption = System.IO.SearchOption;
@@ -42,6 +44,19 @@ public static class FileHelper
         File.Move(source, destination, overwrite);
     }
 
+    public static void Move(string source, string destination, Func<string, string, bool> overwrite, bool skipDestinationDirectory = false)
+    {
+        source.ThrowIfNullOrWhiteSpace();
+
+        string destinationDirectory = PathHelper.GetDirectoryName(destination);
+        if (!skipDestinationDirectory && !Directory.Exists(destinationDirectory))
+        {
+            Directory.CreateDirectory(destinationDirectory);
+        }
+
+        File.Move(source, destination, overwrite(source, destination));
+    }
+
     public static bool TryMove(string source, string destination, bool overwrite = false)
     {
         source.ThrowIfNullOrWhiteSpace();
@@ -68,11 +83,22 @@ public static class FileHelper
         return destinationFile;
     }
 
+    public static string MoveToDirectory(string source, string destinationParentDirectory, Func<string, string, bool> overwrite, bool skipDestinationDirectory = false)
+    {
+        string destinationFile = Path.Combine(destinationParentDirectory, Path.GetFileName(source));
+        Move(source, destinationFile, overwrite, skipDestinationDirectory);
+        return destinationFile;
+    }
+
     public static bool TryMoveToDirectory(string source, string destinationParentDirectory, bool overwrite = false) =>
         TryMove(source, Path.Combine(destinationParentDirectory, Path.GetFileName(source)), overwrite);
 
-    public static void CopyToDirectory(string source, string destinationParentDirectory, bool overwrite = false, bool skipDestinationDirectory = false) =>
-        Copy(source, Path.Combine(destinationParentDirectory, Path.GetFileName(source)), overwrite, skipDestinationDirectory);
+    public static string CopyToDirectory(string source, string destinationParentDirectory, bool overwrite = false, bool skipDestinationDirectory = false)
+    {
+        string destination = Path.Combine(destinationParentDirectory, Path.GetFileName(source));
+        Copy(source, destination, overwrite, skipDestinationDirectory);
+        return destination;
+    }
 
     public static void Copy(string source, string destination, bool overwrite = false, bool skipDestinationDirectory = false)
     {
@@ -102,10 +128,10 @@ public static class FileHelper
         File.Copy(file, backUp, overwrite);
     }
 
-    public static async Task CopyAsync(string fromPath, string toPath)
+    public static async Task CopyAsync(string source, string destination)
     {
-        await using Stream fromStream = File.OpenRead(fromPath);
-        await using Stream toStream = File.Create(toPath);
+        await using Stream fromStream = File.OpenRead(source);
+        await using Stream toStream = File.Create(destination);
         await fromStream.CopyToAsync(toStream);
     }
 
@@ -207,17 +233,115 @@ public static class FileHelper
         return destination;
     }
 
-    public static string ReplaceFileNameWithoutExtension(string file, string newFileNameWithoutExtension, bool overwrite = false, bool skipDestinationDirectory = false)
+    public static string ReplaceFileNameWithoutExtension(string file, string newFileNameWithoutExtension, bool overwrite = false)
     {
         string destination = PathHelper.ReplaceFileNameWithoutExtension(file, newFileNameWithoutExtension);
-        Move(file, destination, overwrite, skipDestinationDirectory);
+        Move(file, destination, overwrite, true);
         return destination;
     }
 
-    public static string ReplaceFileNameWithoutExtension(string file, Func<string, string> replace, bool overwrite = false, bool skipDestinationDirectory = false)
+    public static string ReplaceFileNameWithoutExtension(string file, Func<string, string> replace, bool overwrite = false)
     {
         string destination = PathHelper.ReplaceFileNameWithoutExtension(file, replace);
-        Move(file, destination, overwrite, skipDestinationDirectory);
+        Move(file, destination, overwrite, true);
         return destination;
+    }
+    
+    private const int DefaultCopyBufferSize = 81920;
+
+    public static async Task CopyAsync(string source, string destination, Action<long, long>? progress = null, int? bufferSize = DefaultCopyBufferSize, TimeSpan? reportingInterval = null, bool overwrite = false, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (!File.Exists(source))
+        {
+            throw new FileNotFoundException($"Source file not found : {source}.");
+        }
+
+        if (!overwrite && File.Exists(destination))
+        {
+            throw new IOException($"Destination file already exists: {destination}.");
+        }
+
+        reportingInterval ??= TimeSpan.FromSeconds(1);
+
+        const int DefaultBufferSize = 4096;
+        await using FileStream sourceStream = new(source, FileMode.Open, FileAccess.Read, FileShare.Read, DefaultBufferSize, true);
+        bufferSize ??= sourceStream.GetCopyBufferSize();
+        await using FileStream destinationStream = new(destination, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize.Value, true);
+
+        byte[] buffer = ArrayPool<byte>.Shared.Rent(bufferSize.Value);
+        bool isReported = false;
+        long startingTimestamp = Stopwatch.GetTimestamp();
+        try
+        {
+            long sourceSize = sourceStream.Length;
+            long copiedSize = 0;
+            for (int usedBufferSize = await sourceStream.ReadAsync(new Memory<byte>(buffer), cancellationToken).ConfigureAwait(false);
+                 usedBufferSize > 0;
+                 usedBufferSize = await sourceStream.ReadAsync(new Memory<byte>(buffer), cancellationToken).ConfigureAwait(false))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                await destinationStream.WriteAsync(new ReadOnlyMemory<byte>(buffer, 0, usedBufferSize), cancellationToken).ConfigureAwait(false);
+                copiedSize += usedBufferSize;
+
+                if (Stopwatch.GetElapsedTime(startingTimestamp) >= reportingInterval)
+                {
+                    startingTimestamp = Stopwatch.GetTimestamp();
+                    progress?.Invoke(copiedSize, sourceSize);
+                    if (copiedSize == sourceSize)
+                    {
+                        isReported = true;
+                    }
+                }
+            }
+
+            if (!isReported)
+            {
+                Debug.Assert(copiedSize == sourceSize);
+                progress?.Invoke(copiedSize, sourceSize);
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
+    }
+
+    public static int GetCopyBufferSize(this FileStream sourceStream)
+    {
+        // This value was originally picked to be the largest multiple of 4096 that is still smaller than the large object heap threshold (85K).
+        // The CopyTo{Async} buffer is short-lived and is likely to be collected at Gen0, and it offers a significant improvement in Copy
+        // performance.  Since then, the base implementations of CopyTo{Async} have been updated to use ArrayPool, which will end up rounding
+        // this size up to the next power of two (131,072), which will by default be on the large object heap.  However, most of the time
+        // the buffer should be pooled, the LOH threshold is now configurable and thus may be different than 85K, and there are measurable
+        // benefits to using the larger buffer size.  So, for now, this value remains.
+        int bufferSize = DefaultCopyBufferSize;
+
+        if (sourceStream.CanSeek)
+        {
+            long length = sourceStream.Length;
+            long position = sourceStream.Position;
+            if (length <= position) // Handles negative overflows
+            {
+                // There are no bytes left in the stream to copy.
+                // However, because CopyTo{Async} is virtual, we need to
+                // ensure that any override is still invoked to provide its
+                // own validation, so we use the smallest legal buffer size here.
+                bufferSize = 1;
+            }
+            else
+            {
+                long remaining = length - position;
+                if (remaining > 0)
+                {
+                    // In the case of a positive overflow, stick to the default size
+                    bufferSize = (int)Math.Min(bufferSize, remaining);
+                }
+            }
+        }
+
+        return bufferSize;
     }
 }

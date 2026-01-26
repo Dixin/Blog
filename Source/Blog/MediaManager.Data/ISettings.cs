@@ -20,19 +20,35 @@ public record struct DirectorySettings(string Directory, int Level)
 
 public interface ISettings
 {
+    DirectorySettings AudioControversial { get; init; }
+
+    DirectorySettings AudioMainstream { get; init; }
+
+    DirectorySettings AudioShow { get; init; }
+
+    DirectorySettings AudioSoundtrack { get; init; }
+
     DirectorySettings Movie3D { get; init; }
 
-    DirectorySettings MovieHdr { get; init; }
+    DirectorySettings Movie4KHdr { get; init; }
+
+    DirectorySettings Movie4KHdrOverflow { get; init; }
 
     DirectorySettings MovieControversial { get; init; }
 
     DirectorySettings MovieControversialWithoutSubtitle { get; init; }
 
-    DirectorySettings MovieControversialTemp4 { get; init; }
+    DirectorySettings MovieDisk { get; init; }
 
-    DirectorySettings MovieMainstream { get; init; }
+    DirectorySettings MovieFranchise { get; init; }
 
-    DirectorySettings MovieMainstreamWithoutSubtitle { get; init; }
+    DirectorySettings MovieFranchiseWithoutSubtitle { get; init; }
+
+    DirectorySettings MovieMainstream1 { get; init; }
+
+    DirectorySettings MovieMainstream2 { get; init; }
+
+    DirectorySettings MovieMainstream3 { get; init; }
 
     DirectorySettings MovieMusical { get; init; }
 
@@ -42,23 +58,11 @@ public interface ISettings
 
     DirectorySettings MovieTemp3 { get; init; }
 
-    DirectorySettings MovieTemp31 { get; init; }
+    DirectorySettings MovieTemp4KHdr1 { get; init; }
 
-    DirectorySettings MovieTemp32 { get; init; }
+    DirectorySettings MovieTemp4KHdr2 { get; init; }
 
-    DirectorySettings MovieTemp4 { get; init; }
-
-    DirectorySettings MovieTemp41 { get; init; }
-
-    DirectorySettings MovieTemp42 { get; init; }
-
-    DirectorySettings MovieTemp4Encode { get; init; }
-    
-    DirectorySettings MovieDisk { get; init; }
-
-    DirectorySettings MovieExternalNew { get; init; }
-
-    DirectorySettings MovieExternalDelete { get; init; }
+    DirectorySettings TV4KHdr { get; init; }
 
     DirectorySettings TVControversial { get; init; }
 
@@ -66,21 +70,27 @@ public interface ISettings
 
     DirectorySettings TVMainstream { get; init; }
 
+    DirectorySettings TVMainstreamChinese { get; init; }
+
+    DirectorySettings TVMainstreamOverflow { get; init; }
+
     DirectorySettings TVTutorial { get; init; }
 
-    DirectorySettings TVHdr { get; init; }
+    DirectorySettings TVTemp1 { get; init; }
 
-    DirectorySettings TVMainstreamWithoutSubtitle { get; init; }
+    DirectorySettings TVTemp2 { get; init; }
 
-    DirectorySettings TVTemp4 { get; init; }
+    string MovieMetadataDirectory { get; init; }
 
-    DirectorySettings AudioControversial { get; init; }
+    string MovieMetadataBackupDirectory { get; init; }
 
-    DirectorySettings AudioMainstream { get; init; }
+    string MovieMetadataCacheDirectory { get; init; }
 
-    DirectorySettings AudioShow { get; init; }
+    string MovieMetadataCacheBackupDirectory { get; init; }
 
-    DirectorySettings AudioSoundtrack { get; init; }
+    string TVMetadataDirectory { get; init; }
+
+    string TVMetadataCacheDirectory { get; init; }
 
     Dictionary<string, string[]> MovieRegions { get; init; }
 
@@ -167,18 +177,6 @@ public interface ISettings
     string TVTopX265Metadata { get; init; }
 
     string TVContrastMetadata { get; init; }
-
-    string MovieMetadataDirectory { get; init; }
-
-    string MovieMetadataBackupDirectory { get; init; }
-
-    string MovieMetadataCacheDirectory { get; init; }
-
-    string MovieMetadataCacheBackupDirectory { get; init; }
-
-    string TVMetadataDirectory { get; init; }
-
-    string TVMetadataCacheDirectory { get; init; }
 
     string TopMagnetUrls { get; init; }
 

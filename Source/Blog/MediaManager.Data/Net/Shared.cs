@@ -102,7 +102,7 @@ internal static class Shared
                     string[] tags = articleCQ.Find("span.bl_posted a").Select(linkDom => linkDom.TextContent.Trim()).ToArray();
                     string commentsHtml = itemCQ.Find("#comments ol.commentlist").Html();
                     string[] imdbIds = new string[] { contentHtml, commentsHtml }
-                        .SelectMany(html => Regex.Matches(html, @"imdb\.com/title/(tt[0-9]+)"))
+                        .SelectMany(html => ImdbMetadata.ImdbIdInLinkRegex().Matches(html))
                         .Select(match => match.Groups[1].Value)
                         .Distinct(StringComparer.OrdinalIgnoreCase)
                         .Do(imdbId => Debug.Assert(imdbId.IsImdbId()))

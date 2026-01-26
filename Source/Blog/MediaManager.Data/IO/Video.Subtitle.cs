@@ -1,4 +1,4 @@
-namespace MediaManager.IO;
+﻿namespace MediaManager.IO;
 
 using Examples.Common;
 using Examples.IO;
@@ -31,7 +31,7 @@ internal static partial class Video
     internal static IEnumerable<(string? Charset, float? Confidence, string File)> EnumerateSubtitles(string directory) =>
         Directory
             .EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
-            .Where(file => file.HasAnyExtension(TextExtensions))
+            .Where(file => file.IsTextSubtitle())
             .Select(file =>
             {
                 using FileStream fileStream = File.OpenRead(file);
@@ -58,7 +58,7 @@ internal static partial class Video
             });
     }
 
-    internal static async Task ConvertToUtf8Async(string directory, bool backup = false, Action<string>? log = null)
+    internal static async Task ConvertToUtf8Async(string directory, bool backup = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
         await EnumerateSubtitles(directory)
@@ -109,27 +109,29 @@ internal static partial class Video
                             encoding = Encoding.UTF8;
                             break;
                         default:
-                            log($"!Not supported {result.Item1}, file {result.Item3}");
+                            log($"!Not supported {result.Charset}, file {result.File}");
                             return;
                     }
 
-                    FileInfo fileInfo = new(result.Item3);
+                    FileInfo fileInfo = new(result.File);
                     if (fileInfo.IsReadOnly)
                     {
                         fileInfo.IsReadOnly = false;
                     }
+
                     if (backup)
                     {
-                        FileHelper.Backup(result.Item3);
+                        FileHelper.Backup(result.File);
                     }
+
                     await EncodingHelper.ConvertAsync(encoding, Utf8Encoding, result.File, null, Utf8Bom);
                     log($"Charset: {result.Charset}, confidence: {result.Confidence}, file {result.File}");
                 }
                 catch (Exception exception)
                 {
-                    log($"{result.Item3} {exception}");
+                    log($"{result.File} {exception}");
                 }
-            });
+            }, cancellationToken);
     }
 
     internal static void MoveAllSubtitles(string fromDirectory, string toDirectory, bool overwrite = false, Action<string>? log = null) =>
@@ -138,7 +140,7 @@ internal static partial class Video
     internal static void CopyAllSubtitles(string fromDirectory, string toDirectory, bool overwrite = false, Action<string>? log = null) =>
         FileHelper.CopyAll(fromDirectory, toDirectory, searchOption: SearchOption.AllDirectories, predicate: file => file.HasAnyExtension(AllSubtitleExtensions), overwrite: overwrite);
 
-    internal static void MoveSubtitlesForEpisodes(ISettings settings, string mediaDirectory, string subtitleDirectory = "", bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
+    internal static void MoveSubtitlesForEpisodes(ISettings settings, string mediaDirectory, string subtitleDirectory = "", string subtitleBackupDirectory = "", bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 
@@ -147,10 +149,15 @@ internal static partial class Video
             subtitleDirectory = mediaDirectory;
         }
 
+        if (subtitleBackupDirectory.IsNullOrWhiteSpace())
+        {
+            subtitleBackupDirectory = settings.TVSubtitleBackupDirectory;
+        }
+
         string[] mediaDirectoryFiles = Directory.GetFiles(mediaDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories);
         Dictionary<string, string> episodeToVideos = mediaDirectoryFiles
             .Where(IsVideo)
-            .Select(video => (video, SeasonEpisodeRegex.Match(PathHelper.GetFileNameWithoutExtension(video))))
+            .Select(video => (video, SeasonEpisodeRegex().Match(PathHelper.GetFileNameWithoutExtension(video))))
             .Where(videoMatch => videoMatch.Item2.Success)
             .ToDictionary(videoMatch => videoMatch.Item2.Value, videoMatch => videoMatch.video);
 
@@ -160,14 +167,14 @@ internal static partial class Video
             .Where(IsSubtitle)
             .ToLookup(subtitle =>
             {
-                Match match = SeasonEpisodeRegex.Match(PathHelper.GetFileNameWithoutExtension(subtitle));
+                Match match = SeasonEpisodeRegex().Match(PathHelper.GetFileNameWithoutExtension(subtitle));
                 if (match.Success)
                 {
                     return match.Value;
                 }
 
                 string subtitleDirectory = PathHelper.GetDirectoryName(subtitle);
-                match = SeasonEpisodeRegex.Match(PathHelper.GetFileName(subtitleDirectory));
+                match = SeasonEpisodeRegex().Match(PathHelper.GetFileName(subtitleDirectory));
                 return match.Success ? match.Value : string.Empty;
             });
 
@@ -183,7 +190,7 @@ internal static partial class Video
                         string name = PathHelper.GetFileNameWithoutExtension(subtitle);
                         string title = name.StartsWithIgnoreCase(videoName)
                             ? name[videoName.Length..].Trim(Delimiter.Single())
-                            : SeasonEpisodeRegex.IsMatch(name) ? name.Split(Delimiter).Last() : name;
+                            : SeasonEpisodeRegex().IsMatch(name) ? name.Split(Delimiter).Last() : name;
                         Match match = Regex.Match(title, "[A-Za-z]{3}");
                         string language = match.Success ? match.Value.ToLowerInvariant() : "eng";
                         language = language switch
@@ -228,7 +235,7 @@ internal static partial class Video
                                 }
                                 else
                                 {
-                                    FileHelper.Move(subtitle, Path.Combine(settings.TVSubtitleBackupDirectory, newBackupName), overwrite, true);
+                                    FileHelper.Move(subtitle, Path.Combine(subtitleBackupDirectory, newBackupName), overwrite, true);
                                 }
                             }
 
@@ -252,7 +259,7 @@ internal static partial class Video
                                     }
                                     else
                                     {
-                                        FileHelper.Move(subtitle, Path.Combine(settings.TVSubtitleBackupDirectory, newBackupName), overwrite, true);
+                                        FileHelper.Move(subtitle, Path.Combine(subtitleBackupDirectory, newBackupName), overwrite, true);
                                     }
                                 }
 
@@ -269,7 +276,7 @@ internal static partial class Video
                                     }
                                     else
                                     {
-                                        FileHelper.Move(subtitle, Path.Combine(settings.TVSubtitleBackupDirectory, newBackupName), overwrite, true);
+                                        FileHelper.Move(subtitle, Path.Combine(subtitleBackupDirectory, newBackupName), overwrite, true);
                                     }
                                 }
 
@@ -292,7 +299,7 @@ internal static partial class Video
                                     }
                                     else
                                     {
-                                        FileHelper.Move(subtitle, Path.Combine(settings.TVSubtitleBackupDirectory, newBackupName), overwrite, true);
+                                        FileHelper.Move(subtitle, Path.Combine(subtitleBackupDirectory, newBackupName), overwrite, true);
                                     }
                                 }
 
@@ -303,7 +310,7 @@ internal static partial class Video
 
                             if (!isDryRun)
                             {
-                                subtitles.ForEach(subtitle => FileHelper.Move(subtitle.subtitle, Path.Combine(settings.TVSubtitleBackupDirectory, subtitle.newBackupName), overwrite, true));
+                                subtitles.ForEach(subtitle => FileHelper.Move(subtitle.subtitle, Path.Combine(subtitleBackupDirectory, subtitle.newBackupName), overwrite, true));
                             }
                         }
                     });
@@ -949,14 +956,14 @@ internal static partial class Video
             .ForEach(subtitle =>
             {
                 string name = PathHelper.GetFileNameWithoutExtension(subtitle);
-                if (SeasonEpisodeRegex.IsMatch(name))
+                if (SeasonEpisodeRegex().IsMatch(name))
                 {
                     return;
                 }
 
                 string subtitleDirectory = PathHelper.GetDirectoryName(subtitle);
                 string subtitleDirectoryName = PathHelper.GetFileName(subtitleDirectory);
-                if (SeasonEpisodeRegex.IsMatch(subtitleDirectoryName))
+                if (SeasonEpisodeRegex().IsMatch(subtitleDirectoryName))
                 {
                     string parentDirectory = PathHelper.GetDirectoryName(subtitleDirectory);
                     string newSubtitle = Path.Combine(parentDirectory, $"{subtitleDirectoryName}{Delimiter}{PathHelper.GetFileName(subtitle)}");
@@ -969,6 +976,93 @@ internal static partial class Video
                     log(newSubtitle);
                     log(string.Empty);
                 }
+            });
+    }
+
+    internal static void FormatSubtitleSuffix(string directory, int seasonLevel = DefaultDirectoryLevel, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+
+        RenameFiles(
+            directory, 
+            (file, index) => file
+                .ReplaceIgnoreCase(".chi-廣東話", ".cht-cantonese")
+                .ReplaceIgnoreCase(".chi-中文_(繁體)", ".cht")
+                .ReplaceIgnoreCase(".chi-中文_(简體)", ".chs")
+                .ReplaceIgnoreCase(".chi-中文 (繁体)", ".cht")
+                .ReplaceIgnoreCase(".chi-中文 (简体)", ".chs")
+                .ReplaceIgnoreCase(".chi-中文(繁体)", ".cht")
+                .ReplaceIgnoreCase(".chi-中文(简体)", ".chs")
+                .ReplaceIgnoreCase(".chi-中文（繁體）", ".cht")
+                .ReplaceIgnoreCase(".chi-中文（简體）", ".chs")
+                .ReplaceIgnoreCase(".chi-中文（繁体）", ".cht")
+                .ReplaceIgnoreCase(".chi-中文（简体）", ".chs")
+                .ReplaceIgnoreCase(".chi-Chinese_Traditional", ".cht")
+                .ReplaceIgnoreCase(".chi-Chinese_Yue", ".cht-cantonese")
+                .ReplaceIgnoreCase(".chi-Chinese_Simplified", ".chs")
+                .ReplaceIgnoreCase(".chi-Chinese_(Traditional)", ".cht")
+                .ReplaceIgnoreCase(".chi-Chinese_(Yue)", ".cht-cantonese")
+                .ReplaceIgnoreCase(".chi-Chinese_(Simplified)", ".chs")
+                .ReplaceIgnoreCase(".chi-Chinese_(Hong_Kong_SAR_China)", ".cht-cantonese")
+                .ReplaceIgnoreCase(".chi-Chinese_(Hong_Kong)", ".cht-cantonese")
+                .ReplaceIgnoreCase(".chi-Traditional_Chinese", ".cht")
+                .ReplaceIgnoreCase(".chi-Hong_Kong", ".cht-cantonese")
+                .ReplaceIgnoreCase(".chi-Simplified_Chinese", ".chs")
+                .ReplaceIgnoreCase(".chi-Traditional", ".cht")
+                .ReplaceIgnoreCase(".chi-Simplified", ".chs")
+                .ReplaceIgnoreCase(".chi-Cht_SUP__原盘繁体", ".cht")
+                .ReplaceIgnoreCase(".chi-Chs_SUP__原盘简体", ".chs")
+                .ReplaceIgnoreCase(".chi-CHT&ENG", ".cht&eng")
+                .ReplaceIgnoreCase(".chi-CHS&ENG", ".chs&eng")
+                .ReplaceIgnoreCase(".chi-CHT", ".cht")
+                .ReplaceIgnoreCase(".chi-CHS", ".chs")
+                .ReplaceIgnoreCase(".eng-sdh", "")
+                .ReplaceIgnoreCase(".eng-English_(dub)", ".eng-dubbed")
+                .ReplaceIgnoreCase(".eng-English", ".eng")
+                .ReplaceIgnoreCase(".eng-Eng_SUP", ".eng")
+                .ReplaceIgnoreCase(".eng-English_Regular___OCR", ".eng-ocr")
+                .ReplaceIgnoreCase(".eng_Regular___OCR", ".eng-ocr")
+                .ReplaceIgnoreCase(".eng_(dub)", ".eng-dubbed")
+        );
+
+        EnumerateDirectories(directory, seasonLevel)
+            .Where(season => !season.ContainsIgnoreCase(Featurettes))
+            .ForEach(season =>
+            {
+                string[] files = Directory.GetFiles(season);
+                string[] videoFiles = files.Where(f => f.IsVideo()).ToArray();
+                (string nonVideo, string Name)[] nonVideoFiles = files.Except(videoFiles)
+                    .Select(nonVideo => (nonVideo, Name: PathHelper.GetFileNameWithoutExtension(nonVideo)))
+                    .ToArray();
+                videoFiles.ForEach(video =>
+                {
+                    string videoName = PathHelper.GetFileNameWithoutExtension(video);
+                    nonVideoFiles
+                        .Where(nonVideo => nonVideo.Name.Length > videoName.Length && nonVideo.Name.StartsWith(videoName))
+                        .ToArray()
+                        .ForEach(nonVideo =>
+                        {
+                            string suffix = nonVideo.Name[videoName.Length..];
+                            if (suffix.StartsWithIgnoreCase(".eng") || suffix.StartsWithIgnoreCase(".cht") || suffix.StartsWithIgnoreCase(".chs")
+                                || Regex.IsMatch(suffix, @"^\.[a-z]{3}$"))
+                            {
+                                return;
+                            }
+
+                            if (Regex.IsMatch(suffix, @"^\.[a-z]{3}\-.+"))
+                            {
+                                string newSuffix = suffix[..4];
+                                log(nonVideo.nonVideo);
+                                log(FileHelper.ReplaceFileNameWithoutExtension(nonVideo.nonVideo, videoName + newSuffix));
+                                log(string.Empty);
+                            }
+                            else
+                            {
+                                log("!" + nonVideo.nonVideo);
+                                log(string.Empty);
+                            }
+                        });
+                });
             });
     }
 }

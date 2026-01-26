@@ -7,6 +7,7 @@ using Examples.Linq;
 using Examples.Net;
 using Examples.Text;
 using MediaManager.Net;
+using Microsoft.Playwright;
 
 internal static partial class Video
 {
@@ -213,7 +214,7 @@ internal static partial class Video
         });
     }
 
-    private static async Task<bool> DownloadImdbMetadataAsync(string directory, WebDriverWrapper? webDriver, bool overwrite = false, bool useCache = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    private static async Task<bool> DownloadImdbMetadataAsync(string directory, IPage? page, bool overwrite = false, bool useCache = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
@@ -260,10 +261,10 @@ internal static partial class Video
 
         log($"Start {directory}");
         await TmdbMetadata.WriteTmdbMetadataAsync(directory, overwrite, log, cancellationToken);
-        return await DownloadImdbMetadataAsync(imdbId, directory, directory, [jsonFile], files, webDriver, overwrite, useCache, log, cancellationToken);
+        return await DownloadImdbMetadataAsync(imdbId, directory, directory, [jsonFile], files, page, overwrite, useCache, log, cancellationToken);
     }
 
-    internal static async Task<bool> DownloadImdbMetadataAsync(string imdbId, string metadataDirectory, string cacheDirectory, string[] metadataFiles, string[] cacheFiles, WebDriverWrapper? webDriver, bool overwrite = false, bool useCache = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task<bool> DownloadImdbMetadataAsync(string imdbId, string metadataDirectory, string cacheDirectory, string[] metadataFiles, string[] cacheFiles, IPage? page, bool overwrite = false, bool useCache = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
@@ -275,14 +276,19 @@ internal static partial class Video
             return false;
         }
 
+        const string Advisories = nameof(Advisories);
+        const string Connections = nameof(Connections);
+        const string Keywords = nameof(Keywords);
+        const string Releases = nameof(Releases);
         string imdbFile = Path.Combine(cacheDirectory, $"{imdbId}{ImdbCacheExtension}");
-        string releaseFile = Path.Combine(cacheDirectory, $"{imdbId}.Release{ImdbCacheExtension}");
-        string keywordsFile = Path.Combine(cacheDirectory, $"{imdbId}.Keywords{ImdbCacheExtension}");
-        string advisoriesFile = Path.Combine(cacheDirectory, $"{imdbId}.Advisories{ImdbCacheExtension}");
+        string advisoriesFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Advisories}{ImdbCacheExtension}");
+        string connectionsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Connections}{ImdbCacheExtension}");
+        string keywordsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Keywords}{ImdbCacheExtension}");
+        string releasesFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Releases}{ImdbCacheExtension}");
 
         if (imdbId.EqualsOrdinal(NotExistingFlag))
         {
-            await new string[] { imdbFile, releaseFile, keywordsFile, advisoriesFile }
+            await new string[] { imdbFile, advisoriesFile, connectionsFile, keywordsFile, releasesFile }
                 .Where(file => !cacheFiles.ContainsIgnoreCase(file))
                 .ForEachAsync(async file => await File.WriteAllTextAsync(file, string.Empty, cancellationToken), cancellationToken);
             string notExistingJsonFile = Path.Combine(metadataDirectory, $"{NotExistingFlag}{ImdbMetadata.Extension}");
@@ -301,33 +307,31 @@ internal static partial class Video
             return false;
         }
 
-        string parentImdbFile = Path.Combine(cacheDirectory, $"{imdbId}.Parent{ImdbCacheExtension}");
-        string parentReleaseFile = Path.Combine(cacheDirectory, $"{imdbId}.Parent.Release{ImdbCacheExtension}");
-        string parentKeywordsFile = Path.Combine(cacheDirectory, $"{imdbId}.Parent.Keywords{ImdbCacheExtension}");
-        string parentAdvisoriesFile = Path.Combine(cacheDirectory, $"{imdbId}.Parent.Advisories{ImdbCacheExtension}");
+        const string Parent = nameof(Parent);
+        string parentImdbFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{ImdbCacheExtension}");
+        string parentAdvisoriesFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{Advisories}{ImdbCacheExtension}");
+        string parentConnectionsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{Connections}{ImdbCacheExtension}");
+        string parentKeywordsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{Keywords}{ImdbCacheExtension}");
+        string parentReleasesFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{Releases}{ImdbCacheExtension}");
         (
             ImdbMetadata imdbMetadata,
-
-            string imdbUrl, string imdbHtml,
-            string releaseUrl, string releaseHtml,
-            string keywordsUrl, string keywordsHtml,
-            string advisoriesUrl, string advisoriesHtml,
-
-            string parentImdbUrl, string parentImdbHtml,
-            string parentReleaseUrl, string parentReleaseHtml,
-            string parentKeywordsUrl, string parentKeywordsHtml,
-            string parentAdvisoriesUrl, string parentAdvisoriesHtml
+            string imdbUrl, string advisoriesUrl, string connectionsUrl, string keywordsUrl, string releasesUrl,
+            string imdbHtml, string advisoriesHtml, string connectionsHtml, string keywordsHtml, string releasesHtml,
+            string parentImdbUrl, string parentAdvisoriesUrl, string parentConnectionsUrl, string parentKeywordsUrl, string parentReleasesUrl,
+            string parentImdbHtml, string parentAdvisoriesHtml, string parentConnectionsHtml, string parentKeywordsHtml, string parentReleasesHtml
         ) = await Imdb.DownloadAsync(
             imdbId,
             useCache ? imdbFile : string.Empty,
-            useCache ? releaseFile : string.Empty,
-            useCache ? keywordsFile : string.Empty,
             useCache ? advisoriesFile : string.Empty,
+            useCache ? connectionsFile : string.Empty,
+            useCache ? keywordsFile : string.Empty,
+            useCache ? releasesFile : string.Empty,
             useCache ? parentImdbFile : string.Empty,
-            useCache ? parentReleaseFile : string.Empty,
-            useCache ? parentKeywordsFile : string.Empty,
             useCache ? parentAdvisoriesFile : string.Empty,
-            webDriver, log, cancellationToken);
+            useCache ? parentConnectionsFile : string.Empty,
+            useCache ? parentKeywordsFile : string.Empty, 
+            useCache ? parentReleasesFile : string.Empty, 
+            page, log, cancellationToken);
         Debug.Assert(imdbHtml.IsNotNullOrWhiteSpace());
         if (imdbMetadata.Regions.IsEmpty())
         {
@@ -338,27 +342,31 @@ internal static partial class Video
         {
             log($"Redirected {imdbId} to {imdbMetadata.ImdbId}.");
             imdbFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{ImdbCacheExtension}");
-            releaseFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}.Release{ImdbCacheExtension}");
-            keywordsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}.Keywords{ImdbCacheExtension}");
-            advisoriesFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}.Advisories{ImdbCacheExtension}");
-            parentImdbFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}.Parent{ImdbCacheExtension}");
-            parentReleaseFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}.Parent.Release{ImdbCacheExtension}");
-            parentKeywordsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}.Parent.Keywords{ImdbCacheExtension}");
-            parentAdvisoriesFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}.Parent.Advisories{ImdbCacheExtension}");
+            advisoriesFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Advisories}{ImdbCacheExtension}");
+            connectionsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Connections}{ImdbCacheExtension}");
+            keywordsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Keywords}{ImdbCacheExtension}");
+            releasesFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Releases}{ImdbCacheExtension}");
+            parentImdbFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{ImdbCacheExtension}");
+            parentAdvisoriesFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{Advisories}{ImdbCacheExtension}");
+            parentConnectionsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{Connections}{ImdbCacheExtension}");
+            parentKeywordsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{Keywords}{ImdbCacheExtension}");
+            parentReleasesFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{Releases}{ImdbCacheExtension}");
         }
 
         bool isDownloaded = false;
         await new (string Url, string File, string Html)[]
             {
                 (imdbUrl, imdbFile, imdbHtml),
-                (releaseFile, releaseFile, releaseHtml),
-                (keywordsUrl, keywordsFile, keywordsHtml),
                 (advisoriesUrl, advisoriesFile, advisoriesHtml),
+                (connectionsUrl, connectionsFile, connectionsHtml),
+                (keywordsUrl, keywordsFile, keywordsHtml),
+                (releasesUrl, releasesFile, releasesHtml),
 
                 (parentImdbUrl, parentImdbFile, parentImdbHtml),
-                (parentReleaseUrl, parentReleaseFile, parentReleaseHtml),
-                (parentKeywordsUrl, parentKeywordsFile, parentKeywordsHtml),
                 (parentAdvisoriesUrl, parentAdvisoriesFile, parentAdvisoriesHtml),
+                (parentConnectionsUrl, parentConnectionsFile, parentConnectionsHtml),
+                (parentKeywordsUrl, parentKeywordsFile, parentKeywordsHtml),
+                (parentReleasesUrl, parentReleasesFile, parentReleasesHtml)
             }
             .Where(data => data.Html.IsNotNullOrWhiteSpace() && (!useCache && overwrite || !cacheFiles.Any(file => file.EqualsIgnoreCase(data.File))))
             .ForEachAsync(
@@ -377,7 +385,7 @@ internal static partial class Video
             FileHelper.Recycle(jsonFile);
         }
 
-        log($"Merged {imdbUrl}, {releaseUrl}, {keywordsUrl}, {advisoriesUrl} to {newJsonFile}.");
+        log($"Merged {imdbUrl}, {advisoriesUrl}, {connectionsUrl}, {keywordsUrl}, {releasesUrl} to {newJsonFile}.");
         await JsonHelper.SerializeToFileAsync(imdbMetadata, newJsonFile, cancellationToken);
         log($"Saved to {newJsonFile}.");
         TimeSpan elapsed = Stopwatch.GetElapsedTime(startTime);
@@ -396,13 +404,12 @@ internal static partial class Video
             .ToArray();
         if (movies.Any())
         {
-            using WebDriverWrapper? webDriver = useBrowser ? new() : null;
-            if (webDriver is not null)
-            {
-                webDriver.Url = "https://www.imdb.com/";
-            }
-
-            await movies.ForEachAsync(async movie => await DownloadImdbMetadataAsync(movie, webDriver, overwrite, useCache, log, cancellationToken), cancellationToken);
+            using IPlaywright playwright = await Playwright.CreateAsync();
+            await using IBrowser browser = await playwright.Chromium.LaunchAsync();
+            IPage page = await browser.NewPageAsync();
+            IResponse? response = await page.GotoAsync("https://www.imdb.com/");
+            Debug.Assert(response is not null && response.Ok);
+            await movies.ForEachAsync(async movie => await DownloadImdbMetadataAsync(movie, page, overwrite, useCache, log, cancellationToken), cancellationToken);
         }
     }
 
@@ -705,7 +712,7 @@ internal static partial class Video
                         }
 
                         string doubanTitle = await Douban.GetTitleAsync(webDriver, imdbId, token);
-                        int lastIndex = doubanTitle.LastIndexOf(backupEnglishTitle, StringComparison.InvariantCultureIgnoreCase);
+                        int lastIndex = doubanTitle.LastIndexOfIgnoreCase(backupEnglishTitle);
                         if (lastIndex >= 0)
                         {
                             doubanTitle = doubanTitle[..lastIndex].Trim();
@@ -714,7 +721,7 @@ internal static partial class Video
                         string originalTitle = backupMetadataDocument.Root!.Element("originaltitle")?.Value ?? string.Empty;
                         if (originalTitle.IsNotNullOrWhiteSpace())
                         {
-                            lastIndex = doubanTitle.LastIndexOf(originalTitle, StringComparison.InvariantCultureIgnoreCase);
+                            lastIndex = doubanTitle.LastIndexOfIgnoreCase(originalTitle);
                             if (lastIndex >= 0)
                             {
                                 doubanTitle = doubanTitle[..lastIndex].Trim();

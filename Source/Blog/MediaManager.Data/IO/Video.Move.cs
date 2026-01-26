@@ -3,6 +3,7 @@
 using System.Linq;
 using Examples.Common;
 using Examples.IO;
+using Examples.Linq;
 using MediaManager.Net;
 
 internal static partial class Video
@@ -122,10 +123,10 @@ internal static partial class Video
         string[] mediaFiles = Directory.GetFiles(mediaDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories);
 
         Directory
-            .EnumerateFiles(metadataDirectory, XmlMetadataSearchPattern, SearchOption.AllDirectories)
+            .GetFiles(metadataDirectory, XmlMetadataSearchPattern, SearchOption.AllDirectories)
             .ForEach(file =>
             {
-                string seasonEpisode = SeasonEpisodeRegex.Match(PathHelper.GetFileNameWithoutExtension(file)).Value;
+                string seasonEpisode = SeasonEpisodeRegex().Match(PathHelper.GetFileNameWithoutExtension(file)).Value;
                 if (seasonEpisode.IsNullOrWhiteSpace() || !File.Exists(file))
                 {
                     return;
@@ -198,7 +199,7 @@ internal static partial class Video
             });
     }
 
-    private const string AdditionalMetadataSeparator = "@";
+    internal const string AdditionalMetadataSeparator = "@";
 
     internal static void RenameDirectoriesWithAdditionalMetadata(ISettings settings, string directory, int level = DefaultDirectoryLevel, bool overwrite = false, bool isDryRun = false, Action<string>? log = null)
     {
@@ -213,7 +214,8 @@ internal static partial class Video
                 int index = name.IndexOfOrdinal(AdditionalMetadataSeparator);
                 if (index >= 0)
                 {
-                    name = name[..index];
+                    name = name[(index + 1)..];
+                    Debug.Assert(VideoDirectoryInfo.TryParse(name, out _));
                 }
 
                 string[] languages = Directory
@@ -226,7 +228,7 @@ internal static partial class Video
                 string[] regions = [];
                 string[] genres = [];
                 bool hasImdbMetadata = ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata);
-                if(hasImdbMetadata)
+                if (hasImdbMetadata)
                 {
                     if (languages.IsEmpty())
                     {
@@ -246,19 +248,19 @@ internal static partial class Video
                             regions = tmdbRegions;
                         }
 
-                        if(genres.IsEmpty())
+                        if (genres.IsEmpty())
                         {
                             genres = tmdbGenres;
                         }
                     }
-                    else if(!hasImdbMetadata)
+                    else if (!hasImdbMetadata)
                     {
                         return;
                     }
                 }
 
-                string additional = $"{AdditionalMetadataSeparator}{string.Join(VersionSeparator, regions.Take(4))}{Delimiter}{string.Join(VersionSeparator, languages.Take(4))}{Delimiter}{string.Join(VersionSeparator, genres.Take(4))}";
-                string newMovie = PathHelper.ReplaceDirectoryName(movie, $"{name}{additional}");
+                string additional = $"{string.Join(VersionSeparator, regions.Take(4))}{Delimiter}{string.Join(VersionSeparator, languages.Take(4))}{Delimiter}{string.Join(VersionSeparator, genres.Take(4))}";
+                string newMovie = PathHelper.ReplaceDirectoryName(movie, $"{additional}{AdditionalMetadataSeparator}{name}");
 
                 log(movie);
                 if (!isDryRun)
@@ -385,7 +387,9 @@ internal static partial class Video
 
                 if (name.ContainsOrdinal(AdditionalMetadataSeparator))
                 {
-                    name = name[..name.IndexOfOrdinal(AdditionalMetadataSeparator)];
+                    name = name
+                        .Split(AdditionalMetadataSeparator, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                        .Single(segment => VideoDirectoryInfo.TryParse(segment, out _));
                     isRenamed = true;
                 }
 
@@ -824,7 +828,7 @@ internal static partial class Video
         Directory
             .GetDirectories(directory)
             .Where(season => season.ContainsIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}"))
-            .ForEach(season => MoveSubtitlesForEpisodes(settings, season, season, false, isDryRun: isDryRun, log: log));
+            .ForEach(season => MoveSubtitlesForEpisodes(settings, season, season, subtitleBackupDirectory, false, isDryRun: isDryRun, log: log));
 
         Directory
             .GetDirectories(directory)
@@ -1030,12 +1034,20 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
 
-        Directory
-            .EnumerateFiles(directory, PathHelper.AllSearchPattern, searchOption)
-            .Where(IsVideo)
-            .ToArray()
+        string[] files = Directory.GetFiles(directory, PathHelper.AllSearchPattern, searchOption);
+        string[] videos = files.Where(IsVideo).ToArray();
+        videos
             .Do(log)
-            .ForEach(video => FileHelper.MoveToDirectory(video, Path.Combine(PathHelper.GetDirectoryName(video), PathHelper.GetFileNameWithoutExtension(video))));
+            .ForEach(video =>
+            {
+                string videoDirectory = Path.Combine(PathHelper.GetDirectoryName(video), PathHelper.GetFileNameWithoutExtension(video));
+                FileHelper.MoveToDirectory(video, videoDirectory);
+                string videoWithoutExtension = video[..video.LastIndexOfOrdinal(".")];
+                files
+                    .Where(file => !file.IsVideo() && file.StartsWithIgnoreCase(videoWithoutExtension))
+                    .ToArray()
+                    .ForEach(file => FileHelper.MoveToDirectory(file, videoDirectory));
+            });
     }
 
     internal static void FormatVideoFileNames(string directory, SearchOption searchOption = SearchOption.TopDirectoryOnly, bool isDryRun = false, Action<string>? log = null)
@@ -1253,7 +1265,6 @@ internal static partial class Video
         string[] directories = EnumerateDirectories(directory, level).ToArray();
         directories.Where(DirectoryHelper.IsHidden).Prepend("Hidden backup").Append(string.Empty).ForEach(log);
         directories
-            .ToArray()
             .ForEach(movie =>
             {
                 if (!ImdbMetadata.TryLoad(movie, out ImdbMetadata? metadata))
@@ -1294,24 +1305,220 @@ internal static partial class Video
             })
             .Where(movie => movie.Item2.Root?.Elements("studio").Any(element => element.Value.ContainsIgnoreCase("Nikkatsu")) is true
                 && movie.Item2.Root?.Elements("tag").Any(element => element.Value.ContainsIgnoreCase("pink")) is true
-                || movie.Item3?.Companies?.Keys.Any(company => company.ContainsIgnoreCase("Nikkatsu")) is true
-                && movie.Item3?.AllKeywords.Any(keyword => keyword.ContainsIgnoreCase("roman porno") || keyword.ContainsIgnoreCase("pink")) is true)
+                || movie.imdbMetadata?.Companies?.Keys.Any(company => company.ContainsIgnoreCase("Nikkatsu")) is true
+                && movie.imdbMetadata?.AllKeywords.Any(keyword => keyword.ContainsIgnoreCase("roman porno") || keyword.ContainsIgnoreCase("pink")) is true)
             .ForEach(movie =>
             {
                 log(string.Join(", ", movie.Item2.Root?.Elements("studio").Select(element => element.Value) ?? []));
                 log(string.Join(", ", movie.Item2.Root?.Elements("tag").Select(element => element.Value) ?? []));
-                log(string.Join(", ", movie.Item3?.Companies?.Keys.AsEnumerable() ?? []));
-                log(string.Join(", ", movie.Item3?.AllKeywords.Where(keyword => keyword.ContainsIgnoreCase("roman porno") || keyword.ContainsIgnoreCase("pink")) ?? []));
-                log(movie.Item1);
-                string newMovie = PathHelper.ReplaceDirectoryName(movie.Item1, name => "Nikkatsu Pink-" + Regex.Replace(name, @"\.[0-9]{4}\.", "$0日活粉画-"));
+                log(string.Join(", ", movie.imdbMetadata?.Companies?.Keys.AsEnumerable() ?? []));
+                log(string.Join(", ", movie.imdbMetadata?.AllKeywords.Where(keyword => keyword.ContainsIgnoreCase("roman porno") || keyword.ContainsIgnoreCase("pink")) ?? []));
+                log(movie.movie);
+                string newMovie = PathHelper.ReplaceDirectoryName(movie.movie, name => "Nikkatsu Pink-" + Regex.Replace(name, @"\.[0-9]{4}\.", "$0日活粉画-"));
                 if (!isDryRun)
                 {
-                    DirectoryHelper.Move(movie.Item1, newMovie);
+                    DirectoryHelper.Move(movie.movie, newMovie);
                 }
 
                 log(newMovie);
                 log(string.Empty);
             });
+    }
+
+    internal static void RenameDirectoriesWithDigits(string directory, int level = DefaultDirectoryLevel, bool isDryRun = false, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+
+        int count = 0;
+        EnumerateDirectories(directory, level)
+            .ToArray()
+            .ForEach(movie =>
+            {
+                Debug.Assert(VideoDirectoryInfo.TryParse(movie, out _));
+
+                string name = PathHelper.GetFileName(movie);
+                string title = name[..name.IndexOfOrdinal(".")];
+                title = title[..(title.IndexOfOrdinal("=") > 0 ? title.IndexOfOrdinal("=") : title.Length)];
+                if (!StringHelper.TryReplaceNumbers(title, out string newTitle))
+                {
+                    return;
+                }
+
+                if (isDryRun)
+                {
+                    log(title);
+                    log(newTitle);
+                }
+                else
+                {
+                    log(movie);
+                    string newMovie = DirectoryHelper.ReplaceDirectoryName(movie, movieName => newTitle + name[title.Length..]);
+                    log(newMovie);
+                }
+
+                log(string.Empty);
+                count++;
+            });
+
+        log(count.ToString());
+    }
+
+    internal static async Task ReplaceTopWebWithPreferredBluRay(ISettings settings, string deleteParentDirectory, string directory, int level = DefaultDirectoryLevel, Action<string>? log = null, CancellationToken cancellationToken = default, params string[] drives)
+    {
+        log ??= Logger.WriteLine;
+
+        ILookup<string, string> libraryImdbIdToMetadataFiles = drives
+            .AsParallel()
+            .SelectMany(drive => Directory.EnumerateFiles(drive, ImdbMetadataSearchPattern, SearchOption.AllDirectories))
+            .Where(file => !file.ContainsIgnoreCase($"{Path.DirectorySeparatorChar}Delete"))
+            .ToLookup(json => ImdbMetadata.TryGet(json, out string? imdbId) ? imdbId : string.Empty, json => json);
+        ConcurrentDictionary<string, List<PreferredFileMetadata>> preferredFilesMetadata = await settings.LoadMoviePreferredFileMetadataAsync(cancellationToken);
+        ILookup<string, string> preferredDisplayNameToImdbIds = preferredFilesMetadata.Values.Concat()
+            .AsParallel()
+            .ToLookup(metadata => metadata.DisplayName, metadata => metadata.ImdbId);
+        (string Movie, string DisplayName)[] displayNames = EnumerateDirectories(directory, level)
+            .Select(movie => (Movie: movie, DisplayName: PathHelper.GetFileName(movie)))
+            .Order()
+            .ToArray();
+        await displayNames.ForEachAsync(
+            async displayName =>
+            {
+                string[] sourceFiles = Directory.GetFiles(displayName.Movie);
+                string sourceVideo = sourceFiles.Single(file => file.IsVideo());
+                string imdbId = preferredDisplayNameToImdbIds[displayName.DisplayName].Distinct().Single();
+                string destinationMetadata = libraryImdbIdToMetadataFiles[imdbId].Distinct().Single();
+                string destinationDirectory = PathHelper.GetDirectoryName(destinationMetadata);
+                string[] destinationFiles = Directory.GetFiles(destinationDirectory);
+                string[] destinationVideos = destinationFiles.Where(file => file.IsVideo()).ToArray();
+                if (destinationVideos.Length != 1)
+                {
+                    Debugger.Break();
+                    log($"{displayName.DisplayName} {imdbId} {destinationDirectory}");
+                    DirectoryHelper.MoveToDirectory(displayName.Movie, PathHelper.AddDirectoryPostfix(directory, ".Manual"));
+                    return;
+                }
+
+                //log(movie);
+                //Directory.GetFiles(displayName.Item1).ForEach(file => FileHelper.MoveToDirectory(file, movie));
+                //string xml = files.First(file => file.IsXmlMetadata());
+                //File.Copy(xml, Path.Combine(movie, PathHelper.ReplaceExtension(PathHelper.GetFileName(sourceVideo), ".nfo")));
+                //if (movie.Contains("[1080Y") || movie.Contains("[1080Z"))
+                //{
+                //    DirectoryHelper.MoveToDirectory(displayName.Item1, @"I:\Yts\Preferred");
+                //}
+
+                //if (movie.Contains("[1080X") || movie.Contains("[1080H"))
+                //{
+                //    DirectoryHelper.MoveToDirectory(displayName.Item1, @"I:\Yts\Top");
+                //}
+
+                string destinationVideo = destinationVideos.Single();
+                switch (await FfmpegHelper.CompareDurationAsync(sourceVideo, destinationVideo))
+                {
+                    case > 0:
+                        log(DirectoryHelper.MoveToDirectory(displayName.Item1, PathHelper.AddDirectoryPostfix(directory, ".Longer")));
+                        break;
+                    case < 0:
+                        log(DirectoryHelper.MoveToDirectory(displayName.Item1, PathHelper.AddDirectoryPostfix(directory, ".Shorter")));
+                        break;
+                    default:
+                        {
+                            log(displayName.Movie);
+                            log(destinationDirectory);
+
+                            string destinationDirectoryName = PathHelper.GetFileName(destinationDirectory);
+                            string deletedDirectory = Path.Combine(deleteParentDirectory, destinationDirectoryName);
+                            Directory.CreateDirectory(deletedDirectory);
+                            if (DirectoryHelper.IsHidden(destinationDirectory))
+                            {
+                                DirectoryHelper.SetHidden(deletedDirectory, true);
+                            }
+
+                            string[] destinationFilesToMove = destinationFiles.Where(destinationFile => destinationFile.IsSubtitle() || destinationFile.IsVideo()).Order().ToArray();
+                            string[] destinationFilesToCopy = destinationFiles.Except(destinationFilesToMove).ToArray();
+                            destinationFilesToCopy.ForEach(destinationFile => FileHelper.CopyToDirectory(destinationFile, deletedDirectory));
+                            string destinationXmlMetadata = destinationFiles.Single(destinationFile => destinationFile.IsXmlMetadata() && PathHelper.GetFileNameWithoutExtension(destinationFile).EqualsOrdinal(PathHelper.GetFileNameWithoutExtension(destinationVideo)));
+                            FileHelper.ReplaceFileNameWithoutExtension(destinationXmlMetadata, PathHelper.GetFileNameWithoutExtension(sourceVideo));
+                            sourceFiles.ForEach(sourceFile => FileHelper.MoveToDirectory(sourceFile, destinationDirectory));
+                            destinationFilesToMove
+                                .Do(destinationFile => log($"Move {destinationFile}"))
+                                .ForEach(destinationFile => FileHelper.MoveToDirectory(destinationFile, deletedDirectory));
+                            log("");
+                            break;
+                        }
+                }
+            },
+            cancellationToken);
+    }
+
+    internal static void DeleteSpecialCharacters(string directory, bool isDryRun = false, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+
+        char[] directorySpecialCharacters = ['_', '~', '#', '^', '(', ')', '{', '}', '@', '\u3000'];
+        char[] fileSpecialCharacters = ['_', '~', '#', '^', '(', ')', '{', '}', '\u3000'];
+
+        string[] subDirectories = Directory.GetDirectories(directory);
+        bool hasSubDirectoryRenamed = false;
+        subDirectories
+            .ForEach(subDirectory =>
+            {
+                string subDirectoryName = PathHelper.GetFileName(subDirectory);
+                string newSubDirectoryName = subDirectoryName;
+                directorySpecialCharacters.ForEach(character => newSubDirectoryName = newSubDirectoryName.Replace(character, ' '));
+                newSubDirectoryName = newSubDirectoryName.Replace('–', '-');
+                newSubDirectoryName = newSubDirectoryName.Trim(' ').Trim('.');
+                newSubDirectoryName = Regex.Replace(newSubDirectoryName, @"([ ])+", "$1");
+                newSubDirectoryName = Regex.Replace(newSubDirectoryName, @"([\.])+", "$1");
+                //newSubDirectoryName = Regex.Replace(newSubDirectoryName, @"([\-])+", "$1");
+                newSubDirectoryName = Regex.Replace(newSubDirectoryName, @"[\s]+([\-\=\.\]\[])[\s]+", "$1");
+                newSubDirectoryName = Regex.Replace(newSubDirectoryName, @"[\s]+([\-\=\.\]\[])", "$1");
+                newSubDirectoryName = Regex.Replace(newSubDirectoryName, @"([\-\=\.\]\[])[\s]+", "$1");
+                if (newSubDirectoryName.EqualsIgnoreCase(subDirectoryName))
+                {
+                    return;
+                }
+
+                log(subDirectory);
+                log(isDryRun ? PathHelper.ReplaceDirectoryName(subDirectory, newSubDirectoryName) : DirectoryHelper.ReplaceDirectoryName(subDirectory, newSubDirectoryName));
+                log("");
+                hasSubDirectoryRenamed = true;
+            });
+
+        Directory.EnumerateFiles(directory)
+            .Where(file => !file.IsImdbMetadata() && !file.IsTmdbMetadata())
+            .ToArray()
+            .ForEach(file =>
+            {
+                string fileName = PathHelper.GetFileNameWithoutExtension(file);
+                string extension = PathHelper.GetExtension(file);
+                string newFileName = fileName;
+                fileSpecialCharacters.ForEach(character => newFileName = newFileName.Replace(character, ' '));
+                newFileName = newFileName.Replace('–', '-');
+                newFileName = newFileName.Trim(' ').Trim('.');
+                newFileName = Regex.Replace(newFileName, @"([ ])+", "$1");
+                //newFileName = Regex.Replace(newFileName, @"([\.])+", "$1");
+                newFileName = Regex.Replace(newFileName, @"([\-])+", "$1");
+                newFileName = Regex.Replace(newFileName, @"[\s]+([\-\=\.\]\[])[\s]+", "$1");
+                newFileName = Regex.Replace(newFileName, @"[\s]+([\-\=\.\]\[])", "$1");
+                newFileName = Regex.Replace(newFileName, @"([\-\=\.\]\[])[\s]+", "$1");
+                if (newFileName.EqualsIgnoreCase(fileName))
+                {
+                    return;
+                }
+
+                log(file);
+                string newFile = isDryRun ? PathHelper.ReplaceFileNameWithoutExtension(file, newFileName) : FileHelper.ReplaceFileNameWithoutExtension(file, newFileName);
+                log(newFileName.EndsWithIgnoreCase(extension) ? $"!{newFile}" : newFile);
+                log("");
+            });
+
+        if (hasSubDirectoryRenamed)
+        {
+            subDirectories = Directory.GetDirectories(directory);
+        }
+
+        subDirectories.ForEach(subDirectory => DeleteSpecialCharacters(subDirectory, isDryRun, log));
     }
 
     internal static void ReplaceIfLarger(string source, string destination, string backupDirectory)

@@ -13,7 +13,7 @@ internal static partial class Video
 
     internal const string VideoExtension = ".mp4";
 
-    private const string ThumbExtension = ".jpg";
+    private static readonly string[] ThumbExtensions = [".jpg", ".png"];
 
     internal const string XmlMetadataSearchPattern = $"{PathHelper.AllSearchPattern}{XmlMetadataExtension}";
 
@@ -31,13 +31,13 @@ internal static partial class Video
 
     private static readonly string[] CommonVideoExtensions = [".avi", DiskImageExtension, ".mkv", ".mpg", VideoExtension, ".wmv"];
 
-    private static readonly string[] AllVideoExtensions = UncommonVideoExtensions.Union(CommonVideoExtensions).ToArray();
+    private static readonly string[] AllVideoExtensions = [.. UncommonVideoExtensions, .. CommonVideoExtensions];
 
-    private static readonly string MovieMetadataFile = $"movie{XmlMetadataExtension}";
+    internal const string MovieMetadataFile = $"movie{XmlMetadataExtension}";
 
-    private static readonly string TVShowMetadataFile = $"tvshow{XmlMetadataExtension}";
+    private const string TVShowMetadataFile = $"tvshow{XmlMetadataExtension}";
 
-    private static readonly string TVSeasonMetadataFile = $"season{XmlMetadataExtension}";
+    private const string TVSeasonMetadataFile = $"season{XmlMetadataExtension}";
 
     private static readonly string[] Attachments = ["Introduction.txt", "Introduction.mht"];
 
@@ -51,7 +51,7 @@ internal static partial class Video
 
     private const string ImdbCacheSearchPattern = $"{PathHelper.AllSearchPattern}{ImdbCacheExtension}";
 
-    private static readonly string[] SubtitleLanguages = ["baq", "ben", "bho", "bok", "bul", "can", "cat", "chs", "cht", "cro", "cze", "dan", "dut", "eng", "est", "fil", "fin", "fre", "glg", "gre", "heb", "hin", "hrv", "ind", "ger", "hun", "ice", "ita", "jpn", "kan", "kor", "lat", "lav", "lit", "mac", "mal", "may", "nob", "nor", "pol", "por", "rum", "rus", "slo", "slv", "spa", "srp", "swe", "tam", "tel", "tha", "tur", "ukr", "vie"];
+    private static readonly string[] SubtitleLanguages = ["baq", "ben", "bho", "bok", "bul", "can", "cat", "chs", "cht", "cro", "cze", "dan", "dut", "ekk", "eng", "est", "fil", "fin", "fre", "glg", "gre", "heb", "hin", "hrv", "ind", "ger", "hun", "ice", "ita", "jpn", "kan", "khk", "kor", "lat", "lav", "lit", "mac", "mal", "may", "nob", "nor", "pol", "por", "rum", "rus", "slo", "slv", "spa", "srp", "swe", "tam", "tel", "tgl", "tha", "ukr", "vie"];
 
     internal const string NotExistingFlag = VersionSeparator;
 
@@ -69,7 +69,8 @@ internal static partial class Video
 
     private const string SubtitleDirectory = "Subs";
 
-    internal static readonly Regex SeasonEpisodeRegex = new("S[0-9]{2,4}E[0-9]{2,3}(E[0-9]{2})?");
+    [GeneratedRegex("S[0-9]{2,4}E[0-9]{2,3}(E[0-9]{2})?")]
+    internal static partial Regex SeasonEpisodeRegex();
 
     internal static string FilterForFileSystem(this string value)
     {

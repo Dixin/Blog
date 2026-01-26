@@ -15,11 +15,10 @@ internal static class Contrast
         ContrastMetadata[] metadata = await AsyncEnumerable
             .Range(0, pageCount)
             .Select(pageIndex => $"{settings.TVContrastUrl}{pageIndex}")
-            .Do(log)
-            .SelectManyAwait(async pageUrl =>
+            .SelectMany(async (pageUrl, token) =>
             {
                 using HttpClient httpClient = new HttpClient().AddEdgeHeaders();
-                CQ cq = await httpClient.GetStringAsync(pageUrl, cancellationToken);
+                CQ cq = await httpClient.GetStringAsync(pageUrl, token);
                 return cq
                     .Find("div.tgxtable div.tgxtablerow")
                     .Select(rowDom =>
@@ -30,7 +29,7 @@ internal static class Contrast
                         string link = linkCQ.Attr("href");
                         CQ imdbCQ = rowCellsCQ.Eq(1).Find("a").Eq(1);
                         string imdbLink = imdbCQ.Attr("href");
-                        string imdbId = imdbLink.IsNotNullOrWhiteSpace() ? Regex.Match(imdbLink, "tt[0-9]+$").Value : string.Empty;
+                        string imdbId = imdbLink.IsNotNullOrWhiteSpace() ? ImdbMetadata.ImdbIdSubstringRegex().Match(imdbLink).Value : string.Empty;
                         string torrent = rowCellsCQ.Eq(2).Find("a").Eq(0).Attr("href");
                         string magnet = rowCellsCQ.Eq(2).Find("a").Eq(1).Attr("href");
                         string uploader = rowCellsCQ.Eq(4).Text();
@@ -44,8 +43,7 @@ internal static class Contrast
                         return new ContrastMetadata(
                             link, title, string.Empty, [], image, imdbId,
                             dateAdded, size, int.Parse(seed), int.Parse(leech), uploader, torrent, magnet);
-                    })
-                    .ToAsyncEnumerable();
+                    });
             })
             .ToArrayAsync(cancellationToken);
 

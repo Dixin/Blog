@@ -6,7 +6,7 @@ using Examples.Linq;
 using MediaManager.IO;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
-internal static class Entry
+internal static partial class Entry
 {
     internal static readonly int MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 16);
 
@@ -76,8 +76,7 @@ internal static class Entry
         ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
         Dictionary<string, TopMetadata[]> h264720PMetadata = await settings.LoadMovieTopH264720PMetadataAsync(cancellationToken);
         entryMetadata
-            .SelectMany(entry => Regex
-                .Matches(entry.Value.Content, @"imdb\.com/title/(tt[0-9]+)")
+            .SelectMany(entry => ImdbMetadata.ImdbIdInLinkRegex().Matches(entry.Value.Content)
                 .Where(match => match.Success)
                 .Select(match => (Link: entry.Key, match.Groups[1].Value)))
             .Distinct(imdbId => imdbId.Value)

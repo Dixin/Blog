@@ -35,17 +35,18 @@ public static class DirectoryHelper
         return false;
     }
 
-    public static void Move(string source, string destination, bool overwrite = false)
+    public static void Move(string source, string destination, bool overwrite = false, bool skipDestinationDirectory = false)
     {
         source.ThrowIfNullOrWhiteSpace();
+        destination.ThrowIfNullOrWhiteSpace();
 
-        if (overwrite && Directory.Exists(destination.ThrowIfNullOrWhiteSpace()))
+        if (overwrite && (skipDestinationDirectory || Directory.Exists(destination)))
         {
             Directory.Delete(destination);
         }
 
         string? parent = Path.GetDirectoryName(destination);
-        if (!string.IsNullOrWhiteSpace(parent) && !Directory.Exists(parent))
+        if (!skipDestinationDirectory && !string.IsNullOrWhiteSpace(parent) && !Directory.Exists(parent))
         {
             Directory.CreateDirectory(parent);
         }
@@ -69,7 +70,7 @@ public static class DirectoryHelper
         }
     }
 
-    public static string MoveToDirectory(string source, string destinationParentDirectory, bool overwrite = false)
+    public static string MoveToDirectory(string source, string destinationParentDirectory, bool overwrite = false, bool skipDestinationDirectory = false)
     {
         string destination = Path.Combine(destinationParentDirectory, PathHelper.GetFileName(source));
         Move(source, destination, overwrite);
@@ -106,8 +107,8 @@ public static class DirectoryHelper
             .AsParallel()
             .ForAll(drive => drive
                 .ForEach(directory => Directory
-                    .EnumerateFiles(directory, "*", SearchOption.AllDirectories)
-                    .Where(file => Path.GetExtension(file)?.Any(@char => @char >= 'A' && @char <= 'Z') ?? false)
+                    .EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
+                    .Where(file => PathHelper.GetExtension(file).Any(@char => @char is >= 'A' and <= 'Z'))
                     .ToArray()
                     .ForEach(file => FileHelper.ReplaceFileName(file, $"{PathHelper.GetFileNameWithoutExtension(file)}{PathHelper.GetExtension(file).ToLowerInvariant()}"))));
 
@@ -169,5 +170,27 @@ public static class DirectoryHelper
         {
             new DirectoryInfo(directory.ThrowIfNullOrWhiteSpace()).Attributes &= ~FileAttributes.Hidden;
         }
+    }
+
+    public static void DeleteEmptySubDirectory(string directory, bool isPermanent = false)
+    {
+        Directory.GetDirectories(directory).ForEach(subDirectory =>
+        {
+            DeleteEmptySubDirectory(subDirectory);
+
+            if (Directory.EnumerateFileSystemEntries(subDirectory).Any())
+            {
+                return;
+            }
+
+            if (isPermanent)
+            {
+                Directory.Delete(subDirectory);
+            }
+            else
+            {
+                Recycle(subDirectory);
+            }
+        });
     }
 }

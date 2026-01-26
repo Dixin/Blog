@@ -23,6 +23,8 @@ internal enum EncoderType
     HDBluRay,
     Korean,
     KoreanPremium,
+    Contrast,
+    ContrastBluRay,
     HandbrakeH264,
     HandbrakeH264BluRay,
     NvidiaX265,
