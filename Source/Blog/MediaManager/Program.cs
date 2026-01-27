@@ -705,13 +705,13 @@ static void RenameEpisode(ISettings settings, string mediaDirectory, string meta
         string[] episodeNumbers = seasons
             .SelectMany(Directory.EnumerateFiles)
             .Where(Video.IsVideo)
-            .Select(episode => Video.SeasonEpisodeRegex.Match(PathHelper.GetFileNameWithoutExtension(episode)).Value)
+            .Select(episode => Video.SeasonEpisodeRegex().Match(PathHelper.GetFileNameWithoutExtension(episode)).Value)
             .OrderBy(number => number)
             .ToArray();
         string[] metadataEpisodeNumbers = metadataSeasons
             .SelectMany(Directory.EnumerateFiles)
             .Where(Video.IsVideo)
-            .Select(episode => Video.SeasonEpisodeRegex.Match(PathHelper.GetFileNameWithoutExtension(episode)).Value)
+            .Select(episode => Video.SeasonEpisodeRegex().Match(PathHelper.GetFileNameWithoutExtension(episode)).Value)
             .OrderBy(number => number)
             .ToArray();
         string[] episodeMismatches = episodeNumbers.Except(metadataEpisodeNumbers).ToArray();
