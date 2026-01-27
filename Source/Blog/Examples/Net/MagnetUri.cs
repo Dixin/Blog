@@ -13,13 +13,15 @@ public interface IMagnetUri
     string[] Trackers { get; }
 }
 
-public record MagnetUri(string ExactTopic, string DisplayName, string[] Trackers) : ISimpleParsable<MagnetUri>, IMagnetUri
+public partial record MagnetUri(string ExactTopic, string DisplayName, string[] Trackers) : ISimpleParsable<MagnetUri>, IMagnetUri
 {
     private const int HashLength = 40;
 
-    private static readonly Regex UriRegex = new(@$"magnet\:\?xt\=urn\:btih\:([A-Za-z0-9]{{{HashLength}}})(\&dn\=([^\&]+))?(\&tr\=([^\&]+))*", RegexOptions.IgnoreCase);
+    [GeneratedRegex(@"magnet\:\?xt\=urn\:btih\:([A-Za-z0-9]{40})(\&dn\=([^\&]+))?(\&tr\=([^\&]+))*", RegexOptions.IgnoreCase)]
+    private static partial Regex UriRegex();
 
-    private static readonly Regex TrackersRegex = new(@"&tr\=([^\&]+)", RegexOptions.IgnoreCase);
+    [GeneratedRegex(@"&tr\=([^\&]+)", RegexOptions.IgnoreCase)]
+    private static partial Regex TrackersRegex();
 
     public override string ToString() => $"magnet:?xt=urn:btih:{this.ExactTopic}{(this.DisplayName.IsNullOrWhiteSpace() ? string.Empty : $"&dn={HttpUtility.UrlEncode(this.DisplayName)}")}{string.Join(string.Empty, this.Trackers.Select(tracker => $"&tr={HttpUtility.UrlEncode(tracker)}"))}";
 
@@ -35,14 +37,14 @@ public record MagnetUri(string ExactTopic, string DisplayName, string[] Trackers
         }
 
         value = value.TrimEnd('&');
-        Match match = UriRegex.Match(value);
+        Match match = UriRegex().Match(value);
         if (!match.Success)
         {
             result = null;
             return false;
         }
 
-        string[] trackers = TrackersRegex
+        string[] trackers = TrackersRegex()
             .Matches(value)
             .Where(trackerMatch => trackerMatch.Success)
             .Select(trackerMatch => HttpUtility.UrlDecode(trackerMatch.Groups[1].Value))

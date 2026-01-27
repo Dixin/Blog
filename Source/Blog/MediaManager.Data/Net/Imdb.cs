@@ -868,7 +868,7 @@ internal static partial class Imdb
 
 		WebDriverHelper.DisposeAll();
 
-		ILookup<string, string> top = (await File.ReadAllLinesAsync(settings.TopDatabase, cancellationToken))
+		ILookup<string, string> top = (await File.ReadAllLinesAsync(settings.TopMetadata, cancellationToken))
 			.AsParallel()
 			.Where(line => (line.ContainsIgnoreCase("|movies_x265|") || line.ContainsIgnoreCase("|movies|"))
 				&& (line.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") || line.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}")))
