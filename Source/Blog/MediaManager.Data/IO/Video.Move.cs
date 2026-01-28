@@ -1520,4 +1520,22 @@ internal static partial class Video
 
         subDirectories.ForEach(subDirectory => DeleteSpecialCharacters(subDirectory, isDryRun, log));
     }
+
+    internal static void ReplaceIfLarger(string source, string destination, string backupDirectory)
+    {
+        if (!File.Exists(destination))
+        {
+            FileHelper.Move(source, destination, false, true);
+            return;
+        }
+
+        if (new FileInfo(source).Length <= new FileInfo(destination).Length)
+        {
+            FileHelper.MoveToDirectory(source, backupDirectory, true, true);
+            return;
+        }
+
+        FileHelper.MoveToDirectory(destination, backupDirectory, true, true);
+        FileHelper.Move(source, destination, false, true);
+    }
 }

@@ -135,17 +135,17 @@ public static class FileHelper
         await fromStream.CopyToAsync(toStream);
     }
 
-    public static string AddPrefix(string file, string prefix)
+    public static string AddPrefix(string file, string prefix, bool overwrite = false)
     {
         string destinationFile = PathHelper.AddFilePrefix(file, prefix);
-        File.Move(file, destinationFile);
+        File.Move(file, destinationFile, overwrite);
         return destinationFile;
     }
 
-    public static string AddPostfix(string file, string postfix)
+    public static string AddPostfix(string file, string postfix, bool overwrite = false)
     {
         string destinationFile = PathHelper.AddFilePostfix(file, postfix);
-        File.Move(file, destinationFile);
+        File.Move(file, destinationFile, overwrite);
         return destinationFile;
     }
 

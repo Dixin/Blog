@@ -1,5 +1,6 @@
 ﻿namespace MediaManager;
 
+using System.Buffers;
 using Examples.Common;
 using MediaManager.IO;
 using MediaManager.Net;
@@ -55,7 +56,7 @@ public partial record Settings(
     string TVMetadataCacheDirectory,
 
     string TopMagnetUrls,
-    string TopDatabase,
+    string TopMetadata,
 
     string TempFile)
 {
@@ -274,4 +275,27 @@ public partial record Settings
 
     public async Task WriteTVTopX265MetadataAsync(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken) =>
         await JsonHelper.SerializeToFileAsync(this.tvTopX265Metadata = value, this.TVTopX265Metadata, cancellationToken);
+
+    private ParallelQuery<(int Order, string Title, string Category, string Id, string MagnetUrl, string ImdbId, DateTime DateTime)>? topMetadata;
+
+    private static readonly SearchValues<string> MovieTVCategories = SearchValues.Create(["|movies_x265|", "|tv|", "|movies|"], StringComparison.OrdinalIgnoreCase);
+
+    public async Task<ParallelQuery<(int Order, string Title, string Category, string Id, string MagnetUrl, string ImdbId, DateTime DateTime)>> LoadTopMetadataAsync(CancellationToken cancellationToken) =>
+        this.topMetadata ??= (await File.ReadAllLinesAsync(this.TopMetadata, cancellationToken))
+            .AsParallel()
+            //.Where(line => line.ContainsAny(MovieTVCategories))
+            .Select(line =>
+            {
+                string[] segments = line.Split('|');
+                
+                Debug.Assert(segments.Length >= 6);
+                return (
+                    Order: int.Parse(segments[0]),
+                    Title: string.Join('|', segments[1..^5]),
+                    Category: segments[^5],
+                    Id: segments[^4],
+                    MagnetUrl: segments[^3],
+                    ImdbId: segments[^2],
+                    DateTime: DateTime.Parse(segments[^1]));
+            });
 }
