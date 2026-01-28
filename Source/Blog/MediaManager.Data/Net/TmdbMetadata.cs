@@ -10,41 +10,59 @@ internal static class TmdbMetadata
 
     private const string FileNameMetadataSeparator = Video.VersionSeparator;
 
-    internal const string Extension = ".xml";
+    internal const string XmlExtension = ".xml";
 
-    private const string SearchPattern = $"{PathHelper.AllSearchPattern}{Extension}";
+    private const string XmlSearchPattern = $"{PathHelper.AllSearchPattern}{XmlExtension}";
 
-    internal static async Task WriteTmdbMetadataAsync(string movie, bool overwrite = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal const string NfoExtension = ".nfo";
+
+    internal const string NfoSearchPattern = $"{PathHelper.AllSearchPattern}{NfoExtension}";
+
+    internal const string MovieNfoFile = $"movie{NfoExtension}";
+
+    internal const string TVNfoFile = $"tvshow{NfoExtension}";
+
+    public const string TVSeasonNfoFile = $"season{NfoExtension}";
+
+	internal static async Task WriteTmdbMetadataAsync(string movie, bool overwrite = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
-        string[] existingMetadataFiles = Directory.GetFiles(movie, SearchPattern);
+        string[] existingMetadataFiles = Directory.GetFiles(movie, XmlSearchPattern);
         if (!overwrite && existingMetadataFiles.Any())
         {
             return;
         }
 
-        string[] files = Directory.GetFiles(movie, Video.XmlMetadataSearchPattern);
+        string[] files = Directory.GetFiles(movie, NfoSearchPattern);
 
         if (files.Length < 1)
         {
             throw new InvalidOperationException($"No XML metadata: {movie}.");
         }
 
-        string defaultFile = files.Single(file => PathHelper.GetFileName(file).EqualsOrdinal(Video.MovieMetadataFile));
-        string[] otherFiles = files.Where(file => !PathHelper.GetFileName(file).EqualsOrdinal(Video.MovieMetadataFile)).ToArray();
-        Debug.Assert(otherFiles.Length >= 1);
-        DateTime defaultFileLastWrite = new FileInfo(defaultFile).LastWriteTimeUtc;
-        if (otherFiles.Length == 1)
+        string defaultFile = files.SingleOrDefault(file => PathHelper.GetFileName(file).EqualsOrdinal(MovieNfoFile), string.Empty);
+        if (defaultFile.IsNullOrWhiteSpace())
         {
-            Debug.Assert(otherFiles.All(otherFile => new FileInfo(otherFile).LastWriteTimeUtc <= defaultFileLastWrite));
-            files = [defaultFile];
-        }
+	        defaultFile = files.Single(file => PathHelper.GetFileName(file).EqualsOrdinal(TVNfoFile));
+	        files = [defaultFile];
+		}
         else
         {
-            Debug.Assert(otherFiles.All(otherFile => new FileInfo(otherFile).LastWriteTimeUtc >= defaultFileLastWrite));
-            files = otherFiles;
-        }
+			string[] otherFiles = files.Where(file => !PathHelper.GetFileName(file).EqualsOrdinal(MovieNfoFile)).ToArray();
+			Debug.Assert(otherFiles.Length >= 1);
+			DateTime defaultFileLastWrite = new FileInfo(defaultFile).LastWriteTimeUtc;
+			if (otherFiles.Length == 1)
+			{
+				Debug.Assert(otherFiles.All(otherFile => new FileInfo(otherFile).LastWriteTimeUtc <= defaultFileLastWrite));
+				files = [defaultFile];
+			}
+			else
+			{
+				Debug.Assert(otherFiles.All(otherFile => new FileInfo(otherFile).LastWriteTimeUtc >= defaultFileLastWrite));
+				files = otherFiles;
+			}
+		}
 
         XDocument[] documents = files.Select(XDocument.Load).ToArray();
 
@@ -99,7 +117,7 @@ internal static class TmdbMetadata
             );
         }
 
-        string newPath = Path.Combine(movie, $"{newMetadataFileName}{Extension}");
+        string newPath = Path.Combine(movie, $"{newMetadataFileName}{XmlExtension}");
 
         if (existingMetadataFiles.Any())
         {
@@ -128,12 +146,12 @@ internal static class TmdbMetadata
     {
         if (Directory.Exists(path))
         {
-            file = Directory.GetFiles(path, Video.TmdbMetadataSearchPattern, SearchOption.TopDirectoryOnly).SingleOrDefault();
+            file = Directory.GetFiles(path, XmlSearchPattern, SearchOption.TopDirectoryOnly).SingleOrDefault();
             Debug.Assert(file.IsNullOrWhiteSpace() || PathHelper.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.NotExistingFlag) || PathHelper.GetFileNameWithoutExtension(file).Split(FileNameSeparator).Length == 4);
             return file.IsNotNullOrWhiteSpace();
         }
 
-        if (path.IsNotNullOrWhiteSpace() && path.EndsWith(Extension) && File.Exists(path))
+        if (path.IsNotNullOrWhiteSpace() && path.EndsWith(XmlExtension) && File.Exists(path))
         {
             file = path;
             Debug.Assert(file.IsNullOrWhiteSpace() || PathHelper.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.NotExistingFlag) || PathHelper.GetFileNameWithoutExtension(file).Split(FileNameSeparator).Length == 4);
@@ -151,7 +169,7 @@ internal static class TmdbMetadata
         regions = null;
         genres = null;
 
-        if (!file.HasExtension(Extension))
+        if (!file.HasExtension(XmlExtension))
         {
             return false;
         }

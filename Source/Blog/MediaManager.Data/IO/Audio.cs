@@ -5,6 +5,7 @@ using System.Runtime.Versioning;
 using Examples.Common;
 using Examples.IO;
 using Examples.Text;
+using MediaManager.Net;
 using Microsoft.International.Converters.TraditionalChineseToSimplifiedConverter;
 using TagLib;
 using TagFile = TagLib.File;
@@ -229,7 +230,7 @@ internal static class Audio
                 string[] files = Directory.GetFiles(album, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
                 string[] audios = files.Where(file => file.HasExtension(AudioExtension)).ToArray();
                 string[] attachments = files.Where(file => Attachments.ContainsIgnoreCase(PathHelper.GetFileNameWithoutExtension(file))).ToArray();
-                string[] metadata = files.Where(file => PathHelper.GetFileName(file).EqualsIgnoreCase($"album{Video.XmlMetadataExtension}")).ToArray();
+                string[] metadata = files.Where(file => PathHelper.GetFileName(file).EqualsIgnoreCase($"album{TmdbMetadata.NfoExtension}")).ToArray();
 
                 files.Except(audios).Except(attachments).Except(metadata).ForEach(log);
             });

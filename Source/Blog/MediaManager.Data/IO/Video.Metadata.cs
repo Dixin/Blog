@@ -16,7 +16,7 @@ internal static partial class Video
         log ??= Logger.WriteLine;
 
         Directory
-            .GetFiles(directory, XmlMetadataSearchPattern, SearchOption.AllDirectories)
+            .GetFiles(directory, TmdbMetadata.NfoSearchPattern, SearchOption.AllDirectories)
             .Where(metadata => !PathHelper.GetFileNameWithoutExtension(metadata).EndsWithIgnoreCase($"{Delimiter}{flag}"))
             .Select(metadata => (Metadata: metadata, Backup: PathHelper.AddFilePostfix(metadata, $"{Delimiter}{flag}")))
             .Where(metadata => overwrite || !File.Exists(metadata.Backup))
@@ -27,9 +27,9 @@ internal static partial class Video
     internal static void RestoreMetadata(string directory, string flag = DefaultBackupFlag)
     {
         Directory
-            .GetFiles(directory, XmlMetadataSearchPattern, SearchOption.AllDirectories)
-            .Where(file => file.EndsWithOrdinal($"{Delimiter}{flag}{XmlMetadataExtension}"))
-            .Where(file => File.Exists(file.Replace($"{Delimiter}{flag}{XmlMetadataExtension}", XmlMetadataExtension)))
+            .GetFiles(directory, TmdbMetadata.NfoSearchPattern, SearchOption.AllDirectories)
+            .Where(file => file.EndsWithOrdinal($"{Delimiter}{flag}{TmdbMetadata.NfoExtension}"))
+            .Where(file => File.Exists(file.Replace($"{Delimiter}{flag}{TmdbMetadata.NfoExtension}", TmdbMetadata.NfoExtension)))
             .ForEach(file => FileHelper.Move(file, Path.Combine(PathHelper.GetDirectoryName(file), $"{PathHelper.GetFileNameWithoutExtension(file).Replace($"{Delimiter}{flag}", string.Empty)}{PathHelper.GetExtension(file)}"), true));
     }
 
@@ -42,7 +42,7 @@ internal static partial class Video
                 string featurettes = Path.Combine(movie, Featurettes);
                 if (Directory.Exists(featurettes))
                 {
-                    string[] metadataFiles = Directory.GetFiles(featurettes, XmlMetadataSearchPattern, SearchOption.AllDirectories);
+                    string[] metadataFiles = Directory.GetFiles(featurettes, TmdbMetadata.NfoSearchPattern, SearchOption.AllDirectories);
                     metadataFiles
                         .Do(log)
                         .Where(_ => !isDryRun)
@@ -58,7 +58,7 @@ internal static partial class Video
             .OrderBy(video => video)
             .ForEach((video, index) =>
             {
-                string metadataPath = PathHelper.ReplaceExtension(video, XmlMetadataExtension);
+                string metadataPath = PathHelper.ReplaceExtension(video, TmdbMetadata.NfoExtension);
                 if (!overwrite && File.Exists(metadataPath))
                 {
                     return;
@@ -142,7 +142,7 @@ internal static partial class Video
                 ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata);
                 string? jsonRatingFormatted = imdbMetadata?.AggregateRating?.RatingValue.Replace(".0", string.Empty).Trim();
                 Directory
-                    .GetFiles(movie, XmlMetadataSearchPattern, SearchOption.TopDirectoryOnly)
+                    .GetFiles(movie, TmdbMetadata.NfoSearchPattern, SearchOption.TopDirectoryOnly)
                     .ForEach(xmlMetadataFile =>
                     {
                         XDocument metadata = XDocument.Load(xmlMetadataFile);
@@ -188,7 +188,7 @@ internal static partial class Video
         {
             string[] files = Directory.GetFiles(movie);
             string? imdbId = files
-                .Where(file => file.IsXmlMetadata() && !PathHelper.GetFileName(file).EqualsIgnoreCase(MovieMetadataFile))
+                .Where(file => file.IsTmdbNfoMetadata() && !PathHelper.GetFileName(file).EqualsIgnoreCase(TmdbMetadata.MovieNfoFile))
                 .Select(xml => XDocument.Load(xml).Root?.Element("imdbid")?.Value ?? string.Empty)
                 .Distinct()
                 .SingleOrDefault(string.Empty);
@@ -236,7 +236,7 @@ internal static partial class Video
         else
         {
             string[] xmlImdbIds = files
-                .Where(IsXmlMetadata)
+                .Where(IsTmdbNfoMetadata)
                 .Select(file => file.TryLoadXmlImdbId(out string? xmlImdbId) ? xmlImdbId : string.Empty)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
@@ -542,7 +542,7 @@ internal static partial class Video
             .SelectMany(directory => Directory.GetFiles(directory, VideoSearchPattern, SearchOption.AllDirectories))
             .Select(video =>
             {
-                string metadata = PathHelper.ReplaceExtension(video, XmlMetadataExtension);
+                string metadata = PathHelper.ReplaceExtension(video, TmdbMetadata.NfoExtension);
                 string imdbId = metadata.TryLoadXmlImdbId(out string? xmlImdbId) ? xmlImdbId : throw new InvalidOperationException(video);
                 if (TryReadVideoMetadata(video, out VideoMetadata? videoMetadata))
                 {
@@ -684,10 +684,10 @@ internal static partial class Video
                     while (movies.TryDequeue(out string? movie))
                     {
                         string[] metadataFiles = Directory
-                            .EnumerateFiles(movie, XmlMetadataSearchPattern)
+                            .EnumerateFiles(movie, TmdbMetadata.NfoSearchPattern)
                             .ToArray();
-                        string backupMetadataFile = metadataFiles.Single(file => PathHelper.GetFileName(file).EqualsIgnoreCase($"movie{Delimiter}{DefaultBackupFlag}{XmlMetadataExtension}"));
-                        string metadataFile = metadataFiles.Single(file => PathHelper.GetFileName(file).EqualsIgnoreCase($"movie{XmlMetadataExtension}"));
+                        string backupMetadataFile = metadataFiles.Single(file => PathHelper.GetFileName(file).EqualsIgnoreCase($"movie{Delimiter}{DefaultBackupFlag}{TmdbMetadata.NfoExtension}"));
+                        string metadataFile = metadataFiles.Single(file => PathHelper.GetFileName(file).EqualsIgnoreCase($"movie{TmdbMetadata.NfoExtension}"));
                         XDocument metadataDocument = XDocument.Load(metadataFile);
                         string translatedTitle = metadataDocument.Root!.Element("title")!.Value;
                         if (translatedTitle.ContainsChineseCharacter() || Regex.IsMatch(translatedTitle, "^[0-9]+$"))
@@ -738,7 +738,7 @@ internal static partial class Video
                         if (!doubanTitle.EqualsIgnoreCase(translatedTitle))
                         {
                             metadataFiles
-                                .Where(file => !file.EndsWithIgnoreCase($"{Delimiter}{DefaultBackupFlag}{XmlMetadataExtension}"))
+                                .Where(file => !file.EndsWithIgnoreCase($"{Delimiter}{DefaultBackupFlag}{TmdbMetadata.NfoExtension}"))
                                 .ToArray()
                                 .ForEach(metadataFile =>
                                 {
@@ -775,8 +775,8 @@ internal static partial class Video
             string translatedTitle = translatedTitles[index];
             string year = translatedTitle[^5..^1];
             Debug.Assert(movie.Year.EqualsOrdinal(year));
-            Directory.EnumerateFiles(movie.Directory, XmlMetadataSearchPattern)
-                .Where(file => PathHelper.GetFileName(file).EqualsIgnoreCase(MovieMetadataFile))
+            Directory.EnumerateFiles(movie.Directory, TmdbMetadata.NfoSearchPattern)
+                .Where(file => PathHelper.GetFileName(file).EqualsIgnoreCase(TmdbMetadata.MovieNfoFile))
                 .ToArray()
                 .ForEach(metadataFile =>
                 {
@@ -1036,10 +1036,10 @@ internal static partial class Video
         EnumerateDirectories(directory, level).ForEach(movie =>
         {
             string[] files = Directory.GetFiles(movie);
-            string metadata = files.SingleOrDefault(file => PathHelper.GetFileName(file).EqualsIgnoreCase(MovieMetadataFile), string.Empty);
+            string metadata = files.SingleOrDefault(file => PathHelper.GetFileName(file).EqualsIgnoreCase(TmdbMetadata.MovieNfoFile), string.Empty);
             if (metadata.IsNullOrWhiteSpace())
             {
-                metadata = files.FirstOrDefault(IsXmlMetadata, string.Empty);
+                metadata = files.FirstOrDefault(IsTmdbNfoMetadata, string.Empty);
                 if (metadata.IsNullOrWhiteSpace())
                 {
                     return;
@@ -1084,7 +1084,7 @@ internal static partial class Video
         EnumerateDirectories(directory, level)
         .ForEach(movie =>
         {
-            string[] movieMetadata = Directory.GetFiles(movie, XmlMetadataSearchPattern);
+            string[] movieMetadata = Directory.GetFiles(movie, TmdbMetadata.NfoSearchPattern);
             XDocument[] documents = movieMetadata.Select(XDocument.Load).ToArray();
             Debug.Assert(movieMetadata.Length >= 2);
             Debug.Assert(documents.Select(document => document.Root!.Element("imdbid")?.Value).Distinct(StringComparer.OrdinalIgnoreCase).Count() == 1);
@@ -1104,7 +1104,7 @@ internal static partial class Video
             }
 
             string latestMetadata = movieMetadata.OrderByDescending(metadata => new FileInfo(metadata).LastWriteTimeUtc).First();
-            if (!PathHelper.GetFileName(latestMetadata).EqualsIgnoreCase(MovieMetadataFile))
+            if (!PathHelper.GetFileName(latestMetadata).EqualsIgnoreCase(TmdbMetadata.MovieNfoFile))
             {
                 Debugger.Break();
             }

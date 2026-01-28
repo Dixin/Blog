@@ -2,6 +2,7 @@
 
 using Examples.Common;
 using Examples.IO;
+using MediaManager.Net;
 
 internal static partial class Video
 {
@@ -32,7 +33,7 @@ internal static partial class Video
             return;
         }
 
-        string metadata = Directory.GetFiles(directory, XmlMetadataSearchPattern).FirstOrDefault(string.Empty);
+        string metadata = Directory.GetFiles(directory, TmdbMetadata.NfoSearchPattern).FirstOrDefault(string.Empty);
         if (metadata.IsNullOrWhiteSpace())
         {
             return;

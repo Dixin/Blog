@@ -346,7 +346,7 @@ internal static partial class Video
         //        }
         //        else
         //        {
-        //            string subtitleMetadata = files.SingleOrDefault(IsXmlMetadata, string.Empty);
+        //            string subtitleMetadata = files.SingleOrDefault(IsTmdbNfoMetadata, string.Empty);
         //            if (subtitleMetadata.IsNotNullOrWhiteSpace())
         //            {
         //                subtitleBase = PathHelper.GetFileNameWithoutExtension(subtitleMetadata);
