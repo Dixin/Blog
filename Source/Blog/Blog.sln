@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31903.59
+# Visual Studio Version 18
+VisualStudioVersion = 18.2.11415.280 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Examples", "Examples\Examples.csproj", "{348FDE06-D850-4118-8796-E2AEE8DF6376}"
 EndProject
@@ -54,6 +54,8 @@ EndProject
 Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "Examples.Nodejs", "Examples.Nodejs\Examples.Nodejs.esproj", "{6F563D1B-43DF-4E78-9C16-BADB09B7B89D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MediaInfoLib", "MediaInfoLib\MediaInfoLib.csproj", "{EF8F3F6B-169F-4B6B-AF52-6B895F532B6B}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Examples.FSharp", "Examples.FSharp\Examples.FSharp.fsproj", "{63DDD835-CC77-361E-C6BD-8B63BFF6DA8E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -239,12 +241,24 @@ Global
 		{EF8F3F6B-169F-4B6B-AF52-6B895F532B6B}.Release|x64.Build.0 = Release|Any CPU
 		{EF8F3F6B-169F-4B6B-AF52-6B895F532B6B}.Release|x86.ActiveCfg = Release|Any CPU
 		{EF8F3F6B-169F-4B6B-AF52-6B895F532B6B}.Release|x86.Build.0 = Release|Any CPU
+		{63DDD835-CC77-361E-C6BD-8B63BFF6DA8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63DDD835-CC77-361E-C6BD-8B63BFF6DA8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63DDD835-CC77-361E-C6BD-8B63BFF6DA8E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{63DDD835-CC77-361E-C6BD-8B63BFF6DA8E}.Debug|x64.Build.0 = Debug|Any CPU
+		{63DDD835-CC77-361E-C6BD-8B63BFF6DA8E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{63DDD835-CC77-361E-C6BD-8B63BFF6DA8E}.Debug|x86.Build.0 = Debug|Any CPU
+		{63DDD835-CC77-361E-C6BD-8B63BFF6DA8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63DDD835-CC77-361E-C6BD-8B63BFF6DA8E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63DDD835-CC77-361E-C6BD-8B63BFF6DA8E}.Release|x64.ActiveCfg = Release|Any CPU
+		{63DDD835-CC77-361E-C6BD-8B63BFF6DA8E}.Release|x64.Build.0 = Release|Any CPU
+		{63DDD835-CC77-361E-C6BD-8B63BFF6DA8E}.Release|x86.ActiveCfg = Release|Any CPU
+		{63DDD835-CC77-361E-C6BD-8B63BFF6DA8E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {3970DD61-4F33-45E3-8BBD-B43AAF9C07F9}
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;iseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8
+		SolutionGuid = {3970DD61-4F33-45E3-8BBD-B43AAF9C07F9}
 	EndGlobalSection
 EndGlobal
