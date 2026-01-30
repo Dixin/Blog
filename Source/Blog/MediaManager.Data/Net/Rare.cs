@@ -4,7 +4,6 @@ using CsQuery;
 using Examples.Common;
 using Examples.Linq;
 using MediaManager.IO;
-using Microsoft.Playwright;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 internal static class Rare
@@ -84,11 +83,7 @@ internal static class Rare
             .Distinct(imdbId => imdbId.Value)
             .ToArray();
         int length = imdbIds.Length;
-        using IPlaywright playwright = await Playwright.CreateAsync();
-        await using IBrowser browser = await playwright.Chromium.LaunchAsync();
-        IPage page = await browser.NewPageAsync();
-        IResponse? response = await page.GotoAsync("https://www.imdb.com/");
-        Debug.Assert(response is not null && response.Ok);
+        await using PlayWrightWrapper playWrightWrapper = new("https://www.imdb.com/");
         await imdbIds
             .OrderBy(imdbId => imdbId.Value)
             .ForEachAsync(async (imdbId, index) =>
@@ -104,7 +99,7 @@ internal static class Rare
                 try
                 {
                     await Retry.FixedIntervalAsync(
-                        async () => await Video.DownloadImdbMetadataAsync(imdbId.Value, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, page, overwrite: false, useCache: true, log: log, cancellationToken: cancellationToken),
+                        async () => await Video.DownloadImdbMetadataAsync(imdbId.Value, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, playWrightWrapper, overwrite: false, useCache: true, log: log, cancellationToken: cancellationToken),
                         isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError }, cancellationToken: cancellationToken);
                 }
                 catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
@@ -113,7 +108,7 @@ internal static class Rare
                     if (imdbId.Value.StartsWithIgnoreCase("tt0"))
                     {
                         imdbId = imdbId with { Value = imdbId.Value.ReplaceIgnoreCase("tt0", "tt") };
-                        await Video.DownloadImdbMetadataAsync(imdbId.Value, @settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, page, overwrite: false, useCache: true, log: log, cancellationToken: cancellationToken);
+                        await Video.DownloadImdbMetadataAsync(imdbId.Value, @settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, playWrightWrapper, overwrite: false, useCache: true, log: log, cancellationToken: cancellationToken);
                     }
                 }
 

@@ -166,7 +166,7 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
-            .Select(movie => (movie, metadata: XDocument.Load(Directory.GetFiles(movie, TmdbMetadata.TmdbXmlMetadataSearchPattern, SearchOption.TopDirectoryOnly).First())))
+            .Select(movie => (movie, metadata: XDocument.Load(Directory.GetFiles(movie, TmdbMetadata.NfoSearchPattern, SearchOption.TopDirectoryOnly).First())))
             .Select(movie => (movie.movie, field: movie.metadata.Root?.Element(field)?.Value))
             .OrderBy(movie => movie.field)
             .ForEach(movie => log($"{movie.field}: {PathHelper.GetFileName(movie.movie)}"));
@@ -2731,12 +2731,9 @@ internal static partial class Video
             log(length.ToString());
         }
 
-        using IPlaywright playwright = await Playwright.CreateAsync();
-        await using IBrowser browser = await playwright.Chromium.LaunchAsync();
-        IPage page = await browser.NewPageAsync();
-        IResponse? response = await page.GotoAsync(initialUrl);
-        Debug.Assert(response is not null && response.Ok);
-        await page.Locator("#pager_links").WaitForAsync(new LocatorWaitForOptions() { State = WaitForSelectorState.Visible });
+        await using PlayWrightWrapper playwrightWrapper = new();
+        IPage page = await playwrightWrapper.PageAsync();
+        await (await playwrightWrapper.PageAsync()).Locator("#pager_links").WaitForAsync(new LocatorWaitForOptions() { State = WaitForSelectorState.Visible });
 
         if (updateMetadata)
         {
@@ -2747,7 +2744,7 @@ internal static partial class Video
                 try
                 {
                     await Retry.FixedIntervalAsync(
-                        async () => await DownloadImdbMetadataAsync(imdbMetadata.ImdbId, settings.TVMetadataDirectory, settings.TVMetadataCacheDirectory, metadataFiles.Values.ToArray(), cacheFiles, page, overwrite: true, useCache: false, log: log, cancellationToken: cancellationToken),
+                        async () => await DownloadImdbMetadataAsync(imdbMetadata.ImdbId, settings.TVMetadataDirectory, settings.TVMetadataCacheDirectory, metadataFiles.Values.ToArray(), cacheFiles, playwrightWrapper, overwrite: true, useCache: false, log: log, cancellationToken: cancellationToken),
                     isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError }, cancellationToken: cancellationToken);
                 }
                 catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)

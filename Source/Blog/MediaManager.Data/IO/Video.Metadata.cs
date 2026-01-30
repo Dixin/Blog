@@ -7,7 +7,6 @@ using Examples.Linq;
 using Examples.Net;
 using Examples.Text;
 using MediaManager.Net;
-using Microsoft.Playwright;
 
 internal static partial class Video
 {
@@ -214,7 +213,7 @@ internal static partial class Video
         });
     }
 
-    private static async Task<bool> DownloadImdbMetadataAsync(string directory, IPage? page, bool overwrite = false, bool useCache = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    private static async Task<bool> DownloadImdbMetadataAsync(string directory, PlayWrightWrapper? playWrightWrapper, bool overwrite = false, bool useCache = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
@@ -261,10 +260,10 @@ internal static partial class Video
 
         log($"Start {directory}");
         await TmdbMetadata.WriteTmdbMetadataAsync(directory, overwrite, log, cancellationToken);
-        return await DownloadImdbMetadataAsync(imdbId, directory, directory, [jsonFile], files, page, overwrite, useCache, log, cancellationToken);
+        return await DownloadImdbMetadataAsync(imdbId, directory, directory, [jsonFile], files, playWrightWrapper, overwrite, useCache, log, cancellationToken);
     }
 
-    internal static async Task<bool> DownloadImdbMetadataAsync(string imdbId, string metadataDirectory, string cacheDirectory, string[] metadataFiles, string[] cacheFiles, IPage? page, bool overwrite = false, bool useCache = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task<bool> DownloadImdbMetadataAsync(string imdbId, string metadataDirectory, string cacheDirectory, string[] metadataFiles, string[] cacheFiles, PlayWrightWrapper? playWrightWrapper, bool overwrite = false, bool useCache = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
@@ -329,9 +328,9 @@ internal static partial class Video
             useCache ? parentImdbFile : string.Empty,
             useCache ? parentAdvisoriesFile : string.Empty,
             useCache ? parentConnectionsFile : string.Empty,
-            useCache ? parentKeywordsFile : string.Empty, 
-            useCache ? parentReleasesFile : string.Empty, 
-            page, log, cancellationToken);
+            useCache ? parentKeywordsFile : string.Empty,
+            useCache ? parentReleasesFile : string.Empty,
+            playWrightWrapper, log, cancellationToken);
         Debug.Assert(imdbHtml.IsNotNullOrWhiteSpace());
         if (imdbMetadata.Regions.IsEmpty())
         {
@@ -404,12 +403,8 @@ internal static partial class Video
             .ToArray();
         if (movies.Any())
         {
-            using IPlaywright playwright = await Playwright.CreateAsync();
-            await using IBrowser browser = await playwright.Chromium.LaunchAsync();
-            IPage page = await browser.NewPageAsync();
-            IResponse? response = await page.GotoAsync("https://www.imdb.com/");
-            Debug.Assert(response is not null && response.Ok);
-            await movies.ForEachAsync(async movie => await DownloadImdbMetadataAsync(movie, page, overwrite, useCache, log, cancellationToken), cancellationToken);
+            await using PlayWrightWrapper playWrightWrapper = new("https://www.imdb.com/");
+            await movies.ForEachAsync(async movie => await DownloadImdbMetadataAsync(movie, playWrightWrapper, overwrite, useCache, log, cancellationToken), cancellationToken);
         }
     }
 

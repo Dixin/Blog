@@ -6,7 +6,6 @@ using Examples.IO;
 using Examples.Linq;
 using Examples.Net;
 using MediaManager.Net;
-using Microsoft.Playwright;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Xabe.FFmpeg;
 using JsonReaderException = Newtonsoft.Json.JsonReaderException;
@@ -204,18 +203,14 @@ internal static partial class Video
                     {
                         token.ThrowIfCancellationRequested();
 
-                        using IPlaywright playwright = await Playwright.CreateAsync();
-                        await using IBrowser browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions() { Headless = false });
-                        IPage page = await browser.NewPageAsync();
-                        await page.AbortMediaAsync();
-                        await page.GetStringAsync("https://www.imdb.com/");
+                        await using PlayWrightWrapper playWrightWrapper = new("https://www.imdb.com/");
                         while (movies.TryDequeue(out string? movie))
                         {
                             token.ThrowIfCancellationRequested();
                             int movieIndex = movieTotalCount - movies.Count;
                             log($"{movieIndex * 100 / movieTotalCount}% - {movieIndex}/{movieTotalCount} - {movie}");
 
-                            if (!await DownloadImdbMetadataAsync(movie, page, overwrite, useCache, log, token))
+                            if (!await DownloadImdbMetadataAsync(movie, playWrightWrapper, overwrite, useCache, log, token))
                             {
                                 Interlocked.Decrement(ref movieTotalCount);
                             }

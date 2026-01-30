@@ -15,33 +15,31 @@ internal static class PageHelper
 
     internal static readonly TimeSpan DefaultDomWait = TimeSpan.FromMilliseconds(100);
 
-    internal static async Task<string> GetStringAsync(this IPage page, string url, PageGotoOptions? options = null)
-    {
-	    return await Retry.FixedIntervalAsync(async () =>
-	    {
-		    PageGotoOptions pageGotoOptions = options is null ? new PageGotoOptions() : new PageGotoOptions(options);
-		    //pageGotoOptions.Timeout = (float)DefaultPageWait.TotalMilliseconds;
-		    IResponse? response = await page.GotoAsync(url, pageGotoOptions);
-		    Debug.Assert(response is not null && response.Ok);
-		    await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
-		    await page.WaitForLoadStateAsync(LoadState.Load);
-		    //await page.WaitForLoadStateAsync(LoadState.NetworkIdle, new PageWaitForLoadStateOptions() { Timeout = pageGotoOptions.Timeout });
-		    await Task.Delay(DefaultNetworkWait);
-		    if (await page.IsBlockedAsync())
-		    {
-			    throw new InvalidOperationException(url);
-		    }
+    internal static async Task<string> GetStringAsync(this IPage page, string url, PageGotoOptions? options = null) =>
+        await Retry.FixedIntervalAsync(async () =>
+        {
+            PageGotoOptions pageGotoOptions = options is null ? new PageGotoOptions() : new PageGotoOptions(options);
+            //pageGotoOptions.Timeout = (float)DefaultPageWait.TotalMilliseconds;
+            IResponse? response = await page.GotoAsync(url, pageGotoOptions);
+            Debug.Assert(response is not null && response.Ok);
+            await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+            await page.WaitForLoadStateAsync(LoadState.Load);
+            //await page.WaitForLoadStateAsync(LoadState.NetworkIdle, new PageWaitForLoadStateOptions() { Timeout = pageGotoOptions.Timeout });
+            await Task.Delay(DefaultNetworkWait);
+            if (await page.IsBlockedAsync())
+            {
+                throw new InvalidOperationException(url);
+            }
 
-		    string html = await page.ContentAsync();
-		    Debug.Assert(html.IsNotNullOrWhiteSpace());
-		    return html;
-		});
-    }
+            string html = await page.ContentAsync();
+            Debug.Assert(html.IsNotNullOrWhiteSpace());
+            return html;
+        });
 
     internal static async Task RefreshAsync(this IPage page, PageReloadOptions? options = null)
     {
         PageReloadOptions pageReloadOptions = options is null ? new PageReloadOptions() : new PageReloadOptions(options);
-        pageReloadOptions.Timeout = (float)DefaultPageWait.TotalMilliseconds;
+        //pageReloadOptions.Timeout = (float)DefaultPageWait.TotalMilliseconds;
         IResponse? response = await page.ReloadAsync(pageReloadOptions);
         Debug.Assert(response is not null && response.Ok);
         await Task.Delay(DefaultNetworkWait);
