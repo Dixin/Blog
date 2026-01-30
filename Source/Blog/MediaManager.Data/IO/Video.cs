@@ -9,13 +9,9 @@ internal static partial class Video
 {
     internal const int DefaultDirectoryLevel = 2;
 
-    internal const string XmlMetadataExtension = ".nfo";
-
     internal const string VideoExtension = ".mp4";
 
     private static readonly string[] ThumbExtensions = [".jpg", ".png"];
-
-    internal const string XmlMetadataSearchPattern = $"{PathHelper.AllSearchPattern}{XmlMetadataExtension}";
 
     internal const string VideoSearchPattern = $"{PathHelper.AllSearchPattern}{VideoExtension}";
 
@@ -33,12 +29,6 @@ internal static partial class Video
 
     private static readonly string[] AllVideoExtensions = [.. UncommonVideoExtensions, .. CommonVideoExtensions];
 
-    private static readonly string MovieMetadataFile = $"movie{XmlMetadataExtension}";
-
-    private static readonly string TVShowMetadataFile = $"tvshow{XmlMetadataExtension}";
-
-    private static readonly string TVSeasonMetadataFile = $"season{XmlMetadataExtension}";
-
     private static readonly string[] Attachments = ["Introduction.txt", "Introduction.mht"];
 
     private static readonly string[] AdaptiveAttachments = ["banner.jpg", "banner.png", "box.jpg", "clearart.png", "clearlogo.png", "disc.jpg", "disc.png", "discart.png", "fanart.jpg", "fanart.png", "landscape.jpg", "landscape.png", "logo.png", "logo.svg", "poster.jpg", "poster.png", "backdrop.jpg", "back.jpg"];
@@ -46,8 +36,6 @@ internal static partial class Video
     internal const string ImdbCacheExtension = ".log";
 
     internal const string ImdbMetadataSearchPattern = $"{PathHelper.AllSearchPattern}{ImdbMetadata.Extension}";
-
-    internal const string TmdbMetadataSearchPattern = $"{PathHelper.AllSearchPattern}{TmdbMetadata.Extension}";
 
     private const string ImdbCacheSearchPattern = $"{PathHelper.AllSearchPattern}{ImdbCacheExtension}";
 
@@ -69,7 +57,8 @@ internal static partial class Video
 
     private const string SubtitleDirectory = "Subs";
 
-    internal static readonly Regex SeasonEpisodeRegex = new("S[0-9]{2,4}E[0-9]{2,3}(E[0-9]{2})?");
+    [GeneratedRegex("S[0-9]{2,4}E[0-9]{2,3}(E[0-9]{2})?")]
+    internal static partial Regex SeasonEpisodeRegex();
 
     internal static string FilterForFileSystem(this string value)
     {

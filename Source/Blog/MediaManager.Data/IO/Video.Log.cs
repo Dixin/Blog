@@ -166,7 +166,7 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
         EnumerateDirectories(directory, level)
-            .Select(movie => (movie, metadata: XDocument.Load(Directory.GetFiles(movie, XmlMetadataSearchPattern, SearchOption.TopDirectoryOnly).First())))
+            .Select(movie => (movie, metadata: XDocument.Load(Directory.GetFiles(movie, TmdbMetadata.TmdbXmlMetadataSearchPattern, SearchOption.TopDirectoryOnly).First())))
             .Select(movie => (movie.movie, field: movie.metadata.Root?.Element(field)?.Value))
             .OrderBy(movie => movie.field)
             .ForEach(movie => log($"{movie.field}: {PathHelper.GetFileName(movie.movie)}"));
@@ -175,7 +175,7 @@ internal static partial class Video
     internal static void PrintMetadataByDuplication(string directory, string field = "imdbid", Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
-        Directory.GetFiles(directory, XmlMetadataSearchPattern, SearchOption.AllDirectories)
+        Directory.GetFiles(directory, TmdbMetadata.NfoSearchPattern, SearchOption.AllDirectories)
             .Select(metadata => (metadata, field: XDocument.Load(metadata).Root?.Element(field)?.Value))
             .GroupBy(movie => movie.field)
             .Where(group => group.Count() > 1)
@@ -189,7 +189,7 @@ internal static partial class Video
             .ToArray()
             .ForEach(movie =>
             {
-                XDocument metadata = XDocument.Load(Directory.GetFiles(movie, XmlMetadataSearchPattern, SearchOption.TopDirectoryOnly).First());
+                XDocument metadata = XDocument.Load(Directory.GetFiles(movie, TmdbMetadata.NfoSearchPattern, SearchOption.TopDirectoryOnly).First());
                 string movieDirectory = PathHelper.GetFileName(movie);
                 if (movieDirectory.StartsWithOrdinal("0."))
                 {
@@ -273,7 +273,7 @@ internal static partial class Video
             .Select(movie =>
             {
                 if (Directory
-                    .EnumerateFiles(movie, XmlMetadataSearchPattern)
+                    .EnumerateFiles(movie, TmdbMetadata.NfoSearchPattern)
                     .Select(metadata => XDocument.Load(metadata).Root?.Element("tmdbid")?.Value ?? string.Empty)
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .Count() > 1)
@@ -282,7 +282,7 @@ internal static partial class Video
                 }
 
                 string[] metadataFiles = Directory
-                    .EnumerateFiles(movie, XmlMetadataSearchPattern)
+                    .EnumerateFiles(movie, TmdbMetadata.NfoSearchPattern)
                     .Order()
                     .ToArray();
                 string tmdbId = metadataFiles
@@ -380,12 +380,12 @@ internal static partial class Video
                     //.Where(file => !file.EndsWithIgnoreCase(".temp") && !file.EndsWithIgnoreCase(".tmp") && !file.EndsWithIgnoreCase(".tmp.txt"))
                     .ToArray();
 
-                if (!topFiles.Any(file => PathHelper.GetFileName(file).EqualsIgnoreCase(isTV ? TVShowMetadataFile : MovieMetadataFile)))
+                if (!topFiles.Any(file => PathHelper.GetFileName(file).EqualsIgnoreCase(isTV ? TmdbMetadata.TVNfoFile : TmdbMetadata.MovieNfoFile)))
                 {
-                    log($"!Missing {(isTV ? TVShowMetadataFile : MovieMetadataFile)} in {movie}");
+                    log($"!Missing {(isTV ? TmdbMetadata.TVNfoFile : TmdbMetadata.MovieNfoFile)} in {movie}");
                 }
 
-                topFiles = topFiles.Where(file => !PathHelper.GetFileName(file).EqualsIgnoreCase(MovieMetadataFile)).ToArray();
+                topFiles = topFiles.Where(file => !PathHelper.GetFileName(file).EqualsIgnoreCase(TmdbMetadata.MovieNfoFile)).ToArray();
 
                 string imdbRating = ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata)
                     ? imdbMetadata.FormattedAggregateRating
@@ -437,10 +437,10 @@ internal static partial class Video
                         .Where(topDirectory => !Featurettes.EqualsOrdinal(topDirectory) && !Regex.IsMatch(topDirectory, @"^Season [0-9]{2,4}(\..+)?"))
                         .ForEach(topDirectory => log($"!Directory incorrect {topDirectory}: {movie}"));
 
-                    string metadataFile = Path.Combine(movie, TVShowMetadataFile);
+                    string metadataFile = Path.Combine(movie, TmdbMetadata.TVNfoFile);
                     if (!File.Exists(metadataFile))
                     {
-                        log($"!Metadata file missing {TVShowMetadataFile}: {movie}");
+                        log($"!Metadata file missing {TmdbMetadata.TVNfoFile}: {movie}");
                     }
 
                     XDocument xmlMetadata = XDocument.Load(Path.Combine(movie, metadataFile));
@@ -464,7 +464,7 @@ internal static partial class Video
 
                         string[] seasonFiles = Directory.GetFiles(season, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly).Select(PathHelper.GetFileName).ToArray();
                         string[] videos = seasonFiles.Where(IsVideo).ToArray();
-                        string[] videoMetadataFiles = videos.Select(video => $"{PathHelper.GetFileNameWithoutExtension(video)}{XmlMetadataExtension}").ToArray();
+                        string[] videoMetadataFiles = videos.Select(video => $"{PathHelper.GetFileNameWithoutExtension(video)}{TmdbMetadata.NfoExtension}").ToArray();
                         string[] videoThumbFiles = videos.SelectMany(video => ThumbExtensions.Select(extension => $"{PathHelper.GetFileNameWithoutExtension(video)}-thumb{extension}")).ToArray();
                         VideoEpisodeFileInfo?[] allVideoFileInfos = videos
                             .Select(video => VideoEpisodeFileInfo.TryParse(video, out VideoEpisodeFileInfo? videoFileInfo)
@@ -473,7 +473,7 @@ internal static partial class Video
                             .ToArray();
                         VideoEpisodeFileInfo[] videoFileInfos = allVideoFileInfos.NotNull().ToArray();
                         //string[] subtitles = topFiles.Where(IsSubtitle).ToArray();
-                        //string[] metadataFiles = topFiles.Where(IsXmlMetadata).ToArray();
+                        //string[] metadataFiles = topFiles.Where(IsTmdbNfoMetadata).ToArray();
 
                         Enumerable.Range(0, videos.Length).Where(index => allVideoFileInfos[index] is null).ForEach(index => log($"!Video name {videos[index]}: {movie}"));
 
@@ -498,7 +498,7 @@ internal static partial class Video
                             .Except(videoMetadataFiles)
                             .Except(videoThumbFiles)
                             .Except(allowedSubtitles)
-                            .Except(EnumerableEx.Return(TVSeasonMetadataFile))
+                            .Except(EnumerableEx.Return(TmdbMetadata.TVSeasonNfoFile))
                             .Where(file =>
                             {
                                 if (file.IsSubtitle())
@@ -538,8 +538,8 @@ internal static partial class Video
                 string[] videos = topFiles.Where(IsVideo).ToArray();
                 VideoMovieFileInfo[] videoFileInfos = videos.Select(VideoMovieFileInfo.Parse).ToArray();
                 string[] subtitles = topFiles.Where(IsSubtitle).ToArray();
-                string[] metadataFiles = topFiles.Where(IsXmlMetadata).ToArray();
-                string[] tmdbFiles = topFiles.Where(file => file.HasExtension(TmdbMetadata.Extension)).ToArray();
+                string[] metadataFiles = topFiles.Where(IsTmdbNfoMetadata).ToArray();
+                string[] tmdbFiles = topFiles.Where(file => file.HasExtension(TmdbMetadata.XmlExtension)).ToArray();
                 string[] otherFiles = topFiles.Except(videos).Except(subtitles).Except(metadataFiles).Except(imdbFiles).Except(cacheFiles).Except(tmdbFiles).ToArray();
 
                 if (tmdbFiles.Length < 1)
@@ -632,7 +632,7 @@ internal static partial class Video
                     .ForEach(file => log($"!Subtitle: {Path.Combine(movie, file)}"));
 
                 string[] allowedMetadataFiles = videos
-                    .Select(video => $"{PathHelper.GetFileNameWithoutExtension(video)}{XmlMetadataExtension}")
+                    .Select(video => $"{PathHelper.GetFileNameWithoutExtension(video)}{TmdbMetadata.NfoExtension}")
                     .ToArray();
                 metadataFiles
                     .Where(metadata => !allowedMetadataFiles.ContainsIgnoreCase(metadata))
@@ -2040,7 +2040,7 @@ internal static partial class Video
 
                         if (ImdbMetadata.TryRead(movie, out string? imdbId, out _, out string[]? regions, out string[]? languages, out string[]? genres))
                         {
-                            if ((regions.IsEmpty() || genres.IsEmpty()) && TmdbMetadata.TryRead(Path.Combine(movie, MovieMetadataFile), out _, out string? _, out string[]? tmdbRegions, out string[]? tmdbGenres))
+                            if ((regions.IsEmpty() || genres.IsEmpty()) && TmdbMetadata.TryRead(Path.Combine(movie, TmdbMetadata.MovieNfoFile), out _, out string? _, out string[]? tmdbRegions, out string[]? tmdbGenres))
                             {
                                 if (regions.IsEmpty())
                                 {
@@ -2069,7 +2069,7 @@ internal static partial class Video
                                 log(string.Empty);
                             }
                         }
-                        else if (TmdbMetadata.TryRead(Path.Combine(movie, MovieMetadataFile), out _, out string? _, out regions, out genres))
+                        else if (TmdbMetadata.TryRead(Path.Combine(movie, TmdbMetadata.MovieNfoFile), out _, out string? _, out regions, out genres))
                         {
                             if (regions.Any() && regions.Intersect(allowedRegions).IsEmpty())
                             {
@@ -2147,7 +2147,7 @@ internal static partial class Video
             .ForEach(movie =>
             {
                 Dictionary<string, (string File, string XmlImdbId, string XmlTitle)> xmlDocuments = Directory
-                    .EnumerateFiles(movie.Directory, XmlMetadataSearchPattern, SearchOption.TopDirectoryOnly)
+                    .EnumerateFiles(movie.Directory, TmdbMetadata.NfoSearchPattern, SearchOption.TopDirectoryOnly)
                     .Where(file => !PathHelper.GetFileNameWithoutExtension(file).EqualsIgnoreCase("movie"))
                     .Select(file => (Metadata: XDocument.Load(file), file))
                     .Select(xml => (
@@ -2884,7 +2884,7 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
 
-        //HashSet<string> xmls = new(Directory.GetFiles(settings.MovieTemp41, XmlMetadataSearchPattern, SearchOption.AllDirectories), StringComparer.OrdinalIgnoreCase);
+        //HashSet<string> xmls = new(Directory.GetFiles(settings.MovieTemp41, NfoSearchPattern, SearchOption.AllDirectories), StringComparer.OrdinalIgnoreCase);
 
         //directoryDrives
         //    // Hard drives in parallel.
@@ -2905,7 +2905,7 @@ internal static partial class Video
         //    // Hard drives in parallel.
         //    .AsParallel()
         //    .SelectMany(driveDirectories => driveDirectories
-        //        .SelectMany(directory => Directory.EnumerateFiles(directory, XmlMetadataSearchPattern, SearchOption.AllDirectories))
+        //        .SelectMany(directory => Directory.EnumerateFiles(directory, NfoSearchPattern, SearchOption.AllDirectories))
         //        .AsParallel()
         //        .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
         //        .Select(file =>
@@ -2961,7 +2961,7 @@ internal static partial class Video
             // Hard drives in parallel.
             .AsParallel()
             .SelectMany(driveDirectories => driveDirectories
-                .SelectMany(directory => Directory.EnumerateFiles(directory, XmlMetadataSearchPattern, SearchOption.AllDirectories))
+                .SelectMany(directory => Directory.EnumerateFiles(directory, TmdbMetadata.NfoSearchPattern, SearchOption.AllDirectories))
                 .AsParallel()
                 .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
                 .Select(file =>

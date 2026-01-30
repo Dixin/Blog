@@ -180,7 +180,7 @@ public interface ISettings
 
     string TopMagnetUrls { get; init; }
 
-    string TopDatabase { get; init; }
+    string TopMetadata { get; init; }
 
     string TempFile { get; init; }
 
@@ -247,4 +247,6 @@ public interface ISettings
     Task<Dictionary<string, TopMetadata[]>> LoadTVTopX265MetadataAsync(CancellationToken cancellationToken);
 
     Task WriteTVTopX265MetadataAsync(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken);
+
+    Task<ParallelQuery<(int Order, string Title, string Category, string Id, string MagnetUrl, string ImdbId, DateTime DateTime)>> LoadTopMetadataAsync(CancellationToken cancellationToken);
 }

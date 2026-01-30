@@ -3,6 +3,7 @@
 using Examples.Common;
 using MediaManager.IO;
 using Microsoft.Playwright;
+using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 internal static class PageHelper
 {
@@ -16,15 +17,25 @@ internal static class PageHelper
 
     internal static async Task<string> GetStringAsync(this IPage page, string url, PageGotoOptions? options = null)
     {
-        PageGotoOptions pageGotoOptions = options is null ? new PageGotoOptions() : new PageGotoOptions(options);
-        pageGotoOptions.Timeout = (float)DefaultPageWait.TotalMilliseconds;
-        IResponse? response = await page.GotoAsync(url, pageGotoOptions);
-        Debug.Assert(response is not null && response.Ok);
-        await Task.Delay(DefaultNetworkWait);
-        Debug.Assert(!await page.IsBlockedAsync());
-        string html = await page.ContentAsync();
-        Debug.Assert(html.IsNotNullOrWhiteSpace());
-        return html;
+	    return await Retry.FixedIntervalAsync(async () =>
+	    {
+		    PageGotoOptions pageGotoOptions = options is null ? new PageGotoOptions() : new PageGotoOptions(options);
+		    //pageGotoOptions.Timeout = (float)DefaultPageWait.TotalMilliseconds;
+		    IResponse? response = await page.GotoAsync(url, pageGotoOptions);
+		    Debug.Assert(response is not null && response.Ok);
+		    await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+		    await page.WaitForLoadStateAsync(LoadState.Load);
+		    //await page.WaitForLoadStateAsync(LoadState.NetworkIdle, new PageWaitForLoadStateOptions() { Timeout = pageGotoOptions.Timeout });
+		    await Task.Delay(DefaultNetworkWait);
+		    if (await page.IsBlockedAsync())
+		    {
+			    throw new InvalidOperationException(url);
+		    }
+
+		    string html = await page.ContentAsync();
+		    Debug.Assert(html.IsNotNullOrWhiteSpace());
+		    return html;
+		});
     }
 
     internal static async Task RefreshAsync(this IPage page, PageReloadOptions? options = null)

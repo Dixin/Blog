@@ -257,9 +257,9 @@ internal static partial class Video
 
     internal static bool IsImdbMetadata(this string file) => file.HasExtension(ImdbMetadata.Extension);
 
-    internal static bool IsTmdbMetadata(this string file) => file.HasExtension(TmdbMetadata.Extension);
+    internal static bool IsTmdbXmlMetadata(this string file) => file.HasExtension(TmdbMetadata.XmlExtension);
 
-    internal static bool IsXmlMetadata(this string file) => file.HasExtension(XmlMetadataExtension);
+    internal static bool IsTmdbNfoMetadata(this string file) => file.HasExtension(TmdbMetadata.NfoExtension);
 
     internal static bool IsImdbCache(this string file) => file.HasExtension(ImdbCacheExtension);
 }

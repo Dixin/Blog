@@ -339,4 +339,7 @@ public class TorrentHelper
             .SelectMany(group => group)
             .ForEach(magnetUri => log?.Invoke((addTrackers ? magnetUri.AddDefaultTrackers() : magnetUri).ToString()));
     }
+
+    public static async Task<string> GetExactTopicAsync(string file) => 
+        (await Torrent.LoadAsync(file)).InfoHashes.V1OrV2.ToHex().ToUpperInvariant() ?? throw new InvalidOperationException(file);
 }
