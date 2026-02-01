@@ -77,20 +77,25 @@ internal static class Contrast
 
     internal static async Task DownloadFromExtToAsync(ISettings settings, string directory, CancellationToken cancellationToken = default)
     {
-        ContrastMetadata[] downloaded = Directory.EnumerateFiles(directory).Order()
+        ContrastMetadata[] downloaded = Directory
+            .EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
+            .Order()
             .Select(CQ.CreateDocumentFromFile)
-            .SelectMany(htmlCQ => htmlCQ.Find("body table.related-torrents-table tbody > tr"))
+            .SelectMany(htmlCQ => htmlCQ.Find("body table.search-table tbody > tr"))
             .Select(rowDOm =>
             {
                 CQ rowCQ = rowDOm.Cq();
                 CQ linkCQ = rowCQ.Find("a").Eq(0);
                 string link = linkCQ.Attr("href").Trim();
-                string title = linkCQ.Text().Trim();
+                string title = linkCQ.Text().Trim().ReplaceOrdinal(" ", ".");
+                string imdbId = rowCQ.Find("a:Contains('IMDb')").Attr("href") ?? string.Empty;
+                Match match = Regex.Match(imdbId, "tt[0-9]+$");
+                imdbId = match.Success ? match.Value : string.Empty;
                 string size = rowCQ.Children("td").Eq(1).Text().Trim();
                 string dateTime = rowCQ.Children("td").Eq(3).Text().Trim();
                 string seed = rowCQ.Children("td").Eq(4).Find("span.text-success").Text().Trim();
                 string leech = rowCQ.Children("td").Eq(5).Find("span.text-danger").Text().Trim();
-                return new ContrastMetadata(link, title, string.Empty, [], string.Empty, string.Empty,
+                return new ContrastMetadata(link, title, string.Empty, [], string.Empty, imdbId,
                     dateTime, size, int.Parse(seed), int.Parse(leech), "ExtTo", string.Empty, string.Empty);
             })
             .GroupBy(metadata => metadata.Title)
@@ -115,8 +120,17 @@ internal static class Contrast
             .OrderBy(metadata => metadata.Title)
             .ToArray();
         Debug.Assert(existingDuplicate.Length == downloadedDuplicate.Length);
-        Debug.Assert(existingDuplicate.Select(metadata => metadata.Title).SequenceEqual(
-            downloadedDuplicate.Select(metadata => metadata.Title)));
+        existingDuplicate
+            .Zip(downloadedDuplicate)
+            .ForEach(pair =>
+            {
+                Debug.Assert(pair.First.Title.EqualsOrdinal(pair.Second.Title));
+                Debug.Assert(
+                    pair.Second.ImdbId.IsNullOrWhiteSpace()
+                        ? pair.First.ImdbId.IsImdbId()
+                        : pair.First.Title.EqualsOrdinal(pair.Second.Title));
+            });
+
         if (downloadedDuplicate.All(metadata => metadata.Magnet.IsNotNullOrWhiteSpace()))
         {
             Debug.Assert(existingDuplicate.Select(metadata => MagnetUri.Parse(metadata.Magnet).ExactTopic.ToUpperInvariant()).Order().SequenceEqual(
