@@ -249,4 +249,6 @@ public interface ISettings
     Task WriteTVTopX265MetadataAsync(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken);
 
     Task<ParallelQuery<(int Order, string Title, string Category, string Id, string MagnetUrl, string ImdbId, DateTime DateTime)>> LoadTopMetadataAsync(CancellationToken cancellationToken);
+
+    Task<ContrastMetadata[]> LoadTVContrastMetadataAsync(CancellationToken cancellationToken);
 }

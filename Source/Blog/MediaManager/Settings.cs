@@ -287,7 +287,7 @@ public partial record Settings
             .Select(line =>
             {
                 string[] segments = line.Split('|');
-                
+
                 Debug.Assert(segments.Length >= 6);
                 return (
                     Order: int.Parse(segments[0]),
@@ -298,4 +298,10 @@ public partial record Settings
                     ImdbId: segments[^2],
                     DateTime: DateTime.Parse(segments[^1]));
             });
+
+    public async Task<ContrastMetadata[]> LoadTVContrastMetadataAsync(CancellationToken cancellationToken) =>
+        (await JsonHelper.DeserializeFromFileAsync<ContrastMetadata[]>(this.TVContrastMetadata, cancellationToken))
+        .Where(metadata => metadata.Title.ContainsIgnoreCase(".1080p.") && metadata.Title.ContainsIgnoreCase(this.ContrastKeyword) && Regex.IsMatch(metadata.Title, @"\.S[0-9]{2}\."))
+        .Do(metadata => Debug.Assert(metadata.ImdbId.IsImdbId()))
+        .ToArray();
 }

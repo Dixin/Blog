@@ -50,10 +50,10 @@ internal static class Contrast
         await JsonHelper.SerializeToFileAsync(metadata, settings.TVContrastMetadata, cancellationToken);
     }
 
-    internal static async Task DownloadFromContrast(ISettings settings, string htmlFile, CancellationToken cancellationToken = default)
+    internal static async Task DownloadFromContrastAsync(ISettings settings, string htmlFile, CancellationToken cancellationToken = default)
     {
-        CQ tableCQ = CQ.CreateFragment(await File.ReadAllTextAsync(htmlFile, cancellationToken));
-        ContrastMetadata[] downloaded = tableCQ.Children("tbody.table-group-divider").Children("tr")
+        ContrastMetadata[] downloaded = CQ.CreateFragment(await File.ReadAllTextAsync(htmlFile, cancellationToken))
+            .Children("tbody.table-group-divider").Children("tr")
             .Select(rowDom =>
             {
                 CQ rowCQ = rowDom.Cq();
@@ -71,19 +71,64 @@ internal static class Contrast
                 return new ContrastMetadata(link, title, "", [], image, imdbId, dateTime.ToString("yyyy-MM-dd HH:mm:ss"), size, int.Parse(seed), int.Parse(leechers), "Kontrast.top", "", magnetUrl);
             })
             .ToArray();
+
+        await MergeMetadataAsync(settings, downloaded, cancellationToken);
+    }
+
+    internal static async Task DownloadFromExtToAsync(ISettings settings, string directory, CancellationToken cancellationToken = default)
+    {
+        ContrastMetadata[] downloaded = Directory.EnumerateFiles(directory).Order()
+            .Select(CQ.CreateDocumentFromFile)
+            .SelectMany(htmlCQ => htmlCQ.Find("body table.related-torrents-table tbody > tr"))
+            .Select(rowDOm =>
+            {
+                CQ rowCQ = rowDOm.Cq();
+                CQ linkCQ = rowCQ.Find("a").Eq(0);
+                string link = linkCQ.Attr("href").Trim();
+                string title = linkCQ.Text().Trim();
+                string size = rowCQ.Children("td").Eq(1).Text().Trim();
+                string dateTime = rowCQ.Children("td").Eq(3).Text().Trim();
+                string seed = rowCQ.Children("td").Eq(4).Find("span.text-success").Text().Trim();
+                string leech = rowCQ.Children("td").Eq(5).Find("span.text-danger").Text().Trim();
+                return new ContrastMetadata(link, title, string.Empty, [], string.Empty, string.Empty,
+                    dateTime, size, int.Parse(seed), int.Parse(leech), "ExtTo", string.Empty, string.Empty);
+            })
+            .GroupBy(metadata => metadata.Title)
+            .Select(group => group.Count() == 1
+                ? group.Single()
+                : group.OrderBy(metadata => metadata.Link, StringComparer.OrdinalIgnoreCase).Last())
+            .ToArray();
+
+        await MergeMetadataAsync(settings, downloaded, cancellationToken);
+    }
+
+    private static async Task MergeMetadataAsync(ISettings settings, ContrastMetadata[] downloaded, CancellationToken cancellationToken = default)
+    {
         ContrastMetadata[] existing = await JsonHelper.DeserializeFromFileAsync<ContrastMetadata[]>(settings.TVContrastMetadata, cancellationToken);
         ContrastMetadata[] all = existing.UnionBy(downloaded, metadata => metadata.Title, StringComparer.OrdinalIgnoreCase).ToArray();
-        ContrastMetadata[] existingDuplicate = existing.IntersectBy(downloaded.Select(metadata => metadata.Title), metadata => metadata.Title, StringComparer.OrdinalIgnoreCase).ToArray();
-        ContrastMetadata[] downloadedDuplicate = downloaded.IntersectBy(existing.Select(metadata => metadata.Title), metadata => metadata.Title, StringComparer.OrdinalIgnoreCase).ToArray();
+        ContrastMetadata[] existingDuplicate = existing
+            .IntersectBy(downloaded.Select(metadata => metadata.Title), metadata => metadata.Title, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(metadata => metadata.Title)
+            .ToArray();
+        ContrastMetadata[] downloadedDuplicate = downloaded
+            .IntersectBy(existing.Select(metadata => metadata.Title), metadata => metadata.Title, StringComparer.OrdinalIgnoreCase)
+            .OrderBy(metadata => metadata.Title)
+            .ToArray();
         Debug.Assert(existingDuplicate.Length == downloadedDuplicate.Length);
-        Debug.Assert(existingDuplicate.Select(metadata => MagnetUri.Parse(metadata.Magnet).ExactTopic.ToUpperInvariant()).Order().SequenceEqual(
-            downloadedDuplicate.Select(metadata => MagnetUri.Parse(metadata.Magnet).ExactTopic.ToUpperInvariant()).Order()));
+        Debug.Assert(existingDuplicate.Select(metadata => metadata.Title).SequenceEqual(
+            downloadedDuplicate.Select(metadata => metadata.Title)));
+        if (downloadedDuplicate.All(metadata => metadata.Magnet.IsNotNullOrWhiteSpace()))
+        {
+            Debug.Assert(existingDuplicate.Select(metadata => MagnetUri.Parse(metadata.Magnet).ExactTopic.ToUpperInvariant()).Order().SequenceEqual(
+                downloadedDuplicate.Select(metadata => MagnetUri.Parse(metadata.Magnet).ExactTopic.ToUpperInvariant()).Order()));
+        }
+
         Debug.Assert(all.Length == downloaded.Length + existing.Length - existingDuplicate.Length);
 
         await JsonHelper.SerializeToFileAsync(all, settings.TVContrastMetadata, cancellationToken);
     }
 
-    internal static async Task PrintTVVersionsAsync(ISettings settings, string[][]? tvDrives, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task PrintTVVersionsAsync(ISettings settings, string[][]? tvDrives = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
         tvDrives ??= [
@@ -99,14 +144,11 @@ internal static class Contrast
             ]
         ];
 
-        ContrastMetadata[] existing = await JsonHelper.DeserializeFromFileAsync<ContrastMetadata[]>(settings.TVContrastMetadata, cancellationToken);
+        ContrastMetadata[] existing = await settings.LoadTVContrastMetadataAsync(cancellationToken);
         Dictionary<string, (string SeasonNumber, ContrastMetadata Metadata)[]> result = existing
-            .Where(metadata => metadata.Title.ContainsIgnoreCase(settings.ContrastKeyword))
-            .Select(metadata => (metadata, Match: Regex.Match(metadata.Title, @"\.(S[0-9]{2})\.")))
-            .Where(metadata => metadata.Match.Success)
             .GroupBy(
-                metadata => metadata.metadata.ImdbId,
-                metadata => (SeasonNumber: metadata.Match.Groups[1].Value, Metadata: metadata.metadata))
+                metadata => metadata.ImdbId,
+                metadata => (SeasonNumber: Regex.Match(metadata.Title, @"\.(S[0-9]{2})\.").Groups[1].Value, Metadata: metadata))
             .ToDictionary(
                 group => group.Key,
                 group => group.OrderBy(metadata => metadata.SeasonNumber).ToArray());
