@@ -26,7 +26,65 @@ internal static partial class Imdb
         await Retry.FixedIntervalAsync(
             func: async () =>
             {
-                ILocator seeAllButtons = page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { Name = "See all" });
+				ILocator spoilerButtons = page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { Name = "Spoiler" });
+				int spoilerButtonCount = await spoilerButtons.CountAsync();
+				log($"{spoilerButtonCount} Spoiler buttons are found.");
+				if (spoilerButtonCount > 0)
+				{
+					await (await spoilerButtons.AllAsync()).Reverse().ToArray().ForEachAsync(
+						async button =>
+						{
+							try
+							{
+								await button.ClickAsync();
+							}
+							catch (Exception exception) when (exception.IsNotCritical())
+							{
+								await button.PressAsync(" ");
+							}
+
+							//await button.WaitForAsync(new LocatorWaitForOptions() { State = WaitForSelectorState.Detached });
+						},
+						cancellationToken);
+					log($"{spoilerButtonCount} Spoiler buttons are clicked and waited.");
+					//await spoilerButtons.WaitForAsync(new LocatorWaitForOptions() { State = WaitForSelectorState.Detached });
+					long spoilerDetachingTimestamp = Stopwatch.GetTimestamp();
+					while (await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { Name = "Spoiler" }).CountAsync() > 0)
+					{
+						if (Stopwatch.GetElapsedTime(spoilerDetachingTimestamp) > PageHelper.DefaultManualWait)
+						{
+							throw new TimeoutException("Waiting for Spoiler buttons to be detached timed out.");
+						}
+
+						await Task.Delay(PageHelper.DefaultDomWait, cancellationToken);
+					}
+
+					log($"{spoilerButtonCount} Spoiler buttons are detached.");
+					isUpdated = true;
+
+					await Task.Delay(PageHelper.DefaultNetworkWait, cancellationToken);
+					if (await page.GetByText("error fetching more data").CountAsync() > 0
+						|| await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { Name = "Spoiler" }).CountAsync() > 0)
+					{
+						throw new InvalidOperationException("Ajsx error.");
+					}
+
+					log($"{spoilerButtonCount} Spoilers are waited.");
+					long spoilerInitializingTimestamp = Stopwatch.GetTimestamp();
+					while (await page.GetByText(new Regex("^Spoilers$"), new PageGetByTextOptions() { Exact = true }).CountAsync() != spoilerButtonCount)
+					{
+						if (Stopwatch.GetElapsedTime(spoilerInitializingTimestamp) > PageHelper.DefaultManualWait)
+						{
+							throw new TimeoutException("Waiting for Spoilers to be loaded timed out.");
+						}
+
+						await Task.Delay(PageHelper.DefaultDomWait, cancellationToken);
+					}
+
+					log($"{spoilerButtonCount} Spoilers are loaded.");
+				}
+
+				ILocator seeAllButtons = page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { Name = "See all" });
                 ILocator seeMoreButtons = page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = new Regex(@"[0-9]+ more") });
                 int seeAllButtonsCount = await seeAllButtons.CountAsync();
                 int seeMoreButtonsCount = await seeMoreButtons.CountAsync();
@@ -128,66 +186,6 @@ internal static partial class Imdb
                     {
                         throw new InvalidOperationException("Ajsx error.");
                     }
-
-
-                }
-
-                ILocator spoilerButtons = page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { Name = "Spoiler" });
-                int spoilerButtonCount = await spoilerButtons.CountAsync();
-                log($"{spoilerButtonCount} Spoiler buttons are found.");
-                if (spoilerButtonCount > 0)
-                {
-                    await (await spoilerButtons.AllAsync()).Reverse().ToArray().ForEachAsync(
-                        async button =>
-                        {
-                            try
-                            {
-                                await button.ClickAsync();
-                            }
-                            catch (Exception exception) when (exception.IsNotCritical())
-                            {
-                                await button.PressAsync(" ");
-                            }
-
-                            //await button.WaitForAsync(new LocatorWaitForOptions() { State = WaitForSelectorState.Detached });
-                        },
-                        cancellationToken);
-                    log($"{spoilerButtonCount} Spoiler buttons are clicked and waited.");
-                    //await spoilerButtons.WaitForAsync(new LocatorWaitForOptions() { State = WaitForSelectorState.Detached });
-                    long spoilerDetachingTimestamp = Stopwatch.GetTimestamp();
-                    while (await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { Name = "Spoiler" }).CountAsync() > 0)
-                    {
-                        if (Stopwatch.GetElapsedTime(spoilerDetachingTimestamp) > PageHelper.DefaultManualWait)
-                        {
-                            throw new TimeoutException("Waiting for Spoiler buttons to be detached timed out.");
-                        }
-
-                        await Task.Delay(PageHelper.DefaultDomWait, cancellationToken);
-                    }
-
-                    log($"{spoilerButtonCount} Spoiler buttons are detached.");
-                    isUpdated = true;
-
-                    await Task.Delay(PageHelper.DefaultNetworkWait, cancellationToken);
-                    if (await page.GetByText("error fetching more data").CountAsync() > 0
-                        || await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { Name = "Spoiler" }).CountAsync() > 0)
-                    {
-                        throw new InvalidOperationException("Ajsx error.");
-                    }
-
-                    log($"{spoilerButtonCount} Spoilers are waited.");
-                    long spoilerInitializingTimestamp = Stopwatch.GetTimestamp();
-                    while (await page.GetByText(new Regex("^Spoilers$"), new PageGetByTextOptions() { Exact = true }).CountAsync() != spoilerButtonCount)
-                    {
-                        if (Stopwatch.GetElapsedTime(spoilerInitializingTimestamp) > PageHelper.DefaultManualWait)
-                        {
-                            throw new TimeoutException("Waiting for Spoilers to be loaded timed out.");
-                        }
-
-                        await Task.Delay(PageHelper.DefaultDomWait, cancellationToken);
-                    }
-
-                    log($"{spoilerButtonCount} Spoilers are loaded.");
                 }
             },
             retryingHandler: async void (sender, arg) =>
