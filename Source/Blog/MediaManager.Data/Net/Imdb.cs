@@ -591,7 +591,8 @@ internal static partial class Imdb
 
         CQ storylineSectionCQ = imdbCQ.Find("section[data-testid='Storyline']");
         Debug.Assert(storylineSectionCQ.Any());
-        bool skipAdvisories = storylineSectionCQ.Find("a:Contains('Add content advisory')").Any();
+        bool skipAdvisories = storylineSectionCQ.Find("a:Contains('Add content advisory')").Any()
+            && storylineSectionCQ.Find("[data-testid='storyline-certificate']").IsEmpty();
         bool skipKeywords = storylineSectionCQ.Find($"a[href*='/title/{imdbId}/keywords/']:Contains('more')").IsEmpty();
 
         bool skipTrivia = true;
