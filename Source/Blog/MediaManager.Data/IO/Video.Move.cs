@@ -1285,7 +1285,7 @@ internal static partial class Video
                         Advisories
                         .Where(advisory => advisory.Key.ContainsIgnoreCase("sex"))
                         .SelectMany(advisory => advisory.Value)
-                        .Select(advisory => advisory.Severity));
+                        .Select(advisory => advisory.Key));
                 string keywords = string.Join(VersionSeparator, OrderedKeywords.Intersect(metadata.AllKeywords).Take(3));
                 log(movie);
                 string newMovie = DirectoryHelper.ReplaceDirectoryName(movie, $"{name}{AdditionalMetadataSeparator}{severity}{Delimiter}{keywords}");
