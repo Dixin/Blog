@@ -1858,7 +1858,7 @@ static void MoveSubtitles(string sourceDirectory, string destinationDirectory, b
 //await FfmpegHelper.ExtractAllAsync(settings, @"\\box-d\E\Files\Movies.Mkv", isTV: false, outputVideos: [input => PathHelper.ReplaceExtension(input, ".mp4")
 //    .ReplaceIgnoreCase(@"\\box-d\E\Files\Movies.Mkv\",@"G:\Files\Library\Movies Temp 1\New folder\")]);
 //await FfmpegHelper.ExtractAllAsync(settings, @"\\box-d\E\Files\TV", isTV: true, outputVideos: [input => PathHelper.ReplaceExtension(input, ".mp4")
-//    .ReplaceIgnoreCase(@"\\box-d\E\Files\TV\",@"L:\Files\Library\TV Temp 1\")]);
+//    .ReplaceIgnoreCase(@"\\box-d\E\Files\TV\", @"L:\Files\Library\TV Temp 1\")]);
 //await FfmpegHelper.ExtractAllAsync(settings, @"\\box-x\E\Files\New folder (2)", isTV: true, outputVideos: [input => PathHelper.ReplaceExtension(input, ".mp4")
 //    .ReplaceIgnoreCase(@"\\box-x\E\Files\New folder (2)\",@"L:\Files\Library\TV Temp 1\")]);
 //await FfmpegHelper.ExtractAllAsync(settings, @"\\box-x\E\Files\New folder (2)", isTV: true, outputVideos: [input => PathHelper.ReplaceExtension(input, ".mp4")
