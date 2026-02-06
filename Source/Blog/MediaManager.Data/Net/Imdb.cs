@@ -983,16 +983,17 @@ internal static partial class Imdb
         string soundtracksUrl = $"{imdbUrl}soundtrack/";
         (string soundtracksHtml, CQ soundtracksCQ) = await GetHtmlAsync(skipSoundtracks, soundtracksFile, soundtracksUrl, playWrightWrapper, httpClient, log, cancellationToken);
 
-        Dictionary<string, string[]> soundtracks = soundtracksCQ
+        string[][] soundtracks = soundtracksCQ
             .Find("section.ipc-page-section li.ipc-metadata-list__item")
             .Select(itemDom => itemDom.Cq())
-            .ToDictionary(
-                itemCQ => itemCQ.Find("span").Eq(0).Text().Trim(),
-                itemCQ => itemCQ
-                    .Find("div.ipc-html-content-inner-div")
-                    .Find("a").Each(linkDom => linkDom.RemoveAttribute("class"))
-                    .End()
-                    .Select(divDom => divDom.InnerHTML.Trim()).ToArray());
+            .Select(itemCQ => itemCQ
+                .Find("div.ipc-html-content-inner-div")
+                .Find("a").Each(linkDom => linkDom.RemoveAttribute("class"))
+                .End()
+                .Select(divDom => divDom.InnerHTML.Trim())
+                .Prepend(itemCQ.Find("span").Eq(0).Text().Trim())
+                .ToArray())
+            .ToArray();
 
         string triviaUrl = $"{imdbUrl}trivia/";
         (string triviaHtml, CQ triviaCQ) = await GetHtmlAsync(skipTrivia, triviaFile, triviaUrl, playWrightWrapper, httpClient, log, cancellationToken);

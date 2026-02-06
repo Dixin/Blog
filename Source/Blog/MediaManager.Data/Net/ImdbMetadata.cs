@@ -32,7 +32,7 @@ public partial record ImdbMetadata(
     string[][] Quotes,
     string[] CrazyCredits,
     string[] AlternateVersions,
-    Dictionary<string, string[]> Soundtracks,
+    string[][] Soundtracks,
     Dictionary<string, string[]> BoxOffice,
     Dictionary<string, string[]> TechSpecs,
     string AlternateName = "", string Description = "", string Year = "", string DatePublished = "", string ContentRating = "", string Keywords = ""
