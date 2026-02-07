@@ -276,6 +276,7 @@ internal static partial class Video
         }
 
         const string Advisories = nameof(Advisories);
+        const string Awards = nameof(Awards);
         const string Connections = nameof(Connections);
         const string CrazyCredits = nameof(CrazyCredits);
         const string Credits = nameof(Credits);
@@ -289,6 +290,7 @@ internal static partial class Video
 
         string imdbFile = Path.Combine(cacheDirectory, $"{imdbId}{ImdbCacheExtension}");
         string advisoriesFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Advisories}{ImdbCacheExtension}");
+        string awardsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Awards}{ImdbCacheExtension}");
         string connectionsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Connections}{ImdbCacheExtension}");
         string crazyCreditsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{CrazyCredits}{ImdbCacheExtension}");
         string creditsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Credits}{ImdbCacheExtension}");
@@ -302,9 +304,9 @@ internal static partial class Video
 
         if (imdbId.EqualsOrdinal(NotExistingFlag))
         {
-            await new string[] { imdbFile, advisoriesFile, connectionsFile, creditsFile, keywordsFile, releasesFile }
-                .Where(file => !cacheFiles.ContainsIgnoreCase(file))
-                .ForEachAsync(async file => await File.WriteAllTextAsync(file, string.Empty, cancellationToken), cancellationToken);
+            //await new string[] { imdbFile, advisoriesFile, connectionsFile, creditsFile, keywordsFile, releasesFile }
+            //    .Where(file => !cacheFiles.ContainsIgnoreCase(file))
+            //    .ForEachAsync(async file => await File.WriteAllTextAsync(file, string.Empty, cancellationToken), cancellationToken);
             string notExistingJsonFile = Path.Combine(metadataDirectory, $"{NotExistingFlag}{ImdbMetadata.Extension}");
             if (!File.Exists(notExistingJsonFile))
             {
@@ -324,6 +326,7 @@ internal static partial class Video
         const string Parent = nameof(Parent);
         string parentImdbFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{ImdbCacheExtension}");
         string parentAdvisoriesFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{Advisories}{ImdbCacheExtension}");
+        string parentAwardsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{Awards}{ImdbCacheExtension}");
         string parentConnectionsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{Connections}{ImdbCacheExtension}");
         string parentCrazyCreditsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{CrazyCredits}{ImdbCacheExtension}");
         string parentCreditsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{Credits}{ImdbCacheExtension}");
@@ -340,6 +343,7 @@ internal static partial class Video
 
             string imdbUrl, string imdbHtml,
             string advisoriesUrl, string advisoriesHtml,
+            string awardsUrl, string awardsHtml,
             string connectionsUrl, string connectionsHtml,
             string crazyCreditsUrl, string crazyCreditsHtml,
             string creditsUrl, string creditsHtml,
@@ -353,6 +357,7 @@ internal static partial class Video
 
             string parentImdbUrl, string parentImdbHtml,
             string parentAdvisoriesUrl, string parentAdvisoriesHtml,
+            string parentAwardsUrl, string parentAwardsHtml,
             string parentConnectionsUrl, string parentConnectionsHtml,
             string parentCrazyCreditsUrl, string parentCrazyCreditsHtml,
             string parentCreditsUrl, string parentCreditsHtml,
@@ -368,6 +373,7 @@ internal static partial class Video
 
             useCache ? imdbFile : string.Empty,
             useCache ? advisoriesFile : string.Empty,
+            useCache ? awardsFile : string.Empty,
             useCache ? connectionsFile : string.Empty,
             useCache ? crazyCreditsFile : string.Empty,
             useCache ? creditsFile : string.Empty,
@@ -381,6 +387,7 @@ internal static partial class Video
 
             useCache ? parentImdbFile : string.Empty,
             useCache ? parentAdvisoriesFile : string.Empty,
+            useCache ? parentAwardsFile : string.Empty,
             useCache ? parentConnectionsFile : string.Empty,
             useCache ? parentCrazyCreditsFile : string.Empty,
             useCache ? parentCreditsFile : string.Empty,
@@ -405,6 +412,7 @@ internal static partial class Video
             imdbFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{ImdbCacheExtension}");
 
             advisoriesFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Advisories}{ImdbCacheExtension}");
+            awardsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Awards}{ImdbCacheExtension}");
             connectionsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Connections}{ImdbCacheExtension}");
             crazyCreditsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{CrazyCredits}{ImdbCacheExtension}");
             creditsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Credits}{ImdbCacheExtension}");
@@ -418,6 +426,7 @@ internal static partial class Video
 
             parentImdbFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{ImdbCacheExtension}");
             parentAdvisoriesFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{Advisories}{ImdbCacheExtension}");
+            parentAwardsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{Awards}{ImdbCacheExtension}");
             parentConnectionsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{Connections}{ImdbCacheExtension}");
             parentCrazyCreditsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{CrazyCredits}{ImdbCacheExtension}");
             parentCreditsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{Credits}{ImdbCacheExtension}");
@@ -435,6 +444,7 @@ internal static partial class Video
             {
                 (imdbUrl, imdbFile, imdbHtml),
                 (advisoriesUrl, advisoriesFile, advisoriesHtml),
+                (awardsUrl, awardsFile, awardsHtml),
                 (connectionsUrl, connectionsFile, connectionsHtml),
                 (crazyCreditsUrl, crazyCreditsFile, crazyCreditsHtml),
                 (creditsUrl, creditsFile, creditsHtml),
@@ -448,6 +458,7 @@ internal static partial class Video
 
                 (parentImdbUrl, parentImdbFile, parentImdbHtml),
                 (parentAdvisoriesUrl, parentAdvisoriesFile, parentAdvisoriesHtml),
+                (parentAwardsUrl, parentAwardsFile, parentAwardsHtml),
                 (parentConnectionsUrl, parentConnectionsFile, parentConnectionsHtml),
                 (parentCrazyCreditsUrl, parentCrazyCreditsFile, parentCrazyCreditsHtml),
                 (parentCreditsUrl, parentCreditsFile, parentCreditsHtml),
@@ -933,89 +944,6 @@ internal static partial class Video
 
     internal static bool IsLatestVersion(string metadata) =>
         new FileInfo(metadata).LastWriteTimeUtc > VersionDateTimeUtc;
-
-    internal static async Task UpdateMetadataAsync(string directory, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
-    {
-        log ??= Logger.WriteLine;
-
-        await Directory
-            .EnumerateFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories)
-            .Select(metadata => (metadata, ImdbId: ImdbMetadata.TryGet(metadata, out string? imdbId) ? imdbId : string.Empty))
-            .Where(metadata =>
-            {
-                if (metadata.ImdbId.IsNullOrWhiteSpace())
-                {
-                    return false;
-                }
-
-                DateTime metadataLastWriteTimeUtc = new FileInfo(metadata.metadata).LastWriteTimeUtc;
-                return metadataLastWriteTimeUtc > new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
-                    && metadataLastWriteTimeUtc < new DateTime(2024, 1, 18, 0, 0, 0, DateTimeKind.Utc);
-            })
-            .Select(metadata =>
-            {
-                string file = Path.Combine(PathHelper.GetDirectoryName(metadata.metadata), $"{metadata.ImdbId}{ImdbCacheExtension}");
-
-                CQ imdbCQ = File.ReadAllText(file);
-                (string Text, string Url)[] websites = imdbCQ.Find("div[data-testid='details-officialsites'] > ul > li")
-                        .FirstOrDefault(listItem => listItem.TextContent.Trim().StartsWithIgnoreCase("Official sites"))
-                        ?.Cq().Find("ul li")
-                        .Select(listItem => new CQ(listItem))
-                        .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: listItemCQ.Find("a").Attr("href")))
-                        .ToArray()
-                    ?? imdbCQ
-                        .Find("""ul.ipc-metadata-list li[data-testid="details-officialsites"] ul li""")
-                        .Select(listItem => new CQ(listItem))
-                        .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: listItemCQ.Find("a").Attr("href")))
-                        .ToArray();
-
-                (string Text, string Url)[] locations = imdbCQ.Find("div[data-testid='title-details-filminglocations'] > ul > li")
-                        .FirstOrDefault(listItem => listItem.TextContent.Trim().StartsWithIgnoreCase("Filming locations"))
-                        ?.Cq().Find("ul li")
-                        .Select(listItem => new CQ(listItem))
-                        .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: listItemCQ.Find("a").Attr("href")))
-                        .Select(data => (data.Text, $"https://www.imdb.com{data.Url[..data.Url.IndexOfIgnoreCase("&ref_=")]}"))
-                        .ToArray()
-                    ?? imdbCQ
-                        .Find("""ul.ipc-metadata-list li[data-testid="title-details-filminglocations"] ul li""")
-                        .Select(listItem => new CQ(listItem))
-                        .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: listItemCQ.Find("a").Attr("href")))
-                        .Select(data => (data.Text, $"https://www.imdb.com{data.Url[..data.Url.IndexOfIgnoreCase("&ref_=")]}"))
-                        .ToArray();
-
-                (string Text, string Url)[] companies = imdbCQ.Find("div[data-testid='title-details-companies'] > ul > li")
-                        .FirstOrDefault(listItem => listItem.TextContent.Trim().StartsWithIgnoreCase("Production companies"))
-                        ?.Cq().Find("ul li")
-                        .Select(listItem => new CQ(listItem))
-                        .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: new UriBuilder(new Uri(new Uri("https://www.imdb.com"), listItemCQ.Find("a").Attr("href"))) { Query = string.Empty, Port = -1 }.ToString()))
-                        .ToArray()
-                    ?? imdbCQ
-                        .Find("""ul.ipc-metadata-list li[data-testid="title-details-companies"] ul li""")
-                        .Select(listItem => new CQ(listItem))
-                        .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: new UriBuilder(new Uri(new Uri("https://www.imdb.com"), listItemCQ.Find("a").Attr("href"))) { Query = string.Empty, Port = -1 }.ToString()))
-                        .ToArray();
-
-                return (metadata.metadata, websites, locations, companies);
-            })
-            .ForEachAsync(async data =>
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                log(PathHelper.GetDirectoryName(data.metadata));
-                Debug.Assert(ImdbMetadata.TryLoad(data.metadata, out ImdbMetadata? imdbMetadata));
-                imdbMetadata = imdbMetadata with
-                {
-                    Websites = data.websites.Distinct().ToLookup(item => item.Text, item => item.Url).ToDictionary(group => group.Key, group => group.ToArray()),
-                    FilmingLocations = data.locations.Distinct().ToDictionary(item => item.Text, item => item.Url),
-                    Companies = data.companies.Distinct().ToLookup(item => item.Text, item => item.Url).ToDictionary(group => group.Key, group => group.ToArray())
-                };
-
-                if (!isDryRun)
-                {
-                    await JsonHelper.SerializeToFileAsync(imdbMetadata, data.metadata, cancellationToken);
-                }
-            }, cancellationToken);
-    }
 
     internal static void CopyMetadata(string sourceDirectory, string destinationDirectory, bool isDryRun = false, Action<string>? log = null)
     {

@@ -15,15 +15,17 @@ public record ImdbEntity(string Type, string Name, string Url) : ImdbEntry(Type)
 
 public partial record ImdbMetadata(
     string Url, string Type, string Context, ImdbMetadata? Parent,
-    string Name, string AlsoKnownAs,
+    string Name,
+    //string AlsoKnownAs,
     string Title, string OriginalTitle, Dictionary<string, string[]> Titles,
     string[]? Genres, string Duration,
     Dictionary<string, string[]> Releases,
     string Image, ImdbTrailer? Trailer,
     ImdbAggregateRating? AggregateRating,
     ImdbEntity[]? Actor, ImdbEntity[]? Director, ImdbEntity[]? Creator,
-    string[] Regions, string[] Languages, string[] AllKeywords,
-    Dictionary<string, string[]> Websites, Dictionary<string, string> FilmingLocations, Dictionary<string, string[]> Companies,
+    //string[] Regions, string[] Languages,
+    string[] AllKeywords,
+    //Dictionary<string, string[]> Websites, Dictionary<string, string> FilmingLocations, Dictionary<string, string[]> Companies,
     string MpaaRating, Dictionary<string, string> Certifications, Dictionary<string, Dictionary<string, string[]>> Advisories,
     Dictionary<string, ImdbConnection[]> Connections,
     Dictionary<string, ImdbCredit[]> Credits,
@@ -35,6 +37,10 @@ public partial record ImdbMetadata(
     string[][] Soundtracks,
     Dictionary<string, string[]> BoxOffice,
     Dictionary<string, string[]> TechSpecs,
+    string[] Awards,
+    ImdbAwards[] AllAwards,
+    Dictionary<string, string[][]> Details,
+    string Tagline,
     string AlternateName = "", string Description = "", string Year = "", string DatePublished = "", string ContentRating = "", string Keywords = ""
 ) : ImdbEntity(Type, Name, Url)
 {
@@ -77,6 +83,33 @@ public partial record ImdbMetadata(
     internal const string FileNameMetadataSeparator = Video.VersionSeparator;
 
     internal const string Extension = ".json";
+
+    [JsonIgnore]
+    internal IEnumerable<string> Regions =>
+        this.Details.TryGetValue("Country of origin", out string[][]? regions)
+            ? regions
+                .Select(region => region.First())
+                .Select(region => region switch
+                {
+                    "United States" => "USA",
+                    "United Kingdom" => "UK",
+                    _ => region
+                })
+            : [];
+
+    [JsonIgnore]
+    internal IEnumerable<string> Languages =>
+        this.Details.TryGetValue("Languages", out string[][]? languages)
+            ? languages.Select(language => language.First())
+            : [];
+
+    [JsonIgnore]
+    internal IEnumerable<string> Studios =>
+        this.Details.TryGetValue("Production company", out string[][]? languages)
+            ? languages.Select(studio => studio.First())
+            : [];
+
+    internal IEnumerable<string> MergedKeywords => this.Keywords.Split(",").Union(this.AllKeywords, StringComparer.OrdinalIgnoreCase);
 
     internal static bool TryRead(string path, [NotNullWhen(true)] out string? imdbId, [NotNullWhen(true)] out string? year, [NotNullWhen(true)] out string[]? regions, [NotNullWhen(true)] out string[]? languages, [NotNullWhen(true)] out string[]? genres)
     {
@@ -266,6 +299,10 @@ public record ImdbTrailer(string Type, string Name, string EmbedUrl, string Thum
 public record ImdbConnection(string Title, string Url, string Category, string Description);
 
 public record ImdbCredit(string Name, string Url, string Description);
+
+public record ImdbAwards(string Event, string Url, ImdbAward[] Awards);
+
+public record ImdbAward(string Status, string Url, string Title, string Description, string Remark, string[][] Items);
 
 public enum ImdbAdvisorySeverity
 {

@@ -2349,7 +2349,7 @@ internal static partial class Video
         //log(x265Metadata.Keys.Intersect(imdbIds.Select(metadata => metadata.ImdbId)).Count().ToString());
 
         keywords
-            .Select(keyword => (keyword, imdbIds.Count(imdbId => imdbId.AllKeywords.ContainsIgnoreCase(keyword))))
+            .Select(keyword => (keyword, imdbIds.Count(imdbId => imdbId.MergedKeywords.ContainsIgnoreCase(keyword))))
             .OrderByDescending(keyword => keyword.Item2)
             .ForEach(keyword => log($"{keyword.Item2} - {keyword}"));
 
