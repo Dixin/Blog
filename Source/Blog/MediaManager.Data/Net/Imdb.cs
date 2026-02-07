@@ -1,6 +1,5 @@
 ﻿namespace MediaManager.Net;
 
-using System.Web;
 using CsQuery;
 using Examples.Common;
 using Examples.IO;
@@ -227,13 +226,13 @@ internal static partial class Imdb
         CQ imdbCQ = imdbHtml;
         string json = imdbCQ.Find("script[type='application/ld+json']").Text();
         //string json2 = imdbCQ.Find("#__NEXT_DATA__").Text();
-        string htmlTitle = imdbCQ.Find("title").Text().Trim();
-        if (htmlTitle.StartsWithIgnoreCase("500 Error") || imdbCQ.Find("[data-testid='error-page-title']").Text().ContainsIgnoreCase("500 Error"))
+        string htmlTitle = imdbCQ.Find("title").TextTrimDecode();
+        if (htmlTitle.StartsWithIgnoreCase("500 Error") || imdbCQ.Find("[data-testid='error-page-title']").TextTrimDecode().ContainsIgnoreCase("500 Error"))
         {
             throw new HttpRequestException(HttpRequestError.InvalidResponse, imdbUrl, null, HttpStatusCode.InternalServerError);
         }
 
-        if (htmlTitle.StartsWithIgnoreCase("404 Error") || imdbCQ.Find("[data-testid='error-page-title']").Text().ContainsIgnoreCase("404 Error"))
+        if (htmlTitle.StartsWithIgnoreCase("404 Error") || imdbCQ.Find("[data-testid='error-page-title']").TextTrimDecode().ContainsIgnoreCase("404 Error"))
         {
             throw new HttpRequestException(HttpRequestError.InvalidResponse, imdbUrl, null, HttpStatusCode.NotFound);
         }
@@ -309,23 +308,23 @@ internal static partial class Imdb
             : string.Empty;
         htmlTitleYear = YearRegex().Match(htmlTitleYear).Value;
 
-        string htmlYear = imdbCQ.Find("[data-testid='hero__pageTitle']").NextAll().Find("li:eq(0)").Text().Trim();
+        string htmlYear = imdbCQ.Find("[data-testid='hero__pageTitle']").NextAll().Find("li:eq(0)").TextTrimDecode();
         htmlYear = YearRegex().Match(htmlYear).Value;
         if (!YearRegex().IsMatch(htmlYear))
         {
-            htmlYear = imdbCQ.Find("[data-testid='hero__pageTitle']").NextAll().Find("li:eq(1)").Text().Trim();
+            htmlYear = imdbCQ.Find("[data-testid='hero__pageTitle']").NextAll().Find("li:eq(1)").TextTrimDecode();
             htmlYear = YearRegex().Match(htmlYear).Value;
         }
 
         //if (htmlYear.IsNullOrWhiteSpace())
         //{
-        //    htmlYear = imdbCQ.Find("""div.title_wrapper div.subtext a[title="See more release dates"]""").Text();
+        //    htmlYear = imdbCQ.Find("""div.title_wrapper div.subtext a[title="See more release dates"]""").TextTrimDecode();
         //    htmlYear = YearRegex().Match(htmlYear).Value;
         //}
 
         if (htmlYear.IsNullOrWhiteSpace())
         {
-            htmlYear = imdbCQ.Find($"a[href*='/title/{imdbId}/releaseinfo']").Select(dom => dom.TextContent.Trim()).FirstOrDefault(text => YearRegex().IsMatch(text), string.Empty);
+            htmlYear = imdbCQ.Find($"a[href*='/title/{imdbId}/releaseinfo']").Select(dom => dom.TextTrimDecode()).FirstOrDefault(text => YearRegex().IsMatch(text), string.Empty);
         }
 
         Debug.Assert(htmlYear.EqualsOrdinal(htmlTitleYear) || parentMetadata is not null);
@@ -347,26 +346,28 @@ internal static partial class Imdb
             .Select(itemDom =>
             {
                 CQ itemCQ = itemDom.Cq();
-                return (Key: itemCQ.Children().Eq(0), Values: itemCQ.Find("ul li"));
+                return (Key: itemCQ.Children().Eq(0).TextTrimDecode(), Values: itemCQ.Find("ul li"));
             })
             .Where(item => item.Values.Any())
             .ToDictionary(
-                itemCQ => itemCQ.Key.Text().Trim(),
+                itemCQ => itemCQ.Key,
                 itemCQ => itemCQ.Values
                     .Select(innerItemDom =>
                     {
                         CQ innerItemCQ = innerItemDom.Cq();
                         CQ linkCQ = innerItemCQ.Find("a");
+                        string text = linkCQ.TextTrimDecode();
+                        string url = linkCQ.Attr("href");
                         CQ descriptionCQ = innerItemCQ.Find("span");
                         string[] innerItems = [];
                         if (linkCQ.Any())
                         {
-                            innerItems = [linkCQ.Text().Trim(), linkCQ.Attr("href")];
+                            innerItems = [text, url];
                         }
 
                         if (descriptionCQ.Any())
                         {
-                            innerItems = [.. innerItems, descriptionCQ.Text().Trim()];
+                            innerItems = [.. innerItems, descriptionCQ.TextTrimDecode()];
                         }
 
                         return innerItems;
@@ -377,24 +378,24 @@ internal static partial class Imdb
             .Find("[data-testid='BoxOffice'] ul li.ipc-metadata-list__item")
             .Select(itemDom => itemDom.Cq())
             .ToDictionary(
-                itemCQ => itemCQ.Find("span").Eq(0).Text().Trim(),
-                itemCQ => itemCQ.Find("li").Select(innerItemDom => innerItemDom.TextContent.Trim()).ToArray());
+                itemCQ => itemCQ.Find("span").Eq(0).TextTrimDecode(),
+                itemCQ => itemCQ.Find("li").Select(innerItemDom => innerItemDom.TextTrimDecode()).ToArray());
 
         Dictionary<string, string[]> techSpecs = imdbCQ
             .Find("[data-testid='TechSpecs'] ul li.ipc-metadata-list__item")
             .Select(itemDom => itemDom.Cq())
             .ToDictionary(
-                itemCQ => itemCQ.Find("span").Eq(0).Text().Trim(),
-                itemCQ => itemCQ.Find("li").Select(innerItemDom => innerItemDom.TextContent.Trim()).ToArray());
+                itemCQ => itemCQ.Find("span").Eq(0).TextTrimDecode(),
+                itemCQ => itemCQ.Find("li").Select(innerItemDom => innerItemDom.TextTrimDecode()).ToArray());
 
         CQ awardsDivCQ = imdbCQ.Find("[data-testid='awards']");
-        string topRated = awardsDivCQ.Find("[data-testid='award_top-rated']").Text().Trim();
+        string topRated = awardsDivCQ.Find("[data-testid='award_top-rated']").TextTrimDecode();
         CQ awardsInfoCQ = awardsDivCQ.Find("[data-testid='award_information']");
         string[] awards = awardsInfoCQ
             .Find("a")
             .SkipLast(1)
-            .Select(linkDom => linkDom.TextContent.Trim())
-            .Concat(awardsInfoCQ.Find("ul li").Select(itemDom => itemDom.TextContent.Trim()))
+            .Select(linkDom => linkDom.TextTrimDecode())
+            .Concat(awardsInfoCQ.Find("ul li").Select(itemDom => itemDom.TextTrimDecode()))
             .ToArray();
         if (topRated.IsNotNullOrWhiteSpace())
         {
@@ -404,8 +405,8 @@ internal static partial class Imdb
         bool skipAwards = awardsInfoCQ.Find("a").IsEmpty();
 
         CQ taglineCQ = imdbCQ.Find("[data-testid='storyline-taglines'] ul li");
-        Debug.Assert(taglineCQ.Length<=1);
-        string tagline = taglineCQ.Text().Trim();
+        Debug.Assert(taglineCQ.Length <= 1);
+        string tagline = taglineCQ.TextTrimDecode();
         CQ storylineSectionCQ = imdbCQ.Find("[data-testid='Storyline']");
         Debug.Assert(storylineSectionCQ.Any());
         bool skipAdvisories = storylineSectionCQ.Find("a:Contains('Add content advisory')").Any()
@@ -434,45 +435,81 @@ internal static partial class Imdb
         string releasesUrl = $"{imdbUrl}releaseinfo/";
         (string releasesHtml, CQ releasesCQ) = await GetHtmlAsync(false, releasesFile, releasesUrl, playWrightWrapper, httpClient, log, cancellationToken);
 
-        CQ allDatesCQ = releasesCQ.Find("[data-testid='sub-section-releases'] > ul > li");
-        (string DateKey, string DateValue)[] allDates = allDatesCQ
-            .Select(row => row.Cq())
-            .Select(rowCQ => (Key: rowCQ.Children().Eq(0), Values: rowCQ.Children().Eq(1).Find("li")))
-            .SelectMany(row => row.Values.Select(value => (Key: HttpUtility.HtmlDecode(row.Key.Text().Trim()), Value: HttpUtility.HtmlDecode(value.TextContent.Trim()))))
+        string[][] releaseDates = releasesCQ
+            .Find("[data-testid='sub-section-releases'] [data-testid='list-item']")
+            .SelectMany(rowDom =>
+            {
+                CQ rowCQ = rowDom.Cq();
+                CQ regionCQ = rowCQ.Find("a[href*='/calendar/?region=']");
+                string region = regionCQ.TextTrimDecode();
+                string url = regionCQ.Attr("href");
+                return rowCQ
+                    .Find("ul li")
+                    .Select(innerItemDom =>
+                    {
+                        CQ innerItemCQ = innerItemDom.Cq();
+                        string date = innerItemCQ.Find("span:eq(0)").TextTrimDecode();
+                        string description = innerItemCQ.Find("span:eq(1)").TextTrimDecode();
+                        return description.IsNotNullOrWhiteSpace()
+                            ? new string[] { region, url, date, description }
+                            : [region, url, date];
+                    });
+            })
             .ToArray();
-        Dictionary<string, string[]> dates = allDates
-            .ToLookup(row => row.DateKey, row => row.DateValue, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(group => group.Key, group => group.ToArray());
 
-        CQ allTitlesCQ = releasesCQ.Find("#akas").Next();
-        (string TitleKey, string TitleValue)[] allTitles = allTitlesCQ
+        (string Region, string Title, string Description)[] allTitles = releasesCQ
+            .Find("#akas")
+            .Next()
             .Find("tr")
             .Select(row => row.Cq().Children())
-            .Select(cells => (TitleKey: HttpUtility.HtmlDecode(cells.First().Text().Trim()), TitleValue: HttpUtility.HtmlDecode(cells.Last().Text().Trim()))).ToArray();
-        Enumerable.Range(0, allTitles.Length).ForEach(index =>
-        {
-            if (allTitles[index].TitleKey.IsNullOrWhiteSpace())
+            .Select(cells => (
+                Region: cells.First().TextTrimDecode(),
+                Title: cells.Last().TextTrimDecode(),
+                Description: string.Empty
+            ))
+            .ToArray();
+        Enumerable
+            .Range(0, allTitles.Length)
+            .ForEach(index =>
             {
-                allTitles[index].TitleKey = allTitles[index - 1].TitleKey;
-            }
-        });
+                if (allTitles[index].Region.IsNullOrWhiteSpace())
+                {
+                    allTitles[index].Region = allTitles[index - 1].Region;
+                }
+            });
 
         if (allTitles.IsEmpty())
         {
-            allTitlesCQ = releasesCQ.Find("[data-testid='sub-section-akas'] > ul > li");
-            allTitles = allTitlesCQ
-                .Select(row => row.Cq())
-                .Select(rowCQ => (Key: rowCQ.Children().Eq(0), Values: rowCQ.Children().Eq(1).Find("li")))
-                .SelectMany(row => row.Values.Select(value => (Key: HttpUtility.HtmlDecode(row.Key.Text().Trim()), Value: HttpUtility.HtmlDecode(value.TextContent.Trim()))))
+            allTitles = releasesCQ
+                .Find("[data-testid='sub-section-akas'] [data-testid='list-item']")
+                .SelectMany(rowDom =>
+                {
+                    CQ rowCQ = rowDom.Cq();
+                    string region = rowCQ.Find("span:eq(0)").TextTrimDecode();
+                    return rowCQ
+                        .Find("ul li")
+                        .Select(innerItemDom =>
+                        {
+                            CQ innerItemCQ = innerItemDom.Cq();
+                            return (
+                                Region: region,
+                                Title: innerItemCQ.Find("span:eq(0)").TextTrimDecode(),
+                                Description: innerItemCQ.Find("span:eq(1)").TextTrimDecode()
+                            );
+                        });
+                })
                 .ToArray();
         }
 
-        Dictionary<string, string[]> titles = allTitles
-            .ToLookup(row => row.TitleKey, row => row.TitleValue, StringComparer.OrdinalIgnoreCase)
+        Dictionary<string, string[][]> titles = allTitles
+            .ToLookup(
+                row => row.Region,
+                row => row.Description.IsNotNullOrWhiteSpace() ? new string[] { row.Title, row.Description } : [row.Title],
+                StringComparer.OrdinalIgnoreCase)
             .ToDictionary(group => group.Key, group => group.ToArray());
 
         //Debug.Assert(titles.Any()
-        //    || allTitlesCQ.Text().ContainsIgnoreCase("It looks like we don't have any AKAs for this title yet.")
+        //    || allTitlesCQ.TextTrimDecode().ContainsIgnoreCase("It looks like we don't have any AKAs for this title yet.")
         //    || imdbId is "tt10562876" or "tt13734388" or "tt11485640" or "tt11127510" or "tt11127706" or "tt11423284" or "tt20855690");
 
         string title;
@@ -485,18 +522,16 @@ internal static partial class Imdb
                 .Find("#titleYear")
                 .Remove()
                 .End()
-                .Text()
-                .Trim();
+                .TextTrimDecode();
 
             if (title.IsNullOrWhiteSpace())
             {
                 title = imdbCQ
-                     .Find("[data-testid='hero-title-block__title']")
-                     .Text()
-                     .Trim();
+                    .Find("[data-testid='hero-title-block__title']")
+                    .TextTrimDecode();
             }
 
-            originalTitle = imdbCQ.Find("[data-testid='hero__pageTitle']").Next("div").Text().Trim();
+            originalTitle = imdbCQ.Find("[data-testid='hero__pageTitle']").Next("div").TextTrimDecode();
             if (originalTitle.StartsWithIgnoreCase("Original title: "))
             {
                 originalTitle = originalTitle["Original title: ".Length..].Trim();
@@ -509,16 +544,14 @@ internal static partial class Imdb
                     .Find("span")
                     .Remove()
                     .End()
-                    .Text()
-                    .Trim();
+                    .TextTrimDecode();
             }
 
             if (originalTitle.IsNullOrWhiteSpace())
             {
                 originalTitle = imdbCQ
                     .Find("[data-testid='hero-title-block__original-title']")
-                    .Text()
-                    .Trim()
+                    .TextTrimDecode()
                     .Replace("Original title: ", string.Empty);
             }
 
@@ -539,10 +572,10 @@ internal static partial class Imdb
             {
                 if (titles.Any())
                 {
-                    string releaseHtmlTitle = releasesCQ.Find("title").Text();
+                    string releaseHtmlTitle = releasesCQ.Find("title").TextTrimDecode();
                     releaseHtmlTitle = releaseHtmlTitle[..releaseHtmlTitle.LastIndexOfOrdinal("(")].Trim();
 
-                    if (!titles.TryGetValue("(original title)", out string[]? originalTitleValues))
+                    if (!titles.TryGetValue("(original title)", out string[][]? originalTitleValues))
                     {
                         string[] originalTitleKeys = titles.Keys.Where(key => key.ContainsIgnoreCase("original title")).ToArray();
                         if (originalTitleKeys.Length > 1)
@@ -555,23 +588,23 @@ internal static partial class Imdb
 
                     if (originalTitleValues.Length > 1)
                     {
-                        originalTitleValues = originalTitleValues.Where(titleValue => !titleValue.EqualsOrdinal(releaseHtmlTitle)).ToArray();
+                        originalTitleValues = originalTitleValues.Where(titleValue => !titleValue.First().EqualsOrdinal(releaseHtmlTitle)).ToArray();
                     }
 
                     if (originalTitleValues.Length > 1)
                     {
-                        originalTitleValues = originalTitleValues.Where(titleValue => !titleValue.EqualsIgnoreCase(releaseHtmlTitle)).ToArray();
+                        originalTitleValues = originalTitleValues.Where(titleValue => !titleValue.First().EqualsIgnoreCase(releaseHtmlTitle)).ToArray();
                     }
 
                     originalTitle = originalTitleValues.Length switch
                     {
-                        1 => originalTitleValues.Single(),
-                        > 1 => originalTitleValues.FirstOrDefault(titleValue => originalTitleValues.Except(EnumerableEx.Return(titleValue)).All(titleValue.ContainsIgnoreCase))
+                        1 => originalTitleValues.Select(item => item.First()).Single(),
+                        > 1 => originalTitleValues.Select(item => item.First()).FirstOrDefault(titleValue => originalTitleValues.Select(item => item.First()).Except(EnumerableEx.Return(titleValue)).All(titleValue.ContainsIgnoreCase))
                             ?? string.Join(Video.TitleSeparator, originalTitleValues),
                         _ => string.Empty
                     };
 
-                    if (!titles.TryGetValue("World-wide (English title)", out string[]? titleValues))
+                    if (!titles.TryGetValue("World-wide (English title)", out string[][]? titleValues))
                     {
                         titleValues = titles
                             .Where(pair => pair.Key.ContainsIgnoreCase("World-wide (English title)"))
@@ -594,10 +627,10 @@ internal static partial class Imdb
                     Debug.Assert(titleValues.Any());
                     title = titleValues.Length switch
                     {
-                        1 => titleValues.Single(),
-                        > 1 => titleValues.FirstOrDefault(availableTitle => releaseHtmlTitle.EqualsOrdinal(availableTitle))
-                            ?? titleValues.FirstOrDefault(availableTitle => releaseHtmlTitle.EqualsIgnoreCase(availableTitle))
-                            ?? titleValues.FirstOrDefault(titleValue => titleValues.Except(EnumerableEx.Return(titleValue)).All(titleValue.ContainsIgnoreCase))
+                        1 => titleValues.Select(item => item.First()).Single(),
+                        > 1 => titleValues.Select(item => item.First()).FirstOrDefault(availableTitle => releaseHtmlTitle.EqualsOrdinal(availableTitle))
+                            ?? titleValues.Select(item => item.First()).FirstOrDefault(availableTitle => releaseHtmlTitle.EqualsIgnoreCase(availableTitle))
+                            ?? titleValues.Select(item => item.First()).FirstOrDefault(titleValue => titleValues.Select(item => item.First()).Except(EnumerableEx.Return(titleValue)).All(titleValue.ContainsIgnoreCase))
                             ?? string.Join(Video.TitleSeparator, titleValues),
                         _ => releaseHtmlTitle
                     };
@@ -611,17 +644,15 @@ internal static partial class Imdb
                         .Find("#titleYear")
                         .Remove()
                         .End()
-                        .Text()
-                        .Replace("&nbsp;", string.Empty)
-                        .Trim();
+                        .TextTrimDecode()
+                        .Replace(" ", string.Empty);
 
                     originalTitle = imdbCQ
                         .Find("div.originalTitle")
                         .Find("span")
                         .Remove()
                         .End()
-                        .Text()
-                        .Trim();
+                        .TextTrimDecode();
 
                     if (title.IsNullOrWhiteSpace())
                     {
@@ -630,8 +661,7 @@ internal static partial class Imdb
                             .Find("#titleYear")
                             .Remove()
                             .End()
-                            .Text()
-                            .Trim();
+                            .TextTrimDecode();
                     }
 
                     htmlTitle = htmlTitle.ContainsOrdinal("(")
@@ -652,36 +682,40 @@ internal static partial class Imdb
         string advisoriesUrl = $"{imdbUrl}parentalguide/";
         (string advisoriesHtml, CQ advisoriesCQ) = await GetHtmlAsync(skipAdvisories, advisoriesFile, advisoriesUrl, playWrightWrapper, httpClient, log, cancellationToken);
 
-        string mpaaRating = advisoriesCQ.Find("[data-testid='content-rating'] ul li div.ipc-metadata-list-item__content-container").First().Text().Trim();
+        string mpaaRating = advisoriesCQ.Find("[data-testid='content-rating'] ul li div.ipc-metadata-list-item__content-container").First().TextTrimDecode();
 
-        (string Category, string Severity, string[] Descriptions)[] advisories = advisoriesCQ
+        Dictionary<string, Dictionary<string, string[]>> advisories = advisoriesCQ
             .Find("[data-testid='content-rating']")
             .Siblings()
             .TakeWhile(sectionDom => sectionDom.GetAttribute("data-testid").IsNullOrEmpty())
             .Select(sectionDom => sectionDom.Cq())
             .Select(sectionCQ => (
-                Category: sectionCQ.Find("h3").Text().Trim(),
-                Severity: sectionCQ.Find("[data-testid='severity_component']").Children().First().Text().Trim(),
-                Descriptions: sectionCQ.Find("[data-testid^='sub-section-'] [data-testid='item-html']").Select(item => item.TextContent.Trim()).ToArray()
+                Category: sectionCQ.Find("h3").TextTrimDecode(),
+                Severity: sectionCQ.Find("[data-testid='severity_component']").Children().First().TextTrimDecode(),
+                Descriptions: sectionCQ
+                    .Find("[data-testid^='sub-section-'] [data-testid='item-html']")
+                    .Select(item => item.TextTrimDecode())
+                    .ToArray()
             ))
             .Where(advisory => advisory.Severity.IsNotNullOrWhiteSpace() || advisory.Descriptions.Any())
-            .ToArray();
+            .ToLookup(advisory => advisory.Category)
+            .ToDictionary(group => group.Key, group => group.ToDictionary(advisory => advisory.Severity, advisory => advisory.Descriptions));
 
         Dictionary<string, string> certifications = advisoriesCQ
             .Find("[data-testid='certificates'] [data-testid='certificates-item']")
             .SelectMany(regionDom =>
             {
                 CQ regionCQ = regionDom.Cq();
-                string region = regionCQ.Find("span.ipc-metadata-list-item__label").Text().Trim();
+                string region = regionCQ.Find("span.ipc-metadata-list-item__label").TextTrimDecode();
                 return regionCQ
                     .Find("ul li")
                     .Select(certificationDom =>
                     {
                         CQ certificationCQ = certificationDom.Cq();
                         CQ certificationLinkCQ = certificationCQ.Find("a");
-                        string certification = certificationLinkCQ.Text().Trim();
+                        string certification = certificationLinkCQ.TextTrimDecode();
                         string link = certificationLinkCQ.Attr("href");
-                        string remark = certificationCQ.Find("span").Text().Trim();
+                        string remark = certificationCQ.Find("span").TextTrimDecode();
                         return (
                             Certification: $"{region}:{certification}{(remark.IsNullOrWhiteSpace() ? string.Empty : $" ({remark})")}",
                             Link: link
@@ -701,30 +735,32 @@ internal static partial class Imdb
                 CQ sectionCQ = sectionDom.Cq();
                 CQ eventCQ = sectionCQ.Find("h3");
                 return new ImdbAwards(
-                    eventCQ.Text().Trim(),
+                    eventCQ.TextTrimDecode(),
                     eventCQ.Parent().Attr("href"),
                     sectionCQ
-                        .Find("li.ipc-metadata-list-summary-item")
+                        .Find("[data-testid='list-item']")
                         .Select(itemDom =>
                         {
                             CQ itemCQ = itemDom.Cq();
-                            CQ statusCQ = itemCQ.Find("a:eq(1)");
+                            CQ statusCQ = itemCQ.Find("a[href*='/event/ev']");
                             CQ titleCQ = statusCQ.Find("span").Remove();
                             return new ImdbAward(
-                                statusCQ.Text().Trim(),
+                                statusCQ.TextTrimDecode(),
                                 statusCQ.Attr("href"),
-                                titleCQ.Text().Trim(),
-                                itemCQ.Find("ul:eq(0)").Text().Trim(),
-                                itemCQ.Find("span.ipc-expandableSection__content").Text().Trim(),
+                                titleCQ.TextTrimDecode(),
+                                itemCQ.Find("ul:eq(0)").TextTrimDecode(),
+                                itemCQ.Find("span.ipc-expandableSection__content").TextTrimDecode(),
                                 itemCQ
                                     .Find("ul:eq(1) li a")
                                     .Select(listItemDom =>
                                     {
                                         CQ listItemCQ = listItemDom.Cq();
-                                        string name = listItemCQ.Text().Trim();
+                                        string name = listItemCQ.TextTrimDecode();
                                         string url = listItemCQ.Attr("href");
-                                        string description = listItemCQ.Next().Text().Trim();
-                                        return new string[] { name, url, description };
+                                        CQ descriptionCQ = listItemCQ.Next();
+                                        return descriptionCQ.Any()
+                                            ? new string[] { name, url, descriptionCQ.TextTrimDecode() }
+                                            : [name, url];
                                     })
                                     .ToArray()
                             );
@@ -737,25 +773,25 @@ internal static partial class Imdb
         string connectionsUrl = $"{imdbUrl}movieconnections/";
         (string connectionsHtml, CQ connectionsCQ) = await GetHtmlAsync(skipConnections, connectionsFile, connectionsUrl, playWrightWrapper, httpClient, log, cancellationToken);
 
-        Dictionary<string, ImdbConnection[]> connections = connectionsCQ
+        Dictionary<string, string[][]> connections = connectionsCQ
             .Find("section.ipc-page-section")
             .Select(sectionDom => sectionDom.Cq())
-            .Select(
-                sectionCQ => (Key: sectionCQ.Find("div.ipc-title h3.ipc-title__text").Text().Trim(),
+            .Select(sectionCQ => (
+                Key: sectionCQ.Find("h3").TextTrimDecode(),
                 Value: sectionCQ
-                    .Find("ul.ipc-metadata-list > li")
+                    .Find("[data-testid='list-item']")
                     .Select(listItemDom =>
                     {
-                        CQ listItemDivCQ = listItemDom.Cq().Find("ul > div");
-                        CQ linkCQ = listItemDivCQ.Eq(0).Find("a");
-                        return new ImdbConnection(
-                            linkCQ.Text().Trim(),
-                            linkCQ.Attr("href"),
-                            linkCQ.Remove().End().Text().Trim(),
-                            listItemDivCQ.Eq(1).Text().Trim());
+                        CQ listItemCQ = listItemDom.Cq();
+                        CQ linkCQ = listItemCQ.Find("a").Remove();
+                        CQ paragraphCQ = listItemCQ.Find("p");
+                        CQ description = listItemCQ.Find(".ipc-html-content-inner-div:eq(1)");
+                        return description.Any()
+                            ? new string[] { linkCQ.TextTrimDecode(), linkCQ.Attr("href"), paragraphCQ.TextTrimDecode(), description.TextTrimDecode() }
+                            : [linkCQ.TextTrimDecode(), linkCQ.Attr("href"), paragraphCQ.TextTrimDecode()];
                     })
                     .ToArray()))
-            .Where(pair => pair.Key.IsNotNullOrWhiteSpace())
+            //.Where(pair => pair.Key.IsNotNullOrWhiteSpace())
             //.TakeWhile(pair => !pair.Key.ContainsIgnoreCase("Contribute to this page"))
             .ToDictionary(pair => pair.Key, pair => pair.Value);
 
@@ -763,28 +799,38 @@ internal static partial class Imdb
         (string crazyCreditsHtml, CQ crazyCreditsCQ) = await GetHtmlAsync(skipCrazyCredits, crazyCreditsFile, crazyCreditsUrl, playWrightWrapper, httpClient, log, cancellationToken);
 
         string[] crazyCredits = crazyCreditsCQ
-            .Find("section.ipc-page-section p.crazy-credit-text")
+            .Find("[data-testid='item-html'] .crazy-credit-text")
             .Find("a")
             .Each(linkDom => linkDom.RemoveAttribute("class"))
             .End()
-            .Select(paragraphDom => paragraphDom.InnerHTML.Trim()).ToArray();
+            .Select(paragraphDom => paragraphDom.HtmlTrim()).ToArray();
 
         string creditsUrl = $"{imdbUrl}fullcredits/";
         (string creditsHtml, CQ creditsCQ) = await GetHtmlAsync(false, creditsFile, creditsUrl, playWrightWrapper, httpClient, log, cancellationToken);
 
-        Dictionary<string, ImdbCredit[]> credits = creditsCQ
+        Dictionary<string, string[][]> credits = creditsCQ
             .Find("section.ipc-page-section")
             .Select(sectionDom => sectionDom.Cq())
             .Select(sectionCQ => (
-                Category: sectionCQ.Find("h3").Text().Trim(),
+                Category: sectionCQ.Find("h3").TextTrimDecode(),
                 Credits: sectionCQ
-                    .Find("ul li")
-                    .Select(itemDom => itemDom.Cq())
-                    .Select(itemCQ => new ImdbCredit(
-                        itemCQ.Find("a").Text().Trim(),
-                        itemCQ.Find("a").Attr("href"),
-                        itemCQ.Find(".name-credits--crew-metadata").Text().Trim()
-                    ))
+                    .Find("[data-testid='name-credits-list-item']")
+                    .Select(itemDom =>
+                    {
+                        CQ itemCQ = itemDom.Cq();
+                        CQ nameLinkCQ = itemCQ.Find("a[href*='/name/nm']:last");
+                        Debug.Assert(nameLinkCQ.Length == 1);
+                        CQ characterLinkCQ = itemCQ.Find($"a[href*='/title/{imdbId}/characters/nm']");
+                        string description = itemCQ.Find("span").Select(spanDom => spanDom.TextTrimDecode()).SingleOrDefault(text => !text.EqualsOrdinal("/") && text.IsNotNullOrWhiteSpace(), string.Empty);
+                        IEnumerable<string> result = new string[] { nameLinkCQ.TextTrimDecode(), nameLinkCQ.Attr("href") }
+                            .Concat(characterLinkCQ.SelectMany(characterLinkDom => new string[] { characterLinkDom.TextTrimDecode(), characterLinkDom.GetAttribute("href") }));
+                        if (description.IsNotNullOrWhiteSpace())
+                        {
+                            result = result.Append(description);
+                        }
+
+                        return result.ToArray();
+                    })
                     .ToArray()
             ))
             //.TakeWhile(section => !section.Category.ContainsIgnoreCase("Contribute to this page"))
@@ -797,39 +843,41 @@ internal static partial class Imdb
             .Find("section.ipc-page-section")
             .Select(sectionDom => sectionDom.Cq())
             .Select(sectionCQ => (
-                Category: sectionCQ.Find("h3").Text().Trim(),
+                Category: sectionCQ.Find("h3").TextTrimDecode(),
                 Descriptions: sectionCQ
-                    .Find("div.ipc-html-content-inner-div")
+                    .Find("[data-testid='item-html'] .ipc-html-content-inner-div")
                     .Find("a").Each(linkDom => linkDom.RemoveAttribute("class"))
                     .End()
-                    .Select(divDom => divDom.InnerHTML.Trim()).ToArray()))
+                    .Select(divDom => divDom.HtmlTrim()).ToArray()))
             //.TakeWhile(section => !section.Category.ContainsIgnoreCase("Contribute to this page"))
             .ToDictionary(section => section.Category, section => section.Descriptions);
 
         string keywordsUrl = $"{imdbUrl}keywords/";
         (string keywordsHtml, CQ keywordsCQ) = await GetHtmlAsync(skipKeywords, keywordsFile, keywordsUrl, playWrightWrapper, httpClient, log, cancellationToken);
 
-        string[] allKeywords = keywordsCQ.Find("#keywords_content table td div.sodatext a").Select(keyword => keyword.TextContent.Trim()).ToArray();
+        Dictionary<string, string> allKeywords = keywordsCQ
+            .Find("#keywords_content table td div.sodatext a")
+            .Select(keyword => keyword.TextTrimDecode())
+            .ToDictionary(keyword => keyword, keyword => string.Empty);
         if (allKeywords.IsEmpty())
         {
             keywordsCQ = keywordsHtml;
-            CQ allKeywordsCQ = keywordsCQ.Find("[data-testid='sub-section'] > ul > li");
-            allKeywords = allKeywordsCQ
-                .Select(row => row.Cq())
-                .Select(rowCQ => HttpUtility.HtmlDecode(rowCQ.Children().Eq(0).Text()))
-                .ToArray();
+            allKeywords = keywordsCQ
+                .Find("[data-testid='sub-section'] [data-testid='list-summary-item']")
+                .Select(rowDom => rowDom.Cq().Find("a[href*='/search/title/?keywords=']"))
+                .ToDictionary(linkCQ => linkCQ.TextTrimDecode(), linkCQ => linkCQ.Attr("href"));
         }
 
         string quotesUrl = $"{imdbUrl}quotes/";
         (string quotesHtml, CQ quotesCQ) = await GetHtmlAsync(skipQuotes, quotesFile, quotesUrl, playWrightWrapper, httpClient, log, cancellationToken);
 
         string[][] quotes = quotesCQ
-            .Find("section.ipc-page-section div.ipc-html-content-inner-div ul")
+            .Find("[data-testid='item-html']")
             .Select(quoteDom => quoteDom
-                .Cq().Find("li")
+                .Cq().Find("ul li")
                 .Find("a").Each(linkDom => linkDom.RemoveAttribute("class"))
                 .End()
-                .Select(itemDom => itemDom.InnerHTML.Trim())
+                .Select(itemDom => itemDom.HtmlTrim())
                 .ToArray())
             .ToArray();
 
@@ -837,14 +885,14 @@ internal static partial class Imdb
         (string soundtracksHtml, CQ soundtracksCQ) = await GetHtmlAsync(skipSoundtracks, soundtracksFile, soundtracksUrl, playWrightWrapper, httpClient, log, cancellationToken);
 
         string[][] soundtracks = soundtracksCQ
-            .Find("section.ipc-page-section li.ipc-metadata-list__item")
+            .Find("[data-testid='list-item']")
             .Select(itemDom => itemDom.Cq())
             .Select(itemCQ => itemCQ
-                .Find("div.ipc-html-content-inner-div")
+                .Find(".ipc-html-content-inner-div")
                 .Find("a").Each(linkDom => linkDom.RemoveAttribute("class"))
                 .End()
-                .Select(divDom => divDom.InnerHTML.Trim())
-                .Prepend(itemCQ.Find("span").Eq(0).Text().Trim())
+                .Select(divDom => divDom.HtmlTrim())
+                .Prepend(itemCQ.Find("span:eq(0)").TextTrimDecode())
                 .ToArray())
             .ToArray();
 
@@ -855,12 +903,12 @@ internal static partial class Imdb
             .Find("section.ipc-page-section")
             .Select(sectionDom => sectionDom.Cq())
             .Select(sectionCQ => (
-                category: sectionCQ.Find("h3").Text().Trim(),
+                category: sectionCQ.Find("h3").TextTrimDecode(),
                 Descriptions: sectionCQ
-                    .Find("div.ipc-html-content-inner-div")
+                    .Find("[data-testid='item-html'] .ipc-html-content-inner-div")
                     .Find("a").Each(linkDom => linkDom.RemoveAttribute("class"))
                     .End()
-                    .Select(divDom => divDom.InnerHTML.Trim())
+                    .Select(divDom => divDom.HtmlTrim())
                     .ToArray()
             ))
             //.TakeWhile(section => !section.category.ContainsIgnoreCase("Contribute to this page"))
@@ -869,35 +917,23 @@ internal static partial class Imdb
         string versionsUrl = $"{imdbUrl}alternateversions/";
         (string versionsHtml, CQ versionsCQ) = await GetHtmlAsync(skipVersions, versionsFile, versionsUrl, playWrightWrapper, httpClient, log, cancellationToken);
 
-        string[] versions = versionsCQ.Find("section.ipc-page-section ul li").Select(itemDom => itemDom.TextContent.Trim()).ToArray();
+        string[] versions = versionsCQ
+            .Find("[data-testid='list-item']")
+            .Select(itemDom => itemDom.TextTrimDecode())
+            .ToArray();
 
         imdbMetadata = imdbMetadata with
         {
             Parent = parentMetadata,
             Year = year,
-            //Regions = regions,
-            //Languages = languages,
             Titles = titles,
-            Title = HttpUtility.HtmlDecode(title).Trim(),
-            OriginalTitle = HttpUtility.HtmlDecode(originalTitle).Trim(),
-            Name = HttpUtility.HtmlDecode(imdbMetadata.Name).Trim(),
+            Title = title.TrimDecode(),
+            OriginalTitle = originalTitle.TrimDecode(),
+            Name = imdbMetadata.Name.TrimDecode(),
             AllKeywords = allKeywords,
             MpaaRating = mpaaRating,
-            Advisories = advisories.ToLookup(advisory => advisory.Category).ToDictionary(group => group.Key, group => group.ToDictionary(advisory => advisory.Severity, advisory => advisory.Descriptions)),
-            //AlsoKnownAs = alsoKnownAs,
-            //Genres = imdbMetadata.Genres,
-            Releases = dates,
-            //Websites = websites
-            //    .Distinct()
-            //    .ToLookup(item => item.Text, item => item.Url)
-            //    .ToDictionary(group => HttpUtility.HtmlDecode(group.Key), group => group.ToArray()),
-            //FilmingLocations = locations
-            //    .Distinct()
-            //    .ToDictionary(item => item.Text, item => item.Url),
-            //Companies = companies
-            //    .Distinct()
-            //    .ToLookup(item => item.Text, item => item.Url)
-            //    .ToDictionary(group => HttpUtility.HtmlDecode(group.Key), group => group.ToArray()),
+            Advisories = advisories,
+            ReleaseDates = releaseDates,
             Certifications = certifications,
             Connections = connections,
             AlternateVersions = versions,
@@ -1071,7 +1107,7 @@ internal static partial class Imdb
                             string keywordsUrl = $"{imdbUrl}keywords/";
                             string keywordsHtml = await webDriver.GetStringAsync(keywordsUrl, cancellationToken: token);
                             CQ keywordsCQ = keywordsHtml;
-                            string[] allKeywords = keywordsCQ.Find("#keywords_content table td div.sodatext a").Select(keyword => keyword.TextContent.Trim()).ToArray();
+                            string[] allKeywords = keywordsCQ.Find("#keywords_content table td div.sodatext a").Select(keyword => keyword.TextTrimDecode()).ToArray();
                             Debug.Assert(allKeywords.IsEmpty());
                             if (true)
                             {
@@ -1119,7 +1155,7 @@ internal static partial class Imdb
                                 CQ allKeywordsCQ = keywordsCQ.Find("div[data-testid='sub-section']>ul>li");
                                 allKeywords = allKeywordsCQ
                                     .Select(row => row.Cq())
-                                    .Select(rowCQ => HttpUtility.HtmlDecode(rowCQ.Children().Eq(0).Text()))
+                                    .Select(rowCQ => rowCQ.Children().Eq(0).TextTrimDecode())
                                     .ToArray();
 
                                 await FileHelper.WriteTextAsync(keywordFile, keywordsHtml, cancellationToken: token);
@@ -1178,16 +1214,16 @@ internal static partial class Imdb
                             (bool isUpdated, advisoriesHtml, CQ advisoriesCQ) = await playWrightWrapper.TryUpdateAsync(log, cancellationToken);
                             log(isUpdated ? $"{imdbId} advisories is updated." : $"{imdbId} advisories is not updated.");
 
-                            string mpaaRating = advisoriesCQ.Find("section[data-testid='content-rating'] ul li div.ipc-metadata-list-item__content-container").First().Text().Trim();
+                            string mpaaRating = advisoriesCQ.Find("section[data-testid='content-rating'] ul li div.ipc-metadata-list-item__content-container").First().TextTrimDecode();
                             (string Category, string Severity, string[] Descriptions)[] advisories = advisoriesCQ
                                 .Find("div.ipc-page-grid__item > section[data-testid='content-rating']")
                                 .Siblings()
                                 .TakeWhile(sectionDom => sectionDom.GetAttribute("data-testid").IsNullOrEmpty())
                                 .Select(sectionDom => sectionDom.Cq())
                                 .Select(sectionCQ => (
-                                    Category: sectionCQ.Find("h3").Text().Trim(),
-                                    Severity: sectionCQ.Find("div[data-testid='severity_component']").Children().First().Text().Trim(),
-                                    Descriptions: sectionCQ.Find("div[data-testid^='sub-section-'] div[data-testid='item-html']").Select(item => item.TextContent.Trim()).ToArray()
+                                    Category: sectionCQ.Find("h3").TextTrimDecode(),
+                                    Severity: sectionCQ.Find("div[data-testid='severity_component']").Children().First().TextTrimDecode(),
+                                    Descriptions: sectionCQ.Find("div[data-testid^='sub-section-'] div[data-testid='item-html']").Select(item => item.TextTrimDecode()).ToArray()
                                 ))
                                 .Where(advisory => advisory.Severity.IsNotNullOrWhiteSpace() || advisory.Descriptions.Any())
                                 .ToArray();
@@ -1197,16 +1233,16 @@ internal static partial class Imdb
                                 .SelectMany(regionDom =>
                                 {
                                     CQ regionCQ = regionDom.Cq();
-                                    string region = regionCQ.Find("span.ipc-metadata-list-item__label").Text().Trim();
+                                    string region = regionCQ.Find("span.ipc-metadata-list-item__label").TextTrimDecode();
                                     return regionCQ
                                         .Find("ul li")
                                         .Select(certificationDom =>
                                         {
                                             CQ certificationCQ = certificationDom.Cq();
                                             CQ certificationLinkCQ = certificationCQ.Find("a");
-                                            string certification = certificationLinkCQ.Text().Trim();
+                                            string certification = certificationLinkCQ.TextTrimDecode();
                                             string link = certificationLinkCQ.Attr("href");
-                                            string remark = certificationCQ.Find("span").Text().Trim();
+                                            string remark = certificationCQ.Find("span").TextTrimDecode();
                                             return (
                                                 Certification: $"{region}:{certification}{(remark.IsNullOrWhiteSpace() ? string.Empty : $" ({remark})")}",
                                                 Link: link

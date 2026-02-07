@@ -1,5 +1,7 @@
 namespace Examples.Common;
 
+using System.Web;
+
 public static class StringExtensions
 {
     public static string With(this string format, params object[] args) =>
@@ -106,4 +108,6 @@ public static class StringExtensions
     }
 
     public static string GetUrlPath(this string url) => new Uri(url, UriKind.Absolute).GetLeftPart(UriPartial.Path);
+
+    public static string TrimDecode(this string value) => HttpUtility.HtmlDecode(value.Trim());
 }

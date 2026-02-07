@@ -1721,7 +1721,7 @@ internal static partial class Video
 
                 string imdbTitle = HttpUtility.HtmlDecode(imdbMetadata.Title);
 
-                if (!imdbMetadata.Titles.TryGetValue("World-wide (English title)", out string[]? releaseTitles))
+                if (!imdbMetadata.Titles.TryGetValue("World-wide (English title)", out string[][]? releaseTitles))
                 {
                     releaseTitles = imdbMetadata.Titles
                         .Where(pair => pair.Key.ContainsIgnoreCase("World-wide (English title)"))
@@ -1760,7 +1760,7 @@ internal static partial class Video
                 }
 
                 string[] imdbTitles = imdbTitle.Split(TitleSeparator)
-                    .Concat(releaseTitles)
+                    .Concat(releaseTitles.Select(item => item.First()))
                     .Select(title => title
                         .FilterForFileSystem()
                         .Replace(" 3D", string.Empty)

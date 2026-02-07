@@ -16,19 +16,16 @@ public record ImdbEntity(string Type, string Name, string Url) : ImdbEntry(Type)
 public partial record ImdbMetadata(
     string Url, string Type, string Context, ImdbMetadata? Parent,
     string Name,
-    //string AlsoKnownAs,
-    string Title, string OriginalTitle, Dictionary<string, string[]> Titles,
+    string Title, string OriginalTitle, Dictionary<string, string[][]> Titles,
     string[]? Genres, string Duration,
-    Dictionary<string, string[]> Releases,
+    string[][] ReleaseDates,
     string Image, ImdbTrailer? Trailer,
     ImdbAggregateRating? AggregateRating,
     ImdbEntity[]? Actor, ImdbEntity[]? Director, ImdbEntity[]? Creator,
-    //string[] Regions, string[] Languages,
-    string[] AllKeywords,
-    //Dictionary<string, string[]> Websites, Dictionary<string, string> FilmingLocations, Dictionary<string, string[]> Companies,
+    Dictionary<string, string> AllKeywords,
     string MpaaRating, Dictionary<string, string> Certifications, Dictionary<string, Dictionary<string, string[]>> Advisories,
-    Dictionary<string, ImdbConnection[]> Connections,
-    Dictionary<string, ImdbCredit[]> Credits,
+    Dictionary<string, string[][]> Connections,
+    Dictionary<string, string[][]> Credits,
     Dictionary<string, string[]> Trivia,
     Dictionary<string, string[]> Goofs,
     string[][] Quotes,
@@ -109,7 +106,7 @@ public partial record ImdbMetadata(
             ? languages.Select(studio => studio.First())
             : [];
 
-    internal IEnumerable<string> MergedKeywords => this.Keywords.Split(",").Union(this.AllKeywords, StringComparer.OrdinalIgnoreCase);
+    internal IEnumerable<string> MergedKeywords => this.Keywords.Split(",").Union(this.AllKeywords.Keys, StringComparer.OrdinalIgnoreCase);
 
     internal static bool TryRead(string path, [NotNullWhen(true)] out string? imdbId, [NotNullWhen(true)] out string? year, [NotNullWhen(true)] out string[]? regions, [NotNullWhen(true)] out string[]? languages, [NotNullWhen(true)] out string[]? genres)
     {
@@ -295,10 +292,6 @@ public record ImdbAggregateRating(string Type, int RatingCount, string BestRatin
 }
 
 public record ImdbTrailer(string Type, string Name, string EmbedUrl, string ThumbnailUrl, string Description, DateTime UploadDate) : ImdbEntry(Type);
-
-public record ImdbConnection(string Title, string Url, string Category, string Description);
-
-public record ImdbCredit(string Name, string Url, string Description);
 
 public record ImdbAwards(string Event, string Url, ImdbAward[] Awards);
 
