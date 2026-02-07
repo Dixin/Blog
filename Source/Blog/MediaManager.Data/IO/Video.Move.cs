@@ -232,10 +232,10 @@ internal static partial class Video
                 {
                     if (languages.IsEmpty())
                     {
-                        languages = imdbMetadata.Languages;
+                        languages = imdbMetadata.Languages.ToArray();
                     }
 
-                    regions = imdbMetadata.Regions;
+                    regions = imdbMetadata.Regions.ToArray();
                     genres = imdbMetadata.Genres;
                 }
 

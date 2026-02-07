@@ -17,36 +17,38 @@ internal static class PageHelper
 
     internal static readonly TimeSpan DefaultDomWait = TimeSpan.FromMilliseconds(100);
 
-    internal static async Task<string> GetStringAsync(this IPage page, string url, PageGotoOptions? options = null) =>
-        await Retry.FixedIntervalAsync(async () =>
-        {
-            PageGotoOptions pageGotoOptions = options is null ? new PageGotoOptions() : new PageGotoOptions(options);
-            //pageGotoOptions.Timeout = (float)DefaultPageWait.TotalMilliseconds;
-            IResponse? response = await page.GotoAsync(url, pageGotoOptions);
-            Debug.Assert(response is not null && response.Ok);
-            await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
-            await page.WaitForLoadStateAsync(LoadState.Load);
-            //await page.WaitForLoadStateAsync(LoadState.NetworkIdle, new PageWaitForLoadStateOptions() { Timeout = pageGotoOptions.Timeout });
-            await Task.Delay(DefaultNetworkWait);
-            if (await page.IsBlockedAsync())
+    internal static async Task<string> GetStringAsync(this IPage page, string url, PageGotoOptions? options = null, CancellationToken cancellationToken = default) =>
+        await Retry.FixedIntervalAsync(
+            async () =>
             {
-                throw new InvalidOperationException(url);
-            }
+                PageGotoOptions pageGotoOptions = options is null ? new PageGotoOptions() : new PageGotoOptions(options);
+                IResponse? response = await page.GotoAsync(url, pageGotoOptions);
+                Debug.Assert(response is not null && response.Ok);
+                await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+                await page.WaitForLoadStateAsync(LoadState.Load);
+                //await page.WaitForLoadStateAsync(LoadState.NetworkIdle, new PageWaitForLoadStateOptions() { Timeout = pageGotoOptions.Timeout });
+                await Task.Delay(DefaultNetworkWait, cancellationToken);
+                if (await page.IsBlockedAsync())
+                {
+                    throw new InvalidOperationException(url);
+                }
 
-            string html = await page.ContentAsync();
-            Debug.Assert(html.IsNotNullOrWhiteSpace());
-            return html;
-        });
+                string html = await page.ContentAsync();
+                Debug.Assert(html.IsNotNullOrWhiteSpace());
+                return html;
+            },
+            cancellationToken: cancellationToken);
 
-    internal static async Task RefreshAsync(this IPage page, PageReloadOptions? options = null)
-    {
-        PageReloadOptions pageReloadOptions = options is null ? new PageReloadOptions() : new PageReloadOptions(options);
-        //pageReloadOptions.Timeout = (float)DefaultPageWait.TotalMilliseconds;
-        IResponse? response = await page.ReloadAsync(pageReloadOptions);
-        Debug.Assert(response is not null && response.Ok);
-        await Task.Delay(DefaultNetworkWait);
-        Debug.Assert(!await page.IsBlockedAsync());
-    }
+    internal static async Task RefreshAsync(this IPage page, PageReloadOptions? options = null, CancellationToken cancellationToken = default) =>
+        await Retry.FixedIntervalAsync(
+            async () =>
+            {
+                IResponse? response = await page.ReloadAsync(options);
+                Debug.Assert(response is not null && response.Ok);
+                await Task.Delay(DefaultNetworkWait, cancellationToken);
+                Debug.Assert(!await page.IsBlockedAsync());
+            },
+            cancellationToken: cancellationToken);
 
     private static readonly string[] Media = ["jpg", "jpeg", "png", "gif", "webp", ".mp4", ".mov"];
 

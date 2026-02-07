@@ -92,7 +92,7 @@ internal static partial class Imdb
             {
                 log($"Update retry count {arg.CurrentRetryCount}.");
                 log(arg.LastException.ToString());
-                await page.RefreshAsync();
+                await page.RefreshAsync(cancellationToken: cancellationToken);
             },
             cancellationToken: cancellationToken);
 
@@ -195,7 +195,7 @@ internal static partial class Imdb
         bool hasImdbFile = File.Exists(imdbFile);
         string imdbHtml = hasImdbFile
             ? await File.ReadAllTextAsync(imdbFile, cancellationToken)
-            : await (page?.GetStringAsync(imdbUrl, new PageGotoOptions() { Referer = "https://www.imdb.com/" })
+            : await (page?.GetStringAsync(imdbUrl, new PageGotoOptions() { Referer = "https://www.imdb.com/" }, cancellationToken)
                 ?? Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(imdbUrl, cancellationToken), cancellationToken: cancellationToken));
 
         if (!hasImdbFile && page is not null && !page.Url.EqualsOrdinal(imdbUrl))
@@ -516,7 +516,7 @@ internal static partial class Imdb
             if (originalTitle.IsNullOrWhiteSpace())
             {
                 originalTitle = imdbCQ
-                    .Find([data-testid='hero-title-block__original-title']")
+                    .Find("[data-testid='hero-title-block__original-title']")
                     .Text()
                     .Trim()
                     .Replace("Original title: ", string.Empty);
@@ -1174,7 +1174,7 @@ internal static partial class Imdb
                             string advisoriesUrl = $"{imdbUrl}parentalguide/";
                             string advisoriesHtml = File.Exists(advisoriesFile)
                                 ? await File.ReadAllTextAsync(advisoriesFile, cancellationToken)
-                                : await page.GetStringAsync(advisoriesUrl);
+                                : await page.GetStringAsync(advisoriesUrl, cancellationToken: cancellationToken);
                             (bool isUpdated, advisoriesHtml, CQ advisoriesCQ) = await playWrightWrapper.TryUpdateAsync(log, cancellationToken);
                             log(isUpdated ? $"{imdbId} advisories is updated." : $"{imdbId} advisories is not updated.");
 
