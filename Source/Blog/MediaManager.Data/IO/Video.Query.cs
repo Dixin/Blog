@@ -190,12 +190,10 @@ internal static partial class Video
         degreeOfParallelism ??= Imdb.MaxDegreeOfParallelism;
         log ??= Logger.WriteLine;
 
-        //WebDriverHelper.DisposeAll();
-
         CancellationTokenSource cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         ConcurrentQueue<string> movies = new(EnumerateDirectories(directory, level));
-        int movieTotalCount = movies.Count;
-        await Retry.IncrementalAsync(
+        int totalCountToDownload = movies.Count;
+        await Retry.FixedIntervalAsync(
             async () => await Enumerable
                 .Range(0, degreeOfParallelism.Value)
                 .ParallelForEachAsync(
@@ -203,16 +201,18 @@ internal static partial class Video
                     {
                         token.ThrowIfCancellationRequested();
 
-                        await using PlayWrightWrapper playWrightWrapper = new("https://www.imdb.com/");
+                        await using PlayWrightWrapper playWrightWrapper = new();
                         while (movies.TryDequeue(out string? movie))
                         {
                             token.ThrowIfCancellationRequested();
-                            int movieIndex = movieTotalCount - movies.Count;
-                            log($"{movieIndex * 100 / movieTotalCount}% - {movieIndex}/{movieTotalCount} - {movie}");
+                            int movieIndex = totalCountToDownload - movies.Count;
+                            log($"{movieIndex * 100 / totalCountToDownload}% - {movieIndex}/{totalCountToDownload} - {movie}");
 
-                            if (!await DownloadImdbMetadataAsync(movie, playWrightWrapper, overwrite, useCache, log, token))
+                            if (!await Retry.FixedIntervalAsync(
+                                async () => await DownloadImdbMetadataAsync(movie, playWrightWrapper, overwrite, useCache, log, token),
+                                cancellationToken: token))
                             {
-                                Interlocked.Decrement(ref movieTotalCount);
+                                Interlocked.Decrement(ref totalCountToDownload);
                             }
                         }
                     },
@@ -221,13 +221,13 @@ internal static partial class Video
             retryingHandler: (sender, args) =>
             {
                 log(args.LastException.ToString());
-                cancellationToken.ThrowIfCancellationRequested();
-                cancellationTokenSource.Cancel();
-                cancellationTokenSource.Dispose();
-                cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-                WebDriverHelper.DisposeAll();
-                Thread.Sleep(WebDriverHelper.DefaultNetworkWait);
-                Thread.Sleep(WebDriverHelper.DefaultNetworkWait);
+                //cancellationToken.ThrowIfCancellationRequested();
+                //cancellationTokenSource.Cancel();
+                //cancellationTokenSource.Dispose();
+                //cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                //WebDriverHelper.DisposeAll();
+                //Thread.Sleep(WebDriverHelper.DefaultNetworkWait);
+                //Thread.Sleep(WebDriverHelper.DefaultNetworkWait);
             },
             cancellationToken: cancellationToken);
         try

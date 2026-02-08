@@ -83,7 +83,7 @@ public partial record ImdbMetadata(
 
     [JsonIgnore]
     internal IEnumerable<string> Regions =>
-        this.Details.TryGetValue("Country of origin", out string[][]? regions)
+        this.Details.TryGetValue("Countries of origin", out string[][]? regions) || this.Details.TryGetValue("Country of origin", out regions)
             ? regions
                 .Select(region => region.First())
                 .Select(region => region switch
@@ -96,7 +96,7 @@ public partial record ImdbMetadata(
 
     [JsonIgnore]
     internal IEnumerable<string> Languages =>
-        this.Details.TryGetValue("Languages", out string[][]? languages)
+        this.Details.TryGetValue("Languages", out string[][]? languages) || this.Details.TryGetValue("Language", out languages)
             ? languages.Select(language => language.First())
             : [];
 

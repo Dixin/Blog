@@ -12,7 +12,7 @@ using OpenQA.Selenium;
 
 internal static partial class Imdb
 {
-    internal static readonly int MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 8);
+    internal static readonly int MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 12);
 
     private static async Task<(bool IsUpdated, string Html, CQ TrimmedCQ)> TryUpdateAsync(this PlayWrightWrapper playWrightWrapper, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
