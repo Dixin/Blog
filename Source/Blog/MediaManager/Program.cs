@@ -602,6 +602,13 @@ string[][] metadataDrives = [
 //Video.RenameDirectoriesWithGraphicMetadata(settings.MovieTemp42);
 //Video.MoveDirectoriesByRegions(settings, settings.MovieTemp3, 2, isDryRun: false);
 //Video.RenameDirectoriesWithoutAdditionalMetadata(settings.MovieTemp42);
+//Video.PrintDirectoriesWithErrors(settings, @"G:\Files\Library\", 3);
+//Video.PrintDirectoriesWithErrors(settings, @"H:\Files\Library\", 3);
+//Video.PrintDirectoriesWithErrors(settings, @"I:\Files\Library\", 3);
+//Video.PrintDirectoriesWithErrors(settings, @"J:\Files\Library\", 3);
+//Video.PrintDirectoriesWithErrors(settings, @"K:\Files\Library.Movies", 3);
+//Video.PrintDirectoriesWithErrors(settings, @"L:\Files\Library", 3, isTV: true);
+//Video.PrintDirectoriesWithErrors(settings, @"K:\Files\Library.TV", 3, isTV: true);
 
 //Video.EnumerateDirectories(@"L:\Files\Library\TV Mainstream.主流电视剧")
 //    .GroupBy(d => PathHelper.GetFileName(d)

@@ -14,7 +14,7 @@ internal static partial class Imdb
 {
     internal static readonly int MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 8);
 
-    private static async Task<(bool IsUpdated, string Html, CQ trimmedCQ)> TryUpdateAsync(this PlayWrightWrapper playWrightWrapper, Action<string>? log = null, CancellationToken cancellationToken = default)
+    private static async Task<(bool IsUpdated, string Html, CQ TrimmedCQ)> TryUpdateAsync(this PlayWrightWrapper playWrightWrapper, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
@@ -87,11 +87,11 @@ internal static partial class Imdb
                     await page.WaitForHiddenAsync(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreButtonRegex() }, cancellationToken);
                 }
             },
-            retryingHandler: async void (sender, arg) =>
+            retryingHandler: void (sender, arg) =>
             {
                 log($"Update retry count {arg.CurrentRetryCount}.");
                 log(arg.LastException.ToString());
-                await page.RefreshAsync(cancellationToken: cancellationToken);
+                page.RefreshAsync(cancellationToken: cancellationToken).Wait(cancellationToken);
             },
             cancellationToken: cancellationToken);
 
@@ -124,8 +124,8 @@ internal static partial class Imdb
 
         if (File.Exists(file))
         {
-            string cacheHtml = await File.ReadAllTextAsync(file, cancellationToken);
-            return (cacheHtml, TrimPage(cacheHtml));
+            string cachedHtml = await File.ReadAllTextAsync(file, cancellationToken);
+            return (cachedHtml, TrimPage(cachedHtml));
         }
 
         if (playWrightWrapper is null)
@@ -409,9 +409,9 @@ internal static partial class Imdb
         string tagline = taglineCQ.TextTrimDecode();
         CQ storylineSectionCQ = imdbCQ.Find("[data-testid='Storyline']");
         Debug.Assert(storylineSectionCQ.Any());
-        bool skipAdvisories = storylineSectionCQ.Find("a:Contains('Add content advisory')").Any()
+        bool skipAdvisories = storylineSectionCQ.Find("a:contains('Add content advisory')").Any()
             && storylineSectionCQ.Find("[data-testid='storyline-certificate']").IsEmpty();
-        bool skipKeywords = storylineSectionCQ.Find($"a[href*='/title/{imdbId}/keywords/']:Contains('more')").IsEmpty();
+        bool skipKeywords = storylineSectionCQ.Find($"a[href*='/title/{imdbId}/keywords/']:contains('more')").IsEmpty();
 
         bool skipTrivia = true;
         bool skipGoofs = true;
@@ -423,13 +423,13 @@ internal static partial class Imdb
         CQ knowSection = imdbCQ.Find("[data-testid='DidYouKnow']");
         if (knowSection.Any())
         {
-            skipTrivia = knowSection.Find("a:Contains('Trivia')").IsEmpty();
-            skipGoofs = knowSection.Find("a:Contains('Goofs')").IsEmpty();
-            skipQuotes = knowSection.Find("a:Contains('Quotes')").IsEmpty();
-            skipCrazyCredits = knowSection.Find("a:Contains('Crazy credits')").IsEmpty();
-            skipVersions = knowSection.Find("a:Contains('Alternate versions')").IsEmpty();
-            skipConnections = knowSection.Find("a:Contains('Connections')").IsEmpty();
-            skipSoundtracks = knowSection.Find("a:Contains('Soundtracks')").IsEmpty();
+            skipTrivia = knowSection.Find("a:contains('Trivia')").IsEmpty();
+            skipGoofs = knowSection.Find("a:contains('Goofs')").IsEmpty();
+            skipQuotes = knowSection.Find("a:contains('Quotes')").IsEmpty();
+            skipCrazyCredits = knowSection.Find("a:contains('Crazy credits')").IsEmpty();
+            skipVersions = knowSection.Find("a:contains('Alternate versions')").IsEmpty();
+            skipConnections = knowSection.Find("a:contains('Connections')").IsEmpty();
+            skipSoundtracks = knowSection.Find("a:contains('Soundtracks')").IsEmpty();
         }
 
         string releasesUrl = $"{imdbUrl}releaseinfo/";
