@@ -110,7 +110,7 @@ internal static partial class Imdb
             {
                 log($"Update retry count {arg.CurrentRetryCount}.");
                 log(arg.LastException.ToString());
-                if (arg.LastException is HttpRequestException { StatusCode: HttpStatusCode.InternalServerError })
+                if (arg.LastException is HttpRequestException { StatusCode: HttpStatusCode.InternalServerError, HttpRequestError: HttpRequestError.InvalidResponse })
                 {
                     page = playWrightWrapper.RestartAsync(cancellationToken: cancellationToken).Result;
                     html = page.GetStringAsync(url, PageSelector, cancellationToken: cancellationToken).Result;

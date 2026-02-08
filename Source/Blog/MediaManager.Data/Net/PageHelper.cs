@@ -22,7 +22,11 @@ internal static class PageHelper
             async () =>
             {
                 IResponse? response = await page.GotoAsync(url, options);
-                Debug.Assert(response is not null && response.Ok);
+                if (response is null || !response.Ok)
+                {
+                    throw new HttpRequestException(HttpRequestError.InvalidResponse, $"Page error {url}", null, response is null ? HttpStatusCode.InternalServerError : (HttpStatusCode)response.Status);
+                }
+
                 await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
                 await page.WaitForLoadStateAsync(LoadState.Load);
                 //await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
