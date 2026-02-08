@@ -199,12 +199,9 @@ internal static partial class Video
                 .ParallelForEachAsync(
                     async (webDriverIndex, index, token) =>
                     {
-                        token.ThrowIfCancellationRequested();
-
                         await using PlayWrightWrapper playWrightWrapper = new();
                         while (movies.TryDequeue(out string? movie))
                         {
-                            token.ThrowIfCancellationRequested();
                             int movieIndex = totalCountToDownload - movies.Count;
                             log($"{movieIndex * 100 / totalCountToDownload}% - {movieIndex}/{totalCountToDownload} - {movie}");
 

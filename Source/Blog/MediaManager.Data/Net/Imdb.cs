@@ -18,8 +18,9 @@ internal static partial class Imdb
     {
         log ??= Logger.WriteLine;
 
-        bool isUpdated = false;
         IPage page = await playWrightWrapper.PageAsync();
+        string url = page.Url;
+        bool isUpdated = false;
         string html = await page.ContentAsync();
         CQ trimmedCQ = TrimPage(html);
         int spoilersButtonsCount = trimmedCQ.Find("button:contains('Spoilers')").Length;
@@ -38,13 +39,13 @@ internal static partial class Imdb
                     if (await page.GetByText("error fetching more data").CountAsync() > 0
                         || await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { Name = "Spoiler" }).CountAsync() > 0)
                     {
-                        throw new InvalidOperationException("Ajax error.");
+                        throw new HttpRequestException(HttpRequestError.InvalidResponse, $"Ajax error {url}", null, HttpStatusCode.InternalServerError);
                     }
-                }
 
-                log($"{spoilerButtonCount} Spoilers are waited.");
-                await page.WaitForVisibleAsync(new Regex("^Spoilers$"), new PageGetByTextOptions() { Exact = true }, spoilerButtonCount, cancellationToken);
-                log($"{spoilerButtonCount} Spoilers are loaded.");
+                    log($"{spoilerButtonCount} Spoilers are waited.");
+                    await page.WaitForCountAsync(new Regex("^Spoilers$"), new PageGetByTextOptions() { Exact = true }, spoilerButtonCount, cancellationToken);
+                    log($"{spoilerButtonCount} Spoilers are loaded.");
+                }
 
                 ILocator seeMoreButtons = page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreButtonRegex() });
                 int targetSeeMoreButtonsCount = await seeMoreButtons.CountAsync();
@@ -57,7 +58,7 @@ internal static partial class Imdb
                     if (await page.GetByText("error fetching more data").CountAsync() > 0
                         || await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { Name = "See all" }).CountAsync() > 0)
                     {
-                        throw new InvalidOperationException("Ajax error.");
+                        throw new HttpRequestException(HttpRequestError.InvalidResponse, $"Ajax error {url}", null, HttpStatusCode.InternalServerError);
                     }
                 }
 
@@ -70,7 +71,7 @@ internal static partial class Imdb
                 log($"{targetSeeMoreButtonsCount} See more buttons are found.");
                 if (targetSeeMoreButtonsCount > 0)
                 {
-                    await page.WaitForVisibleAsync(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreButtonRegex() }, targetSeeMoreButtonsCount, cancellationToken);
+                    await page.WaitForCountAsync(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreButtonRegex() }, targetSeeMoreButtonsCount, cancellationToken);
                     int actualSeeMoreButtonCount = await page.ClickOrPressAsync(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreButtonRegex() }, cancellationToken);
                     Debug.Assert(targetSeeMoreButtonsCount == actualSeeMoreButtonCount);
 
@@ -79,36 +80,50 @@ internal static partial class Imdb
                     if (await page.GetByText("error fetching more data").CountAsync() > 0
                         || await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreButtonRegex() }).CountAsync() > 0)
                     {
-                        throw new InvalidOperationException("Ajax error.");
+                        throw new HttpRequestException(HttpRequestError.InvalidResponse, $"Ajax error {url}", null, HttpStatusCode.InternalServerError);
                     }
                 }
                 else
                 {
-                    await page.WaitForHiddenAsync(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreButtonRegex() }, cancellationToken);
+                    await page.WaitForNoneAsync(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreButtonRegex() }, cancellationToken);
+                }
+
+                if (isUpdated)
+                {
+                    await Task.Delay(PageHelper.DefaultNetworkWait, cancellationToken);
+                    html = await page.ContentAsync();
+                    trimmedCQ = TrimPage(html);
+                }
+
+                if (trimmedCQ.Find("section span.ipc-see-more button:contains('Spoilers')").Any()
+                    || trimmedCQ.Find("section > div.ipc-signpost > div.ipc-signpost__text:contains('Spoilers')").Length != spoilersButtonsCount
+                    || trimmedCQ.Find("button.ipc-see-more__button:contains('all') span.ipc-btn__text:visible").Any()
+                    || trimmedCQ.Find("button.ipc-see-more__button:contains('more') span.ipc-btn__text:visible").Any()
+                    || trimmedCQ.Find(":contains('error fetching more data')").Any())
+                {
+                    throw new HttpRequestException(HttpRequestError.InvalidResponse, $"Ajax error {url}", null, HttpStatusCode.InternalServerError);
                 }
             },
             retryingHandler: void (sender, arg) =>
             {
                 log($"Update retry count {arg.CurrentRetryCount}.");
                 log(arg.LastException.ToString());
-                page.RefreshAsync(cancellationToken: cancellationToken).Wait(cancellationToken);
+                if (arg.LastException is HttpRequestException { StatusCode: HttpStatusCode.InternalServerError })
+                {
+                    page = playWrightWrapper.RestartAsync(cancellationToken: cancellationToken).Result;
+                    html = playWrightWrapper.GetStringAsync(url, cancellationToken: cancellationToken).Result;
+                }
+                else
+                {
+                    page.RefreshAsync(cancellationToken: cancellationToken).Wait(cancellationToken);
+                    html = page.ContentAsync().Result;
+                }
+
+                isUpdated = false;
+                trimmedCQ = TrimPage(html);
+                spoilersButtonsCount = trimmedCQ.Find("button:contains('Spoilers')").Length;
             },
             cancellationToken: cancellationToken);
-
-        if (isUpdated)
-        {
-            await Task.Delay(PageHelper.DefaultNetworkWait, cancellationToken);
-            html = await page.ContentAsync();
-            trimmedCQ = TrimPage(html);
-        }
-
-        if (trimmedCQ.Find("section span.ipc-see-more button:contains('Spoilers')").Any()
-            || trimmedCQ.Find("section > div.ipc-signpost > div.ipc-signpost__text:contains('Spoilers')").Length != spoilersButtonsCount
-            || trimmedCQ.Find("button.ipc-see-more__button:contains('all') span.ipc-btn__text:visible").Any()
-            || trimmedCQ.Find("button.ipc-see-more__button:contains('more') span.ipc-btn__text:visible").Any())
-        {
-            throw new InvalidOperationException($"Failed to update {page.Url}");
-        }
 
         return (isUpdated, html, trimmedCQ);
     }
@@ -201,26 +216,39 @@ internal static partial class Imdb
         {
             log($"Redirected {imdbId} to {page.Url}");
             imdbUrl = page.Url;
-            imdbId = ImdbMetadata.ImdbIdInLinkRegex().Match(imdbUrl).Value;
+            imdbId = ImdbMetadata.ImdbIdSubstringRegex().Match(imdbUrl).Value;
+            Debug.Assert(imdbId.IsImdbId());
         }
 
-        if (!hasImdbFile && page is not null)
+        if (!hasImdbFile && page is not null && playWrightWrapper is not null)
         {
-            ILocator knowLocator = page.GetByTestId("DidYouKnow");
-            if (await knowLocator.CountAsync() > 0)
-            {
-                await knowLocator.ScrollIntoViewIfNeededAsync();
-            }
-            else
-            {
-                ILocator topPicksLocator = page.Locator("[data-cel-widget='DynamicFeature_TopPicks']");
-                Debug.Assert(await topPicksLocator.CountAsync() > 0);
-                await topPicksLocator.ScrollIntoViewIfNeededAsync();
-            }
+            await Retry.FixedIntervalAsync(
+                async () =>
+                {
+                    ILocator knowLocator = page.GetByTestId("DidYouKnow");
+                    if (await knowLocator.CountAsync() > 0)
+                    {
+                        await knowLocator.ScrollIntoViewIfNeededAsync();
+                    }
+                    else
+                    {
+                        ILocator topPicksLocator = await page.WaitForCountAsync("[data-cel-widget='DynamicFeature_TopPicks']", locatorCount: 1, cancellationToken: cancellationToken);
+                        await topPicksLocator.ScrollIntoViewIfNeededAsync();
+                    }
 
-            await page.Keyboard.PressAsync("PageUp");
-            await page.WaitForSelectorAsync("[data-testid='storyline-parents-guide']");
-            imdbHtml = await page.ContentAsync();
+                    await page.Keyboard.PressAsync("PageUp");
+                    await page.WaitForSelectorAsync("[data-testid='storyline-parents-guide']");
+                    imdbHtml = await page.ContentAsync();
+                },
+                retryingHandler: (sender, args) =>
+                {
+                    if (args.LastException is TimeoutException)
+                    {
+                        page = playWrightWrapper.RestartAsync(cancellationToken: cancellationToken).Result;
+                        imdbHtml = playWrightWrapper.GetStringAsync(imdbUrl, cancellationToken: cancellationToken).Result;
+                    }
+                },
+                cancellationToken: cancellationToken);
         }
 
         CQ imdbCQ = imdbHtml;
@@ -800,7 +828,7 @@ internal static partial class Imdb
 
         string[] crazyCredits = crazyCreditsCQ
             .Find("[data-testid='item-html'] .crazy-credit-text")
-            .Find("a")
+            .Find("*")
             .Each(linkDom => linkDom.RemoveAttribute("class"))
             .End()
             .Select(paragraphDom => paragraphDom.HtmlTrim()).ToArray();
@@ -846,7 +874,8 @@ internal static partial class Imdb
                 Category: sectionCQ.Find("h3").TextTrimDecode(),
                 Descriptions: sectionCQ
                     .Find("[data-testid='item-html'] .ipc-html-content-inner-div")
-                    .Find("a").Each(linkDom => linkDom.RemoveAttribute("class"))
+                    .Find("*")
+                    .Each(linkDom => linkDom.RemoveAttribute("class"))
                     .End()
                     .Select(divDom => divDom.HtmlTrim()).ToArray()))
             //.TakeWhile(section => !section.Category.ContainsIgnoreCase("Contribute to this page"))
@@ -875,7 +904,8 @@ internal static partial class Imdb
             .Find("[data-testid='item-html']")
             .Select(quoteDom => quoteDom
                 .Cq().Find("ul li")
-                .Find("a").Each(linkDom => linkDom.RemoveAttribute("class"))
+                .Find("*")
+                .Each(linkDom => linkDom.RemoveAttribute("class"))
                 .End()
                 .Select(itemDom => itemDom.HtmlTrim())
                 .ToArray())
@@ -889,7 +919,8 @@ internal static partial class Imdb
             .Select(itemDom => itemDom.Cq())
             .Select(itemCQ => itemCQ
                 .Find(".ipc-html-content-inner-div")
-                .Find("a").Each(linkDom => linkDom.RemoveAttribute("class"))
+                .Find("*")
+                .Each(linkDom => linkDom.RemoveAttribute("class"))
                 .End()
                 .Select(divDom => divDom.HtmlTrim())
                 .Prepend(itemCQ.Find("span:eq(0)").TextTrimDecode())
@@ -906,7 +937,8 @@ internal static partial class Imdb
                 category: sectionCQ.Find("h3").TextTrimDecode(),
                 Descriptions: sectionCQ
                     .Find("[data-testid='item-html'] .ipc-html-content-inner-div")
-                    .Find("a").Each(linkDom => linkDom.RemoveAttribute("class"))
+                    .Find("*")
+                    .Each(linkDom => linkDom.RemoveAttribute("class"))
                     .End()
                     .Select(divDom => divDom.HtmlTrim())
                     .ToArray()
@@ -918,8 +950,11 @@ internal static partial class Imdb
         (string versionsHtml, CQ versionsCQ) = await GetHtmlAsync(skipVersions, versionsFile, versionsUrl, playWrightWrapper, httpClient, log, cancellationToken);
 
         string[] versions = versionsCQ
-            .Find("[data-testid='list-item']")
-            .Select(itemDom => itemDom.TextTrimDecode())
+            .Find("[data-testid='list-item'] .ipc-html-content-inner-div")
+            .Find("*")
+            .Each(linkDom => linkDom.RemoveAttribute("class"))
+            .End()
+            .Select(itemDom => itemDom.HtmlTrim())
             .ToArray();
 
         imdbMetadata = imdbMetadata with

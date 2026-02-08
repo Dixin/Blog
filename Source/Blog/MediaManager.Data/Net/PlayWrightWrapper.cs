@@ -15,9 +15,9 @@ internal class PlayWrightWrapper : IAsyncDisposable
 
     internal PlayWrightWrapper(string initialUrl = "") => this.initialUrl = initialUrl;
 
-    internal ValueTask<IPage> PageAsync() => this.page == null ? this.InitializeAsync() : ValueTask.FromResult(this.page);
+    internal ValueTask<IPage> PageAsync() => this.page == null ? this.InitializeAsync(this.initialUrl) : ValueTask.FromResult(this.page);
 
-    private async ValueTask<IPage> InitializeAsync()
+    private async ValueTask<IPage> InitializeAsync(string url = "")
     {
         this.playwright = await Playwright.CreateAsync();
         this.browser = await this.playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions() { Headless = false });
@@ -29,7 +29,7 @@ internal class PlayWrightWrapper : IAsyncDisposable
         await this.page.AbortMediaAsync();
         if (this.initialUrl.IsNotNullOrWhiteSpace())
         {
-            IResponse? response = await this.page.GotoAsync(this.initialUrl);
+            IResponse? response = await this.page.GotoAsync(url);
             Debug.Assert(response is not null && response.Ok);
         }
 
@@ -38,22 +38,40 @@ internal class PlayWrightWrapper : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        this.playwright?.Dispose();
-
-        if (this.browser is not null)
+        try { }
+        finally
         {
-            await this.browser.DisposeAsync();
+            if (this.page is not null)
+            {
+                await this.page.CloseAsync();
+            }
+        }
+
+        try { }
+        finally
+        {
+            if (this.browser is not null)
+            {
+                await this.browser.DisposeAsync();
+            }
+        }
+
+        try { }
+        finally
+        {
+            this.playwright?.Dispose();
         }
     }
 
-    internal async ValueTask Restart()
+    internal async Task<IPage> RestartAsync(TimeSpan? wait = null, string initialUrl = "", CancellationToken cancellationToken = default)
     {
         await this.DisposeAsync();
-        await this.InitializeAsync();
+        await Task.Delay(wait ??= PageHelper.DefaultPageWait, cancellationToken);
+        return await this.InitializeAsync(initialUrl);
     }
 
-    internal async Task<string> GetStringAsync(string url, PageGotoOptions? options = null) =>
-        await (await this.PageAsync()).GetStringAsync(url, options);
+    internal async Task<string> GetStringAsync(string url, PageGotoOptions? options = null, CancellationToken cancellationToken = default) =>
+        await (await this.PageAsync()).GetStringAsync(url, options, cancellationToken);
 
     internal async Task<string> GetUrlAsync() => (await this.PageAsync()).Url;
 }
