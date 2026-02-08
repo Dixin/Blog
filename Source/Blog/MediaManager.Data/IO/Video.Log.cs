@@ -2737,8 +2737,7 @@ internal static partial class Video
 
         if (updateMetadata)
         {
-
-            await imdbIds.ForEachAsync(async (imdbMetadata, index) =>
+            await imdbIds.ForEachAsync(async (ImdbMetadata imdbMetadata, int index) =>
             {
                 log($"{index * 100 / length}% - {index}/{length} - {imdbMetadata.ImdbId}");
                 try
@@ -2831,7 +2830,7 @@ internal static partial class Video
                             }
                             else
                             {
-                                await page.GetStringAsync(metadata.Link);
+                                await page.GetStringAsync(metadata.Link, string.Empty, cancellationToken: cancellationToken);
                                 await page.Locator("""img[src$="magnet.gif"]""").WaitForAsync(new LocatorWaitForOptions() { State = WaitForSelectorState.Visible });
                                 html = await page.ContentAsync();
                                 await Task.Delay(WebDriverHelper.DefaultDomWait, token);

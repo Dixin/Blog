@@ -14,6 +14,8 @@ internal static partial class Imdb
 {
     internal static readonly int MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 12);
 
+    private const string PageSelector = "main .ipc-page-grid__item";
+
     private static async Task<(bool IsUpdated, string Html, CQ TrimmedCQ)> TryUpdateAsync(this PlayWrightWrapper playWrightWrapper, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
@@ -111,12 +113,11 @@ internal static partial class Imdb
                 if (arg.LastException is HttpRequestException { StatusCode: HttpStatusCode.InternalServerError })
                 {
                     page = playWrightWrapper.RestartAsync(cancellationToken: cancellationToken).Result;
-                    html = playWrightWrapper.GetStringAsync(url, cancellationToken: cancellationToken).Result;
+                    html = page.GetStringAsync(url, PageSelector, cancellationToken: cancellationToken).Result;
                 }
                 else
                 {
-                    page.RefreshAsync(cancellationToken: cancellationToken).Wait(cancellationToken);
-                    html = page.ContentAsync().Result;
+                    html = page.RefreshAsync(PageSelector, cancellationToken: cancellationToken).Result;
                 }
 
                 isUpdated = false;
@@ -150,14 +151,15 @@ internal static partial class Imdb
             return (downloadedHtml, TrimPage(downloadedHtml));
         }
 
-        await playWrightWrapper.GetStringAsync(url, cancellationToken: cancellationToken);
+        IPage page = await playWrightWrapper.PageAsync();
+        await page.GetStringAsync(url, PageSelector, cancellationToken: cancellationToken);
         (bool isUpdated, string html, CQ trimmedCQ) = await playWrightWrapper.TryUpdateAsync(log, cancellationToken);
         log(isUpdated ? $"{url} is updated." : $"{url} is not updated.");
         return (html, trimmedCQ);
     }
 
     private static CQ TrimPage(CQ pageCQ) => pageCQ
-        .Find("main .ipc-page-grid__item:eq(0)")
+        .Find(PageSelector).Eq(0)
         .Find("[data-testid='contribution'], [data-testid='more-from-section']")
         .Remove()
         .End();
@@ -206,7 +208,7 @@ internal static partial class Imdb
         bool hasImdbFile = File.Exists(imdbFile);
         string imdbHtml = hasImdbFile
             ? (await File.ReadAllTextAsync(imdbFile, cancellationToken)).ThrowIfNullOrWhiteSpace()
-            : await (page?.GetStringAsync(imdbUrl, new PageGotoOptions() { Referer = "https://www.imdb.com/" }, cancellationToken)
+            : await (page?.GetStringAsync(imdbUrl, PageSelector, new PageGotoOptions() { Referer = "https://www.imdb.com/" }, cancellationToken)
                 ?? Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(imdbUrl, cancellationToken), cancellationToken: cancellationToken));
 
         if (!hasImdbFile && page is not null && !page.Url.EqualsOrdinal(imdbUrl))
@@ -242,7 +244,7 @@ internal static partial class Imdb
                     if (args.LastException is TimeoutException)
                     {
                         page = playWrightWrapper.RestartAsync(cancellationToken: cancellationToken).Result;
-                        imdbHtml = playWrightWrapper.GetStringAsync(imdbUrl, cancellationToken: cancellationToken).Result;
+                        imdbHtml = page.GetStringAsync(imdbUrl, PageSelector, cancellationToken: cancellationToken).Result;
                     }
                 },
                 cancellationToken: cancellationToken);
@@ -1242,7 +1244,7 @@ internal static partial class Imdb
                             string advisoriesUrl = $"{imdbUrl}parentalguide/";
                             string advisoriesHtml = File.Exists(advisoriesFile)
                                 ? await File.ReadAllTextAsync(advisoriesFile, cancellationToken)
-                                : await page.GetStringAsync(advisoriesUrl, cancellationToken: cancellationToken);
+                                : await page.GetStringAsync(advisoriesUrl, PageSelector, cancellationToken: cancellationToken);
                             (bool isUpdated, advisoriesHtml, CQ advisoriesCQ) = await playWrightWrapper.TryUpdateAsync(log, cancellationToken);
                             log(isUpdated ? $"{imdbId} advisories is updated." : $"{imdbId} advisories is not updated.");
 

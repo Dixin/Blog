@@ -70,8 +70,5 @@ internal class PlayWrightWrapper : IAsyncDisposable
         return await this.InitializeAsync(initialUrl);
     }
 
-    internal async Task<string> GetStringAsync(string url, PageGotoOptions? options = null, CancellationToken cancellationToken = default) =>
-        await (await this.PageAsync()).GetStringAsync(url, options, cancellationToken);
-
     internal async Task<string> GetUrlAsync() => (await this.PageAsync()).Url;
 }
