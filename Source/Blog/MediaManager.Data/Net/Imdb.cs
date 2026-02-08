@@ -140,7 +140,7 @@ internal static partial class Imdb
         if (File.Exists(file))
         {
             string cachedHtml = await File.ReadAllTextAsync(file, cancellationToken);
-            return (cachedHtml, TrimPage(cachedHtml));
+            return (cachedHtml.ThrowIfNullOrWhiteSpace(), TrimPage(cachedHtml));
         }
 
         if (playWrightWrapper is null)
@@ -150,20 +150,17 @@ internal static partial class Imdb
             return (downloadedHtml, TrimPage(downloadedHtml));
         }
 
-        await playWrightWrapper.GetStringAsync(url);
+        await playWrightWrapper.GetStringAsync(url, cancellationToken: cancellationToken);
         (bool isUpdated, string html, CQ trimmedCQ) = await playWrightWrapper.TryUpdateAsync(log, cancellationToken);
         log(isUpdated ? $"{url} is updated." : $"{url} is not updated.");
         return (html, trimmedCQ);
     }
 
-    private static CQ TrimPage(CQ pageCQ)
-    {
-        CQ trimmedCQ = pageCQ.Find("main .ipc-page-grid__item").Eq(0);
-        CQ remove = trimmedCQ.Find("[data-testid='contribution'], [data-testid='more-from-section']");
-        Debug.Assert(remove.Any());
-        remove.Remove();
-        return trimmedCQ;
-    }
+    private static CQ TrimPage(CQ pageCQ) => pageCQ
+        .Find("main .ipc-page-grid__item:eq(0)")
+        .Find("[data-testid='contribution'], [data-testid='more-from-section']")
+        .Remove()
+        .End();
 
     internal static async Task<(ImdbMetadata ImdbMetadata,
         string ImdbUrl, string ImdbHtml,
@@ -208,7 +205,7 @@ internal static partial class Imdb
         string imdbUrl = $"https://www.imdb.com/title/{imdbId}/";
         bool hasImdbFile = File.Exists(imdbFile);
         string imdbHtml = hasImdbFile
-            ? await File.ReadAllTextAsync(imdbFile, cancellationToken)
+            ? (await File.ReadAllTextAsync(imdbFile, cancellationToken)).ThrowIfNullOrWhiteSpace()
             : await (page?.GetStringAsync(imdbUrl, new PageGotoOptions() { Referer = "https://www.imdb.com/" }, cancellationToken)
                 ?? Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(imdbUrl, cancellationToken), cancellationToken: cancellationToken));
 

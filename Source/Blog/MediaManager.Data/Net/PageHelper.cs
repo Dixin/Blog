@@ -28,7 +28,7 @@ internal static class PageHelper
                 await page.WaitForLoadStateAsync(LoadState.Load);
                 //await page.WaitForLoadStateAsync(LoadState.NetworkIdle, new PageWaitForLoadStateOptions() { Timeout = pageGotoOptions.Timeout });
                 await Task.Delay(DefaultNetworkWait, cancellationToken);
-                if (await page.IsBlockedAsync())
+                if (await page.WaitForBodyAsync(cancellationToken))
                 {
                     throw new InvalidOperationException(url);
                 }
@@ -46,7 +46,7 @@ internal static class PageHelper
                 IResponse? response = await page.ReloadAsync(options);
                 Debug.Assert(response is not null && response.Ok);
                 await Task.Delay(DefaultNetworkWait, cancellationToken);
-                Debug.Assert(!await page.IsBlockedAsync());
+                Debug.Assert(!await page.WaitForBodyAsync(cancellationToken));
             },
             cancellationToken: cancellationToken);
 
@@ -84,13 +84,23 @@ internal static class PageHelper
             async route => await route.AbortAsync());
     }
 
-    internal static async Task<bool> IsBlockedAsync(this IPage page)
+    internal static async Task<bool> WaitForBodyAsync(this IPage page, CancellationToken cancellationToken = default)
     {
-        string text = await page.TextContentAsync("body") ?? string.Empty;
-        return text.IsNullOrWhiteSpace()
-            || text.ContainsIgnoreCase("JavaScript is disabled")
-            || text.ContainsIgnoreCase("need to verify that you're not a robot")
-            || text.ContainsIgnoreCase("Enable JavaScript and then reload");
+        string body;
+        long startingTimestamp = Stopwatch.GetTimestamp();
+        while ((body = await page.TextContentAsync("body") ?? string.Empty).IsNullOrWhiteSpace())
+        {
+            if (Stopwatch.GetElapsedTime(startingTimestamp) > DefaultManualWait)
+            {
+                throw new TimeoutException("Waiting for body to be availabe timed out.");
+            }
+
+            await Task.Delay(DefaultDomWait, cancellationToken);
+        }
+
+        return body.ContainsIgnoreCase("JavaScript is disabled")
+            || body.ContainsIgnoreCase("need to verify that you're not a robot")
+            || body.ContainsIgnoreCase("Enable JavaScript and then reload");
     }
 
     private static async Task WaitForNoneAsync(Func<ILocator> locatorFactory, CancellationToken cancellationToken = default)
@@ -100,7 +110,7 @@ internal static class PageHelper
         {
             if (Stopwatch.GetElapsedTime(startingTimestamp) > DefaultManualWait)
             {
-                throw new TimeoutException("Waiting for prompt to be closed timed out.");
+                throw new TimeoutException("Waiting for locator to be closed timed out.");
             }
 
             await Task.Delay(DefaultDomWait, cancellationToken);
@@ -111,13 +121,13 @@ internal static class PageHelper
     {
         locatorCount.ThrowIfNotPositive();
 
-        long spoilerInitializingTimestamp = Stopwatch.GetTimestamp();
         ILocator locator;
+        long startingTimestamp = Stopwatch.GetTimestamp();
         while (await (locator = locatorFactory()).CountAsync() != locatorCount)
         {
-            if (Stopwatch.GetElapsedTime(spoilerInitializingTimestamp) > DefaultManualWait)
+            if (Stopwatch.GetElapsedTime(startingTimestamp) > DefaultManualWait)
             {
-                throw new TimeoutException("Waiting for Spoilers to be loaded timed out.");
+                throw new TimeoutException("Waiting for locator to be loaded timed out.");
             }
 
             await Task.Delay(DefaultDomWait, cancellationToken);
