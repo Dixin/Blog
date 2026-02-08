@@ -893,7 +893,10 @@ internal static partial class Imdb
             allKeywords = keywordsCQ
                 .Find("[data-testid='sub-section'] [data-testid='list-summary-item']")
                 .Select(rowDom => rowDom.Cq().Find("a[href*='/search/title/?keywords=']"))
-                .ToDictionary(linkCQ => linkCQ.TextTrimDecode(), linkCQ => linkCQ.Attr("href"));
+                .ToLookup(linkCQ => linkCQ.TextTrimDecode(), linkCQ => linkCQ.Attr("href"))
+                .ToDictionary(
+                    group => group.Key, 
+                    group => group.Distinct(StringComparer.OrdinalIgnoreCase).Single());
         }
 
         string quotesUrl = $"{imdbUrl}quotes/";
