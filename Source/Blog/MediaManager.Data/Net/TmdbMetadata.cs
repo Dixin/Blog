@@ -1,4 +1,5 @@
 using Examples.Common;
+using Examples.Linq;
 using Examples.IO;
 using MediaManager.IO;
 
@@ -24,45 +25,43 @@ internal static class TmdbMetadata
 
     public const string TVSeasonNfoFile = $"season{NfoExtension}";
 
-	internal static async Task WriteTmdbMetadataAsync(string movie, bool overwrite = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task WriteTmdbXmlMetadataAsync(string movie, HashSet<string> files, bool overwrite = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
-        string[] existingMetadataFiles = Directory.GetFiles(movie, XmlSearchPattern);
-        if (!overwrite && existingMetadataFiles.Any())
+        string[] existingXmlMetadataFiles = files.Where(file => file.HasExtension(XmlExtension)).ToArray();
+        if (!overwrite && existingXmlMetadataFiles.Any())
         {
             return;
         }
 
-        string[] files = Directory.GetFiles(movie, NfoSearchPattern);
-
-        if (files.Length < 1)
+        if (files.Count < 1)
         {
             throw new InvalidOperationException($"No XML metadata: {movie}.");
         }
 
-        string defaultFile = files.SingleOrDefault(file => PathHelper.GetFileName(file).EqualsOrdinal(MovieNfoFile), string.Empty);
-        if (defaultFile.IsNullOrWhiteSpace())
+        string defaultNfoFile = files.SingleOrDefault(file => PathHelper.GetFileName(file).EqualsOrdinal(MovieNfoFile), string.Empty);
+        if (defaultNfoFile.IsNullOrWhiteSpace())
         {
-	        defaultFile = files.Single(file => PathHelper.GetFileName(file).EqualsOrdinal(TVNfoFile));
-	        files = [defaultFile];
-		}
+            defaultNfoFile = files.Single(file => PathHelper.GetFileName(file).EqualsOrdinal(TVNfoFile));
+            files = EnumerableEx.Return(defaultNfoFile).ToHashSetOrdinalIgnoreCase();
+        }
         else
         {
-			string[] otherFiles = files.Where(file => !PathHelper.GetFileName(file).EqualsOrdinal(MovieNfoFile)).ToArray();
-			Debug.Assert(otherFiles.Length >= 1);
-			DateTime defaultFileLastWrite = new FileInfo(defaultFile).LastWriteTimeUtc;
-			if (otherFiles.Length == 1)
-			{
-				Debug.Assert(otherFiles.All(otherFile => new FileInfo(otherFile).LastWriteTimeUtc <= defaultFileLastWrite));
-				files = [defaultFile];
-			}
-			else
-			{
-				Debug.Assert(otherFiles.All(otherFile => new FileInfo(otherFile).LastWriteTimeUtc >= defaultFileLastWrite));
-				files = otherFiles;
-			}
-		}
+            string[] otherNfoFiles = files.Where(file => !PathHelper.GetFileName(file).EqualsOrdinal(MovieNfoFile)).ToArray();
+            Debug.Assert(otherNfoFiles.Length >= 1);
+            DateTime defaultFileLastWrite = new FileInfo(defaultNfoFile).LastWriteTimeUtc;
+            if (otherNfoFiles.Length == 1)
+            {
+                Debug.Assert(otherNfoFiles.All(otherFile => new FileInfo(otherFile).LastWriteTimeUtc <= defaultFileLastWrite));
+                files = EnumerableEx.Return(defaultNfoFile).ToHashSetOrdinalIgnoreCase();
+            }
+            else
+            {
+                Debug.Assert(otherNfoFiles.All(otherFile => new FileInfo(otherFile).LastWriteTimeUtc >= defaultFileLastWrite));
+                files = otherNfoFiles.ToHashSetOrdinalIgnoreCase();
+            }
+        }
 
         XDocument[] documents = files.Select(XDocument.Load).ToArray();
 
@@ -119,9 +118,9 @@ internal static class TmdbMetadata
 
         string newPath = Path.Combine(movie, $"{newMetadataFileName}{XmlExtension}");
 
-        if (existingMetadataFiles.Any())
+        if (existingXmlMetadataFiles.Any())
         {
-            existingMetadataFiles.ForEach(FileHelper.Recycle);
+            existingXmlMetadataFiles.ForEach(FileHelper.Recycle);
         }
 
         log(newPath);

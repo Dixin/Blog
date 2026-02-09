@@ -193,6 +193,7 @@ internal static partial class Video
         CancellationTokenSource cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         ConcurrentQueue<string> movies = new(EnumerateDirectories(directory, level));
         int totalCountToDownload = movies.Count;
+        Lock @lock = new();
         await Retry.FixedIntervalAsync(
             async () => await Enumerable
                 .Range(0, degreeOfParallelism.Value)
@@ -206,7 +207,7 @@ internal static partial class Video
                             log($"{movieIndex * 100 / totalCountToDownload}% - {movieIndex}/{totalCountToDownload} - {movie}");
 
                             if (!await Retry.FixedIntervalAsync(
-                                async () => await DownloadImdbMetadataAsync(movie, playWrightWrapper, overwrite, useCache, log, token),
+                                async () => await DownloadImdbMetadataAsync(movie, playWrightWrapper, @lock, overwrite, useCache, log, token),
                                 cancellationToken: token))
                             {
                                 Interlocked.Decrement(ref totalCountToDownload);

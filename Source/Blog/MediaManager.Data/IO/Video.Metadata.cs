@@ -213,11 +213,11 @@ internal static partial class Video
         });
     }
 
-    private static async Task<bool> DownloadImdbMetadataAsync(string directory, PlayWrightWrapper? playWrightWrapper, bool overwrite = false, bool useCache = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    private static async Task<bool> DownloadImdbMetadataAsync(string directory, PlayWrightWrapper? playWrightWrapper, Lock? @lock = null, bool overwrite = false, bool useCache = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
-        string[] files = Directory.GetFiles(directory, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
+        HashSet<string> files = DirectoryHelper.GetFilesOrdinalIgnoreCase(directory);
         string jsonFile = files.SingleOrDefault(IsImdbMetadata, string.Empty);
         string imdbId;
         if (jsonFile.IsNotNullOrWhiteSpace())
@@ -234,24 +234,24 @@ internal static partial class Video
         }
         else
         {
-            string[] xmlImdbIds = files
+            string[] nfoImdbIds = files
                 .Where(IsTmdbNfoMetadata)
-                .Select(file => file.TryLoadXmlImdbId(out string? xmlImdbId) ? xmlImdbId : string.Empty)
+                .Select(file => file.TryLoadNfoImdbId(out string? nfoImdbId) ? nfoImdbId : string.Empty)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
-            if (xmlImdbIds.Length == 0)
+            if (nfoImdbIds.Length == 0)
             {
                 log($"!No JSON or XML metadata in {directory}.");
                 return false;
             }
 
-            if (xmlImdbIds.Length > 1)
+            if (nfoImdbIds.Length > 1)
             {
-                log($"!Inconsistent IMDB ids {string.Join(", ", xmlImdbIds)} in {directory}.");
+                log($"!Inconsistent IMDB ids {string.Join(", ", nfoImdbIds)} in {directory}.");
                 return false;
             }
 
-            imdbId = xmlImdbIds.Single();
+            imdbId = nfoImdbIds.Single();
             if (!imdbId.IsImdbId())
             {
                 imdbId = NotExistingFlag;
@@ -259,15 +259,17 @@ internal static partial class Video
         }
 
         log($"Start {directory}");
-        await TmdbMetadata.WriteTmdbMetadataAsync(directory, overwrite, log, cancellationToken);
-        return await DownloadImdbMetadataAsync(imdbId, directory, directory, [jsonFile], files, playWrightWrapper, overwrite, useCache, log, cancellationToken);
+        await TmdbMetadata.WriteTmdbXmlMetadataAsync(directory, files, overwrite, log, cancellationToken);
+        return await DownloadImdbMetadataAsync(imdbId, directory, directory, [jsonFile], files, playWrightWrapper, @lock, overwrite, useCache, log, cancellationToken);
     }
 
-    internal static async Task<bool> DownloadImdbMetadataAsync(string imdbId, string metadataDirectory, string cacheDirectory, string[] metadataFiles, string[] cacheFiles, PlayWrightWrapper? playWrightWrapper, bool overwrite = false, bool useCache = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task<bool> DownloadImdbMetadataAsync(
+        string imdbId, string metadataDirectory, string cacheDirectory, string[] metadataFiles, HashSet<string> cacheFiles, 
+        PlayWrightWrapper? playWrightWrapper, Lock? @lock = null, bool overwrite = false, bool useCache = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
-        long startTime = Stopwatch.GetTimestamp();
+        long startingTimestamp = Stopwatch.GetTimestamp();
         if (metadataFiles.Select(PathHelper.GetFileNameWithoutExtension).SequenceEqual([NotExistingFlag], StringComparer.OrdinalIgnoreCase))
         {
             Debug.Assert(imdbId.EqualsOrdinal(NotExistingFlag));
@@ -399,7 +401,7 @@ internal static partial class Video
             useCache ? parentTriviaFile : string.Empty,
             useCache ? parentVersionsFile : string.Empty,
 
-            playWrightWrapper, log, cancellationToken);
+            playWrightWrapper, cacheFiles, log, cancellationToken);
         Debug.Assert(imdbHtml.IsNotNullOrWhiteSpace());
         if (imdbMetadata.Regions.IsEmpty())
         {
@@ -440,7 +442,7 @@ internal static partial class Video
         }
 
         bool isDownloaded = false;
-        await new (string Url, string File, string Html)[]
+        (string Url, string File, string Html)[] files = new (string Url, string File, string Html)[]
             {
                 (imdbUrl, imdbFile, imdbHtml),
                 (advisoriesUrl, advisoriesFile, advisoriesHtml),
@@ -470,8 +472,38 @@ internal static partial class Video
                 (parentTriviaUrl, parentTriviaFile, parentTriviaHtml),
                 (parentVersionsUrl, parentVersionsFile, parentVersionsHtml)
             }
-            .Where(data => data.Html.IsNotNullOrWhiteSpace() && (!useCache && overwrite || !cacheFiles.Any(file => file.EqualsIgnoreCase(data.File))))
-            .ForEachAsync(
+            .Where(data => data.Html.IsNotNullOrWhiteSpace()
+                && ((!useCache && overwrite) || !cacheFiles.Contains(data.File)))
+            .ToArray();
+
+        if (@lock is not null)
+        {
+            lock (@lock)
+            {
+                files.ForEach(data =>
+                {
+                    isDownloaded = true;
+                    log($"Downloaded {data.Url} to {data.File}.");
+                    File.WriteAllText(data.File, data.Html);
+                    log($"Saved to {data.File}.");
+                });
+
+                string newJsonFile = imdbMetadata.GetFilePath(metadataDirectory);
+                if (jsonFile.IsNotNullOrWhiteSpace() && !jsonFile.EqualsIgnoreCase(newJsonFile))
+                {
+                    FileHelper.Recycle(jsonFile);
+                }
+
+                log($"Merged {imdbUrl}, {advisoriesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {goofsUrl}, {keywordsUrl}, {quotesUrl}, {releasesUrl}, {soundtracksUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile}.");
+                JsonHelper.SerializeToFile(imdbMetadata, newJsonFile);
+                log($"Saved to {newJsonFile}.");
+                TimeSpan elapsed = Stopwatch.GetElapsedTime(startingTimestamp);
+                log($"Elapsed {elapsed}");
+            }
+        }
+        else
+        {
+            await files.ForEachAsync(
                 async data =>
                 {
                     isDownloaded = true;
@@ -481,18 +513,19 @@ internal static partial class Video
                 },
                 cancellationToken);
 
-        string newJsonFile = imdbMetadata.GetFilePath(metadataDirectory);
-        if (jsonFile.IsNotNullOrWhiteSpace() && !jsonFile.EqualsIgnoreCase(newJsonFile))
-        {
-            FileHelper.Recycle(jsonFile);
+            string newJsonFile = imdbMetadata.GetFilePath(metadataDirectory);
+            if (jsonFile.IsNotNullOrWhiteSpace() && !jsonFile.EqualsIgnoreCase(newJsonFile))
+            {
+                FileHelper.Recycle(jsonFile);
+            }
+
+            log($"Merged {imdbUrl}, {advisoriesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {goofsUrl}, {keywordsUrl}, {quotesUrl}, {releasesUrl}, {soundtracksUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile}.");
+            await JsonHelper.SerializeToFileAsync(imdbMetadata, newJsonFile, cancellationToken);
+            log($"Saved to {newJsonFile}.");
+            TimeSpan elapsed = Stopwatch.GetElapsedTime(startingTimestamp);
+            log($"Elapsed {elapsed}");
         }
-
-        log($"Merged {imdbUrl}, {advisoriesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {goofsUrl}, {keywordsUrl}, {quotesUrl}, {releasesUrl}, {soundtracksUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile}.");
-        await JsonHelper.SerializeToFileAsync(imdbMetadata, newJsonFile, cancellationToken);
-        log($"Saved to {newJsonFile}.");
-        TimeSpan elapsed = Stopwatch.GetElapsedTime(startTime);
-        log($"Elapsed {elapsed}");
-
+            
         return isDownloaded;
     }
 
@@ -507,7 +540,8 @@ internal static partial class Video
         if (movies.Any())
         {
             await using PlayWrightWrapper playWrightWrapper = new("https://www.imdb.com/");
-            await movies.ForEachAsync(async movie => await DownloadImdbMetadataAsync(movie, playWrightWrapper, overwrite, useCache, log, cancellationToken), cancellationToken);
+            Lock @lock = new();
+            await movies.ForEachAsync(async movie => await DownloadImdbMetadataAsync(movie, playWrightWrapper, @lock, overwrite, useCache, log, cancellationToken), cancellationToken);
         }
     }
 
@@ -529,7 +563,7 @@ internal static partial class Video
                 Debug.Assert(video.group.TryRemove(video.video, out _));
             });
 
-        HashSet<string> existingVideos = new(existingMetadata.Values.SelectMany(group => group.Keys), StringComparer.OrdinalIgnoreCase);
+        HashSet<string> existingVideos = existingMetadata.Values.SelectMany(group => group.Keys).ToHashSetOrdinalIgnoreCase();
         directoryDrives
             // Hard drives in parallel.
             .AsParallel()
@@ -641,7 +675,7 @@ internal static partial class Video
             .Select(video =>
             {
                 string metadata = PathHelper.ReplaceExtension(video, TmdbMetadata.NfoExtension);
-                string imdbId = metadata.TryLoadXmlImdbId(out string? xmlImdbId) ? xmlImdbId : throw new InvalidOperationException(video);
+                string imdbId = metadata.TryLoadNfoImdbId(out string? xmlImdbId) ? xmlImdbId : throw new InvalidOperationException(video);
                 if (TryReadVideoMetadata(video, out VideoMetadata? videoMetadata))
                 {
                     return (ImdbId: imdbId, Value: videoMetadata);
@@ -668,14 +702,13 @@ internal static partial class Video
             .EnumerateFiles(settings.MovieMetadataDirectory, ImdbMetadataSearchPattern)
             .ToDictionary(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty);
 
-        HashSet<string> topLibraryImdbIds = new(
-            libraryMetadata
-                .Where(group => group
-                    .Value
-                    .Select(video => PathHelper.GetFileNameWithoutExtension(video.Key))
-                    .Any(name => name.ContainsIgnoreCase(".1080p.") && (name.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || name.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}"))))
-                .Select(group => group.Key),
-            StringComparer.OrdinalIgnoreCase);
+        HashSet<string> topLibraryImdbIds = libraryMetadata
+            .Where(group => group
+                .Value
+                .Select(video => PathHelper.GetFileNameWithoutExtension(video.Key))
+                .Any(name => name.ContainsIgnoreCase(".1080p.") && (name.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || name.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}"))))
+            .Select(group => group.Key)
+            .ToHashSetOrdinalIgnoreCase();
         Action<string> recycleMetadata = settings.MovieMetadataBackupDirectory.IsNullOrWhiteSpace()
             ? FileHelper.Recycle
             : file => FileHelper.MoveToDirectory(file, settings.MovieMetadataBackupDirectory, true, true);
@@ -798,7 +831,7 @@ internal static partial class Video
                         string backupEnglishTitle = backupMetadataDocument.TryGetTitle(out string? xmlTitle) ? xmlTitle : string.Empty;
                         string year = backupMetadataDocument.Root!.Element("year")?.Value ?? string.Empty;
 
-                        if (!backupMetadataFile.TryLoadXmlImdbId(out string? imdbId)
+                        if (!backupMetadataFile.TryLoadNfoImdbId(out string? imdbId)
                             || translatedTitle.IsNullOrEmpty()) // Already searched Douban, no result.
                         {
                             if (backupOriginalTitle.IsNullOrWhiteSpace() || !backupOriginalTitle.ContainsCjkCharacter())

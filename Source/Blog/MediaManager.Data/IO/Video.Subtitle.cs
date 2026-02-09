@@ -486,7 +486,7 @@ internal static partial class Video
                     return;
                 }
 
-                HashSet<string> movieSubtitles = new(movieGroup.Subtitles, StringComparer.OrdinalIgnoreCase);
+                HashSet<string> movieSubtitles = movieGroup.Subtitles.ToHashSetOrdinalIgnoreCase();
                 movieGroup
                     .Subtitles
                     .ForEach(subtitle =>

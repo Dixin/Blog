@@ -656,7 +656,7 @@ internal static partial class Video
 
                 metadataFiles.ForEach(metadataFile =>
                 {
-                    Path.Combine(movie, metadataFile).TryLoadXmlImdbId(out string? metadataImdbId);
+                    Path.Combine(movie, metadataFile).TryLoadNfoImdbId(out string? metadataImdbId);
                     // string? metadataImdbRating = metadata.Root?.Element("rating")?.Value;
                     if (imdbMetadata is null)
                     {
@@ -696,7 +696,7 @@ internal static partial class Video
         ConcurrentDictionary<string, List<PreferredFileMetadata>> preferredFiles = await settings.LoadMoviePreferredFileMetadataAsync(cancellationToken);
         Dictionary<string, string> preferredExactTopicToDirectory = preferredFiles.Values.Concat().DistinctBy(m => m.ExactTopic).ToDictionary(m => m.ExactTopic, m => m.DisplayName);
         HashSet<string> ignore = await settings.LoadIgnoredAsync(cancellationToken);
-        HashSet<string> localDisplayNames = new(new string[] { }.Select(PathHelper.GetFileName), StringComparer.OrdinalIgnoreCase);
+        HashSet<string> localDisplayNames = new string[] { }.Select(PathHelper.GetFileName).ToHashSetOrdinalIgnoreCase();
         directories
             .AsParallel()
             .SelectMany(directory => EnumerateDirectories(directory.Directory, directory.Level)
@@ -1218,12 +1218,12 @@ internal static partial class Video
         HashSet<string> ignore = await settings.LoadIgnoredAsync(cancellationToken);
         ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> library = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
 
-        HashSet<string> imdbIds = new(drives
+        HashSet<string> imdbIds = drives
             .AsParallel()
             .SelectMany(drive => Directory.EnumerateFiles(drive, ImdbMetadataSearchPattern, SearchOption.AllDirectories))
             .Select(imdb => ImdbMetadata.TryGet(imdb, out string? imdbId) ? imdbId : string.Empty)
             .Where(imdbId => imdbId.IsNotNullOrWhiteSpace())
-            .ToArray());
+            .ToHashSetOrdinalIgnoreCase();
 
         library.Values.ForEach(dic => dic.Keys
             .Where(file => file.StartsWithIgnoreCase(@"Movies Mainstream"))
@@ -1629,12 +1629,12 @@ internal static partial class Video
     internal static async Task PrintHighRatingAsync(ISettings settings, string threshold = "8.0", string[]? excludedGenres = null, Action<string>? log = null, CancellationToken cancellationToken = default, params string[] directories)
     {
         log ??= Logger.WriteLine;
-        HashSet<string> existingImdbIds = new(
-            directories.SelectMany(directory => Directory
+        HashSet<string> existingImdbIds = directories
+            .SelectMany(directory => Directory
                 .EnumerateFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories)
                 .Select(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty))
-                .Where(imdbId => imdbId.IsNotNullOrWhiteSpace()),
-            StringComparer.OrdinalIgnoreCase);
+            .Where(imdbId => imdbId.IsNotNullOrWhiteSpace())
+            .ToHashSetOrdinalIgnoreCase();
         Dictionary<string, TopMetadata[]> x265Summaries = await settings.LoadMovieTopX265MetadataAsync(cancellationToken);
         Dictionary<string, TopMetadata[]> h264Summaries = await settings.LoadMovieTopH264MetadataAsync(cancellationToken);
         ConcurrentDictionary<string, List<PreferredMetadata>> preferredDetails = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
@@ -2116,7 +2116,7 @@ internal static partial class Video
         Dictionary<string, TopMetadata[]> x265XMetadata = await settings.LoadMovieTopX265XMetadataAsync(cancellationToken);
         Dictionary<string, TopMetadata[]> h264XMetadata = await settings.LoadMovieTopH264XMetadataAsync(cancellationToken);
         ConcurrentDictionary<string, List<PreferredFileMetadata>> preferredFileMetadata = await settings.LoadMoviePreferredFileMetadataAsync(cancellationToken);
-        HashSet<string> topDuplications = new(settings.MovieTopDuplications, StringComparer.OrdinalIgnoreCase);
+        HashSet<string> topDuplications = settings.MovieTopDuplications.ToHashSetOrdinalIgnoreCase();
 
         Dictionary<string, string> x265TitlesToImdbIds = x265Metadata
             .SelectMany(pair => pair.Value)
@@ -2320,7 +2320,7 @@ internal static partial class Video
         //Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(rareJsonPath);
         //string[] metadataFiles = Directory.GetFiles(settings.MovieMetadataDirectory);
         //string[] cacheFiles = Directory.GetFiles(settings.MovieMetadataCacheDirectory);
-        HashSet<string> keywords = new(settings.ImdbKeywords, StringComparer.OrdinalIgnoreCase);
+        HashSet<string> keywords = settings.ImdbKeywords.ToHashSetOrdinalIgnoreCase();
         //Dictionary<string, string> metadataFilesByImdbId = metadataFiles.ToDictionary(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty);
         string[] localImdbIds = drives
             .AsParallel()
@@ -2709,7 +2709,7 @@ internal static partial class Video
         log ??= Logger.WriteLine;
         Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadTVTopX265MetadataAsync(cancellationToken);
         Dictionary<string, string> metadataFiles = Directory.EnumerateFiles(settings.TVMetadataDirectory).ToDictionary(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty);
-        string[] cacheFiles = Directory.GetFiles(settings.TVMetadataCacheDirectory);
+        HashSet<string> cacheFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.TVMetadataCacheDirectory);
         string[] libraryImdbIds = tvDirectories.SelectMany(tvDirectory => Directory.EnumerateFiles(tvDirectory, ImdbMetadataSearchPattern, SearchOption.AllDirectories))
             .Select(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty)
             .Where(imdbId => imdbId.IsNotNullOrWhiteSpace())

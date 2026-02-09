@@ -112,11 +112,12 @@ internal static class PageHelper
     private static async Task WaitForNoneAsync(Func<ILocator> locatorFactory, CancellationToken cancellationToken = default)
     {
         long startingTimestamp = Stopwatch.GetTimestamp();
-        while (await locatorFactory().CountAsync() > 0)
+        ILocator locator;
+        while (await (locator = locatorFactory()).CountAsync() > 0)
         {
             if (Stopwatch.GetElapsedTime(startingTimestamp) > DefaultManualWait)
             {
-                throw new TimeoutException("Waiting for locator to be closed timed out.");
+                throw new TimeoutException($"Waiting for {locator} to be unloaded timed out.");
             }
 
             await Task.Delay(DefaultDomWait, cancellationToken);
@@ -133,7 +134,7 @@ internal static class PageHelper
         {
             if (Stopwatch.GetElapsedTime(startingTimestamp) > DefaultManualWait)
             {
-                throw new TimeoutException("Waiting for locator to be loaded timed out.");
+                throw new TimeoutException($"Waiting for {locator} to be loaded timed out.");
             }
 
             await Task.Delay(DefaultDomWait, cancellationToken);

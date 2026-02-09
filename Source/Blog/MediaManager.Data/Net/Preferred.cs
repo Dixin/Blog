@@ -353,7 +353,7 @@ internal static class Preferred
     {
         log ??= Logger.WriteLine;
 
-        HashSet<string> existingFiles = new(Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory, TorrentHelper.TorrentSearchPattern), StringComparer.OrdinalIgnoreCase);
+        HashSet<string> existingFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.MovieMetadataCacheDirectory, TorrentHelper.TorrentSearchPattern);
 
         ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
 
@@ -406,7 +406,7 @@ internal static class Preferred
 
         ConcurrentDictionary<string, List<PreferredFileMetadata>> allFileMetadata = await settings.LoadMoviePreferredFileMetadataAsync(cancellationToken);
 
-        HashSet<string> existingFiles = new(Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory, TorrentHelper.TorrentSearchPattern), StringComparer.OrdinalIgnoreCase);
+        HashSet<string> existingFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.MovieMetadataCacheDirectory, TorrentHelper.TorrentSearchPattern);
 
         ConcurrentDictionary<string, List<PreferredMetadata>> allMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
 
