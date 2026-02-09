@@ -126,7 +126,7 @@ internal static partial class Imdb
         return (isUpdated, html, trimmedCQ);
 
         async ValueTask<Exception?> HasAjaxError() =>
-            await page.GetByText("error fetching more data").CountAsync() > 0 
+            await page.GetByText("error fetching more data").CountAsync() > 0
                 ? AjaxError()
                 : null;
 
@@ -915,9 +915,7 @@ internal static partial class Imdb
                 .Find("[data-testid='sub-section'] [data-testid='list-summary-item']")
                 .Select(rowDom => rowDom.Cq().Find("a[href*='/search/title/?keywords=']"))
                 .ToLookup(linkCQ => linkCQ.TextTrimDecode(), linkCQ => linkCQ.Attr("href"))
-                .ToDictionary(
-                    group => group.Key,
-                    group => group.Distinct(StringComparer.OrdinalIgnoreCase).Single());
+                .ToDictionary(group => group.Key, group => group.First());
         }
 
         string quotesUrl = $"{imdbUrl}quotes/";
