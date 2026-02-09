@@ -30,18 +30,17 @@ internal static partial class Imdb
         await Retry.FixedIntervalAsync(
             func: async () =>
             {
-                await page.ClickOrPressAsync("button", new PageLocatorOptions() { HasText = "Don't prompt me" }, cancellationToken);
+                await page.ClickOrPressAsync("button", new PageLocatorOptions() { HasText = "Don't prompt me" }, HasAjaxError, cancellationToken);
 
-                int spoilerButtonCount = await page.ClickOrPressAsync(AriaRole.Button, new PageGetByRoleOptions() { Name = "Spoiler" }, cancellationToken);
+                int spoilerButtonCount = await page.ClickOrPressAsync(AriaRole.Button, new PageGetByRoleOptions() { Name = "Spoiler" }, HasAjaxError, cancellationToken);
                 log($"{spoilerButtonCount} Spoiler buttons are found.");
                 if (spoilerButtonCount > 0)
                 {
                     isUpdated = true;
                     await Task.Delay(PageHelper.DefaultNetworkWait, cancellationToken);
-                    if (await page.GetByText("error fetching more data").CountAsync() > 0
-                        || await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { Name = "Spoiler" }).CountAsync() > 0)
+                    if (await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { Name = "Spoiler" }).CountAsync() > 0)
                     {
-                        throw new HttpRequestException(HttpRequestError.InvalidResponse, $"Ajax error {url}", null, HttpStatusCode.InternalServerError);
+                        throw AjaxError();
                     }
 
                     log($"{spoilerButtonCount} Spoilers are waited.");
@@ -51,16 +50,15 @@ internal static partial class Imdb
 
                 ILocator seeMoreButtons = page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreButtonRegex() });
                 int targetSeeMoreButtonsCount = await seeMoreButtons.CountAsync();
-                int seeAllButtonsCount = await page.ClickOrPressAsync(AriaRole.Button, new PageGetByRoleOptions() { Name = "See all" }, cancellationToken);
+                int seeAllButtonsCount = await page.ClickOrPressAsync(AriaRole.Button, new PageGetByRoleOptions() { Name = "See all" }, HasAjaxError, cancellationToken);
                 log($"{seeAllButtonsCount} See all buttons are found.");
                 if (seeAllButtonsCount > 0)
                 {
                     isUpdated = true;
                     await Task.Delay(PageHelper.DefaultNetworkWait, cancellationToken);
-                    if (await page.GetByText("error fetching more data").CountAsync() > 0
-                        || await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { Name = "See all" }).CountAsync() > 0)
+                    if (await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { Name = "See all" }).CountAsync() > 0)
                     {
-                        throw new HttpRequestException(HttpRequestError.InvalidResponse, $"Ajax error {url}", null, HttpStatusCode.InternalServerError);
+                        throw AjaxError();
                     }
                 }
 
@@ -74,20 +72,19 @@ internal static partial class Imdb
                 if (targetSeeMoreButtonsCount > 0)
                 {
                     await page.WaitForCountAsync(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreButtonRegex() }, targetSeeMoreButtonsCount, cancellationToken);
-                    int actualSeeMoreButtonCount = await page.ClickOrPressAsync(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreButtonRegex() }, cancellationToken);
+                    int actualSeeMoreButtonCount = await page.ClickOrPressAsync(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreButtonRegex() }, HasAjaxError, cancellationToken);
                     Debug.Assert(targetSeeMoreButtonsCount == actualSeeMoreButtonCount);
 
                     isUpdated = true;
                     await Task.Delay(PageHelper.DefaultNetworkWait, cancellationToken);
-                    if (await page.GetByText("error fetching more data").CountAsync() > 0
-                        || await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreButtonRegex() }).CountAsync() > 0)
+                    if (await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreButtonRegex() }).CountAsync() > 0)
                     {
-                        throw new HttpRequestException(HttpRequestError.InvalidResponse, $"Ajax error {url}", null, HttpStatusCode.InternalServerError);
+                        throw AjaxError();
                     }
                 }
                 else
                 {
-                    await page.WaitForNoneAsync(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreButtonRegex() }, cancellationToken);
+                    await page.WaitForNoneAsync(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreButtonRegex() }, HasAjaxError, cancellationToken);
                 }
 
                 if (isUpdated)
@@ -103,7 +100,7 @@ internal static partial class Imdb
                     || trimmedCQ.Find("button.ipc-see-more__button:contains('more') span.ipc-btn__text:visible").Any()
                     || trimmedCQ.Find(":contains('error fetching more data')").Any())
                 {
-                    throw new HttpRequestException(HttpRequestError.InvalidResponse, $"Ajax error {url}", null, HttpStatusCode.InternalServerError);
+                    throw AjaxError();
                 }
             },
             retryingHandler: void (sender, arg) =>
@@ -127,6 +124,13 @@ internal static partial class Imdb
             cancellationToken: cancellationToken);
 
         return (isUpdated, html, trimmedCQ);
+
+        async ValueTask<Exception?> HasAjaxError() =>
+            await page.GetByText("error fetching more data").CountAsync() > 0 
+                ? AjaxError()
+                : null;
+
+        HttpRequestException AjaxError() => new HttpRequestException(HttpRequestError.InvalidResponse, $"Ajax error {url}", null, HttpStatusCode.InternalServerError);
     }
 
     private static async Task<(string Html, CQ CQ)> GetHtmlAsync(bool skip, string file, string url, PlayWrightWrapper? playWrightWrapper, HttpClient? httpClient, HashSet<string> cacheFiles, Action<string>? log = null, CancellationToken cancellationToken = default)
@@ -912,7 +916,7 @@ internal static partial class Imdb
                 .Select(rowDom => rowDom.Cq().Find("a[href*='/search/title/?keywords=']"))
                 .ToLookup(linkCQ => linkCQ.TextTrimDecode(), linkCQ => linkCQ.Attr("href"))
                 .ToDictionary(
-                    group => group.Key, 
+                    group => group.Key,
                     group => group.Distinct(StringComparer.OrdinalIgnoreCase).Single());
         }
 

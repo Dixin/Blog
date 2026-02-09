@@ -109,10 +109,11 @@ internal static class PageHelper
             && !body.ContainsIgnoreCase("Enable JavaScript and then reload");
     }
 
-    private static async Task WaitForNoneAsync(Func<ILocator> locatorFactory, CancellationToken cancellationToken = default)
+    private static async Task WaitForNoneAsync(Func<ILocator> locatorFactory, Func<ValueTask<Exception?>>? error = null, CancellationToken cancellationToken = default)
     {
         long startingTimestamp = Stopwatch.GetTimestamp();
         ILocator locator;
+        bool checkError = error is not null;
         while (await (locator = locatorFactory()).CountAsync() > 0)
         {
             if (Stopwatch.GetElapsedTime(startingTimestamp) > DefaultManualWait)
@@ -120,7 +121,25 @@ internal static class PageHelper
                 throw new TimeoutException($"Waiting for {locator} to be unloaded timed out.");
             }
 
+            if (checkError)
+            {
+                Exception? exception = await error!();
+                if (exception is not null)
+                {
+                    throw exception;
+                }
+            }
+
             await Task.Delay(DefaultDomWait, cancellationToken);
+        }
+
+        if (checkError)
+        {
+            Exception? exception = await error!();
+            if (exception is not null)
+            {
+                throw exception;
+            }
         }
     }
 
@@ -143,7 +162,7 @@ internal static class PageHelper
         return locator;
     }
 
-    private static async Task<int> ClickOrPressAsync(Func<ILocator> locatorFactory, CancellationToken cancellationToken = default)
+    private static async Task<int> ClickOrPressAsync(Func<ILocator> locatorFactory, Func<ValueTask<Exception?>>? error = null, CancellationToken cancellationToken = default)
     {
         IReadOnlyList<ILocator> locators = await locatorFactory().AllAsync();
         if (locators.Count > 0)
@@ -162,20 +181,20 @@ internal static class PageHelper
                 },
                 cancellationToken);
 
-            await WaitForNoneAsync(locatorFactory, cancellationToken);
+            await WaitForNoneAsync(locatorFactory, error, cancellationToken);
         }
 
         return locators.Count;
     }
 
-    internal static async Task WaitForNoneAsync(this IPage page, string selector, PageLocatorOptions? options = null, CancellationToken cancellationToken = default) =>
-        await WaitForNoneAsync(() => page.Locator(selector, options), cancellationToken);
+    internal static async Task WaitForNoneAsync(this IPage page, string selector, PageLocatorOptions? options = null, Func<ValueTask<Exception?>>? error = null, CancellationToken cancellationToken = default) =>
+        await WaitForNoneAsync(() => page.Locator(selector, options), error, cancellationToken);
 
-    internal static async Task WaitForNoneAsync(this IPage page, string text, PageGetByTextOptions? options = null, CancellationToken cancellationToken = default) =>
-        await WaitForNoneAsync(() => page.GetByText(text, options), cancellationToken);
+    internal static async Task WaitForNoneAsync(this IPage page, string text, PageGetByTextOptions? options = null, Func<ValueTask<Exception?>>? error = null, CancellationToken cancellationToken = default) =>
+        await WaitForNoneAsync(() => page.GetByText(text, options), error, cancellationToken);
 
-    internal static async Task WaitForNoneAsync(this IPage page, AriaRole ariaRole, PageGetByRoleOptions? options = null, CancellationToken cancellationToken = default) =>
-        await WaitForNoneAsync(() => page.GetByRole(ariaRole, options), cancellationToken);
+    internal static async Task WaitForNoneAsync(this IPage page, AriaRole ariaRole, PageGetByRoleOptions? options = null, Func<ValueTask<Exception?>>? error = null, CancellationToken cancellationToken = default) =>
+        await WaitForNoneAsync(() => page.GetByRole(ariaRole, options), error, cancellationToken);
 
     internal static async Task<ILocator> WaitForCountAsync(this IPage page, string selector, PageLocatorOptions? options = null, int locatorCount = 0, CancellationToken cancellationToken = default) =>
         await WaitForCountAsync(() => page.Locator(selector, options), locatorCount, cancellationToken);
@@ -186,9 +205,9 @@ internal static class PageHelper
     internal static async Task<ILocator> WaitForCountAsync(this IPage page, Regex text, PageGetByTextOptions? options = null, int locatorCount = 0, CancellationToken cancellationToken = default) =>
         await WaitForCountAsync(() => page.GetByText(text, options), locatorCount, cancellationToken);
 
-    internal static async Task<int> ClickOrPressAsync(this IPage page, string selector, PageLocatorOptions? options = null, CancellationToken cancellationToken = default) =>
-        await ClickOrPressAsync(() => page.Locator(selector, options), cancellationToken);
+    internal static async Task<int> ClickOrPressAsync(this IPage page, string selector, PageLocatorOptions? options = null, Func<ValueTask<Exception?>>? error = null, CancellationToken cancellationToken = default) =>
+        await ClickOrPressAsync(() => page.Locator(selector, options), error, cancellationToken);
 
-    internal static async Task<int> ClickOrPressAsync(this IPage page, AriaRole ariaRole, PageGetByRoleOptions? options = null, CancellationToken cancellationToken = default) =>
-        await ClickOrPressAsync(() => page.GetByRole(ariaRole, options), cancellationToken);
+    internal static async Task<int> ClickOrPressAsync(this IPage page, AriaRole ariaRole, PageGetByRoleOptions? options = null, Func<ValueTask<Exception?>>? error = null, CancellationToken cancellationToken = default) =>
+        await ClickOrPressAsync(() => page.GetByRole(ariaRole, options), error, cancellationToken);
 }
