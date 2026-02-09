@@ -141,6 +141,12 @@ internal static partial class Imdb
         if (File.Exists(file))
         {
             string cachedHtml = await File.ReadAllTextAsync(file, cancellationToken);
+            if (!cachedHtml.EndsWithIgnoreCase("</html>"))
+            {
+                FileHelper.Recycle(file);
+                throw new InvalidDataException($"Invalid cached HTML: {file}.");
+            }
+
             return (cachedHtml.ThrowIfNullOrWhiteSpace(), TrimPage(cachedHtml));
         }
 
@@ -206,10 +212,21 @@ internal static partial class Imdb
 
         string imdbUrl = $"https://www.imdb.com/title/{imdbId}/";
         bool hasImdbFile = File.Exists(imdbFile);
-        string imdbHtml = hasImdbFile
-            ? (await File.ReadAllTextAsync(imdbFile, cancellationToken)).ThrowIfNullOrWhiteSpace()
-            : await (page?.GetStringAsync(imdbUrl, PageSelector, new PageGotoOptions() { Referer = "https://www.imdb.com/" }, cancellationToken)
+        string imdbHtml;
+        if (hasImdbFile)
+        {
+            imdbHtml = (await File.ReadAllTextAsync(imdbFile, cancellationToken)).ThrowIfNullOrWhiteSpace();
+            if (!imdbHtml.EndsWithIgnoreCase("</html>"))
+            {
+                FileHelper.Recycle(imdbFile);
+                throw new InvalidDataException($"Invalid cached HTML: {imdbFile}.");
+            }
+        }
+        else
+        {
+            imdbHtml = await (page?.GetStringAsync(imdbUrl, PageSelector, new PageGotoOptions() { Referer = "https://www.imdb.com/" }, cancellationToken)
                 ?? Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(imdbUrl, cancellationToken), cancellationToken: cancellationToken));
+        }
 
         if (!hasImdbFile && page is not null && !page.Url.EqualsOrdinal(imdbUrl))
         {
