@@ -455,7 +455,7 @@ DirectorySettings[][] metadataDrives = [
 //    settings,
 //    count => ..);
 
-//await Imdb.DownloadAllTVsAsync(settings, [settings.TVMainstream], settings.TVMetadataCacheDirectory, settings.TVMetadataDirectory);
+//await Imdb.DownloadAllTVsAsync(settings, [settings.TVMainstream], length => .., log, cancellationToken);
 
 //string[] genres = ["family", "animation", "documentary"];
 //string[] keywords = [];
@@ -2039,3 +2039,30 @@ static void MoveSubtitles(string sourceDirectory, string destinationDirectory, b
 
 //int lastPostId = await Cool.DownloadAllPostsAsync(14523909, 14523909 + 10000, @"M:\Files\Chinese.Text.Cool18Raw\Posts", true);
 //log(lastPostId.ToString());
+//string[] imdbIds = new DirectorySettings[]
+//{
+//    (@"G:\Files\Library", 3),
+//    (@"H:\Files\Library", 3),
+//    (@"I:\Files\Library", 3),
+//    (@"J:\Files\Library", 3),
+//    (@"K:\Files\Library.Movies", 3)
+//}
+//.AsParallel()
+//.SelectMany(drive => Directory.EnumerateFiles(drive, "*.json", SearchOption.AllDirectories))
+//.Select(json => PathHelper.GetFileNameWithoutExtension(json).Split(".").First())
+//.Where(imdbId => imdbId.IsImdbId())
+//.Distinct(StringComparer.OrdinalIgnoreCase)
+//.ToArray();
+//JsonHelper.SerializeToFile(imdbIds, Path.Combine(settings.LibraryDirectory, "Movie.ImdbIds.json"));
+//string[] imdbIds = new DirectorySettings[]
+//{
+//    (@"L:\Files\Library", 3),
+//    (@"K:\Files\Library.TV", 3)
+//}
+//.AsParallel()
+//.SelectMany(drive => Directory.EnumerateFiles(drive, "*.json", SearchOption.AllDirectories))
+//.Select(json => PathHelper.GetFileNameWithoutExtension(json).Split(".").First())
+//.Where(imdbId => imdbId.IsImdbId())
+//.Distinct(StringComparer.OrdinalIgnoreCase)
+//.ToArray();
+//JsonHelper.SerializeToFile(imdbIds, Path.Combine(settings.LibraryDirectory, "TV.ImdbIds.json"));
