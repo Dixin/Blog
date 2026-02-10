@@ -228,7 +228,7 @@ internal static partial class Video
             }
             else
             {
-                log($"Skip {directory}.");
+                log($"Skip {directory.EscapeMarkup()}.");
                 return false;
             }
         }
@@ -247,7 +247,7 @@ internal static partial class Video
 
             if (nfoImdbIds.Length > 1)
             {
-                log($"!Inconsistent IMDB ids {string.Join(", ", nfoImdbIds)} in {directory}.");
+                log($"[red]!Inconsistent IMDB ids {string.Join(", ", nfoImdbIds)} in {directory.EscapeMarkup()}.[/]");
                 return false;
             }
 
@@ -258,7 +258,7 @@ internal static partial class Video
             }
         }
 
-        log($"Start {directory}");
+        log($"Start {directory.EscapeMarkup()}");
         await TmdbMetadata.WriteTmdbXmlMetadataAsync(directory, files, overwrite, log, cancellationToken);
         return await DownloadImdbMetadataAsync(imdbId, directory, directory, [jsonFile], files, playWrightWrapper, @lock, overwrite, useCache, log, cancellationToken);
     }
@@ -483,9 +483,9 @@ internal static partial class Video
                 files.ForEach(data =>
                 {
                     isDownloaded = true;
-                    log($"Downloaded {data.Url} to {data.File}.");
+                    log($"Downloaded {data.Url} to {data.File.EscapeMarkup()}.");
                     File.WriteAllText(data.File, data.Html);
-                    log($"Saved to {data.File}.");
+                    log($"Saved to {data.File.EscapeMarkup()}.");
                 });
 
                 string newJsonFile = imdbMetadata.GetFilePath(metadataDirectory);
@@ -494,11 +494,10 @@ internal static partial class Video
                     FileHelper.Recycle(jsonFile);
                 }
 
-                log($"Merged {imdbUrl}, {advisoriesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {goofsUrl}, {keywordsUrl}, {quotesUrl}, {releasesUrl}, {soundtracksUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile}.");
+                log($"Merged {imdbUrl}, {advisoriesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {goofsUrl}, {keywordsUrl}, {quotesUrl}, {releasesUrl}, {soundtracksUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile.EscapeMarkup()}.");
                 JsonHelper.SerializeToFile(imdbMetadata, newJsonFile);
-                log($"Saved to {newJsonFile}.");
                 TimeSpan elapsed = Stopwatch.GetElapsedTime(startingTimestamp);
-                log($"Elapsed {elapsed}");
+                log($"[green]Elapsed {elapsed} to Save {newJsonFile.EscapeMarkup()}.[/]");
             }
         }
         else
@@ -507,9 +506,9 @@ internal static partial class Video
                 async data =>
                 {
                     isDownloaded = true;
-                    log($"Downloaded {data.Url} to {data.File}.");
+                    log($"Downloaded {data.Url} to {data.File.EscapeMarkup()}.");
                     await File.WriteAllTextAsync(data.File, data.Html, cancellationToken);
-                    log($"Saved to {data.File}.");
+                    log($"Saved to {data.File.EscapeMarkup()}.");
                 },
                 cancellationToken);
 
@@ -519,11 +518,10 @@ internal static partial class Video
                 FileHelper.Recycle(jsonFile);
             }
 
-            log($"Merged {imdbUrl}, {advisoriesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {goofsUrl}, {keywordsUrl}, {quotesUrl}, {releasesUrl}, {soundtracksUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile}.");
+            log($"Merged {imdbUrl}, {advisoriesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {goofsUrl}, {keywordsUrl}, {quotesUrl}, {releasesUrl}, {soundtracksUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile.EscapeMarkup()}.");
             await JsonHelper.SerializeToFileAsync(imdbMetadata, newJsonFile, cancellationToken);
-            log($"Saved to {newJsonFile}.");
             TimeSpan elapsed = Stopwatch.GetElapsedTime(startingTimestamp);
-            log($"Elapsed {elapsed}");
+            log($"[green]Elapsed {elapsed} to Save {newJsonFile.EscapeMarkup()}.[/]");
         }
             
         return isDownloaded;

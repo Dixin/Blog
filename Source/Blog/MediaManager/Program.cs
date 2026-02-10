@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Xabe.FFmpeg;
 using SearchOption = System.IO.SearchOption;
 
@@ -565,6 +566,11 @@ string[][] metadataDrives = [
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp3, 2, overwrite: false, useCache: true, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.TVTemp1, 1, overwrite: false, useCache: true, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.TVTemp2, 1, overwrite: false, useCache: true, useBrowser: true);
+//Directory.GetFiles(settings.MovieMainstream2, "*.json", SearchOption.AllDirectories)
+//    .ForEach(file => File.Move(file, file + ".bak"));
+//Directory.GetFiles(settings.MovieMainstream2, "*.log", SearchOption.AllDirectories)
+//    .ForEach(file => File.Move(file, file + ".bak"));
+await Video.DownloadImdbMetadataAsync(@"G:\Files\Library", 3, overwrite: false, useCache: true, useBrowser: true, cancellationToken: cancellationToken);
 //FfmpegHelper.MergeAllDubbedMovies(settings.MovieTemp1, isDryRun: true);
 //Video.PrintDuplicateImdbId(null, @"G:\Files\Library",
 //    @"H:\Files\Library",
@@ -1800,9 +1806,7 @@ static void MoveSubtitles(string sourceDirectory, string destinationDirectory, b
             Match match = Regex.Match(PathHelper.GetFileNameWithoutExtension(file), @"\.(?<seasonEpisode>S[0-9]{2}E[0-9]{2}(E[0-9]{2})?)\.", RegexOptions.IgnoreCase);
             return match.Success ? match.Groups["seasonEpisode"].Value : string.Empty;
         });
-    HashSet<string> destinationFiles = new(
-        Directory.EnumerateFiles(destinationDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories),
-        StringComparer.OrdinalIgnoreCase);
+    HashSet<string> destinationFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(destinationDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories);
     Dictionary<string, string[]> destinationVideos = destinationFiles
         .Where(file => file.IsVideo())
         .ToLookup(file =>
