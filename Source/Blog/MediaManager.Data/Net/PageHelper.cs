@@ -32,7 +32,6 @@ internal static class PageHelper
                 //await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
                 if (selector.IsNotNullOrWhiteSpace())
                 {
-                    //await page.WaitForCountAsync(selector, locatorCount: 1, cancellationToken: cancellationToken);
                     await page.WaitForSelectorAsync(selector);
                 }
 
@@ -48,14 +47,17 @@ internal static class PageHelper
             async () =>
             {
                 IResponse? response = await page.ReloadAsync(options);
-                Debug.Assert(response is not null && response.Ok);
+                if (response is null || !response.Ok)
+                {
+                    throw new HttpRequestException(HttpRequestError.InvalidResponse, $"Page error {page.Url}", null, response is null ? HttpStatusCode.InternalServerError : (HttpStatusCode)response.Status);
+                }
+
                 await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
                 await page.WaitForLoadStateAsync(LoadState.Load);
                 //await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
                 if (selector.IsNotNullOrWhiteSpace())
                 {
                     await page.WaitForSelectorAsync(selector);
-                    //await page.WaitForCountAsync(selector, locatorCount: 1, cancellationToken: cancellationToken);
                 }
 
                 await Task.Delay(DefaultNetworkWait, cancellationToken);
