@@ -1,12 +1,11 @@
 namespace MediaManager.IO;
 
-using System;
 using Examples.Common;
 using Examples.IO;
 using Examples.Linq;
-using Examples.Net;
 using MediaManager.Net;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+using Spectre.Console;
 using Xabe.FFmpeg;
 using JsonReaderException = Newtonsoft.Json.JsonReaderException;
 
@@ -204,7 +203,7 @@ internal static partial class Video
                         while (movies.TryDequeue(out string? movie))
                         {
                             int movieIndex = totalCountToDownload - movies.Count;
-                            log($"[yellow]{movieIndex * 100 / totalCountToDownload}% - {movieIndex}/{totalCountToDownload}[/] - [green]{movie}[/]");
+                            log($"[yellow]{movieIndex * 100 / totalCountToDownload}% - {movieIndex}/{totalCountToDownload}[/] - [green]{movie.EscapeMarkup()}[/]");
 
                             if (!await Retry.FixedIntervalAsync(
                                 async () => await DownloadImdbMetadataAsync(movie, playWrightWrapper, @lock, overwrite, useCache, log, token),
@@ -218,7 +217,7 @@ internal static partial class Video
                     cancellationToken),
             retryingHandler: (sender, args) =>
             {
-                log(args.LastException.ToString());
+                log(args.LastException.ToString().EscapeMarkup());
                 //cancellationToken.ThrowIfCancellationRequested();
                 //cancellationTokenSource.Cancel();
                 //cancellationTokenSource.Dispose();

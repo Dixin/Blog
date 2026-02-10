@@ -7,6 +7,7 @@ using Examples.Linq;
 using Examples.Net;
 using Examples.Text;
 using MediaManager.Net;
+using Spectre.Console;
 
 internal static partial class Video
 {
@@ -228,7 +229,7 @@ internal static partial class Video
             }
             else
             {
-                log($"Skip {directory}.");
+                log($"Skip {directory.EscapeMarkup()}.");
                 return false;
             }
         }
@@ -247,7 +248,7 @@ internal static partial class Video
 
             if (nfoImdbIds.Length > 1)
             {
-                log($"!Inconsistent IMDB ids {string.Join(", ", nfoImdbIds)} in {directory}.");
+                log($"[red]!Inconsistent IMDB ids {string.Join(", ", nfoImdbIds)} in {directory.EscapeMarkup()}.[/]");
                 return false;
             }
 
@@ -258,13 +259,14 @@ internal static partial class Video
             }
         }
 
-        log($"Start {directory}");
+        Debug.Assert(imdbId.IsImdbId() || imdbId.EqualsOrdinal(NotExistingFlag));
+        log($"Start {directory.EscapeMarkup()}");
         await TmdbMetadata.WriteTmdbXmlMetadataAsync(directory, files, overwrite, log, cancellationToken);
         return await DownloadImdbMetadataAsync(imdbId, directory, directory, [jsonFile], files, playWrightWrapper, @lock, overwrite, useCache, log, cancellationToken);
     }
 
     internal static async Task<bool> DownloadImdbMetadataAsync(
-        string imdbId, string metadataDirectory, string cacheDirectory, string[] metadataFiles, HashSet<string> cacheFiles, 
+        string imdbId, string metadataDirectory, string cacheDirectory, string[] metadataFiles, HashSet<string> cacheFiles,
         PlayWrightWrapper? playWrightWrapper, Lock? @lock = null, bool overwrite = false, bool useCache = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
@@ -319,7 +321,7 @@ internal static partial class Video
         }
 
         string jsonFile = metadataFiles.SingleOrDefault(file => file.HasImdbId(imdbId), string.Empty);
-        if (jsonFile.IsNotNullOrWhiteSpace() && (!overwrite || IsLatestVersion(jsonFile)))
+        if (jsonFile.IsNotNullOrWhiteSpace() && !overwrite)
         {
             log($"Skip {imdbId}.");
             return false;
@@ -405,7 +407,7 @@ internal static partial class Video
         Debug.Assert(imdbHtml.IsNotNullOrWhiteSpace());
         if (imdbMetadata.Regions.IsEmpty())
         {
-            log($"!Location is missing for {imdbId}: {cacheDirectory}");
+            log($"[yellow]!Location is missing for {imdbId}: {cacheDirectory.EscapeMarkup()}.[/]");
         }
 
         if (!imdbId.EqualsIgnoreCase(imdbMetadata.ImdbId))
@@ -483,9 +485,9 @@ internal static partial class Video
                 //files.ForEach(data =>
                 //{
                 //    isDownloaded = true;
-                //    log($"Downloaded {data.Url} to {data.File}.");
+                //    log($"Downloaded {data.Url} to {data.File.EscapeMarkup()}.");
                 //    File.WriteAllText(data.File, data.Html);
-                //    log($"Saved to {data.File}.");
+                //    log($"Saved to {data.File.EscapeMarkup()}.");
                 //});
 
                 string newJsonFile = imdbMetadata.GetFilePath(metadataDirectory);
@@ -494,11 +496,10 @@ internal static partial class Video
                     FileHelper.Recycle(jsonFile);
                 }
 
-                log($"Merged {imdbUrl}, {advisoriesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {goofsUrl}, {keywordsUrl}, {quotesUrl}, {releasesUrl}, {soundtracksUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile}.");
+                log($"Merged {imdbUrl}, {advisoriesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {goofsUrl}, {keywordsUrl}, {quotesUrl}, {releasesUrl}, {soundtracksUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile.EscapeMarkup()}.");
                 JsonHelper.SerializeToFile(imdbMetadata, newJsonFile);
-                log($"Saved to {newJsonFile}.");
                 TimeSpan elapsed = Stopwatch.GetElapsedTime(startingTimestamp);
-                log($"Elapsed {elapsed}");
+                log($"[green]Elapsed {elapsed} to Save {newJsonFile.EscapeMarkup()}.[/]");
             }
         }
         else
@@ -507,9 +508,9 @@ internal static partial class Video
             //    async data =>
             //    {
             //        isDownloaded = true;
-            //        log($"Downloaded {data.Url} to {data.File}.");
+            //        log($"Downloaded {data.Url} to {data.File.EscapeMarkup()}.");
             //        await File.WriteAllTextAsync(data.File, data.Html, cancellationToken);
-            //        log($"Saved to {data.File}.");
+            //        log($"Saved to {data.File.EscapeMarkup()}.");
             //    },
             //    cancellationToken);
 
@@ -519,13 +520,12 @@ internal static partial class Video
                 FileHelper.Recycle(jsonFile);
             }
 
-            log($"Merged {imdbUrl}, {advisoriesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {goofsUrl}, {keywordsUrl}, {quotesUrl}, {releasesUrl}, {soundtracksUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile}.");
+            log($"Merged {imdbUrl}, {advisoriesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {goofsUrl}, {keywordsUrl}, {quotesUrl}, {releasesUrl}, {soundtracksUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile.EscapeMarkup()}.");
             await JsonHelper.SerializeToFileAsync(imdbMetadata, newJsonFile, cancellationToken);
-            log($"Saved to {newJsonFile}.");
             TimeSpan elapsed = Stopwatch.GetElapsedTime(startingTimestamp);
-            log($"Elapsed {elapsed}");
+            log($"[green]Elapsed {elapsed} to Save {newJsonFile.EscapeMarkup()}.[/]");
         }
-            
+
         return isDownloaded;
     }
 
@@ -973,11 +973,6 @@ internal static partial class Video
         await JsonHelper.SerializeToFileAsync(movies, jsonFile);
     }
 
-    private static readonly DateTime VersionDateTimeUtc = new(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
-    internal static bool IsLatestVersion(string metadata) =>
-        new FileInfo(metadata).LastWriteTimeUtc > VersionDateTimeUtc;
-
     internal static void CopyMetadata(string sourceDirectory, string destinationDirectory, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
@@ -1161,6 +1156,49 @@ internal static partial class Video
                 .Except([latestMetadata])
                 .ToArray()
                 .ForEach(metadata => FileHelper.Copy(latestMetadata, metadata, true, true));
+        });
+    }
+
+    internal static void SyncImdbMetadata(DirectorySettings[] drives, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+
+        (string movie, string imdbId, string json, DateTime LastWriteTimeUtc)[][] groups = drives
+            .AsParallel()
+            .SelectMany(drive => EnumerateDirectories(drive.Directory, drive.Level).Select(movie =>
+            {
+                string json = Directory.EnumerateFiles(movie, ImdbMetadataSearchPattern).Single();
+                string imdbId = PathHelper.GetFileNameWithoutExtension(json).Split(ImdbMetadata.FileNameSeparator).First();
+                return (movie, imdbId, json, new FileInfo(json).LastWriteTimeUtc);
+            }))
+            .Where(movie => !movie.imdbId.EqualsIgnoreCase(NotExistingFlag))
+            .GroupBy(movie => movie.imdbId)
+            .Select(group =>
+            {
+                Debug.Assert(group.Key.IsImdbId());
+                return group.OrderByDescending(movie => movie.LastWriteTimeUtc).ToArray();
+            })
+            .Where(array => array.Length > 1)
+            .OrderBy(array => array[0].movie)
+            .ToArray();
+        log($"{groups.Length} to sync.");
+        groups.Select(group=>group.First().movie.EscapeMarkup()).Append(string.Empty).ForEach(log);
+
+        groups.ForEach(array =>
+        {
+            (string movie, string imdbId, string json, DateTime LastWriteTimeUtc) latest = array[0];
+            string[] latestFiles = Directory.GetFiles(latest.movie).Where(file => file.HasAnyExtension(ImdbMetadata.Extension, ImdbCacheExtension)).ToArray();
+            array
+                .Skip(1)
+                .Where(movie => movie.LastWriteTimeUtc < latest.LastWriteTimeUtc)
+                .ToArray()
+                .ForEach(movie =>
+                {
+                    log($"Sync {latest.movie.EscapeMarkup()} to {movie.movie.EscapeMarkup()}");
+                    string[] files = Directory.GetFiles(movie.movie).Where(file => file.HasAnyExtension(ImdbMetadata.Extension, ImdbCacheExtension)).ToArray();
+                    files.ForEach(FileHelper.Recycle);
+                    latestFiles.ForEach(file => FileHelper.CopyToDirectory(file, movie.movie, false, true));
+                });
         });
     }
 }

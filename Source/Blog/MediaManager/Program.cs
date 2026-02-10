@@ -40,7 +40,7 @@ Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
 FFmpeg.SetExecutablesPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin"));
 Action<string> log = Logger.WriteLine;
 
-string[][] mediaDrives = [
+DirectorySettings[][] mediaDrives = [
     [
         settings.MovieFranchise,
         settings.MovieFranchiseWithoutSubtitle,
@@ -81,10 +81,9 @@ string[][] mediaDrives = [
     ]
 ];
 
-string[][] movieDrives = [
+DirectorySettings[][] movieDrives = [
     [
         settings.MovieFranchise,
-        settings.MovieFranchiseWithoutSubtitle,
         settings.MovieMainstream1,
         settings.MovieTemp1
     ],
@@ -110,7 +109,7 @@ string[][] movieDrives = [
     ]
 ];
 
-string[][] sdrMovieDrives = [
+DirectorySettings[][] sdrMovieDrives = [
     [
         settings.MovieFranchise,
         settings.MovieFranchiseWithoutSubtitle,
@@ -132,7 +131,7 @@ string[][] sdrMovieDrives = [
     ]
 ];
 
-string[][] tvDrives = [
+DirectorySettings[][] tvDrives = [
     [
         settings.TVMainstream,
         settings.TVTemp1
@@ -148,7 +147,7 @@ string[][] tvDrives = [
     ]
 ];
 
-string[][] metadataDrives = [
+DirectorySettings[][] metadataDrives = [
     [
         settings.MovieMetadataDirectory,
         settings.MovieMetadataBackupDirectory,
@@ -609,6 +608,7 @@ string[][] metadataDrives = [
 //Video.PrintDirectoriesWithErrors(settings, @"K:\Files\Library.Movies", 3);
 //Video.PrintDirectoriesWithErrors(settings, @"L:\Files\Library", 3, isTV: true);
 //Video.PrintDirectoriesWithErrors(settings, @"K:\Files\Library.TV", 3, isTV: true);
+//Video.SyncImdbMetadata([(@"L:\Files\Library", 3), (@"K:\Files\Library.TV", 3)], log);
 
 //Video.EnumerateDirectories(@"L:\Files\Library\TV Mainstream.主流电视剧")
 //    .GroupBy(d => PathHelper.GetFileName(d)
@@ -1800,9 +1800,7 @@ static void MoveSubtitles(string sourceDirectory, string destinationDirectory, b
             Match match = Regex.Match(PathHelper.GetFileNameWithoutExtension(file), @"\.(?<seasonEpisode>S[0-9]{2}E[0-9]{2}(E[0-9]{2})?)\.", RegexOptions.IgnoreCase);
             return match.Success ? match.Groups["seasonEpisode"].Value : string.Empty;
         });
-    HashSet<string> destinationFiles = new(
-        Directory.EnumerateFiles(destinationDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories),
-        StringComparer.OrdinalIgnoreCase);
+    HashSet<string> destinationFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(destinationDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories);
     Dictionary<string, string[]> destinationVideos = destinationFiles
         .Where(file => file.IsVideo())
         .ToLookup(file =>
