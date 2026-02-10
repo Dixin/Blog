@@ -387,7 +387,7 @@ internal static partial class Video
 
                 topFiles = topFiles.Where(file => !PathHelper.GetFileName(file).EqualsIgnoreCase(TmdbMetadata.MovieNfoFile)).ToArray();
 
-                string imdbRating = ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata)
+                string imdbRating = ImdbMinMetadata.TryLoad(movie, out ImdbMinMetadata? imdbMetadata)
                     ? imdbMetadata.FormattedAggregateRating
                     : NotExistingFlag;
 

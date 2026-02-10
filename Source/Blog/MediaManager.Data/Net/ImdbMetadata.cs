@@ -13,6 +13,124 @@ public record ImdbEntry(string Type)
 
 public record ImdbEntity(string Type, string Name, string Url) : ImdbEntry(Type);
 
+public partial record ImdbMinMetadata(
+    string Url, string Title, string OriginalTitle,
+    string Type, string Name, string Image, string[]? Genres, 
+    ImdbAggregateRating? AggregateRating,
+    Dictionary<string, string[][]> Details,
+    string AlternateName = "", string Year = "", string ContentRating = "") : ImdbEntity(Type, Name, Url)
+{
+
+    [JsonIgnore]
+    internal string FormattedAggregateRating => (this.AggregateRating?.RatingValue).IfNullOrWhiteSpace("0.0");
+
+    [JsonIgnore]
+    internal string FormattedAggregateRatingCount =>
+        this.AggregateRating switch
+        {
+            null => "0",
+            { RatingCount: < 1_000 } => this.AggregateRating.RatingCount.ToString(),
+            { RatingCount: >= 1_000_000 } => $"{Regex.Replace(Math.Round(this.AggregateRating.RatingCount / 1_000_000d, 1).ToString(CultureInfo.InvariantCulture), @"\.0$", string.Empty)}M",
+            { RatingCount: >= 10_000 } => $"{Math.Round(this.AggregateRating.RatingCount / 1000d)}K",
+            _ => $"{Regex.Replace(Math.Round(this.AggregateRating.RatingCount / 1_000d, 1).ToString(CultureInfo.InvariantCulture), @"\.0$", string.Empty)}K"
+        };
+
+    [JsonIgnore]
+    internal string FormattedContentRating => this.ContentRating.IsNullOrWhiteSpace()
+        ? "NA"
+        : this.ContentRating.Replace("-", string.Empty).Replace(" ", string.Empty).Replace("/", string.Empty).Replace(":", string.Empty);
+    
+    [JsonIgnore]
+    internal IEnumerable<string> Regions =>
+        this.Details.TryGetValue("Countries of origin", out string[][]? regions) || this.Details.TryGetValue("Country of origin", out regions)
+            ? regions
+                .Select(region => region.First())
+                .Select(region => region switch
+                {
+                    "United States" => "USA",
+                    "United Kingdom" => "UK",
+                    _ => region
+                })
+            : [];
+
+    [JsonIgnore]
+    internal IEnumerable<string> Languages =>
+        this.Details.TryGetValue("Languages", out string[][]? languages) || this.Details.TryGetValue("Language", out languages)
+            ? languages.Select(language => language.First())
+            : [];
+
+    [JsonIgnore]
+    internal IEnumerable<string> Studios =>
+        this.Details.TryGetValue("Production company", out string[][]? languages)
+            ? languages.Select(studio => studio.First())
+            : [];
+}
+
+public partial record ImdbMinMetadata : IImdbMetadata
+{
+    public string ImdbId => this.Link.GetUrlPath().Split("/", StringSplitOptions.RemoveEmptyEntries).Single(item => ImdbMetadata.ImdbIdOnlyRegex().IsMatch(item));
+
+    public string ImdbRating => this.AggregateRating?.RatingValue ?? string.Empty;
+
+    [JsonConverter(typeof(StringOrArrayConverter))]
+    [JsonPropertyName("genre")]
+    public string[] Genres { get; init; } = Genres ?? [];
+
+    public string Link => this.Url;
+}
+
+[JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+[JsonSerializable(typeof(ImdbMinMetadata))]
+internal partial class ImdbMinMetadataSourceGenerationContext : JsonSerializerContext
+{
+    internal static ImdbMinMetadataSourceGenerationContext Deserialization => field ??= new(JsonHelper.DeserializerOptions);
+}
+
+public partial record ImdbMinMetadata
+{
+    internal static ImdbMinMetadata Deserialize(string json) =>
+        JsonSerializer.Deserialize<ImdbMinMetadata>(json, ImdbMinMetadataSourceGenerationContext.Deserialization.ImdbMinMetadata)
+        ?? throw new InvalidOperationException($"{json} should not be null.");
+
+    internal static ImdbMinMetadata DeserializeFromFile(string file) =>
+        Deserialize(File.ReadAllText(file));
+
+    public static async Task<ImdbMinMetadata> DeserializeFromFileAsync(string file, CancellationToken cancellationToken = default) =>
+        Deserialize(await File.ReadAllTextAsync(file, cancellationToken));
+
+    internal static bool TryLoad(string? path, [NotNullWhen(true)] out ImdbMinMetadata? imdbMetadata)
+    {
+        if (TryRead(path, out string? file) && !PathHelper.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.NotExistingFlag))
+        {
+            imdbMetadata = DeserializeFromFile(file);
+            return true;
+        }
+
+        imdbMetadata = null;
+        return false;
+    }
+
+    private static bool TryRead(string? path, [NotNullWhen(true)] out string? file)
+    {
+        if (Directory.Exists(path))
+        {
+            file = Directory.GetFiles(path, Video.ImdbMetadataSearchPattern, SearchOption.TopDirectoryOnly).SingleOrDefault();
+            Debug.Assert(file.IsNullOrWhiteSpace() || PathHelper.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.NotExistingFlag) || PathHelper.GetFileNameWithoutExtension(file).Split(ImdbMetadata.FileNameSeparator).Length == 5);
+            return file.IsNotNullOrWhiteSpace();
+        }
+
+        if (path.IsNotNullOrWhiteSpace() && path.EndsWith(ImdbMetadata.Extension) && File.Exists(path))
+        {
+            file = path;
+            Debug.Assert(file.IsNullOrWhiteSpace() || PathHelper.GetFileNameWithoutExtension(file).EqualsOrdinal(Video.NotExistingFlag) || PathHelper.GetFileNameWithoutExtension(file).Split(ImdbMetadata.FileNameSeparator).Length == 5);
+            return true;
+        }
+
+        file = null;
+        return false;
+    }
+}
+
 public partial record ImdbMetadata(
     string Url, string Type, string Context, ImdbMetadata? Parent,
     string Name,

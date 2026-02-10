@@ -227,7 +227,7 @@ internal static partial class Video
                     .ToArray();
                 string[] regions = [];
                 string[] genres = [];
-                bool hasImdbMetadata = ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata);
+                bool hasImdbMetadata = ImdbMinMetadata.TryLoad(movie, out ImdbMinMetadata? imdbMetadata);
                 if (hasImdbMetadata)
                 {
                     if (languages.IsEmpty())
@@ -313,7 +313,7 @@ internal static partial class Video
                 }
 
                 string json = files.Single(IsImdbMetadata);
-                ImdbMetadata.TryLoad(json, out ImdbMetadata? imdbMetadata);
+                ImdbMinMetadata.TryLoad(json, out ImdbMinMetadata? imdbMetadata);
 
                 string defaultTitle = english.Root?.Element("title")?.Value ?? throw new InvalidOperationException($"{movie} has no default title.");
                 defaultTitle = defaultTitle.ReplaceOrdinal(" - ", TitleSeparator);

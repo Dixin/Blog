@@ -401,7 +401,7 @@ internal static partial class Video
             useCache ? parentTriviaFile : string.Empty,
             useCache ? parentVersionsFile : string.Empty,
 
-            playWrightWrapper, cacheFiles, log, cancellationToken);
+            playWrightWrapper, cacheFiles, @lock, log, cancellationToken);
         Debug.Assert(imdbHtml.IsNotNullOrWhiteSpace());
         if (imdbMetadata.Regions.IsEmpty())
         {
@@ -480,13 +480,13 @@ internal static partial class Video
         {
             lock (@lock)
             {
-                files.ForEach(data =>
-                {
-                    isDownloaded = true;
-                    log($"Downloaded {data.Url} to {data.File}.");
-                    File.WriteAllText(data.File, data.Html);
-                    log($"Saved to {data.File}.");
-                });
+                //files.ForEach(data =>
+                //{
+                //    isDownloaded = true;
+                //    log($"Downloaded {data.Url} to {data.File}.");
+                //    File.WriteAllText(data.File, data.Html);
+                //    log($"Saved to {data.File}.");
+                //});
 
                 string newJsonFile = imdbMetadata.GetFilePath(metadataDirectory);
                 if (jsonFile.IsNotNullOrWhiteSpace() && !jsonFile.EqualsIgnoreCase(newJsonFile))
@@ -503,15 +503,15 @@ internal static partial class Video
         }
         else
         {
-            await files.ForEachAsync(
-                async data =>
-                {
-                    isDownloaded = true;
-                    log($"Downloaded {data.Url} to {data.File}.");
-                    await File.WriteAllTextAsync(data.File, data.Html, cancellationToken);
-                    log($"Saved to {data.File}.");
-                },
-                cancellationToken);
+            //await files.ForEachAsync(
+            //    async data =>
+            //    {
+            //        isDownloaded = true;
+            //        log($"Downloaded {data.Url} to {data.File}.");
+            //        await File.WriteAllTextAsync(data.File, data.Html, cancellationToken);
+            //        log($"Saved to {data.File}.");
+            //    },
+            //    cancellationToken);
 
             string newJsonFile = imdbMetadata.GetFilePath(metadataDirectory);
             if (jsonFile.IsNotNullOrWhiteSpace() && !jsonFile.EqualsIgnoreCase(newJsonFile))

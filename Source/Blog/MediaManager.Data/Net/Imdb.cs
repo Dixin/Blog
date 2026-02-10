@@ -133,7 +133,7 @@ internal static partial class Imdb
         HttpRequestException AjaxError() => new HttpRequestException(HttpRequestError.InvalidResponse, $"Ajax error {url}", null, HttpStatusCode.InternalServerError);
     }
 
-    private static async Task<(string Html, CQ CQ)> GetHtmlAsync(bool skip, string file, string url, PlayWrightWrapper? playWrightWrapper, HttpClient? httpClient, HashSet<string> cacheFiles, Action<string>? log = null, CancellationToken cancellationToken = default)
+    private static async Task<(string Html, CQ CQ)> GetHtmlAsync(bool skip, string file, string url, PlayWrightWrapper? playWrightWrapper, HttpClient? httpClient, HashSet<string> cacheFiles, Lock? @lock = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
@@ -165,6 +165,19 @@ internal static partial class Imdb
         await page.GetStringAsync(url, PageSelector, cancellationToken: cancellationToken);
         (bool isUpdated, string html, CQ trimmedCQ) = await playWrightWrapper.TryUpdateAsync(log, cancellationToken);
         log(isUpdated ? $"{url} is updated." : $"{url} is not updated.");
+
+        if (@lock is not null)
+        {
+            lock (@lock)
+            {
+                File.WriteAllText(file, html);
+            }
+        }
+        else
+        {
+            await File.WriteAllTextAsync(file, html, cancellationToken);
+        }
+
         return (html, trimmedCQ);
     }
 
@@ -206,7 +219,7 @@ internal static partial class Imdb
         string imdbId,
         string imdbFile, string advisoriesFile, string awardsFile, string connectionsFile, string crazyCreditsFile, string creditsFile, string goofsFile, string keywordsFile, string quotesFile, string releasesFile, string soundtracksFile, string triviaFile, string versionsFile,
         string parentImdbFile, string parentAdvisoriesFile, string parentAwardsFile, string parentConnectionsFile, string parentCrazyCreditsFile, string parentCreditsFile, string parentGoofsFile, string parentKeywordsFile, string parentQuotesFile, string parentReleasesFile, string parentSoundtracksFile, string parentTriviaFile, string parentVersionsFile,
-        PlayWrightWrapper? playWrightWrapper, HashSet<string> cacheFiles, Action<string>? log = null, CancellationToken cancellationToken = default)
+        PlayWrightWrapper? playWrightWrapper, HashSet<string> cacheFiles, Lock? @lock = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
@@ -230,45 +243,57 @@ internal static partial class Imdb
         {
             imdbHtml = await (page?.GetStringAsync(imdbUrl, PageSelector, new PageGotoOptions() { Referer = "https://www.imdb.com/" }, cancellationToken)
                 ?? Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(imdbUrl, cancellationToken), cancellationToken: cancellationToken));
-        }
 
-        if (!hasImdbFile && page is not null && !page.Url.EqualsOrdinal(imdbUrl))
-        {
-            log($"Redirected {imdbId} to {page.Url}");
-            imdbUrl = page.Url;
-            imdbId = ImdbMetadata.ImdbIdSubstringRegex().Match(imdbUrl).Value;
-            Debug.Assert(imdbId.IsImdbId());
-        }
-
-        if (!hasImdbFile && page is not null && playWrightWrapper is not null)
-        {
-            await Retry.FixedIntervalAsync(
-                async () =>
+            if (page is not null && playWrightWrapper is not null)
+            {
+                if (!page.Url.EqualsOrdinal(imdbUrl))
                 {
-                    ILocator knowLocator = page.GetByTestId("DidYouKnow");
-                    if (await knowLocator.CountAsync() > 0)
-                    {
-                        await knowLocator.ScrollIntoViewIfNeededAsync();
-                    }
-                    else
-                    {
-                        ILocator topPicksLocator = await page.WaitForCountAsync("[data-cel-widget='DynamicFeature_TopPicks']", locatorCount: 1, cancellationToken: cancellationToken);
-                        await topPicksLocator.ScrollIntoViewIfNeededAsync();
-                    }
+                    log($"Redirected {imdbId} to {page.Url}");
+                    imdbUrl = page.Url;
+                    imdbId = ImdbMetadata.ImdbIdSubstringRegex().Match(imdbUrl).Value;
+                    Debug.Assert(imdbId.IsImdbId());
+                }
 
-                    await page.Keyboard.PressAsync("PageUp");
-                    await page.WaitForSelectorAsync("[data-testid='storyline-parents-guide']");
-                    imdbHtml = await page.ContentAsync();
-                },
-                retryingHandler: (sender, args) =>
-                {
-                    if (args.LastException is TimeoutException)
+                await Retry.FixedIntervalAsync(
+                    async () =>
                     {
-                        page = playWrightWrapper.RestartAsync(cancellationToken: cancellationToken).Result;
-                        imdbHtml = page.GetStringAsync(imdbUrl, PageSelector, cancellationToken: cancellationToken).Result;
-                    }
-                },
-                cancellationToken: cancellationToken);
+                        ILocator knowLocator = page.GetByTestId("DidYouKnow");
+                        if (await knowLocator.CountAsync() > 0)
+                        {
+                            await knowLocator.ScrollIntoViewIfNeededAsync();
+                        }
+                        else
+                        {
+                            ILocator topPicksLocator = await page.WaitForCountAsync("[data-cel-widget='DynamicFeature_TopPicks']", locatorCount: 1, cancellationToken: cancellationToken);
+                            await topPicksLocator.ScrollIntoViewIfNeededAsync();
+                        }
+
+                        await page.Keyboard.PressAsync("PageUp");
+                        await page.WaitForSelectorAsync("[data-testid='storyline-parents-guide']");
+                        imdbHtml = await page.ContentAsync();
+                    },
+                    retryingHandler: (sender, args) =>
+                    {
+                        if (args.LastException is TimeoutException)
+                        {
+                            page = playWrightWrapper.RestartAsync(cancellationToken: cancellationToken).Result;
+                            imdbHtml = page.GetStringAsync(imdbUrl, PageSelector, cancellationToken: cancellationToken).Result;
+                        }
+                    },
+                    cancellationToken: cancellationToken);
+            }
+
+            if (@lock is not null)
+            {
+                lock (@lock)
+                {
+                    File.WriteAllText(imdbFile, imdbHtml);
+                }
+            }
+            else
+            {
+                await File.WriteAllTextAsync(imdbFile, imdbHtml, cancellationToken);
+            }
         }
 
         CQ imdbCQ = imdbHtml;
@@ -347,7 +372,7 @@ internal static partial class Imdb
                     parentImdbId,
                     parentImdbFile, parentAdvisoriesFile, parentAwardsFile, parentConnectionsFile, parentCrazyCreditsFile, parentCreditsFile, parentGoofsFile, parentKeywordsFile, parentQuotesFile, parentReleasesFile, parentSoundtracksFile, parentTriviaFile, parentVersionsFile,
                     string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty,
-                    playWrightWrapper, cacheFiles, log, cancellationToken);
+                    playWrightWrapper, cacheFiles, @lock, log, cancellationToken);
             }
         }
 
@@ -481,7 +506,7 @@ internal static partial class Imdb
         }
 
         string releasesUrl = $"{imdbUrl}releaseinfo/";
-        (string releasesHtml, CQ releasesCQ) = await GetHtmlAsync(false, releasesFile, releasesUrl, playWrightWrapper, httpClient, cacheFiles, log, cancellationToken);
+        (string releasesHtml, CQ releasesCQ) = await GetHtmlAsync(false, releasesFile, releasesUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
         string[][] releaseDates = releasesCQ
             .Find("[data-testid='sub-section-releases'] [data-testid='list-item']")
@@ -728,7 +753,7 @@ internal static partial class Imdb
         Debug.Assert(title.IsNotNullOrWhiteSpace());
 
         string advisoriesUrl = $"{imdbUrl}parentalguide/";
-        (string advisoriesHtml, CQ advisoriesCQ) = await GetHtmlAsync(skipAdvisories, advisoriesFile, advisoriesUrl, playWrightWrapper, httpClient, cacheFiles, log, cancellationToken);
+        (string advisoriesHtml, CQ advisoriesCQ) = await GetHtmlAsync(skipAdvisories, advisoriesFile, advisoriesUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
         string mpaaRating = advisoriesCQ.Find("[data-testid='content-rating'] ul li div.ipc-metadata-list-item__content-container").First().TextTrimDecode();
 
@@ -774,7 +799,7 @@ internal static partial class Imdb
             .ToDictionary(certification => certification.Certification, certification => certification.Link);
 
         string awardsUrl = $"{imdbUrl}awards/";
-        (string awardsHtml, CQ awardsCQ) = await GetHtmlAsync(skipAwards, awardsFile, awardsUrl, playWrightWrapper, httpClient, cacheFiles, log, cancellationToken);
+        (string awardsHtml, CQ awardsCQ) = await GetHtmlAsync(skipAwards, awardsFile, awardsUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
         ImdbAwards[] allAwards = awardsCQ
             .Find("section.ipc-page-section")
@@ -819,7 +844,7 @@ internal static partial class Imdb
             .ToArray();
 
         string connectionsUrl = $"{imdbUrl}movieconnections/";
-        (string connectionsHtml, CQ connectionsCQ) = await GetHtmlAsync(skipConnections, connectionsFile, connectionsUrl, playWrightWrapper, httpClient, cacheFiles, log, cancellationToken);
+        (string connectionsHtml, CQ connectionsCQ) = await GetHtmlAsync(skipConnections, connectionsFile, connectionsUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
         Dictionary<string, string[][]> connections = connectionsCQ
             .Find("section.ipc-page-section")
@@ -844,7 +869,7 @@ internal static partial class Imdb
             .ToDictionary(pair => pair.Key, pair => pair.Value);
 
         string crazyCreditsUrl = $"{imdbUrl}crazycredits/";
-        (string crazyCreditsHtml, CQ crazyCreditsCQ) = await GetHtmlAsync(skipCrazyCredits, crazyCreditsFile, crazyCreditsUrl, playWrightWrapper, httpClient, cacheFiles, log, cancellationToken);
+        (string crazyCreditsHtml, CQ crazyCreditsCQ) = await GetHtmlAsync(skipCrazyCredits, crazyCreditsFile, crazyCreditsUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
         string[] crazyCredits = crazyCreditsCQ
             .Find("[data-testid='item-html'] .crazy-credit-text")
@@ -854,7 +879,7 @@ internal static partial class Imdb
             .Select(paragraphDom => paragraphDom.HtmlTrim()).ToArray();
 
         string creditsUrl = $"{imdbUrl}fullcredits/";
-        (string creditsHtml, CQ creditsCQ) = await GetHtmlAsync(false, creditsFile, creditsUrl, playWrightWrapper, httpClient, cacheFiles, log, cancellationToken);
+        (string creditsHtml, CQ creditsCQ) = await GetHtmlAsync(false, creditsFile, creditsUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
         Dictionary<string, string[][]> credits = creditsCQ
             .Find("section.ipc-page-section")
@@ -885,7 +910,7 @@ internal static partial class Imdb
             .ToDictionary(section => section.Category, section => section.Credits);
 
         string goofsUrl = $"{imdbUrl}goofs/";
-        (string goofsHtml, CQ goofsCQ) = await GetHtmlAsync(skipGoofs, goofsFile, goofsUrl, playWrightWrapper, httpClient, cacheFiles, log, cancellationToken);
+        (string goofsHtml, CQ goofsCQ) = await GetHtmlAsync(skipGoofs, goofsFile, goofsUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
         Dictionary<string, string[]> goofs = goofsCQ
             .Find("section.ipc-page-section")
@@ -902,7 +927,7 @@ internal static partial class Imdb
             .ToDictionary(section => section.Category, section => section.Descriptions);
 
         string keywordsUrl = $"{imdbUrl}keywords/";
-        (string keywordsHtml, CQ keywordsCQ) = await GetHtmlAsync(skipKeywords, keywordsFile, keywordsUrl, playWrightWrapper, httpClient, cacheFiles, log, cancellationToken);
+        (string keywordsHtml, CQ keywordsCQ) = await GetHtmlAsync(skipKeywords, keywordsFile, keywordsUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
         Dictionary<string, string> allKeywords = keywordsCQ
             .Find("#keywords_content table td div.sodatext a")
@@ -919,7 +944,7 @@ internal static partial class Imdb
         }
 
         string quotesUrl = $"{imdbUrl}quotes/";
-        (string quotesHtml, CQ quotesCQ) = await GetHtmlAsync(skipQuotes, quotesFile, quotesUrl, playWrightWrapper, httpClient, cacheFiles, log, cancellationToken);
+        (string quotesHtml, CQ quotesCQ) = await GetHtmlAsync(skipQuotes, quotesFile, quotesUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
         string[][] quotes = quotesCQ
             .Find("[data-testid='item-html']")
@@ -933,7 +958,7 @@ internal static partial class Imdb
             .ToArray();
 
         string soundtracksUrl = $"{imdbUrl}soundtrack/";
-        (string soundtracksHtml, CQ soundtracksCQ) = await GetHtmlAsync(skipSoundtracks, soundtracksFile, soundtracksUrl, playWrightWrapper, httpClient, cacheFiles, log, cancellationToken);
+        (string soundtracksHtml, CQ soundtracksCQ) = await GetHtmlAsync(skipSoundtracks, soundtracksFile, soundtracksUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
         string[][] soundtracks = soundtracksCQ
             .Find("[data-testid='list-item']")
@@ -949,7 +974,7 @@ internal static partial class Imdb
             .ToArray();
 
         string triviaUrl = $"{imdbUrl}trivia/";
-        (string triviaHtml, CQ triviaCQ) = await GetHtmlAsync(skipTrivia, triviaFile, triviaUrl, playWrightWrapper, httpClient, cacheFiles, log, cancellationToken);
+        (string triviaHtml, CQ triviaCQ) = await GetHtmlAsync(skipTrivia, triviaFile, triviaUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
         Dictionary<string, string[]> trivia = triviaCQ
             .Find("section.ipc-page-section")
@@ -968,7 +993,7 @@ internal static partial class Imdb
             .ToDictionary(section => section.category, section => section.Descriptions);
 
         string versionsUrl = $"{imdbUrl}alternateversions/";
-        (string versionsHtml, CQ versionsCQ) = await GetHtmlAsync(skipVersions, versionsFile, versionsUrl, playWrightWrapper, httpClient, cacheFiles, log, cancellationToken);
+        (string versionsHtml, CQ versionsCQ) = await GetHtmlAsync(skipVersions, versionsFile, versionsUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
         string[] versions = versionsCQ
             .Find("[data-testid='list-item'] .ipc-html-content-inner-div")
