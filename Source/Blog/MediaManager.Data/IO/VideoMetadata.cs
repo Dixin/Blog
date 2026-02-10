@@ -4,7 +4,7 @@ using MediaManager.Net;
 
 public record VideoMetadata
 {
-    public ImdbMetadata? Imdb { get; init; }
+    public ImdbMinMetadata? Imdb { get; init; }
 
     public string File { get; init; } = string.Empty;
 

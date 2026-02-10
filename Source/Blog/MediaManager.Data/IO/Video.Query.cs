@@ -16,7 +16,7 @@ internal static partial class Video
             .EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories)
             .Where(file => (predicate?.Invoke(file) ?? true) && file.IsVideo());
 
-    internal static Task<VideoMetadata> ReadVideoMetadataAsync(string file, ImdbMetadata? imdbMetadata = null, string? relativePath = null, int retryCount = IODefaultRetryCount, CancellationToken cancellationToken = default) =>
+    internal static Task<VideoMetadata> ReadVideoMetadataAsync(string file, ImdbMinMetadata? imdbMetadata = null, string? relativePath = null, int retryCount = IODefaultRetryCount, CancellationToken cancellationToken = default) =>
         Retry.IncrementalAsync(
             async () =>
             {
@@ -41,7 +41,7 @@ internal static partial class Video
             retryCount,
             cancellationToken: cancellationToken);
 
-    internal static bool TryReadVideoMetadata(string file, [NotNullWhen(true)] out VideoMetadata? videoMetadata, ImdbMetadata? imdbMetadata = null, string? relativePath = null, int retryCount = IODefaultRetryCount, Action<string>? log = null)
+    internal static bool TryReadVideoMetadata(string file, [NotNullWhen(true)] out VideoMetadata? videoMetadata, ImdbMinMetadata? imdbMetadata = null, string? relativePath = null, int retryCount = IODefaultRetryCount, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
 

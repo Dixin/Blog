@@ -1066,49 +1066,46 @@ internal static partial class Imdb
         );
     }
 
-    internal static async Task DownloadAllMoviesAsync(ISettings settings, DirectorySettings[] drives, Func<int, Range>? getRange = null, int? maxDegreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task DownloadAllMoviesAsync(ISettings settings, Func<int, Range>? getRange = null, int? maxDegreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         maxDegreeOfParallelism ??= MaxDegreeOfParallelism;
         log ??= Logger.WriteLine;
 
-        ILookup<string, string> top = (await File.ReadAllLinesAsync(settings.TopMetadata, cancellationToken))
-            .AsParallel()
-            .Where(line => (line.ContainsIgnoreCase("|movies_x265|") || line.ContainsIgnoreCase("|movies|"))
-                && (line.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") || line.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}")))
-            .Select(line => line.Split('|'))
-            .Do(cells => Debug.Assert(string.IsNullOrEmpty(cells[^2]) || cells[^2].IsImdbId()))
-            .Do(cells => Debug.Assert(cells[1].ContainsIgnoreCase($"-{settings.TopEnglishKeyword}") || cells[1].ContainsIgnoreCase($"-{settings.TopForeignKeyword}")))
-            .ToLookup(cells => cells[^2], cells => cells[1]);
+        //ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
 
-        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
-        Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadMovieTopX265MetadataAsync(cancellationToken);
-        Dictionary<string, TopMetadata[]> h264Metadata = await settings.LoadMovieTopH264MetadataAsync(cancellationToken);
-        Dictionary<string, TopMetadata[]> h264720PMetadata = await settings.LoadMovieTopH264720PMetadataAsync(cancellationToken);
-        ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
-        Dictionary<string, TopMetadata[]> x265XMetadata = await settings.LoadMovieTopX265XMetadataAsync(cancellationToken);
-        Dictionary<string, TopMetadata[]> h264XMetadata = await settings.LoadMovieTopH264XMetadataAsync(cancellationToken);
+        //ILookup<string, string> top = (await settings.LoadTopMetadataAsync(cancellationToken))
+        //    .Where(line => (line.Category.EqualsIgnoreCase("movies_x265") || line.Category.EqualsIgnoreCase("movies"))
+        //        && (line.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") || line.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}")))
+        //    .ToLookup(cells => cells.ImdbId, cells => cells.Title);
+        //Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadMovieTopX265MetadataAsync(cancellationToken);
+        //Dictionary<string, TopMetadata[]> h264Metadata = await settings.LoadMovieTopH264MetadataAsync(cancellationToken);
+        //Dictionary<string, TopMetadata[]> h264720PMetadata = await settings.LoadMovieTopH264720PMetadataAsync(cancellationToken);
+        //ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
+        //Dictionary<string, TopMetadata[]> x265XMetadata = await settings.LoadMovieTopX265XMetadataAsync(cancellationToken);
+        //Dictionary<string, TopMetadata[]> h264XMetadata = await settings.LoadMovieTopH264XMetadataAsync(cancellationToken);
         //Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(rareJsonPath);
 
         HashSet<string> cacheFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.MovieMetadataCacheDirectory);
         string[] metadataFiles = Directory.GetFiles(settings.MovieMetadataDirectory);
-        string[] imdbIds = x265Metadata.Keys
-            .Concat(x265XMetadata.Keys)
-            .Concat(h264Metadata.Keys)
-            .Concat(h264XMetadata.Keys)
-            .Concat(preferredMetadata.Keys)
-            .Concat(h264720PMetadata.Keys)
-            .Concat(top.Select(group => group.Key))
-            .Except(libraryMetadata.Keys)
-            .Except(await JsonHelper.DeserializeFromFileAsync<string[]>(Path.Combine(settings.LibraryDirectory, "Movie.ImdbIds.json"), cancellationToken))
-            //.Except(rareMetadata
-            //    .SelectMany(rare => Regex
-            //        .Matches(rare.Value.Content, @"imdb\.com/title/(tt[0-9]+)")
-            //        .Where(match => match.Success)
-            //        .Select(match => match.Groups[1].Value)))
-            .Distinct()
-            .Order()
-            .ToArray();
-        await JsonHelper.SerializeToFileAsync(imdbIds, Path.Combine(settings.LibraryDirectory, "Movie.ImdbIds.json"), cancellationToken);
+        //string[] imdbIds = x265Metadata.Keys.AsParallel()
+        //    .Concat(x265XMetadata.Keys.AsParallel())
+        //    .Concat(h264Metadata.Keys.AsParallel())
+        //    .Concat(h264XMetadata.Keys.AsParallel())
+        //    .Concat(preferredMetadata.Keys.AsParallel())
+        //    .Concat(h264720PMetadata.Keys.AsParallel())
+        //    .Concat(top.Select(group => group.Key).AsParallel())
+        //    .Distinct(StringComparer.OrdinalIgnoreCase)
+        //    .Except(libraryMetadata.Keys.AsParallel())
+        //    .Except((await JsonHelper.DeserializeFromFileAsync<string[]>(Path.Combine(settings.LibraryDirectory, "Movie.ImdbIds.json"), cancellationToken)).AsParallel())
+        //    //.Except(rareMetadata
+        //    //    .SelectMany(rare => Regex
+        //    //        .Matches(rare.Value.Content, @"imdb\.com/title/(tt[0-9]+)")
+        //    //        .Where(match => match.Success)
+        //    //        .Select(match => match.Groups[1].Value)))
+        //    .OrderBy(imdbId => imdbId)
+        //    .ToArray();
+        //await JsonHelper.SerializeToFileAsync(imdbIds, Path.Combine(settings.LibraryDirectory, "Movie.ImdbIdsToDownload.json"), cancellationToken);
+        string[] imdbIds = await JsonHelper.DeserializeFromFileAsync<string[]>(Path.Combine(settings.LibraryDirectory, "Movie.ImdbIdsToDownload.json"), cancellationToken);
         int length = imdbIds.Length;
         if (getRange is not null)
         {
@@ -1393,7 +1390,7 @@ internal static partial class Imdb
     }
 
     internal static async Task DownloadAllTVsAsync(
-        ISettings settings, string[] tvDirectories, Func<int, Range>? getRange = null, 
+        ISettings settings, string[] tvDirectories, Func<int, Range>? getRange = null,
         Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
@@ -1443,7 +1440,7 @@ internal static partial class Imdb
                         {
                             await Retry.FixedIntervalAsync(
                                 async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.TVMetadataDirectory, settings.TVMetadataCacheDirectory, metadataFiles, cacheFiles, playWrightWrapper, @lock, false, true, log, token),
-                                isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound }, 
+                                isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound },
                                 cancellationToken: token);
                         }
                         catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound)

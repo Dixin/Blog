@@ -611,12 +611,12 @@ internal static partial class Video
                     .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
                     .Select(group =>
                     {
-                        ImdbMetadata? imdbMetadata = null;
+                        ImdbMinMetadata? imdbMetadata = null;
                         if (!allMetadataFiles.TryGetValue(group.Key, out string? metadataFile))
                         {
                             log($"!Metadata is missing for {group.Key}.");
                         }
-                        else if (!ImdbMetadata.TryLoad(metadataFile, out imdbMetadata))
+                        else if (!ImdbMinMetadata.TryLoad(metadataFile, out imdbMetadata))
                         {
                             log($"!Metadata is unavailable for {group.Key}.");
                         }
