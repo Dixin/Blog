@@ -5,6 +5,7 @@ using Examples.IO;
 using Examples.Linq;
 using MediaManager.Net;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+using Spectre.Console;
 using Xabe.FFmpeg;
 using JsonReaderException = Newtonsoft.Json.JsonReaderException;
 

@@ -7,6 +7,7 @@ using Examples.Linq;
 using Examples.Net;
 using Examples.Text;
 using MediaManager.Net;
+using Spectre.Console;
 
 internal static partial class Video
 {
@@ -406,7 +407,7 @@ internal static partial class Video
         Debug.Assert(imdbHtml.IsNotNullOrWhiteSpace());
         if (imdbMetadata.Regions.IsEmpty())
         {
-            log($"!Location is missing for {imdbId}: {cacheDirectory}");
+            log($"[yellow]!Location is missing for {imdbId}: {cacheDirectory.EscapeMarkup()}.[/]");
         }
 
         if (!imdbId.EqualsIgnoreCase(imdbMetadata.ImdbId))
