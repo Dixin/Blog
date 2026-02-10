@@ -106,7 +106,7 @@ internal static partial class Imdb
             retryingHandler: void (sender, arg) =>
             {
                 log($"Update retry count {arg.CurrentRetryCount}.");
-                log(arg.LastException.ToString());
+                log(arg.LastException.ToString().EscapeMarkup());
                 if (arg.LastException is HttpRequestException { StatusCode: HttpStatusCode.InternalServerError, HttpRequestError: HttpRequestError.InvalidResponse })
                 {
                     page = playWrightWrapper.RestartAsync(cancellationToken: cancellationToken).Result;

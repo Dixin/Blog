@@ -1800,9 +1800,7 @@ static void MoveSubtitles(string sourceDirectory, string destinationDirectory, b
             Match match = Regex.Match(PathHelper.GetFileNameWithoutExtension(file), @"\.(?<seasonEpisode>S[0-9]{2}E[0-9]{2}(E[0-9]{2})?)\.", RegexOptions.IgnoreCase);
             return match.Success ? match.Groups["seasonEpisode"].Value : string.Empty;
         });
-    HashSet<string> destinationFiles = new(
-        Directory.EnumerateFiles(destinationDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories),
-        StringComparer.OrdinalIgnoreCase);
+    HashSet<string> destinationFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(destinationDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories);
     Dictionary<string, string[]> destinationVideos = destinationFiles
         .Where(file => file.IsVideo())
         .ToLookup(file =>

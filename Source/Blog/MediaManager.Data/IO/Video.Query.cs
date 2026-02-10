@@ -1,10 +1,8 @@
 namespace MediaManager.IO;
 
-using System;
 using Examples.Common;
 using Examples.IO;
 using Examples.Linq;
-using Examples.Net;
 using MediaManager.Net;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Xabe.FFmpeg;
@@ -204,7 +202,7 @@ internal static partial class Video
                         while (movies.TryDequeue(out string? movie))
                         {
                             int movieIndex = totalCountToDownload - movies.Count;
-                            log($"{movieIndex * 100 / totalCountToDownload}% - {movieIndex}/{totalCountToDownload} - {movie}");
+                            log($"[yellow]{movieIndex * 100 / totalCountToDownload}% - {movieIndex}/{totalCountToDownload}[/] - [green]{movie.EscapeMarkup()}[/]");
 
                             if (!await Retry.FixedIntervalAsync(
                                 async () => await DownloadImdbMetadataAsync(movie, playWrightWrapper, @lock, overwrite, useCache, log, token),
