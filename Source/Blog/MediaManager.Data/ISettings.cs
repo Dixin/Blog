@@ -13,6 +13,8 @@ public record struct DirectorySettings(string Directory, int Level)
 
     public static implicit operator (string Directory, int Level)(DirectorySettings directorySettings) => (directorySettings.Directory, directorySettings.Level);
 
+    public static implicit operator DirectorySettings((string Directory, int Level) directorySettings) => new(directorySettings.Directory, directorySettings.Level);
+
     public static implicit operator string(DirectorySettings directorySettings) => directorySettings.Directory;
 
     public static implicit operator DirectorySettings(string directory) => new(directory, Video.DefaultDirectoryLevel);

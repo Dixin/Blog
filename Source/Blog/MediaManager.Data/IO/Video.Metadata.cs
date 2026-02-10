@@ -1158,4 +1158,47 @@ internal static partial class Video
                 .ForEach(metadata => FileHelper.Copy(latestMetadata, metadata, true, true));
         });
     }
+
+    internal static void SyncImdbMetadata(DirectorySettings[] drives, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+
+        (string movie, string imdbId, string json, DateTime LastWriteTimeUtc)[][] groups = drives
+            .AsParallel()
+            .SelectMany(drive => EnumerateDirectories(drive.Directory, drive.Level).Select(movie =>
+            {
+                string json = Directory.EnumerateFiles(movie, ImdbMetadataSearchPattern).Single();
+                string imdbId = PathHelper.GetFileNameWithoutExtension(json).Split(ImdbMetadata.FileNameSeparator).First();
+                return (movie, imdbId, json, new FileInfo(json).LastWriteTimeUtc);
+            }))
+            .Where(movie => !movie.imdbId.EqualsIgnoreCase(NotExistingFlag))
+            .GroupBy(movie => movie.imdbId)
+            .Select(group =>
+            {
+                Debug.Assert(group.Key.IsImdbId());
+                return group.OrderByDescending(movie => movie.LastWriteTimeUtc).ToArray();
+            })
+            .Where(array => array.Length > 1)
+            .OrderBy(array => array[0].movie)
+            .ToArray();
+        log($"{groups.Length} to sync.");
+        groups.Select(group=>group.First().movie.EscapeMarkup()).Append(string.Empty).ForEach(log);
+
+        groups.ForEach(array =>
+        {
+            (string movie, string imdbId, string json, DateTime LastWriteTimeUtc) latest = array[0];
+            string[] latestFiles = Directory.GetFiles(latest.movie).Where(file => file.HasAnyExtension(ImdbMetadata.Extension, ImdbCacheExtension)).ToArray();
+            array
+                .Skip(1)
+                .Where(movie => movie.LastWriteTimeUtc < latest.LastWriteTimeUtc)
+                .ToArray()
+                .ForEach(movie =>
+                {
+                    log($"Sync {latest.movie.EscapeMarkup()} to {movie.movie.EscapeMarkup()}");
+                    string[] files = Directory.GetFiles(movie.movie).Where(file => file.HasAnyExtension(ImdbMetadata.Extension, ImdbCacheExtension)).ToArray();
+                    files.ForEach(FileHelper.Recycle);
+                    latestFiles.ForEach(file => FileHelper.CopyToDirectory(file, movie.movie, false, true));
+                });
+        });
+    }
 }
