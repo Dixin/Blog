@@ -204,7 +204,7 @@ internal static partial class Video
                         while (movies.TryDequeue(out string? movie))
                         {
                             int movieIndex = totalCountToDownload - movies.Count;
-                            log($"{movieIndex * 100 / totalCountToDownload}% - {movieIndex}/{totalCountToDownload} - {movie}");
+                            log($"[yellow]{movieIndex * 100 / totalCountToDownload}% - {movieIndex}/{totalCountToDownload}[/] - [green]{movie}[/]");
 
                             if (!await Retry.FixedIntervalAsync(
                                 async () => await DownloadImdbMetadataAsync(movie, playWrightWrapper, @lock, overwrite, useCache, log, token),
