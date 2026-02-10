@@ -258,13 +258,14 @@ internal static partial class Video
             }
         }
 
+        Debug.Assert(imdbId.IsImdbId() || imdbId.EqualsOrdinal(NotExistingFlag));
         log($"Start {directory}");
         await TmdbMetadata.WriteTmdbXmlMetadataAsync(directory, files, overwrite, log, cancellationToken);
         return await DownloadImdbMetadataAsync(imdbId, directory, directory, [jsonFile], files, playWrightWrapper, @lock, overwrite, useCache, log, cancellationToken);
     }
 
     internal static async Task<bool> DownloadImdbMetadataAsync(
-        string imdbId, string metadataDirectory, string cacheDirectory, string[] metadataFiles, HashSet<string> cacheFiles, 
+        string imdbId, string metadataDirectory, string cacheDirectory, string[] metadataFiles, HashSet<string> cacheFiles,
         PlayWrightWrapper? playWrightWrapper, Lock? @lock = null, bool overwrite = false, bool useCache = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
@@ -319,7 +320,7 @@ internal static partial class Video
         }
 
         string jsonFile = metadataFiles.SingleOrDefault(file => file.HasImdbId(imdbId), string.Empty);
-        if (jsonFile.IsNotNullOrWhiteSpace() && (!overwrite || IsLatestVersion(jsonFile)))
+        if (jsonFile.IsNotNullOrWhiteSpace() && !overwrite)
         {
             log($"Skip {imdbId}.");
             return false;
@@ -525,7 +526,7 @@ internal static partial class Video
             TimeSpan elapsed = Stopwatch.GetElapsedTime(startingTimestamp);
             log($"Elapsed {elapsed}");
         }
-            
+
         return isDownloaded;
     }
 
@@ -972,11 +973,6 @@ internal static partial class Video
 
         await JsonHelper.SerializeToFileAsync(movies, jsonFile);
     }
-
-    private static readonly DateTime VersionDateTimeUtc = new(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
-    internal static bool IsLatestVersion(string metadata) =>
-        new FileInfo(metadata).LastWriteTimeUtc > VersionDateTimeUtc;
 
     internal static void CopyMetadata(string sourceDirectory, string destinationDirectory, bool isDryRun = false, Action<string>? log = null)
     {
