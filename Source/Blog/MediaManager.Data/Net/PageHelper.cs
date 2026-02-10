@@ -49,7 +49,7 @@ internal static class PageHelper
                 IResponse? response = await page.ReloadAsync(options);
                 if (response is null || !response.Ok)
                 {
-                    throw new HttpRequestException(HttpRequestError.InvalidResponse, $"Page error {url}", null, response is null ? HttpStatusCode.InternalServerError : (HttpStatusCode)response.Status);
+                    throw new HttpRequestException(HttpRequestError.InvalidResponse, $"Page error {page.Url}", null, response is null ? HttpStatusCode.InternalServerError : (HttpStatusCode)response.Status);
                 }
 
                 await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
