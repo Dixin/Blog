@@ -217,7 +217,7 @@ internal static partial class Video
                     cancellationToken),
             retryingHandler: (sender, args) =>
             {
-                log(args.LastException.ToString());
+                log(args.LastException.ToString().EscapeMarkup());
                 //cancellationToken.ThrowIfCancellationRequested();
                 //cancellationTokenSource.Cancel();
                 //cancellationTokenSource.Dispose();

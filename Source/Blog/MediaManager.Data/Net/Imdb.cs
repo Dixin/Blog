@@ -9,6 +9,7 @@ using MediaManager.IO;
 using Microsoft.Playwright;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using OpenQA.Selenium;
+using Spectre.Console;
 
 internal static partial class Imdb
 {
