@@ -1041,12 +1041,10 @@ internal static partial class Imdb
         );
     }
 
-    internal static async Task DownloadAllMoviesAsync(ISettings settings, Func<int, Range>? getRange = null, int? maxDegreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task DownloadAllMoviesAsync(ISettings settings, DirectorySettings[] drives, Func<int, Range>? getRange = null, int? maxDegreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         maxDegreeOfParallelism ??= MaxDegreeOfParallelism;
         log ??= Logger.WriteLine;
-
-        WebDriverHelper.DisposeAll();
 
         ILookup<string, string> top = (await File.ReadAllLinesAsync(settings.TopMetadata, cancellationToken))
             .AsParallel()
@@ -1076,6 +1074,7 @@ internal static partial class Imdb
             .Concat(h264720PMetadata.Keys)
             .Concat(top.Select(group => group.Key))
             .Except(libraryMetadata.Keys)
+            .Except(await JsonHelper.DeserializeFromFileAsync<string[]>(Path.Combine(settings.LibraryDirectory, "Movie.ImdbIds.json"), cancellationToken))
             //.Except(rareMetadata
             //    .SelectMany(rare => Regex
             //        .Matches(rare.Value.Content, @"imdb\.com/title/(tt[0-9]+)")
@@ -1084,6 +1083,7 @@ internal static partial class Imdb
             .Distinct()
             .Order()
             .ToArray();
+        await JsonHelper.SerializeToFileAsync(imdbIds, Path.Combine(settings.LibraryDirectory, "Movie.ImdbIds.json"), cancellationToken);
         int length = imdbIds.Length;
         if (getRange is not null)
         {
@@ -1102,9 +1102,7 @@ internal static partial class Imdb
             .ParallelForEachAsync(
                 async (webDriverIndex, _, token) =>
                 {
-                    token.ThrowIfCancellationRequested();
-                    await using PlayWrightWrapper playWrightWrapper = new("https://www.imdb.com/");
-
+                    await using PlayWrightWrapper playWrightWrapper = new();
                     while (imdbIdQueue.TryDequeue(out string? imdbId))
                     {
                         int index = trimmedLength - imdbIdQueue.Count;
@@ -1115,9 +1113,9 @@ internal static partial class Imdb
                                 async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, playWrightWrapper, @lock, overwrite: false, useCache: true, log: log, token),
                                 isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError }, cancellationToken: token);
                         }
-                        catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
+                        catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound)
                         {
-                            log($"!!!{imdbId} {exception}");
+                            log($"!!!{imdbId} {exception.ToString().EscapeMarkup()}");
                             imdbIdWithErrors.Add(imdbId);
                         }
                     }
@@ -1370,27 +1368,28 @@ internal static partial class Imdb
     }
 
     internal static async Task DownloadAllTVsAsync(
-        ISettings settings,
-        string[] tvDirectories, string cacheDirectory, string metadataDirectory,
-        Func<int, Range>? getRange = null, Action<string>? log = null, CancellationToken cancellationToken = default)
+        ISettings settings, string[] tvDirectories, Func<int, Range>? getRange = null, 
+        Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
-        Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadMovieTopX265MetadataAsync(cancellationToken);
-        string[] libraryImdbIds = tvDirectories.SelectMany(tvDirectory => Directory.EnumerateFiles(tvDirectory, Video.ImdbMetadataSearchPattern, SearchOption.AllDirectories))
-            .Select(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty)
-            .Where(imdbId => imdbId.IsNotNullOrWhiteSpace())
-            .ToArray();
+        //Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadTVTopX265MetadataAsync(cancellationToken);
+        //ContrastMetadata[] contrastMetadata = await settings.LoadTVContrastMetadataAsync(cancellationToken);
+        //string[] libraryImdbIds = tvDirectories.SelectMany(tvDirectory => Directory.EnumerateFiles(tvDirectory, Video.ImdbMetadataSearchPattern, SearchOption.AllDirectories))
+        //    .Select(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty)
+        //    .Where(imdbId => imdbId.IsImdbId())
+        //    .ToArray();
 
-        await using PlayWrightWrapper playWrightWrapper = new("https://www.imdb.com/");
-
-        HashSet<string> cacheFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(cacheDirectory);
-        string[] metadataFiles = Directory.GetFiles(metadataDirectory);
-        string[] imdbIds = x265Metadata.Keys
-            .Distinct()
-            .Except(libraryImdbIds)
-            .Order()
-            .ToArray();
+        HashSet<string> cacheFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.TVMetadataCacheDirectory);
+        string[] metadataFiles = Directory.GetFiles(settings.TVMetadataDirectory);
+        //string[] imdbIds = x265Metadata.Keys
+        //    .Concat(contrastMetadata.Select(metadata => metadata.ImdbId).Where(imdbId => imdbId.IsImdbId()))
+        //    .Distinct(StringComparer.OrdinalIgnoreCase)
+        //    .Except(await JsonHelper.DeserializeFromFileAsync<string[]>(Path.Combine(settings.LibraryDirectory, "TV.ImdbIds.json"), cancellationToken))
+        //    .Order()
+        //    .ToArray();
+        //await JsonHelper.SerializeToFileAsync(imdbIds, Path.Combine(settings.LibraryDirectory, "TV.ImdbIdsToDownload.json"), cancellationToken);
+        string[] imdbIds = await JsonHelper.DeserializeFromFileAsync<string[]>(Path.Combine(settings.LibraryDirectory, "TV.ImdbIdsToDownload.json"), cancellationToken);
         if (getRange is not null)
         {
             int length = imdbIds.Length;
@@ -1401,23 +1400,38 @@ internal static partial class Imdb
             .Except(metadataFiles.Select(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty))
             .ToArray();
         int trimmedLength = imdbIds.Length;
-        await imdbIds.ForEachAsync(
-            async (imdbId, index) =>
-            {
-                log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
-                try
+        ConcurrentQueue<string> imdbIdQueue = new(imdbIds);
+        ConcurrentBag<string> imdbIdWithErrors = [];
+        await using PlayWrightWrapper playWrightWrapper = new("https://www.imdb.com/");
+        Lock @lock = new();
+        await Enumerable
+            .Range(0, MaxDegreeOfParallelism)
+            .ParallelForEachAsync(
+                async (webDriverIndex, _, token) =>
                 {
-                    await Retry.FixedIntervalAsync(
-                        async () => await Video.DownloadImdbMetadataAsync(imdbId, metadataDirectory, cacheDirectory, metadataFiles, cacheFiles, playWrightWrapper, overwrite: false, useCache: true, log: log, cancellationToken: cancellationToken),
-                        isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError },
-                        cancellationToken: cancellationToken);
-                }
-                catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
-                {
-                    log($"!!!{imdbId} {exception}");
-                }
-            },
-            cancellationToken: cancellationToken);
+                    await using PlayWrightWrapper playWrightWrapper = new();
+                    while (imdbIdQueue.TryDequeue(out string? imdbId))
+                    {
+                        int index = trimmedLength - imdbIdQueue.Count;
+                        log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
+                        try
+                        {
+                            await Retry.FixedIntervalAsync(
+                                async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.TVMetadataDirectory, settings.TVMetadataCacheDirectory, metadataFiles, cacheFiles, playWrightWrapper, @lock, false, true, log, token),
+                                isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound }, 
+                                cancellationToken: token);
+                        }
+                        catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound)
+                        {
+                            log($"!!!{imdbId} {exception.ToString().EscapeMarkup()}");
+                            imdbIdWithErrors.Add(imdbId);
+                        }
+                    }
+                },
+                MaxDegreeOfParallelism,
+                cancellationToken);
+
+        imdbIdWithErrors.Prepend("IMDB ids with errors:").ForEach(log);
     }
 
     [GeneratedRegex("[0-9]{4}")]
