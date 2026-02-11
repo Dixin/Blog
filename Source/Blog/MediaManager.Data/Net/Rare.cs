@@ -2,6 +2,7 @@
 
 using CsQuery;
 using Examples.Common;
+using Examples.IO;
 using Examples.Linq;
 using MediaManager.IO;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
@@ -69,7 +70,7 @@ internal static class Rare
         Dictionary<string, TopMetadata[]> h264720PMetadata = await settings.LoadMovieTopH264720PMetadataAsync(cancellationToken);
         ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
 
-        string[] cacheFiles = Directory.GetFiles(settings.MovieMetadataCacheDirectory);
+        HashSet<string> cacheFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.MovieMetadataCacheDirectory);
         string[] metadataFiles = Directory.GetFiles(settings.MovieMetadataDirectory);
         (string Link, string Title, string Value, string[] Categories)[] imdbIds = rareMetadata
             .AsParallel()

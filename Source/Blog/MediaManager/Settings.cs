@@ -2,6 +2,7 @@
 
 using System.Buffers;
 using Examples.Common;
+using Examples.Linq;
 using MediaManager.IO;
 using MediaManager.Net;
 
@@ -166,7 +167,7 @@ public partial record Settings
     private HashSet<string>? movieIgnoredMetadata;
 
     public async Task<HashSet<string>> LoadIgnoredAsync(CancellationToken cancellationToken) =>
-        this.movieIgnoredMetadata ??= new(await JsonHelper.DeserializeFromFileAsync<string[]>(this.MovieIgnoredMetadata, cancellationToken), StringComparer.OrdinalIgnoreCase);
+        this.movieIgnoredMetadata ??= (await JsonHelper.DeserializeFromFileAsync<string[]>(this.MovieIgnoredMetadata, cancellationToken)).ToHashSetOrdinalIgnoreCase();
 
     public async Task WriteMovieIgnoredMetadataAsync(HashSet<string> value, CancellationToken cancellationToken) =>
         await JsonHelper.SerializeToFileAsync(this.movieIgnoredMetadata = value, this.MovieIgnoredMetadata, cancellationToken);

@@ -227,15 +227,15 @@ internal static partial class Video
                     .ToArray();
                 string[] regions = [];
                 string[] genres = [];
-                bool hasImdbMetadata = ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata);
+                bool hasImdbMetadata = ImdbMinMetadata.TryLoad(movie, out ImdbMinMetadata? imdbMetadata);
                 if (hasImdbMetadata)
                 {
                     if (languages.IsEmpty())
                     {
-                        languages = imdbMetadata.Languages;
+                        languages = imdbMetadata.Languages.ToArray();
                     }
 
-                    regions = imdbMetadata.Regions;
+                    regions = imdbMetadata.Regions.ToArray();
                     genres = imdbMetadata.Genres;
                 }
 
@@ -313,7 +313,7 @@ internal static partial class Video
                 }
 
                 string json = files.Single(IsImdbMetadata);
-                ImdbMetadata.TryLoad(json, out ImdbMetadata? imdbMetadata);
+                ImdbMinMetadata.TryLoad(json, out ImdbMinMetadata? imdbMetadata);
 
                 string defaultTitle = english.Root?.Element("title")?.Value ?? throw new InvalidOperationException($"{movie} has no default title.");
                 defaultTitle = defaultTitle.ReplaceOrdinal(" - ", TitleSeparator);
@@ -1286,7 +1286,7 @@ internal static partial class Video
                         .Where(advisory => advisory.Key.ContainsIgnoreCase("sex"))
                         .SelectMany(advisory => advisory.Value)
                         .Select(advisory => advisory.Key));
-                string keywords = string.Join(VersionSeparator, OrderedKeywords.Intersect(metadata.AllKeywords).Take(3));
+                string keywords = string.Join(VersionSeparator, OrderedKeywords.Intersect(metadata.MergedKeywords).Take(3));
                 log(movie);
                 string newMovie = DirectoryHelper.ReplaceDirectoryName(movie, $"{name}{AdditionalMetadataSeparator}{severity}{Delimiter}{keywords}");
                 log(newMovie);
@@ -1305,14 +1305,14 @@ internal static partial class Video
             })
             .Where(movie => movie.Item2.Root?.Elements("studio").Any(element => element.Value.ContainsIgnoreCase("Nikkatsu")) is true
                 && movie.Item2.Root?.Elements("tag").Any(element => element.Value.ContainsIgnoreCase("pink")) is true
-                || movie.imdbMetadata?.Companies?.Keys.Any(company => company.ContainsIgnoreCase("Nikkatsu")) is true
-                && movie.imdbMetadata?.AllKeywords.Any(keyword => keyword.ContainsIgnoreCase("roman porno") || keyword.ContainsIgnoreCase("pink")) is true)
+                || movie.imdbMetadata?.Studios.Any(company => company.ContainsIgnoreCase("Nikkatsu")) is true
+                && movie.imdbMetadata?.MergedKeywords.Any(keyword => keyword.ContainsIgnoreCase("roman porno") || keyword.ContainsIgnoreCase("pink")) is true)
             .ForEach(movie =>
             {
                 log(string.Join(", ", movie.Item2.Root?.Elements("studio").Select(element => element.Value) ?? []));
                 log(string.Join(", ", movie.Item2.Root?.Elements("tag").Select(element => element.Value) ?? []));
-                log(string.Join(", ", movie.imdbMetadata?.Companies?.Keys.AsEnumerable() ?? []));
-                log(string.Join(", ", movie.imdbMetadata?.AllKeywords.Where(keyword => keyword.ContainsIgnoreCase("roman porno") || keyword.ContainsIgnoreCase("pink")) ?? []));
+                log(string.Join(", ", movie.imdbMetadata?.Studios.AsEnumerable() ?? []));
+                log(string.Join(", ", movie.imdbMetadata?.MergedKeywords.Where(keyword => keyword.ContainsIgnoreCase("roman porno") || keyword.ContainsIgnoreCase("pink")) ?? []));
                 log(movie.movie);
                 string newMovie = PathHelper.ReplaceDirectoryName(movie.movie, name => "Nikkatsu Pink-" + Regex.Replace(name, @"\.[0-9]{4}\.", "$0日活粉画-"));
                 if (!isDryRun)

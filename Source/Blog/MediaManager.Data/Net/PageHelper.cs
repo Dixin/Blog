@@ -1,9 +1,11 @@
 ﻿namespace MediaManager.Net;
 
 using Examples.Common;
+using Examples.Linq;
 using MediaManager.IO;
 using Microsoft.Playwright;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+using System.Threading;
 
 internal static class PageHelper
 {
@@ -11,40 +13,59 @@ internal static class PageHelper
 
     internal static readonly TimeSpan DefaultNetworkWait = TimeSpan.FromSeconds(1);
 
-    internal static readonly TimeSpan DefaultPageWait = TimeSpan.FromSeconds(60);
+    internal static readonly TimeSpan DefaultPageWait = TimeSpan.FromSeconds(120);
 
     internal static readonly TimeSpan DefaultDomWait = TimeSpan.FromMilliseconds(100);
 
-    internal static async Task<string> GetStringAsync(this IPage page, string url, PageGotoOptions? options = null) =>
-        await Retry.FixedIntervalAsync(async () =>
-        {
-            PageGotoOptions pageGotoOptions = options is null ? new PageGotoOptions() : new PageGotoOptions(options);
-            //pageGotoOptions.Timeout = (float)DefaultPageWait.TotalMilliseconds;
-            IResponse? response = await page.GotoAsync(url, pageGotoOptions);
-            Debug.Assert(response is not null && response.Ok);
-            await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
-            await page.WaitForLoadStateAsync(LoadState.Load);
-            //await page.WaitForLoadStateAsync(LoadState.NetworkIdle, new PageWaitForLoadStateOptions() { Timeout = pageGotoOptions.Timeout });
-            await Task.Delay(DefaultNetworkWait);
-            if (await page.IsBlockedAsync())
+    internal static async Task<string> GetStringAsync(this IPage page, string url, string selector, PageGotoOptions? options = null, CancellationToken cancellationToken = default) =>
+        await Retry.FixedIntervalAsync(
+            async () =>
             {
-                throw new InvalidOperationException(url);
-            }
+                IResponse? response = await page.GotoAsync(url, options);
+                if (response is null || !response.Ok)
+                {
+                    throw new HttpRequestException(HttpRequestError.InvalidResponse, $"Page error {url}", null, response is null ? HttpStatusCode.InternalServerError : (HttpStatusCode)response.Status);
+                }
 
-            string html = await page.ContentAsync();
-            Debug.Assert(html.IsNotNullOrWhiteSpace());
-            return html;
-        });
+                await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+                await page.WaitForLoadStateAsync(LoadState.Load);
+                //await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                if (selector.IsNotNullOrWhiteSpace())
+                {
+                    await page.WaitForSelectorAsync(selector);
+                }
 
-    internal static async Task RefreshAsync(this IPage page, PageReloadOptions? options = null)
-    {
-        PageReloadOptions pageReloadOptions = options is null ? new PageReloadOptions() : new PageReloadOptions(options);
-        //pageReloadOptions.Timeout = (float)DefaultPageWait.TotalMilliseconds;
-        IResponse? response = await page.ReloadAsync(pageReloadOptions);
-        Debug.Assert(response is not null && response.Ok);
-        await Task.Delay(DefaultNetworkWait);
-        Debug.Assert(!await page.IsBlockedAsync());
-    }
+                await Task.Delay(DefaultNetworkWait, cancellationToken);
+                string html = await page.ContentAsync();
+                Debug.Assert(html.IsNotNullOrWhiteSpace());
+                return html;
+            },
+            cancellationToken: cancellationToken);
+
+    internal static async Task<string> RefreshAsync(this IPage page, string selector, PageReloadOptions? options = null, CancellationToken cancellationToken = default) =>
+        await Retry.FixedIntervalAsync(
+            async () =>
+            {
+                IResponse? response = await page.ReloadAsync(options);
+                if (response is null || !response.Ok)
+                {
+                    throw new HttpRequestException(HttpRequestError.InvalidResponse, $"Page error {page.Url}", null, response is null ? HttpStatusCode.InternalServerError : (HttpStatusCode)response.Status);
+                }
+
+                await page.WaitForLoadStateAsync(LoadState.DOMContentLoaded);
+                await page.WaitForLoadStateAsync(LoadState.Load);
+                //await page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+                if (selector.IsNotNullOrWhiteSpace())
+                {
+                    await page.WaitForSelectorAsync(selector);
+                }
+
+                await Task.Delay(DefaultNetworkWait, cancellationToken);
+                string html = await page.ContentAsync();
+                Debug.Assert(html.IsNotNullOrWhiteSpace());
+                return html;
+            },
+            cancellationToken: cancellationToken);
 
     private static readonly string[] Media = ["jpg", "jpeg", "png", "gif", "webp", ".mp4", ".mov"];
 
@@ -77,21 +98,118 @@ internal static class PageHelper
         //    });
         await page.RouteAsync(
             new Regex(@"\.(jpg|jpeg|png|gif|webp|mp4|mov)", RegexOptions.IgnoreCase),
-            async route =>
-            {
-                await route.AbortAsync();
-                //log($"Blocked {route.Request.ResourceType} {route.Request.Url}");
-            });
+            async route => await route.AbortAsync());
     }
 
-    internal static async Task<bool> IsBlockedAsync(this IPage page, Action<string>? log = null)
+    internal static async Task<bool> WaitForBodyAsync(this IPage page, CancellationToken cancellationToken = default)
     {
-        log ??= Logger.WriteLine;
+        ILocator bodyLocator = await page.WaitForCountAsync("body", locatorCount: 1, cancellationToken: cancellationToken);
 
-        string text = await page.TextContentAsync("body") ?? string.Empty;
-        return text.IsNullOrWhiteSpace()
-            || text.ContainsIgnoreCase("JavaScript is disabled")
-            || text.ContainsIgnoreCase("need to verify that you're not a robot")
-            || text.ContainsIgnoreCase("Enable JavaScript and then reload");
+        string body = await bodyLocator.TextContentAsync() ?? string.Empty;
+        return !body.ContainsIgnoreCase("JavaScript is disabled")
+            && !body.ContainsIgnoreCase("need to verify that you're not a robot")
+            && !body.ContainsIgnoreCase("Enable JavaScript and then reload");
     }
+
+    private static async Task WaitForNoneAsync(Func<ILocator> locatorFactory, Func<ValueTask<Exception?>>? error = null, CancellationToken cancellationToken = default)
+    {
+        long startingTimestamp = Stopwatch.GetTimestamp();
+        ILocator locator;
+        bool checkError = error is not null;
+        while (await (locator = locatorFactory()).CountAsync() > 0)
+        {
+            if (Stopwatch.GetElapsedTime(startingTimestamp) > DefaultManualWait)
+            {
+                throw new TimeoutException($"Waiting for {locator} to be unloaded timed out.");
+            }
+
+            if (checkError)
+            {
+                Exception? exception = await error!();
+                if (exception is not null)
+                {
+                    throw exception;
+                }
+            }
+
+            await Task.Delay(DefaultDomWait, cancellationToken);
+        }
+
+        if (checkError)
+        {
+            Exception? exception = await error!();
+            if (exception is not null)
+            {
+                throw exception;
+            }
+        }
+    }
+
+    private static async Task<ILocator> WaitForCountAsync(Func<ILocator> locatorFactory, int locatorCount, CancellationToken cancellationToken = default)
+    {
+        locatorCount.ThrowIfNotPositive();
+
+        ILocator locator;
+        long startingTimestamp = Stopwatch.GetTimestamp();
+        while (await (locator = locatorFactory()).CountAsync() != locatorCount)
+        {
+            if (Stopwatch.GetElapsedTime(startingTimestamp) > DefaultManualWait)
+            {
+                throw new TimeoutException($"Waiting for {locator} to be loaded timed out.");
+            }
+
+            await Task.Delay(DefaultDomWait, cancellationToken);
+        }
+
+        return locator;
+    }
+
+    private static async Task<int> ClickOrPressAsync(Func<ILocator> locatorFactory, Func<ValueTask<Exception?>>? error = null, CancellationToken cancellationToken = default)
+    {
+        IReadOnlyList<ILocator> locators = await locatorFactory().AllAsync();
+        if (locators.Count > 0)
+        {
+            await locators.Reverse().ForEachAsync(
+                async button =>
+                {
+                    try
+                    {
+                        await button.ClickAsync();
+                    }
+                    catch (Exception exception) when (exception.IsNotCritical())
+                    {
+                        await button.PressAsync(" ");
+                    }
+                },
+                cancellationToken);
+
+            await WaitForNoneAsync(locatorFactory, error, cancellationToken);
+        }
+
+        return locators.Count;
+    }
+
+    internal static async Task WaitForNoneAsync(this IPage page, string selector, PageLocatorOptions? options = null, Func<ValueTask<Exception?>>? error = null, CancellationToken cancellationToken = default) =>
+        await WaitForNoneAsync(() => page.Locator(selector, options), error, cancellationToken);
+
+    internal static async Task WaitForNoneAsync(this IPage page, string text, PageGetByTextOptions? options = null, Func<ValueTask<Exception?>>? error = null, CancellationToken cancellationToken = default) =>
+        await WaitForNoneAsync(() => page.GetByText(text, options), error, cancellationToken);
+
+    internal static async Task WaitForNoneAsync(this IPage page, AriaRole ariaRole, PageGetByRoleOptions? options = null, Func<ValueTask<Exception?>>? error = null, CancellationToken cancellationToken = default) =>
+        await WaitForNoneAsync(() => page.GetByRole(ariaRole, options), error, cancellationToken);
+
+    internal static async Task<ILocator> WaitForCountAsync(this IPage page, string selector, PageLocatorOptions? options = null, int locatorCount = 0, CancellationToken cancellationToken = default) =>
+        await WaitForCountAsync(() => page.Locator(selector, options), locatorCount, cancellationToken);
+
+    internal static async Task<ILocator> WaitForCountAsync(this IPage page, AriaRole ariaRole, PageGetByRoleOptions? options = null, int locatorCount = 0, CancellationToken cancellationToken = default) =>
+        await WaitForCountAsync(() => page.GetByRole(ariaRole, options), locatorCount, cancellationToken);
+
+    internal static async Task<ILocator> WaitForCountAsync(this IPage page, Regex text, PageGetByTextOptions? options = null, int locatorCount = 0, CancellationToken cancellationToken = default) =>
+        await WaitForCountAsync(() => page.GetByText(text, options), locatorCount, cancellationToken);
+
+    internal static async Task<int> ClickOrPressAsync(this IPage page, string selector, PageLocatorOptions? options = null, Func<ValueTask<Exception?>>? error = null, CancellationToken cancellationToken = default) =>
+        await ClickOrPressAsync(() => page.Locator(selector, options), error, cancellationToken);
+
+    internal static async Task<int> ClickOrPressAsync(this IPage page, AriaRole ariaRole, PageGetByRoleOptions? options = null, Func<ValueTask<Exception?>>? error = null, CancellationToken cancellationToken = default) =>
+        await ClickOrPressAsync(() => page.GetByRole(ariaRole, options), error, cancellationToken);
 }

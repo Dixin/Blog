@@ -6,6 +6,18 @@ using SearchOption = System.IO.SearchOption;
 
 public static class DirectoryHelper
 {
+    public static HashSet<string> GetFiles(string directory, StringComparer? comparer = null) =>
+            Directory.EnumerateFiles(directory.ThrowIfNull()).ToHashSet(comparer);
+
+    public static HashSet<string> GetFilesOrdinalIgnoreCase(string directory) =>
+        GetFiles(directory.ThrowIfNull(), StringComparer.OrdinalIgnoreCase);
+
+    public static HashSet<string> GetFiles(string directory, string searchPattern, SearchOption searchOption = SearchOption.TopDirectoryOnly, StringComparer? comparer = null) =>
+        Directory.EnumerateFiles(directory.ThrowIfNull(), searchPattern, searchOption).ToHashSet(comparer);
+
+    public static HashSet<string> GetFilesOrdinalIgnoreCase(string directory, string searchPattern, SearchOption searchOption = SearchOption.TopDirectoryOnly) =>
+        GetFiles(directory.ThrowIfNull(), searchPattern, searchOption, StringComparer.OrdinalIgnoreCase);
+
     public static void Delete(string directory)
     {
         Directory.GetFiles(directory.ThrowIfNull()).ForEach(FileHelper.Delete);

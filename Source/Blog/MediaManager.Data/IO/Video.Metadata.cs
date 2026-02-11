@@ -7,6 +7,7 @@ using Examples.Linq;
 using Examples.Net;
 using Examples.Text;
 using MediaManager.Net;
+using Spectre.Console;
 
 internal static partial class Video
 {
@@ -213,11 +214,11 @@ internal static partial class Video
         });
     }
 
-    private static async Task<bool> DownloadImdbMetadataAsync(string directory, PlayWrightWrapper? playWrightWrapper, bool overwrite = false, bool useCache = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    private static async Task<bool> DownloadImdbMetadataAsync(string directory, PlayWrightWrapper? playWrightWrapper, Lock? @lock = null, bool overwrite = false, bool useCache = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
-        string[] files = Directory.GetFiles(directory, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
+        HashSet<string> files = DirectoryHelper.GetFilesOrdinalIgnoreCase(directory);
         string jsonFile = files.SingleOrDefault(IsImdbMetadata, string.Empty);
         string imdbId;
         if (jsonFile.IsNotNullOrWhiteSpace())
@@ -228,46 +229,49 @@ internal static partial class Video
             }
             else
             {
-                log($"Skip {directory}.");
+                log($"Skip {directory.EscapeMarkup()}.");
                 return false;
             }
         }
         else
         {
-            string[] xmlImdbIds = files
+            string[] nfoImdbIds = files
                 .Where(IsTmdbNfoMetadata)
-                .Select(file => file.TryLoadXmlImdbId(out string? xmlImdbId) ? xmlImdbId : string.Empty)
+                .Select(file => file.TryLoadNfoImdbId(out string? nfoImdbId) ? nfoImdbId : string.Empty)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
-            if (xmlImdbIds.Length == 0)
+            if (nfoImdbIds.Length == 0)
             {
                 log($"!No JSON or XML metadata in {directory}.");
                 return false;
             }
 
-            if (xmlImdbIds.Length > 1)
+            if (nfoImdbIds.Length > 1)
             {
-                log($"!Inconsistent IMDB ids {string.Join(", ", xmlImdbIds)} in {directory}.");
+                log($"[red]!Inconsistent IMDB ids {string.Join(", ", nfoImdbIds)} in {directory.EscapeMarkup()}.[/]");
                 return false;
             }
 
-            imdbId = xmlImdbIds.Single();
+            imdbId = nfoImdbIds.Single();
             if (!imdbId.IsImdbId())
             {
                 imdbId = NotExistingFlag;
             }
         }
 
-        log($"Start {directory}");
-        await TmdbMetadata.WriteTmdbMetadataAsync(directory, overwrite, log, cancellationToken);
-        return await DownloadImdbMetadataAsync(imdbId, directory, directory, [jsonFile], files, playWrightWrapper, overwrite, useCache, log, cancellationToken);
+        Debug.Assert(imdbId.IsImdbId() || imdbId.EqualsOrdinal(NotExistingFlag));
+        log($"Start {directory.EscapeMarkup()}");
+        await TmdbMetadata.WriteTmdbXmlMetadataAsync(directory, files, overwrite, log, cancellationToken);
+        return await DownloadImdbMetadataAsync(imdbId, directory, directory, [jsonFile], files, playWrightWrapper, @lock, overwrite, useCache, log, cancellationToken);
     }
 
-    internal static async Task<bool> DownloadImdbMetadataAsync(string imdbId, string metadataDirectory, string cacheDirectory, string[] metadataFiles, string[] cacheFiles, PlayWrightWrapper? playWrightWrapper, bool overwrite = false, bool useCache = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task<bool> DownloadImdbMetadataAsync(
+        string imdbId, string metadataDirectory, string cacheDirectory, string[] metadataFiles, HashSet<string> cacheFiles,
+        PlayWrightWrapper? playWrightWrapper, Lock? @lock = null, bool overwrite = false, bool useCache = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
-        long startTime = Stopwatch.GetTimestamp();
+        long startingTimestamp = Stopwatch.GetTimestamp();
         if (metadataFiles.Select(PathHelper.GetFileNameWithoutExtension).SequenceEqual([NotExistingFlag], StringComparer.OrdinalIgnoreCase))
         {
             Debug.Assert(imdbId.EqualsOrdinal(NotExistingFlag));
@@ -276,6 +280,7 @@ internal static partial class Video
         }
 
         const string Advisories = nameof(Advisories);
+        const string Awards = nameof(Awards);
         const string Connections = nameof(Connections);
         const string CrazyCredits = nameof(CrazyCredits);
         const string Credits = nameof(Credits);
@@ -289,6 +294,7 @@ internal static partial class Video
 
         string imdbFile = Path.Combine(cacheDirectory, $"{imdbId}{ImdbCacheExtension}");
         string advisoriesFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Advisories}{ImdbCacheExtension}");
+        string awardsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Awards}{ImdbCacheExtension}");
         string connectionsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Connections}{ImdbCacheExtension}");
         string crazyCreditsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{CrazyCredits}{ImdbCacheExtension}");
         string creditsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Credits}{ImdbCacheExtension}");
@@ -302,9 +308,9 @@ internal static partial class Video
 
         if (imdbId.EqualsOrdinal(NotExistingFlag))
         {
-            await new string[] { imdbFile, advisoriesFile, connectionsFile, creditsFile, keywordsFile, releasesFile }
-                .Where(file => !cacheFiles.ContainsIgnoreCase(file))
-                .ForEachAsync(async file => await File.WriteAllTextAsync(file, string.Empty, cancellationToken), cancellationToken);
+            //await new string[] { imdbFile, advisoriesFile, connectionsFile, creditsFile, keywordsFile, releasesFile }
+            //    .Where(file => !cacheFiles.ContainsIgnoreCase(file))
+            //    .ForEachAsync(async file => await File.WriteAllTextAsync(file, string.Empty, cancellationToken), cancellationToken);
             string notExistingJsonFile = Path.Combine(metadataDirectory, $"{NotExistingFlag}{ImdbMetadata.Extension}");
             if (!File.Exists(notExistingJsonFile))
             {
@@ -315,7 +321,7 @@ internal static partial class Video
         }
 
         string jsonFile = metadataFiles.SingleOrDefault(file => file.HasImdbId(imdbId), string.Empty);
-        if (jsonFile.IsNotNullOrWhiteSpace() && (!overwrite || IsLatestVersion(jsonFile)))
+        if (jsonFile.IsNotNullOrWhiteSpace() && !overwrite)
         {
             log($"Skip {imdbId}.");
             return false;
@@ -324,6 +330,7 @@ internal static partial class Video
         const string Parent = nameof(Parent);
         string parentImdbFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{ImdbCacheExtension}");
         string parentAdvisoriesFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{Advisories}{ImdbCacheExtension}");
+        string parentAwardsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{Awards}{ImdbCacheExtension}");
         string parentConnectionsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{Connections}{ImdbCacheExtension}");
         string parentCrazyCreditsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{CrazyCredits}{ImdbCacheExtension}");
         string parentCreditsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{Credits}{ImdbCacheExtension}");
@@ -340,6 +347,7 @@ internal static partial class Video
 
             string imdbUrl, string imdbHtml,
             string advisoriesUrl, string advisoriesHtml,
+            string awardsUrl, string awardsHtml,
             string connectionsUrl, string connectionsHtml,
             string crazyCreditsUrl, string crazyCreditsHtml,
             string creditsUrl, string creditsHtml,
@@ -353,6 +361,7 @@ internal static partial class Video
 
             string parentImdbUrl, string parentImdbHtml,
             string parentAdvisoriesUrl, string parentAdvisoriesHtml,
+            string parentAwardsUrl, string parentAwardsHtml,
             string parentConnectionsUrl, string parentConnectionsHtml,
             string parentCrazyCreditsUrl, string parentCrazyCreditsHtml,
             string parentCreditsUrl, string parentCreditsHtml,
@@ -368,6 +377,7 @@ internal static partial class Video
 
             useCache ? imdbFile : string.Empty,
             useCache ? advisoriesFile : string.Empty,
+            useCache ? awardsFile : string.Empty,
             useCache ? connectionsFile : string.Empty,
             useCache ? crazyCreditsFile : string.Empty,
             useCache ? creditsFile : string.Empty,
@@ -381,6 +391,7 @@ internal static partial class Video
 
             useCache ? parentImdbFile : string.Empty,
             useCache ? parentAdvisoriesFile : string.Empty,
+            useCache ? parentAwardsFile : string.Empty,
             useCache ? parentConnectionsFile : string.Empty,
             useCache ? parentCrazyCreditsFile : string.Empty,
             useCache ? parentCreditsFile : string.Empty,
@@ -392,11 +403,11 @@ internal static partial class Video
             useCache ? parentTriviaFile : string.Empty,
             useCache ? parentVersionsFile : string.Empty,
 
-            playWrightWrapper, log, cancellationToken);
+            playWrightWrapper, cacheFiles, @lock, log, cancellationToken);
         Debug.Assert(imdbHtml.IsNotNullOrWhiteSpace());
         if (imdbMetadata.Regions.IsEmpty())
         {
-            log($"!Location is missing for {imdbId}: {cacheDirectory}");
+            log($"[yellow]!Location is missing for {imdbId}: {cacheDirectory.EscapeMarkup()}.[/]");
         }
 
         if (!imdbId.EqualsIgnoreCase(imdbMetadata.ImdbId))
@@ -405,6 +416,7 @@ internal static partial class Video
             imdbFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{ImdbCacheExtension}");
 
             advisoriesFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Advisories}{ImdbCacheExtension}");
+            awardsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Awards}{ImdbCacheExtension}");
             connectionsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Connections}{ImdbCacheExtension}");
             crazyCreditsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{CrazyCredits}{ImdbCacheExtension}");
             creditsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Credits}{ImdbCacheExtension}");
@@ -418,6 +430,7 @@ internal static partial class Video
 
             parentImdbFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{ImdbCacheExtension}");
             parentAdvisoriesFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{Advisories}{ImdbCacheExtension}");
+            parentAwardsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{Awards}{ImdbCacheExtension}");
             parentConnectionsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{Connections}{ImdbCacheExtension}");
             parentCrazyCreditsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{CrazyCredits}{ImdbCacheExtension}");
             parentCreditsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{Credits}{ImdbCacheExtension}");
@@ -431,10 +444,11 @@ internal static partial class Video
         }
 
         bool isDownloaded = false;
-        await new (string Url, string File, string Html)[]
+        (string Url, string File, string Html)[] files = new (string Url, string File, string Html)[]
             {
                 (imdbUrl, imdbFile, imdbHtml),
                 (advisoriesUrl, advisoriesFile, advisoriesHtml),
+                (awardsUrl, awardsFile, awardsHtml),
                 (connectionsUrl, connectionsFile, connectionsHtml),
                 (crazyCreditsUrl, crazyCreditsFile, crazyCreditsHtml),
                 (creditsUrl, creditsFile, creditsHtml),
@@ -448,6 +462,7 @@ internal static partial class Video
 
                 (parentImdbUrl, parentImdbFile, parentImdbHtml),
                 (parentAdvisoriesUrl, parentAdvisoriesFile, parentAdvisoriesHtml),
+                (parentAwardsUrl, parentAwardsFile, parentAwardsHtml),
                 (parentConnectionsUrl, parentConnectionsFile, parentConnectionsHtml),
                 (parentCrazyCreditsUrl, parentCrazyCreditsFile, parentCrazyCreditsHtml),
                 (parentCreditsUrl, parentCreditsFile, parentCreditsHtml),
@@ -459,28 +474,57 @@ internal static partial class Video
                 (parentTriviaUrl, parentTriviaFile, parentTriviaHtml),
                 (parentVersionsUrl, parentVersionsFile, parentVersionsHtml)
             }
-            .Where(data => data.Html.IsNotNullOrWhiteSpace() && (!useCache && overwrite || !cacheFiles.Any(file => file.EqualsIgnoreCase(data.File))))
-            .ForEachAsync(
-                async data =>
-                {
-                    isDownloaded = true;
-                    log($"Downloaded {data.Url} to {data.File}.");
-                    await File.WriteAllTextAsync(data.File, data.Html, cancellationToken);
-                    log($"Saved to {data.File}.");
-                },
-                cancellationToken);
+            .Where(data => data.Html.IsNotNullOrWhiteSpace()
+                && ((!useCache && overwrite) || !cacheFiles.Contains(data.File)))
+            .ToArray();
 
-        string newJsonFile = imdbMetadata.GetFilePath(metadataDirectory);
-        if (jsonFile.IsNotNullOrWhiteSpace() && !jsonFile.EqualsIgnoreCase(newJsonFile))
+        if (@lock is not null)
         {
-            FileHelper.Recycle(jsonFile);
-        }
+            lock (@lock)
+            {
+                //files.ForEach(data =>
+                //{
+                //    isDownloaded = true;
+                //    log($"Downloaded {data.Url} to {data.File.EscapeMarkup()}.");
+                //    File.WriteAllText(data.File, data.Html);
+                //    log($"Saved to {data.File.EscapeMarkup()}.");
+                //});
 
-        log($"Merged {imdbUrl}, {advisoriesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {goofsUrl}, {keywordsUrl}, {quotesUrl}, {releasesUrl}, {soundtracksUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile}.");
-        await JsonHelper.SerializeToFileAsync(imdbMetadata, newJsonFile, cancellationToken);
-        log($"Saved to {newJsonFile}.");
-        TimeSpan elapsed = Stopwatch.GetElapsedTime(startTime);
-        log($"Elapsed {elapsed}");
+                string newJsonFile = imdbMetadata.GetFilePath(metadataDirectory);
+                if (jsonFile.IsNotNullOrWhiteSpace() && !jsonFile.EqualsIgnoreCase(newJsonFile))
+                {
+                    FileHelper.Recycle(jsonFile);
+                }
+
+                log($"Merged {imdbUrl}, {advisoriesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {goofsUrl}, {keywordsUrl}, {quotesUrl}, {releasesUrl}, {soundtracksUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile.EscapeMarkup()}.");
+                JsonHelper.SerializeToFile(imdbMetadata, newJsonFile);
+                TimeSpan elapsed = Stopwatch.GetElapsedTime(startingTimestamp);
+                log($"[green]Elapsed {elapsed} to Save {newJsonFile.EscapeMarkup()}.[/]");
+            }
+        }
+        else
+        {
+            //await files.ForEachAsync(
+            //    async data =>
+            //    {
+            //        isDownloaded = true;
+            //        log($"Downloaded {data.Url} to {data.File.EscapeMarkup()}.");
+            //        await File.WriteAllTextAsync(data.File, data.Html, cancellationToken);
+            //        log($"Saved to {data.File.EscapeMarkup()}.");
+            //    },
+            //    cancellationToken);
+
+            string newJsonFile = imdbMetadata.GetFilePath(metadataDirectory);
+            if (jsonFile.IsNotNullOrWhiteSpace() && !jsonFile.EqualsIgnoreCase(newJsonFile))
+            {
+                FileHelper.Recycle(jsonFile);
+            }
+
+            log($"Merged {imdbUrl}, {advisoriesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {goofsUrl}, {keywordsUrl}, {quotesUrl}, {releasesUrl}, {soundtracksUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile.EscapeMarkup()}.");
+            await JsonHelper.SerializeToFileAsync(imdbMetadata, newJsonFile, cancellationToken);
+            TimeSpan elapsed = Stopwatch.GetElapsedTime(startingTimestamp);
+            log($"[green]Elapsed {elapsed} to Save {newJsonFile.EscapeMarkup()}.[/]");
+        }
 
         return isDownloaded;
     }
@@ -496,7 +540,8 @@ internal static partial class Video
         if (movies.Any())
         {
             await using PlayWrightWrapper playWrightWrapper = new("https://www.imdb.com/");
-            await movies.ForEachAsync(async movie => await DownloadImdbMetadataAsync(movie, playWrightWrapper, overwrite, useCache, log, cancellationToken), cancellationToken);
+            Lock @lock = new();
+            await movies.ForEachAsync(async movie => await DownloadImdbMetadataAsync(movie, playWrightWrapper, @lock, overwrite, useCache, log, cancellationToken), cancellationToken);
         }
     }
 
@@ -518,7 +563,7 @@ internal static partial class Video
                 Debug.Assert(video.group.TryRemove(video.video, out _));
             });
 
-        HashSet<string> existingVideos = new(existingMetadata.Values.SelectMany(group => group.Keys), StringComparer.OrdinalIgnoreCase);
+        HashSet<string> existingVideos = existingMetadata.Values.SelectMany(group => group.Keys).ToHashSetOrdinalIgnoreCase();
         directoryDrives
             // Hard drives in parallel.
             .AsParallel()
@@ -566,12 +611,12 @@ internal static partial class Video
                     .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
                     .Select(group =>
                     {
-                        ImdbMetadata? imdbMetadata = null;
+                        ImdbMinMetadata? imdbMetadata = null;
                         if (!allMetadataFiles.TryGetValue(group.Key, out string? metadataFile))
                         {
                             log($"!Metadata is missing for {group.Key}.");
                         }
-                        else if (!ImdbMetadata.TryLoad(metadataFile, out imdbMetadata))
+                        else if (!ImdbMinMetadata.TryLoad(metadataFile, out imdbMetadata))
                         {
                             log($"!Metadata is unavailable for {group.Key}.");
                         }
@@ -630,7 +675,7 @@ internal static partial class Video
             .Select(video =>
             {
                 string metadata = PathHelper.ReplaceExtension(video, TmdbMetadata.NfoExtension);
-                string imdbId = metadata.TryLoadXmlImdbId(out string? xmlImdbId) ? xmlImdbId : throw new InvalidOperationException(video);
+                string imdbId = metadata.TryLoadNfoImdbId(out string? xmlImdbId) ? xmlImdbId : throw new InvalidOperationException(video);
                 if (TryReadVideoMetadata(video, out VideoMetadata? videoMetadata))
                 {
                     return (ImdbId: imdbId, Value: videoMetadata);
@@ -657,14 +702,13 @@ internal static partial class Video
             .EnumerateFiles(settings.MovieMetadataDirectory, ImdbMetadataSearchPattern)
             .ToDictionary(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty);
 
-        HashSet<string> topLibraryImdbIds = new(
-            libraryMetadata
-                .Where(group => group
-                    .Value
-                    .Select(video => PathHelper.GetFileNameWithoutExtension(video.Key))
-                    .Any(name => name.ContainsIgnoreCase(".1080p.") && (name.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || name.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}"))))
-                .Select(group => group.Key),
-            StringComparer.OrdinalIgnoreCase);
+        HashSet<string> topLibraryImdbIds = libraryMetadata
+            .Where(group => group
+                .Value
+                .Select(video => PathHelper.GetFileNameWithoutExtension(video.Key))
+                .Any(name => name.ContainsIgnoreCase(".1080p.") && (name.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || name.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}"))))
+            .Select(group => group.Key)
+            .ToHashSetOrdinalIgnoreCase();
         Action<string> recycleMetadata = settings.MovieMetadataBackupDirectory.IsNullOrWhiteSpace()
             ? FileHelper.Recycle
             : file => FileHelper.MoveToDirectory(file, settings.MovieMetadataBackupDirectory, true, true);
@@ -787,7 +831,7 @@ internal static partial class Video
                         string backupEnglishTitle = backupMetadataDocument.TryGetTitle(out string? xmlTitle) ? xmlTitle : string.Empty;
                         string year = backupMetadataDocument.Root!.Element("year")?.Value ?? string.Empty;
 
-                        if (!backupMetadataFile.TryLoadXmlImdbId(out string? imdbId)
+                        if (!backupMetadataFile.TryLoadNfoImdbId(out string? imdbId)
                             || translatedTitle.IsNullOrEmpty()) // Already searched Douban, no result.
                         {
                             if (backupOriginalTitle.IsNullOrWhiteSpace() || !backupOriginalTitle.ContainsCjkCharacter())
@@ -927,94 +971,6 @@ internal static partial class Video
             .ToArray();
 
         await JsonHelper.SerializeToFileAsync(movies, jsonFile);
-    }
-
-    private static readonly DateTime VersionDateTimeUtc = new(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-
-    internal static bool IsLatestVersion(string metadata) =>
-        new FileInfo(metadata).LastWriteTimeUtc > VersionDateTimeUtc;
-
-    internal static async Task UpdateMetadataAsync(string directory, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
-    {
-        log ??= Logger.WriteLine;
-
-        await Directory
-            .EnumerateFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories)
-            .Select(metadata => (metadata, ImdbId: ImdbMetadata.TryGet(metadata, out string? imdbId) ? imdbId : string.Empty))
-            .Where(metadata =>
-            {
-                if (metadata.ImdbId.IsNullOrWhiteSpace())
-                {
-                    return false;
-                }
-
-                DateTime metadataLastWriteTimeUtc = new FileInfo(metadata.metadata).LastWriteTimeUtc;
-                return metadataLastWriteTimeUtc > new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
-                    && metadataLastWriteTimeUtc < new DateTime(2024, 1, 18, 0, 0, 0, DateTimeKind.Utc);
-            })
-            .Select(metadata =>
-            {
-                string file = Path.Combine(PathHelper.GetDirectoryName(metadata.metadata), $"{metadata.ImdbId}{ImdbCacheExtension}");
-
-                CQ imdbCQ = File.ReadAllText(file);
-                (string Text, string Url)[] websites = imdbCQ.Find("div[data-testid='details-officialsites'] > ul > li")
-                        .FirstOrDefault(listItem => listItem.TextContent.Trim().StartsWithIgnoreCase("Official sites"))
-                        ?.Cq().Find("ul li")
-                        .Select(listItem => new CQ(listItem))
-                        .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: listItemCQ.Find("a").Attr("href")))
-                        .ToArray()
-                    ?? imdbCQ
-                        .Find("""ul.ipc-metadata-list li[data-testid="details-officialsites"] ul li""")
-                        .Select(listItem => new CQ(listItem))
-                        .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: listItemCQ.Find("a").Attr("href")))
-                        .ToArray();
-
-                (string Text, string Url)[] locations = imdbCQ.Find("div[data-testid='title-details-filminglocations'] > ul > li")
-                        .FirstOrDefault(listItem => listItem.TextContent.Trim().StartsWithIgnoreCase("Filming locations"))
-                        ?.Cq().Find("ul li")
-                        .Select(listItem => new CQ(listItem))
-                        .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: listItemCQ.Find("a").Attr("href")))
-                        .Select(data => (data.Text, $"https://www.imdb.com{data.Url[..data.Url.IndexOfIgnoreCase("&ref_=")]}"))
-                        .ToArray()
-                    ?? imdbCQ
-                        .Find("""ul.ipc-metadata-list li[data-testid="title-details-filminglocations"] ul li""")
-                        .Select(listItem => new CQ(listItem))
-                        .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: listItemCQ.Find("a").Attr("href")))
-                        .Select(data => (data.Text, $"https://www.imdb.com{data.Url[..data.Url.IndexOfIgnoreCase("&ref_=")]}"))
-                        .ToArray();
-
-                (string Text, string Url)[] companies = imdbCQ.Find("div[data-testid='title-details-companies'] > ul > li")
-                        .FirstOrDefault(listItem => listItem.TextContent.Trim().StartsWithIgnoreCase("Production companies"))
-                        ?.Cq().Find("ul li")
-                        .Select(listItem => new CQ(listItem))
-                        .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: new UriBuilder(new Uri(new Uri("https://www.imdb.com"), listItemCQ.Find("a").Attr("href"))) { Query = string.Empty, Port = -1 }.ToString()))
-                        .ToArray()
-                    ?? imdbCQ
-                        .Find("""ul.ipc-metadata-list li[data-testid="title-details-companies"] ul li""")
-                        .Select(listItem => new CQ(listItem))
-                        .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: new UriBuilder(new Uri(new Uri("https://www.imdb.com"), listItemCQ.Find("a").Attr("href"))) { Query = string.Empty, Port = -1 }.ToString()))
-                        .ToArray();
-
-                return (metadata.metadata, websites, locations, companies);
-            })
-            .ForEachAsync(async data =>
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                log(PathHelper.GetDirectoryName(data.metadata));
-                Debug.Assert(ImdbMetadata.TryLoad(data.metadata, out ImdbMetadata? imdbMetadata));
-                imdbMetadata = imdbMetadata with
-                {
-                    Websites = data.websites.Distinct().ToLookup(item => item.Text, item => item.Url).ToDictionary(group => group.Key, group => group.ToArray()),
-                    FilmingLocations = data.locations.Distinct().ToDictionary(item => item.Text, item => item.Url),
-                    Companies = data.companies.Distinct().ToLookup(item => item.Text, item => item.Url).ToDictionary(group => group.Key, group => group.ToArray())
-                };
-
-                if (!isDryRun)
-                {
-                    await JsonHelper.SerializeToFileAsync(imdbMetadata, data.metadata, cancellationToken);
-                }
-            }, cancellationToken);
     }
 
     internal static void CopyMetadata(string sourceDirectory, string destinationDirectory, bool isDryRun = false, Action<string>? log = null)
@@ -1200,6 +1156,49 @@ internal static partial class Video
                 .Except([latestMetadata])
                 .ToArray()
                 .ForEach(metadata => FileHelper.Copy(latestMetadata, metadata, true, true));
+        });
+    }
+
+    internal static void SyncImdbMetadata(DirectorySettings[] drives, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+
+        (string movie, string imdbId, string json, DateTime LastWriteTimeUtc)[][] groups = drives
+            .AsParallel()
+            .SelectMany(drive => EnumerateDirectories(drive.Directory, drive.Level).Select(movie =>
+            {
+                string json = Directory.EnumerateFiles(movie, ImdbMetadataSearchPattern).Single();
+                string imdbId = PathHelper.GetFileNameWithoutExtension(json).Split(ImdbMetadata.FileNameSeparator).First();
+                return (movie, imdbId, json, new FileInfo(json).LastWriteTimeUtc);
+            }))
+            .Where(movie => !movie.imdbId.EqualsIgnoreCase(NotExistingFlag))
+            .GroupBy(movie => movie.imdbId)
+            .Select(group =>
+            {
+                Debug.Assert(group.Key.IsImdbId());
+                return group.OrderByDescending(movie => movie.LastWriteTimeUtc).ToArray();
+            })
+            .Where(array => array.Length > 1)
+            .OrderBy(array => array[0].movie)
+            .ToArray();
+        log($"{groups.Length} to sync.");
+        groups.Select(group=>group.First().movie.EscapeMarkup()).Append(string.Empty).ForEach(log);
+
+        groups.ForEach(array =>
+        {
+            (string movie, string imdbId, string json, DateTime LastWriteTimeUtc) latest = array[0];
+            string[] latestFiles = Directory.GetFiles(latest.movie).Where(file => file.HasAnyExtension(ImdbMetadata.Extension, ImdbCacheExtension)).ToArray();
+            array
+                .Skip(1)
+                .Where(movie => movie.LastWriteTimeUtc < latest.LastWriteTimeUtc)
+                .ToArray()
+                .ForEach(movie =>
+                {
+                    log($"Sync {latest.movie.EscapeMarkup()} to {movie.movie.EscapeMarkup()}");
+                    string[] files = Directory.GetFiles(movie.movie).Where(file => file.HasAnyExtension(ImdbMetadata.Extension, ImdbCacheExtension)).ToArray();
+                    files.ForEach(FileHelper.Recycle);
+                    latestFiles.ForEach(file => FileHelper.CopyToDirectory(file, movie.movie, false, true));
+                });
         });
     }
 }

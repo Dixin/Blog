@@ -18,7 +18,7 @@ internal static class Cool
         log ??= Logger.WriteLine;
 
         ConcurrentQueue<int> postIds = new(Enumerable.Range(startPostId, endPostId - startPostId).Chunk(ChunkLength).Select(chunk => chunk[0]));
-        HashSet<string> files = overwrite ? [] : new(Directory.EnumerateFiles(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories), StringComparer.OrdinalIgnoreCase);
+        HashSet<string> files = overwrite ? [] : DirectoryHelper.GetFilesOrdinalIgnoreCase(directory, PathHelper.AllSearchPattern, SearchOption.AllDirectories);
         int[] lastDownloadedPostIds = new int[degreeOfParallelism.Value];
         await Parallel.ForEachAsync(
             Enumerable.Range(0, degreeOfParallelism.Value),

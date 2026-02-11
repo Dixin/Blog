@@ -1,6 +1,5 @@
 ﻿namespace MediaManager.Net;
 
-using System.Web;
 using CsQuery;
 using Examples.Common;
 using Examples.IO;
@@ -10,239 +9,132 @@ using MediaManager.IO;
 using Microsoft.Playwright;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using OpenQA.Selenium;
+using Spectre.Console;
 
 internal static partial class Imdb
 {
-    internal static readonly int MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 8);
+    internal static readonly int MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 12);
 
-    private static async Task<(bool IsUpdated, string Html, CQ trimmedCQ)> TryUpdateAsync(this PlayWrightWrapper playWrightWrapper, Action<string>? log = null, CancellationToken cancellationToken = default)
+    private const string PageSelector = "main .ipc-page-grid__item";
+
+    private static async Task<(bool IsUpdated, string Html, CQ TrimmedCQ)> TryUpdateAsync(this PlayWrightWrapper playWrightWrapper, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
-        bool isUpdated = false;
         IPage page = await playWrightWrapper.PageAsync();
+        string url = page.Url;
+        bool isUpdated = false;
         string html = await page.ContentAsync();
         CQ trimmedCQ = TrimPage(html);
-        int spoilersButtonsCount = trimmedCQ.Find("section span.ipc-see-more button:contains('Spoilers')").Length;
+        int spoilersButtonsCount = trimmedCQ.Find("button:contains('Spoilers')").Length;
 
         await Retry.FixedIntervalAsync(
             func: async () =>
             {
-                IReadOnlyList<ILocator> closeButtons = await page.Locator("button", new PageLocatorOptions() { HasText = "Don't prompt me" }).AllAsync();
-                await closeButtons.ForEachAsync(
-                    async button =>
-                    {
-                        try
-                        {
-                            await button.ClickAsync();
-                        }
-                        catch (Exception exception) when (exception.IsNotCritical())
-                        {
-                            await button.PressAsync(" ");
-                        }
-                    },
-                    cancellationToken);
-                long closingPromptTimestamp = Stopwatch.GetTimestamp();
-                while (await page.Locator("button", new PageLocatorOptions() { HasText = "Don't prompt me" }).CountAsync() > 0)
-                {
-                    if (Stopwatch.GetElapsedTime(closingPromptTimestamp) > PageHelper.DefaultManualWait)
-                    {
-                        throw new TimeoutException("Waiting for prompt to be closed timed out.");
-                    }
+                await page.ClickOrPressAsync("button", new PageLocatorOptions() { HasText = "Don't prompt me" }, HasAjaxError, cancellationToken);
 
-                    await Task.Delay(PageHelper.DefaultDomWait, cancellationToken);
-                }
-
-                ILocator spoilerButtons = page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { Name = "Spoiler" });
-                int spoilerButtonCount = await spoilerButtons.CountAsync();
+                int spoilerButtonCount = await page.ClickOrPressAsync(AriaRole.Button, new PageGetByRoleOptions() { Name = "Spoiler" }, HasAjaxError, cancellationToken);
                 log($"{spoilerButtonCount} Spoiler buttons are found.");
                 if (spoilerButtonCount > 0)
                 {
-                    await (await spoilerButtons.AllAsync()).Reverse().ToArray().ForEachAsync(
-                        async button =>
-                        {
-                            try
-                            {
-                                await button.ClickAsync();
-                            }
-                            catch (Exception exception) when (exception.IsNotCritical())
-                            {
-                                await button.PressAsync(" ");
-                            }
-
-                            //await button.WaitForAsync(new LocatorWaitForOptions() { State = WaitForSelectorState.Detached });
-                        },
-                        cancellationToken);
-                    log($"{spoilerButtonCount} Spoiler buttons are clicked and waited.");
-                    //await spoilerButtons.WaitForAsync(new LocatorWaitForOptions() { State = WaitForSelectorState.Detached });
-                    long spoilerDetachingTimestamp = Stopwatch.GetTimestamp();
-                    while (await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { Name = "Spoiler" }).CountAsync() > 0)
-                    {
-                        if (Stopwatch.GetElapsedTime(spoilerDetachingTimestamp) > PageHelper.DefaultManualWait)
-                        {
-                            throw new TimeoutException("Waiting for Spoiler buttons to be detached timed out.");
-                        }
-
-                        await Task.Delay(PageHelper.DefaultDomWait, cancellationToken);
-                    }
-
-                    log($"{spoilerButtonCount} Spoiler buttons are detached.");
                     isUpdated = true;
-
                     await Task.Delay(PageHelper.DefaultNetworkWait, cancellationToken);
-                    if (await page.GetByText("error fetching more data").CountAsync() > 0
-                        || await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { Name = "Spoiler" }).CountAsync() > 0)
+                    if (await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { Name = "Spoiler" }).CountAsync() > 0)
                     {
-                        throw new InvalidOperationException("Ajsx error.");
+                        throw AjaxError();
                     }
 
                     log($"{spoilerButtonCount} Spoilers are waited.");
-                    long spoilerInitializingTimestamp = Stopwatch.GetTimestamp();
-                    while (await page.GetByText(new Regex("^Spoilers$"), new PageGetByTextOptions() { Exact = true }).CountAsync() != spoilerButtonCount)
-                    {
-                        if (Stopwatch.GetElapsedTime(spoilerInitializingTimestamp) > PageHelper.DefaultManualWait)
-                        {
-                            throw new TimeoutException("Waiting for Spoilers to be loaded timed out.");
-                        }
-
-                        await Task.Delay(PageHelper.DefaultDomWait, cancellationToken);
-                    }
-
+                    await page.WaitForCountAsync(new Regex("^Spoilers$"), new PageGetByTextOptions() { Exact = true }, spoilerButtonCount, cancellationToken);
                     log($"{spoilerButtonCount} Spoilers are loaded.");
                 }
 
-                ILocator seeAllButtons = page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { Name = "See all" });
-                ILocator seeMoreButtons = page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = new Regex(@"[0-9]+ more") });
-                int seeAllButtonsCount = await seeAllButtons.CountAsync();
-                int seeMoreButtonsCount = await seeMoreButtons.CountAsync();
+                ILocator seeMoreButtons = page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreButtonRegex() });
+                int targetSeeMoreButtonsCount = await seeMoreButtons.CountAsync();
+                int seeAllButtonsCount = await page.ClickOrPressAsync(AriaRole.Button, new PageGetByRoleOptions() { Name = "See all" }, HasAjaxError, cancellationToken);
                 log($"{seeAllButtonsCount} See all buttons are found.");
                 if (seeAllButtonsCount > 0)
                 {
-                    await (await seeAllButtons.AllAsync()).Reverse().ToArray().ForEachAsync(
-                        async button =>
-                        {
-                            try
-                            {
-                                await button.ClickAsync();
-                            }
-                            catch (Exception exception) when (exception.IsNotCritical())
-                            {
-                                await button.PressAsync(" ");
-                            }
-
-                            //await button.WaitForAsync(new LocatorWaitForOptions() { State = WaitForSelectorState.Detached });
-                        },
-                        cancellationToken);
-                    log($"{seeAllButtonsCount} See all buttons are clicked and waited.");
-                    //await seeAllButtons.WaitForAsync(new LocatorWaitForOptions() { State = WaitForSelectorState.Detached });
-                    long seeAllDetachingTimestamp = Stopwatch.GetTimestamp();
-                    while (await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { Name = "See all" }).CountAsync() > 0)
-                    {
-                        if (Stopwatch.GetElapsedTime(seeAllDetachingTimestamp) > PageHelper.DefaultManualWait)
-                        {
-                            throw new TimeoutException("Waiting for See all buttons to be detached timed out.");
-                        }
-
-                        await Task.Delay(PageHelper.DefaultDomWait, cancellationToken);
-                    }
-
-                    log($"{seeAllButtonsCount} See all buttons are detached.");
                     isUpdated = true;
-
                     await Task.Delay(PageHelper.DefaultNetworkWait, cancellationToken);
-                    if (await page.GetByText("error fetching more data").CountAsync() > 0
-                        || await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { Name = "See all" }).CountAsync() > 0)
+                    if (await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { Name = "See all" }).CountAsync() > 0)
                     {
-                        throw new InvalidOperationException("Ajsx error.");
+                        throw AjaxError();
                     }
                 }
 
-                seeMoreButtonsCount -= seeAllButtonsCount;
-                if (seeMoreButtonsCount < 0)
+                targetSeeMoreButtonsCount -= seeAllButtonsCount;
+                if (targetSeeMoreButtonsCount < 0)
                 {
-                    seeMoreButtonsCount = 0;
+                    targetSeeMoreButtonsCount = 0;
                 }
 
-                long seeMoreInitializingTimestamp = Stopwatch.GetTimestamp();
-                while (await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = new Regex(@"[0-9]+ more") }).CountAsync() != seeMoreButtonsCount)
+                log($"{targetSeeMoreButtonsCount} See more buttons are found.");
+                if (targetSeeMoreButtonsCount > 0)
                 {
-                    if (Stopwatch.GetElapsedTime(seeMoreInitializingTimestamp) > PageHelper.DefaultManualWait)
-                    {
-                        throw new TimeoutException("Waiting for See all buttons to be initialized timed out.");
-                    }
+                    await page.WaitForCountAsync(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreButtonRegex() }, targetSeeMoreButtonsCount, cancellationToken);
+                    int actualSeeMoreButtonCount = await page.ClickOrPressAsync(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreButtonRegex() }, HasAjaxError, cancellationToken);
+                    Debug.Assert(targetSeeMoreButtonsCount == actualSeeMoreButtonCount);
 
-                    await Task.Delay(PageHelper.DefaultDomWait, cancellationToken);
-                }
-
-                log($"{seeMoreButtonsCount} See more buttons are found.");
-                if (seeMoreButtonsCount > 0)
-                {
-                    await (await seeMoreButtons.AllAsync()).Reverse().ToArray().ForEachAsync(
-                        async button =>
-                        {
-                            try
-                            {
-                                await button.ClickAsync();
-                            }
-                            catch (Exception exception) when (exception.IsNotCritical())
-                            {
-                                await button.PressAsync(" ");
-                            }
-
-                            //await button.WaitForAsync(new LocatorWaitForOptions() { State = WaitForSelectorState.Detached });
-                        },
-                        cancellationToken);
-                    log($"{seeMoreButtonsCount} See more buttons are clicked and waited.");
-                    //await seeMoreButtons.WaitForAsync(new LocatorWaitForOptions() { State = WaitForSelectorState.Detached });
-                    long seeMoreDetachingTimestamp = Stopwatch.GetTimestamp();
-                    while (await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = new Regex(@"[0-9]+ more") }).CountAsync() > 0)
-                    {
-                        if (Stopwatch.GetElapsedTime(seeMoreDetachingTimestamp) > PageHelper.DefaultManualWait)
-                        {
-                            throw new TimeoutException("Waiting for See more buttons to be detached timed out.");
-                        }
-
-                        await Task.Delay(PageHelper.DefaultDomWait, cancellationToken);
-                    }
-
-                    log($"{seeMoreButtonsCount} See more buttons are detached.");
                     isUpdated = true;
-
                     await Task.Delay(PageHelper.DefaultNetworkWait, cancellationToken);
-                    if (await page.GetByText("error fetching more data").CountAsync() > 0
-                        || await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = new Regex(@"[0-9]+ more") }).CountAsync() > 0)
+                    if (await page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreButtonRegex() }).CountAsync() > 0)
                     {
-                        throw new InvalidOperationException("Ajax error.");
+                        throw AjaxError();
                     }
+                }
+                else
+                {
+                    await page.WaitForNoneAsync(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreButtonRegex() }, HasAjaxError, cancellationToken);
+                }
+
+                if (isUpdated)
+                {
+                    await Task.Delay(PageHelper.DefaultNetworkWait, cancellationToken);
+                    html = await page.ContentAsync();
+                    trimmedCQ = TrimPage(html);
+                }
+
+                if (trimmedCQ.Find("section span.ipc-see-more button:contains('Spoilers')").Any()
+                    || trimmedCQ.Find("section > div.ipc-signpost > div.ipc-signpost__text:contains('Spoilers')").Length != spoilersButtonsCount
+                    || trimmedCQ.Find("button.ipc-see-more__button:contains('all') span.ipc-btn__text:visible").Any()
+                    || trimmedCQ.Find("button.ipc-see-more__button:contains('more') span.ipc-btn__text:visible").Any()
+                    || trimmedCQ.Find(":contains('error fetching more data')").Any())
+                {
+                    throw AjaxError();
                 }
             },
-            retryingHandler: async void (sender, arg) =>
+            retryingHandler: void (sender, arg) =>
             {
                 log($"Update retry count {arg.CurrentRetryCount}.");
-                log(arg.LastException.ToString());
-                await page.RefreshAsync();
+                log(arg.LastException.ToString().EscapeMarkup());
+                if (arg.LastException is HttpRequestException { StatusCode: HttpStatusCode.InternalServerError, HttpRequestError: HttpRequestError.InvalidResponse })
+                {
+                    page = playWrightWrapper.RestartAsync(cancellationToken: cancellationToken).Result;
+                    html = page.GetStringAsync(url, PageSelector, cancellationToken: cancellationToken).Result;
+                }
+                else
+                {
+                    html = page.RefreshAsync(PageSelector, cancellationToken: cancellationToken).Result;
+                }
+
+                isUpdated = false;
+                trimmedCQ = TrimPage(html);
+                spoilersButtonsCount = trimmedCQ.Find("button:contains('Spoilers')").Length;
             },
             cancellationToken: cancellationToken);
 
-        if (isUpdated)
-        {
-            await Task.Delay(PageHelper.DefaultNetworkWait, cancellationToken);
-            html = await page.ContentAsync();
-            trimmedCQ = TrimPage(html);
-        }
-
-        if (trimmedCQ.Find("section span.ipc-see-more button:contains('Spoilers')").Any()
-            || trimmedCQ.Find("section > div.ipc-signpost > div.ipc-signpost__text:contains('Spoilers')").Length != spoilersButtonsCount
-            || trimmedCQ.Find("button.ipc-see-more__button:contains('all') span.ipc-btn__text:visible").Any()
-            || trimmedCQ.Find("button.ipc-see-more__button:contains('more') span.ipc-btn__text:visible").Any())
-        {
-            throw new InvalidOperationException($"Failed to update {page.Url}");
-        }
-
         return (isUpdated, html, trimmedCQ);
+
+        async ValueTask<Exception?> HasAjaxError() =>
+            await page.GetByText("error fetching more data").CountAsync() > 0
+                ? AjaxError()
+                : null;
+
+        HttpRequestException AjaxError() => new HttpRequestException(HttpRequestError.InvalidResponse, $"Ajax error {url}", null, HttpStatusCode.InternalServerError);
     }
 
-    private static async Task<(string Html, CQ CQ)> GetHtmlAsync(bool skip, string file, string url, PlayWrightWrapper? playWrightWrapper, HttpClient? httpClient, Action<string>? log = null, CancellationToken cancellationToken = default)
+    private static async Task<(string Html, CQ CQ)> GetHtmlAsync(bool skip, string file, string url, PlayWrightWrapper? playWrightWrapper, HttpClient? httpClient, HashSet<string> cacheFiles, Lock? @lock = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
@@ -251,10 +143,16 @@ internal static partial class Imdb
             return (string.Empty, string.Empty);
         }
 
-        if (File.Exists(file))
+        if (cacheFiles.Contains(file))
         {
-            string cacheHtml = await File.ReadAllTextAsync(file, cancellationToken);
-            return (cacheHtml, TrimPage(cacheHtml));
+            string cachedHtml = await File.ReadAllTextAsync(file, cancellationToken);
+            if (!cachedHtml.EndsWithIgnoreCase("</html>"))
+            {
+                FileHelper.Recycle(file);
+                throw new InvalidDataException($"Invalid cached HTML: {file}.");
+            }
+
+            return (cachedHtml.ThrowIfNullOrWhiteSpace(), TrimPage(cachedHtml));
         }
 
         if (playWrightWrapper is null)
@@ -264,24 +162,36 @@ internal static partial class Imdb
             return (downloadedHtml, TrimPage(downloadedHtml));
         }
 
-        await playWrightWrapper.GetStringAsync(url);
+        IPage page = await playWrightWrapper.PageAsync();
+        await page.GetStringAsync(url, PageSelector, cancellationToken: cancellationToken);
         (bool isUpdated, string html, CQ trimmedCQ) = await playWrightWrapper.TryUpdateAsync(log, cancellationToken);
         log(isUpdated ? $"{url} is updated." : $"{url} is not updated.");
+
+        if (@lock is not null)
+        {
+            lock (@lock)
+            {
+                File.WriteAllText(file, html);
+            }
+        }
+        else
+        {
+            await File.WriteAllTextAsync(file, html, cancellationToken);
+        }
+
         return (html, trimmedCQ);
     }
 
-    private static CQ TrimPage(CQ pageCQ)
-    {
-        CQ trimmedCQ = pageCQ.Find("main .ipc-page-grid__item").Eq(0);
-        CQ remove = trimmedCQ.Find("[data-testid='contribution'], [data-testid='more-from-section']");
-        Debug.Assert(remove.Any());
-        remove.Remove();
-        return trimmedCQ;
-    }
+    private static CQ TrimPage(CQ pageCQ) => pageCQ
+        .Find(PageSelector).Eq(0)
+        .Find("[data-testid='contribution'], [data-testid='more-from-section']")
+        .Remove()
+        .End();
 
     internal static async Task<(ImdbMetadata ImdbMetadata,
         string ImdbUrl, string ImdbHtml,
         string AdvisoriesUrl, string AdvisoriesHtml,
+        string AwardsUrl, string AwardsHtml,
         string ConnectionsUrl, string ConnectionsHtml,
         string CrazyCreditsUrl, string CrazyCreditsHtml,
         string CreditsUrl, string CreditsHtml,
@@ -295,6 +205,7 @@ internal static partial class Imdb
 
         string ParentImdbUrl, string ParentImdbHtml,
         string ParentAdvisoriesUrl, string ParentAdvisoriesHtml,
+        string ParentAwardsUrl, string ParentAwardsHtml,
         string ParentConnectionsUrl, string ParentConnectionsHtml,
         string parentCrazyCreditsUrl, string parentCrazyCreditsHtml,
         string ParentCreditsUrl, string ParentCreditsHtml,
@@ -307,9 +218,9 @@ internal static partial class Imdb
         string ParentVersionsUrl, string ParentVersionsHtml
         )> DownloadAsync(
         string imdbId,
-        string imdbFile, string advisoriesFile, string connectionsFile, string crazyCreditsFile, string creditsFile, string goofsFile, string keywordsFile, string quotesFile, string releasesFile, string soundtracksFile, string triviaFile, string versionsFile,
-        string parentImdbFile, string parentAdvisoriesFile, string parentConnectionsFile, string parentCrazyCreditsFile, string parentCreditsFile, string parentGoofsFile, string parentKeywordsFile, string parentQuotesFile, string parentReleasesFile, string parentSoundtracksFile, string parentTriviaFile, string parentVersionsFile,
-        PlayWrightWrapper? playWrightWrapper, Action<string>? log = null, CancellationToken cancellationToken = default)
+        string imdbFile, string advisoriesFile, string awardsFile, string connectionsFile, string crazyCreditsFile, string creditsFile, string goofsFile, string keywordsFile, string quotesFile, string releasesFile, string soundtracksFile, string triviaFile, string versionsFile,
+        string parentImdbFile, string parentAdvisoriesFile, string parentAwardsFile, string parentConnectionsFile, string parentCrazyCreditsFile, string parentCreditsFile, string parentGoofsFile, string parentKeywordsFile, string parentQuotesFile, string parentReleasesFile, string parentSoundtracksFile, string parentTriviaFile, string parentVersionsFile,
+        PlayWrightWrapper? playWrightWrapper, HashSet<string> cacheFiles, Lock? @lock = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
@@ -318,46 +229,84 @@ internal static partial class Imdb
         httpClient?.AddEdgeHeaders();
 
         string imdbUrl = $"https://www.imdb.com/title/{imdbId}/";
-        bool hasImdbFile = File.Exists(imdbFile);
-        string imdbHtml = hasImdbFile
-            ? await File.ReadAllTextAsync(imdbFile, cancellationToken)
-            : await (page?.GetStringAsync(imdbUrl, new PageGotoOptions() { Referer = "https://www.imdb.com/" })
+        bool hasImdbFile = cacheFiles.Contains(imdbFile);
+        string imdbHtml;
+        if (hasImdbFile)
+        {
+            imdbHtml = (await File.ReadAllTextAsync(imdbFile, cancellationToken)).ThrowIfNullOrWhiteSpace();
+            if (!imdbHtml.EndsWithIgnoreCase("</html>"))
+            {
+                FileHelper.Recycle(imdbFile);
+                throw new InvalidDataException($"Invalid cached HTML: {imdbFile}.");
+            }
+        }
+        else
+        {
+            imdbHtml = await (page?.GetStringAsync(imdbUrl, PageSelector, new PageGotoOptions() { Referer = "https://www.imdb.com/" }, cancellationToken)
                 ?? Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(imdbUrl, cancellationToken), cancellationToken: cancellationToken));
 
-        if (!hasImdbFile && page is not null && !page.Url.EqualsOrdinal(imdbUrl))
-        {
-            log($"Redirected {imdbId} to {page.Url}");
-            imdbUrl = page.Url;
-        }
-
-        if (!hasImdbFile && page is not null)
-        {
-            ILocator knowLocator = page.GetByTestId("DidYouKnow");
-            if (await knowLocator.CountAsync() > 0)
+            if (page is not null && playWrightWrapper is not null)
             {
-                await knowLocator.ScrollIntoViewIfNeededAsync();
+                if (!page.Url.EqualsOrdinal(imdbUrl))
+                {
+                    log($"Redirected {imdbId} to {page.Url}");
+                    imdbUrl = page.Url;
+                    imdbId = ImdbMetadata.ImdbIdSubstringRegex().Match(imdbUrl).Value;
+                    Debug.Assert(imdbId.IsImdbId());
+                }
+
+                await Retry.FixedIntervalAsync(
+                    async () =>
+                    {
+                        ILocator knowLocator = page.GetByTestId("DidYouKnow");
+                        if (await knowLocator.CountAsync() > 0)
+                        {
+                            await knowLocator.ScrollIntoViewIfNeededAsync();
+                        }
+                        else
+                        {
+                            ILocator topPicksLocator = await page.WaitForCountAsync("[data-cel-widget='DynamicFeature_TopPicks']", locatorCount: 1, cancellationToken: cancellationToken);
+                            await topPicksLocator.ScrollIntoViewIfNeededAsync();
+                        }
+
+                        await page.Keyboard.PressAsync("PageUp");
+                        await page.WaitForSelectorAsync("[data-testid='storyline-parents-guide']");
+                        imdbHtml = await page.ContentAsync();
+                    },
+                    retryingHandler: (sender, args) =>
+                    {
+                        if (args.LastException is TimeoutException)
+                        {
+                            page = playWrightWrapper.RestartAsync(cancellationToken: cancellationToken).Result;
+                            imdbHtml = page.GetStringAsync(imdbUrl, PageSelector, cancellationToken: cancellationToken).Result;
+                        }
+                    },
+                    cancellationToken: cancellationToken);
+            }
+
+            if (@lock is not null)
+            {
+                lock (@lock)
+                {
+                    File.WriteAllText(imdbFile, imdbHtml);
+                }
             }
             else
             {
-                ILocator topPicksLocator = page.Locator("[data-cel-widget='DynamicFeature_TopPicks']");
-                Debug.Assert(await topPicksLocator.CountAsync() > 0);
-                await topPicksLocator.ScrollIntoViewIfNeededAsync();
+                await File.WriteAllTextAsync(imdbFile, imdbHtml, cancellationToken);
             }
-
-            await page.Keyboard.PressAsync("PageUp");
-            await page.WaitForSelectorAsync("section[data-testid='Storyline'] [data-testid='storyline-parents-guide']");
-            imdbHtml = await page.ContentAsync();
         }
 
         CQ imdbCQ = imdbHtml;
-        string json = imdbCQ.Find("""script[type="application/ld+json"]""").Text();
+        string json = imdbCQ.Find("script[type='application/ld+json']").Text();
         //string json2 = imdbCQ.Find("#__NEXT_DATA__").Text();
-        if (imdbCQ.Find("title").Text().Trim().StartsWithIgnoreCase("500 Error") || imdbCQ.Find("h1[data-testid='error-page-title']").Text().ContainsIgnoreCase("500 Error"))
+        string htmlTitle = imdbCQ.Find("title").TextTrimDecode();
+        if (htmlTitle.StartsWithIgnoreCase("500 Error") || imdbCQ.Find("[data-testid='error-page-title']").TextTrimDecode().ContainsIgnoreCase("500 Error"))
         {
             throw new HttpRequestException(HttpRequestError.InvalidResponse, imdbUrl, null, HttpStatusCode.InternalServerError);
         }
 
-        if (imdbCQ.Find("title").Text().Trim().StartsWithIgnoreCase("404 Error") || imdbCQ.Find("h1[data-testid='error-page-title']").Text().ContainsIgnoreCase("404 Error"))
+        if (htmlTitle.StartsWithIgnoreCase("404 Error") || imdbCQ.Find("[data-testid='error-page-title']").TextTrimDecode().ContainsIgnoreCase("404 Error"))
         {
             throw new HttpRequestException(HttpRequestError.InvalidResponse, imdbUrl, null, HttpStatusCode.NotFound);
         }
@@ -366,6 +315,7 @@ internal static partial class Imdb
 
         string parentImdbUrl = string.Empty;
         string parentAdvisoriesUrl = string.Empty;
+        string parentAwardsUrl = string.Empty;
         string parentConnectionsUrl = string.Empty;
         string parentCrazyCreditsUrl = string.Empty;
         string parentCreditsUrl = string.Empty;
@@ -379,6 +329,7 @@ internal static partial class Imdb
 
         string parentImdbHtml = string.Empty;
         string parentAdvisoriesHtml = string.Empty;
+        string parentAwardsHtml = string.Empty;
         string parentConnectionsHtml = string.Empty;
         string parentCrazyCreditsHtml = string.Empty;
         string parentCreditsHtml = string.Empty;
@@ -390,7 +341,6 @@ internal static partial class Imdb
         string parentTriviaHtml = string.Empty;
         string parentVersionsHtml = string.Empty;
 
-        string htmlTitle = imdbCQ.Find("title").Text();
         imdbCQ = imdbCQ.Find("main");
         string parentHref = imdbCQ.Find("div.titleParent a").FirstOrDefault()?.GetAttribute("href")
             ?? imdbCQ.Find("div").FirstOrDefault(div => div.Classes.Any(@class => @class.StartsWithOrdinal("TitleBlock__SeriesParentLinkWrapper")))?.Cq().Find("a").Attr("href")
@@ -406,6 +356,7 @@ internal static partial class Imdb
                     parentMetadata,
                     parentImdbUrl, parentImdbHtml,
                     parentAdvisoriesUrl, parentAdvisoriesHtml,
+                    parentAwardsUrl, parentAwardsHtml,
                     parentConnectionsUrl, parentConnectionsHtml,
                     parentCrazyCreditsUrl, parentCrazyCreditsHtml,
                     parentCreditsUrl, parentCreditsHtml,
@@ -417,12 +368,12 @@ internal static partial class Imdb
                     parentTriviaUrl, parentTriviaHtml,
                     parentVersionsUrl, parentVersionsHtml,
 
-                    _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _
+                    _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _
                 ) = await DownloadAsync(
                     parentImdbId,
-                    parentImdbFile, parentAdvisoriesFile, parentConnectionsFile, parentCrazyCreditsFile, parentCreditsFile, parentGoofsFile, parentKeywordsFile, parentQuotesFile, parentReleasesFile, parentSoundtracksFile, parentTriviaFile, parentVersionsFile,
-                    string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty,
-                    playWrightWrapper, log, cancellationToken);
+                    parentImdbFile, parentAdvisoriesFile, parentAwardsFile, parentConnectionsFile, parentCrazyCreditsFile, parentCreditsFile, parentGoofsFile, parentKeywordsFile, parentQuotesFile, parentReleasesFile, parentSoundtracksFile, parentTriviaFile, parentVersionsFile,
+                    string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty,
+                    playWrightWrapper, cacheFiles, @lock, log, cancellationToken);
             }
         }
 
@@ -431,31 +382,24 @@ internal static partial class Imdb
             : string.Empty;
         htmlTitleYear = YearRegex().Match(htmlTitleYear).Value;
 
-        string htmlYear = imdbCQ.Find("h1[data-testid='hero__pageTitle']").NextAll().Find("li:first").Text().Trim();
+        string htmlYear = imdbCQ.Find("[data-testid='hero__pageTitle']").NextAll().Find("li:eq(0)").TextTrimDecode();
         htmlYear = YearRegex().Match(htmlYear).Value;
         if (!YearRegex().IsMatch(htmlYear))
         {
-            htmlYear = imdbCQ.Find("h1[data-testid='hero__pageTitle']").NextAll().Find("li:eq(1)").Text().Trim();
-            htmlYear = YearRegex().Match(htmlYear).Value;
-        }
-
-        if (htmlYear.IsNullOrWhiteSpace())
-        {
-            htmlYear = imdbCQ.Find("""div.title_wrapper div.subtext a[title="See more release dates"]""").Text();
-            htmlYear = YearRegex().Match(htmlYear).Value;
-        }
-
-        if (htmlYear.IsNullOrWhiteSpace())
-        {
-            htmlYear = imdbCQ.Find($"""ul.ipc-inline-list li a[href="/title/{imdbId}/releaseinfo?ref_=tt_ov_rdat#releases"]""").Text();
+            htmlYear = imdbCQ.Find("[data-testid='hero__pageTitle']").NextAll().Find("li:eq(1)").TextTrimDecode();
             htmlYear = YearRegex().Match(htmlYear).Value;
         }
 
         //if (htmlYear.IsNullOrWhiteSpace())
         //{
-        //    htmlYear = imdbCQ.Find(@$"ul.ipc-inline-list li").Text();
-        //    htmlYear = Regex.Match(htmlYear, "[0-9]{4}").Value;
+        //    htmlYear = imdbCQ.Find("""div.title_wrapper div.subtext a[title="See more release dates"]""").TextTrimDecode();
+        //    htmlYear = YearRegex().Match(htmlYear).Value;
         //}
+
+        if (htmlYear.IsNullOrWhiteSpace())
+        {
+            htmlYear = imdbCQ.Find($"a[href*='/title/{imdbId}/releaseinfo']").Select(dom => dom.TextTrimDecode()).FirstOrDefault(text => YearRegex().IsMatch(text), string.Empty);
+        }
 
         Debug.Assert(htmlYear.EqualsOrdinal(htmlTitleYear) || parentMetadata is not null);
 
@@ -471,129 +415,77 @@ internal static partial class Imdb
 
         Debug.Assert(year.IsNullOrWhiteSpace() || YearRegex().IsMatch(htmlYear));
 
-        string[] regions = imdbCQ
-                .Find("div[data-testid='title-details-section'] > ul > li")
-                .FirstOrDefault(listItem => listItem.TextContent.ContainsIgnoreCase("Countries of origin") || listItem.TextContent.ContainsIgnoreCase("Country of origin"))
-                ?.Cq().Find("ul li")
-                .Select(region => region.TextContent.Trim())
-                .ToArray()
-            ?? imdbCQ
-                .Find("""ul.ipc-metadata-list li[data-testid="title-details-origin"] ul li""")
-                .Select(element => new CQ(element).Text().Trim())
-                .ToArray();
-        if (regions.IsEmpty())
-        {
-            regions = imdbCQ.Find("""a[href^="/search/title?country_of_origin="]""").Select(link => link.TextContent.Trim()).DistinctOrdinal().ToArray();
-        }
-
-        if (regions.IsEmpty())
-        {
-            regions = imdbCQ.Find("""a[href^="/search/title/?country_of_origin="]""").Select(link => link.TextContent.Trim()).DistinctOrdinal().ToArray();
-        }
-
-        if (regions.IsEmpty() && parentMetadata is not null)
-        {
-            regions = parentMetadata.Regions;
-        }
-
-        regions = regions
-            .Select(region => region switch
+        Dictionary<string, string[][]> details = imdbCQ
+            .Find("[data-testid='title-details-section'] > ul > li")
+            .Select(itemDom =>
             {
-                "United States" => "USA",
-                "United Kingdom" => "UK",
-                _ => region
+                CQ itemCQ = itemDom.Cq();
+                return (Key: itemCQ.Children().Eq(0).TextTrimDecode(), Values: itemCQ.Find("ul li"));
             })
-            .ToArray();
+            .Where(item => item.Values.Any())
+            .ToDictionary(
+                itemCQ => itemCQ.Key,
+                itemCQ => itemCQ.Values
+                    .Select(innerItemDom =>
+                    {
+                        CQ innerItemCQ = innerItemDom.Cq();
+                        CQ linkCQ = innerItemCQ.Find("a");
+                        string text = linkCQ.TextTrimDecode();
+                        string url = linkCQ.Attr("href");
+                        CQ descriptionCQ = innerItemCQ.Find("span");
+                        string[] innerItems = [];
+                        if (linkCQ.Any())
+                        {
+                            innerItems = [text, url];
+                        }
 
-        //Debug.Assert(regions.Any() || imdbMetadata.ImdbId is "tt0166122" or "tt6922816" or "tt12229160" or "tt6900644");
+                        if (descriptionCQ.Any())
+                        {
+                            innerItems = [.. innerItems, descriptionCQ.TextTrimDecode()];
+                        }
 
-        string[] languages = imdbCQ
-                .Find("div[data-testid='title-details-section'] > ul > li")
-                .FirstOrDefault(listItem => listItem.TextContent.Trim().StartsWithIgnoreCase("Language"))
-                ?.Cq().Find("ul li")
-                .Select(region => region.TextContent.Trim())
-                .ToArray()
-            ?? imdbCQ
-                .Find("""ul.ipc-metadata-list li[data-testid="title-details-languages"] ul li""")
-                .Select(element => new CQ(element).Text().Trim())
-                .ToArray();
-        if (languages.IsEmpty())
-        {
-            languages = imdbCQ.Find("""a[href^="/search/title?title_type=feature&primary_language="]""").Select(link => link.TextContent.Trim()).DistinctOrdinal().ToArray();
-        }
-
-        if (languages.IsEmpty())
-        {
-            languages = imdbCQ.Find("""a[href^="/search/title/?title_type=feature&primary_language="]""").Select(link => link.TextContent.Trim()).DistinctOrdinal().ToArray();
-        }
-
-        if (languages.IsEmpty() && parentMetadata is not null)
-        {
-            languages = parentMetadata.Languages;
-        }
-
-        //Debug.Assert(languages.Any() || imdbMetadata.ImdbId
-        //    is "tt0226895" or "tt0398936" or "tt6922816" or "tt3061100" or "tt3877124" or "tt0219913" or "tt0108361"
-        //    or "tt0133065" or "tt0173797" or "tt2617008" or "tt1764627" or "tt0225882" or "tt10540298" or "tt0195707" or "tt3807900" or "tt2946498"
-        //    or "tt9395794");
-
-        (string Text, string Url)[] websites = imdbCQ.Find("div[data-testid='details-officialsites'] > ul > li")
-                .FirstOrDefault(listItem => listItem.TextContent.Trim().StartsWithIgnoreCase("Official sites"))
-                ?.Cq().Find("ul li")
-                .Select(listItem => new CQ(listItem))
-                .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: listItemCQ.Find("a").Attr("href")))
-                .ToArray()
-            ?? imdbCQ
-                .Find("""ul.ipc-metadata-list li[data-testid="details-officialsites"] ul li""")
-                .Select(listItem => new CQ(listItem))
-                .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: listItemCQ.Find("a").Attr("href")))
-                .ToArray();
-
-        (string Text, string Url)[] locations = imdbCQ.Find("div[data-testid='title-details-filminglocations'] > ul > li")
-                .FirstOrDefault(listItem => listItem.TextContent.Trim().StartsWithIgnoreCase("Filming locations"))
-                ?.Cq().Find("ul li")
-                .Select(listItem => new CQ(listItem))
-                .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: listItemCQ.Find("a").Attr("href")))
-                //.Select(data => (data.Text, $"https://www.imdb.com{data.Url[..data.Url.IndexOfIgnoreCase("&ref_=")]}"))
-                .ToArray()
-            ?? imdbCQ
-                .Find("""ul.ipc-metadata-list li[data-testid="title-details-filminglocations"] ul li""")
-                .Select(listItem => new CQ(listItem))
-                .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: listItemCQ.Find("a").Attr("href")))
-                //.Select(data => (data.Text, $"https://www.imdb.com{data.Url[..data.Url.IndexOfIgnoreCase("&ref_=")]}"))
-                .ToArray();
-
-        (string Text, string Url)[] companies = imdbCQ.Find("div[data-testid='title-details-companies'] > ul > li")
-                .FirstOrDefault(listItem => listItem.TextContent.Trim().StartsWithIgnoreCase("Production companies"))
-                ?.Cq().Find("ul li")
-                .Select(listItem => new CQ(listItem))
-                .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: listItemCQ.Find("a").Attr("href")))
-                .ToArray()
-            ?? imdbCQ
-                .Find("""ul.ipc-metadata-list li[data-testid="title-details-companies"] ul li""")
-                .Select(listItem => new CQ(listItem))
-                .Select(listItemCQ => (Text: listItemCQ.Text().Trim(), Url: listItemCQ.Find("a").Attr("href")))
-                .ToArray();
+                        return innerItems;
+                    })
+                    .ToArray());
 
         Dictionary<string, string[]> boxOffice = imdbCQ
-            .Find("section[data-testid='BoxOffice'] ul li.ipc-metadata-list__item")
+            .Find("[data-testid='BoxOffice'] ul li.ipc-metadata-list__item")
             .Select(itemDom => itemDom.Cq())
             .ToDictionary(
-                itemCQ => itemCQ.Find("span").Eq(0).Text().Trim(),
-                itemCQ => itemCQ.Find("li").Select(innerItemDom => innerItemDom.TextContent.Trim()).ToArray());
+                itemCQ => itemCQ.Find("span").Eq(0).TextTrimDecode(),
+                itemCQ => itemCQ.Find("li").Select(innerItemDom => innerItemDom.TextTrimDecode()).ToArray());
 
         Dictionary<string, string[]> techSpecs = imdbCQ
-            .Find("section[data-testid='TechSpecs'] ul li.ipc-metadata-list__item")
+            .Find("[data-testid='TechSpecs'] ul li.ipc-metadata-list__item")
             .Select(itemDom => itemDom.Cq())
             .ToDictionary(
-                itemCQ => itemCQ.Find("span").Eq(0).Text().Trim(),
-                itemCQ => itemCQ.Find("li").Select(innerItemDom => innerItemDom.TextContent.Trim()).ToArray());
+                itemCQ => itemCQ.Find("span").Eq(0).TextTrimDecode(),
+                itemCQ => itemCQ.Find("li").Select(innerItemDom => innerItemDom.TextTrimDecode()).ToArray());
 
-        CQ storylineSectionCQ = imdbCQ.Find("section[data-testid='Storyline']");
+        CQ awardsDivCQ = imdbCQ.Find("[data-testid='awards']");
+        string topRated = awardsDivCQ.Find("[data-testid='award_top-rated']").TextTrimDecode();
+        CQ awardsInfoCQ = awardsDivCQ.Find("[data-testid='award_information']");
+        string[] awards = awardsInfoCQ
+            .Find("a")
+            .SkipLast(1)
+            .Select(linkDom => linkDom.TextTrimDecode())
+            .Concat(awardsInfoCQ.Find("ul li").Select(itemDom => itemDom.TextTrimDecode()))
+            .ToArray();
+        if (topRated.IsNotNullOrWhiteSpace())
+        {
+            awards = [topRated, .. awards];
+        }
+
+        bool skipAwards = awardsInfoCQ.Find("a").IsEmpty();
+
+        CQ taglineCQ = imdbCQ.Find("[data-testid='storyline-taglines'] ul li");
+        Debug.Assert(taglineCQ.Length <= 1);
+        string tagline = taglineCQ.TextTrimDecode();
+        CQ storylineSectionCQ = imdbCQ.Find("[data-testid='Storyline']");
         Debug.Assert(storylineSectionCQ.Any());
-        bool skipAdvisories = storylineSectionCQ.Find("a:Contains('Add content advisory')").Any()
+        bool skipAdvisories = storylineSectionCQ.Find("a:contains('Add content advisory')").Any()
             && storylineSectionCQ.Find("[data-testid='storyline-certificate']").IsEmpty();
-        bool skipKeywords = storylineSectionCQ.Find($"a[href*='/title/{imdbId}/keywords/']:Contains('more')").IsEmpty();
+        bool skipKeywords = storylineSectionCQ.Find($"a[href*='/title/{imdbId}/keywords/']:contains('more')").IsEmpty();
 
         bool skipTrivia = true;
         bool skipGoofs = true;
@@ -602,91 +494,118 @@ internal static partial class Imdb
         bool skipVersions = true;
         bool skipConnections = true;
         bool skipSoundtracks = true;
-        CQ knowSection = imdbCQ.Find("section[data-testid='DidYouKnow']");
+        CQ knowSection = imdbCQ.Find("[data-testid='DidYouKnow']");
         if (knowSection.Any())
         {
-            skipTrivia = knowSection.Find("a:Contains('Trivia')").IsEmpty();
-            skipGoofs = knowSection.Find("a:Contains('Goofs')").IsEmpty();
-            skipQuotes = knowSection.Find("a:Contains('Quotes')").IsEmpty();
-            skipCrazyCredits = knowSection.Find("a:Contains('Crazy credits')").IsEmpty();
-            skipVersions = knowSection.Find("a:Contains('Alternate versions')").IsEmpty();
-            skipConnections = knowSection.Find("a:Contains('Connections')").IsEmpty();
-            skipSoundtracks = knowSection.Find("a:Contains('Soundtracks')").IsEmpty();
+            skipTrivia = knowSection.Find("a:contains('Trivia')").IsEmpty();
+            skipGoofs = knowSection.Find("a:contains('Goofs')").IsEmpty();
+            skipQuotes = knowSection.Find("a:contains('Quotes')").IsEmpty();
+            skipCrazyCredits = knowSection.Find("a:contains('Crazy credits')").IsEmpty();
+            skipVersions = knowSection.Find("a:contains('Alternate versions')").IsEmpty();
+            skipConnections = knowSection.Find("a:contains('Connections')").IsEmpty();
+            skipSoundtracks = knowSection.Find("a:contains('Soundtracks')").IsEmpty();
         }
 
         string releasesUrl = $"{imdbUrl}releaseinfo/";
-        (string releasesHtml, CQ releasesCQ) = await GetHtmlAsync(false, releasesFile, releasesUrl, playWrightWrapper, httpClient, log, cancellationToken);
+        (string releasesHtml, CQ releasesCQ) = await GetHtmlAsync(false, releasesFile, releasesUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
-        CQ allDatesCQ = releasesCQ.Find("div[data-testid='sub-section-releases']>ul>li");
-        (string DateKey, string DateValue)[] allDates = allDatesCQ
-            .Select(row => row.Cq())
-            .Select(rowCQ => (Key: rowCQ.Children().Eq(0), Values: rowCQ.Children().Eq(1).Find("li")))
-            .SelectMany(row => row.Values.Select(value => (Key: HttpUtility.HtmlDecode(row.Key.Text().Trim()), Value: HttpUtility.HtmlDecode(value.TextContent.Trim()))))
+        string[][] releaseDates = releasesCQ
+            .Find("[data-testid='sub-section-releases'] [data-testid='list-item']")
+            .SelectMany(rowDom =>
+            {
+                CQ rowCQ = rowDom.Cq();
+                CQ regionCQ = rowCQ.Find("a[href*='/calendar/?region=']");
+                string region = regionCQ.TextTrimDecode();
+                string url = regionCQ.Attr("href");
+                return rowCQ
+                    .Find("ul li")
+                    .Select(innerItemDom =>
+                    {
+                        CQ innerItemCQ = innerItemDom.Cq();
+                        string date = innerItemCQ.Find("span:eq(0)").TextTrimDecode();
+                        string description = innerItemCQ.Find("span:eq(1)").TextTrimDecode();
+                        return description.IsNotNullOrWhiteSpace()
+                            ? new string[] { region, url, date, description }
+                            : [region, url, date];
+                    });
+            })
             .ToArray();
-        Dictionary<string, string[]> dates = allDates
-            .ToLookup(row => row.DateKey, row => row.DateValue, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(group => group.Key, group => group.ToArray());
 
-        CQ allTitlesCQ = releasesCQ.Find("#akas").Next();
-        (string TitleKey, string TitleValue)[] allTitles = allTitlesCQ
+        (string Region, string Title, string Description)[] allTitles = releasesCQ
+            .Find("#akas")
+            .Next()
             .Find("tr")
             .Select(row => row.Cq().Children())
-            .Select(cells => (TitleKey: HttpUtility.HtmlDecode(cells.First().Text().Trim()), TitleValue: HttpUtility.HtmlDecode(cells.Last().Text().Trim()))).ToArray();
-        Enumerable.Range(0, allTitles.Length).ForEach(index =>
-        {
-            if (allTitles[index].TitleKey.IsNullOrWhiteSpace())
+            .Select(cells => (
+                Region: cells.First().TextTrimDecode(),
+                Title: cells.Last().TextTrimDecode(),
+                Description: string.Empty
+            ))
+            .ToArray();
+        Enumerable
+            .Range(0, allTitles.Length)
+            .ForEach(index =>
             {
-                allTitles[index].TitleKey = allTitles[index - 1].TitleKey;
-            }
-        });
+                if (allTitles[index].Region.IsNullOrWhiteSpace())
+                {
+                    allTitles[index].Region = allTitles[index - 1].Region;
+                }
+            });
 
         if (allTitles.IsEmpty())
         {
-            allTitlesCQ = releasesCQ.Find("div[data-testid='sub-section-akas']>ul>li");
-            allTitles = allTitlesCQ
-                .Select(row => row.Cq())
-                .Select(rowCQ => (Key: rowCQ.Children().Eq(0), Values: rowCQ.Children().Eq(1).Find("li")))
-                .SelectMany(row => row.Values.Select(value => (Key: HttpUtility.HtmlDecode(row.Key.Text().Trim()), Value: HttpUtility.HtmlDecode(value.TextContent.Trim()))))
+            allTitles = releasesCQ
+                .Find("[data-testid='sub-section-akas'] [data-testid='list-item']")
+                .SelectMany(rowDom =>
+                {
+                    CQ rowCQ = rowDom.Cq();
+                    string region = rowCQ.Find("span:eq(0)").TextTrimDecode();
+                    return rowCQ
+                        .Find("ul li")
+                        .Select(innerItemDom =>
+                        {
+                            CQ innerItemCQ = innerItemDom.Cq();
+                            return (
+                                Region: region,
+                                Title: innerItemCQ.Find("span:eq(0)").TextTrimDecode(),
+                                Description: innerItemCQ.Find("span:eq(1)").TextTrimDecode()
+                            );
+                        });
+                })
                 .ToArray();
         }
 
-        Dictionary<string, string[]> titles = allTitles
-            .ToLookup(row => row.TitleKey, row => row.TitleValue, StringComparer.OrdinalIgnoreCase)
+        Dictionary<string, string[][]> titles = allTitles
+            .ToLookup(
+                row => row.Region,
+                row => row.Description.IsNotNullOrWhiteSpace() ? new string[] { row.Title, row.Description } : [row.Title],
+                StringComparer.OrdinalIgnoreCase)
             .ToDictionary(group => group.Key, group => group.ToArray());
 
         //Debug.Assert(titles.Any()
-        //    || allTitlesCQ.Text().ContainsIgnoreCase("It looks like we don't have any AKAs for this title yet.")
+        //    || allTitlesCQ.TextTrimDecode().ContainsIgnoreCase("It looks like we don't have any AKAs for this title yet.")
         //    || imdbId is "tt10562876" or "tt13734388" or "tt11485640" or "tt11127510" or "tt11127706" or "tt11423284" or "tt20855690");
 
         string title;
         string originalTitle;
-        string alsoKnownAs = string.Empty;
+        //string alsoKnownAs = string.Empty;
         if (page is not null)
         {
-            alsoKnownAs = imdbCQ
-                .Find("div[data-testid='title-details-section'] > ul > li")
-                .FirstOrDefault(listItem => listItem.TextContent.ContainsIgnoreCase("Also known as"))
-                ?.Cq().Find("ul li")
-                .Select(region => region.TextContent.Trim())
-                .Single() ?? string.Empty;
-
             title = imdbCQ
                 .Find("section.ipc-page-section--bp-xs h1")
                 .Find("#titleYear")
                 .Remove()
                 .End()
-                .Text()
-                .Trim();
+                .TextTrimDecode();
 
             if (title.IsNullOrWhiteSpace())
             {
                 title = imdbCQ
-                     .Find("""h1[data-testid="hero-title-block__title"]""")
-                     .Text()
-                     .Trim();
+                    .Find("[data-testid='hero-title-block__title']")
+                    .TextTrimDecode();
             }
 
-            originalTitle = imdbCQ.Find("h1[data-testid='hero__pageTitle']").Next("div").Text().Trim();
+            originalTitle = imdbCQ.Find("[data-testid='hero__pageTitle']").Next("div").TextTrimDecode();
             if (originalTitle.StartsWithIgnoreCase("Original title: "))
             {
                 originalTitle = originalTitle["Original title: ".Length..].Trim();
@@ -699,16 +618,14 @@ internal static partial class Imdb
                     .Find("span")
                     .Remove()
                     .End()
-                    .Text()
-                    .Trim();
+                    .TextTrimDecode();
             }
 
             if (originalTitle.IsNullOrWhiteSpace())
             {
                 originalTitle = imdbCQ
-                    .Find("""div[data-testid="hero-title-block__original-title"]""")
-                    .Text()
-                    .Trim()
+                    .Find("[data-testid='hero-title-block__original-title']")
+                    .TextTrimDecode()
                     .Replace("Original title: ", string.Empty);
             }
 
@@ -729,10 +646,10 @@ internal static partial class Imdb
             {
                 if (titles.Any())
                 {
-                    string releaseHtmlTitle = releasesCQ.Find("title").Text();
+                    string releaseHtmlTitle = releasesCQ.Find("title").TextTrimDecode();
                     releaseHtmlTitle = releaseHtmlTitle[..releaseHtmlTitle.LastIndexOfOrdinal("(")].Trim();
 
-                    if (!titles.TryGetValue("(original title)", out string[]? originalTitleValues))
+                    if (!titles.TryGetValue("(original title)", out string[][]? originalTitleValues))
                     {
                         string[] originalTitleKeys = titles.Keys.Where(key => key.ContainsIgnoreCase("original title")).ToArray();
                         if (originalTitleKeys.Length > 1)
@@ -745,23 +662,23 @@ internal static partial class Imdb
 
                     if (originalTitleValues.Length > 1)
                     {
-                        originalTitleValues = originalTitleValues.Where(titleValue => !titleValue.EqualsOrdinal(releaseHtmlTitle)).ToArray();
+                        originalTitleValues = originalTitleValues.Where(titleValue => !titleValue.First().EqualsOrdinal(releaseHtmlTitle)).ToArray();
                     }
 
                     if (originalTitleValues.Length > 1)
                     {
-                        originalTitleValues = originalTitleValues.Where(titleValue => !titleValue.EqualsIgnoreCase(releaseHtmlTitle)).ToArray();
+                        originalTitleValues = originalTitleValues.Where(titleValue => !titleValue.First().EqualsIgnoreCase(releaseHtmlTitle)).ToArray();
                     }
 
                     originalTitle = originalTitleValues.Length switch
                     {
-                        1 => originalTitleValues.Single(),
-                        > 1 => originalTitleValues.FirstOrDefault(titleValue => originalTitleValues.Except(EnumerableEx.Return(titleValue)).All(titleValue.ContainsIgnoreCase))
+                        1 => originalTitleValues.Select(item => item.First()).Single(),
+                        > 1 => originalTitleValues.Select(item => item.First()).FirstOrDefault(titleValue => originalTitleValues.Select(item => item.First()).Except(EnumerableEx.Return(titleValue)).All(titleValue.ContainsIgnoreCase))
                             ?? string.Join(Video.TitleSeparator, originalTitleValues),
                         _ => string.Empty
                     };
 
-                    if (!titles.TryGetValue("World-wide (English title)", out string[]? titleValues))
+                    if (!titles.TryGetValue("World-wide (English title)", out string[][]? titleValues))
                     {
                         titleValues = titles
                             .Where(pair => pair.Key.ContainsIgnoreCase("World-wide (English title)"))
@@ -784,10 +701,10 @@ internal static partial class Imdb
                     Debug.Assert(titleValues.Any());
                     title = titleValues.Length switch
                     {
-                        1 => titleValues.Single(),
-                        > 1 => titleValues.FirstOrDefault(availableTitle => releaseHtmlTitle.EqualsOrdinal(availableTitle))
-                            ?? titleValues.FirstOrDefault(availableTitle => releaseHtmlTitle.EqualsIgnoreCase(availableTitle))
-                            ?? titleValues.FirstOrDefault(titleValue => titleValues.Except(EnumerableEx.Return(titleValue)).All(titleValue.ContainsIgnoreCase))
+                        1 => titleValues.Select(item => item.First()).Single(),
+                        > 1 => titleValues.Select(item => item.First()).FirstOrDefault(availableTitle => releaseHtmlTitle.EqualsOrdinal(availableTitle))
+                            ?? titleValues.Select(item => item.First()).FirstOrDefault(availableTitle => releaseHtmlTitle.EqualsIgnoreCase(availableTitle))
+                            ?? titleValues.Select(item => item.First()).FirstOrDefault(titleValue => titleValues.Select(item => item.First()).Except(EnumerableEx.Return(titleValue)).All(titleValue.ContainsIgnoreCase))
                             ?? string.Join(Video.TitleSeparator, titleValues),
                         _ => releaseHtmlTitle
                     };
@@ -801,27 +718,24 @@ internal static partial class Imdb
                         .Find("#titleYear")
                         .Remove()
                         .End()
-                        .Text()
-                        .Replace("&nbsp;", string.Empty)
-                        .Trim();
+                        .TextTrimDecode()
+                        .Replace(" ", string.Empty);
 
                     originalTitle = imdbCQ
                         .Find("div.originalTitle")
                         .Find("span")
                         .Remove()
                         .End()
-                        .Text()
-                        .Trim();
+                        .TextTrimDecode();
 
                     if (title.IsNullOrWhiteSpace())
                     {
                         title = imdbCQ
-                            .Find("""h1[data-testid="hero-title-block__title"]""")
+                            .Find("[data-testid='hero-title-block__title']")
                             .Find("#titleYear")
                             .Remove()
                             .End()
-                            .Text()
-                            .Trim();
+                            .TextTrimDecode();
                     }
 
                     htmlTitle = htmlTitle.ContainsOrdinal("(")
@@ -840,38 +754,42 @@ internal static partial class Imdb
         Debug.Assert(title.IsNotNullOrWhiteSpace());
 
         string advisoriesUrl = $"{imdbUrl}parentalguide/";
-        (string advisoriesHtml, CQ advisoriesCQ) = await GetHtmlAsync(skipAdvisories, advisoriesFile, advisoriesUrl, playWrightWrapper, httpClient, log, cancellationToken);
+        (string advisoriesHtml, CQ advisoriesCQ) = await GetHtmlAsync(skipAdvisories, advisoriesFile, advisoriesUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
-        string mpaaRating = advisoriesCQ.Find("section[data-testid='content-rating'] ul li div.ipc-metadata-list-item__content-container").First().Text().Trim();
+        string mpaaRating = advisoriesCQ.Find("[data-testid='content-rating'] ul li div.ipc-metadata-list-item__content-container").First().TextTrimDecode();
 
-        (string Category, string Severity, string[] Descriptions)[] advisories = advisoriesCQ
-            .Find("section[data-testid='content-rating']")
+        Dictionary<string, Dictionary<string, string[]>> advisories = advisoriesCQ
+            .Find("[data-testid='content-rating']")
             .Siblings()
             .TakeWhile(sectionDom => sectionDom.GetAttribute("data-testid").IsNullOrEmpty())
             .Select(sectionDom => sectionDom.Cq())
             .Select(sectionCQ => (
-                Category: sectionCQ.Find("h3").Text().Trim(),
-                Severity: sectionCQ.Find("div[data-testid='severity_component']").Children().First().Text().Trim(),
-                Descriptions: sectionCQ.Find("div[data-testid^='sub-section-'] div[data-testid='item-html']").Select(item => item.TextContent.Trim()).ToArray()
+                Category: sectionCQ.Find("h3").TextTrimDecode(),
+                Severity: sectionCQ.Find("[data-testid='severity_component']").Children().First().TextTrimDecode(),
+                Descriptions: sectionCQ
+                    .Find("[data-testid^='sub-section-'] [data-testid='item-html']")
+                    .Select(item => item.TextTrimDecode())
+                    .ToArray()
             ))
             .Where(advisory => advisory.Severity.IsNotNullOrWhiteSpace() || advisory.Descriptions.Any())
-            .ToArray();
+            .ToLookup(advisory => advisory.Category)
+            .ToDictionary(group => group.Key, group => group.ToDictionary(advisory => advisory.Severity, advisory => advisory.Descriptions));
 
         Dictionary<string, string> certifications = advisoriesCQ
-            .Find("section[data-testid='certificates'] ul li[data-testid='certificates-item']")
+            .Find("[data-testid='certificates'] [data-testid='certificates-item']")
             .SelectMany(regionDom =>
             {
                 CQ regionCQ = regionDom.Cq();
-                string region = regionCQ.Find("span.ipc-metadata-list-item__label").Text().Trim();
+                string region = regionCQ.Find("span.ipc-metadata-list-item__label").TextTrimDecode();
                 return regionCQ
                     .Find("ul li")
                     .Select(certificationDom =>
                     {
                         CQ certificationCQ = certificationDom.Cq();
                         CQ certificationLinkCQ = certificationCQ.Find("a");
-                        string certification = certificationLinkCQ.Text().Trim();
+                        string certification = certificationLinkCQ.TextTrimDecode();
                         string link = certificationLinkCQ.Attr("href");
-                        string remark = certificationCQ.Find("span").Text().Trim();
+                        string remark = certificationCQ.Find("span").TextTrimDecode();
                         return (
                             Certification: $"{region}:{certification}{(remark.IsNullOrWhiteSpace() ? string.Empty : $" ({remark})")}",
                             Link: link
@@ -881,169 +799,223 @@ internal static partial class Imdb
             .DistinctBy(certification => certification.Certification)
             .ToDictionary(certification => certification.Certification, certification => certification.Link);
 
-        string connectionsUrl = $"{imdbUrl}movieconnections/";
-        (string connectionsHtml, CQ connectionsCQ) = await GetHtmlAsync(skipConnections, connectionsFile, connectionsUrl, playWrightWrapper, httpClient, log, cancellationToken);
+        string awardsUrl = $"{imdbUrl}awards/";
+        (string awardsHtml, CQ awardsCQ) = await GetHtmlAsync(skipAwards, awardsFile, awardsUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
-        Dictionary<string, ImdbConnection[]> connections = connectionsCQ
+        ImdbAwards[] allAwards = awardsCQ
+            .Find("section.ipc-page-section")
+            .Select(sectionDom =>
+            {
+                CQ sectionCQ = sectionDom.Cq();
+                CQ eventCQ = sectionCQ.Find("h3");
+                return new ImdbAwards(
+                    eventCQ.TextTrimDecode(),
+                    eventCQ.Parent().Attr("href"),
+                    sectionCQ
+                        .Find("[data-testid='list-item']")
+                        .Select(itemDom =>
+                        {
+                            CQ itemCQ = itemDom.Cq();
+                            CQ statusCQ = itemCQ.Find("a[href*='/event/ev']");
+                            CQ titleCQ = statusCQ.Find("span").Remove();
+                            return new ImdbAward(
+                                statusCQ.TextTrimDecode(),
+                                statusCQ.Attr("href"),
+                                titleCQ.TextTrimDecode(),
+                                itemCQ.Find("ul:eq(0)").TextTrimDecode(),
+                                itemCQ.Find("span.ipc-expandableSection__content").TextTrimDecode(),
+                                itemCQ
+                                    .Find("ul:eq(1) li a")
+                                    .Select(listItemDom =>
+                                    {
+                                        CQ listItemCQ = listItemDom.Cq();
+                                        string name = listItemCQ.TextTrimDecode();
+                                        string url = listItemCQ.Attr("href");
+                                        CQ descriptionCQ = listItemCQ.Next();
+                                        return descriptionCQ.Any()
+                                            ? new string[] { name, url, descriptionCQ.TextTrimDecode() }
+                                            : [name, url];
+                                    })
+                                    .ToArray()
+                            );
+                        })
+                        .ToArray()
+                );
+            })
+            .ToArray();
+
+        string connectionsUrl = $"{imdbUrl}movieconnections/";
+        (string connectionsHtml, CQ connectionsCQ) = await GetHtmlAsync(skipConnections, connectionsFile, connectionsUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
+
+        Dictionary<string, string[][]> connections = connectionsCQ
             .Find("section.ipc-page-section")
             .Select(sectionDom => sectionDom.Cq())
-            .Select(
-                sectionCQ => (Key: sectionCQ.Find("div.ipc-title h3.ipc-title__text").Text().Trim(),
+            .Select(sectionCQ => (
+                Key: sectionCQ.Find("h3").TextTrimDecode(),
                 Value: sectionCQ
-                    .Find("ul.ipc-metadata-list > li")
+                    .Find("[data-testid='list-item']")
                     .Select(listItemDom =>
                     {
-                        CQ listItemDivCQ = listItemDom.Cq().Find("ul > div");
-                        CQ linkCQ = listItemDivCQ.Eq(0).Find("a");
-                        return new ImdbConnection(
-                            linkCQ.Text().Trim(),
-                            linkCQ.Attr("href"),
-                            linkCQ.Remove().End().Text().Trim(),
-                            listItemDivCQ.Eq(1).Text().Trim());
+                        CQ listItemCQ = listItemDom.Cq();
+                        CQ linkCQ = listItemCQ.Find("a").Remove();
+                        CQ paragraphCQ = listItemCQ.Find("p");
+                        CQ description = listItemCQ.Find(".ipc-html-content-inner-div:eq(1)");
+                        return description.Any()
+                            ? new string[] { linkCQ.TextTrimDecode(), linkCQ.Attr("href"), paragraphCQ.TextTrimDecode(), description.TextTrimDecode() }
+                            : [linkCQ.TextTrimDecode(), linkCQ.Attr("href"), paragraphCQ.TextTrimDecode()];
                     })
                     .ToArray()))
-            .Where(pair => pair.Key.IsNotNullOrWhiteSpace())
+            //.Where(pair => pair.Key.IsNotNullOrWhiteSpace())
             //.TakeWhile(pair => !pair.Key.ContainsIgnoreCase("Contribute to this page"))
             .ToDictionary(pair => pair.Key, pair => pair.Value);
 
         string crazyCreditsUrl = $"{imdbUrl}crazycredits/";
-        (string crazyCreditsHtml, CQ crazyCreditsCQ) = await GetHtmlAsync(skipCrazyCredits, crazyCreditsFile, crazyCreditsUrl, playWrightWrapper, httpClient, log, cancellationToken);
+        (string crazyCreditsHtml, CQ crazyCreditsCQ) = await GetHtmlAsync(skipCrazyCredits, crazyCreditsFile, crazyCreditsUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
         string[] crazyCredits = crazyCreditsCQ
-            .Find("section.ipc-page-section p.crazy-credit-text")
-            .Find("a")
+            .Find("[data-testid='item-html'] .crazy-credit-text")
+            .Find("*")
             .Each(linkDom => linkDom.RemoveAttribute("class"))
             .End()
-            .Select(paragraphDom => paragraphDom.InnerHTML.Trim()).ToArray();
+            .Select(paragraphDom => paragraphDom.HtmlTrim()).ToArray();
 
         string creditsUrl = $"{imdbUrl}fullcredits/";
-        (string creditsHtml, CQ creditsCQ) = await GetHtmlAsync(false, creditsFile, creditsUrl, playWrightWrapper, httpClient, log, cancellationToken);
+        (string creditsHtml, CQ creditsCQ) = await GetHtmlAsync(false, creditsFile, creditsUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
-        Dictionary<string, ImdbCredit[]> credits = creditsCQ
+        Dictionary<string, string[][]> credits = creditsCQ
             .Find("section.ipc-page-section")
             .Select(sectionDom => sectionDom.Cq())
             .Select(sectionCQ => (
-                Category: sectionCQ.Find("h3").Text().Trim(),
+                Category: sectionCQ.Find("h3").TextTrimDecode(),
                 Credits: sectionCQ
-                    .Find("ul li")
-                    .Select(itemDom => itemDom.Cq())
-                    .Select(itemCQ => new ImdbCredit(
-                        itemCQ.Find("a").Text().Trim(),
-                        itemCQ.Find("a").Attr("href"),
-                        itemCQ.Find(".name-credits--crew-metadata").Text().Trim()
-                    ))
+                    .Find("[data-testid='name-credits-list-item']")
+                    .Select(itemDom =>
+                    {
+                        CQ itemCQ = itemDom.Cq();
+                        CQ nameLinkCQ = itemCQ.Find("a[href*='/name/nm']:last");
+                        Debug.Assert(nameLinkCQ.Length == 1);
+                        CQ characterLinkCQ = itemCQ.Find($"a[href*='/title/{imdbId}/characters/nm']");
+                        string description = itemCQ.Find("span").Select(spanDom => spanDom.TextTrimDecode()).SingleOrDefault(text => !text.EqualsOrdinal("/") && text.IsNotNullOrWhiteSpace(), string.Empty);
+                        IEnumerable<string> result = new string[] { nameLinkCQ.TextTrimDecode(), nameLinkCQ.Attr("href") }
+                            .Concat(characterLinkCQ.SelectMany(characterLinkDom => new string[] { characterLinkDom.TextTrimDecode(), characterLinkDom.GetAttribute("href") }));
+                        if (description.IsNotNullOrWhiteSpace())
+                        {
+                            result = result.Append(description);
+                        }
+
+                        return result.ToArray();
+                    })
                     .ToArray()
             ))
             //.TakeWhile(section => !section.Category.ContainsIgnoreCase("Contribute to this page"))
             .ToDictionary(section => section.Category, section => section.Credits);
 
         string goofsUrl = $"{imdbUrl}goofs/";
-        (string goofsHtml, CQ goofsCQ) = await GetHtmlAsync(skipGoofs, goofsFile, goofsUrl, playWrightWrapper, httpClient, log, cancellationToken);
+        (string goofsHtml, CQ goofsCQ) = await GetHtmlAsync(skipGoofs, goofsFile, goofsUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
         Dictionary<string, string[]> goofs = goofsCQ
             .Find("section.ipc-page-section")
             .Select(sectionDom => sectionDom.Cq())
             .Select(sectionCQ => (
-                Category: sectionCQ.Find("h3").Text().Trim(),
+                Category: sectionCQ.Find("h3").TextTrimDecode(),
                 Descriptions: sectionCQ
-                    .Find("div.ipc-html-content-inner-div")
-                    .Find("a").Each(linkDom => linkDom.RemoveAttribute("class"))
+                    .Find("[data-testid='item-html'] .ipc-html-content-inner-div")
+                    .Find("*")
+                    .Each(linkDom => linkDom.RemoveAttribute("class"))
                     .End()
-                    .Select(divDom => divDom.InnerHTML.Trim()).ToArray()))
+                    .Select(divDom => divDom.HtmlTrim()).ToArray()))
             //.TakeWhile(section => !section.Category.ContainsIgnoreCase("Contribute to this page"))
             .ToDictionary(section => section.Category, section => section.Descriptions);
 
         string keywordsUrl = $"{imdbUrl}keywords/";
-        (string keywordsHtml, CQ keywordsCQ) = await GetHtmlAsync(skipKeywords, keywordsFile, keywordsUrl, playWrightWrapper, httpClient, log, cancellationToken);
+        (string keywordsHtml, CQ keywordsCQ) = await GetHtmlAsync(skipKeywords, keywordsFile, keywordsUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
-        string[] allKeywords = keywordsCQ.Find("#keywords_content table td div.sodatext a").Select(keyword => keyword.TextContent.Trim()).ToArray();
+        Dictionary<string, string> allKeywords = keywordsCQ
+            .Find("#keywords_content table td div.sodatext a")
+            .Select(keyword => keyword.TextTrimDecode())
+            .ToDictionary(keyword => keyword, keyword => string.Empty);
         if (allKeywords.IsEmpty())
         {
             keywordsCQ = keywordsHtml;
-            CQ allKeywordsCQ = keywordsCQ.Find("div[data-testid='sub-section']>ul>li");
-            allKeywords = allKeywordsCQ
-                .Select(row => row.Cq())
-                .Select(rowCQ => HttpUtility.HtmlDecode(rowCQ.Children().Eq(0).Text()))
-                .ToArray();
+            allKeywords = keywordsCQ
+                .Find("[data-testid='sub-section'] [data-testid='list-summary-item']")
+                .Select(rowDom => rowDom.Cq().Find("a[href*='/search/title/?keywords=']"))
+                .ToLookup(linkCQ => linkCQ.TextTrimDecode(), linkCQ => linkCQ.Attr("href"))
+                .ToDictionary(group => group.Key, group => group.First());
         }
 
         string quotesUrl = $"{imdbUrl}quotes/";
-        (string quotesHtml, CQ quotesCQ) = await GetHtmlAsync(skipQuotes, quotesFile, quotesUrl, playWrightWrapper, httpClient, log, cancellationToken);
+        (string quotesHtml, CQ quotesCQ) = await GetHtmlAsync(skipQuotes, quotesFile, quotesUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
         string[][] quotes = quotesCQ
-            .Find("section.ipc-page-section div.ipc-html-content-inner-div ul")
+            .Find("[data-testid='item-html']")
             .Select(quoteDom => quoteDom
-                .Cq().Find("li")
-                .Find("a").Each(linkDom => linkDom.RemoveAttribute("class"))
+                .Cq().Find("ul li")
+                .Find("*")
+                .Each(linkDom => linkDom.RemoveAttribute("class"))
                 .End()
-                .Select(itemDom => itemDom.InnerHTML.Trim())
+                .Select(itemDom => itemDom.HtmlTrim())
                 .ToArray())
             .ToArray();
 
         string soundtracksUrl = $"{imdbUrl}soundtrack/";
-        (string soundtracksHtml, CQ soundtracksCQ) = await GetHtmlAsync(skipSoundtracks, soundtracksFile, soundtracksUrl, playWrightWrapper, httpClient, log, cancellationToken);
+        (string soundtracksHtml, CQ soundtracksCQ) = await GetHtmlAsync(skipSoundtracks, soundtracksFile, soundtracksUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
-        Dictionary<string, string[]> soundtracks = soundtracksCQ
-            .Find("section.ipc-page-section li.ipc-metadata-list__item")
+        string[][] soundtracks = soundtracksCQ
+            .Find("[data-testid='list-item']")
             .Select(itemDom => itemDom.Cq())
-            .ToDictionary(
-                itemCQ => itemCQ.Find("span").Eq(0).Text().Trim(),
-                itemCQ => itemCQ
-                    .Find("div.ipc-html-content-inner-div")
-                    .Find("a").Each(linkDom => linkDom.RemoveAttribute("class"))
-                    .End()
-                    .Select(divDom => divDom.InnerHTML.Trim()).ToArray());
+            .Select(itemCQ => itemCQ
+                .Find(".ipc-html-content-inner-div")
+                .Find("*")
+                .Each(linkDom => linkDom.RemoveAttribute("class"))
+                .End()
+                .Select(divDom => divDom.HtmlTrim())
+                .Prepend(itemCQ.Find("span:eq(0)").TextTrimDecode())
+                .ToArray())
+            .ToArray();
 
         string triviaUrl = $"{imdbUrl}trivia/";
-        (string triviaHtml, CQ triviaCQ) = await GetHtmlAsync(skipTrivia, triviaFile, triviaUrl, playWrightWrapper, httpClient, log, cancellationToken);
+        (string triviaHtml, CQ triviaCQ) = await GetHtmlAsync(skipTrivia, triviaFile, triviaUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
         Dictionary<string, string[]> trivia = triviaCQ
             .Find("section.ipc-page-section")
             .Select(sectionDom => sectionDom.Cq())
             .Select(sectionCQ => (
-                category: sectionCQ.Find("h3").Text().Trim(),
+                category: sectionCQ.Find("h3").TextTrimDecode(),
                 Descriptions: sectionCQ
-                    .Find("div.ipc-html-content-inner-div")
-                    .Find("a").Each(linkDom => linkDom.RemoveAttribute("class"))
+                    .Find("[data-testid='item-html'] .ipc-html-content-inner-div")
+                    .Find("*")
+                    .Each(linkDom => linkDom.RemoveAttribute("class"))
                     .End()
-                    .Select(divDom => divDom.InnerHTML.Trim())
+                    .Select(divDom => divDom.HtmlTrim())
                     .ToArray()
             ))
             //.TakeWhile(section => !section.category.ContainsIgnoreCase("Contribute to this page"))
             .ToDictionary(section => section.category, section => section.Descriptions);
 
         string versionsUrl = $"{imdbUrl}alternateversions/";
-        (string versionsHtml, CQ versionsCQ) = await GetHtmlAsync(skipVersions, versionsFile, versionsUrl, playWrightWrapper, httpClient, log, cancellationToken);
+        (string versionsHtml, CQ versionsCQ) = await GetHtmlAsync(skipVersions, versionsFile, versionsUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
-        string[] versions = versionsCQ.Find("section.ipc-page-section ul li").Select(itemDom => itemDom.TextContent.Trim()).ToArray();
+        string[] versions = versionsCQ
+            .Find("[data-testid='list-item'] .ipc-html-content-inner-div")
+            .Find("*")
+            .Each(linkDom => linkDom.RemoveAttribute("class"))
+            .End()
+            .Select(itemDom => itemDom.HtmlTrim())
+            .ToArray();
 
         imdbMetadata = imdbMetadata with
         {
             Parent = parentMetadata,
             Year = year,
-            Regions = regions,
-            Languages = languages,
             Titles = titles,
-            Title = HttpUtility.HtmlDecode(title).Trim(),
-            OriginalTitle = HttpUtility.HtmlDecode(originalTitle).Trim(),
-            Name = HttpUtility.HtmlDecode(imdbMetadata.Name).Trim(),
+            Title = title.TrimDecode(),
+            OriginalTitle = originalTitle.TrimDecode(),
+            Name = imdbMetadata.Name.TrimDecode(),
             AllKeywords = allKeywords,
             MpaaRating = mpaaRating,
-            Advisories = advisories.ToLookup(advisory => advisory.Category).ToDictionary(group => group.Key, group => group.ToDictionary(advisory => advisory.Severity, advisory => advisory.Descriptions)),
-            AlsoKnownAs = alsoKnownAs,
-            Genres = imdbMetadata.Genres,
-            Releases = dates,
-            Websites = websites
-                .Distinct()
-                .ToLookup(item => item.Text, item => item.Url)
-                .ToDictionary(group => HttpUtility.HtmlDecode(group.Key), group => group.ToArray()),
-            FilmingLocations = locations
-                .Distinct()
-                .ToDictionary(item => item.Text, item => item.Url),
-            Companies = companies
-                .Distinct()
-                .ToLookup(item => item.Text, item => item.Url)
-                .ToDictionary(group => HttpUtility.HtmlDecode(group.Key), group => group.ToArray()),
+            Advisories = advisories,
+            ReleaseDates = releaseDates,
             Certifications = certifications,
             Connections = connections,
             AlternateVersions = versions,
@@ -1054,7 +1026,11 @@ internal static partial class Imdb
             Quotes = quotes,
             Trivia = trivia,
             BoxOffice = boxOffice,
-            TechSpecs = techSpecs
+            TechSpecs = techSpecs,
+            Awards = awards,
+            AllAwards = allAwards,
+            Details = details,
+            Tagline = tagline
         };
 
         return (
@@ -1062,6 +1038,7 @@ internal static partial class Imdb
 
             imdbUrl, imdbHtml,
             advisoriesUrl, advisoriesHtml,
+            awardsUrl, awardsHtml,
             connectionsUrl, connectionsHtml,
             crazyCreditsUrl, crazyCreditsHtml,
             creditsUrl, creditsHtml,
@@ -1075,6 +1052,7 @@ internal static partial class Imdb
 
             parentImdbUrl, parentImdbHtml,
             parentAdvisoriesUrl, parentAdvisoriesHtml,
+            parentAwardsUrl, parentAwardsHtml,
             parentConnectionsUrl, parentConnectionsHtml,
             parentCrazyCreditsUrl, parentCrazyCreditsHtml,
             parentCreditsUrl, parentCreditsHtml,
@@ -1093,44 +1071,41 @@ internal static partial class Imdb
         maxDegreeOfParallelism ??= MaxDegreeOfParallelism;
         log ??= Logger.WriteLine;
 
-        WebDriverHelper.DisposeAll();
+        //ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
 
-        ILookup<string, string> top = (await File.ReadAllLinesAsync(settings.TopMetadata, cancellationToken))
-            .AsParallel()
-            .Where(line => (line.ContainsIgnoreCase("|movies_x265|") || line.ContainsIgnoreCase("|movies|"))
-                && (line.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") || line.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}")))
-            .Select(line => line.Split('|'))
-            .Do(cells => Debug.Assert(string.IsNullOrEmpty(cells[^2]) || cells[^2].IsImdbId()))
-            .Do(cells => Debug.Assert(cells[1].ContainsIgnoreCase($"-{settings.TopEnglishKeyword}") || cells[1].ContainsIgnoreCase($"-{settings.TopForeignKeyword}")))
-            .ToLookup(cells => cells[^2], cells => cells[1]);
-
-        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
-        Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadMovieTopX265MetadataAsync(cancellationToken);
-        Dictionary<string, TopMetadata[]> h264Metadata = await settings.LoadMovieTopH264MetadataAsync(cancellationToken);
-        Dictionary<string, TopMetadata[]> h264720PMetadata = await settings.LoadMovieTopH264720PMetadataAsync(cancellationToken);
-        ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
-        Dictionary<string, TopMetadata[]> x265XMetadata = await settings.LoadMovieTopX265XMetadataAsync(cancellationToken);
-        Dictionary<string, TopMetadata[]> h264XMetadata = await settings.LoadMovieTopH264XMetadataAsync(cancellationToken);
+        //ILookup<string, string> top = (await settings.LoadTopMetadataAsync(cancellationToken))
+        //    .Where(line => (line.Category.EqualsIgnoreCase("movies_x265") || line.Category.EqualsIgnoreCase("movies"))
+        //        && (line.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") || line.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}")))
+        //    .ToLookup(cells => cells.ImdbId, cells => cells.Title);
+        //Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadMovieTopX265MetadataAsync(cancellationToken);
+        //Dictionary<string, TopMetadata[]> h264Metadata = await settings.LoadMovieTopH264MetadataAsync(cancellationToken);
+        //Dictionary<string, TopMetadata[]> h264720PMetadata = await settings.LoadMovieTopH264720PMetadataAsync(cancellationToken);
+        //ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
+        //Dictionary<string, TopMetadata[]> x265XMetadata = await settings.LoadMovieTopX265XMetadataAsync(cancellationToken);
+        //Dictionary<string, TopMetadata[]> h264XMetadata = await settings.LoadMovieTopH264XMetadataAsync(cancellationToken);
         //Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(rareJsonPath);
 
-        string[] cacheFiles = Directory.GetFiles(settings.MovieMetadataCacheDirectory);
+        HashSet<string> cacheFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.MovieMetadataCacheDirectory);
         string[] metadataFiles = Directory.GetFiles(settings.MovieMetadataDirectory);
-        string[] imdbIds = x265Metadata.Keys
-            .Concat(x265XMetadata.Keys)
-            .Concat(h264Metadata.Keys)
-            .Concat(h264XMetadata.Keys)
-            .Concat(preferredMetadata.Keys)
-            .Concat(h264720PMetadata.Keys)
-            .Concat(top.Select(group => group.Key))
-            .Except(libraryMetadata.Keys)
-            //.Except(rareMetadata
-            //    .SelectMany(rare => Regex
-            //        .Matches(rare.Value.Content, @"imdb\.com/title/(tt[0-9]+)")
-            //        .Where(match => match.Success)
-            //        .Select(match => match.Groups[1].Value)))
-            .Distinct()
-            .Order()
-            .ToArray();
+        //string[] imdbIds = x265Metadata.Keys.AsParallel()
+        //    .Concat(x265XMetadata.Keys.AsParallel())
+        //    .Concat(h264Metadata.Keys.AsParallel())
+        //    .Concat(h264XMetadata.Keys.AsParallel())
+        //    .Concat(preferredMetadata.Keys.AsParallel())
+        //    .Concat(h264720PMetadata.Keys.AsParallel())
+        //    .Concat(top.Select(group => group.Key).AsParallel())
+        //    .Distinct(StringComparer.OrdinalIgnoreCase)
+        //    .Except(libraryMetadata.Keys.AsParallel())
+        //    .Except((await JsonHelper.DeserializeFromFileAsync<string[]>(Path.Combine(settings.LibraryDirectory, "Movie.ImdbIds.json"), cancellationToken)).AsParallel())
+        //    //.Except(rareMetadata
+        //    //    .SelectMany(rare => Regex
+        //    //        .Matches(rare.Value.Content, @"imdb\.com/title/(tt[0-9]+)")
+        //    //        .Where(match => match.Success)
+        //    //        .Select(match => match.Groups[1].Value)))
+        //    .OrderBy(imdbId => imdbId)
+        //    .ToArray();
+        //await JsonHelper.SerializeToFileAsync(imdbIds, Path.Combine(settings.LibraryDirectory, "Movie.ImdbIdsToDownload.json"), cancellationToken);
+        string[] imdbIds = await JsonHelper.DeserializeFromFileAsync<string[]>(Path.Combine(settings.LibraryDirectory, "Movie.ImdbIdsToDownload.json"), cancellationToken);
         int length = imdbIds.Length;
         if (getRange is not null)
         {
@@ -1143,14 +1118,13 @@ internal static partial class Imdb
         int trimmedLength = imdbIds.Length;
         ConcurrentQueue<string> imdbIdQueue = new(imdbIds);
         ConcurrentBag<string> imdbIdWithErrors = [];
+        Lock @lock = new();
         await Enumerable
             .Range(0, maxDegreeOfParallelism.Value)
             .ParallelForEachAsync(
                 async (webDriverIndex, _, token) =>
                 {
-                    token.ThrowIfCancellationRequested();
-                    await using PlayWrightWrapper playWrightWrapper = new("https://www.imdb.com/");
-
+                    await using PlayWrightWrapper playWrightWrapper = new();
                     while (imdbIdQueue.TryDequeue(out string? imdbId))
                     {
                         int index = trimmedLength - imdbIdQueue.Count;
@@ -1158,12 +1132,12 @@ internal static partial class Imdb
                         try
                         {
                             await Retry.FixedIntervalAsync(
-                                async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, playWrightWrapper, overwrite: false, useCache: true, log: log, token),
+                                async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, playWrightWrapper, @lock, overwrite: false, useCache: true, log: log, token),
                                 isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError }, cancellationToken: token);
                         }
-                        catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
+                        catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound)
                         {
-                            log($"!!!{imdbId} {exception}");
+                            log($"!!!{imdbId} {exception.ToString().EscapeMarkup()}");
                             imdbIdWithErrors.Add(imdbId);
                         }
                     }
@@ -1181,7 +1155,7 @@ internal static partial class Imdb
 
         WebDriverHelper.DisposeAll();
         string[] cacheFiles = Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory, "*.Keywords.log").Order().ToArray();
-        HashSet<string> keywordsFiles = new(Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory, "*.Keywords.log.txt"), StringComparer.OrdinalIgnoreCase);
+        HashSet<string> keywordsFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.MovieMetadataCacheDirectory, "*.Keywords.log.txt");
         int length = cacheFiles.Length;
         if (getRange is not null)
         {
@@ -1211,7 +1185,7 @@ internal static partial class Imdb
                             string keywordsUrl = $"{imdbUrl}keywords/";
                             string keywordsHtml = await webDriver.GetStringAsync(keywordsUrl, cancellationToken: token);
                             CQ keywordsCQ = keywordsHtml;
-                            string[] allKeywords = keywordsCQ.Find("#keywords_content table td div.sodatext a").Select(keyword => keyword.TextContent.Trim()).ToArray();
+                            string[] allKeywords = keywordsCQ.Find("#keywords_content table td div.sodatext a").Select(keyword => keyword.TextTrimDecode()).ToArray();
                             Debug.Assert(allKeywords.IsEmpty());
                             if (true)
                             {
@@ -1259,7 +1233,7 @@ internal static partial class Imdb
                                 CQ allKeywordsCQ = keywordsCQ.Find("div[data-testid='sub-section']>ul>li");
                                 allKeywords = allKeywordsCQ
                                     .Select(row => row.Cq())
-                                    .Select(rowCQ => HttpUtility.HtmlDecode(rowCQ.Children().Eq(0).Text()))
+                                    .Select(rowCQ => rowCQ.Children().Eq(0).TextTrimDecode())
                                     .ToArray();
 
                                 await FileHelper.WriteTextAsync(keywordFile, keywordsHtml, cancellationToken: token);
@@ -1281,8 +1255,8 @@ internal static partial class Imdb
 
         WebDriverHelper.DisposeAll();
 
-        HashSet<string> advisoriesFiles = new(Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory, "*.Advisories.log.txt"), StringComparer.OrdinalIgnoreCase);
-        HashSet<string> certificationsFiles = new(Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory, "*.Advisories.log.Certifications.txt"), StringComparer.OrdinalIgnoreCase);
+        HashSet<string> advisoriesFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.MovieMetadataCacheDirectory, "*.Advisories.log.txt");
+        HashSet<string> certificationsFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.MovieMetadataCacheDirectory, "*.Advisories.log.Certifications.txt");
         string[] cacheFiles = Directory.EnumerateFiles(settings.MovieMetadataCacheDirectory, "*.Advisories.log")
             .Where(advisoriesFile => !(advisoriesFiles.Contains($"{advisoriesFile}.txt") && certificationsFiles.Contains($"{advisoriesFile}.Certifications.txt")))
             .Order()
@@ -1314,20 +1288,20 @@ internal static partial class Imdb
                             string advisoriesUrl = $"{imdbUrl}parentalguide/";
                             string advisoriesHtml = File.Exists(advisoriesFile)
                                 ? await File.ReadAllTextAsync(advisoriesFile, cancellationToken)
-                                : await page.GetStringAsync(advisoriesUrl);
+                                : await page.GetStringAsync(advisoriesUrl, PageSelector, cancellationToken: cancellationToken);
                             (bool isUpdated, advisoriesHtml, CQ advisoriesCQ) = await playWrightWrapper.TryUpdateAsync(log, cancellationToken);
                             log(isUpdated ? $"{imdbId} advisories is updated." : $"{imdbId} advisories is not updated.");
 
-                            string mpaaRating = advisoriesCQ.Find("section[data-testid='content-rating'] ul li div.ipc-metadata-list-item__content-container").First().Text().Trim();
+                            string mpaaRating = advisoriesCQ.Find("section[data-testid='content-rating'] ul li div.ipc-metadata-list-item__content-container").First().TextTrimDecode();
                             (string Category, string Severity, string[] Descriptions)[] advisories = advisoriesCQ
                                 .Find("div.ipc-page-grid__item > section[data-testid='content-rating']")
                                 .Siblings()
                                 .TakeWhile(sectionDom => sectionDom.GetAttribute("data-testid").IsNullOrEmpty())
                                 .Select(sectionDom => sectionDom.Cq())
                                 .Select(sectionCQ => (
-                                    Category: sectionCQ.Find("h3").Text().Trim(),
-                                    Severity: sectionCQ.Find("div[data-testid='severity_component']").Children().First().Text().Trim(),
-                                    Descriptions: sectionCQ.Find("div[data-testid^='sub-section-'] div[data-testid='item-html']").Select(item => item.TextContent.Trim()).ToArray()
+                                    Category: sectionCQ.Find("h3").TextTrimDecode(),
+                                    Severity: sectionCQ.Find("div[data-testid='severity_component']").Children().First().TextTrimDecode(),
+                                    Descriptions: sectionCQ.Find("div[data-testid^='sub-section-'] div[data-testid='item-html']").Select(item => item.TextTrimDecode()).ToArray()
                                 ))
                                 .Where(advisory => advisory.Severity.IsNotNullOrWhiteSpace() || advisory.Descriptions.Any())
                                 .ToArray();
@@ -1337,16 +1311,16 @@ internal static partial class Imdb
                                 .SelectMany(regionDom =>
                                 {
                                     CQ regionCQ = regionDom.Cq();
-                                    string region = regionCQ.Find("span.ipc-metadata-list-item__label").Text().Trim();
+                                    string region = regionCQ.Find("span.ipc-metadata-list-item__label").TextTrimDecode();
                                     return regionCQ
                                         .Find("ul li")
                                         .Select(certificationDom =>
                                         {
                                             CQ certificationCQ = certificationDom.Cq();
                                             CQ certificationLinkCQ = certificationCQ.Find("a");
-                                            string certification = certificationLinkCQ.Text().Trim();
+                                            string certification = certificationLinkCQ.TextTrimDecode();
                                             string link = certificationLinkCQ.Attr("href");
-                                            string remark = certificationCQ.Find("span").Text().Trim();
+                                            string remark = certificationCQ.Find("span").TextTrimDecode();
                                             return (
                                                 Certification: $"{region}:{certification}{(remark.IsNullOrWhiteSpace() ? string.Empty : $" ({remark})")}",
                                                 Link: link
@@ -1380,7 +1354,7 @@ internal static partial class Imdb
 
         await using PlayWrightWrapper playWrightWrapper = new("https://www.imdb.com/");
 
-        string[] cacheFiles = Directory.GetFiles(@cacheDirectory);
+        HashSet<string> cacheFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(cacheDirectory);
         string[] metadataFiles = Directory.GetFiles(metadataDirectory);
         string[] imdbIds = libraryMetadata.Keys
             .Where(imdbId => imdbId.IsImdbId())
@@ -1416,27 +1390,28 @@ internal static partial class Imdb
     }
 
     internal static async Task DownloadAllTVsAsync(
-        ISettings settings,
-        string[] tvDirectories, string cacheDirectory, string metadataDirectory,
-        Func<int, Range>? getRange = null, Action<string>? log = null, CancellationToken cancellationToken = default)
+        ISettings settings, string[] tvDirectories, Func<int, Range>? getRange = null,
+        Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
-        Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadMovieTopX265MetadataAsync(cancellationToken);
-        string[] libraryImdbIds = tvDirectories.SelectMany(tvDirectory => Directory.EnumerateFiles(tvDirectory, Video.ImdbMetadataSearchPattern, SearchOption.AllDirectories))
-            .Select(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty)
-            .Where(imdbId => imdbId.IsNotNullOrWhiteSpace())
-            .ToArray();
+        //Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadTVTopX265MetadataAsync(cancellationToken);
+        //ContrastMetadata[] contrastMetadata = await settings.LoadTVContrastMetadataAsync(cancellationToken);
+        //string[] libraryImdbIds = tvDirectories.SelectMany(tvDirectory => Directory.EnumerateFiles(tvDirectory, Video.ImdbMetadataSearchPattern, SearchOption.AllDirectories))
+        //    .Select(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty)
+        //    .Where(imdbId => imdbId.IsImdbId())
+        //    .ToArray();
 
-        await using PlayWrightWrapper playWrightWrapper = new("https://www.imdb.com/");
-
-        string[] cacheFiles = Directory.GetFiles(cacheDirectory);
-        string[] metadataFiles = Directory.GetFiles(metadataDirectory);
-        string[] imdbIds = x265Metadata.Keys
-            .Distinct()
-            .Except(libraryImdbIds)
-            .Order()
-            .ToArray();
+        HashSet<string> cacheFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.TVMetadataCacheDirectory);
+        string[] metadataFiles = Directory.GetFiles(settings.TVMetadataDirectory);
+        //string[] imdbIds = x265Metadata.Keys
+        //    .Concat(contrastMetadata.Select(metadata => metadata.ImdbId).Where(imdbId => imdbId.IsImdbId()))
+        //    .Distinct(StringComparer.OrdinalIgnoreCase)
+        //    .Except(await JsonHelper.DeserializeFromFileAsync<string[]>(Path.Combine(settings.LibraryDirectory, "TV.ImdbIds.json"), cancellationToken))
+        //    .Order()
+        //    .ToArray();
+        //await JsonHelper.SerializeToFileAsync(imdbIds, Path.Combine(settings.LibraryDirectory, "TV.ImdbIdsToDownload.json"), cancellationToken);
+        string[] imdbIds = await JsonHelper.DeserializeFromFileAsync<string[]>(Path.Combine(settings.LibraryDirectory, "TV.ImdbIdsToDownload.json"), cancellationToken);
         if (getRange is not null)
         {
             int length = imdbIds.Length;
@@ -1447,25 +1422,43 @@ internal static partial class Imdb
             .Except(metadataFiles.Select(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty))
             .ToArray();
         int trimmedLength = imdbIds.Length;
-        await imdbIds.ForEachAsync(
-            async (imdbId, index) =>
-            {
-                log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
-                try
+        ConcurrentQueue<string> imdbIdQueue = new(imdbIds);
+        ConcurrentBag<string> imdbIdWithErrors = [];
+        await using PlayWrightWrapper playWrightWrapper = new("https://www.imdb.com/");
+        Lock @lock = new();
+        await Enumerable
+            .Range(0, MaxDegreeOfParallelism)
+            .ParallelForEachAsync(
+                async (webDriverIndex, _, token) =>
                 {
-                    await Retry.FixedIntervalAsync(
-                        async () => await Video.DownloadImdbMetadataAsync(imdbId, metadataDirectory, cacheDirectory, metadataFiles, cacheFiles, playWrightWrapper, overwrite: false, useCache: true, log: log, cancellationToken: cancellationToken),
-                        isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError },
-                        cancellationToken: cancellationToken);
-                }
-                catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
-                {
-                    log($"!!!{imdbId} {exception}");
-                }
-            },
-            cancellationToken: cancellationToken);
+                    await using PlayWrightWrapper playWrightWrapper = new();
+                    while (imdbIdQueue.TryDequeue(out string? imdbId))
+                    {
+                        int index = trimmedLength - imdbIdQueue.Count;
+                        log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
+                        try
+                        {
+                            await Retry.FixedIntervalAsync(
+                                async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.TVMetadataDirectory, settings.TVMetadataCacheDirectory, metadataFiles, cacheFiles, playWrightWrapper, @lock, false, true, log, token),
+                                isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound },
+                                cancellationToken: token);
+                        }
+                        catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound)
+                        {
+                            log($"!!!{imdbId} {exception.ToString().EscapeMarkup()}");
+                            imdbIdWithErrors.Add(imdbId);
+                        }
+                    }
+                },
+                MaxDegreeOfParallelism,
+                cancellationToken);
+
+        imdbIdWithErrors.Prepend("IMDB ids with errors:").ForEach(log);
     }
 
     [GeneratedRegex("[0-9]{4}")]
     private static partial Regex YearRegex();
+
+    [GeneratedRegex("[0-9]+ more")]
+    private static partial Regex SeeMoreButtonRegex();
 }

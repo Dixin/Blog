@@ -325,11 +325,10 @@ public class TorrentHelper
 
     public static async Task PrintNotDownloadedAsync(string magnetUrlPath, string torrentDirectory, bool addTrackers = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
-        HashSet<string> downloadedHashes = new(
-            Directory
-                .EnumerateFiles(torrentDirectory, TorrentSearchPattern, SearchOption.AllDirectories)
-                .Select(torrent => PathHelper.GetFileNameWithoutExtension(torrent).Split(HashSeparator).Last()),
-            StringComparer.OrdinalIgnoreCase);
+        HashSet<string> downloadedHashes = Directory
+            .EnumerateFiles(torrentDirectory, TorrentSearchPattern, SearchOption.AllDirectories)
+            .Select(torrent => PathHelper.GetFileNameWithoutExtension(torrent).Split(HashSeparator).Last())
+            .ToHashSetOrdinalIgnoreCase();
 
         (await File.ReadAllTextAsync(magnetUrlPath, cancellationToken))
             .Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
@@ -340,6 +339,6 @@ public class TorrentHelper
             .ForEach(magnetUri => log?.Invoke((addTrackers ? magnetUri.AddDefaultTrackers() : magnetUri).ToString()));
     }
 
-    public static async Task<string> GetExactTopicAsync(string file) => 
+    public static async Task<string> GetExactTopicAsync(string file) =>
         (await Torrent.LoadAsync(file)).InfoHashes.V1OrV2.ToHex().ToUpperInvariant() ?? throw new InvalidOperationException(file);
 }

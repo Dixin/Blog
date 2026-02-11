@@ -30,7 +30,7 @@ internal static class ImdbMetadataExtensions
         return imdbId.IsImdbId();
     }
 
-    internal static bool TryLoadXmlImdbId(this string xml, [NotNullWhen(true)] out string? imdbId)
+    internal static bool TryLoadNfoImdbId(this string xml, [NotNullWhen(true)] out string? imdbId)
     {
         XDocument metadata;
         try

@@ -1,5 +1,7 @@
 ﻿namespace Examples.Linq;
 
+using Examples.Common;
+
 public static class EnumerableExtensions
 {
     public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, ValueTask> asyncAction, CancellationToken cancellationToken = default) =>
@@ -180,6 +182,9 @@ public static class EnumerableExtensions
             await asyncAction(source.Current, cancellationToken);
         }
     }
+
+    public static HashSet<string> ToHashSetOrdinalIgnoreCase(this IEnumerable<string> source) => 
+        source.ThrowIfNull().ToHashSet(StringComparer.OrdinalIgnoreCase);
 
     extension<TSource>(IEnumerable<TSource>)
     {
