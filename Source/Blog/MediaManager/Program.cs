@@ -43,7 +43,6 @@ Action<string> log = Logger.WriteLine;
 DirectorySettings[][] mediaDrives = [
     [
         settings.MovieFranchise,
-        settings.MovieFranchiseWithoutSubtitle,
         settings.MovieMainstream1,
         settings.MovieTemp1
     ],
@@ -112,7 +111,6 @@ DirectorySettings[][] movieDrives = [
 DirectorySettings[][] sdrMovieDrives = [
     [
         settings.MovieFranchise,
-        settings.MovieFranchiseWithoutSubtitle,
         settings.MovieMainstream1,
         settings.MovieTemp1
     ],

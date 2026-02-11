@@ -353,7 +353,7 @@ internal static class Preferred
     {
         log ??= Logger.WriteLine;
 
-        HashSet<string> existingFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.MovieMetadataCacheDirectory, TorrentHelper.TorrentSearchPattern);
+        HashSet<string> existingFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.MovieMetadataFileDirectory, TorrentHelper.TorrentSearchPattern);
 
         ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
 
@@ -365,7 +365,7 @@ internal static class Preferred
                     (
                         metadata,
                         Link: availability.Value,
-                        File: Path.Combine(settings.MovieMetadataCacheDirectory, $"{metadata.ImdbId}.{availability.Value.GetPreferredExtractTopic()}{TorrentHelper.TorrentExtension}")
+                        File: Path.Combine(settings.MovieMetadataFileDirectory, $"{metadata.ImdbId}{Video.Delimiter}{availability.Value.GetPreferredExtractTopic()}{TorrentHelper.TorrentExtension}")
                     )))
             .Where(task => !existingFiles.Contains(task.File)));
         int count = metadataToDownload.Count;
@@ -406,7 +406,7 @@ internal static class Preferred
 
         ConcurrentDictionary<string, List<PreferredFileMetadata>> allFileMetadata = await settings.LoadMoviePreferredFileMetadataAsync(cancellationToken);
 
-        HashSet<string> existingFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.MovieMetadataCacheDirectory, TorrentHelper.TorrentSearchPattern);
+        HashSet<string> existingFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.MovieMetadataFileDirectory, TorrentHelper.TorrentSearchPattern);
 
         ConcurrentDictionary<string, List<PreferredMetadata>> allMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
 
@@ -420,7 +420,7 @@ internal static class Preferred
         log(length.ToString());
 
         ILookup<string, string> existingImdbIds = existingFiles
-            .Select(file => PathHelper.GetFileNameWithoutExtension(file).Split("."))
+            .Select(file => PathHelper.GetFileNameWithoutExtension(file).Split(Video.Delimiter))
             .ToLookup(
                 fileNameSegments => fileNameSegments.First(),
                 fileNameSegments => fileNameSegments.Last());
@@ -448,7 +448,7 @@ internal static class Preferred
                     }
 
                     string linkExactTopic = video.Link.GetPreferredExtractTopic();
-                    string file = Path.Combine(settings.MovieMetadataCacheDirectory, $"{video.Metadata.ImdbId}.{linkExactTopic}{TorrentHelper.TorrentExtension}");
+                    string file = Path.Combine(settings.MovieMetadataFileDirectory, $"{video.Metadata.ImdbId}{Video.Delimiter}{linkExactTopic}{TorrentHelper.TorrentExtension}");
                     if (!existingFiles.Contains(file))
                     {
                         Debugger.Break(); // Missing file.
@@ -622,9 +622,9 @@ internal static class Preferred
     {
         log ??= Logger.WriteLine;
 
-        ILookup<string, string> allFiles = Directory
-            .EnumerateFiles(settings.MovieMetadataCacheDirectory, TorrentHelper.TorrentSearchPattern)
-            .ToLookup(file => PathHelper.GetFileNameWithoutExtension(file).Split(".")[1]);
+        ILookup<string, string> exactTopicToFiles = Directory
+            .EnumerateFiles(settings.MovieMetadataFileDirectory, TorrentHelper.TorrentSearchPattern)
+            .ToLookup(file => PathHelper.GetFileNameWithoutExtension(file).Split(Video.Delimiter)[1]);
 
         ConcurrentDictionary<string, List<PreferredMetadata>> details = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
         Dictionary<string, string> exactTopicToImdbIds = details
@@ -636,7 +636,7 @@ internal static class Preferred
                     groupByExactTopic => groupByExactTopic.Key,
                     groupByExactTopic => groupByExactTopic.Select(item => item.Metadata.ImdbId).Distinct().Single());
 
-        allFiles.ForEach(fileGroup =>
+        exactTopicToFiles.ForEach(fileGroup =>
         {
             if (!exactTopicToImdbIds.TryGetValue(fileGroup.Key, out string? imdbId))
             {
@@ -651,15 +651,15 @@ internal static class Preferred
 
             fileGroup.ForEach(file =>
             {
-                if (PathHelper.GetFileNameWithoutExtension(file).Split(".")[0].EqualsIgnoreCase(imdbId))
+                if (PathHelper.GetFileNameWithoutExtension(file).Split(Video.Delimiter)[0].EqualsIgnoreCase(imdbId))
                 {
                     return;
                 }
 
-                log($"Rename {file} to {imdbId}.{fileGroup.Key}");
+                log($"Rename {file} to {imdbId}{Video.Delimiter}{fileGroup.Key}");
                 if (!isDryRun)
                 {
-                    FileHelper.ReplaceFileNameWithoutExtension(file, $"{imdbId}.{fileGroup.Key}", true);
+                    FileHelper.ReplaceFileNameWithoutExtension(file, $"{imdbId}{Video.Delimiter}{fileGroup.Key}", true);
                 }
             });
         });

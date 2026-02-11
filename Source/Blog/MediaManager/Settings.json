@@ -50,7 +50,7 @@
     "MovieMetadataDirectory": "D:\\Files\\Library\\MovieMetadata",
     "MovieMetadataBackupDirectory": "D:\\Files\\Library\\MovieMetadataBackup",
     "MovieMetadataCacheDirectory": "D:\\Files\\Library\\MovieMetadataCache",
-    "MovieMetadataFileDirectory": "D:\\Files\\Library\\MovieMetadataCache",
+    "MovieMetadataFileDirectory": "D:\\Files\\Library\\MovieMetadataFile",
     "MovieMetadataCacheBackupDirectory": "D:\\Files\\Library\\MovieMetadataCacheBackup",
 
     "TVMetadataDirectory": "D:\\Files\\Library\\TVMetadata",
