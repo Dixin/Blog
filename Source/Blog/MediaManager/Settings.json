@@ -1,1314 +1,1311 @@
 {
-  "TopEnglishKeyword": "",
-  "TopForeignKeyword": "",
-  "PreferredOldKeyword": "",
-  "PreferredNewKeyword": "",
-  "ContrastKeyword": "",
-
-  "LibraryDirectory": "D:\\Files\\Library",
-  "MovieSubtitleBackupDirectory": "D:\\Files\\Library\\MovieSubtitle",
-  "TVSubtitleBackupDirectory": "D:\\Files\\Library\\TVSubtitle",
-
-  "Drive115Url": "",
-  "MovieTopX265Url": "",
-  "MovieTopX265EnglishUrl": "",
-  "MovieTopX265ForeignUrl": "",
-  "MovieTopH264Url": "",
-  "MovieTopH264EnglishUrl": "",
-  "MovieTopH264ForeignUrl": "",
-  "MovieTopH264720PUrl": "",
-  "MoviePreferredUrl": "",
-  "MovieSharedUrl": "",
-  "TVTopX265Url": "",
-  "TVContrastUrl": "",
-
-  "MovieTopDuplications": [],
-
-  "Drive115Metadata": "D:\\Files\\Library\\Movie.Drive115Metadata.json",
-  "MovieLibraryMetadata": "D:\\Files\\Library\\Movie.LibraryMetadata.json",
-  "MovieIgnoredMetadata": "D:\\Files\\Library\\Movie.Ignored.json",
-  "MovieExternalMetadata": "D:\\Files\\Library\\Movie.ExternalMetadata.json",
-  "MovieTopX265Metadata": "D:\\Files\\Library\\Movie.TopMetadata.x265.json",
-  "MovieTopX265XMetadata": "D:\\Files\\Library\\Movie.TopMetadata.x265.X.json",
-  "MovieTopH264Metadata": "D:\\Files\\Library\\Movie.TopMetadata.H264.json",
-  "MovieTopH264XMetadata": "D:\\Files\\Library\\Movie.TopMetadata.H264.X.json",
-  "MovieTopH264720PMetadata": "D:\\Files\\Library\\Movie.TopMetadata.H264.720p.json",
-  "MoviePreferredSummary": "D:\\Files\\Library\\Movie.PreferredSummary.json",
-  "MoviePreferredMetadata": "D:\\Files\\Library\\Movie.PreferredMetadata.json",
-  "MoviePreferredFileMetadata": "D:\\Files\\Library\\Movie.PreferredFileMetadata.json",
-  "MovieRareMetadata": "D:\\Files\\Library\\Movie.RareMetadata.json",
-  "MovieSharedMetadata": "D:\\Files\\Library\\Movie.SharedMetadata.json",
-  "MovieImdbSpecialMetadata": "D:\\Files\\Library\\Movie.ImdbSpecial.json",
-  "MovieMergedMetadata": "D:\\Files\\Library\\Movie.MergedMetadata.json",
-  "TVTopX265Metadata": "D:\\Files\\Library\\TV.TopMetadata.x265.json",
-  "TVContrastMetadata": "D:\\Files\\Library\\TV.ContrastMetadata.json",
-  "TopMagnetUrls": "D:\\Files\\Library\\Top.MagnetUrls.txt",
-  "TopMetadata": "D:\\Files\\Library\\Top.Metadata.txt",
-
-  "TempFile": "D:\\Files\\Library\\Temp.txt",
-
-  "MovieMetadataDirectory": "D:\\Files\\Library\\MovieMetadata",
-  "MovieMetadataBackupDirectory": "D:\\Files\\Library\\MovieMetadataBackup",
-  "MovieMetadataCacheDirectory": "D:\\Files\\Library\\MovieMetadataCache",
-  "MovieMetadataCacheBackupDirectory": "D:\\Files\\Library\\MovieMetadataCacheBackup",
-
-  "TVMetadataDirectory": "D:\\Files\\Library\\TVMetadata",
-  "TVMetadataCacheDirectory": "D:\\Files\\Library\\TVMetadataCache",
-
-  "AudioControversial": {
-    "Directory": "D:\\Files\\Library\\Audio Controversial.非主流音乐",
-    "Level": 1
-  },
-  "AudioMainstream": {
-    "Directory": "D:\\Files\\Library\\Audio Mainstream.主流音乐",
-    "Level": 1
-  },
-  "AudioShow": {
-    "Directory": "D:\\Files\\Library\\Audio Show.节目音频",
-    "Level": 1
-  },
-  "AudioSoundtrack": {
-    "Directory": "D:\\Files\\Library\\Audio Soundtrack.电影音乐",
-    "Level": 1
-  },
-
-  "Movie3D": {
-    "Directory": "D:\\Files\\Library\\Movies 3D.立体电影",
-    "Level": 2
-  },
-  "Movie4KHdr": {
-    "Directory": "D:\\Files\\Library\\Movies 4K HDR.高动态范围电影",
-    "Level": 2
-  },
-  "Movie4KHdrOverflow": {
-    "Directory": "D:\\Files\\Library\\Movies 4K HDR Overflow.高动态范围电影",
-    "Level": 2
-  },
-  "MovieControversial": {
-    "Directory": "D:\\Files\\Library\\Movies Controversial.非主流电影",
-    "Level": 2
-  },
-  "MovieControversialWithoutSubtitle": {
-    "Directory": "D:\\Files\\Library\\Movies Controversial.非主流电影[未抓取字幕]",
-    "Level": 2
-  },
-  "MovieDisk": {
-    "Directory": "D:\\Files\\Library\\Movies Disk.电影原盘",
-    "Level": 2
-  },
-  "MovieFranchise": {
-    "Directory": "D:\\Files\\Library\\Movies Franchise.系列电影",
-    "Level": 2
-  },
-  "MovieFranchiseWithoutSubtitle": {
-    "Directory": "D:\\Files\\Library\\Movies Franchise.系列电影[未抓取字幕]",
-    "Level": 2
-  },
-  "MovieMainstream1": {
-    "Directory": "D:\\Files\\Library\\Movies Mainstream 1.主流电影1",
-    "Level": 2
-  },
-  "MovieMainstream2": {
-    "Directory": "D:\\Files\\Library\\Movies Mainstream 2.主流电影2",
-    "Level": 2
-  },
-  "MovieMainstream3": {
-    "Directory": "D:\\Files\\Library\\Movies Mainstream 3.主流电影3",
-    "Level": 2
-  },
-  "MovieMusical": {
-    "Directory": "D:\\Files\\Library\\Movies Musical.音乐",
-    "Level": 2
-  },
-  "MovieTemp1": {
-    "Directory": "D:\\Files\\Library\\Movies Temp 1",
-    "Level": 2
-  },
-  "MovieTemp2": {
-    "Directory": "D:\\Files\\Library\\Movies Temp 2",
-    "Level": 2
-  },
-  "MovieTemp3": {
-    "Directory": "D:\\Files\\Library\\Movies Temp 3",
-    "Level": 2
-  },
-  "MovieTemp4KHdr1": {
-    "Directory": "D:\\Files\\Library\\Movies 4K HDR Temp 1",
-    "Level": 2
-  },
-  "MovieTemp4KHdr2": {
-    "Directory": "D:\\Files\\Library\\Movies 4K HDR Temp 2",
-    "Level": 2
-  },
-
-  "TV4KHdr": {
-    "Directory": "D:\\Files\\Library\\TV 4K HDR.高动态范围电视剧",
-    "Level": 1
-  },
-  "TVControversial": {
-    "Directory": "D:\\Files\\Library\\TV Controversial.非主流电视剧",
-    "Level": 1
-  },
-  "TVDocumentary": {
-    "Directory": "D:\\Files\\Library\\TV Documentary.记录电视剧",
-    "Level": 1
-  },
-  "TVMainstream": {
-    "Directory": "D:\\Files\\Library\\TV Mainstream.主流电视剧",
-    "Level": 1
-  },
-  "TVMainstreamChinese": {
-    "Directory": "D:\\Files\\Library\\TV Mainstream Chinese.主流电视剧",
-    "Level": 1
-  },
-  "TVMainstreamOverflow": {
-    "Directory": "D:\\Files\\Library\\TV Mainstream Overflow.主流电视剧",
-    "Level": 1
-  },
-  "TVTutorial": {
-    "Directory": "D:\\Files\\Library\\TV Tutorial.教程",
-    "Level": 1
-  },
-  "TVTemp1": {
-    "Directory": "D:\\Files\\Library\\TV Temp 1",
-    "Level": 1
-  },
-  "TVTemp2": {
-    "Directory": "D:\\Files\\Library\\TV Temp 2",
-    "Level": 1
-  },
-
-  "MovieRegions": {
-    "American Action.美国动作": [
-      "USA",
-      "Genre:Action",
-      "Franchise:Liam Neeson",
-      "Franchise:Jason Statham",
-      "Franchise:Death Race",
-      "Franchise:BMW Films"
-    ],
-    "American Adult.美国成人": [
-      "USA",
-      "Genre:Adult",
-      "Franchise:Andrew Blake",
-      "Franchise:Lesbian Workout",
-      "Franchise:Private",
-      "Franchise:Private Gold",
-      "Franchise:The World's Biggest Gang Bang",
-      "Franchise:XXX"
-    ],
-    "American Biography.美国传记": [
-      "USA",
-      "Franchise:Stanley Kubrick",
-      "Genre:Biography"
-    ],
-    "American Animation.美国动画": [
-      "USA",
-      "Genre:Animation"
-    ],
-    "American Comedy.美国喜剧": [
-      "USA",
-      "Genre:Comedy"
-    ],
-    "American Crime.美国罪案": [
-      "USA",
-      "Genre:Crime"
-    ],
-    "American Disability.美国": [
-      "USA"
-    ],
-    "American Document.美国记录": [
-      "USA",
-      "Franchise:Vintage Erotica",
-      "Genre:Documentary"
-    ],
-    "American Documentary.美国记录": [
-      "USA",
-      "Franchise:Titanic",
-      "Franchise:IMAX",
-      "Genre:Documentary"
-    ],
-    "American Drama.美国剧情": [
-      "USA",
-      "Franchise:Friend of the Family",
-      "Franchise:Masseuse",
-      "Genre:Drama"
-    ],
-    "American Erotic.美国情色": [
-      "USA",
-      "Franchise:Electric Blue"
-    ],
-    "American Fantasy.美国神话": [
-      "USA",
-      "Franchise:Night of the Demons",
-      "Genre:Fantasy"
-    ],
-    "American SciFi.美国科幻": [
-      "USA",
-      "Franchise:Resident Evil",
-      "Franchise:Fortress",
-      "Genre:SciFi"
-    ],
-    "American History.美国历史": [
-      "USA",
-      "Genre:History"
-    ],
-    "American Horror.美国恐怖": [
-      "USA",
-      "Franchise:Lake Placid",
-      "Franchise:Sorority House Massacre",
-      "Franchise:Witchcraft",
-      "Genre:Horror"
-    ],
-    "American Musical.美国音乐": [
-      "USA",
-      "Genre:Music",
-      "Genre:Musical"
-    ],
-    "American Politics.美国政治": [
-      "USA",
-      "UK",
-      "Canada",
-      "Genre:Biography",
-      "Genre:Documentary"
-    ],
-    "American Romance.美国爱情": [
-      "USA",
-      "Genre:Romance"
-    ],
-    "American Sport.美国运动": [
-      "USA",
-      "Genre:Sport"
-    ],
-    "American Thriller.美国惊悚": [
-      "USA",
-      "Franchise:Christopher Nolan",
-      "Franchise:Secret Games",
-      "Genre:Thriller"
-    ],
-    "American War.美国战争": [
-      "USA",
-      "Genre:War"
-    ],
-    "American Western.美国西部": [
-      "USA",
-      "Genre:Western"
-    ],
-    "Argentinan.阿根廷": [
-      "Argentina"
-    ],
-    "Australian Action.澳大利亚动作": [
-      "Australia",
-      "Genre:Action"
-    ],
-    "Australian Biography.澳大利亚传记": [
-      "Australia",
-      "Genre:Biography"
-    ],
-    "Australian Document.澳大利亚记录": [
-      "Australia",
-      "Genre:Documentary"
-    ],
-    "Australian.澳大利亚": [
-      "Australia"
-    ],
-    "Austrian Disability.奥地利": [
-      "Austria"
-    ],
-    "Austrian.奥地利": [
-      "Austria",
-      "Language:German"
-    ],
-    "Azerbaijan.阿塞拜疆": [
-      "Azerbaijan"
-    ],
-    "Bahamian.巴哈马": [
-      "Bahamas"
-    ],
-    "Belarusian.白俄罗斯": [
-      "Belarus"
-    ],
-    "Belgian Disability.比利时": [
-      "Belgium",
-      "Franchise:Come As You Are"
-    ],
-    "Belgian Document.比利时记录": [
-      "Belgium",
-      "Genre:Documentary"
-    ],
-    "Belgian.比利时": [
-      "Belgium"
-    ],
-    "Brazilian.巴西": [
-      "Brazil"
-    ],
-    "British Action.英国动作": [
-      "UK",
-      "Genre:Action",
-      "Franchise:James Bond",
-      "Franchise:Jason Statham"
-    ],
-    "British Adult.英国成人": [
-      "UK",
-      "Genre:Adult"
-    ],
-    "British Biography.英国传记": [
-      "UK",
-      "Genre:Biography",
-      "Genre:Documentary",
-      "Franchise:Mary Millington"
-    ],
-    "British Disability.英国": [
-      "UK"
-    ],
-    "British Document.英国记录": [
-      "UK",
-      "Franchise:Define Beauty",
-      "Genre:Documentary"
-    ],
-    "British Documentary.英国记录": [
-      "UK",
-      "Genre:Documentary"
-    ],
-    "British Musical.英国音乐": [
-      "UK",
-      "Genre:Music",
-      "Genre:Musical"
-    ],
-    "British.英国": [
-      "UK",
-      "Franchise:The Omen"
-    ],
-    "Bulgarian.保加利亚": [
-      "Bulgaria"
-    ],
-    "Cambodian Politics.柬埔寨政治": [
-      "Cambodia",
-      "Genre:Documentary"
-    ],
-    "Canadian Adult.加拿大成人": [
-      "Canada",
-      "Genre:Adult"
-    ],
-    "Canadian Action.加拿大动作": [
-      "Canada",
-      "Genre:Action"
-    ],
-    "Canadian Biography.加拿大传记": [
-      "Canada",
-      "Genre:Biography"
-    ],
-    "Canadian Disability.加拿大": [
-      "Canada"
-    ],
-    "Canadian Documentary.加拿大记录": [
-      "Canada",
-      "Genre:Documentary"
-    ],
-    "Canadian.加拿大": [
-      "Canada",
-      "Franchise:Scorned"
-    ],
-    "Chilean.智利": [
-      "Chile"
-    ],
-    "Chinese Adult.中文成人": [
-      "Hong Kong",
-      "Taiwan",
-      "China",
-      "Genre:Adult"
-    ],
-    "Chinese Foreign Action.中外合拍动作": [
-      "Hong Kong",
-      "Taiwan",
-      "USA",
-      "China",
-      "Genre:Action"
-    ],
-    "Chinese Foreign.中外合拍": [
-      "USA"
-    ],
-    "Chinese Biography.中文传记": [
-      "China",
-      "Hong Kong",
-      "Language:Mandarin",
-      "Genre:Biography"
-    ],
-    "Chinese Animation.中文动画": [
-      "China",
-      "Genre:Animation"
-    ],
-    "Chinese Disability.中文": [
-      "Hong Kong",
-      "China"
-    ],
-    "Chinese Documentary.中文记录": [
-      "China",
-      "Taiwan",
-      "Genre:Documentary"
-    ],
-    "Chinese Hongkong Action.中文香港动作": [
-      "Hong Kong",
-      "China",
-      "Taiwan",
-      "Franchise:Once Upon a Time in China",
-      "Genre:Action"
-    ],
-    "Chinese Hongkong.中文香港": [
-      "Hong Kong",
-      "Franchise:Stephen Chow-A Chinese Odyssey",
-      "Franchise:Erotic Ghost Story",
-      "Language:Cantonese"
-    ],
-    "Chinese Mainland Action.中文大陆动作": [
-      "China",
-      "Genre:Action"
-    ],
-    "Chinese Mainland.中文大陆": [
-      "China"
-    ],
-    "Chinese Politics.中文政治": [
-      "USA",
-      "UK",
-      "China",
-      "Genre:Documentary"
-    ],
-    "Chinese Singapore.中文新加坡": [
-      "Singapore"
-    ],
-    "Chinese Taiwan Action.中文台湾动作": [
-      "Taiwan",
-      "Genre:Action"
-    ],
-    "Chinese Taiwan.中文台湾": [
-      "Taiwan",
-      "Franchise:New Jin Ping Mei"
-    ],
-    "Colombian.哥伦比亚": [
-      "Colombia"
-    ],
-    "Cuban.古巴": [
-      "Cuba"
-    ],
-    "Cypriot.塞浦路斯": [
-      "Cyprus"
-    ],
-    "Czech.捷克": [
-      "Czech Republic",
-      "Czechoslovakia",
-      "Franchise:Bound Heat"
-    ],
-    "Slovakian.斯洛伐克": [
-      "Slovakia"
-    ],
-    "Danish Action.丹麦动作": [
-      "Denmark",
-      "Genre:Action"
-    ],
-    "Danish Adult.丹麦成人": [
-      "Denmark",
-      "Genre:Adult"
-    ],
-    "Danish Biography.丹麦传记": [
-      "Denmark",
-      "Genre:Biography"
-    ],
-    "Danish Erotic.丹麦情色": [
-      "Denmark"
-    ],
-    "Danish.丹麦": [
-      "Denmark"
-    ],
-    "Dominican.多米尼加": [
-      "Dominican Republic"
-    ],
-    "Dutch Adult.荷兰成人": [
-      "Netherlands",
-      "Genre:Adult"
-    ],
-    "Dutch Biography.荷兰传记": [
-      "Netherlands",
-      "Genre:Biography"
-    ],
-    "Dutch Documentary.荷兰记录": [
-      "Netherlands",
-      "Genre:Documentary"
-    ],
-    "Dutch.荷兰": [
-      "Netherlands",
-      "Franchise:Peter Greenaway"
-    ],
-    "Ecuadorian.厄瓜多尔": [
-      "Ecuador"
-    ],
-    "Egyptian.埃及": [
-      "Egypt"
-    ],
-    "Estonian.爱沙尼亚": [
-      "Estonia"
-    ],
-    "Filipino.菲律宾": [
-      "Philippines"
-    ],
-    "Finnish.芬兰": [
-      "Finland"
-    ],
-    "French Action.法国动作": [
-      "France",
-      "Genre:Action",
-      "Franchise:Crimson Rivers"
-    ],
-    "French Adult.法国成人": [
-      "France",
-      "Genre:Adult"
-    ],
-    "French Biography.法国传记": [
-      "France",
-      "Franchise:Zahia Dehar",
-      "Genre:Biography"
-    ],
-    "French Animation.法国动画": [
-      "France",
-      "Genre:Animation"
-    ],
-    "French Disability.法国": [
-      "France"
-    ],
-    "French Document.法国记录": [
-      "France",
-      "Genre:Documentary"
-    ],
-    "French Documentary.法国记录": [
-      "France",
-      "Genre:Documentary"
-    ],
-    "French Erotic.法国情色": [
-      "France",
-      "Franchise:Emanuelle Black",
-      "Franchise:Emmanuelle",
-      "Franchise:Emanuelle"
-    ],
-    "French Musical.法国音乐": [
-      "France",
-      "Genre:Music",
-      "Genre:Musical",
-      "Franchise:Crazy Horse"
-    ],
-    "French.法国": [
-      "France",
-      "Franchise:The Story of O",
-      "Franchise:Emmanuelle",
-      "Franchise:Diabolique",
-      "Language:French"
-    ],
-    "Georgian.格鲁吉亚": [
-      "Georgia"
-    ],
-    "German Adult.德国成人": [
-      "Germany",
-      "West Germany",
-      "Franchise:Josefine Mutzenbacher",
-      "Genre:Adult"
-    ],
-    "German Biography.德国传记": [
-      "Germany",
-      "West Germany",
-      "Genre:Biography"
-    ],
-    "German Disability.德国": [
-      "Germany",
-      "West Germany"
-    ],
-    "German Document.德国记录": [
-      "Germany",
-      "West Germany",
-      "Genre:Documentary"
-    ],
-    "German Documentary.德国记录": [
-      "Germany",
-      "West Germany",
-      "Genre:Documentary"
-    ],
-    "German Politics.德国政治": [
-      "Germany",
-      "West Germany",
-      "Genre:Documentary"
-    ],
-    "German.德国": [
-      "Germany",
-      "West Germany",
-      "East Germany",
-      "Franchise:The Experiment"
-    ],
-    "Greek.希腊": [
-      "Greece"
-    ],
-    "Guatemalan.危地马拉": [
-      "Guatemala"
-    ],
-    "Haitian.海地": [
-      "Haiti"
-    ],
-    "Hungarian.匈牙利": [
-      "Hungary"
-    ],
-    "Icelandic.冰岛": [
-      "Iceland"
-    ],
-    "Indian Action.印度动作": [
-      "India",
-      "Language:Hindi",
-      "Genre:Action"
-    ],
-    "Indian Biography.印度传记": [
-      "India",
-      "Genre:Biography"
-    ],
-    "Indian Disability.印度": [
-      "India"
-    ],
-    "Indian.印度": [
-      "India"
-    ],
-    "Indonesian Action.印度尼西亚动作": [
-      "Indonesia",
-      "Genre:Action"
-    ],
-    "Indonesian Documentary.印度尼西亚记录": [
-      "Indonesia",
-      "Genre:Documentary"
-    ],
-    "Indonesian.印度尼西亚": [
-      "Indonesia"
-    ],
-    "Iranian.伊朗": [
-      "Iran"
-    ],
-    "Irish Documentary.爱尔兰记录": [
-      "Ireland",
-      "Genre:Documentary"
-    ],
-    "Irish.爱尔兰": [
-      "Ireland"
-    ],
-    "Israel.以色列": [
-      "Israel"
-    ],
-    "Italian Action.意大利动作": [
-      "Italy",
-      "Genre:Action",
-      "Franchise:Clint Eastwood"
-    ],
-    "Italian Adult.意大利成人": [
-      "Italy",
-      "Franchise:Mario Salieri",
-      "Franchise:Selen",
-      "Genre:Adult"
-    ],
-    "Italian Biography.意大利传记": [
-      "Italy",
-      "Genre:Biography"
-    ],
-    "Italian Disability.意大利": [
-      "Italy"
-    ],
-    "Italian Document.意大利记录": [
-      "Italy",
-      "Genre:Documentary"
-    ],
-    "Italian Erotic.意大利情色": [
-      "Italy"
-    ],
-    "Italian.意大利": [
-      "Italy"
-    ],
-    "Japanese Action.日本动作": [
-      "Japan",
-      "Genre:Action"
-    ],
-    "Japanese Biography.日本传记": [
-      "Japan",
-      "Genre:Biography"
-    ],
-    "Japanese Animation.日本动画": [
-      "Japan",
-      "Genre:Animation"
-    ],
-    "Japanese Erotic.日本情色": [
-      "Japan"
-    ],
-    "Japanese.日本": [
-      "Japan"
-    ],
-    "Kazakhstani.哈萨克斯坦": [
-      "Kazakhstan"
-    ],
-    "Korean Action.韩国动作": [
-      "South Korea",
-      "Genre:Action",
-      "Franchise:Northern Limit Line"
-    ],
-    "Korean Biography.韩国传记": [
-      "South Korea",
-      "Genre:Biography"
-    ],
-    "Korean Disability.韩国": [
-      "South Korea"
-    ],
-    "Korean Erotic.韩国情色": [
-      "South Korea",
-      "Franchise:Affair"
-    ],
-    "Korean Politics.朝鲜政治": [
-      "Poland",
-      "Germany",
-      "Russia",
-      "Genre:Documentary"
-    ],
-    "Korean.韩国": [
-      "South Korea"
-    ],
-    "Latvian Politics.拉脱维亚政治": [
-      "Latvia",
-      "Genre:Documentary"
-    ],
-    "Latvian.拉脱维亚": [
-      "Latvia"
-    ],
-    "Lebanon.黎巴嫩": [
-      "Lebanon"
-    ],
-    "Lithuanian.立陶宛": [
-      "Lithuania"
-    ],
-    "Luxembourg.卢森堡": [
-      "Luxembourg"
-    ],
-    "Malian.马里": [
-      "Mali"
-    ],
-    "Mexican.墨西哥": [
-      "Mexico"
-    ],
-    "Mongolian.蒙古": [
-      "Mongolia"
-    ],
-    "New Zealand Documentary.新西兰记录": [
-      "New Zealand",
-      "Genre:Documentary"
-    ],
-    "New Zealand.新西兰": [
-      "New Zealand"
-    ],
-    "Nigerian.尼日利亚": [
-      "Nigeria"
-    ],
-    "Norwegian.挪威": [
-      "Norway"
-    ],
-    "Pakistani Action.巴基斯坦动作": [
-      "Pakistan",
-      "Genre:Action"
-    ],
-    "Pakistani Biography.巴基斯坦传记": [
-      "Pakistan",
-      "Genre:Biography"
-    ],
-    "Pakistani.巴基斯坦": [
-      "Pakistan"
-    ],
-    "Panamanian.巴拿马": [
-      "Panama"
-    ],
-    "Peruvian Action.秘鲁动作": [
-      "Peru",
-      "Genre:Action"
-    ],
-    "Peruvian.秘鲁": [
-      "Peru"
-    ],
-    "Polish Biography.波兰传记": [
-      "Poland",
-      "Genre:Biography"
-    ],
-    "Polish.波兰": [
-      "Poland"
-    ],
-    "Portuguese.葡萄牙": [
-      "Portugal"
-    ],
-    "Puerto Rican.波多黎各": [
-      "Puerto Rico"
-    ],
-    "Romanian.罗马尼亚": [
-      "Romania"
-    ],
-    "Russian Soviet Union Biography.苏俄传记": [
-      "Russia",
-      "Soviet Union",
-      "Genre:Biography"
-    ],
-    "Russian Soviet Union.苏俄": [
-      "Russia",
-      "Soviet Union"
-    ],
-    "Senegalese.塞内加尔": [
-      "Senegal"
-    ],
-    "South African Documentary.南非记录": [
-      "South Africa",
-      "Genre:Documentary"
-    ],
-    "South African.南非": [
-      "South Africa"
-    ],
-    "Spanish Adult.西班牙成人": [
-      "Spain",
-      "Genre:Adult"
-    ],
-    "Spanish Biography.西班牙传记": [
-      "Spain",
-      "Genre:Biography"
-    ],
-    "Spanish Disability.西班牙": [
-      "Spain"
-    ],
-    "Spanish Documentary.西班牙记录": [
-      "Spain",
-      "Genre:Documentary"
-    ],
-    "Spanish Erotic.西班牙情色": [
-      "Spain",
-      "Franchise:Jesús Franco"
-    ],
-    "Spanish.西班牙": [
-      "Spain",
-      "Franchise:Jesús Franco"
-    ],
-    "Swedish Document.瑞典记录": [
-      "Sweden",
-      "Genre:Documentary",
-      "Franchise:Language of Love"
-    ],
-    "Swedish Musical.瑞典音乐": [
-      "Sweden",
-      "Genre:Music",
-      "Genre:Musical"
-    ],
-    "Swedish Adult.瑞典成人": [
-      "Sweden",
-      "Genre:Adult"
-    ],
-    "Swedish.瑞典": [
-      "Sweden",
-      "Language:Swedish"
-    ],
-    "Swiss Adult.瑞士成人": [
-      "Switzerland",
-      "Genre:Adult"
-    ],
-    "Swiss Documentary.瑞士记录": [
-      "Switzerland",
-      "Genre:Documentary"
-    ],
-    "Swiss.瑞士": [
-      "Switzerland"
-    ],
-    "Thai Action.泰国动作": [
-      "Thailand",
-      "Genre:Action"
-    ],
-    "Thai.泰国": [
-      "Thailand"
-    ],
-    "Tunisian.突尼斯": [
-      "Tunisia"
-    ],
-    "Turkish.土耳其": [
-      "Turkey"
-    ],
-    "Ukrainian Disability.乌克兰": [
-      "Ukraine"
-    ],
-    "Ukrainian Erotic.乌克兰情色": [
-      "Ukraine"
-    ],
-    "Ukrainian Politics.乌克兰政治": [
-      "Ukraine",
-      "Genre:Documentary"
-    ],
-    "Ukrainian.乌克兰": [
-      "Ukraine"
-    ],
-    "United Arab Emirates Action.阿联酋": [
-      "United Arab Emirates",
-      "Genre:Action"
-    ],
-    "United Arab Emirates.阿联酋": [
-      "United Arab Emirates"
-    ],
-    "Uraguayan Documentary.乌拉圭记录": [
-      "Uruguay",
-      "Genre:Documentary"
-    ],
-    "Uraguayan.乌拉圭": [
-      "Uruguay"
-    ],
-    "Venezuelan.委内瑞拉": [
-      "Venezuela"
-    ],
-    "Vietnamese Action.越南动作": [
-      "Vietnam",
-      "Genre:Action"
-    ],
-    "Vietnamese.越南": [
-      "Vietnam"
-    ],
-    "Yugoslavian.南斯拉夫": [
-      "Bosnia and Herzegovina",
-      "Croatia",
-      "Federal Republic of Yugoslavia",
-      "Kosovo",
-      "North Macedonia",
-      "Serbia",
-      "Slovenia",
-      "Yugoslavia"
-    ]
-  },
-
-  "MovieRegionDirectories": {
-    "USA.Action": "American Action.美国动作",
-
-    "USA.Adult": "American Adult.美国成人",
-
-    "USA.Animation": "American Animation.美国动画",
-
-    "USA.Biography": "American Biography.美国传记",
-
-    "USA.Comedy": "American Comedy.美国喜剧",
-
-    "USA.Crime": "American Crime.美国罪案",
-
-    "USA.Documentary": "American Documentary.美国记录",
-
-    "USA.Drama": "American Drama.美国剧情",
-
-    "USA.Fantasy": "American Fantasy.美国神话",
-
-    "USA.History": "American History.美国历史",
-
-    "USA.Horror": "American Horror.美国恐怖",
-
-    "USA.Music|Musical": "American Musical.美国音乐",
-
-    "USA.Romance": "American Romance.美国爱情",
-
-    "USA.SciFi": "American SciFi.美国科幻",
-
-    "USA.Sport": "American Sport.美国运动",
-
-    "USA.Thriller": "American Thriller.美国惊悚",
-
-    "USA.War": "American War.美国战争",
-
-    "USA.Western": "American Western.美国西部",
-
-    "Argentina": "Argentinan.阿根廷",
-
-    "Australia.Action": "Australian Action.澳大利亚动作",
-
-    "Australia.Biography": "Australian Biography.澳大利亚传记",
-
-    "Australia": "Australian.澳大利亚",
-
-    "Austria": "Austrian.奥地利",
-
-    "Azerbaijan": "Azerbaijan.阿塞拜疆",
-
-    "Bahamas": "Bahamian.巴哈马",
-
-    "Belarus": "Belarusian.白俄罗斯",
-
-    "Belgium": "Belgian.比利时",
-
-    "Brazil": "Brazilian.巴西",
-
-    "UK.Action": "British Action.英国动作",
-
-    "UK.Adult": "British Adult.英国成人",
-
-    "UK.Biography": "British Biography.英国传记",
-
-    "UK.Documentary": "British Documentary.英国记录",
-
-    "UK.Music|Musical": "British Musical.英国音乐",
-
-    "UK": "British.英国",
-
-    "Bulgaria": "Bulgarian.保加利亚",
-
-    "Canada.Action": "Canadian Action.加拿大动作",
-
-    "Canada.Adult": "Canadian Adult.加拿大成人",
-
-    "Canada.Biography": "Canadian Biography.加拿大传记",
-
-    "Canada.Documentary": "Canadian Documentary.加拿大记录",
-
-    "Canada": "Canadian.加拿大",
-
-    "Chile": "Chilean.智利",
-
-    "China.Animation": "Chinese Animation.中文动画",
-
-    "China.Biography": "Chinese Biography.中文传记",
-    "Hong Kong.Biography": "Chinese Biography.中文传记",
-
-    "China.Documentary": "Chinese Documentary.中文记录",
-    "Taiwan.Documentary": "Chinese Documentary.中文记录",
-
-    "Hong Kong.Action": "Chinese Hongkong Action.中文香港动作",
-
-    "Hong Kong": "Chinese Hongkong.中文香港",
-
-    "China.Action": "Chinese Mainland Action.中文大陆动作",
-
-    "China": "Chinese Mainland.中文大陆",
-
-    "Singapore": "Chinese Singapore.中文新加坡",
-
-    "Taiwan.Action": "Chinese Taiwan Action.中文台湾动作",
-
-    "Taiwan": "Chinese Taiwan.中文台湾",
-
-    "Colombia": "Colombian.哥伦比亚",
-
-    "Cuba": "Cuban.古巴",
-
-    "Cyprus": "Cypriot.塞浦路斯",
-
-    "Czech Republic": "Czech.捷克",
-    "Czechoslovakia": "Czech.捷克",
-    "Slovakia": "Slovakian.斯洛伐克",
-
-    "Denmark.Action": "Danish Action.丹麦动作",
-
-    "Denmark.Adult": "Danish Adult.丹麦成人",
-
-    "Denmark.Biography": "Danish Biography.丹麦传记",
-
-    "Denmark": "Danish.丹麦",
-
-    "Dominican Republic": "Dominican.多米尼加",
-
-    "Netherlands.Adult": "Dutch Adult.荷兰成人",
-
-    "Netherlands.Biography": "Dutch Biography.荷兰传记",
-
-    "Netherlands.Documentary": "Dutch Documentary.荷兰记录",
-
-    "Netherlands": "Dutch.荷兰",
-
-    "Ecuador": "Ecuadorian.厄瓜多尔",
-
-    "Egypt": "Egyptian.埃及",
-
-    "Estonia": "Estonian.爱沙尼亚",
-
-    "Philippines": "Filipino.菲律宾",
-
-    "Finland": "Finnish.芬兰",
-
-    "France.Action": "French Action.法国动作",
-
-    "France.Adult": "French Adult.法国成人",
-
-    "France.Animation": "French Animation.法国动画",
-
-    "France.Biography": "French Biography.法国传记",
-
-    "France.Documentary": "French Documentary.法国记录",
-
-    "France.Music|Musical": "French Musical.法国音乐",
-
-    "France": "French.法国",
-
-    "Georgia": "Georgian.格鲁吉亚",
-
-    "Germany.Adult": "German Adult.德国成人",
-    "West Germany.Adult": "German Adult.德国成人",
-
-    "West Germany.Biography": "German Biography.德国传记",
-    "Germany.Biography": "German Biography.德国传记",
-
-    "Germany.Documentary": "German Documentary.德国记录",
-
-    "Germany": "German.德国",
-    "West Germany": "German.德国",
-
-    "Greece": "Greek.希腊",
-
-    "Guatemala": "Guatemalan.危地马拉",
-
-    "Haiti": "Haitian.海地",
-
-    "Hungary": "Hungarian.匈牙利",
-
-    "Iceland": "Icelandic.冰岛",
-
-    "India.Action": "Indian Action.印度动作",
-
-    "India.Biography": "Indian Biography.印度传记",
-
-    "India": "Indian.印度",
-
-    "Indonesia.Action": "Indonesian Action.印度尼西亚动作",
-
-    "Indonesia.Documentary": "Indonesian Documentary.印度尼西亚记录",
-
-    "Indonesia": "Indonesian.印度尼西亚",
-
-    "Iran": "Iranian.伊朗",
-
-    "Ireland.Documentary": "Irish Documentary.爱尔兰记录",
-
-    "Ireland": "Irish.爱尔兰",
-
-    "Israel": "Israel.以色列",
-
-    "Italy.Action": "Italian Action.意大利动作",
-
-    "Italy.Adult": "Italian Adult.意大利成人",
-
-    "Italy.Biography": "Italian Biography.意大利传记",
-
-    "Italy": "Italian.意大利",
-
-    "Japan.Action": "Japanese Action.日本动作",
-
-    "Japan.Animation": "Japanese Animation.日本动画",
-
-    "Japan.Biography": "Japanese Biography.日本传记",
-
-    "Japan": "Japanese.日本",
-
-    "Kazakhstan": "Kazakhstani.哈萨克斯坦",
-
-    "South Korea.Action": "Korean Action.韩国动作",
-
-    "South Korea.Biography": "Korean Biography.韩国传记",
-
-    "South Korea": "Korean.韩国",
-
-    "Latvia": "Latvian.拉脱维亚",
-
-    "Lebanon": "Lebanon.黎巴嫩",
-
-    "Lithuania": "Lithuanian.立陶宛",
-
-    "Luxembourg": "Luxembourg.卢森堡",
-
-    "Mali": "Malian.马里",
-
-    "Mexico": "Mexican.墨西哥",
-
-    "Mongolia": "Mongolian.蒙古",
-
-    "New Zealand.Documentary": "New Zealand Documentary.新西兰记录",
-
-    "New Zealand": "New Zealand.新西兰",
-
-    "Nigeria": "Nigerian.尼日利亚",
-
-    "Norway": "Norwegian.挪威",
-
-    "Pakistan.Action": "Pakistani Action.巴基斯坦动作",
-
-    "Pakistan.Biography": "Pakistani Biography.巴基斯坦传记",
-
-    "Pakistan": "Pakistani.巴基斯坦",
-
-    "Panama": "Panamanian.巴拿马",
-
-    "Peru": "Peruvian.秘鲁",
-
-    "Poland.Biography": "Polish Biography.波兰传记",
-
-    "Poland": "Polish.波兰",
-
-    "Portugal": "Portuguese.葡萄牙",
-
-    "Puerto Rico": "Puerto Rican.波多黎各",
-
-    "Romania": "Romanian.罗马尼亚",
-
-    "Russia.Biography": "Russian Soviet Union Biography.苏俄传记",
-    "Soviet Union.Biography": "Russian Soviet Union Biography.苏俄传记",
-
-    "Russia": "Russian Soviet Union.苏俄",
-    "Soviet Union": "Russian Soviet Union.苏俄",
-
-    "Senegal": "Senegalese.塞内加尔",
-
-    "South Africa.Documentary": "South African Documentary.南非记录",
-
-    "South Africa": "South African.南非",
-
-    "Spain.Adult": "Spanish Adult.西班牙成人",
-
-    "Spain.Biography": "Spanish Biography.西班牙传记",
-
-    "Spain.Documentary": "Spanish Documentary.西班牙记录",
-
-    "Spain": "Spanish.西班牙",
-
-    "Sweden.Adult": "Swedish Adult.瑞典成人",
-
-    "Sweden.Music|Musical": "Swedish Musical.瑞典音乐",
-
-    "Sweden": "Swedish.瑞典",
-
-    "Switzerland.Adult": "Swiss Adult.瑞士成人",
-
-    "Switzerland.Documentary": "Swiss Documentary.瑞士记录",
-
-    "Switzerland": "Swiss.瑞士",
-
-    "Thailand.Action": "Thai Action.泰国动作",
-
-    "Thailand": "Thai.泰国",
-
-    "Tunisia": "Tunisian.突尼斯",
-
-    "Turkey": "Turkish.土耳其",
-
-    "Ukraine": "Ukrainian.乌克兰",
-
-    "United Arab Emirates.Action": "United Arab Emirates Action.阿联酋动作",
-
-    "United Arab Emirates": "United Arab Emirates.阿联酋",
-
-    "Uraguay": "Uruguayan.乌拉圭",
-
-    "Uraguay.Documentary": "Uruguayan Documentary.乌拉圭记录",
-
-    "Venezuela": "Venezuelan.委内瑞拉",
-
-    "Vietnam.Action": "Vietnamese Action.越南动作",
-
-    "Vietnam": "Vietnamese.越南",
-
-    "Bosnia and Herzegovina": "Yugoslavian.南斯拉夫",
-    "Croatia": "Yugoslavian.南斯拉夫",
-    "Federal Republic of Yugoslavia": "Yugoslavian.南斯拉夫",
-    "Kosovo": "Yugoslavian.南斯拉夫",
-    "North Macedonia": "Yugoslavian.南斯拉夫",
-    "Serbia": "Yugoslavian.南斯拉夫",
-    "Slovenia": "Yugoslavian.南斯拉夫",
-    "Yugoslavia": "Yugoslavian.南斯拉夫"
-  },
-
-  "ImdbKeywords": [],
-
-  "AllImdbKeywords": []
+    "TopEnglishKeyword": "",
+    "TopForeignKeyword": "",
+    "PreferredOldKeyword": "",
+    "PreferredNewKeyword": "",
+    "ContrastKeyword": "",
+
+    "LibraryDirectory": "D:\\Files\\Library",
+    "MovieSubtitleBackupDirectory": "D:\\Files\\Library\\MovieSubtitle",
+    "TVSubtitleBackupDirectory": "D:\\Files\\Library\\TVSubtitle",
+
+    "Drive115Url": "",
+    "MovieTopX265Url": "",
+    "MovieTopX265EnglishUrl": "",
+    "MovieTopX265ForeignUrl": "",
+    "MovieTopH264Url": "",
+    "MovieTopH264EnglishUrl": "",
+    "MovieTopH264ForeignUrl": "",
+    "MovieTopH264720PUrl": "",
+    "MoviePreferredUrl": "",
+    "MovieSharedUrl": "",
+    "TVTopX265Url": "",
+    "TVContrastUrl": "",
+
+    "MovieTopDuplications": [],
+
+    "Drive115Metadata": "D:\\Files\\Library\\Movie.Drive115Metadata.json",
+    "MovieLibraryMetadata": "D:\\Files\\Library\\Movie.LibraryMetadata.json",
+    "MovieIgnoredMetadata": "D:\\Files\\Library\\Movie.Ignored.json",
+    "MovieExternalMetadata": "D:\\Files\\Library\\Movie.ExternalMetadata.json",
+    "MovieTopX265Metadata": "D:\\Files\\Library\\Movie.TopMetadata.x265.json",
+    "MovieTopX265XMetadata": "D:\\Files\\Library\\Movie.TopMetadata.x265.X.json",
+    "MovieTopH264Metadata": "D:\\Files\\Library\\Movie.TopMetadata.H264.json",
+    "MovieTopH264XMetadata": "D:\\Files\\Library\\Movie.TopMetadata.H264.X.json",
+    "MovieTopH264720PMetadata": "D:\\Files\\Library\\Movie.TopMetadata.H264.720p.json",
+    "MoviePreferredSummary": "D:\\Files\\Library\\Movie.PreferredSummary.json",
+    "MoviePreferredMetadata": "D:\\Files\\Library\\Movie.PreferredMetadata.json",
+    "MoviePreferredFileMetadata": "D:\\Files\\Library\\Movie.PreferredFileMetadata.json",
+    "MovieRareMetadata": "D:\\Files\\Library\\Movie.RareMetadata.json",
+    "MovieSharedMetadata": "D:\\Files\\Library\\Movie.SharedMetadata.json",
+    "MovieImdbSpecialMetadata": "D:\\Files\\Library\\Movie.ImdbSpecial.json",
+    "MovieMergedMetadata": "D:\\Files\\Library\\Movie.MergedMetadata.json",
+    "TVTopX265Metadata": "D:\\Files\\Library\\TV.TopMetadata.x265.json",
+    "TVContrastMetadata": "D:\\Files\\Library\\TV.ContrastMetadata.json",
+    "TopMagnetUrls": "D:\\Files\\Library\\Top.MagnetUrls.txt",
+    "TopMetadata": "D:\\Files\\Library\\Top.Metadata.txt",
+
+    "TempFile": "D:\\Files\\Library\\Temp.txt",
+
+    "MovieMetadataDirectory": "D:\\Files\\Library\\MovieMetadata",
+    "MovieMetadataBackupDirectory": "D:\\Files\\Library\\MovieMetadataBackup",
+    "MovieMetadataCacheDirectory": "D:\\Files\\Library\\MovieMetadataCache",
+    "MovieMetadataFileDirectory": "D:\\Files\\Library\\MovieMetadataCache",
+    "MovieMetadataCacheBackupDirectory": "D:\\Files\\Library\\MovieMetadataCacheBackup",
+
+    "TVMetadataDirectory": "D:\\Files\\Library\\TVMetadata",
+    "TVMetadataCacheDirectory": "D:\\Files\\Library\\TVMetadataCache",
+
+    "AudioControversial": {
+        "Directory": "D:\\Files\\Library\\Audio Controversial.非主流音乐",
+        "Level": 1
+    },
+    "AudioMainstream": {
+        "Directory": "D:\\Files\\Library\\Audio Mainstream.主流音乐",
+        "Level": 1
+    },
+    "AudioShow": {
+        "Directory": "D:\\Files\\Library\\Audio Show.节目音频",
+        "Level": 1
+    },
+    "AudioSoundtrack": {
+        "Directory": "D:\\Files\\Library\\Audio Soundtrack.电影音乐",
+        "Level": 1
+    },
+
+    "Movie3D": {
+        "Directory": "D:\\Files\\Library\\Movies 3D.立体电影",
+        "Level": 2
+    },
+    "Movie4KHdr": {
+        "Directory": "D:\\Files\\Library\\Movies 4K HDR.高动态范围电影",
+        "Level": 2
+    },
+    "Movie4KHdrOverflow": {
+        "Directory": "D:\\Files\\Library\\Movies 4K HDR Overflow.高动态范围电影",
+        "Level": 2
+    },
+    "MovieControversial": {
+        "Directory": "D:\\Files\\Library\\Movies Controversial.非主流电影",
+        "Level": 2
+    },
+    "MovieControversialWithoutSubtitle": {
+        "Directory": "D:\\Files\\Library\\Movies Controversial.非主流电影[未抓取字幕]",
+        "Level": 2
+    },
+    "MovieDisk": {
+        "Directory": "D:\\Files\\Library\\Movies Disk.电影原盘",
+        "Level": 2
+    },
+    "MovieFranchise": {
+        "Directory": "D:\\Files\\Library\\Movies Franchise.系列电影",
+        "Level": 2
+    },
+    "MovieMainstream1": {
+        "Directory": "D:\\Files\\Library\\Movies Mainstream 1.主流电影1",
+        "Level": 2
+    },
+    "MovieMainstream2": {
+        "Directory": "D:\\Files\\Library\\Movies Mainstream 2.主流电影2",
+        "Level": 2
+    },
+    "MovieMainstream3": {
+        "Directory": "D:\\Files\\Library\\Movies Mainstream 3.主流电影3",
+        "Level": 2
+    },
+    "MovieMusical": {
+        "Directory": "D:\\Files\\Library\\Movies Musical.音乐",
+        "Level": 2
+    },
+    "MovieTemp1": {
+        "Directory": "D:\\Files\\Library\\Movies Temp 1",
+        "Level": 2
+    },
+    "MovieTemp2": {
+        "Directory": "D:\\Files\\Library\\Movies Temp 2",
+        "Level": 2
+    },
+    "MovieTemp3": {
+        "Directory": "D:\\Files\\Library\\Movies Temp 3",
+        "Level": 2
+    },
+    "MovieTemp4KHdr1": {
+        "Directory": "D:\\Files\\Library\\Movies 4K HDR Temp 1",
+        "Level": 2
+    },
+    "MovieTemp4KHdr2": {
+        "Directory": "D:\\Files\\Library\\Movies 4K HDR Temp 2",
+        "Level": 2
+    },
+
+    "TV4KHdr": {
+        "Directory": "D:\\Files\\Library\\TV 4K HDR.高动态范围电视剧",
+        "Level": 1
+    },
+    "TVControversial": {
+        "Directory": "D:\\Files\\Library\\TV Controversial.非主流电视剧",
+        "Level": 1
+    },
+    "TVDocumentary": {
+        "Directory": "D:\\Files\\Library\\TV Documentary.记录电视剧",
+        "Level": 1
+    },
+    "TVMainstream": {
+        "Directory": "D:\\Files\\Library\\TV Mainstream.主流电视剧",
+        "Level": 1
+    },
+    "TVMainstreamChinese": {
+        "Directory": "D:\\Files\\Library\\TV Mainstream Chinese.主流电视剧",
+        "Level": 1
+    },
+    "TVMainstreamOverflow": {
+        "Directory": "D:\\Files\\Library\\TV Mainstream Overflow.主流电视剧",
+        "Level": 1
+    },
+    "TVTutorial": {
+        "Directory": "D:\\Files\\Library\\TV Tutorial.教程",
+        "Level": 1
+    },
+    "TVTemp1": {
+        "Directory": "D:\\Files\\Library\\TV Temp 1",
+        "Level": 1
+    },
+    "TVTemp2": {
+        "Directory": "D:\\Files\\Library\\TV Temp 2",
+        "Level": 1
+    },
+
+    "MovieRegions": {
+        "American Action.美国动作": [
+            "USA",
+            "Genre:Action",
+            "Franchise:Liam Neeson",
+            "Franchise:Jason Statham",
+            "Franchise:Death Race",
+            "Franchise:BMW Films"
+        ],
+        "American Adult.美国成人": [
+            "USA",
+            "Genre:Adult",
+            "Franchise:Andrew Blake",
+            "Franchise:Lesbian Workout",
+            "Franchise:Private",
+            "Franchise:Private Gold",
+            "Franchise:The World's Biggest Gang Bang",
+            "Franchise:XXX"
+        ],
+        "American Biography.美国传记": [
+            "USA",
+            "Franchise:Stanley Kubrick",
+            "Genre:Biography"
+        ],
+        "American Animation.美国动画": [
+            "USA",
+            "Genre:Animation"
+        ],
+        "American Comedy.美国喜剧": [
+            "USA",
+            "Genre:Comedy"
+        ],
+        "American Crime.美国罪案": [
+            "USA",
+            "Genre:Crime"
+        ],
+        "American Disability.美国": [
+            "USA"
+        ],
+        "American Document.美国记录": [
+            "USA",
+            "Franchise:Vintage Erotica",
+            "Genre:Documentary"
+        ],
+        "American Documentary.美国记录": [
+            "USA",
+            "Franchise:Titanic",
+            "Franchise:IMAX",
+            "Genre:Documentary"
+        ],
+        "American Drama.美国剧情": [
+            "USA",
+            "Franchise:Friend of the Family",
+            "Franchise:Masseuse",
+            "Genre:Drama"
+        ],
+        "American Erotic.美国情色": [
+            "USA",
+            "Franchise:Electric Blue"
+        ],
+        "American Fantasy.美国神话": [
+            "USA",
+            "Franchise:Night of the Demons",
+            "Genre:Fantasy"
+        ],
+        "American SciFi.美国科幻": [
+            "USA",
+            "Franchise:Resident Evil",
+            "Franchise:Fortress",
+            "Genre:SciFi"
+        ],
+        "American History.美国历史": [
+            "USA",
+            "Genre:History"
+        ],
+        "American Horror.美国恐怖": [
+            "USA",
+            "Franchise:Lake Placid",
+            "Franchise:Sorority House Massacre",
+            "Franchise:Witchcraft",
+            "Genre:Horror"
+        ],
+        "American Musical.美国音乐": [
+            "USA",
+            "Genre:Music",
+            "Genre:Musical"
+        ],
+        "American Politics.美国政治": [
+            "USA",
+            "UK",
+            "Canada",
+            "Genre:Biography",
+            "Genre:Documentary"
+        ],
+        "American Romance.美国爱情": [
+            "USA",
+            "Genre:Romance"
+        ],
+        "American Sport.美国运动": [
+            "USA",
+            "Genre:Sport"
+        ],
+        "American Thriller.美国惊悚": [
+            "USA",
+            "Franchise:Christopher Nolan",
+            "Franchise:Secret Games",
+            "Genre:Thriller"
+        ],
+        "American War.美国战争": [
+            "USA",
+            "Genre:War"
+        ],
+        "American Western.美国西部": [
+            "USA",
+            "Genre:Western"
+        ],
+        "Argentinan.阿根廷": [
+            "Argentina"
+        ],
+        "Australian Action.澳大利亚动作": [
+            "Australia",
+            "Genre:Action"
+        ],
+        "Australian Biography.澳大利亚传记": [
+            "Australia",
+            "Genre:Biography"
+        ],
+        "Australian Document.澳大利亚记录": [
+            "Australia",
+            "Genre:Documentary"
+        ],
+        "Australian.澳大利亚": [
+            "Australia"
+        ],
+        "Austrian Disability.奥地利": [
+            "Austria"
+        ],
+        "Austrian.奥地利": [
+            "Austria",
+            "Language:German"
+        ],
+        "Azerbaijan.阿塞拜疆": [
+            "Azerbaijan"
+        ],
+        "Bahamian.巴哈马": [
+            "Bahamas"
+        ],
+        "Belarusian.白俄罗斯": [
+            "Belarus"
+        ],
+        "Belgian Disability.比利时": [
+            "Belgium",
+            "Franchise:Come As You Are"
+        ],
+        "Belgian Document.比利时记录": [
+            "Belgium",
+            "Genre:Documentary"
+        ],
+        "Belgian.比利时": [
+            "Belgium"
+        ],
+        "Brazilian.巴西": [
+            "Brazil"
+        ],
+        "British Action.英国动作": [
+            "UK",
+            "Genre:Action",
+            "Franchise:James Bond",
+            "Franchise:Jason Statham"
+        ],
+        "British Adult.英国成人": [
+            "UK",
+            "Genre:Adult"
+        ],
+        "British Biography.英国传记": [
+            "UK",
+            "Genre:Biography",
+            "Genre:Documentary",
+            "Franchise:Mary Millington"
+        ],
+        "British Disability.英国": [
+            "UK"
+        ],
+        "British Document.英国记录": [
+            "UK",
+            "Franchise:Define Beauty",
+            "Genre:Documentary"
+        ],
+        "British Documentary.英国记录": [
+            "UK",
+            "Genre:Documentary"
+        ],
+        "British Musical.英国音乐": [
+            "UK",
+            "Genre:Music",
+            "Genre:Musical"
+        ],
+        "British.英国": [
+            "UK",
+            "Franchise:The Omen"
+        ],
+        "Bulgarian.保加利亚": [
+            "Bulgaria"
+        ],
+        "Cambodian Politics.柬埔寨政治": [
+            "Cambodia",
+            "Genre:Documentary"
+        ],
+        "Canadian Adult.加拿大成人": [
+            "Canada",
+            "Genre:Adult"
+        ],
+        "Canadian Action.加拿大动作": [
+            "Canada",
+            "Genre:Action"
+        ],
+        "Canadian Biography.加拿大传记": [
+            "Canada",
+            "Genre:Biography"
+        ],
+        "Canadian Disability.加拿大": [
+            "Canada"
+        ],
+        "Canadian Documentary.加拿大记录": [
+            "Canada",
+            "Genre:Documentary"
+        ],
+        "Canadian.加拿大": [
+            "Canada",
+            "Franchise:Scorned"
+        ],
+        "Chilean.智利": [
+            "Chile"
+        ],
+        "Chinese Adult.中文成人": [
+            "Hong Kong",
+            "Taiwan",
+            "China",
+            "Genre:Adult"
+        ],
+        "Chinese Foreign Action.中外合拍动作": [
+            "Hong Kong",
+            "Taiwan",
+            "USA",
+            "China",
+            "Genre:Action"
+        ],
+        "Chinese Foreign.中外合拍": [
+            "USA"
+        ],
+        "Chinese Biography.中文传记": [
+            "China",
+            "Hong Kong",
+            "Language:Mandarin",
+            "Genre:Biography"
+        ],
+        "Chinese Animation.中文动画": [
+            "China",
+            "Genre:Animation"
+        ],
+        "Chinese Disability.中文": [
+            "Hong Kong",
+            "China"
+        ],
+        "Chinese Documentary.中文记录": [
+            "China",
+            "Taiwan",
+            "Genre:Documentary"
+        ],
+        "Chinese Hongkong Action.中文香港动作": [
+            "Hong Kong",
+            "China",
+            "Taiwan",
+            "Franchise:Once Upon a Time in China",
+            "Genre:Action"
+        ],
+        "Chinese Hongkong.中文香港": [
+            "Hong Kong",
+            "Franchise:Stephen Chow-A Chinese Odyssey",
+            "Franchise:Erotic Ghost Story",
+            "Language:Cantonese"
+        ],
+        "Chinese Mainland Action.中文大陆动作": [
+            "China",
+            "Genre:Action"
+        ],
+        "Chinese Mainland.中文大陆": [
+            "China"
+        ],
+        "Chinese Politics.中文政治": [
+            "USA",
+            "UK",
+            "China",
+            "Genre:Documentary"
+        ],
+        "Chinese Singapore.中文新加坡": [
+            "Singapore"
+        ],
+        "Chinese Taiwan Action.中文台湾动作": [
+            "Taiwan",
+            "Genre:Action"
+        ],
+        "Chinese Taiwan.中文台湾": [
+            "Taiwan",
+            "Franchise:New Jin Ping Mei"
+        ],
+        "Colombian.哥伦比亚": [
+            "Colombia"
+        ],
+        "Cuban.古巴": [
+            "Cuba"
+        ],
+        "Cypriot.塞浦路斯": [
+            "Cyprus"
+        ],
+        "Czech.捷克": [
+            "Czech Republic",
+            "Czechoslovakia",
+            "Franchise:Bound Heat"
+        ],
+        "Slovakian.斯洛伐克": [
+            "Slovakia"
+        ],
+        "Danish Action.丹麦动作": [
+            "Denmark",
+            "Genre:Action"
+        ],
+        "Danish Adult.丹麦成人": [
+            "Denmark",
+            "Genre:Adult"
+        ],
+        "Danish Biography.丹麦传记": [
+            "Denmark",
+            "Genre:Biography"
+        ],
+        "Danish Erotic.丹麦情色": [
+            "Denmark"
+        ],
+        "Danish.丹麦": [
+            "Denmark"
+        ],
+        "Dominican.多米尼加": [
+            "Dominican Republic"
+        ],
+        "Dutch Adult.荷兰成人": [
+            "Netherlands",
+            "Genre:Adult"
+        ],
+        "Dutch Biography.荷兰传记": [
+            "Netherlands",
+            "Genre:Biography"
+        ],
+        "Dutch Documentary.荷兰记录": [
+            "Netherlands",
+            "Genre:Documentary"
+        ],
+        "Dutch.荷兰": [
+            "Netherlands",
+            "Franchise:Peter Greenaway"
+        ],
+        "Ecuadorian.厄瓜多尔": [
+            "Ecuador"
+        ],
+        "Egyptian.埃及": [
+            "Egypt"
+        ],
+        "Estonian.爱沙尼亚": [
+            "Estonia"
+        ],
+        "Filipino.菲律宾": [
+            "Philippines"
+        ],
+        "Finnish.芬兰": [
+            "Finland"
+        ],
+        "French Action.法国动作": [
+            "France",
+            "Genre:Action",
+            "Franchise:Crimson Rivers"
+        ],
+        "French Adult.法国成人": [
+            "France",
+            "Genre:Adult"
+        ],
+        "French Biography.法国传记": [
+            "France",
+            "Franchise:Zahia Dehar",
+            "Genre:Biography"
+        ],
+        "French Animation.法国动画": [
+            "France",
+            "Genre:Animation"
+        ],
+        "French Disability.法国": [
+            "France"
+        ],
+        "French Document.法国记录": [
+            "France",
+            "Genre:Documentary"
+        ],
+        "French Documentary.法国记录": [
+            "France",
+            "Genre:Documentary"
+        ],
+        "French Erotic.法国情色": [
+            "France",
+            "Franchise:Emanuelle Black",
+            "Franchise:Emmanuelle",
+            "Franchise:Emanuelle"
+        ],
+        "French Musical.法国音乐": [
+            "France",
+            "Genre:Music",
+            "Genre:Musical",
+            "Franchise:Crazy Horse"
+        ],
+        "French.法国": [
+            "France",
+            "Franchise:The Story of O",
+            "Franchise:Emmanuelle",
+            "Franchise:Diabolique",
+            "Language:French"
+        ],
+        "Georgian.格鲁吉亚": [
+            "Georgia"
+        ],
+        "German Adult.德国成人": [
+            "Germany",
+            "West Germany",
+            "Franchise:Josefine Mutzenbacher",
+            "Genre:Adult"
+        ],
+        "German Biography.德国传记": [
+            "Germany",
+            "West Germany",
+            "Genre:Biography"
+        ],
+        "German Disability.德国": [
+            "Germany",
+            "West Germany"
+        ],
+        "German Document.德国记录": [
+            "Germany",
+            "West Germany",
+            "Genre:Documentary"
+        ],
+        "German Documentary.德国记录": [
+            "Germany",
+            "West Germany",
+            "Genre:Documentary"
+        ],
+        "German Politics.德国政治": [
+            "Germany",
+            "West Germany",
+            "Genre:Documentary"
+        ],
+        "German.德国": [
+            "Germany",
+            "West Germany",
+            "East Germany",
+            "Franchise:The Experiment"
+        ],
+        "Greek.希腊": [
+            "Greece"
+        ],
+        "Guatemalan.危地马拉": [
+            "Guatemala"
+        ],
+        "Haitian.海地": [
+            "Haiti"
+        ],
+        "Hungarian.匈牙利": [
+            "Hungary"
+        ],
+        "Icelandic.冰岛": [
+            "Iceland"
+        ],
+        "Indian Action.印度动作": [
+            "India",
+            "Language:Hindi",
+            "Genre:Action"
+        ],
+        "Indian Biography.印度传记": [
+            "India",
+            "Genre:Biography"
+        ],
+        "Indian Disability.印度": [
+            "India"
+        ],
+        "Indian.印度": [
+            "India"
+        ],
+        "Indonesian Action.印度尼西亚动作": [
+            "Indonesia",
+            "Genre:Action"
+        ],
+        "Indonesian Documentary.印度尼西亚记录": [
+            "Indonesia",
+            "Genre:Documentary"
+        ],
+        "Indonesian.印度尼西亚": [
+            "Indonesia"
+        ],
+        "Iranian.伊朗": [
+            "Iran"
+        ],
+        "Irish Documentary.爱尔兰记录": [
+            "Ireland",
+            "Genre:Documentary"
+        ],
+        "Irish.爱尔兰": [
+            "Ireland"
+        ],
+        "Israel.以色列": [
+            "Israel"
+        ],
+        "Italian Action.意大利动作": [
+            "Italy",
+            "Genre:Action",
+            "Franchise:Clint Eastwood"
+        ],
+        "Italian Adult.意大利成人": [
+            "Italy",
+            "Franchise:Mario Salieri",
+            "Franchise:Selen",
+            "Genre:Adult"
+        ],
+        "Italian Biography.意大利传记": [
+            "Italy",
+            "Genre:Biography"
+        ],
+        "Italian Disability.意大利": [
+            "Italy"
+        ],
+        "Italian Document.意大利记录": [
+            "Italy",
+            "Genre:Documentary"
+        ],
+        "Italian Erotic.意大利情色": [
+            "Italy"
+        ],
+        "Italian.意大利": [
+            "Italy"
+        ],
+        "Japanese Action.日本动作": [
+            "Japan",
+            "Genre:Action"
+        ],
+        "Japanese Biography.日本传记": [
+            "Japan",
+            "Genre:Biography"
+        ],
+        "Japanese Animation.日本动画": [
+            "Japan",
+            "Genre:Animation"
+        ],
+        "Japanese Erotic.日本情色": [
+            "Japan"
+        ],
+        "Japanese.日本": [
+            "Japan"
+        ],
+        "Kazakhstani.哈萨克斯坦": [
+            "Kazakhstan"
+        ],
+        "Korean Action.韩国动作": [
+            "South Korea",
+            "Genre:Action",
+            "Franchise:Northern Limit Line"
+        ],
+        "Korean Biography.韩国传记": [
+            "South Korea",
+            "Genre:Biography"
+        ],
+        "Korean Disability.韩国": [
+            "South Korea"
+        ],
+        "Korean Erotic.韩国情色": [
+            "South Korea",
+            "Franchise:Affair"
+        ],
+        "Korean Politics.朝鲜政治": [
+            "Poland",
+            "Germany",
+            "Russia",
+            "Genre:Documentary"
+        ],
+        "Korean.韩国": [
+            "South Korea"
+        ],
+        "Latvian Politics.拉脱维亚政治": [
+            "Latvia",
+            "Genre:Documentary"
+        ],
+        "Latvian.拉脱维亚": [
+            "Latvia"
+        ],
+        "Lebanon.黎巴嫩": [
+            "Lebanon"
+        ],
+        "Lithuanian.立陶宛": [
+            "Lithuania"
+        ],
+        "Luxembourg.卢森堡": [
+            "Luxembourg"
+        ],
+        "Malian.马里": [
+            "Mali"
+        ],
+        "Mexican.墨西哥": [
+            "Mexico"
+        ],
+        "Mongolian.蒙古": [
+            "Mongolia"
+        ],
+        "New Zealand Documentary.新西兰记录": [
+            "New Zealand",
+            "Genre:Documentary"
+        ],
+        "New Zealand.新西兰": [
+            "New Zealand"
+        ],
+        "Nigerian.尼日利亚": [
+            "Nigeria"
+        ],
+        "Norwegian.挪威": [
+            "Norway"
+        ],
+        "Pakistani Action.巴基斯坦动作": [
+            "Pakistan",
+            "Genre:Action"
+        ],
+        "Pakistani Biography.巴基斯坦传记": [
+            "Pakistan",
+            "Genre:Biography"
+        ],
+        "Pakistani.巴基斯坦": [
+            "Pakistan"
+        ],
+        "Panamanian.巴拿马": [
+            "Panama"
+        ],
+        "Peruvian Action.秘鲁动作": [
+            "Peru",
+            "Genre:Action"
+        ],
+        "Peruvian.秘鲁": [
+            "Peru"
+        ],
+        "Polish Biography.波兰传记": [
+            "Poland",
+            "Genre:Biography"
+        ],
+        "Polish.波兰": [
+            "Poland"
+        ],
+        "Portuguese.葡萄牙": [
+            "Portugal"
+        ],
+        "Puerto Rican.波多黎各": [
+            "Puerto Rico"
+        ],
+        "Romanian.罗马尼亚": [
+            "Romania"
+        ],
+        "Russian Soviet Union Biography.苏俄传记": [
+            "Russia",
+            "Soviet Union",
+            "Genre:Biography"
+        ],
+        "Russian Soviet Union.苏俄": [
+            "Russia",
+            "Soviet Union"
+        ],
+        "Senegalese.塞内加尔": [
+            "Senegal"
+        ],
+        "South African Documentary.南非记录": [
+            "South Africa",
+            "Genre:Documentary"
+        ],
+        "South African.南非": [
+            "South Africa"
+        ],
+        "Spanish Adult.西班牙成人": [
+            "Spain",
+            "Genre:Adult"
+        ],
+        "Spanish Biography.西班牙传记": [
+            "Spain",
+            "Genre:Biography"
+        ],
+        "Spanish Disability.西班牙": [
+            "Spain"
+        ],
+        "Spanish Documentary.西班牙记录": [
+            "Spain",
+            "Genre:Documentary"
+        ],
+        "Spanish Erotic.西班牙情色": [
+            "Spain",
+            "Franchise:Jesús Franco"
+        ],
+        "Spanish.西班牙": [
+            "Spain",
+            "Franchise:Jesús Franco"
+        ],
+        "Swedish Document.瑞典记录": [
+            "Sweden",
+            "Genre:Documentary",
+            "Franchise:Language of Love"
+        ],
+        "Swedish Musical.瑞典音乐": [
+            "Sweden",
+            "Genre:Music",
+            "Genre:Musical"
+        ],
+        "Swedish Adult.瑞典成人": [
+            "Sweden",
+            "Genre:Adult"
+        ],
+        "Swedish.瑞典": [
+            "Sweden",
+            "Language:Swedish"
+        ],
+        "Swiss Adult.瑞士成人": [
+            "Switzerland",
+            "Genre:Adult"
+        ],
+        "Swiss Documentary.瑞士记录": [
+            "Switzerland",
+            "Genre:Documentary"
+        ],
+        "Swiss.瑞士": [
+            "Switzerland"
+        ],
+        "Thai Action.泰国动作": [
+            "Thailand",
+            "Genre:Action"
+        ],
+        "Thai.泰国": [
+            "Thailand"
+        ],
+        "Tunisian.突尼斯": [
+            "Tunisia"
+        ],
+        "Turkish.土耳其": [
+            "Turkey"
+        ],
+        "Ukrainian Disability.乌克兰": [
+            "Ukraine"
+        ],
+        "Ukrainian Erotic.乌克兰情色": [
+            "Ukraine"
+        ],
+        "Ukrainian Politics.乌克兰政治": [
+            "Ukraine",
+            "Genre:Documentary"
+        ],
+        "Ukrainian.乌克兰": [
+            "Ukraine"
+        ],
+        "United Arab Emirates Action.阿联酋": [
+            "United Arab Emirates",
+            "Genre:Action"
+        ],
+        "United Arab Emirates.阿联酋": [
+            "United Arab Emirates"
+        ],
+        "Uraguayan Documentary.乌拉圭记录": [
+            "Uruguay",
+            "Genre:Documentary"
+        ],
+        "Uraguayan.乌拉圭": [
+            "Uruguay"
+        ],
+        "Venezuelan.委内瑞拉": [
+            "Venezuela"
+        ],
+        "Vietnamese Action.越南动作": [
+            "Vietnam",
+            "Genre:Action"
+        ],
+        "Vietnamese.越南": [
+            "Vietnam"
+        ],
+        "Yugoslavian.南斯拉夫": [
+            "Bosnia and Herzegovina",
+            "Croatia",
+            "Federal Republic of Yugoslavia",
+            "Kosovo",
+            "North Macedonia",
+            "Serbia",
+            "Slovenia",
+            "Yugoslavia"
+        ]
+    },
+
+    "MovieRegionDirectories": {
+        "USA.Action": "American Action.美国动作",
+
+        "USA.Adult": "American Adult.美国成人",
+
+        "USA.Animation": "American Animation.美国动画",
+
+        "USA.Biography": "American Biography.美国传记",
+
+        "USA.Comedy": "American Comedy.美国喜剧",
+
+        "USA.Crime": "American Crime.美国罪案",
+
+        "USA.Documentary": "American Documentary.美国记录",
+
+        "USA.Drama": "American Drama.美国剧情",
+
+        "USA.Fantasy": "American Fantasy.美国神话",
+
+        "USA.History": "American History.美国历史",
+
+        "USA.Horror": "American Horror.美国恐怖",
+
+        "USA.Music|Musical": "American Musical.美国音乐",
+
+        "USA.Romance": "American Romance.美国爱情",
+
+        "USA.SciFi": "American SciFi.美国科幻",
+
+        "USA.Sport": "American Sport.美国运动",
+
+        "USA.Thriller": "American Thriller.美国惊悚",
+
+        "USA.War": "American War.美国战争",
+
+        "USA.Western": "American Western.美国西部",
+
+        "Argentina": "Argentinan.阿根廷",
+
+        "Australia.Action": "Australian Action.澳大利亚动作",
+
+        "Australia.Biography": "Australian Biography.澳大利亚传记",
+
+        "Australia": "Australian.澳大利亚",
+
+        "Austria": "Austrian.奥地利",
+
+        "Azerbaijan": "Azerbaijan.阿塞拜疆",
+
+        "Bahamas": "Bahamian.巴哈马",
+
+        "Belarus": "Belarusian.白俄罗斯",
+
+        "Belgium": "Belgian.比利时",
+
+        "Brazil": "Brazilian.巴西",
+
+        "UK.Action": "British Action.英国动作",
+
+        "UK.Adult": "British Adult.英国成人",
+
+        "UK.Biography": "British Biography.英国传记",
+
+        "UK.Documentary": "British Documentary.英国记录",
+
+        "UK.Music|Musical": "British Musical.英国音乐",
+
+        "UK": "British.英国",
+
+        "Bulgaria": "Bulgarian.保加利亚",
+
+        "Canada.Action": "Canadian Action.加拿大动作",
+
+        "Canada.Adult": "Canadian Adult.加拿大成人",
+
+        "Canada.Biography": "Canadian Biography.加拿大传记",
+
+        "Canada.Documentary": "Canadian Documentary.加拿大记录",
+
+        "Canada": "Canadian.加拿大",
+
+        "Chile": "Chilean.智利",
+
+        "China.Animation": "Chinese Animation.中文动画",
+
+        "China.Biography": "Chinese Biography.中文传记",
+        "Hong Kong.Biography": "Chinese Biography.中文传记",
+
+        "China.Documentary": "Chinese Documentary.中文记录",
+        "Taiwan.Documentary": "Chinese Documentary.中文记录",
+
+        "Hong Kong.Action": "Chinese Hongkong Action.中文香港动作",
+
+        "Hong Kong": "Chinese Hongkong.中文香港",
+
+        "China.Action": "Chinese Mainland Action.中文大陆动作",
+
+        "China": "Chinese Mainland.中文大陆",
+
+        "Singapore": "Chinese Singapore.中文新加坡",
+
+        "Taiwan.Action": "Chinese Taiwan Action.中文台湾动作",
+
+        "Taiwan": "Chinese Taiwan.中文台湾",
+
+        "Colombia": "Colombian.哥伦比亚",
+
+        "Cuba": "Cuban.古巴",
+
+        "Cyprus": "Cypriot.塞浦路斯",
+
+        "Czech Republic": "Czech.捷克",
+        "Czechoslovakia": "Czech.捷克",
+        "Slovakia": "Slovakian.斯洛伐克",
+
+        "Denmark.Action": "Danish Action.丹麦动作",
+
+        "Denmark.Adult": "Danish Adult.丹麦成人",
+
+        "Denmark.Biography": "Danish Biography.丹麦传记",
+
+        "Denmark": "Danish.丹麦",
+
+        "Dominican Republic": "Dominican.多米尼加",
+
+        "Netherlands.Adult": "Dutch Adult.荷兰成人",
+
+        "Netherlands.Biography": "Dutch Biography.荷兰传记",
+
+        "Netherlands.Documentary": "Dutch Documentary.荷兰记录",
+
+        "Netherlands": "Dutch.荷兰",
+
+        "Ecuador": "Ecuadorian.厄瓜多尔",
+
+        "Egypt": "Egyptian.埃及",
+
+        "Estonia": "Estonian.爱沙尼亚",
+
+        "Philippines": "Filipino.菲律宾",
+
+        "Finland": "Finnish.芬兰",
+
+        "France.Action": "French Action.法国动作",
+
+        "France.Adult": "French Adult.法国成人",
+
+        "France.Animation": "French Animation.法国动画",
+
+        "France.Biography": "French Biography.法国传记",
+
+        "France.Documentary": "French Documentary.法国记录",
+
+        "France.Music|Musical": "French Musical.法国音乐",
+
+        "France": "French.法国",
+
+        "Georgia": "Georgian.格鲁吉亚",
+
+        "Germany.Adult": "German Adult.德国成人",
+        "West Germany.Adult": "German Adult.德国成人",
+
+        "West Germany.Biography": "German Biography.德国传记",
+        "Germany.Biography": "German Biography.德国传记",
+
+        "Germany.Documentary": "German Documentary.德国记录",
+
+        "Germany": "German.德国",
+        "West Germany": "German.德国",
+
+        "Greece": "Greek.希腊",
+
+        "Guatemala": "Guatemalan.危地马拉",
+
+        "Haiti": "Haitian.海地",
+
+        "Hungary": "Hungarian.匈牙利",
+
+        "Iceland": "Icelandic.冰岛",
+
+        "India.Action": "Indian Action.印度动作",
+
+        "India.Biography": "Indian Biography.印度传记",
+
+        "India": "Indian.印度",
+
+        "Indonesia.Action": "Indonesian Action.印度尼西亚动作",
+
+        "Indonesia.Documentary": "Indonesian Documentary.印度尼西亚记录",
+
+        "Indonesia": "Indonesian.印度尼西亚",
+
+        "Iran": "Iranian.伊朗",
+
+        "Ireland.Documentary": "Irish Documentary.爱尔兰记录",
+
+        "Ireland": "Irish.爱尔兰",
+
+        "Israel": "Israel.以色列",
+
+        "Italy.Action": "Italian Action.意大利动作",
+
+        "Italy.Adult": "Italian Adult.意大利成人",
+
+        "Italy.Biography": "Italian Biography.意大利传记",
+
+        "Italy": "Italian.意大利",
+
+        "Japan.Action": "Japanese Action.日本动作",
+
+        "Japan.Animation": "Japanese Animation.日本动画",
+
+        "Japan.Biography": "Japanese Biography.日本传记",
+
+        "Japan": "Japanese.日本",
+
+        "Kazakhstan": "Kazakhstani.哈萨克斯坦",
+
+        "South Korea.Action": "Korean Action.韩国动作",
+
+        "South Korea.Biography": "Korean Biography.韩国传记",
+
+        "South Korea": "Korean.韩国",
+
+        "Latvia": "Latvian.拉脱维亚",
+
+        "Lebanon": "Lebanon.黎巴嫩",
+
+        "Lithuania": "Lithuanian.立陶宛",
+
+        "Luxembourg": "Luxembourg.卢森堡",
+
+        "Mali": "Malian.马里",
+
+        "Mexico": "Mexican.墨西哥",
+
+        "Mongolia": "Mongolian.蒙古",
+
+        "New Zealand.Documentary": "New Zealand Documentary.新西兰记录",
+
+        "New Zealand": "New Zealand.新西兰",
+
+        "Nigeria": "Nigerian.尼日利亚",
+
+        "Norway": "Norwegian.挪威",
+
+        "Pakistan.Action": "Pakistani Action.巴基斯坦动作",
+
+        "Pakistan.Biography": "Pakistani Biography.巴基斯坦传记",
+
+        "Pakistan": "Pakistani.巴基斯坦",
+
+        "Panama": "Panamanian.巴拿马",
+
+        "Peru": "Peruvian.秘鲁",
+
+        "Poland.Biography": "Polish Biography.波兰传记",
+
+        "Poland": "Polish.波兰",
+
+        "Portugal": "Portuguese.葡萄牙",
+
+        "Puerto Rico": "Puerto Rican.波多黎各",
+
+        "Romania": "Romanian.罗马尼亚",
+
+        "Russia.Biography": "Russian Soviet Union Biography.苏俄传记",
+        "Soviet Union.Biography": "Russian Soviet Union Biography.苏俄传记",
+
+        "Russia": "Russian Soviet Union.苏俄",
+        "Soviet Union": "Russian Soviet Union.苏俄",
+
+        "Senegal": "Senegalese.塞内加尔",
+
+        "South Africa.Documentary": "South African Documentary.南非记录",
+
+        "South Africa": "South African.南非",
+
+        "Spain.Adult": "Spanish Adult.西班牙成人",
+
+        "Spain.Biography": "Spanish Biography.西班牙传记",
+
+        "Spain.Documentary": "Spanish Documentary.西班牙记录",
+
+        "Spain": "Spanish.西班牙",
+
+        "Sweden.Adult": "Swedish Adult.瑞典成人",
+
+        "Sweden.Music|Musical": "Swedish Musical.瑞典音乐",
+
+        "Sweden": "Swedish.瑞典",
+
+        "Switzerland.Adult": "Swiss Adult.瑞士成人",
+
+        "Switzerland.Documentary": "Swiss Documentary.瑞士记录",
+
+        "Switzerland": "Swiss.瑞士",
+
+        "Thailand.Action": "Thai Action.泰国动作",
+
+        "Thailand": "Thai.泰国",
+
+        "Tunisia": "Tunisian.突尼斯",
+
+        "Turkey": "Turkish.土耳其",
+
+        "Ukraine": "Ukrainian.乌克兰",
+
+        "United Arab Emirates.Action": "United Arab Emirates Action.阿联酋动作",
+
+        "United Arab Emirates": "United Arab Emirates.阿联酋",
+
+        "Uraguay": "Uruguayan.乌拉圭",
+
+        "Uraguay.Documentary": "Uruguayan Documentary.乌拉圭记录",
+
+        "Venezuela": "Venezuelan.委内瑞拉",
+
+        "Vietnam.Action": "Vietnamese Action.越南动作",
+
+        "Vietnam": "Vietnamese.越南",
+
+        "Bosnia and Herzegovina": "Yugoslavian.南斯拉夫",
+        "Croatia": "Yugoslavian.南斯拉夫",
+        "Federal Republic of Yugoslavia": "Yugoslavian.南斯拉夫",
+        "Kosovo": "Yugoslavian.南斯拉夫",
+        "North Macedonia": "Yugoslavian.南斯拉夫",
+        "Serbia": "Yugoslavian.南斯拉夫",
+        "Slovenia": "Yugoslavian.南斯拉夫",
+        "Yugoslavia": "Yugoslavian.南斯拉夫"
+    },
+
+    "ImdbKeywords": [],
+
+    "AllImdbKeywords": []
 }

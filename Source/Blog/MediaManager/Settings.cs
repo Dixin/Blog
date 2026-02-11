@@ -51,6 +51,7 @@ public partial record Settings(
     string MovieMetadataDirectory,
     string MovieMetadataBackupDirectory,
     string MovieMetadataCacheDirectory,
+    string MovieMetadataFileDirectory,
     string MovieMetadataCacheBackupDirectory,
     string TVMetadataDirectory,
     string TVMetadataCacheDirectory,
@@ -81,8 +82,6 @@ public partial record Settings(
     public DirectorySettings MovieDisk { get; init; }
 
     public DirectorySettings MovieFranchise { get; init; }
-
-    public DirectorySettings MovieFranchiseWithoutSubtitle { get; init; }
 
     public DirectorySettings MovieMainstream1 { get; init; }
 

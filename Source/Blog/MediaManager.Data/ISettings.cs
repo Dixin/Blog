@@ -42,8 +42,6 @@ public interface ISettings
 
     DirectorySettings MovieFranchise { get; init; }
 
-    DirectorySettings MovieFranchiseWithoutSubtitle { get; init; }
-
     DirectorySettings MovieMainstream1 { get; init; }
 
     DirectorySettings MovieMainstream2 { get; init; }
@@ -85,6 +83,8 @@ public interface ISettings
     string MovieMetadataBackupDirectory { get; init; }
 
     string MovieMetadataCacheDirectory { get; init; }
+
+    string MovieMetadataFileDirectory { get; init; }
 
     string MovieMetadataCacheBackupDirectory { get; init; }
 
