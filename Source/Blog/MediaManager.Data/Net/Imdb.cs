@@ -171,12 +171,20 @@ internal static partial class Imdb
         {
             lock (@lock)
             {
-                File.WriteAllText(file, html);
+                try { }
+                finally
+                {
+                    File.WriteAllText(file, html);
+                }
             }
         }
         else
         {
-            await File.WriteAllTextAsync(file, html, cancellationToken);
+            try { }
+            finally
+            {
+                await File.WriteAllTextAsync(file, html, cancellationToken);
+            }
         }
 
         return (html, trimmedCQ);
@@ -231,19 +239,26 @@ internal static partial class Imdb
         string imdbUrl = $"https://www.imdb.com/title/{imdbId}/";
         bool hasImdbFile = cacheFiles.Contains(imdbFile);
         string imdbHtml;
+        CQ imdbCQ;
+        bool isInDevelopment;
         if (hasImdbFile)
         {
             imdbHtml = (await File.ReadAllTextAsync(imdbFile, cancellationToken)).ThrowIfNullOrWhiteSpace();
+            imdbCQ = imdbHtml;
             if (!imdbHtml.EndsWithIgnoreCase("</html>"))
             {
                 FileHelper.Recycle(imdbFile);
                 throw new InvalidDataException($"Invalid cached HTML: {imdbFile}.");
             }
+
+            isInDevelopment = imdbCQ.Find("[data-testid='hero-subnav-bar-imdb-pro-link']").TextTrimDecode().ContainsIgnoreCase("In development");
         }
         else
         {
             imdbHtml = await (page?.GetStringAsync(imdbUrl, PageSelector, new PageGotoOptions() { Referer = "https://www.imdb.com/" }, cancellationToken)
                 ?? Retry.FixedIntervalAsync(async () => await httpClient!.GetStringAsync(imdbUrl, cancellationToken), cancellationToken: cancellationToken));
+            imdbCQ = imdbHtml;
+            isInDevelopment = imdbCQ.Find("[data-testid='hero-subnav-bar-imdb-pro-link']").TextTrimDecode().ContainsIgnoreCase("In development");
 
             if (page is not null && playWrightWrapper is not null)
             {
@@ -255,51 +270,103 @@ internal static partial class Imdb
                     Debug.Assert(imdbId.IsImdbId());
                 }
 
-                await Retry.FixedIntervalAsync(
-                    async () =>
-                    {
-                        ILocator knowLocator = page.GetByTestId("DidYouKnow");
-                        if (await knowLocator.CountAsync() > 0)
+                if (!isInDevelopment)
+                {
+                    await Retry.FixedIntervalAsync(
+                        async () =>
                         {
-                            await knowLocator.ScrollIntoViewIfNeededAsync();
-                        }
-                        else
-                        {
-                            ILocator topPicksLocator = await page.WaitForCountAsync("[data-cel-widget='DynamicFeature_TopPicks']", locatorCount: 1, cancellationToken: cancellationToken);
-                            await topPicksLocator.ScrollIntoViewIfNeededAsync();
-                        }
+                            ILocator knowLocator = page.GetByTestId("DidYouKnow");
+                            if (await knowLocator.CountAsync() > 0)
+                            {
+                                await knowLocator.ScrollIntoViewIfNeededAsync();
+                            }
+                            else
+                            {
+                                ILocator topPicksLocator = await page.WaitForCountAsync("[data-cel-widget='DynamicFeature_TopPicks']", locatorCount: 1, cancellationToken: cancellationToken);
+                                await topPicksLocator.ScrollIntoViewIfNeededAsync();
+                            }
 
-                        await page.Keyboard.PressAsync("PageUp");
-                        await page.WaitForSelectorAsync("[data-testid='storyline-parents-guide']");
-                        imdbHtml = await page.ContentAsync();
-                    },
-                    retryingHandler: (sender, args) =>
-                    {
-                        if (args.LastException is TimeoutException)
+                            await page.Keyboard.PressAsync("PageUp");
+                            await page.WaitForSelectorAsync("[data-testid='storyline-parents-guide']");
+                            imdbHtml = await page.ContentAsync();
+                            imdbCQ = imdbHtml;
+                        },
+                        retryingHandler: (sender, args) =>
                         {
-                            page = playWrightWrapper.RestartAsync(cancellationToken: cancellationToken).Result;
-                            imdbHtml = page.GetStringAsync(imdbUrl, PageSelector, cancellationToken: cancellationToken).Result;
-                        }
-                    },
-                    cancellationToken: cancellationToken);
+                            if (args.LastException is TimeoutException)
+                            {
+                                page = playWrightWrapper.RestartAsync(cancellationToken: cancellationToken).Result;
+                                imdbHtml = page.GetStringAsync(imdbUrl, PageSelector, cancellationToken: cancellationToken).Result;
+                                imdbCQ = imdbHtml;
+                            }
+                        },
+                        cancellationToken: cancellationToken);
+                }
             }
 
             if (@lock is not null)
             {
                 lock (@lock)
                 {
-                    File.WriteAllText(imdbFile, imdbHtml);
+                    try { }
+                    finally
+                    {
+                        File.WriteAllText(imdbFile, imdbHtml);
+                    }
                 }
             }
             else
             {
-                await File.WriteAllTextAsync(imdbFile, imdbHtml, cancellationToken);
+                try { }
+                finally
+                {
+                    await File.WriteAllTextAsync(imdbFile, imdbHtml, cancellationToken);
+                }
             }
         }
 
-        CQ imdbCQ = imdbHtml;
         string json = imdbCQ.Find("script[type='application/ld+json']").Text();
         //string json2 = imdbCQ.Find("#__NEXT_DATA__").Text();
+        ImdbMetadata imdbMetadata = JsonHelper.Deserialize<ImdbMetadata>(json);
+        if (isInDevelopment)
+        {
+            return (
+                imdbMetadata with
+                {
+                    Details = imdbMetadata.Details ?? [],
+                    Genres = imdbMetadata.Genres ?? []
+                },
+
+                imdbUrl, imdbHtml,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
+
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty
+            );
+        }
+
         string htmlTitle = imdbCQ.Find("title").TextTrimDecode();
         if (htmlTitle.StartsWithIgnoreCase("500 Error") || imdbCQ.Find("[data-testid='error-page-title']").TextTrimDecode().ContainsIgnoreCase("500 Error"))
         {
@@ -310,8 +377,6 @@ internal static partial class Imdb
         {
             throw new HttpRequestException(HttpRequestError.InvalidResponse, imdbUrl, null, HttpStatusCode.NotFound);
         }
-
-        ImdbMetadata imdbMetadata = JsonHelper.Deserialize<ImdbMetadata>(json);
 
         string parentImdbUrl = string.Empty;
         string parentAdvisoriesUrl = string.Empty;

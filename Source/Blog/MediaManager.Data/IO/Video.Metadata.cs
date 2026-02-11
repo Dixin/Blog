@@ -497,7 +497,12 @@ internal static partial class Video
                 }
 
                 log($"Merged {imdbUrl}, {advisoriesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {goofsUrl}, {keywordsUrl}, {quotesUrl}, {releasesUrl}, {soundtracksUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile.EscapeMarkup()}.");
-                JsonHelper.SerializeToFile(imdbMetadata, newJsonFile);
+                try { }
+                finally
+                {
+                    JsonHelper.SerializeToFile(imdbMetadata, newJsonFile);
+                }
+
                 TimeSpan elapsed = Stopwatch.GetElapsedTime(startingTimestamp);
                 log($"[green]Elapsed {elapsed} to Save {newJsonFile.EscapeMarkup()}.[/]");
             }
@@ -521,7 +526,12 @@ internal static partial class Video
             }
 
             log($"Merged {imdbUrl}, {advisoriesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {goofsUrl}, {keywordsUrl}, {quotesUrl}, {releasesUrl}, {soundtracksUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile.EscapeMarkup()}.");
-            await JsonHelper.SerializeToFileAsync(imdbMetadata, newJsonFile, cancellationToken);
+            try { }
+            finally
+            {
+                await JsonHelper.SerializeToFileAsync(imdbMetadata, newJsonFile, cancellationToken);
+            }
+
             TimeSpan elapsed = Stopwatch.GetElapsedTime(startingTimestamp);
             log($"[green]Elapsed {elapsed} to Save {newJsonFile.EscapeMarkup()}.[/]");
         }

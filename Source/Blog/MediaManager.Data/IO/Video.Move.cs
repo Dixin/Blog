@@ -5,6 +5,7 @@ using Examples.Common;
 using Examples.IO;
 using Examples.Linq;
 using MediaManager.Net;
+using Spectre.Console;
 
 internal static partial class Video
 {
@@ -416,11 +417,11 @@ internal static partial class Video
             {
                 if (!VideoDirectoryInfo.TryParse(movie, out VideoDirectoryInfo? parsed))
                 {
-                    log($"!Cannot parse {movie}");
+                    log($"!Cannot parse {movie.EscapeMarkup()}");
                     return;
                 }
 
-                if (ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata))
+                if (ImdbMinMetadata.TryLoad(movie, out ImdbMinMetadata? imdbMetadata))
                 {
                     if (imdbMetadata.Year.IsNotNullOrWhiteSpace())
                     {
@@ -466,13 +467,13 @@ internal static partial class Video
                     return;
                 }
 
-                log(movie);
+                log(movie.EscapeMarkup());
                 if (!isDryRun)
                 {
                     Directory.Move(movie, newMovie);
                 }
 
-                log(newMovie);
+                log(newMovie.EscapeMarkup());
                 log(string.Empty);
             });
     }
