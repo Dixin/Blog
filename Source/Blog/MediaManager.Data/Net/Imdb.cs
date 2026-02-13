@@ -271,9 +271,38 @@ internal static partial class Imdb
                 if (!page.Url.EqualsOrdinal(imdbUrl))
                 {
                     log($"Redirected {imdbId} to {page.Url}");
-                    imdbUrl = page.Url;
-                    imdbId = ImdbMetadata.ImdbIdSubstringRegex().Match(imdbUrl).Value;
+                    imdbUrl = new Uri(page.Url).GetLeftPart(UriPartial.Path);
+                    string updatedImdbId = ImdbMetadata.ImdbIdSubstringRegex().Match(page.Url).Value;
                     Debug.Assert(imdbId.IsImdbId());
+                    new string[]
+                    {
+                        imdbFile, advisoriesFile, awardsFile, companiesFile, connectionsFile, crazyCreditsFile, creditsFile, goofsFile, keywordsFile, locationsFile, quotesFile, releasesFile, sitesFile, soundtracksFile, triviaFile, versionsFile
+                    }
+                    .Where(cacheFiles.Contains)
+                    .ForEach(file =>
+                    {
+                        FileHelper.Recycle(file);
+                        cacheFiles.Remove(file);
+                    });
+                    imdbFile = imdbFile.Replace(imdbId, updatedImdbId);
+                    advisoriesFile = advisoriesFile.Replace(imdbId, updatedImdbId);
+                    awardsFile = awardsFile.Replace(imdbId, updatedImdbId);
+                    companiesFile = companiesFile.Replace(imdbId, updatedImdbId);
+                    connectionsFile = connectionsFile.Replace(imdbId, updatedImdbId);
+                    crazyCreditsFile = crazyCreditsFile.Replace(imdbId, updatedImdbId);
+                    creditsFile = creditsFile.Replace(imdbId, updatedImdbId);
+                    goofsFile = goofsFile.Replace(imdbId, updatedImdbId);
+                    keywordsFile = keywordsFile.Replace(imdbId, updatedImdbId);
+                    locationsFile = locationsFile.Replace(imdbId, updatedImdbId);
+                    quotesFile = quotesFile.Replace(imdbId, updatedImdbId);
+                    releasesFile = releasesFile.Replace(imdbId, updatedImdbId);
+                    sitesFile = sitesFile.Replace(imdbId, updatedImdbId);
+                    soundtracksFile = soundtracksFile.Replace(imdbId, updatedImdbId);
+                    triviaFile = triviaFile.Replace(imdbId, updatedImdbId);
+                    versionsFile = versionsFile.Replace(imdbId, updatedImdbId);
+
+                    imdbId = updatedImdbId;
+                    Debug.Assert(imdbUrl.EqualsIgnoreCase($"https://www.imdb.com/title/{imdbId}/"));
                 }
 
                 if (!isInDevelopment)
@@ -596,9 +625,9 @@ internal static partial class Imdb
         bool skipVersions = true;
         bool skipConnections = true;
         bool skipSoundtracks = true;
-        bool skipCompanies = imdbCQ.Find($"[data-testid='title-details-companies'] a[href*='/title/{imdbId}/companycredits']").Any();
-        bool skipLocations = imdbCQ.Find($"[title-details-filminglocations'] a[href*='/title/{imdbId}/locations']").Any();
-        bool skipSites = imdbCQ.Find($"[data-testid='details-officialsites'] a[href*='/title/{imdbId}/externalsites']").Any();
+        bool skipCompanies = imdbCQ.Find($"[data-testid='title-details-companies'] a[href*='/title/{imdbId}/companycredits']").IsEmpty();
+        bool skipLocations = imdbCQ.Find($"[title-details-filminglocations'] a[href*='/title/{imdbId}/locations']").IsEmpty();
+        bool skipSites = imdbCQ.Find($"[data-testid='details-officialsites'] a[href*='/title/{imdbId}/externalsites']").IsEmpty();
         CQ knowSectionCQ = imdbCQ.Find("[data-testid='DidYouKnow']");
         if (knowSectionCQ.Any())
         {
@@ -878,7 +907,9 @@ internal static partial class Imdb
             ))
             .Where(advisory => advisory.Severity.IsNotNullOrWhiteSpace() || advisory.Descriptions.Any())
             .ToLookup(advisory => advisory.Category)
-            .ToDictionary(group => group.Key, group => group.ToDictionary(advisory => advisory.Severity, advisory => advisory.Descriptions));
+            .ToDictionary(
+                group => group.Key,
+                group => group.ToDictionary(advisory => advisory.Severity, advisory => advisory.Descriptions));
 
         Dictionary<string, string> certifications = advisoriesCQ
             .Find("[data-testid='certificates'] [data-testid='certificates-item']")
@@ -980,9 +1011,9 @@ internal static partial class Imdb
         Dictionary<string, string[][]> connections = connectionsCQ
             .Find("section.ipc-page-section")
             .Select(sectionDom => sectionDom.Cq())
-            .Select(sectionCQ => (
-                Key: sectionCQ.Find("h3").TextTrimDecode(),
-                Value: sectionCQ
+            .ToDictionary(
+                sectionCQ => sectionCQ.Find("h3").TextTrimDecode(),
+                sectionCQ => sectionCQ
                     .Find("[data-testid='list-item']")
                     .Select(listItemDom =>
                     {
@@ -994,10 +1025,7 @@ internal static partial class Imdb
                             ? new string[] { linkCQ.TextTrimDecode(), linkCQ.Attr("href"), paragraphCQ.TextTrimDecode(), description.TextTrimDecode() }
                             : [linkCQ.TextTrimDecode(), linkCQ.Attr("href"), paragraphCQ.TextTrimDecode()];
                     })
-                    .ToArray()))
-            //.Where(pair => pair.Key.IsNotNullOrWhiteSpace())
-            //.TakeWhile(pair => !pair.Key.ContainsIgnoreCase("Contribute to this page"))
-            .ToDictionary(pair => pair.Key, pair => pair.Value);
+                    .ToArray());
 
         string crazyCreditsUrl = $"{imdbUrl}crazycredits/";
         (string crazyCreditsHtml, CQ crazyCreditsCQ) = await GetHtmlAsync(skipCrazyCredits, crazyCreditsFile, crazyCreditsUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
@@ -1015,9 +1043,9 @@ internal static partial class Imdb
         Dictionary<string, string[][]> credits = creditsCQ
             .Find("section.ipc-page-section")
             .Select(sectionDom => sectionDom.Cq())
-            .Select(sectionCQ => (
-                Category: sectionCQ.Find("h3").TextTrimDecode(),
-                Credits: sectionCQ
+            .ToDictionary(
+                sectionCQ => sectionCQ.Find("h3").TextTrimDecode(),
+                sectionCQ => sectionCQ
                     .Find("[data-testid='name-credits-list-item']")
                     .Select(itemDom =>
                     {
@@ -1035,10 +1063,7 @@ internal static partial class Imdb
 
                         return result.ToArray();
                     })
-                    .ToArray()
-            ))
-            //.TakeWhile(section => !section.Category.ContainsIgnoreCase("Contribute to this page"))
-            .ToDictionary(section => section.Category, section => section.Credits);
+                    .ToArray());
 
         string goofsUrl = $"{imdbUrl}goofs/";
         (string goofsHtml, CQ goofsCQ) = await GetHtmlAsync(skipGoofs, goofsFile, goofsUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
@@ -1046,16 +1071,14 @@ internal static partial class Imdb
         Dictionary<string, string[]> goofs = goofsCQ
             .Find("section.ipc-page-section")
             .Select(sectionDom => sectionDom.Cq())
-            .Select(sectionCQ => (
-                Category: sectionCQ.Find("h3").TextTrimDecode(),
-                Descriptions: sectionCQ
+            .ToDictionary(
+                sectionCQ => sectionCQ.Find("h3").TextTrimDecode(),
+                sectionCQ => sectionCQ
                     .Find("[data-testid='item-html'] .ipc-html-content-inner-div")
                     .Find("*")
                     .Each(linkDom => linkDom.RemoveAttribute("class"))
                     .End()
-                    .Select(divDom => divDom.HtmlTrim()).ToArray()))
-            //.TakeWhile(section => !section.Category.ContainsIgnoreCase("Contribute to this page"))
-            .ToDictionary(section => section.Category, section => section.Descriptions);
+                    .Select(divDom => divDom.HtmlTrim()).ToArray());
 
         string keywordsUrl = $"{imdbUrl}keywords/";
         (string keywordsHtml, CQ keywordsCQ) = await GetHtmlAsync(skipKeywords, keywordsFile, keywordsUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
@@ -1160,18 +1183,15 @@ internal static partial class Imdb
         Dictionary<string, string[]> trivia = triviaCQ
             .Find("section.ipc-page-section")
             .Select(sectionDom => sectionDom.Cq())
-            .Select(sectionCQ => (
-                category: sectionCQ.Find("h3").TextTrimDecode(),
-                Descriptions: sectionCQ
+            .ToDictionary(
+                sectionCQ => sectionCQ.Find("h3").TextTrimDecode(),
+                sectionCQ => sectionCQ
                     .Find("[data-testid='item-html'] .ipc-html-content-inner-div")
                     .Find("*")
                     .Each(linkDom => linkDom.RemoveAttribute("class"))
                     .End()
                     .Select(divDom => divDom.HtmlTrim())
-                    .ToArray()
-            ))
-            //.TakeWhile(section => !section.category.ContainsIgnoreCase("Contribute to this page"))
-            .ToDictionary(section => section.category, section => section.Descriptions);
+                    .ToArray());
 
         string versionsUrl = $"{imdbUrl}alternateversions/";
         (string versionsHtml, CQ versionsCQ) = await GetHtmlAsync(skipVersions, versionsFile, versionsUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
