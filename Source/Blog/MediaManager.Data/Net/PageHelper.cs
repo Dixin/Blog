@@ -40,6 +40,7 @@ internal static class PageHelper
                 Debug.Assert(html.IsNotNullOrWhiteSpace());
                 return html;
             },
+            isTransient:exception => exception is not HttpRequestException {StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError},
             cancellationToken: cancellationToken);
 
     internal static async Task<string> RefreshAsync(this IPage page, string selector, PageReloadOptions? options = null, CancellationToken cancellationToken = default) =>
