@@ -200,13 +200,16 @@ internal static partial class Imdb
         string ImdbUrl, string ImdbHtml,
         string AdvisoriesUrl, string AdvisoriesHtml,
         string AwardsUrl, string AwardsHtml,
+        string CompaniesUrl, string CompaniesHtml,
         string ConnectionsUrl, string ConnectionsHtml,
         string CrazyCreditsUrl, string CrazyCreditsHtml,
         string CreditsUrl, string CreditsHtml,
         string GoofsUrl, string GoofsHtml,
         string KeywordsUrl, string KeywordsHtml,
+        string LocationsUrl, string LocationsHtml,
         string QuotesUrl, string QuotesHtml,
         string ReleasesUrl, string ReleasesHtml,
+        string SitesUrl, string SitesHtml,
         string SoundtracksUrl, string SoundtracksHtml,
         string TriviaUrl, string TriviaHtml,
         string VersionsUrl, string VersionsHtml,
@@ -214,20 +217,23 @@ internal static partial class Imdb
         string ParentImdbUrl, string ParentImdbHtml,
         string ParentAdvisoriesUrl, string ParentAdvisoriesHtml,
         string ParentAwardsUrl, string ParentAwardsHtml,
+        string ParentCompaniesUrl, string ParentCompaniesHtml,
         string ParentConnectionsUrl, string ParentConnectionsHtml,
         string parentCrazyCreditsUrl, string parentCrazyCreditsHtml,
         string ParentCreditsUrl, string ParentCreditsHtml,
         string ParentGoofsUrl, string ParentGoofsHtml,
         string ParentKeywordsUrl, string parentKeywordsHtml,
+        string ParentLocationsUrl, string ParentLocationsHtml,
         string ParentQuotesUrl, string ParentQuotesHtml,
         string ParentReleasesUrl, string ParentReleasesHtml,
+        string ParentSitesHtml, string ParentSitesUrl,
         string ParentSoundtracksUrl, string ParentSoundtracksHtml,
         string ParentTriviaUrl, string ParentTriviaHtml,
         string ParentVersionsUrl, string ParentVersionsHtml
         )> DownloadAsync(
         string imdbId,
-        string imdbFile, string advisoriesFile, string awardsFile, string connectionsFile, string crazyCreditsFile, string creditsFile, string goofsFile, string keywordsFile, string quotesFile, string releasesFile, string soundtracksFile, string triviaFile, string versionsFile,
-        string parentImdbFile, string parentAdvisoriesFile, string parentAwardsFile, string parentConnectionsFile, string parentCrazyCreditsFile, string parentCreditsFile, string parentGoofsFile, string parentKeywordsFile, string parentQuotesFile, string parentReleasesFile, string parentSoundtracksFile, string parentTriviaFile, string parentVersionsFile,
+        string imdbFile, string advisoriesFile, string awardsFile, string companiesFile, string connectionsFile, string crazyCreditsFile, string creditsFile, string goofsFile, string keywordsFile, string locationsFile, string quotesFile, string releasesFile, string sitesFile, string soundtracksFile, string triviaFile, string versionsFile,
+        string parentImdbFile, string parentAdvisoriesFile, string parentAwardsFile, string parentCompaniesFile, string parentConnectionsFile, string parentCrazyCreditsFile, string parentCreditsFile, string parentGoofsFile, string parentKeywordsFile, string parentLocationsFile, string parentQuotesFile, string parentReleasesFile, string parentSitesFile, string parentSoundtracksFile, string parentTriviaFile, string parentVersionsFile,
         PlayWrightWrapper? playWrightWrapper, HashSet<string> cacheFiles, Lock? @lock = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
@@ -350,7 +356,13 @@ internal static partial class Imdb
                 string.Empty, string.Empty,
                 string.Empty, string.Empty,
                 string.Empty, string.Empty,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
 
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
+                string.Empty, string.Empty,
                 string.Empty, string.Empty,
                 string.Empty, string.Empty,
                 string.Empty, string.Empty,
@@ -381,13 +393,16 @@ internal static partial class Imdb
         string parentImdbUrl = string.Empty;
         string parentAdvisoriesUrl = string.Empty;
         string parentAwardsUrl = string.Empty;
+        string parentCompaniesUrl = string.Empty;
         string parentConnectionsUrl = string.Empty;
         string parentCrazyCreditsUrl = string.Empty;
         string parentCreditsUrl = string.Empty;
         string parentGoofsUrl = string.Empty;
         string parentKeywordsUrl = string.Empty;
+        string parentLocationsUrl = string.Empty;
         string parentQuotesUrl = string.Empty;
         string parentReleasesUrl = string.Empty;
+        string parentSitesUrl = string.Empty;
         string parentSoundtracksUrl = string.Empty;
         string parentTriviaUrl = string.Empty;
         string parentVersionsUrl = string.Empty;
@@ -395,13 +410,16 @@ internal static partial class Imdb
         string parentImdbHtml = string.Empty;
         string parentAdvisoriesHtml = string.Empty;
         string parentAwardsHtml = string.Empty;
+        string parentCompaniesHtml = string.Empty;
         string parentConnectionsHtml = string.Empty;
         string parentCrazyCreditsHtml = string.Empty;
         string parentCreditsHtml = string.Empty;
         string parentGoofsHtml = string.Empty;
         string parentKeywordsHtml = string.Empty;
+        string parentLocationsHtml = string.Empty;
         string parentQuotesHtml = string.Empty;
         string parentReleasesHtml = string.Empty;
+        string parentSitesHtml = string.Empty;
         string parentSoundtracksHtml = string.Empty;
         string parentTriviaHtml = string.Empty;
         string parentVersionsHtml = string.Empty;
@@ -419,25 +437,44 @@ internal static partial class Imdb
             {
                 (
                     parentMetadata,
+
                     parentImdbUrl, parentImdbHtml,
                     parentAdvisoriesUrl, parentAdvisoriesHtml,
                     parentAwardsUrl, parentAwardsHtml,
+                    parentCompaniesUrl, parentCompaniesHtml,
                     parentConnectionsUrl, parentConnectionsHtml,
                     parentCrazyCreditsUrl, parentCrazyCreditsHtml,
                     parentCreditsUrl, parentCreditsHtml,
                     parentGoofsUrl, parentGoofsHtml,
                     parentKeywordsUrl, parentKeywordsHtml,
+                    parentLocationsUrl, parentLocationsHtml,
                     parentQuotesUrl, parentQuotesHtml,
                     parentReleasesUrl, parentReleasesHtml,
+                    parentSitesUrl, parentSitesHtml,
                     parentSoundtracksUrl, parentSoundtracksHtml,
                     parentTriviaUrl, parentTriviaHtml,
                     parentVersionsUrl, parentVersionsHtml,
 
-                    _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _
+                    _, _,
+                    _, _,
+                    _, _,
+                    _, _,
+                    _, _,
+                    _, _,
+                    _, _,
+                    _, _,
+                    _, _,
+                    _, _,
+                    _, _,
+                    _, _,
+                    _, _,
+                    _, _,
+                    _, _,
+                    _, _
                 ) = await DownloadAsync(
                     parentImdbId,
-                    parentImdbFile, parentAdvisoriesFile, parentAwardsFile, parentConnectionsFile, parentCrazyCreditsFile, parentCreditsFile, parentGoofsFile, parentKeywordsFile, parentQuotesFile, parentReleasesFile, parentSoundtracksFile, parentTriviaFile, parentVersionsFile,
-                    string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty,
+                    parentImdbFile, parentAdvisoriesFile, parentAwardsFile, parentCompaniesFile, parentConnectionsFile, parentCrazyCreditsFile, parentCreditsFile, parentGoofsFile, parentKeywordsFile, parentLocationsFile, parentQuotesFile, parentReleasesFile, parentSitesFile, parentSoundtracksFile, parentTriviaFile, parentVersionsFile,
+                    string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty, string.Empty,
                     playWrightWrapper, cacheFiles, @lock, log, cancellationToken);
             }
         }
@@ -559,16 +596,19 @@ internal static partial class Imdb
         bool skipVersions = true;
         bool skipConnections = true;
         bool skipSoundtracks = true;
-        CQ knowSection = imdbCQ.Find("[data-testid='DidYouKnow']");
-        if (knowSection.Any())
+        bool skipCompanies = imdbCQ.Find($"[data-testid='title-details-companies'] a[href*='/title/{imdbId}/companycredits']").Any();
+        bool skipLocations = imdbCQ.Find($"[title-details-filminglocations'] a[href*='/title/{imdbId}/locations']").Any();
+        bool skipSites = imdbCQ.Find($"[data-testid='details-officialsites'] a[href*='/title/{imdbId}/externalsites']").Any();
+        CQ knowSectionCQ = imdbCQ.Find("[data-testid='DidYouKnow']");
+        if (knowSectionCQ.Any())
         {
-            skipTrivia = knowSection.Find("a:contains('Trivia')").IsEmpty();
-            skipGoofs = knowSection.Find("a:contains('Goofs')").IsEmpty();
-            skipQuotes = knowSection.Find("a:contains('Quotes')").IsEmpty();
-            skipCrazyCredits = knowSection.Find("a:contains('Crazy credits')").IsEmpty();
-            skipVersions = knowSection.Find("a:contains('Alternate versions')").IsEmpty();
-            skipConnections = knowSection.Find("a:contains('Connections')").IsEmpty();
-            skipSoundtracks = knowSection.Find("a:contains('Soundtracks')").IsEmpty();
+            skipTrivia = knowSectionCQ.Find("a:contains('Trivia')").IsEmpty();
+            skipGoofs = knowSectionCQ.Find("a:contains('Goofs')").IsEmpty();
+            skipQuotes = knowSectionCQ.Find("a:contains('Quotes')").IsEmpty();
+            skipCrazyCredits = knowSectionCQ.Find("a:contains('Crazy credits')").IsEmpty();
+            skipVersions = knowSectionCQ.Find("a:contains('Alternate versions')").IsEmpty();
+            skipConnections = knowSectionCQ.Find("a:contains('Connections')").IsEmpty();
+            skipSoundtracks = knowSectionCQ.Find("a:contains('Soundtracks')").IsEmpty();
         }
 
         string releasesUrl = $"{imdbUrl}releaseinfo/";
@@ -909,6 +949,31 @@ internal static partial class Imdb
             })
             .ToArray();
 
+        string companiesUrl = $"{imdbUrl}companycredits/";
+        (string companyCreditsHtml, CQ companyCreditsCQ) = await GetHtmlAsync(skipCompanies, companiesFile, companiesUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
+        Dictionary<string, string[][]> companyCredits = companyCreditsCQ
+            .Find("section.ipc-page-section")
+            .Select(sectionDom => sectionDom.Cq())
+            .ToDictionary(
+                sectionCQ => sectionCQ.Find("h3").TextTrimDecode(),
+                sectionCQ => sectionCQ
+                    .Find("[data-testid='list-item']")
+                    .Select(listItemDom =>
+                    {
+                        CQ listItemCQ = listItemDom.Cq();
+                        CQ linkCQ = listItemCQ.Find("a").Remove();
+                        return new string[] { linkCQ.Text(), linkCQ.Attr("href") }
+                            .Concat(listItemCQ
+                                .Find("ul li")
+                                .Select(innerItemDom => innerItemDom
+                                    .Cq()
+                                    .Find("span")
+                                    .Select(spanDom => spanDom.TextTrimDecode()))
+                                .Concat())
+                            .ToArray();
+                    })
+                    .ToArray());
+
         string connectionsUrl = $"{imdbUrl}movieconnections/";
         (string connectionsHtml, CQ connectionsCQ) = await GetHtmlAsync(skipConnections, connectionsFile, connectionsUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
@@ -1009,6 +1074,35 @@ internal static partial class Imdb
                 .ToDictionary(group => group.Key, group => group.First());
         }
 
+        string locationsUrl = $"{imdbUrl}locations/";
+        (string locationsHtml, CQ locationsCQ) = await GetHtmlAsync(skipLocations, locationsFile, locationsUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
+        Dictionary<string, string[][]> locations = locationsCQ
+            .Find("section.ipc-page-section")
+            .Select(sectionDom => sectionDom.Cq())
+            .ToDictionary(
+                sectionCQ => sectionCQ.Find("h3").TextTrimDecode(),
+                sectionCQ => sectionCQ
+                    .Find("[data-testid='item-id']")
+                    .Select(itemDom =>
+                    {
+                        CQ itemCQ = itemDom.Cq();
+                        CQ linkCQ = itemCQ.Find("a:eq(0)");
+                        if (linkCQ.Any())
+                        {
+                            string name = linkCQ.TextTrimDecode();
+                            string url = linkCQ.Attr("href");
+                            CQ descriptionCQ = itemCQ.Find("p");
+                            return descriptionCQ.Any()
+                                ? new string[] { name, url, descriptionCQ.TextTrimDecode() }
+                                : [name, url];
+                        }
+
+                        CQ contentCQ = itemCQ.Find("[data-testid='item-html']");
+                        Debug.Assert(contentCQ.Length == 1);
+                        return [contentCQ.HtmlTrim()];
+                    })
+                    .ToArray());
+
         string quotesUrl = $"{imdbUrl}quotes/";
         (string quotesHtml, CQ quotesCQ) = await GetHtmlAsync(skipQuotes, quotesFile, quotesUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
 
@@ -1022,6 +1116,27 @@ internal static partial class Imdb
                 .Select(itemDom => itemDom.HtmlTrim())
                 .ToArray())
             .ToArray();
+
+        string sitesUrl = $"{imdbUrl}externalsites/";
+        (string sitesHtml, CQ sitesCQ) = await GetHtmlAsync(skipSites, sitesFile, sitesUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
+        Dictionary<string, string[][]> sites = sitesCQ.Find("section.ipc-page-section")
+            .Select(sectionDom => sectionDom.Cq())
+            .ToDictionary(
+                sectionCQ => sectionCQ.Find("h3").TextTrimDecode(),
+                sectionCQ => sectionCQ
+                    .Find("[data-testid='list-item']")
+                    .Select(itemDom =>
+                    {
+                        CQ itemCQ = itemDom.Cq();
+                        CQ linkCQ = itemCQ.Find("a:eq(0)");
+                        string title = linkCQ.TextTrimDecode();
+                        string url = linkCQ.Attr("href");
+                        CQ descriptionCQ = itemCQ.Find("ul li");
+                        return descriptionCQ.Any()
+                            ? new string[] { title, url, string.Join(",", descriptionCQ.Select(dom => dom.TextTrimDecode())) }
+                            : [title, url];
+                    })
+                    .ToArray());
 
         string soundtracksUrl = $"{imdbUrl}soundtrack/";
         (string soundtracksHtml, CQ soundtracksCQ) = await GetHtmlAsync(skipSoundtracks, soundtracksFile, soundtracksUrl, playWrightWrapper, httpClient, cacheFiles, @lock, log, cancellationToken);
@@ -1104,13 +1219,16 @@ internal static partial class Imdb
             imdbUrl, imdbHtml,
             advisoriesUrl, advisoriesHtml,
             awardsUrl, awardsHtml,
+            companiesUrl, companyCreditsHtml,
             connectionsUrl, connectionsHtml,
             crazyCreditsUrl, crazyCreditsHtml,
             creditsUrl, creditsHtml,
             goofsUrl, goofsHtml,
             keywordsUrl, keywordsHtml,
+            locationsUrl, locationsHtml,
             quotesUrl, quotesHtml,
             releasesUrl, releasesHtml,
+            sitesUrl, sitesHtml,
             soundtracksUrl, soundtracksHtml,
             triviaUrl, triviaHtml,
             versionsUrl, versionsHtml,
@@ -1118,13 +1236,16 @@ internal static partial class Imdb
             parentImdbUrl, parentImdbHtml,
             parentAdvisoriesUrl, parentAdvisoriesHtml,
             parentAwardsUrl, parentAwardsHtml,
+            parentCompaniesUrl, parentCompaniesHtml,
             parentConnectionsUrl, parentConnectionsHtml,
             parentCrazyCreditsUrl, parentCrazyCreditsHtml,
             parentCreditsUrl, parentCreditsHtml,
             parentGoofsUrl, parentGoofsHtml,
             parentKeywordsUrl, parentKeywordsHtml,
+            parentLocationsUrl, parentLocationsHtml,
             parentQuotesUrl, parentQuotesHtml,
             parentReleasesUrl, parentReleasesHtml,
+            parentSitesUrl, parentSitesHtml,
             parentSoundtracksUrl, parentSoundtracksHtml,
             parentTriviaUrl, parentTriviaHtml,
             parentVersionsUrl, parentVersionsHtml
