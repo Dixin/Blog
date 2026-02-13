@@ -232,7 +232,7 @@ internal static partial class Imdb
         string ParentReleasesUrl, string ParentReleasesHtml,
         string ParentSitesHtml, string ParentSitesUrl,
         string ParentSoundtracksUrl, string ParentSoundtracksHtml,
-        string ParentTagsUrl, string ParentTagsHtml,
+        string ParentTaglinesUrl, string ParentTaglinesHtml,
         string ParentTriviaUrl, string ParentTriviaHtml,
         string ParentVersionsUrl, string ParentVersionsHtml
         )> DownloadAsync(
@@ -1461,7 +1461,7 @@ internal static partial class Imdb
                                 async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, playWrightWrapper, @lock, overwrite: false, useCache: true, log: log, token),
                                 isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError }, cancellationToken: token);
                         }
-                        catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound)
+                        catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
                         {
                             log($"!!!{imdbId} {exception.ToString().EscapeMarkup()}");
                             imdbIdWithErrors.Add(imdbId);
