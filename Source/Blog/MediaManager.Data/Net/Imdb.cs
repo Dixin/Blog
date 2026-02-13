@@ -232,7 +232,7 @@ internal static partial class Imdb
         string ParentReleasesUrl, string ParentReleasesHtml,
         string ParentSitesHtml, string ParentSitesUrl,
         string ParentSoundtracksUrl, string ParentSoundtracksHtml,
-        string ParentTagsUrl, string ParentTagsHtml,
+        string ParentTaglinesUrl, string ParentTaglinesHtml,
         string ParentTriviaUrl, string ParentTriviaHtml,
         string ParentVersionsUrl, string ParentVersionsHtml
         )> DownloadAsync(
