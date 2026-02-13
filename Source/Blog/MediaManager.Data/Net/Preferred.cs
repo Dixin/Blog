@@ -114,7 +114,8 @@ internal static class Preferred
                         {
                             string html = await Retry.FixedIntervalAsync(
                                 async () => await httpClient.GetStringAsync(summary.Link, token),
-                                isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound }, cancellationToken: token);
+                                isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound },
+                                cancellationToken: token);
                             CQ cq = new(html);
                             CQ info = cq.Find("#movie-info");
                             CQ specsCQ = cq.Find("#movie-tech-specs");

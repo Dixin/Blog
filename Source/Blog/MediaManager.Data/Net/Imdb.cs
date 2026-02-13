@@ -108,7 +108,7 @@ internal static partial class Imdb
             {
                 log($"Update retry count {arg.CurrentRetryCount}.");
                 log(arg.LastException.ToString().EscapeMarkup());
-                if (arg.LastException is HttpRequestException { StatusCode: HttpStatusCode.InternalServerError, HttpRequestError: HttpRequestError.InvalidResponse })
+                if (arg.LastException is HttpRequestException { StatusCode: HttpStatusCode.InternalServerError })
                 {
                     page = playWrightWrapper.RestartAsync(cancellationToken: cancellationToken).Result;
                     html = page.GetStringAsync(url, PageSelector, cancellationToken: cancellationToken).Result;
@@ -131,7 +131,7 @@ internal static partial class Imdb
                 ? AjaxError()
                 : null;
 
-        HttpRequestException AjaxError() => new HttpRequestException(HttpRequestError.InvalidResponse, $"Ajax error {url}", null, HttpStatusCode.InternalServerError);
+        HttpRequestException AjaxError() => new(HttpRequestError.InvalidResponse, $"Ajax error {url}", null, HttpStatusCode.InternalServerError);
     }
 
     private static async Task<(string Html, CQ CQ)> GetHtmlAsync(bool skip, string file, string url, PlayWrightWrapper? playWrightWrapper, HttpClient? httpClient, HashSet<string> cacheFiles, Lock? @lock = null, Action<string>? log = null, CancellationToken cancellationToken = default)
@@ -1114,8 +1114,8 @@ internal static partial class Imdb
             .Find("section.ipc-page-section")
             .Select(sectionDom => sectionDom.Cq())
             .Select(sectionCQ => (
-                Title: sectionCQ.Find("h3").TextTrimDecode(), 
-                Faqs: sectionCQ.Find("[data-testid='accordion-item']"), 
+                Title: sectionCQ.Find("h3").TextTrimDecode(),
+                Faqs: sectionCQ.Find("[data-testid='accordion-item']"),
                 TopQuestions: sectionCQ.Find("[data-testid='list-item']")))
             .Where(section => section.Title.IsNotNullOrWhiteSpace() && (section.Faqs.Any() || section.TopQuestions.Any()))
             .ToDictionary(
