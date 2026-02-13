@@ -13,7 +13,7 @@ internal static class PageHelper
 
     internal static readonly TimeSpan DefaultNetworkWait = TimeSpan.FromSeconds(1);
 
-    internal static readonly TimeSpan DefaultPageWait = TimeSpan.FromSeconds(120);
+    internal static readonly TimeSpan DefaultErrorWait = TimeSpan.FromSeconds(120);
 
     internal static readonly TimeSpan DefaultDomWait = TimeSpan.FromMilliseconds(100);
 

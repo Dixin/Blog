@@ -66,7 +66,7 @@ internal class PlayWrightWrapper : IAsyncDisposable
     internal async Task<IPage> RestartAsync(TimeSpan? wait = null, string initialUrl = "", CancellationToken cancellationToken = default)
     {
         await this.DisposeAsync();
-        await Task.Delay(wait ??= PageHelper.DefaultPageWait, cancellationToken);
+        await Task.Delay(wait ??= PageHelper.DefaultErrorWait, cancellationToken);
         return await this.InitializeAsync(initialUrl);
     }
 
