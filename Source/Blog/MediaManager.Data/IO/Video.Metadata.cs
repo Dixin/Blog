@@ -285,6 +285,7 @@ internal static partial class Video
         const string Connections = nameof(Connections);
         const string CrazyCredits = nameof(CrazyCredits);
         const string Credits = nameof(Credits);
+        const string Faqs = nameof(Faqs);
         const string Goofs = nameof(Goofs);
         const string Keywords = nameof(Keywords);
         const string Locations = nameof(Locations);
@@ -292,6 +293,7 @@ internal static partial class Video
         const string Releases = nameof(Releases);
         const string Sites = nameof(Sites);
         const string Soundtracks = nameof(Soundtracks);
+        const string Taglines = nameof(Taglines);
         const string Trivia = nameof(Trivia);
         const string Versions = nameof(Versions);
 
@@ -302,6 +304,7 @@ internal static partial class Video
         string connectionsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Connections}{ImdbCacheExtension}");
         string crazyCreditsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{CrazyCredits}{ImdbCacheExtension}");
         string creditsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Credits}{ImdbCacheExtension}");
+        string faqsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Faqs}{ImdbCacheExtension}");
         string goofsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Goofs}{ImdbCacheExtension}");
         string keywordsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Keywords}{ImdbCacheExtension}");
         string locationsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Locations}{ImdbCacheExtension}");
@@ -309,6 +312,7 @@ internal static partial class Video
         string releasesFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Releases}{ImdbCacheExtension}");
         string sitesFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Sites}{ImdbCacheExtension}");
         string soundtracksFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Soundtracks}{ImdbCacheExtension}");
+        string taglinesFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Taglines}{ImdbCacheExtension}");
         string triviaFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Trivia}{ImdbCacheExtension}");
         string versionsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Versions}{ImdbCacheExtension}");
 
@@ -341,6 +345,7 @@ internal static partial class Video
         string parentConnectionsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{Connections}{ImdbCacheExtension}");
         string parentCrazyCreditsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{CrazyCredits}{ImdbCacheExtension}");
         string parentCreditsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{Credits}{ImdbCacheExtension}");
+        string parentFaqsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{Faqs}{ImdbCacheExtension}");
         string parentGoofsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{Goofs}{ImdbCacheExtension}");
         string parentKeywordsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{Keywords}{ImdbCacheExtension}");
         string parentLocationsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{Locations}{ImdbCacheExtension}");
@@ -348,6 +353,7 @@ internal static partial class Video
         string parentReleasesFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{Releases}{ImdbCacheExtension}");
         string parentSitesFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{Sites}{ImdbCacheExtension}");
         string parentSoundtracksFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{Soundtracks}{ImdbCacheExtension}");
+        string parentTaglinesFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{Taglines}{ImdbCacheExtension}");
         string parentTriviaFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{Trivia}{ImdbCacheExtension}");
         string parentVersionsFile = Path.Combine(cacheDirectory, $"{imdbId}{Delimiter}{Parent}{Delimiter}{Versions}{ImdbCacheExtension}");
 
@@ -361,6 +367,7 @@ internal static partial class Video
             string connectionsUrl, string connectionsHtml,
             string crazyCreditsUrl, string crazyCreditsHtml,
             string creditsUrl, string creditsHtml,
+            string faqsUrl, string faqsHtml,
             string goofsUrl, string goofsHtml,
             string keywordsUrl, string keywordsHtml,
             string locationsUrl, string locationsHtml,
@@ -368,6 +375,7 @@ internal static partial class Video
             string releasesUrl, string releasesHtml,
             string sitesUrl, string sitesHtml,
             string soundtracksUrl, string soundtracksHtml,
+            string taglinesUrl, string taglinesHtml,
             string triviaUrl, string triviaHtml,
             string versionsUrl, string versionsHtml,
 
@@ -378,6 +386,7 @@ internal static partial class Video
             string parentConnectionsUrl, string parentConnectionsHtml,
             string parentCrazyCreditsUrl, string parentCrazyCreditsHtml,
             string parentCreditsUrl, string parentCreditsHtml,
+            string parentFaqsUrl, string parentFaqsHtml,
             string parentGoofsUrl, string parentGoofsHtml,
             string parentKeywordsUrl, string parentKeywordsHtml,
             string parentLocationsUrl, string parentLocationsHtml,
@@ -385,6 +394,7 @@ internal static partial class Video
             string parentReleasesUrl, string parentReleasesHtml,
             string parentSitesUrl, string parentSitesHtml,
             string parentSoundtracksUrl, string parentSoundtracksHtml,
+            string parentTaglinesUrl, string parentTaglinesHtml,
             string parentTriviaUrl, string parentTriviaHtml,
             string parentVersionsUrl, string parentVersionsHtml
         ) = await Imdb.DownloadAsync(
@@ -397,6 +407,7 @@ internal static partial class Video
             useCache ? connectionsFile : string.Empty,
             useCache ? crazyCreditsFile : string.Empty,
             useCache ? creditsFile : string.Empty,
+            useCache ? faqsFile : string.Empty,
             useCache ? goofsFile : string.Empty,
             useCache ? keywordsFile : string.Empty,
             useCache ? locationsFile : string.Empty,
@@ -404,6 +415,7 @@ internal static partial class Video
             useCache ? releasesFile : string.Empty,
             useCache ? sitesFile : string.Empty,
             useCache ? soundtracksFile : string.Empty,
+            useCache ? taglinesFile : string.Empty,
             useCache ? triviaFile : string.Empty,
             useCache ? versionsFile : string.Empty,
 
@@ -414,6 +426,7 @@ internal static partial class Video
             useCache ? parentConnectionsFile : string.Empty,
             useCache ? parentCrazyCreditsFile : string.Empty,
             useCache ? parentCreditsFile : string.Empty,
+            useCache ? parentFaqsFile : string.Empty,
             useCache ? parentGoofsFile : string.Empty,
             useCache ? parentKeywordsFile : string.Empty,
                 useCache ? parentLocationsFile : string.Empty,
@@ -421,6 +434,7 @@ internal static partial class Video
             useCache ? parentReleasesFile : string.Empty,
             useCache ? parentSitesFile : string.Empty,
             useCache ? parentSoundtracksFile : string.Empty,
+            useCache ? parentTaglinesFile : string.Empty,
             useCache ? parentTriviaFile : string.Empty,
             useCache ? parentVersionsFile : string.Empty,
 
@@ -442,6 +456,7 @@ internal static partial class Video
             connectionsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Connections}{ImdbCacheExtension}");
             crazyCreditsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{CrazyCredits}{ImdbCacheExtension}");
             creditsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Credits}{ImdbCacheExtension}");
+            faqsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Faqs}{ImdbCacheExtension}");
             goofsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Goofs}{ImdbCacheExtension}");
             keywordsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Keywords}{ImdbCacheExtension}");
             locationsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Locations}{ImdbCacheExtension}");
@@ -449,6 +464,7 @@ internal static partial class Video
             releasesFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Releases}{ImdbCacheExtension}");
             soundtracksFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Soundtracks}{ImdbCacheExtension}");
             sitesFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Sites}{ImdbCacheExtension}");
+            taglinesFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Taglines}{ImdbCacheExtension}");
             triviaFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Trivia}{ImdbCacheExtension}");
             versionsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Versions}{ImdbCacheExtension}");
 
@@ -459,6 +475,7 @@ internal static partial class Video
             parentConnectionsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{Connections}{ImdbCacheExtension}");
             parentCrazyCreditsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{CrazyCredits}{ImdbCacheExtension}");
             parentCreditsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{Credits}{ImdbCacheExtension}");
+            parentFaqsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{Faqs}{ImdbCacheExtension}");
             parentGoofsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{Goofs}{ImdbCacheExtension}");
             parentKeywordsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{Keywords}{ImdbCacheExtension}");
             parentLocationsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{Locations}{ImdbCacheExtension}");
@@ -466,6 +483,7 @@ internal static partial class Video
             parentReleasesFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{Releases}{ImdbCacheExtension}");
             parentSitesFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{Sites}{ImdbCacheExtension}");
             parentSoundtracksFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{Soundtracks}{ImdbCacheExtension}");
+            parentTaglinesFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{Taglines}{ImdbCacheExtension}");
             parentTriviaFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{Trivia}{ImdbCacheExtension}");
             parentVersionsFile = Path.Combine(cacheDirectory, $"{imdbMetadata.ImdbId}{Delimiter}{Parent}{Delimiter}{Versions}{ImdbCacheExtension}");
         }
@@ -480,6 +498,7 @@ internal static partial class Video
                 (connectionsUrl, connectionsFile, connectionsHtml),
                 (crazyCreditsUrl, crazyCreditsFile, crazyCreditsHtml),
                 (creditsUrl, creditsFile, creditsHtml),
+                (faqsUrl, faqsFile, faqsHtml),
                 (goofsUrl, goofsFile, goofsHtml),
                 (keywordsUrl, keywordsFile, keywordsHtml),
                 (locationsUrl, locationsFile, locationsHtml),
@@ -487,6 +506,7 @@ internal static partial class Video
                 (releasesUrl, releasesFile, releasesHtml),
                 (sitesUrl, sitesFile, sitesHtml),
                 (soundtracksUrl, soundtracksFile, soundtracksHtml),
+                (taglinesUrl, taglinesFile, taglinesHtml),
                 (triviaUrl, triviaFile, triviaHtml),
                 (versionsUrl, versionsFile, versionsHtml),
 
@@ -497,6 +517,7 @@ internal static partial class Video
                 (parentConnectionsUrl, parentConnectionsFile, parentConnectionsHtml),
                 (parentCrazyCreditsUrl, parentCrazyCreditsFile, parentCrazyCreditsHtml),
                 (parentCreditsUrl, parentCreditsFile, parentCreditsHtml),
+                (parentFaqsUrl, parentFaqsFile, parentFaqsHtml),
                 (parentGoofsUrl, parentGoofsFile, parentGoofsHtml),
                 (parentKeywordsUrl, parentKeywordsFile, parentKeywordsHtml),
                 (parentLocationsUrl, parentLocationsFile, parentLocationsHtml),
@@ -504,6 +525,7 @@ internal static partial class Video
                 (parentReleasesUrl, parentReleasesFile, parentReleasesHtml),
                 (parentSitesUrl, parentSitesFile, parentSitesHtml),
                 (parentSoundtracksUrl, parentSoundtracksFile, parentSoundtracksHtml),
+                (parentTaglinesUrl, parentTaglinesFile, parentTaglinesHtml),
                 (parentTriviaUrl, parentTriviaFile, parentTriviaHtml),
                 (parentVersionsUrl, parentVersionsFile, parentVersionsHtml)
             }
@@ -529,7 +551,7 @@ internal static partial class Video
                     FileHelper.Recycle(jsonFile);
                 }
 
-                log($"Merged {imdbUrl}, {advisoriesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {goofsUrl}, {keywordsUrl}, {quotesUrl}, {releasesUrl}, {soundtracksUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile.EscapeMarkup()}.");
+                log($"Merged {imdbUrl}, {advisoriesUrl}, {companiesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {faqsUrl}, {goofsUrl}, {keywordsUrl}, {locationsUrl}, {quotesUrl}, {releasesUrl}, {sitesUrl}, {soundtracksUrl}, {taglinesUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile.EscapeMarkup()}.");
                 try { }
                 finally
                 {
@@ -558,7 +580,7 @@ internal static partial class Video
                 FileHelper.Recycle(jsonFile);
             }
 
-            log($"Merged {imdbUrl}, {advisoriesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {goofsUrl}, {keywordsUrl}, {quotesUrl}, {releasesUrl}, {soundtracksUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile.EscapeMarkup()}.");
+            log($"Merged {imdbUrl}, {advisoriesUrl}, {companiesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {faqsUrl}, {goofsUrl}, {keywordsUrl}, {locationsUrl}, {quotesUrl}, {releasesUrl}, {sitesUrl}, {soundtracksUrl}, {taglinesUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile.EscapeMarkup()}.");
             try { }
             finally
             {

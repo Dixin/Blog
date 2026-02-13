@@ -151,11 +151,16 @@ public partial record ImdbMetadata(
     string[] AlternateVersions,
     string[][] Soundtracks,
     Dictionary<string, string[]> BoxOffice,
-    Dictionary<string, string[]> TechSpecs,
+    Dictionary<string, string[][]> TechSpecs,
     string[] Awards,
     ImdbAwards[] AllAwards,
     Dictionary<string, string[][]> Details,
+    Dictionary<string, string[][]> Companies,
+    Dictionary<string, string[][]> Locations,
+    Dictionary<string, string[][]> Sites,
+    Dictionary<string, string[][]> Faqs,
     string Tagline,
+    string[] Taglines,
     string AlternateName = "", string Description = "", string Year = "", string DatePublished = "", string ContentRating = "", string Keywords = ""
 ) : ImdbEntity(Type, Name, Url)
 {

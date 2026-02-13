@@ -150,12 +150,13 @@ internal static class PageHelper
         locatorCount.ThrowIfNotPositive();
 
         ILocator locator;
+        int actualCount;
         long startingTimestamp = Stopwatch.GetTimestamp();
-        while (await (locator = locatorFactory()).CountAsync() != locatorCount)
+        while ((actualCount = await (locator = locatorFactory()).CountAsync()) != locatorCount)
         {
             if (Stopwatch.GetElapsedTime(startingTimestamp) > DefaultManualWait)
             {
-                throw new TimeoutException($"Waiting for {locator} to be loaded timed out.");
+                throw new TimeoutException($"Waiting for {locator} to be loaded timed out, {locatorCount} is expected, actually {actualCount}.");
             }
 
             await Task.Delay(DefaultDomWait, cancellationToken);
