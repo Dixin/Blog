@@ -183,14 +183,21 @@ internal static partial class Video
     }
 
     internal static async Task DownloadImdbMetadataAsync(
-        string directory, int level = DefaultDirectoryLevel, bool overwrite = false, bool useCache = false,
-        bool useBrowser = false, int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
+        string directory, int level = DefaultDirectoryLevel, 
+        bool overwrite = false, bool useCache = false, bool useBrowser = false, 
+        int? degreeOfParallelism = null, Func<int, Range>? getRange = null, Func<string, HashSet<string>, string>? resolveImdbIdConflict = null, 
+        Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         degreeOfParallelism ??= Imdb.MaxDegreeOfParallelism;
         log ??= Logger.WriteLine;
 
         CancellationTokenSource cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         ConcurrentQueue<string> movies = new(EnumerateDirectories(directory, level));
+        if (getRange is not null)
+        {
+            movies = new(movies.Take(getRange(movies.Count)));
+        }
+
         int totalCountToDownload = movies.Count;
         Lock @lock = new();
         await Retry.FixedIntervalAsync(
@@ -206,7 +213,7 @@ internal static partial class Video
                             log($"[yellow]{movieIndex * 100 / totalCountToDownload}% - {movieIndex}/{totalCountToDownload}[/] - [green]{movie.EscapeMarkup()}[/]");
 
                             if (!await Retry.FixedIntervalAsync(
-                                async () => await DownloadImdbMetadataAsync(movie, playWrightWrapper, @lock, overwrite, useCache, log, token),
+                                async () => await DownloadImdbMetadataAsync(movie, playWrightWrapper, @lock, overwrite, useCache, resolveImdbIdConflict, log, token),
                                 cancellationToken: token))
                             {
                                 Interlocked.Decrement(ref totalCountToDownload);

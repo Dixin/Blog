@@ -214,7 +214,10 @@ internal static partial class Video
         });
     }
 
-    private static async Task<bool> DownloadImdbMetadataAsync(string directory, PlayWrightWrapper? playWrightWrapper, Lock? @lock = null, bool overwrite = false, bool useCache = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    private static async Task<bool> DownloadImdbMetadataAsync(
+        string directory, PlayWrightWrapper? playWrightWrapper, Lock? @lock = null,
+        bool overwrite = false, bool useCache = false, Func<string, HashSet<string>, string>? resolveImdbIdConflict = null,
+        Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
@@ -240,22 +243,34 @@ internal static partial class Video
                 .Select(file => file.TryLoadNfoImdbId(out string? nfoImdbId) ? nfoImdbId : string.Empty)
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
-            if (nfoImdbIds.Length == 0)
+            switch (nfoImdbIds.Length)
             {
-                log($"!No JSON or XML metadata in {directory}.");
-                return false;
-            }
+                case 0:
+                {
+                    log($"!No JSON or XML metadata in {directory}.");
+                    return false;
+                }
+                case > 1:
+                {
+                    log($"[red]!Inconsistent IMDB ids {string.Join(", ", nfoImdbIds)} in {directory.EscapeMarkup()}.[/]");
+                    if (resolveImdbIdConflict is null)
+                    {
+                        return false;
+                    }
 
-            if (nfoImdbIds.Length > 1)
-            {
-                log($"[red]!Inconsistent IMDB ids {string.Join(", ", nfoImdbIds)} in {directory.EscapeMarkup()}.[/]");
-                return false;
-            }
+                    imdbId = resolveImdbIdConflict(directory, files);
+                    break;
+                }
+                default:
+                {
+                    imdbId = nfoImdbIds.Single();
+                    if (!imdbId.IsImdbId())
+                    {
+                        imdbId = NotExistingFlag;
+                    }
 
-            imdbId = nfoImdbIds.Single();
-            if (!imdbId.IsImdbId())
-            {
-                imdbId = NotExistingFlag;
+                    break;
+                }
             }
         }
 
@@ -596,7 +611,8 @@ internal static partial class Video
 
     internal static async Task DownloadImdbMetadataAsync(
         (string directory, int level)[] directories, Func<VideoDirectoryInfo, bool> predicate,
-        bool overwrite = false, bool useCache = false, bool useBrowser = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+        bool overwrite = false, bool useCache = false, bool useBrowser = false, Func<string, HashSet<string>, string>? resolveImdbIdConflict = null,
+        Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         string[] movies = directories
             .SelectMany(directory => EnumerateDirectories(directory.directory, directory.level))
@@ -606,7 +622,9 @@ internal static partial class Video
         {
             await using PlayWrightWrapper playWrightWrapper = new("https://www.imdb.com/");
             Lock @lock = new();
-            await movies.ForEachAsync(async movie => await DownloadImdbMetadataAsync(movie, playWrightWrapper, @lock, overwrite, useCache, log, cancellationToken), cancellationToken);
+            await movies.ForEachAsync(
+                async movie => await DownloadImdbMetadataAsync(movie, playWrightWrapper, @lock, overwrite, useCache, resolveImdbIdConflict, log, cancellationToken),
+                cancellationToken);
         }
     }
 
@@ -1247,7 +1265,10 @@ internal static partial class Video
             .OrderBy(array => array[0].movie)
             .ToArray();
         log($"{groups.Length} to sync.");
-        groups.Select(group=>group.First().movie.EscapeMarkup()).Append(string.Empty).ForEach(log);
+        groups
+            .Select(group => group.First().movie.EscapeMarkup())
+            .Append(string.Empty)
+            .ForEach(log);
 
         groups.ForEach(array =>
         {
