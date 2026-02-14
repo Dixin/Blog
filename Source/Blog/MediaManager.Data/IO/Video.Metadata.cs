@@ -247,7 +247,7 @@ internal static partial class Video
             {
                 case 0:
                 {
-                    log($"!No JSON or XML metadata in {directory}.");
+                    log($"!No JSON or XML metadata in {directory.EscapeMarkup()}.");
                     return false;
                 }
                 case > 1:
