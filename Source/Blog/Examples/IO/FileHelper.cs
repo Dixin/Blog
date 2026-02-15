@@ -1,7 +1,6 @@
 namespace Examples.IO;
 
 using System.Buffers;
-using System.Threading;
 using Examples.Common;
 using Microsoft.VisualBasic.FileIO;
 using SearchOption = System.IO.SearchOption;
