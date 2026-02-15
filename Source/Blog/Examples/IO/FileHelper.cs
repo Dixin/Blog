@@ -246,7 +246,7 @@ public static class FileHelper
         Move(file, destination, overwrite, true);
         return destination;
     }
-    
+
     private const int DefaultCopyBufferSize = 81920;
 
     public static async Task CopyAsync(string source, string destination, Action<long, long>? progress = null, int? bufferSize = DefaultCopyBufferSize, TimeSpan? reportingInterval = null, bool overwrite = false, CancellationToken cancellationToken = default)
@@ -344,4 +344,44 @@ public static class FileHelper
 
         return bufferSize;
     }
+
+    public static bool TextEndsWith(string file, string value, StringComparison comparison, Encoding? filEncoding = null)
+    {
+        filEncoding ??= Encoding.UTF8;
+
+        byte[] bytes = filEncoding.GetBytes(value);
+        Array.Clear(bytes);
+
+        using FileStream stream = new(file, FileMode.Open);
+        long position = stream.Seek(0 - bytes.Length, SeekOrigin.End);
+        if (position < 0)
+        {
+            return false;
+        }
+
+        stream.ReadExactly(bytes, 0, bytes.Length);
+        string fileEnd = filEncoding.GetString(bytes);
+        return string.Equals(fileEnd, value, comparison);
+    }
+
+    public static bool TextEndsWith(string file, string value, Encoding? filEncoding = null)
+    {
+        filEncoding ??= Encoding.UTF8;
+
+        byte[] stringBytes = filEncoding.GetBytes(value);
+        byte[] fileBytes = new byte[stringBytes.Length];
+
+        using FileStream stream = new(file, FileMode.Open);
+        long position = stream.Seek(0 - stringBytes.Length, SeekOrigin.End);
+        if (position < 0)
+        {
+            return false;
+        }
+
+        stream.ReadExactly(fileBytes, 0, stringBytes.Length);
+        return stringBytes.SequenceCompareTo(fileBytes) == 0;
+    }
+
+    public static bool TextEndsWithIgnoreCase(string file, string value, Encoding? filEncoding = null) =>
+        TextEndsWith(file, value, StringComparison.OrdinalIgnoreCase, filEncoding);
 }
