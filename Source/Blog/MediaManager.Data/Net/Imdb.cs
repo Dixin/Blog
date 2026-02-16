@@ -8,7 +8,6 @@ using Examples.Net;
 using MediaManager.IO;
 using Microsoft.Playwright;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
-using OpenQA.Selenium;
 using Spectre.Console;
 
 internal static partial class Imdb
@@ -31,9 +30,9 @@ internal static partial class Imdb
         await Retry.FixedIntervalAsync(
             func: async () =>
             {
-                await page.ClickOrPressAsync("button", new PageLocatorOptions() { HasText = "Don't prompt me" }, HasAjaxError, cancellationToken);
+                await page.ClickOrPressAsync("button", new PageLocatorOptions() { HasText = "Don't prompt me" }, HasAjaxError, cancellationToken: cancellationToken);
 
-                int spoilerButtonCount = await page.ClickOrPressAsync(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SpoilersRegex(), Exact = true }, HasAjaxError, cancellationToken);
+                int spoilerButtonCount = await page.ClickOrPressAsync(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SpoilersRegex(), Exact = true }, HasAjaxError, cancellationToken: cancellationToken);
                 log($"{spoilerButtonCount} Spoiler buttons are found.");
                 if (spoilerButtonCount > 0)
                 {
@@ -51,7 +50,7 @@ internal static partial class Imdb
 
                 ILocator seeMoreButtons = page.GetByRole(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreRegex(), Exact = true });
                 int targetSeeMoreButtonsCount = await seeMoreButtons.CountAsync();
-                int seeAllButtonsCount = await page.ClickOrPressAsync(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeAllRegex(), Exact = true }, HasAjaxError, cancellationToken);
+                int seeAllButtonsCount = await page.ClickOrPressAsync(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeAllRegex(), Exact = true }, HasAjaxError, cancellationToken: cancellationToken);
                 log($"{seeAllButtonsCount} See all buttons are found.");
                 if (seeAllButtonsCount > 0)
                 {
@@ -73,7 +72,7 @@ internal static partial class Imdb
                 if (targetSeeMoreButtonsCount > 0)
                 {
                     await page.WaitForCountAsync(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreRegex() }, targetSeeMoreButtonsCount, cancellationToken);
-                    int actualSeeMoreButtonCount = await page.ClickOrPressAsync(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreRegex() }, HasAjaxError, cancellationToken);
+                    int actualSeeMoreButtonCount = await page.ClickOrPressAsync(AriaRole.Button, new PageGetByRoleOptions() { NameRegex = SeeMoreRegex() }, HasAjaxError, cancellationToken: cancellationToken);
                     Debug.Assert(targetSeeMoreButtonsCount == actualSeeMoreButtonCount);
 
                     isUpdated = true;

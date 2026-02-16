@@ -17,7 +17,7 @@ internal static class PageHelper
 
     internal static readonly TimeSpan DefaultDomWait = TimeSpan.FromMilliseconds(100);
 
-    internal static async Task<string> GetStringAsync(this IPage page, string url, string selector, PageGotoOptions? options = null, CancellationToken cancellationToken = default) =>
+    internal static async Task<string> GetStringAsync(this IPage page, string url, string selector = "", PageGotoOptions? options = null, CancellationToken cancellationToken = default) =>
         await Retry.FixedIntervalAsync(
             async () =>
             {
@@ -166,7 +166,7 @@ internal static class PageHelper
         return locator;
     }
 
-    private static async Task<int> ClickOrPressAsync(Func<ILocator> locatorFactory, Func<ValueTask<Exception?>>? error = null, CancellationToken cancellationToken = default)
+    private static async Task<int> ClickOrPressAsync(Func<ILocator> locatorFactory, Func<ValueTask<Exception?>>? error = null, Func<ILocator>? unload = null, CancellationToken cancellationToken = default)
     {
         IReadOnlyList<ILocator> locators = await locatorFactory().AllAsync();
         if (locators.Count > 0)
@@ -185,7 +185,7 @@ internal static class PageHelper
                 },
                 cancellationToken);
 
-            await WaitForNoneAsync(locatorFactory, error, cancellationToken);
+            await WaitForNoneAsync(unload ?? locatorFactory, error, cancellationToken);
         }
 
         return locators.Count;
@@ -209,9 +209,9 @@ internal static class PageHelper
     internal static async Task<ILocator> WaitForCountAsync(this IPage page, Regex text, PageGetByTextOptions? options = null, int locatorCount = 0, CancellationToken cancellationToken = default) =>
         await WaitForCountAsync(() => page.GetByText(text, options), locatorCount, cancellationToken);
 
-    internal static async Task<int> ClickOrPressAsync(this IPage page, string selector, PageLocatorOptions? options = null, Func<ValueTask<Exception?>>? error = null, CancellationToken cancellationToken = default) =>
-        await ClickOrPressAsync(() => page.Locator(selector, options), error, cancellationToken);
+    internal static async Task<int> ClickOrPressAsync(this IPage page, string selector, PageLocatorOptions? options = null, Func<ValueTask<Exception?>>? error = null, Func<ILocator>? unload = null, CancellationToken cancellationToken = default) =>
+        await ClickOrPressAsync(() => page.Locator(selector, options), error, unload, cancellationToken);
 
-    internal static async Task<int> ClickOrPressAsync(this IPage page, AriaRole ariaRole, PageGetByRoleOptions? options = null, Func<ValueTask<Exception?>>? error = null, CancellationToken cancellationToken = default) =>
-        await ClickOrPressAsync(() => page.GetByRole(ariaRole, options), error, cancellationToken);
+    internal static async Task<int> ClickOrPressAsync(this IPage page, AriaRole ariaRole, PageGetByRoleOptions? options = null, Func<ValueTask<Exception?>>? error = null, Func<ILocator>? unload = null, CancellationToken cancellationToken = default) =>
+        await ClickOrPressAsync(() => page.GetByRole(ariaRole, options), error, unload, cancellationToken);
 }

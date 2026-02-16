@@ -107,7 +107,7 @@ public static class StringExtensions
         }
     }
 
-    public static string GetUrlPath(this string url) => new Uri(url, UriKind.Absolute).GetLeftPart(UriPartial.Path);
+    public static string GetUrlPath(this string url) => new Uri(url).GetLeftPart(UriPartial.Path);
 
     public static string TrimDecode(this string value) => HttpUtility.HtmlDecode(value.Trim());
 }

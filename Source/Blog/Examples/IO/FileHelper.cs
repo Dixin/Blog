@@ -383,4 +383,44 @@ public static class FileHelper
 
     public static bool TextEndsWithIgnoreCase(string file, string value, Encoding? filEncoding = null) =>
         TextEndsWith(file, value, StringComparison.OrdinalIgnoreCase, filEncoding);
+
+    public static async Task<bool> TextEndsWithAsync(string file, string value, StringComparison comparison, Encoding? filEncoding = null, CancellationToken cancellation = default)
+    {
+        filEncoding ??= Encoding.UTF8;
+
+        byte[] bytes = filEncoding.GetBytes(value);
+        Array.Clear(bytes);
+
+        using FileStream stream = new(file, FileMode.Open);
+        long position = stream.Seek(0 - bytes.Length, SeekOrigin.End);
+        if (position < 0)
+        {
+            return false;
+        }
+
+        await stream.ReadExactlyAsync(bytes, 0, bytes.Length, cancellation);
+        string fileEnd = filEncoding.GetString(bytes);
+        return string.Equals(fileEnd, value, comparison);
+    }
+
+    public static async Task<bool> TextEndsWithAsync(string file, string value, Encoding? filEncoding = null, CancellationToken cancellationToken = default)
+    {
+        filEncoding ??= Encoding.UTF8;
+
+        byte[] stringBytes = filEncoding.GetBytes(value);
+        byte[] fileBytes = new byte[stringBytes.Length];
+
+        using FileStream stream = new(file, FileMode.Open);
+        long position = stream.Seek(0 - stringBytes.Length, SeekOrigin.End);
+        if (position < 0)
+        {
+            return false;
+        }
+
+        await stream.ReadExactlyAsync(fileBytes, 0, stringBytes.Length, cancellationToken);
+        return stringBytes.SequenceCompareTo(fileBytes) == 0;
+    }
+
+    public static async Task<bool> TextEndsWithIgnoreCaseAsync(string file, string value, Encoding? filEncoding = null, CancellationToken cancellationToken = default) =>
+        await TextEndsWithAsync(file, value, StringComparison.OrdinalIgnoreCase, filEncoding, cancellationToken);
 }
