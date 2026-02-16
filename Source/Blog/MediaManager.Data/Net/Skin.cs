@@ -6,6 +6,7 @@ using Examples.IO;
 using Examples.Linq;
 using MediaManager.IO;
 using Microsoft.Playwright;
+using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 internal static class Skin
 {
@@ -60,9 +61,42 @@ internal static class Skin
         log ??= Logger.WriteLine;
         string skinMetadataCacheDirectory = @"D:\Files\Library\SkinMetadataCache";
         string skinMetadataDirectory = @"D:\Files\Library\SkinMetadata";
-        string detailsFile = @"D:\Files\Library\Skin.Details.json";
-
         summaries ??= await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, SkinSummary>>(@"D:\Files\Library\Skin.Summary.json", cancellationToken);
+
+        Dictionary<string, string> cacheFiles = Directory
+            .EnumerateFiles(skinMetadataCacheDirectory)
+            .ToDictionary(file => $"/{PathHelper.GetFileNameWithoutExtension(file)}");
+        ConcurrentQueue<string> urls = new(summaries.Keys.Except(cacheFiles.Keys));
+        await Enumerable
+            .Range(0, MaxDegreeOfParallelism)
+            .ParallelForEachAsync(async (index, _, token) =>
+                {
+                    await using PlayWrightWrapper playWrightWrapper = new();
+                    IPage page = await playWrightWrapper.PageAsync();
+                    while (urls.TryDequeue(out string? url))
+                    {
+                        string html = await Retry.FixedIntervalAsync(
+                            async () => await page.GetStringAsync($"https://www.mrskin.com{url}", "#titleShowView", cancellationToken: token), 
+                            cancellationToken: token);
+                        try { }
+                        finally
+                        {
+                            await File.WriteAllTextAsync(Path.Combine(skinMetadataCacheDirectory, $"{url.Trim('/')}{Video.ImdbCacheExtension}"), html, token);
+                        }
+                    }
+                },
+                MaxDegreeOfParallelism,
+                cancellationToken);
+    }
+
+    internal static async Task DownloadMemberDetails(ISettings settings, ConcurrentDictionary<string, SkinSummary>? summaries = null, bool useCache = true, Action<string>? log = null, CancellationToken cancellationToken = default)
+    {
+        log ??= Logger.WriteLine;
+        string skinMetadataCacheDirectory = @"D:\Files\Library\SkinMetadataCache";
+        string skinMetadataDirectory = @"D:\Files\Library\SkinMetadata";
+        string detailsFile = @"D:\Files\Library\Skin.Details.json";
+        summaries ??= await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, SkinSummary>>(@"D:\Files\Library\Skin.Summary.json", cancellationToken);
+
         ConcurrentDictionary<string, SkinMetadata> details = File.Exists(detailsFile)
             ? await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, SkinMetadata>>(detailsFile, cancellationToken)
             : [];
