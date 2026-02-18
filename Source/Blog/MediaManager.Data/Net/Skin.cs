@@ -29,7 +29,8 @@ internal static class Skin
         ConcurrentQueue<int> pageIndexes = new(Enumerable.Range(1, 1330));
         ConcurrentDictionary<string, SkinSummary> summaries = [];
         await Enumerable.Range(0, MaxDegreeOfParallelism)
-            .ParallelForEachAsync(async (index, _, token) =>
+            .ParallelForEachAsync(
+                async (index, _, token) =>
                 {
                     await using PlayWrightWrapper playWrightWrapper = new();
                     IPage page = await playWrightWrapper.PageAsync();
@@ -75,7 +76,8 @@ internal static class Skin
         ConcurrentQueue<string> urls = new(summaries.Keys.Except(cacheFiles.Keys));
         await Enumerable
             .Range(0, MaxDegreeOfParallelism)
-            .ParallelForEachAsync(async (index, _, token) =>
+            .ParallelForEachAsync(
+                async (index, _, token) =>
                 {
                     await using PlayWrightWrapper playWrightWrapper = new();
                     IPage page = await playWrightWrapper.PageAsync();
@@ -110,7 +112,8 @@ internal static class Skin
         int downloadedCount = 0;
         await Enumerable
             .Range(0, MaxDegreeOfParallelism)
-            .ParallelForEachAsync(async (index, _, token) =>
+            .ParallelForEachAsync(
+                async (index, _, token) =>
                 {
                     await using PlayWrightWrapper playWrightWrapper = new();
                     while (urls.TryDequeue(out string? url))
@@ -209,46 +212,46 @@ internal static class Skin
         SkinPicture[] pictures = clipsCQ.Find("#pics_tab").IsEmpty()
             ? []
             : (await GetHtmlAsync(picturesUrl, picturesFile, cacheFiles, useCache, playWrightWrapper, "#pics .thumbnails", cancellationToken: cancellationToken))
-            .Select(html =>
-            {
-                CQ pageCQ = CQ.CreateDocument(html);
-                CQ thumbnailsCQ = pageCQ.Find(".tab-content .thumbnails");
-                CQ advertisementCQ = thumbnailsCQ.Children(".col-xs-12");
-                Debug.Assert(advertisementCQ.Length is 0 or 1);
-                advertisementCQ.Remove();
+                .Select(html =>
+                {
+                    CQ pageCQ = CQ.CreateDocument(html);
+                    CQ thumbnailsCQ = pageCQ.Find(".tab-content .thumbnails");
+                    CQ advertisementCQ = thumbnailsCQ.Children(".col-xs-12");
+                    Debug.Assert(advertisementCQ.Length is 0 or 1);
+                    advertisementCQ.Remove();
 
-                return thumbnailsCQ
-                    .Find(".thumbnail")
-                    .Select(thumbnailDom =>
-                    {
-                        CQ thumbnailCQ = thumbnailDom.Cq();
-                        CQ mediaCQ = thumbnailCQ.Find("a.media-item:eq(0)");
-                        string title = (string)mediaCQ.Data("modal-title-name");
-                        Debug.Assert(title.IsNotNullOrWhiteSpace());
-                        string url = mediaCQ.Attr("href");
-                        Debug.Assert(url.IsNotNullOrWhiteSpace());
-                        string image = thumbnailCQ.Find("img").Attr("src");
-                        Debug.Assert(image.IsNotNullOrWhiteSpace());
-                        Dictionary<string, string> names = thumbnailCQ
-                            .Find(".title a")
-                            .Select(linkDom => linkDom.Cq())
-                            .ToDictionary(linkCQ => linkCQ.Attr("href"), linkCQ => linkCQ.TextTrimDecode());
-                        Debug.Assert(names.Any());
-                        string @as = thumbnailCQ.Find(".role-type").TextTrimDecode();
-                        Debug.Assert(@as.StartsWithIgnoreCase("- As "));
-                        @as = @as.ReplaceIgnoreCase("- As ", string.Empty);
-                        string level = thumbnailCQ.Find(".scene-keywords span:eq(0)").TextTrimDecode();
-                        Debug.Assert(level.IsNotNullOrWhiteSpace());
-                        string[] keywords = thumbnailCQ
-                            .Find(".scene-keywords span:eq(1)")
-                            .TextTrimDecode()
-                            .Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                        Debug.Assert(keywords.Any());
-                        return new SkinPicture(title, url, image, names, @as, level, keywords);
-                    });
-            })
-            .Concat()
-            .ToArray();
+                    return thumbnailsCQ
+                        .Find(".thumbnail")
+                        .Select(thumbnailDom =>
+                        {
+                            CQ thumbnailCQ = thumbnailDom.Cq();
+                            CQ mediaCQ = thumbnailCQ.Find("a.media-item:eq(0)");
+                            string title = (string)mediaCQ.Data("modal-title-name");
+                            Debug.Assert(title.IsNotNullOrWhiteSpace());
+                            string url = mediaCQ.Attr("href");
+                            Debug.Assert(url.IsNotNullOrWhiteSpace());
+                            string image = thumbnailCQ.Find("img").Attr("src");
+                            Debug.Assert(image.IsNotNullOrWhiteSpace());
+                            Dictionary<string, string> names = thumbnailCQ
+                                .Find(".title a")
+                                .Select(linkDom => linkDom.Cq())
+                                .ToDictionary(linkCQ => linkCQ.Attr("href"), linkCQ => linkCQ.TextTrimDecode());
+                            Debug.Assert(names.Any());
+                            string @as = thumbnailCQ.Find(".role-type").TextTrimDecode();
+                            Debug.Assert(@as.StartsWithIgnoreCase("- As "));
+                            @as = @as.ReplaceIgnoreCase("- As ", string.Empty);
+                            string level = thumbnailCQ.Find(".scene-keywords span:eq(0)").TextTrimDecode();
+                            Debug.Assert(level.IsNotNullOrWhiteSpace());
+                            string[] keywords = thumbnailCQ
+                                .Find(".scene-keywords span:eq(1)")
+                                .TextTrimDecode()
+                                .Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+                            Debug.Assert(keywords.Any());
+                            return new SkinPicture(title, url, image, names, @as, level, keywords);
+                        });
+                })
+                .Concat()
+                .ToArray();
 
         string celebratesUrl = $"https://www.mrskin.com{url}/celebs";
         string celebratesFile = Path.Combine(MetadataCacheDirectory, $"{fileName}.Celebrates{Video.ImdbCacheExtension}");
@@ -263,7 +266,7 @@ internal static class Skin
                 "#appearances",
                 async page => await page.ClickOrPressAsync("button.drawer-toggle", unload: () => page.Locator(".loading-icon"), cancellationToken: cancellationToken),
                 cancellationToken))
-            .Select(html => CQ.CreateDocument(html)
+                .Select(html => CQ.CreateDocument(html)
                 .Find(".tab-content .media-drawer")
                 .Select(celebrateDom =>
                 {
@@ -344,7 +347,7 @@ internal static class Skin
         SkinCelebrateScenes[] celebrateScenes = clipsCQ.Find("#nude_scene_guide_tab").IsEmpty()
             ? []
             : (await GetHtmlAsync(celebrateScenesUrl, celebrateScenesFile, cacheFiles, useCache, playWrightWrapper, "#nude_scene_guide", cancellationToken: cancellationToken))
-            .Select(html => CQ.CreateDocument(html)
+                .Select(html => CQ.CreateDocument(html)
                 .Find(".tab-content .nude-scene-content-group")
                 .Select(celebrateDom =>
                 {
@@ -389,7 +392,7 @@ internal static class Skin
         SkinEpisode[] episodes = clipsCQ.Find("#episode_guide_tab").IsEmpty()
             ? []
             : (await GetHtmlAsync(episodesUrl, episodesFile, cacheFiles, useCache, playWrightWrapper, "#episode_guide", cancellationToken: cancellationToken))
-            .Select(html => CQ.CreateDocument(html)
+                .Select(html => CQ.CreateDocument(html)
                 .Find(".episode-item")
                 .Select(episodeDom =>
                 {
