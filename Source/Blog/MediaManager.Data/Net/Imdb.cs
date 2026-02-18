@@ -1595,6 +1595,6 @@ internal static partial class Imdb
     [GeneratedRegex(@"^\s*Spoilers\s*$", RegexOptions.IgnoreCase)]
     private static partial Regex SpoilersRegex();
 
-    [GeneratedRegex(@"^\s*See all\s*$", RegexOptions.IgnoreCase)]
+    [GeneratedRegex(@"^\s*See all( [0-9]+)?\s*$", RegexOptions.IgnoreCase)]
     private static partial Regex SeeAllRegex();
 }
