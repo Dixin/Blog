@@ -101,8 +101,10 @@ internal record VideoDirectoryInfo(
         TryParse(value, out VideoDirectoryInfo? result) ? result : throw new ArgumentOutOfRangeException(nameof(value), value, "The input is invalid");
 
     internal static IEnumerable<VideoMovieFileInfo> GetMovies(string path) =>
-        Directory
-            .EnumerateFiles(path, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly)
+        GetMovies(Directory.EnumerateFiles(path, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly));
+
+    internal static IEnumerable<VideoMovieFileInfo> GetMovies(IEnumerable<string> files) =>
+        files
             .Where(Video.IsVideo)
             .Select(VideoMovieFileInfo.Parse);
 

@@ -15,7 +15,7 @@ public record ImdbEntity(string Type, string Name, string Url) : ImdbEntry(Type)
 
 public partial record ImdbMinMetadata(
     string Url, string Title, string OriginalTitle,
-    string Type, string Name, string Image, string[]? Genres, 
+    string Type, string Name, string Image, string[]? Genres,
     ImdbAggregateRating? AggregateRating,
     Dictionary<string, string[][]> Details,
     string AlternateName = "", string Year = "", string ContentRating = "") : ImdbEntity(Type, Name, Url)
@@ -39,7 +39,7 @@ public partial record ImdbMinMetadata(
     internal string FormattedContentRating => this.ContentRating.IsNullOrWhiteSpace()
         ? "NA"
         : this.ContentRating.Replace("-", string.Empty).Replace(" ", string.Empty).Replace("/", string.Empty).Replace(":", string.Empty);
-    
+
     [JsonIgnore]
     internal IEnumerable<string> Regions =>
         this.Details.TryGetValue("Countries of origin", out string[][]? regions) || this.Details.TryGetValue("Country of origin", out regions)
@@ -92,11 +92,19 @@ public partial record ImdbMinMetadata
         JsonSerializer.Deserialize<ImdbMinMetadata>(json, ImdbMinMetadataSourceGenerationContext.Deserialization.ImdbMinMetadata)
         ?? throw new InvalidOperationException($"{json} should not be null.");
 
-    internal static ImdbMinMetadata DeserializeFromFile(string file) =>
-        Deserialize(File.ReadAllText(file));
+    internal static ImdbMinMetadata DeserializeFromFile(string file)
+    {
+        using FileStream fileStream = new(file, FileMode.Open, FileAccess.Read);
+        return JsonSerializer.Deserialize<ImdbMinMetadata>(fileStream, ImdbMinMetadataSourceGenerationContext.Deserialization.ImdbMinMetadata)
+            ?? throw new InvalidOperationException($"{file} content should not be null.");
+    }
 
-    public static async Task<ImdbMinMetadata> DeserializeFromFileAsync(string file, CancellationToken cancellationToken = default) =>
-        Deserialize(await File.ReadAllTextAsync(file, cancellationToken));
+    public static async Task<ImdbMinMetadata> DeserializeFromFileAsync(string file, CancellationToken cancellationToken = default)
+    {
+        await using FileStream fileStream = new(file, FileMode.Open, FileAccess.Read);
+        return await JsonSerializer.DeserializeAsync<ImdbMinMetadata>(fileStream, ImdbMinMetadataSourceGenerationContext.Deserialization.ImdbMinMetadata, cancellationToken)
+            ?? throw new InvalidOperationException($"{file} content should not be null.");
+    }
 
     internal static bool TryLoad(string? path, [NotNullWhen(true)] out ImdbMinMetadata? imdbMetadata)
     {

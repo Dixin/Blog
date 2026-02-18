@@ -411,6 +411,7 @@ internal static partial class Video
     internal static void RenameDirectoriesWithImdbMetadata(ISettings settings, string directory, int level = DefaultDirectoryLevel, bool isTV = false, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;
+
         EnumerateDirectories(directory, level)
             .ToArray()
             .ForEach(movie =>
@@ -421,7 +422,15 @@ internal static partial class Video
                     return;
                 }
 
-                if (ImdbMinMetadata.TryLoad(movie, out ImdbMinMetadata? imdbMetadata))
+                string[] files = Directory.GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.TopDirectoryOnly);
+                string jsonFile = files.SingleOrDefault(IsImdbMetadata) ?? string.Empty;
+                if (jsonFile.IsNullOrWhiteSpace())
+                {
+                    log($"Missing JSON: {movie}.");
+                    return;
+                }
+
+                if (ImdbMinMetadata.TryLoad(jsonFile, out ImdbMinMetadata? imdbMetadata))
                 {
                     if (imdbMetadata.Year.IsNotNullOrWhiteSpace())
                     {
@@ -450,7 +459,7 @@ internal static partial class Video
                 }
                 else
                 {
-                    VideoMovieFileInfo[] movies = VideoDirectoryInfo.GetMovies(movie).ToArray();
+                    VideoMovieFileInfo[] movies = VideoDirectoryInfo.GetMovies(files).ToArray();
                     parsed = parsed with
                     {
                         Resolution = VideoDirectoryInfo.GetResolution(movies),

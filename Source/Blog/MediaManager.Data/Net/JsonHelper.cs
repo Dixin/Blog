@@ -2,7 +2,6 @@
 
 using System.Text.Encodings.Web;
 using System.Text.Unicode;
-using Examples.IO;
 using Examples.Text.Json;
 
 internal static class JsonHelper
@@ -32,44 +31,63 @@ internal static class JsonHelper
 
     public static TValue DeserializeFromFile<TValue>(string file)
     {
-        string jsonContent = File.ReadAllText(file);
-        return Deserialize<TValue>(jsonContent);
+        using FileStream fileStream = new(file, FileMode.Open, FileAccess.Read);
+        return JsonSerializer.Deserialize<TValue>(fileStream, DeserializerOptions)
+            ?? throw new InvalidOperationException($"{file} content should not be null.");
     }
 
     public static async Task<TValue> DeserializeFromFileAsync<TValue>(string file, CancellationToken cancellationToken = default)
     {
-        string jsonContent = await File.ReadAllTextAsync(file, cancellationToken);
-        return Deserialize<TValue>(jsonContent);
+        await using FileStream fileStream = new(file, FileMode.Open, FileAccess.Read);
+        return await JsonSerializer.DeserializeAsync<TValue>(fileStream, DeserializerOptions, cancellationToken)
+            ?? throw new InvalidOperationException($"{file} content should not be null.");
     }
 
-    public static TValue DeserializeFromFile<TValue>(string file, TValue @default) =>
-        File.Exists(file)
-            ? DeserializeNullable<TValue>(File.ReadAllText(file)) ?? @default
-            : @default;
+    public static TValue DeserializeFromFile<TValue>(string file, TValue @default)
+    {
+        if (File.Exists(file))
+        {
+            using FileStream fileStream = new(file, FileMode.Open, FileAccess.Read);
+            return JsonSerializer.Deserialize<TValue>(fileStream, DeserializerOptions)
+                ?? @default;
+        }
 
-    public static async Task<TValue> DeserializeFromFileAsync<TValue>(string file, TValue @default, CancellationToken cancellationToken = default) =>
-        File.Exists(file)
-            ? DeserializeNullable<TValue>(await File.ReadAllTextAsync(file, cancellationToken)) ?? @default
-            : @default;
+        return @default;
+    }
+
+    public static async Task<TValue> DeserializeFromFileAsync<TValue>(string file, TValue @default, CancellationToken cancellationToken = default)
+    {
+        if (File.Exists(file))
+        {
+            await using FileStream fileStream = new(file, FileMode.Open, FileAccess.Read);
+            return await JsonSerializer.DeserializeAsync<TValue>(fileStream, DeserializerOptions, cancellationToken)
+                ?? @default;
+        }
+
+        return @default;
+    }
 
     public static string Serialize<TValue>(TValue value) =>
         JsonSerializer.Serialize(value, SerializerOptions);
 
     public static void SerializeToFile<TValue>(TValue value, string file)
     {
-        string jsonContent = Serialize(value);
-        FileHelper.WriteText(file, jsonContent);
+        using FileStream fileStream = new(file, FileMode.OpenOrCreate, FileAccess.Write);
+        JsonSerializer.Serialize(fileStream, value, SerializerOptions);
     }
 
     public static void SerializeToFile<TValue>(TValue value, string file, ref readonly Lock @lock)
     {
-        string jsonContent = Serialize(value);
-        FileHelper.WriteText(file, jsonContent, in @lock);
+        using FileStream fileStream = new(file, FileMode.OpenOrCreate, FileAccess.Write);
+        lock (@lock)
+        {
+            JsonSerializer.Serialize(fileStream, value, SerializerOptions);
+        }
     }
 
     public static async Task SerializeToFileAsync<TValue>(TValue value, string file, CancellationToken cancellationToken = default)
     {
-        string jsonContent = Serialize(value);
-        await FileHelper.WriteTextAsync(file, jsonContent, cancellationToken: cancellationToken);
+        await using FileStream fileStream = new(file, FileMode.OpenOrCreate, FileAccess.Write);
+        await JsonSerializer.SerializeAsync(fileStream, value, SerializerOptions, cancellationToken);
     }
 }
