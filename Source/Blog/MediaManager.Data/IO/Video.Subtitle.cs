@@ -4,8 +4,7 @@ using Examples.Common;
 using Examples.IO;
 using Examples.Linq;
 using Examples.Text;
-using System;
-using System.Linq;
+using Spectre.Console;
 using Ude;
 
 internal static partial class Video
@@ -125,7 +124,7 @@ internal static partial class Video
                     }
 
                     await EncodingHelper.ConvertAsync(encoding, Utf8Encoding, result.File, null, Utf8Bom);
-                    log($"Charset: {result.Charset}, confidence: {result.Confidence}, file {result.File}");
+                    log($"Charset: {result.Charset}, confidence: {result.Confidence}, file {result.File.EscapeMarkup()}");
                 }
                 catch (Exception exception)
                 {
@@ -672,7 +671,7 @@ internal static partial class Video
                         (string Subtitle, string OriginalName, long Length) firstSubtitle = subtitleGroup.Subtitles.First();
                         string destinationFirstSubtitle = Path.Combine(movieGroup.Movie, $"{videoName}.srt");
                         string destinationSecondSubtitle = Path.Combine(movieGroup.Movie, $"{videoName}.eng.srt");
-                        log(firstSubtitle.Subtitle);
+                        log(firstSubtitle.Subtitle.EscapeMarkup());
                         if (!isDryRun)
                         {
                             if (File.Exists(destinationFirstSubtitle))
@@ -719,13 +718,13 @@ internal static partial class Video
                             }
                         }
 
-                        log(destinationFirstSubtitle);
+                        log(destinationFirstSubtitle.EscapeMarkup());
                         log(string.Empty);
 
                         if (subtitleGroup.Subtitles.Length > 1)
                         {
                             (string Subtitle, string OriginalName, long Length) secondSubtitle = subtitleGroup.Subtitles[1];
-                            log(secondSubtitle.Subtitle);
+                            log(secondSubtitle.Subtitle.EscapeMarkup());
                             if (!isDryRun)
                             {
                                 if (File.Exists(destinationSecondSubtitle))
@@ -752,7 +751,7 @@ internal static partial class Video
                                 }
                             }
 
-                            log(destinationSecondSubtitle);
+                            log(destinationSecondSubtitle.EscapeMarkup());
                             log(string.Empty);
                         }
 
@@ -761,14 +760,14 @@ internal static partial class Video
                             .Skip(2)
                             .ForEach(subtitle =>
                             {
-                                log(subtitle.Subtitle);
+                                log(subtitle.Subtitle.EscapeMarkup());
                                 string destinationSubtitle = Path.Combine(subtitleBackupDirectory, $"{videoName}{Delimiter}{subtitle.OriginalName}.srt");
                                 if (!isDryRun)
                                 {
                                     FileHelper.Move(subtitle.Subtitle, destinationSubtitle, false, true);
                                 }
 
-                                log(destinationSubtitle);
+                                log(destinationSubtitle.EscapeMarkup());
                                 log(string.Empty);
                             });
                     }
@@ -776,7 +775,7 @@ internal static partial class Video
                     {
                         (string Subtitle, string OriginalName, long Length) firstSubtitle = subtitleGroup.Subtitles.First();
                         string destinationFirstSubtitle = Path.Combine(movieGroup.Movie, $"{videoName}{Delimiter}{subtitleGroup.Language}.srt");
-                        log(firstSubtitle.Subtitle);
+                        log(firstSubtitle.Subtitle.EscapeMarkup());
                         if (!isDryRun)
                         {
                             if (File.Exists(destinationFirstSubtitle))
@@ -803,7 +802,7 @@ internal static partial class Video
                             }
                         }
 
-                        log(destinationFirstSubtitle);
+                        log(destinationFirstSubtitle.EscapeMarkup());
                         log(string.Empty);
 
                         subtitleGroup
@@ -811,14 +810,14 @@ internal static partial class Video
                             .Skip(1)
                             .ForEach(subtitle =>
                             {
-                                log(subtitle.Subtitle);
+                                log(subtitle.Subtitle.EscapeMarkup());
                                 string destinationSubtitle = Path.Combine(subtitleBackupDirectory, $"{videoName}{Delimiter}{subtitle.OriginalName}.srt");
                                 if (!isDryRun)
                                 {
                                     FileHelper.Move(subtitle.Subtitle, destinationSubtitle, false, true);
                                 }
 
-                                log(destinationSubtitle);
+                                log(destinationSubtitle.EscapeMarkup());
                                 log(string.Empty);
                             });
                     }

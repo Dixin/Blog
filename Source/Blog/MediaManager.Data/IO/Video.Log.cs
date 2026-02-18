@@ -10,6 +10,7 @@ using Examples.Net;
 using MediaManager.Net;
 using Microsoft.Playwright;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+using Spectre.Console;
 
 internal static partial class Video
 {
@@ -51,9 +52,9 @@ internal static partial class Video
         parallelFiles
             .Select((video, index) =>
             {
-                if (!TryReadVideoMetadata(video, out VideoMetadata? videoMetadata, log: message => log($"{index} {message}")))
+                if (!TryReadVideoMetadata(video, out VideoMetadata? videoMetadata, log: message => log($"{index} {message.EscapeMarkup()}")))
                 {
-                    log($"!Failed {video}");
+                    log($"!Failed {video.EscapeMarkup()}");
                 }
 
                 return (video, videoMetadata);
@@ -75,7 +76,7 @@ internal static partial class Video
             .OrderBy(result => result.Video)
             .ForEach(result =>
             {
-                log(result.Error.Message ?? result.Video);
+                log(result.Error.Message ?? result.Video.EscapeMarkup());
                 result.Error.Action?.Invoke(result.Video);
             });
     }
@@ -263,7 +264,7 @@ internal static partial class Video
                 .Select(metadata => (metadata, Movie: PathHelper.GetFileName(PathHelper.GetDirectoryName(metadata))))
                 .OrderBy(metadata => metadata.Movie)
                 .ThenBy(metadata => metadata.metadata)
-                .Select(metadata => $"{metadata.Movie} - {metadata.metadata}")
+                .Select(metadata => $"{metadata.Movie.EscapeMarkup()} - {metadata.metadata.EscapeMarkup()}")
                 .Append(string.Empty)
                 .Prepend(group.Key)
                 .ForEach(log));
@@ -300,7 +301,7 @@ internal static partial class Video
             .ForEach(group => group
                 .OrderBy(metadata => metadata.Movie)
                 .ThenBy(metadata => metadata.Metadata)
-                .Select(metadata => $"{PathHelper.GetFileName(metadata.Movie)} - {metadata.Metadata}")
+                .Select(metadata => $"{PathHelper.GetFileName(metadata.Movie).EscapeMarkup()} - {metadata.Metadata.EscapeMarkup()}")
                 .Append(string.Empty)
                 .Prepend(group.Key)
                 .ForEach(log));
@@ -629,20 +630,20 @@ internal static partial class Video
                             return subtitleLanguage.Equals(allowedLanguage) || subtitleLanguage.StartsWithOrdinal($"{allowedLanguage}-");
                         });
                     })))
-                    .ForEach(file => log($"!Subtitle: {Path.Combine(movie, file)}"));
+                    .ForEach(file => log($"!Subtitle: {Path.Combine(movie, file).EscapeMarkup()}"));
 
                 string[] allowedMetadataFiles = videos
                     .Select(video => $"{PathHelper.GetFileNameWithoutExtension(video)}{TmdbMetadata.NfoExtension}")
                     .ToArray();
                 metadataFiles
                     .Where(metadata => !allowedMetadataFiles.ContainsIgnoreCase(metadata))
-                    .ForEach(file => log($"!Metadata: {Path.Combine(movie, file)}"));
+                    .ForEach(file => log($"!Metadata: {Path.Combine(movie, file).EscapeMarkup()}"));
 
                 topFiles
                     .Except(imdbFiles)
                     .Except(cacheFiles)
                     .Where(file => Regex.IsMatch(file, @"\.(1080[^p]|720[^p])"))
-                    .ForEach(file => log($"Definition: {Path.Combine(movie, file)}"));
+                    .ForEach(file => log($"Definition: {Path.Combine(movie, file).EscapeMarkup()}"));
 
                 if (isLoadingVideo)
                 {
@@ -651,7 +652,7 @@ internal static partial class Video
 
                 if (metadataFiles.Length < 1)
                 {
-                    log($"!Metadata missing: {movie}");
+                    log($"!Metadata missing: {movie.EscapeMarkup()}");
                 }
 
                 metadataFiles.ForEach(metadataFile =>
@@ -662,7 +663,7 @@ internal static partial class Video
                     {
                         if (metadataImdbId.IsNotNullOrWhiteSpace())
                         {
-                            log($"!Metadata https://www.imdb.com/title/{metadataImdbId}/ should have no imdb id: {Path.Combine(movie, metadataFile)}");
+                            log($"!Metadata https://www.imdb.com/title/{metadataImdbId}/ should have no imdb id: {Path.Combine(movie, metadataFile).EscapeMarkup()}");
                         }
 
                         // if (metadataImdbRating.IsNotNullOrWhiteSpace())
@@ -674,7 +675,7 @@ internal static partial class Video
                     {
                         if (!imdbMetadata.ImdbId.EqualsOrdinal(metadataImdbId))
                         {
-                            log($"!Metadata imdb id {metadataImdbId} should be {imdbMetadata.ImdbId}: {Path.Combine(movie, metadataFile)}");
+                            log($"!Metadata imdb id {metadataImdbId} should be {imdbMetadata.ImdbId}: {Path.Combine(movie, metadataFile).EscapeMarkup()}");
                         }
                     }
                 });

@@ -1,9 +1,10 @@
+namespace MediaManager.Net;
+
 using Examples.Common;
 using Examples.Linq;
 using Examples.IO;
 using MediaManager.IO;
-
-namespace MediaManager.Net;
+using Spectre.Console;
 
 internal static class TmdbMetadata
 {
@@ -48,7 +49,7 @@ internal static class TmdbMetadata
         }
         else
         {
-            string[] otherNfoFiles = files.Where(file => !PathHelper.GetFileName(file).EqualsOrdinal(MovieNfoFile)).ToArray();
+            string[] otherNfoFiles = files.Where(file => file.IsTmdbNfoMetadata() && !PathHelper.GetFileName(file).EqualsOrdinal(MovieNfoFile)).ToArray();
             Debug.Assert(otherNfoFiles.Length >= 1);
             DateTime defaultFileLastWrite = new FileInfo(defaultNfoFile).LastWriteTimeUtc;
             if (otherNfoFiles.Length == 1)
@@ -123,7 +124,7 @@ internal static class TmdbMetadata
             existingXmlMetadataFiles.ForEach(FileHelper.Recycle);
         }
 
-        log(newPath);
+        log(newPath.EscapeMarkup());
         await File.WriteAllTextAsync(newPath, string.Empty, cancellationToken);
     }
 

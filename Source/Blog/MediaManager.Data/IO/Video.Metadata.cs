@@ -1200,7 +1200,7 @@ internal static partial class Video
                 }
 
                 FileHelper.Copy(metadata, videoMetadata, overwrite, true);
-                log(videoMetadata);
+                log(videoMetadata.EscapeMarkup());
             });
         });
     }

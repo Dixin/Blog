@@ -8,6 +8,7 @@ using Examples.Net;
 using MediaManager.IO;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using MonoTorrent;
+using Spectre.Console;
 
 internal static class Preferred
 {
@@ -535,7 +536,7 @@ internal static class Preferred
             .GroupBy(availability => availability.Availability.Value.GetPreferredExtractTopic())
             .Where(groupByExactTopic => groupByExactTopic.Count() > 1)
             .Do(groupByExactTopic => groupByExactTopic
-                .Select(a => $"{a.Availability.Key} {a.Metadata.Title} {a.Metadata.Link} https://www.imdb.com/title/{a.Metadata.ImdbId} {a.Availability.Value}")
+                .Select(a => $"{a.Availability.Key} {a.Metadata.Title.EscapeMarkup()} {a.Metadata.Link} https://www.imdb.com/title/{a.Metadata.ImdbId} {a.Availability.Value}")
                 .Append(string.Empty)
                 .Prepend(groupByExactTopic.Key)
                 .ForEach(log))
@@ -573,7 +574,7 @@ internal static class Preferred
             .Where(group => group.Value.Count > 1)
             .Do(group => group
                 .Value
-                .Select(metadata => $"{metadata.Title} {metadata.Link}")
+                .Select(metadata => $"{metadata.Title.EscapeMarkup()} {metadata.Link}")
                 .Append(string.Empty)
                 .Prepend($"https://www.imdb.com/title/{group.Key}")
                 .ForEach(log))
@@ -603,7 +604,7 @@ internal static class Preferred
             .GroupBy(metadata => metadata.Link.GetUrlPath())
             .Where(groupByLink => groupByLink.Count() > 1)
             .ForEach(groupByLink => groupByLink
-                .Select(metadata => $"{metadata.Title} https://www.imdb.com/title/{metadata.ImdbId}")
+                .Select(metadata => $"{metadata.Title.EscapeMarkup()} https://www.imdb.com/title/{metadata.ImdbId}")
                 .Append(string.Empty)
                 .Prepend(groupByLink.Key)
                 .ForEach(log));

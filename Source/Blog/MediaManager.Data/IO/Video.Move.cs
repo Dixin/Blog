@@ -141,14 +141,14 @@ internal static partial class Video
                     .ToArray()
                     .ForEach(file =>
                     {
-                        log(file);
+                        log(file.EscapeMarkup());
                         string newFile = rename(file, title).Trim();
                         if (!isDryRun)
                         {
                             FileHelper.Move(file, newFile, overwrite, true);
                         }
 
-                        log(newFile);
+                        log(newFile.EscapeMarkup());
                     });
             });
     }
@@ -358,13 +358,13 @@ internal static partial class Video
                     return;
                 }
 
-                log(movie);
+                log(movie.EscapeMarkup());
                 if (!isDryRun)
                 {
                     Directory.Move(movie, newDirectory);
                 }
 
-                log(newDirectory);
+                log(newDirectory.EscapeMarkup());
                 log(string.Empty);
             });
     }
