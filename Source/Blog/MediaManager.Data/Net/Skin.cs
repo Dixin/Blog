@@ -14,6 +14,14 @@ internal static class Skin
 
     private const int WriteCount = 100;
 
+    private const string MetadataCacheDirectory = @"D:\Files\Library\Metadata.Skin.Cache";
+
+    private const string MetadataDirectory = @"D:\Files\Library\Metadata.Skin";
+
+    private const string MetadataJson = @"D:\Files\Library\Metadata.Skin.json";
+
+    private const string SummariesJson = @"D:\Files\Library\Metadata.Skin.Summary.json";
+
     internal static async Task<ConcurrentDictionary<string, SkinSummary>> DownloadSummariesAsync(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
@@ -52,19 +60,17 @@ internal static class Skin
                 MaxDegreeOfParallelism,
                 cancellationToken);
 
-        await JsonHelper.SerializeToFileAsync(summaries, @"D:\Files\Library\Skin.Summaries.json", cancellationToken);
+        await JsonHelper.SerializeToFileAsync(summaries, SummariesJson, cancellationToken);
         return summaries;
     }
 
-    internal static async Task DownloadDetails(ISettings settings, ConcurrentDictionary<string, SkinSummary>? summaries = null, bool useCache = true, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task DownloadMetadata(ISettings settings, ConcurrentDictionary<string, SkinSummary>? summaries = null, bool useCache = true, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
-        string skinMetadataCacheDirectory = @"D:\Files\Library\SkinMetadataCache";
-        string skinMetadataDirectory = @"D:\Files\Library\SkinMetadata";
-        summaries ??= await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, SkinSummary>>(@"D:\Files\Library\Skin.Summary.json", cancellationToken);
+        summaries ??= await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, SkinSummary>>(SummariesJson, cancellationToken);
 
         Dictionary<string, string> cacheFiles = Directory
-            .EnumerateFiles(skinMetadataCacheDirectory)
+            .EnumerateFiles(MetadataCacheDirectory)
             .ToDictionary(file => $"/{PathHelper.GetFileNameWithoutExtension(file)}");
         ConcurrentQueue<string> urls = new(summaries.Keys.Except(cacheFiles.Keys));
         await Enumerable
@@ -81,7 +87,7 @@ internal static class Skin
                         try { }
                         finally
                         {
-                            await File.WriteAllTextAsync(Path.Combine(skinMetadataCacheDirectory, $"{url.Trim('/')}{Video.ImdbCacheExtension}"), html, token);
+                            await File.WriteAllTextAsync(Path.Combine(MetadataCacheDirectory, $"{url.Trim('/')}{Video.ImdbCacheExtension}"), html, token);
                         }
                     }
                 },
@@ -89,20 +95,17 @@ internal static class Skin
                 cancellationToken);
     }
 
-    internal static async Task DownloadMemberDetails(ISettings settings, ConcurrentDictionary<string, SkinSummary>? summaries = null, bool useCache = true, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task DownloadMemberMetadata(ISettings settings, ConcurrentDictionary<string, SkinSummary>? summaries = null, bool useCache = true, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
-        string skinMetadataCacheDirectory = @"D:\Files\Library\SkinMetadataCache";
-        string skinMetadataDirectory = @"D:\Files\Library\SkinMetadata";
-        string detailsFile = @"D:\Files\Library\Skin.Details.json";
-        summaries ??= await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, SkinSummary>>(@"D:\Files\Library\Skin.Summary.json", cancellationToken);
+        summaries ??= await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, SkinSummary>>(SummariesJson, cancellationToken);
 
-        ConcurrentDictionary<string, SkinMetadata> details = File.Exists(detailsFile)
-            ? await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, SkinMetadata>>(detailsFile, cancellationToken)
+        ConcurrentDictionary<string, SkinMetadata> metadata = File.Exists(MetadataJson)
+            ? await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, SkinMetadata>>(MetadataJson, cancellationToken)
             : [];
-        HashSet<string> metadataFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(skinMetadataDirectory);
-        HashSet<string> cacheFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(skinMetadataCacheDirectory);
-        ConcurrentQueue<string> urls = new(summaries.Keys.Except(details.Keys));
+        HashSet<string> metadataFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(MetadataDirectory);
+        HashSet<string> cacheFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(MetadataCacheDirectory);
+        ConcurrentQueue<string> urls = new(summaries.Keys.Except(metadata.Keys));
         Lock writeJsonLock = new();
         int downloadedCount = 0;
         await Enumerable
@@ -112,34 +115,33 @@ internal static class Skin
                     await using PlayWrightWrapper playWrightWrapper = new();
                     while (urls.TryDequeue(out string? url))
                     {
-                        details[url] = await DownloadDetailAsync(settings, url, metadataFiles, cacheFiles, useCache, playWrightWrapper, log, token);
+                        metadata[url] = await DownloadMetadataAsync(settings, url, metadataFiles, cacheFiles, useCache, playWrightWrapper, log, token);
                     }
 
                     if (Interlocked.Increment(ref downloadedCount) % WriteCount == 0)
                     {
-                        JsonHelper.SerializeToFile(details, detailsFile, ref writeJsonLock);
+                        JsonHelper.SerializeToFile(metadata, MetadataJson, ref writeJsonLock);
                     }
                 },
                 MaxDegreeOfParallelism,
                 cancellationToken);
 
-        await JsonHelper.SerializeToFileAsync(details, detailsFile, cancellationToken);
+        await JsonHelper.SerializeToFileAsync(metadata, MetadataJson, cancellationToken);
     }
 
-    private static async Task<SkinMetadata> DownloadDetailAsync(ISettings settings, string url, HashSet<string> metadataFiles, HashSet<string> cacheFiles, bool useCache, PlayWrightWrapper playWrightWrapper, Action<string>? log = null, CancellationToken cancellationToken = default)
+    private static async Task<SkinMetadata> DownloadMetadataAsync(ISettings settings, string url, HashSet<string> metadataFiles, HashSet<string> cacheFiles, bool useCache, PlayWrightWrapper playWrightWrapper, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
-        string skinMetadataDirectory = @"D:\Files\Library\SkinMetadata";
-        string skinMetadataCacheDirectory = @"D:\Files\Library\SkinMetadataCache";
+        log ??= Logger.WriteLine;
 
         string fileName = url.Trim('/');
-        string metadataFile = Path.Combine(skinMetadataDirectory, $"{fileName}{ImdbMetadata.Extension}");
+        string metadataFile = Path.Combine(MetadataDirectory, $"{fileName}{ImdbMetadata.Extension}");
         if (useCache && metadataFiles.Contains(metadataFile))
         {
             return await JsonHelper.DeserializeFromFileAsync<SkinMetadata>(metadataFile, cancellationToken);
         }
 
         string clipsUrl = $"https://www.mrskin.com{url}/clips";
-        string clipsFile = Path.Combine(skinMetadataCacheDirectory, $"{fileName}.Clips{Video.ImdbCacheExtension}");
+        string clipsFile = Path.Combine(MetadataCacheDirectory, $"{fileName}.Clips{Video.ImdbCacheExtension}");
         string[] clipsHtml = await GetHtmlAsync(clipsUrl, clipsFile, cacheFiles, useCache, playWrightWrapper, "#clips .thumbnails", cancellationToken: cancellationToken);
         SkinClip[] clips = clipsHtml
             .Select(html =>
@@ -203,7 +205,7 @@ internal static class Skin
         string description = topCQ.Find(".description--expanded p").TextTrimDecode();
 
         string picturesUrl = $"https://www.mrskin.com{url}/pics";
-        string picturesFile = Path.Combine(skinMetadataCacheDirectory, $"{fileName}.Pictures{Video.ImdbCacheExtension}");
+        string picturesFile = Path.Combine(MetadataCacheDirectory, $"{fileName}.Pictures{Video.ImdbCacheExtension}");
         SkinPicture[] pictures = clipsCQ.Find("#pics_tab").IsEmpty()
             ? []
             : (await GetHtmlAsync(picturesUrl, picturesFile, cacheFiles, useCache, playWrightWrapper, "#pics .thumbnails", cancellationToken: cancellationToken))
@@ -249,7 +251,7 @@ internal static class Skin
             .ToArray();
 
         string celebratesUrl = $"https://www.mrskin.com{url}/celebs";
-        string celebratesFile = Path.Combine(skinMetadataCacheDirectory, $"{fileName}.Celebrates{Video.ImdbCacheExtension}");
+        string celebratesFile = Path.Combine(MetadataCacheDirectory, $"{fileName}.Celebrates{Video.ImdbCacheExtension}");
         SkinCelebrate[] celebrates = clipsCQ.Find("#celebs_tab").IsEmpty()
             ? []
             : (await GetHtmlAsync(
@@ -338,7 +340,7 @@ internal static class Skin
             .ToArray();
 
         string celebrateScenesUrl = $"https://www.mrskin.com{url}/nude_scene_guide";
-        string celebrateScenesFile = Path.Combine(skinMetadataCacheDirectory, $"{fileName}.Scenes{Video.ImdbCacheExtension}");
+        string celebrateScenesFile = Path.Combine(MetadataCacheDirectory, $"{fileName}.Scenes{Video.ImdbCacheExtension}");
         SkinCelebrateScenes[] celebrateScenes = clipsCQ.Find("#nude_scene_guide_tab").IsEmpty()
             ? []
             : (await GetHtmlAsync(celebrateScenesUrl, celebrateScenesFile, cacheFiles, useCache, playWrightWrapper, "#nude_scene_guide", cancellationToken: cancellationToken))
@@ -383,7 +385,7 @@ internal static class Skin
             .ToArray();
 
         string episodesUrl = $"https://www.mrskin.com{url}/episode_guide";
-        string episodesFile = Path.Combine(skinMetadataCacheDirectory, $"{fileName}.Episodes{Video.ImdbCacheExtension}");
+        string episodesFile = Path.Combine(MetadataCacheDirectory, $"{fileName}.Episodes{Video.ImdbCacheExtension}");
         SkinEpisode[] episodes = clipsCQ.Find("#episode_guide_tab").IsEmpty()
             ? []
             : (await GetHtmlAsync(episodesUrl, episodesFile, cacheFiles, useCache, playWrightWrapper, "#episode_guide", cancellationToken: cancellationToken))
@@ -537,27 +539,3 @@ internal static class Skin
             .ToArrayAsync(cancellationToken);
     }
 }
-
-public record SkinSummary(string Title, string Url, string Year, string Image, int Rating);
-
-public record SkinMetadata(
-    string Title, string Url, string Image, string Year,
-    int Rating, string RatingDescription, string UserRating, string Description, int BlogCount, string BlogUrl,
-    Dictionary<string, string> Details,
-    SkinClip[] Clips,
-    SkinPicture[] Pictures,
-    SkinCelebrate[] Celebrates,
-    SkinCelebrateScenes[] CelebScenes,
-    SkinEpisode[] Episodes);
-
-public record SkinClip(string Title, string Url, string Image, Dictionary<string, string> Names, int Rating, string Level, string[] Keywords);
-
-public record SkinPicture(string Title, string Url, string Image, Dictionary<string, string> Names, string As, string Level, string[] Keywords);
-
-public record SkinCelebrate(string Name, string Url, string Image, string Level, string As, SkinClip[] Clips, SkinPicture[] Pictures);
-
-public record SkinCelebrateScenes(string Name, string Url, string Level, string As, SkinScene[] Scenes);
-
-public record SkinScene(string Title, string Url, string Image, int Rating, string Level, string[] Keywords, string Position, string Description);
-
-public record SkinEpisode(string Title, string Description, SkinClip[] Clips, SkinPicture[] Pictures);
