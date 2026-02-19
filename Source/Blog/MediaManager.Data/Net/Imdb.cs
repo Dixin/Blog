@@ -1453,7 +1453,7 @@ internal static partial class Imdb
                     while (imdbIdQueue.TryDequeue(out string? imdbId))
                     {
                         int index = trimmedLength - imdbIdQueue.Count;
-                        log($"{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}");
+                        log($"[yellow]{index * 100 / trimmedLength}% - {index}/{trimmedLength} - {imdbId}[/]");
                         try
                         {
                             await Retry.FixedIntervalAsync(
