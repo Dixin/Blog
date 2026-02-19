@@ -363,15 +363,15 @@ internal static partial class Video
                 DirectorySpecialCharacters.Where(trimmedMovie.Contains).ForEach(specialCharacter => log($"!Special character {specialCharacter}: {trimmedMovie}"));
                 translations
                     .Where(translated => Regex.IsMatch(translated.Split(InstallmentSeparator).First(), "[0-9]+"))
-                    .ForEach(translated => log($"!Translation has number {translated}: {movie}"));
+                    .ForEach(translated => log($"!Translation has number {translated}: {movie.EscapeMarkup()}"));
                 translations
                     .Where(translation => !string.IsNullOrEmpty(translation) && translation.All(character => character is >= 'a' and <= 'z' or >= 'A' and <= 'Z' || char.IsPunctuation(character) || char.IsSeparator(character) || char.IsSymbol(character) || char.IsWhiteSpace(character)))
                     .Where(title => !TitlesWithNoTranslation.ContainsIgnoreCase(title))
-                    .ForEach(translated => log($"!Title not translated {translated}: {movie}"));
+                    .ForEach(translated => log($"!Title not translated {translated}: {movie.EscapeMarkup()}"));
 
                 titles
                     .Where(title => title.IsNotNullOrWhiteSpace() && (char.IsWhiteSpace(title.First()) || char.IsWhiteSpace(title.Last())))
-                    .ForEach(title => log($"!Title has white space {title}: {movie}"));
+                    .ForEach(title => log($"!Title has white space {title}: {movie.EscapeMarkup()}"));
 
                 //allPaths.Where(path => path.Length > 256).ForEach(path => log($"!Path too long: {path}"));
 
@@ -383,7 +383,7 @@ internal static partial class Video
 
                 if (!topFiles.Any(file => PathHelper.GetFileName(file).EqualsIgnoreCase(isTV ? TmdbMetadata.TVNfoFile : TmdbMetadata.MovieNfoFile)))
                 {
-                    log($"!Missing {(isTV ? TmdbMetadata.TVNfoFile : TmdbMetadata.MovieNfoFile)} in {movie}");
+                    log($"!Missing {(isTV ? TmdbMetadata.TVNfoFile : TmdbMetadata.MovieNfoFile)} in {movie.EscapeMarkup()}");
                 }
 
                 topFiles = topFiles.Where(file => !PathHelper.GetFileName(file).EqualsIgnoreCase(TmdbMetadata.MovieNfoFile)).ToArray();
@@ -395,24 +395,24 @@ internal static partial class Video
                 string? imdbYear = imdbMetadata?.Year;
                 if (imdbYear.IsNotNullOrWhiteSpace() && !directoryInfo.Year.EqualsOrdinal(imdbYear))
                 {
-                    log($"!Year should be {imdbYear}: {movie}");
+                    log($"!Year should be {imdbYear}: {movie.EscapeMarkup()}");
                 }
 
                 if (!directoryInfo.AggregateRating.EqualsOrdinal(imdbRating))
                 {
-                    log($"!Imdb rating {directoryInfo.AggregateRating} should be {imdbRating}: {movie}");
+                    log($"!Imdb rating {directoryInfo.AggregateRating} should be {imdbRating}: {movie.EscapeMarkup()}");
                 }
 
                 string imdbRatingCount = imdbMetadata?.FormattedAggregateRatingCount ?? NotExistingFlag;
                 if (!imdbRatingCount.EqualsOrdinal(directoryInfo.AggregateRatingCount))
                 {
-                    log($"!Imdb rating count {directoryInfo.AggregateRatingCount} should be {imdbRatingCount}: {movie}");
+                    log($"!Imdb rating count {directoryInfo.AggregateRatingCount} should be {imdbRatingCount}: {movie.EscapeMarkup()}");
                 }
 
                 string contentRating = imdbMetadata?.FormattedContentRating ?? NotExistingFlag;
                 if (!contentRating.EqualsOrdinal(directoryInfo.ContentRating))
                 {
-                    log($"!Content rating {directoryInfo.ContentRating} should be {contentRating}: {movie}");
+                    log($"!Content rating {directoryInfo.ContentRating} should be {contentRating}: {movie.EscapeMarkup()}");
                 }
 
                 string[] imdbFiles = topFiles.Where(IsImdbMetadata).ToArray();
@@ -420,7 +420,7 @@ internal static partial class Video
 
                 if (imdbFiles.Length != 1)
                 {
-                    log($"!Imdb files {imdbFiles.Length}: {movie}");
+                    log($"!Imdb files {imdbFiles.Length}: {movie.EscapeMarkup()}");
                 }
 
                 string[] topDirectories = Directory.GetDirectories(movie).Select(PathHelper.GetFileName).ToArray();
@@ -436,12 +436,12 @@ internal static partial class Video
                 {
                     topDirectories
                         .Where(topDirectory => !Featurettes.EqualsOrdinal(topDirectory) && !Regex.IsMatch(topDirectory, @"^Season [0-9]{2,4}(\..+)?"))
-                        .ForEach(topDirectory => log($"!Directory incorrect {topDirectory}: {movie}"));
+                        .ForEach(topDirectory => log($"!Directory incorrect {topDirectory}: {movie.EscapeMarkup()}"));
 
                     string metadataFile = Path.Combine(movie, TmdbMetadata.TVNfoFile);
                     if (!File.Exists(metadataFile))
                     {
-                        log($"!Metadata file missing {TmdbMetadata.TVNfoFile}: {movie}");
+                        log($"!Metadata file missing {TmdbMetadata.TVNfoFile}: {movie.EscapeMarkup()}");
                     }
 
                     XDocument xmlMetadata = XDocument.Load(Path.Combine(movie, metadataFile));
@@ -450,12 +450,12 @@ internal static partial class Video
                     {
                         if (metadataImdbId.IsNotNullOrWhiteSpace())
                         {
-                            log($"!Metadata https://www.imdb.com/title/{metadataImdbId}/ should have no imdb id: {metadataFile}");
+                            log($"!Metadata https://www.imdb.com/title/{metadataImdbId}/ should have no imdb id: {metadataFile.EscapeMarkup()}");
                         }
                     }
                     else if (!imdbMetadata.ImdbId.EqualsOrdinal(metadataImdbId))
                     {
-                        log($"!Metadata imdb id {metadataImdbId} should be {imdbMetadata.ImdbId}: {metadataFile}");
+                        log($"!Metadata imdb id {metadataImdbId} should be {imdbMetadata.ImdbId}: {metadataFile.EscapeMarkup()}");
                     }
 
                     string[] seasonPaths = Directory.GetDirectories(movie).Where(path => Regex.IsMatch(PathHelper.GetFileName(path), @"^Season [0-9]{2,4}(\..+)?")).ToArray();
@@ -476,7 +476,7 @@ internal static partial class Video
                         //string[] subtitles = topFiles.Where(IsSubtitle).ToArray();
                         //string[] metadataFiles = topFiles.Where(IsTmdbNfoMetadata).ToArray();
 
-                        Enumerable.Range(0, videos.Length).Where(index => allVideoFileInfos[index] is null).ForEach(index => log($"!Video name {videos[index]}: {movie}"));
+                        Enumerable.Range(0, videos.Length).Where(index => allVideoFileInfos[index] is null).ForEach(index => log($"!Video name {videos[index]}: {movie.EscapeMarkup()}"));
 
                         videoFileInfos.ForEach((video, index) =>
                         {
@@ -520,7 +520,7 @@ internal static partial class Video
 
                                 return true;
                             })
-                            .ForEach(file => log($"!File: {Path.Combine(season, file)}"));
+                            .ForEach(file => log($"!File: {Path.Combine(season, file).EscapeMarkup()}"));
                     });
 
                     return;
@@ -529,7 +529,7 @@ internal static partial class Video
                 switch (topDirectories.Length)
                 {
                     case > 1:
-                        log($"!Directory count: {topDirectories.Length}: {movie}");
+                        log($"!Directory count: {topDirectories.Length}: {movie.EscapeMarkup()}");
                         break;
                     case 1 when !Featurettes.EqualsOrdinal(topDirectories.Single()):
                         log($"!Directory incorrect: {topDirectories.Single()}");
@@ -545,11 +545,11 @@ internal static partial class Video
 
                 if (tmdbFiles.Length < 1)
                 {
-                    log($"!TMDB file is missing. {movie}");
+                    log($"!TMDB file is missing. {movie.EscapeMarkup()}");
                 }
                 else if (tmdbFiles.Length > 1)
                 {
-                    log($"!TMDB file has duplicate. {movie}");
+                    log($"!TMDB file has duplicate. {movie.EscapeMarkup()}");
                 }
                 else
                 {
@@ -563,44 +563,44 @@ internal static partial class Video
 
                 if (directoryInfo.Is2160P && !videoFileInfos.Any(video => video.GetDefinitionType() is DefinitionType.P2160))
                 {
-                    log($"!Not 2160: {movie}");
+                    log($"!Not 2160: {movie.EscapeMarkup()}");
                 }
 
                 if (!directoryInfo.Is2160P && videoFileInfos.Any(video => video.GetDefinitionType() is DefinitionType.P2160))
                 {
-                    log($"!2160: {movie}");
+                    log($"!2160: {movie.EscapeMarkup()}");
                 }
 
                 if (directoryInfo.Is1080P && !videoFileInfos.Any(video => video.GetDefinitionType() is DefinitionType.P1080))
                 {
-                    log($"!Not 1080: {movie}");
+                    log($"!Not 1080: {movie.EscapeMarkup()}");
                 }
 
                 if (!directoryInfo.Is1080P && videoFileInfos.Any(video => video.GetDefinitionType() is DefinitionType.P1080) && !videoFileInfos.Any(video => video.GetDefinitionType() is DefinitionType.P2160))
                 {
-                    log($"!1080: {movie}");
+                    log($"!1080: {movie.EscapeMarkup()}");
                 }
 
                 if (directoryInfo.Is720P && !videoFileInfos.Any(video => video.GetDefinitionType() is DefinitionType.P720))
                 {
-                    log($"!Not 720: {movie}");
+                    log($"!Not 720: {movie.EscapeMarkup()}");
                 }
 
                 if (!directoryInfo.Is720P && videoFileInfos.Any(video => video.GetDefinitionType() is DefinitionType.P720) && !videoFileInfos.Any(video => video.GetDefinitionType() is DefinitionType.P1080) && !videoFileInfos.Any(video => video.GetDefinitionType() is DefinitionType.P2160))
                 {
-                    log($"!720: {movie}");
+                    log($"!720: {movie.EscapeMarkup()}");
                 }
 
                 if (videos.Length < 1)
                 {
-                    log($"!No video: {movie}");
+                    log($"!No video: {movie.EscapeMarkup()}");
                 }
                 else if (videos.Length == 1 || videos.All(video => Regex.IsMatch(PathHelper.GetFileNameWithoutExtension(video), @"\.cd[0-9]+$")))
                 {
                     string[] allowedAttachments = Attachments.Concat(AdaptiveAttachments).ToArray();
                     otherFiles
                         .Where(file => !allowedAttachments.ContainsIgnoreCase(file))
-                        .ForEach(file => log($"!Attachment: {Path.Combine(movie, file)}"));
+                        .ForEach(file => log($"!Attachment: {Path.Combine(movie, file).EscapeMarkup()}"));
                 }
                 else
                 {
@@ -610,13 +610,13 @@ internal static partial class Video
                         .ToArray();
                     otherFiles
                         .Where(file => !allowedAttachments.ContainsIgnoreCase(file))
-                        .ForEach(file => log($"!Attachment: {Path.Combine(movie, file)}"));
+                        .ForEach(file => log($"!Attachment: {Path.Combine(movie, file).EscapeMarkup()}"));
                 }
 
                 string source = VideoDirectoryInfo.GetSource(videoFileInfos);
                 if (!source.EqualsOrdinal(directoryInfo.Source))
                 {
-                    log($"!Source {directoryInfo.Source} should be {source}: {movie}");
+                    log($"!Source {directoryInfo.Source} should be {source}: {movie.EscapeMarkup()}");
                 }
 
                 subtitles
@@ -3207,5 +3207,109 @@ internal static partial class Video
                 }
             });
         });
+    }
+
+    internal static async Task PrintImdbFranchiseAsync(ISettings settings, string directory, int level = DefaultDirectoryLevel, Action<string>? log = null, CancellationToken cancellationToken = default)
+    {
+        log ??= Logger.WriteLine;
+
+        ILookup<string, (int Order, string Title, string Category, string Id, string MagnetUrl, string ImdbId, DateTime DateTime)> topMetadata = (await settings.LoadTopMetadataAsync(cancellationToken))
+        .Where(metadata => metadata.ImdbId.IsImdbId())
+        .ToLookup(metadata => metadata.ImdbId);
+        ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
+        
+        EnumerateDirectories(directory, level)
+            .Where(movie => !movie.ContainsIgnoreCase(@"\Delete"))
+            .ForEach(movie =>
+            {
+                if (ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata))
+                {
+                    if (imdbMetadata.Connections.TryGetValue("Followed by", out string[][]? followedBy)
+                        && followedBy.Any())
+                    {
+                        log(movie.EscapeMarkup());
+                        log("[yellow]Followed by:[/]");
+                        followedBy.ForEach(array =>
+                        {
+                            array[0] = $"[green]{array[0].EscapeMarkup()}[/]";
+                            string item = string.Join("|", array);
+                            log(item);
+                            Match match = ImdbMetadata.ImdbIdSubstringRegex().Match(item);
+                            if (!match.Success)
+                            {
+                                return;
+                            }
+
+                            string imdbId = match.Value;
+                            Debug.Assert(imdbId.IsImdbId());
+                            if (libraryMetadata.TryGetValue(imdbId, out ConcurrentDictionary<string, VideoMetadata>? localMetadata))
+                            {
+                                localMetadata.ForEach(metadata => log($"[red]{metadata.Key.EscapeMarkup()}[/]"));
+                                log(string.Empty);
+                                return;
+                            }
+
+                            if (topMetadata.Contains(imdbId))
+                            {
+                                topMetadata[imdbId].ForEach(metadata => log($"{metadata.Title.EscapeMarkup()}|[green]{metadata.MagnetUrl}[/]"));
+                            }
+
+                            if (preferredMetadata.TryGetValue(imdbId, out List<PreferredMetadata>? preferredMetadataList))
+                            {
+                                preferredMetadataList
+                                    .SelectMany(metadata => metadata.PreferredAvailabilities, (metadata, availability) => (metadata, availability))
+                                    .ForEach(availability => log($"{availability.metadata.Title.EscapeMarkup()}|[yellow]{availability.availability.Key}[/]|[green]{availability.availability.Value}[/]"));
+                            }
+
+                            log(string.Empty);
+                        });
+
+                        log(string.Empty);
+                    }
+
+                    if (imdbMetadata.Connections.TryGetValue("Follows", out string[][]? follows)
+                        && follows.Any())
+                    {
+                        log(movie.EscapeMarkup());
+                        log("[yellow]Followed by:[/]");
+                        follows.ForEach(array =>
+                        {
+                            array[0] = $"[green]{array[0].EscapeMarkup()}[/]";
+                            string item = string.Join("|", array);
+                            log(item);
+                            Match match = ImdbMetadata.ImdbIdSubstringRegex().Match(item);
+                            if (!match.Success)
+                            {
+                                return;
+                            }
+
+                            string imdbId = match.Value;
+                            Debug.Assert(imdbId.IsImdbId());
+                            if (libraryMetadata.TryGetValue(imdbId, out ConcurrentDictionary<string, VideoMetadata>? localMetadata))
+                            {
+                                localMetadata.ForEach(metadata => log($"[red]{metadata.Key.EscapeMarkup()}[/]"));
+                                log(string.Empty);
+                                return;
+                            }
+
+                            if (topMetadata.Contains(imdbId))
+                            {
+                                topMetadata[imdbId].ForEach(metadata => log($"{metadata.Title.EscapeMarkup()}|[green]{metadata.MagnetUrl}[/]"));
+                            }
+
+                            if (preferredMetadata.TryGetValue(imdbId, out List<PreferredMetadata>? preferredMetadataList))
+                            {
+                                preferredMetadataList
+                                    .SelectMany(metadata => metadata.PreferredAvailabilities, (metadata, availability) => (metadata, availability))
+                                    .ForEach(availability => log($"{availability.metadata.Title.EscapeMarkup()}|[yellow]{availability.availability.Key}[/]|[green]{availability.availability.Value}[/]"));
+                            }
+
+                            log(string.Empty);
+                        });
+                        log(string.Empty);
+                    }
+                }
+            });
     }
 }
