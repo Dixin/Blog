@@ -345,8 +345,8 @@ internal static partial class Video
             return false;
         }
 
-        string jsonFile = metadataFiles.SingleOrDefault(file => file.HasImdbId(imdbId), string.Empty);
-        if (jsonFile.IsNotNullOrWhiteSpace() && !overwrite)
+        string existingJsonFile = metadataFiles.SingleOrDefault(file => file.HasImdbId(imdbId), string.Empty);
+        if (existingJsonFile.IsNotNullOrWhiteSpace() && !overwrite)
         {
             log($"Skip {imdbId}.");
             return false;
@@ -548,33 +548,39 @@ internal static partial class Video
                 && ((!useCache && overwrite) || !cacheFiles.Contains(data.File)))
             .ToArray();
 
+        string newJsonFile = imdbMetadata.GetFilePath(metadataDirectory);
         if (@lock is not null)
         {
-            lock (@lock)
-            {
-                //files.ForEach(data =>
-                //{
-                //    isDownloaded = true;
-                //    log($"Downloaded {data.Url} to {data.File.EscapeMarkup()}.");
-                //    File.WriteAllText(data.File, data.Html);
-                //    log($"Saved to {data.File.EscapeMarkup()}.");
-                //});
+            //files.ForEach(data =>
+            //{
+            //    isDownloaded = true;
+            //    log($"Downloaded {data.Url} to {data.File.EscapeMarkup()}.");
+            //    File.WriteAllText(data.File, data.Html);
+            //    log($"Saved to {data.File.EscapeMarkup()}.");
+            //});
 
-                string newJsonFile = imdbMetadata.GetFilePath(metadataDirectory);
-                if (jsonFile.IsNotNullOrWhiteSpace() && !jsonFile.EqualsIgnoreCase(newJsonFile))
+            if (!existingJsonFile.EqualsIgnoreCase(newJsonFile))
+            {
+                if (existingJsonFile.IsNotNullOrWhiteSpace())
                 {
-                    FileHelper.Recycle(jsonFile);
+                    FileHelper.Recycle(existingJsonFile);
                 }
 
                 log($"Merged {imdbUrl}, {advisoriesUrl}, {companiesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {faqsUrl}, {goofsUrl}, {keywordsUrl}, {locationsUrl}, {quotesUrl}, {releasesUrl}, {sitesUrl}, {soundtracksUrl}, {taglinesUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile.EscapeMarkup()}.");
                 try { }
                 finally
                 {
-                    JsonHelper.SerializeToFile(imdbMetadata, newJsonFile);
+                    JsonHelper.SerializeToFile(imdbMetadata, newJsonFile, ref @lock);
                 }
-
-                TimeSpan elapsed = Stopwatch.GetElapsedTime(startingTimestamp);
-                log($"[green]Elapsed {elapsed} to Save {newJsonFile.EscapeMarkup()}.[/]");
+            }
+            else if (overwrite)
+            {
+                log($"Merged {imdbUrl}, {advisoriesUrl}, {companiesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {faqsUrl}, {goofsUrl}, {keywordsUrl}, {locationsUrl}, {quotesUrl}, {releasesUrl}, {sitesUrl}, {soundtracksUrl}, {taglinesUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile.EscapeMarkup()}.");
+                try { }
+                finally
+                {
+                    JsonHelper.SerializeToFile(imdbMetadata, newJsonFile, ref @lock);
+                }
             }
         }
         else
@@ -589,23 +595,33 @@ internal static partial class Video
             //    },
             //    cancellationToken);
 
-            string newJsonFile = imdbMetadata.GetFilePath(metadataDirectory);
-            if (jsonFile.IsNotNullOrWhiteSpace() && !jsonFile.EqualsIgnoreCase(newJsonFile))
+            if (!existingJsonFile.EqualsIgnoreCase(newJsonFile))
             {
-                FileHelper.Recycle(jsonFile);
-            }
+                if (existingJsonFile.IsNotNullOrWhiteSpace())
+                {
+                    FileHelper.Recycle(existingJsonFile);
+                }
 
-            log($"Merged {imdbUrl}, {advisoriesUrl}, {companiesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {faqsUrl}, {goofsUrl}, {keywordsUrl}, {locationsUrl}, {quotesUrl}, {releasesUrl}, {sitesUrl}, {soundtracksUrl}, {taglinesUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile.EscapeMarkup()}.");
-            try { }
-            finally
+                log($"Merged {imdbUrl}, {advisoriesUrl}, {companiesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {faqsUrl}, {goofsUrl}, {keywordsUrl}, {locationsUrl}, {quotesUrl}, {releasesUrl}, {sitesUrl}, {soundtracksUrl}, {taglinesUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile.EscapeMarkup()}.");
+                try { }
+                finally
+                {
+                    await JsonHelper.SerializeToFileAsync(imdbMetadata, newJsonFile, cancellationToken);
+                }
+            }
+            else if (overwrite)
             {
-                await JsonHelper.SerializeToFileAsync(imdbMetadata, newJsonFile, cancellationToken);
+                log($"Merged {imdbUrl}, {advisoriesUrl}, {companiesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {faqsUrl}, {goofsUrl}, {keywordsUrl}, {locationsUrl}, {quotesUrl}, {releasesUrl}, {sitesUrl}, {soundtracksUrl}, {taglinesUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile.EscapeMarkup()}.");
+                try { }
+                finally
+                {
+                    await JsonHelper.SerializeToFileAsync(imdbMetadata, newJsonFile, cancellationToken);
+                }
             }
-
-            TimeSpan elapsed = Stopwatch.GetElapsedTime(startingTimestamp);
-            log($"[green]Elapsed {elapsed} to Save {newJsonFile.EscapeMarkup()}.[/]");
         }
 
+        TimeSpan elapsed = Stopwatch.GetElapsedTime(startingTimestamp);
+        log($"[green]Elapsed {elapsed} to Save {newJsonFile.EscapeMarkup()}.[/]");
         return isDownloaded;
     }
 
