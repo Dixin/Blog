@@ -254,7 +254,6 @@ internal static partial class Imdb
         if (hasImdbFile)
         {
             imdbHtml = (await File.ReadAllTextAsync(imdbFile, cancellationToken)).ThrowIfNullOrWhiteSpace();
-            imdbCQ = imdbHtml;
             if (!imdbHtml.EndsWithIgnoreCase("</html>"))
             {
                 FileHelper.Recycle(imdbFile);
@@ -262,6 +261,7 @@ internal static partial class Imdb
                 throw new InvalidDataException($"Invalid cached HTML: {imdbFile}.");
             }
 
+            imdbCQ = imdbHtml;
             isInDevelopment = imdbCQ.Find("[data-testid='hero-subnav-bar-imdb-pro-link']").TextTrimDecode().ContainsIgnoreCase("In development");
         }
         else
@@ -275,9 +275,9 @@ internal static partial class Imdb
             {
                 if (!page.Url.EqualsOrdinal(imdbUrl))
                 {
-                    log($"Redirected {imdbId} to {page.Url}");
                     imdbUrl = new Uri(page.Url).GetLeftPart(UriPartial.Path);
                     string updatedImdbId = ImdbMetadata.ImdbIdSubstringRegex().Match(page.Url).Value;
+                    log($"Redirected {imdbId} to {updatedImdbId}");
                     Debug.Assert(imdbId.IsImdbId());
                     new string[]
                     {
@@ -549,6 +549,7 @@ internal static partial class Imdb
         if (htmlYear.IsNullOrWhiteSpace())
         {
             htmlYear = imdbCQ.Find($"a[href*='/title/{imdbId}/releaseinfo']").Select(dom => dom.TextTrimDecode()).FirstOrDefault(text => YearRegex().IsMatch(text), string.Empty);
+            htmlYear = YearRegex().Match(htmlYear).Value;
         }
 
         Debug.Assert(htmlYear.EqualsOrdinal(htmlTitleYear) || parentMetadata is not null);
