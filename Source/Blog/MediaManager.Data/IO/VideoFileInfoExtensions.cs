@@ -25,21 +25,21 @@ internal static class VideoFileInfoExtensions
                 return isBluRayOrDvd ? EncoderType.HandbrakeH264BluRay : EncoderType.HandbrakeH264;
         }
 
-        if (video.Version.EqualsOrdinal(T.Settings.TopEnglishKeyword) || video.Version.EqualsOrdinal(T.Settings.TopForeignKeyword))
+        if (video.Version.EqualsOrdinal(T.Settings.KeywordTopEnglish) || video.Version.EqualsOrdinal(T.Settings.KeywordTopForeign))
         {
             return video.VideoCodec.ContainsIgnoreCase(".x265")
                 ? isBluRay ? EncoderType.TopX265BluRay : EncoderType.TopX265
                 : isBluRay ? EncoderType.TopH264BluRay : EncoderType.TopH264;
         }
 
-        if (video.Version.EqualsIgnoreCase(T.Settings.PreferredOldKeyword) || video.Version.StartsWithIgnoreCase($"[{T.Settings.PreferredNewKeyword}."))
+        if (video.Version.EqualsIgnoreCase(T.Settings.KeywordPreferredOld) || video.Version.StartsWithIgnoreCase($"[{T.Settings.KeywordPreferredNew}."))
         {
             return video.VideoCodec.ContainsIgnoreCase(".x265")
                 ? isBluRayOrDvd ? EncoderType.PreferredX265BluRay : EncoderType.PreferredX265
                 : isBluRayOrDvd ? EncoderType.PreferredH264BluRay : EncoderType.PreferredH264;
         }
 
-        if (video.Version.EqualsOrdinal(T.Settings.ContrastKeyword))
+        if (video.Version.EqualsOrdinal(T.Settings.KeywordContrast))
         {
             return isBluRay ? EncoderType.ContrastBluRay : EncoderType.Contrast;
         }

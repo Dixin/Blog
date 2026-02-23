@@ -1411,8 +1411,8 @@ internal static partial class Imdb
         //Dictionary<string, TopMetadata[]> h264XMetadata = await settings.LoadMovieTopH264XMetadataAsync(cancellationToken);
         //Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(rareJsonPath);
 
-        HashSet<string> cacheFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.MovieMetadataCacheDirectory);
-        string[] metadataFiles = Directory.GetFiles(settings.MovieMetadataDirectory);
+        HashSet<string> cacheFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.DirectoryMetadataAllMoviesCache);
+        string[] metadataFiles = Directory.GetFiles(settings.DirectoryMetadataAllMovies);
         //string[] imdbIds = x265Metadata.Keys.AsParallel()
         //    .Concat(x265XMetadata.Keys.AsParallel())
         //    .Concat(h264Metadata.Keys.AsParallel())
@@ -1431,7 +1431,7 @@ internal static partial class Imdb
         //    .OrderBy(imdbId => imdbId)
         //    .ToArray();
         //await JsonHelper.SerializeToFileAsync(imdbIds, Path.Combine(settings.LibraryDirectory, "Movie.ImdbIdsToDownload.json"), cancellationToken);
-        string[] imdbIds = await JsonHelper.DeserializeFromFileAsync<string[]>(Path.Combine(settings.LibraryDirectory, "Movie.ImdbIdsToDownload.json"), cancellationToken);
+        string[] imdbIds = await JsonHelper.DeserializeFromFileAsync<string[]>(Path.Combine(settings.DirectoryLibrary, "Movie.ImdbIdsToDownload.json"), cancellationToken);
         int length = imdbIds.Length;
         if (getRange is not null)
         {
@@ -1458,7 +1458,7 @@ internal static partial class Imdb
                         try
                         {
                             await Retry.FixedIntervalAsync(
-                                async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, playWrightWrapper, @lock, overwrite: false, useCache: true, log: log, token),
+                                async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.DirectoryMetadataAllMovies, settings.DirectoryMetadataAllMoviesCache, metadataFiles, cacheFiles, playWrightWrapper, @lock, overwrite: false, useCache: true, log: log, token),
                                 isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError }, cancellationToken: token);
                         }
                         catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
@@ -1481,7 +1481,7 @@ internal static partial class Imdb
     {
         log ??= Logger.WriteLine;
 
-        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMetadataLibraryMoviesAsync(cancellationToken);
 
         await using PlayWrightWrapper playWrightWrapper = new("https://www.imdb.com/");
 
@@ -1532,8 +1532,8 @@ internal static partial class Imdb
         //    .Where(imdbId => imdbId.IsImdbId())
         //    .ToArray();
 
-        HashSet<string> cacheFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.TVMetadataCacheDirectory);
-        string[] metadataFiles = Directory.GetFiles(settings.TVMetadataDirectory);
+        HashSet<string> cacheFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.DirectoryMetadataAllTVCache);
+        string[] metadataFiles = Directory.GetFiles(settings.DirectoryMetadataAllTV);
         //string[] imdbIds = x265Metadata.Keys
         //    .Concat(contrastMetadata.Select(metadata => metadata.ImdbId).Where(imdbId => imdbId.IsImdbId()))
         //    .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -1541,7 +1541,7 @@ internal static partial class Imdb
         //    .Order()
         //    .ToArray();
         //await JsonHelper.SerializeToFileAsync(imdbIds, Path.Combine(settings.LibraryDirectory, "TV.ImdbIdsToDownload.json"), cancellationToken);
-        string[] imdbIds = await JsonHelper.DeserializeFromFileAsync<string[]>(Path.Combine(settings.LibraryDirectory, "TV.ImdbIdsToDownload.json"), cancellationToken);
+        string[] imdbIds = await JsonHelper.DeserializeFromFileAsync<string[]>(Path.Combine(settings.DirectoryLibrary, "TV.ImdbIdsToDownload.json"), cancellationToken);
         int length = imdbIds.Length;
         if (getRange is not null)
         {
@@ -1568,7 +1568,7 @@ internal static partial class Imdb
                         try
                         {
                             await Retry.FixedIntervalAsync(
-                                async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.TVMetadataDirectory, settings.TVMetadataCacheDirectory, metadataFiles, cacheFiles, playWrightWrapper, @lock, overwrite: false, useCache: true, log: log, token),
+                                async () => await Video.DownloadImdbMetadataAsync(imdbId, settings.DirectoryMetadataAllTV, settings.DirectoryMetadataAllTVCache, metadataFiles, cacheFiles, playWrightWrapper, @lock, overwrite: false, useCache: true, log: log, token),
                                 isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError }, cancellationToken: token);
                         }
                         catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)

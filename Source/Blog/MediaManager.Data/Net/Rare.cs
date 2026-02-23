@@ -49,13 +49,13 @@ internal static class Rare
 
                 if (index % WriteCount == 0)
                 {
-                    JsonHelper.SerializeToFile(rareMetadata, settings.MovieRareMetadata, ref writeJsonLock);
+                    JsonHelper.SerializeToFile(rareMetadata, settings.MetadataRareMovies, ref writeJsonLock);
                 }
             },
             degreeOfParallelism,
             cancellationToken);
 
-        await settings.WriteMovieRareMetadataAsync(rareMetadata, cancellationToken);
+        await settings.WriteMetadataRareMoviesAsync(rareMetadata, cancellationToken);
 
         await PrintVersionsAsync(settings, rareMetadata, log, cancellationToken);
     }
@@ -64,14 +64,14 @@ internal static class Rare
     {
         log ??= Logger.WriteLine;
 
-        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
-        Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadMovieTopX265MetadataAsync(cancellationToken);
-        Dictionary<string, TopMetadata[]> h264Metadata = await settings.LoadMovieTopH264MetadataAsync(cancellationToken);
-        Dictionary<string, TopMetadata[]> h264720PMetadata = await settings.LoadMovieTopH264720PMetadataAsync(cancellationToken);
-        ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMetadataLibraryMoviesAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadMetadataTopMoviesX265Async(cancellationToken);
+        Dictionary<string, TopMetadata[]> h264Metadata = await settings.LoadMetadataTopMoviesH264Async(cancellationToken);
+        Dictionary<string, TopMetadata[]> h264720PMetadata = await settings.LoadMetadataTopMoviesH264720PAsync(cancellationToken);
+        ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMetadataPreferredMoviesAsync(cancellationToken);
 
-        HashSet<string> cacheFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.MovieMetadataCacheDirectory);
-        string[] metadataFiles = Directory.GetFiles(settings.MovieMetadataDirectory);
+        HashSet<string> cacheFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.DirectoryMetadataAllMoviesCache);
+        string[] metadataFiles = Directory.GetFiles(settings.DirectoryMetadataAllMovies);
         (string Link, string Title, string Value, string[] Categories)[] imdbIds = rareMetadata
             .AsParallel()
             .SelectMany(rare => ImdbMetadata
@@ -100,7 +100,7 @@ internal static class Rare
                 try
                 {
                     await Retry.FixedIntervalAsync(
-                        async () => await Video.DownloadImdbMetadataAsync(imdbId.Value, settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, playWrightWrapper, overwrite: false, useCache: true, log: log, cancellationToken: cancellationToken),
+                        async () => await Video.DownloadImdbMetadataAsync(imdbId.Value, settings.DirectoryMetadataAllMovies, settings.DirectoryMetadataAllMoviesCache, metadataFiles, cacheFiles, playWrightWrapper, overwrite: false, useCache: true, log: log, cancellationToken: cancellationToken),
                         isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound or HttpStatusCode.InternalServerError }, cancellationToken: cancellationToken);
                 }
                 catch (HttpRequestException exception) when (exception.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.InternalServerError)
@@ -109,7 +109,7 @@ internal static class Rare
                     if (imdbId.Value.StartsWithIgnoreCase("tt0"))
                     {
                         imdbId = imdbId with { Value = imdbId.Value.ReplaceIgnoreCase("tt0", "tt") };
-                        await Video.DownloadImdbMetadataAsync(imdbId.Value, @settings.MovieMetadataDirectory, settings.MovieMetadataCacheDirectory, metadataFiles, cacheFiles, playWrightWrapper, overwrite: false, useCache: true, log: log, cancellationToken: cancellationToken);
+                        await Video.DownloadImdbMetadataAsync(imdbId.Value, @settings.DirectoryMetadataAllMovies, settings.DirectoryMetadataAllMoviesCache, metadataFiles, cacheFiles, playWrightWrapper, overwrite: false, useCache: true, log: log, cancellationToken: cancellationToken);
                     }
                 }
 
@@ -162,14 +162,14 @@ internal static class Rare
                     if (h264Videos.Length > 1)
                     {
                         List<TopMetadata> excluded = [];
-                        excluded.AddRange(h264Videos.Where(video => !video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") && !video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}")));
+                        excluded.AddRange(h264Videos.Where(video => !video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.KeywordTopEnglish}") && !video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.KeywordTopForeign}")));
                         if (excluded.Count == h264Videos.Length)
                         {
                             excluded.Clear();
                         }
                         else
                         {
-                            h264Videos = h264Videos.Where(video => video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") || video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}")).ToArray();
+                            h264Videos = h264Videos.Where(video => video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.KeywordTopEnglish}") || video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.KeywordTopForeign}")).ToArray();
                         }
 
                         if (h264Videos.Any(video => video.Title.ContainsIgnoreCase("BluRay")) && h264Videos.Any(video => video.Title.ContainsIgnoreCase("WEBRip")))
@@ -254,14 +254,14 @@ internal static class Rare
                     if (h264720PVideos.Length > 1)
                     {
                         List<TopMetadata> excluded = [];
-                        excluded.AddRange(h264720PVideos.Where(video => !video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") && !video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}")));
+                        excluded.AddRange(h264720PVideos.Where(video => !video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.KeywordTopEnglish}") && !video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.KeywordTopForeign}")));
                         if (excluded.Count == h264720PVideos.Length)
                         {
                             excluded.Clear();
                         }
                         else
                         {
-                            h264720PVideos = h264720PVideos.Where(video => video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") || video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}")).ToArray();
+                            h264720PVideos = h264720PVideos.Where(video => video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.KeywordTopEnglish}") || video.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.KeywordTopForeign}")).ToArray();
                         }
                     }
 
@@ -276,7 +276,7 @@ internal static class Rare
 
     internal static async Task PrintVersionsAsync(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
-        ConcurrentDictionary<string, RareMetadata> rareMetadata = await settings.LoadMovieRareMetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, RareMetadata> rareMetadata = await settings.LoadMetadataRareMoviesAsync(cancellationToken);
         await PrintVersionsAsync(settings, rareMetadata, log, cancellationToken);
     }
 }

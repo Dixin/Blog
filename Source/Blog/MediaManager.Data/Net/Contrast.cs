@@ -14,7 +14,7 @@ internal static class Contrast
 
         ContrastMetadata[] metadata = await AsyncEnumerable
             .Range(0, pageCount)
-            .Select(pageIndex => $"{settings.TVContrastUrl}{pageIndex}")
+            .Select(pageIndex => $"{settings.UrlContrastTV}{pageIndex}")
             .SelectMany(async (pageUrl, token) =>
             {
                 using HttpClient httpClient = new HttpClient().AddEdgeHeaders();
@@ -47,7 +47,7 @@ internal static class Contrast
             })
             .ToArrayAsync(cancellationToken);
 
-        await JsonHelper.SerializeToFileAsync(metadata, settings.TVContrastMetadata, cancellationToken);
+        await JsonHelper.SerializeToFileAsync(metadata, settings.MetadataContrastTV, cancellationToken);
     }
 
     internal static async Task DownloadFromContrastAsync(ISettings settings, string htmlFile, CancellationToken cancellationToken = default)
@@ -109,7 +109,7 @@ internal static class Contrast
 
     private static async Task MergeMetadataAsync(ISettings settings, ContrastMetadata[] downloaded, CancellationToken cancellationToken = default)
     {
-        ContrastMetadata[] existing = await JsonHelper.DeserializeFromFileAsync<ContrastMetadata[]>(settings.TVContrastMetadata, cancellationToken);
+        ContrastMetadata[] existing = await JsonHelper.DeserializeFromFileAsync<ContrastMetadata[]>(settings.MetadataContrastTV, cancellationToken);
         ContrastMetadata[] all = existing.UnionBy(downloaded, metadata => metadata.Title, StringComparer.OrdinalIgnoreCase).ToArray();
         ContrastMetadata[] existingDuplicate = existing
             .IntersectBy(downloaded.Select(metadata => metadata.Title), metadata => metadata.Title, StringComparer.OrdinalIgnoreCase)
@@ -139,7 +139,7 @@ internal static class Contrast
 
         Debug.Assert(all.Length == downloaded.Length + existing.Length - existingDuplicate.Length);
 
-        await JsonHelper.SerializeToFileAsync(all, settings.TVContrastMetadata, cancellationToken);
+        await JsonHelper.SerializeToFileAsync(all, settings.MetadataContrastTV, cancellationToken);
     }
 
     internal static async Task PrintTVVersionsAsync(ISettings settings, string[][]? tvDrives = null, Action<string>? log = null, CancellationToken cancellationToken = default)
@@ -158,7 +158,7 @@ internal static class Contrast
             ]
         ];
 
-        ContrastMetadata[] existing = await settings.LoadTVContrastMetadataAsync(cancellationToken);
+        ContrastMetadata[] existing = await settings.LoadMetadataContrastTVAsync(cancellationToken);
         Dictionary<string, (string SeasonNumber, ContrastMetadata Metadata)[]> result = existing
             .GroupBy(
                 metadata => metadata.ImdbId,
@@ -193,7 +193,7 @@ internal static class Contrast
                         return (
                             SeasonNumber: seasonNumber,
                             Season: season,
-                            IsTopOrKontrast: Directory.EnumerateFiles(season).Count(file => file.IsVideo() && (file.ContainsIgnoreCase(settings.ContrastKeyword) || file.ContainsIgnoreCase(settings.TopEnglishKeyword))) > 1
+                            IsTopOrKontrast: Directory.EnumerateFiles(season).Count(file => file.IsVideo() && (file.ContainsIgnoreCase(settings.KeywordContrast) || file.ContainsIgnoreCase(settings.KeywordTopEnglish))) > 1
                         );
                     })
                     .OrderBy(season => season.SeasonNumber)

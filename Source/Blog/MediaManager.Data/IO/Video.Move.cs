@@ -224,7 +224,7 @@ internal static partial class Video
                     .EnumerateFiles(movie)
                     .Where(file => file.IsVideo())
                     .Select(VideoMovieFileInfo.Parse)
-                    .Where(video => video.Version.Contains($"{VersionSeparator}{settings.TopForeignKeyword}"))
+                    .Where(video => video.Version.Contains($"{VersionSeparator}{settings.KeywordTopForeign}"))
                     .Select(video => video.Edition)
                     .ToArray();
                 string[] regions = [];
@@ -520,8 +520,8 @@ internal static partial class Video
     internal static async Task CompareAndMoveAsync(ISettings settings, string fromJsonPath, string newDirectory, string deletedDirectory, Action<string>? log = null, bool isDryRun = false, bool moveAllAttachment = true, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
-        Dictionary<string, VideoMetadata> externalMetadata = await settings.LoadMovieExternalMetadataAsync(cancellationToken);
-        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> moviesMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
+        Dictionary<string, VideoMetadata> externalMetadata = await settings.LoadMetadataLibraryMoviesExternalAsync(cancellationToken);
+        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> moviesMetadata = await settings.LoadMetadataLibraryMoviesAsync(cancellationToken);
 
         externalMetadata
             .Where(externalVideo => File.Exists(externalVideo.Value.File))
@@ -550,7 +550,7 @@ internal static partial class Video
                 }
 
                 VideoMetadata toVideoMetadata = group.Single().Value;
-                toVideoMetadata = toVideoMetadata with { File = Path.Combine(settings.LibraryDirectory, toVideoMetadata.File) };
+                toVideoMetadata = toVideoMetadata with { File = Path.Combine(settings.DirectoryLibrary, toVideoMetadata.File) };
                 if (VideoMovieFileInfo.Parse(PathHelper.GetFileNameWithoutExtension(toVideoMetadata.File)).GetEncoderType() is EncoderType.TopX265)
                 {
                     log($"Video {toVideoMetadata.File} is x265.");
@@ -838,12 +838,12 @@ internal static partial class Video
 
         Directory
             .GetDirectories(directory)
-            .Where(season => season.ContainsIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}"))
+            .Where(season => season.ContainsIgnoreCase($"{VersionSeparator}{settings.KeywordTopEnglish}"))
             .ForEach(season => MoveSubtitlesForEpisodes(settings, season, season, subtitleBackupDirectory, false, isDryRun: isDryRun, log: log));
 
         Directory
             .GetDirectories(directory)
-            .Where(season => season.ContainsIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}"))
+            .Where(season => season.ContainsIgnoreCase($"{VersionSeparator}{settings.KeywordTopEnglish}"))
             .ForEach(season =>
             {
                 Match match = Regex.Match(PathHelper.GetFileName(season), @"^(.+)\.S([0-9]{2})(\.[A-Z]+)?\.1080p\.+");
@@ -1383,7 +1383,7 @@ internal static partial class Video
             .SelectMany(drive => Directory.EnumerateFiles(drive, ImdbMetadataSearchPattern, SearchOption.AllDirectories))
             .Where(file => !file.ContainsIgnoreCase($"{Path.DirectorySeparatorChar}Delete"))
             .ToLookup(json => ImdbMetadata.TryGet(json, out string? imdbId) ? imdbId : string.Empty, json => json);
-        ConcurrentDictionary<string, List<PreferredFileMetadata>> preferredFilesMetadata = await settings.LoadMoviePreferredFileMetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, List<PreferredFileMetadata>> preferredFilesMetadata = await settings.LoadMetadataPreferredMoviesFilesAsync(cancellationToken);
         ILookup<string, string> preferredDisplayNameToImdbIds = preferredFilesMetadata.Values.Concat()
             .AsParallel()
             .ToLookup(metadata => metadata.DisplayName, metadata => metadata.ImdbId);

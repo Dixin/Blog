@@ -22,7 +22,7 @@ internal static class Preferred
         log ??= Logger.WriteLine;
         degreeOfParallelism ??= MaxDegreeOfParallelism;
         predicate ??= _ => true;
-        ConcurrentDictionary<string, PreferredSummary> allSummaries = await settings.LoadMoviePreferredSummaryAsync(cancellationToken);
+        ConcurrentDictionary<string, PreferredSummary> allSummaries = await settings.LoadMetadataPreferredMoviesSummariesAsync(cancellationToken);
         ConcurrentQueue<PreferredSummary> downloadedSummaries = [];
         ConcurrentQueue<int> pageIndexes = new(Enumerable.Range(initialPageIndex, int.MaxValue).Where(predicate));
         Lock writeJsonLock = new();
@@ -34,7 +34,7 @@ internal static class Preferred
                     using HttpClient httpClient = new HttpClient().AddEdgeHeaders();
                     while (pageIndexes.TryDequeue(out int pageIndex))
                     {
-                        string url = $"{settings.MoviePreferredUrl}/browse-movies?page={pageIndex}";
+                        string url = $"{settings.UrlPreferredMovies}/browse-movies?page={pageIndex}";
                         log($"Start {url}");
                         string html = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(url, cancellationToken), cancellationToken: token);
                         CQ cq = new(html);
@@ -65,7 +65,7 @@ internal static class Preferred
 
                         if (pageIndex % WriteCount == 0)
                         {
-                            JsonHelper.SerializeToFile(allSummaries, settings.MoviePreferredSummary, ref writeJsonLock);
+                            JsonHelper.SerializeToFile(allSummaries, settings.MetadataPreferredMoviesSummaries, ref writeJsonLock);
                         }
 
                         log($"End {url}");
@@ -76,7 +76,7 @@ internal static class Preferred
 
         log($"Downloaded {downloadedSummaries.Count}");
 
-        await settings.WriteMoviePreferredSummaryAsync(allSummaries, cancellationToken);
+        await settings.WriteMetadataPreferredMoviesSummariesAsync(allSummaries, cancellationToken);
         return downloadedSummaries;
     }
 
@@ -84,7 +84,7 @@ internal static class Preferred
     {
         degreeOfParallelism ??= MaxDegreeOfParallelism;
         ConcurrentQueue<PreferredSummary> downloadedSummaries = skipSummaries
-            ? new((await settings.LoadMoviePreferredSummaryAsync(cancellationToken)).Values)
+            ? new((await settings.LoadMetadataPreferredMoviesSummariesAsync(cancellationToken)).Values)
             : await DownloadSummariesAsync(settings, @continue, index, degreeOfParallelism, log, cancellationToken);
         await DownloadMetadataAsync(settings, downloadedSummaries, degreeOfParallelism, log, cancellationToken);
     }
@@ -94,9 +94,9 @@ internal static class Preferred
         degreeOfParallelism ??= MaxDegreeOfParallelism;
         log ??= Logger.WriteLine;
 
-        summaries ??= new ConcurrentQueue<PreferredSummary>((await settings.LoadMoviePreferredSummaryAsync(cancellationToken)).Values);
+        summaries ??= new ConcurrentQueue<PreferredSummary>((await settings.LoadMetadataPreferredMoviesSummariesAsync(cancellationToken)).Values);
         summaries = new ConcurrentQueue<PreferredSummary>(summaries.OrderBy(summary => summary.Link));
-        ConcurrentDictionary<string, List<PreferredMetadata>> details = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, List<PreferredMetadata>> details = await settings.LoadMetadataPreferredMoviesAsync(cancellationToken);
 
         int summaryIndex = 0;
         int summaryCount = summaries.Count;
@@ -210,14 +210,14 @@ internal static class Preferred
                         if (Interlocked.Increment(ref summaryIndex) % WriteCount == 0)
                         {
                             log($"{summaryIndex}/{summaryCount}: {summary.Link}");
-                            JsonHelper.SerializeToFile(details, settings.MoviePreferredMetadata, ref writeJsonLock);
+                            JsonHelper.SerializeToFile(details, settings.MetadataPreferredMovies, ref writeJsonLock);
                         }
                     }
                 },
                 degreeOfParallelism,
                 cancellationToken);
 
-        await settings.WriteMoviePreferredMetadataAsync(details, cancellationToken);
+        await settings.WriteMetadataPreferredMoviesAsync(details, cancellationToken);
     }
 
     internal static void CleanupMetadata(ConcurrentDictionary<string, List<PreferredMetadata>> details)
@@ -312,7 +312,7 @@ internal static class Preferred
             .Where(line => !"0".EqualsOrdinal(line.ElementAtOrDefault(4)))
             .Select(line => line[0])
             .ToArray();
-        await settings.WriteMovieImdbSpecialMetadataAsync(specialTitles, cancellationToken);
+        await settings.WriteMetadataAllMoviesSpecialAsync(specialTitles, cancellationToken);
     }
 
     internal static async Task WritePreferredSpecialTitles(string directory, string jsonPath, Action<string>? log = null)
@@ -355,9 +355,9 @@ internal static class Preferred
     {
         log ??= Logger.WriteLine;
 
-        HashSet<string> existingFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.MovieMetadataFileDirectory, TorrentHelper.TorrentSearchPattern);
+        HashSet<string> existingFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.DirectoryMetadataAllMoviesFile, TorrentHelper.TorrentSearchPattern);
 
-        ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMetadataPreferredMoviesAsync(cancellationToken);
 
         ConcurrentQueue<(PreferredMetadata Metadata, string Link, string File)> metadataToDownload = new(preferredMetadata
             .SelectMany(group => group.Value)
@@ -367,7 +367,7 @@ internal static class Preferred
                     (
                         metadata,
                         Link: availability.Value,
-                        File: Path.Combine(settings.MovieMetadataFileDirectory, $"{metadata.ImdbId}{Video.Delimiter}{availability.Value.GetPreferredExtractTopic()}{TorrentHelper.TorrentExtension}")
+                        File: Path.Combine(settings.DirectoryMetadataAllMoviesFile, $"{metadata.ImdbId}{Video.Delimiter}{availability.Value.GetPreferredExtractTopic()}{TorrentHelper.TorrentExtension}")
                     )))
             .Where(task => !existingFiles.Contains(task.File)));
         int count = metadataToDownload.Count;
@@ -406,11 +406,11 @@ internal static class Preferred
     {
         log ??= Logger.WriteLine;
 
-        ConcurrentDictionary<string, List<PreferredFileMetadata>> allFileMetadata = await settings.LoadMoviePreferredFileMetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, List<PreferredFileMetadata>> allFileMetadata = await settings.LoadMetadataPreferredMoviesFilesAsync(cancellationToken);
 
-        HashSet<string> existingFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.MovieMetadataFileDirectory, TorrentHelper.TorrentSearchPattern);
+        HashSet<string> existingFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.DirectoryMetadataAllMoviesFile, TorrentHelper.TorrentSearchPattern);
 
-        ConcurrentDictionary<string, List<PreferredMetadata>> allMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, List<PreferredMetadata>> allMetadata = await settings.LoadMetadataPreferredMoviesAsync(cancellationToken);
 
         (string Quality, string Link, PreferredMetadata Metadata)[] allVideos = allMetadata
             .SelectMany(group => group.Value)
@@ -450,7 +450,7 @@ internal static class Preferred
                     }
 
                     string linkExactTopic = video.Link.GetPreferredExtractTopic();
-                    string file = Path.Combine(settings.MovieMetadataFileDirectory, $"{video.Metadata.ImdbId}{Video.Delimiter}{linkExactTopic}{TorrentHelper.TorrentExtension}");
+                    string file = Path.Combine(settings.DirectoryMetadataAllMoviesFile, $"{video.Metadata.ImdbId}{Video.Delimiter}{linkExactTopic}{TorrentHelper.TorrentExtension}");
                     if (!existingFiles.Contains(file))
                     {
                         Debugger.Break(); // Missing file.
@@ -518,7 +518,7 @@ internal static class Preferred
 
         if (!isDryRun)
         {
-            await settings.WriteMoviePreferredFileMetadataAsync(allFileMetadata, cancellationToken);
+            await settings.WriteMetadataPreferredMoviesFilesAsync(allFileMetadata, cancellationToken);
         }
     }
 
@@ -527,7 +527,7 @@ internal static class Preferred
         log ??= Logger.WriteLine;
 
         using HttpClient httpClient = new HttpClient().AddEdgeHeaders();
-        ConcurrentDictionary<string, List<PreferredMetadata>> details = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, List<PreferredMetadata>> details = await settings.LoadMetadataPreferredMoviesAsync(cancellationToken);
 
         details
             .Values
@@ -567,7 +567,7 @@ internal static class Preferred
 
         if (!isDryRun)
         {
-            await settings.WriteMoviePreferredMetadataAsync(details, cancellationToken);
+            await settings.WriteMetadataPreferredMoviesAsync(details, cancellationToken);
         }
 
         details
@@ -611,7 +611,7 @@ internal static class Preferred
 
         if (!isDryRun)
         {
-            await settings.WriteMoviePreferredMetadataAsync(details, cancellationToken);
+            await settings.WriteMetadataPreferredMoviesAsync(details, cancellationToken);
         }
     }
 
@@ -625,10 +625,10 @@ internal static class Preferred
         log ??= Logger.WriteLine;
 
         ILookup<string, string> exactTopicToFiles = Directory
-            .EnumerateFiles(settings.MovieMetadataFileDirectory, TorrentHelper.TorrentSearchPattern)
+            .EnumerateFiles(settings.DirectoryMetadataAllMoviesFile, TorrentHelper.TorrentSearchPattern)
             .ToLookup(file => PathHelper.GetFileNameWithoutExtension(file).Split(Video.Delimiter)[1]);
 
-        ConcurrentDictionary<string, List<PreferredMetadata>> details = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, List<PreferredMetadata>> details = await settings.LoadMetadataPreferredMoviesAsync(cancellationToken);
         Dictionary<string, string> exactTopicToImdbIds = details
                 .Values
                 .SelectMany(group => group)
@@ -645,7 +645,7 @@ internal static class Preferred
                 log($"Delete {string.Join("|", fileGroup)}.");
                 if (!isDryRun)
                 {
-                    fileGroup.ForEach(file => FileHelper.MoveToDirectory(file, settings.MovieMetadataCacheBackupDirectory, true, true));
+                    fileGroup.ForEach(file => FileHelper.MoveToDirectory(file, settings.DirectoryMetadataAllMoviesCacheBackup, true, true));
                 }
 
                 return;

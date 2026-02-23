@@ -150,7 +150,7 @@ internal static partial class Video
 
         if (subtitleBackupDirectory.IsNullOrWhiteSpace())
         {
-            subtitleBackupDirectory = settings.TVSubtitleBackupDirectory;
+            subtitleBackupDirectory = settings.DirectoryMetadataAllTVSubtitles;
         }
 
         string[] mediaDirectoryFiles = Directory.GetFiles(mediaDirectory, PathHelper.AllSearchPattern, SearchOption.AllDirectories);

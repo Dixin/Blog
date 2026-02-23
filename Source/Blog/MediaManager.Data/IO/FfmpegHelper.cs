@@ -577,7 +577,7 @@ public static class FfmpegHelper
             .Select(subtitleGroup => subtitleGroup.OrderBy(subtitle => subtitle.Index).ToArray())
             .Do(subtitleArray =>
             {
-                if (inputVideo.Contains($"{Video.VersionSeparator}{settings.TopEnglishKeyword}"))
+                if (inputVideo.Contains($"{Video.VersionSeparator}{settings.KeywordTopEnglish}"))
                 {
                     Debug.Assert(subtitleArray.Count(subtitle => Regex.IsMatch(subtitle.Title, @"\bForced\b", RegexOptions.IgnoreCase)) <= 1);
                     Debug.Assert(subtitleArray.Count(subtitle => Regex.IsMatch(subtitle.Title, @"\bSDH\b", RegexOptions.IgnoreCase)) <= 1);

@@ -18,7 +18,7 @@ internal static class Shared
         log ??= Logger.WriteLine;
         degreeOfParallelism ??= MaxDegreeOfParallelism;
 
-        IDictionary<string, string> itemUrls = await DownloadListAsync(settings.MovieSharedUrl, degreeOfParallelism.Value, log, cancellationToken);
+        IDictionary<string, string> itemUrls = await DownloadListAsync(settings.UrlSharedMovies, degreeOfParallelism.Value, log, cancellationToken);
         return await DownloadItemsAsync(settings, itemUrls, degreeOfParallelism.Value, skipExisting, log, cancellationToken);
     }
 
@@ -62,9 +62,9 @@ internal static class Shared
         log($"Total items: {itemUrls.Count}.");
         ConcurrentDictionary<string, SharedMetadata> results = new(StringComparer.OrdinalIgnoreCase);
         IEnumerable<KeyValuePair<string, string>> downloadingUrls = itemUrls;
-        if (skipExisting && File.Exists(settings.MovieSharedMetadata))
+        if (skipExisting && File.Exists(settings.MetadataSharedMovies))
         {
-            (await settings.LoadMovieSharedMetadataAsync(cancellationToken))
+            (await settings.LoadMetadataSharedMoviesAsync(cancellationToken))
                 .AsParallel()
                 .Where(item => itemUrls.ContainsKey(item.Url))
                 .ForAll(item => results[item.Url] = item);
@@ -116,13 +116,13 @@ internal static class Shared
                     if (results.Count % WriteCount == 0)
                     {
                         SharedMetadata[] ordered = results.Values.OrderByDescending(item => item.Id).ToArray();
-                        JsonHelper.SerializeToFile(ordered, settings.MovieSharedMetadata, ref writeJsonLock);
+                        JsonHelper.SerializeToFile(ordered, settings.MetadataSharedMovies, ref writeJsonLock);
                     }
                 },
                 degreeOfParallelism,
                 cancellationToken);
         SharedMetadata[] ordered = results.Values.OrderByDescending(item => item.Id).ToArray();
-        await settings.WriteMovieSharedMetadataAsync(ordered, cancellationToken);
+        await settings.WriteMetadataSharedMoviesAsync(ordered, cancellationToken);
         return ordered;
     }
 }

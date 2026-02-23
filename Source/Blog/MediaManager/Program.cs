@@ -147,9 +147,9 @@ DirectorySettings[][] tvDrives = [
 
 DirectorySettings[][] metadataDrives = [
     [
-        settings.MovieMetadataDirectory,
-        settings.MovieMetadataBackupDirectory,
-        settings.TVMetadataDirectory
+        settings.DirectoryMetadataAllMovies,
+        settings.DirectoryMetadataAllMoviesBackup,
+        settings.DirectoryMetadataAllTV
     ]
 ];
 
@@ -449,9 +449,9 @@ DirectorySettings[][] metadataDrives = [
 //    settings.TVMainstream,
 //    settings.TVMainstreamOverflow);
 
-//await Imdb.DownloadAllMoviesAsync(settings, count => .., null, log, cancellationToken);
+//await Imdb.DownloadAllMoviesAsync(settings, length => .., null, log, cancellationToken);
 
-//await Imdb.DownloadAllTVsAsync(settings, [settings.TVMainstream], length => .., log, cancellationToken);
+//await Imdb.DownloadAllTVsAsync(settings, length => .., null, log, cancellationToken);
 
 //string[] genres = ["family", "animation", "documentary"];
 //string[] keywords = [];
@@ -605,7 +605,13 @@ DirectorySettings[][] metadataDrives = [
 //Video.PrintDirectoriesWithErrors(settings, @"L:\Files\Library", 3, isTV: true);
 //Video.PrintDirectoriesWithErrors(settings, @"K:\Files\Library.TV", 3, isTV: true);
 //Video.SyncImdbMetadata([(@"L:\Files\Library", 3), (@"K:\Files\Library.TV", 3)], log);
-
+//Video.SyncImdbMetadata([
+//    (@"G:\Files\Library", 3),
+//    (@"H:\Files\Library", 3),
+//    (@"I:\Files\Library", 3),
+//    (@"J:\Files\Library", 3),
+//    (@"K:\Files\Library.Movies", 3)
+//], log);
 //Video.EnumerateDirectories(@"L:\Files\Library\TV Mainstream.主流电视剧")
 //    .GroupBy(d => PathHelper.GetFileName(d)
 //        .Split(".", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).First()
@@ -737,7 +743,7 @@ static void RenameEpisode(ISettings settings, string mediaDirectory, string meta
     tvs.ForEach(tv => Video.RenameEpisodesWithTitle(
         tv,
         Path.Combine(metadataDirectory, PathHelper.GetFileName(tv)),
-        (file, title) => PathHelper.GetFileNameWithoutExtension(file).ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") ? file.ReplaceIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}", $"{Video.VersionSeparator}{settings.TopEnglishKeyword}.{title}") : file.ReplaceIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}", $"{Video.VersionSeparator}{settings.TopForeignKeyword}.{title}"),
+        (file, title) => PathHelper.GetFileNameWithoutExtension(file).ContainsIgnoreCase($"{Video.VersionSeparator}{settings.KeywordTopEnglish}") ? file.ReplaceIgnoreCase($"{Video.VersionSeparator}{settings.KeywordTopEnglish}", $"{Video.VersionSeparator}{settings.KeywordTopEnglish}.{title}") : file.ReplaceIgnoreCase($"{Video.VersionSeparator}{settings.KeywordTopForeign}", $"{Video.VersionSeparator}{settings.KeywordTopForeign}.{title}"),
         false,
         isDryRun,
         log));
@@ -1329,7 +1335,7 @@ static async Task MoveSharedMoviesAsync(ISettings settings, CancellationToken ca
 {
     log ??= Logger.WriteLine;
 
-    SharedMetadata[] ordered = await settings.LoadMovieSharedMetadataAsync(cancellationToken);
+    SharedMetadata[] ordered = await settings.LoadMetadataSharedMoviesAsync(cancellationToken);
     //var allMetadata = ordered
     //    .AsParallel()
     //    .Select(metadata =>
@@ -1858,8 +1864,8 @@ static void MoveSubtitles(string sourceDirectory, string destinationDirectory, b
 
 //await FfmpegHelper.ExtractAllAsync(settings, @"\\box-d\E\Files\Movies.Mkv", isTV: false, outputVideos: [input => PathHelper.ReplaceExtension(input, ".mp4")
 //    .ReplaceIgnoreCase(@"\\box-d\E\Files\Movies.Mkv\",@"G:\Files\Library\Movies Temp 1\New folder\")]);
-//await FfmpegHelper.ExtractAllAsync(settings, @"\\box-d\E\Files\TV", isTV: true, outputVideos: [input => PathHelper.ReplaceExtension(input, ".mp4")
-//    .ReplaceIgnoreCase(@"\\box-d\E\Files\TV\", @"L:\Files\Library\TV Temp 1\")]);
+//await FfmpegHelper.ExtractAllAsync(settings, @"\\box-d\E\Files\TV.Mkv", isTV: true, outputVideos: [input => PathHelper.ReplaceExtension(input, ".mp4")
+//    .ReplaceIgnoreCase(@"\\box-d\E\Files\TV.Mkv\", @"L:\Files\Library\TV Temp 1\")]);
 //await FfmpegHelper.ExtractAllAsync(settings, @"\\box-x\E\Files\New folder (2)", isTV: true, outputVideos: [input => PathHelper.ReplaceExtension(input, ".mp4")
 //    .ReplaceIgnoreCase(@"\\box-x\E\Files\New folder (2)\",@"L:\Files\Library\TV Temp 1\")]);
 //await FfmpegHelper.ExtractAllAsync(settings, @"\\box-x\E\Files\New folder (2)", isTV: true, outputVideos: [input => PathHelper.ReplaceExtension(input, ".mp4")
@@ -2062,3 +2068,4 @@ static void MoveSubtitles(string sourceDirectory, string destinationDirectory, b
 //.Distinct(StringComparer.OrdinalIgnoreCase)
 //.ToArray();
 //JsonHelper.SerializeToFile(imdbIds, Path.Combine(settings.LibraryDirectory, "TV.ImdbIds.json"));
+//await Skin.DownloadDetails(settings);

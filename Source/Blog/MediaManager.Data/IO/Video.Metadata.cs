@@ -648,14 +648,14 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
 
-        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> existingMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> existingMetadata = await settings.LoadMetadataLibraryMoviesAsync(cancellationToken);
 
         existingMetadata
             .Values
             .SelectMany(group => group.Keys, (group, video) => (group, video))
             .AsParallel()
             .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
-            .Where(video => !File.Exists(Path.IsPathRooted(video.video) ? video.video : Path.Combine(settings.LibraryDirectory, video.video)))
+            .Where(video => !File.Exists(Path.IsPathRooted(video.video) ? video.video : Path.Combine(settings.DirectoryLibrary, video.video)))
             .ForAll(video =>
             {
                 log($"Delete {video.video}.");
@@ -685,7 +685,7 @@ internal static partial class Video
                             return;
                         }
 
-                        if (file.IsVideo() && !file.IsDiskImage() && !existingVideos.Contains(Path.GetRelativePath(settings.LibraryDirectory, file)))
+                        if (file.IsVideo() && !file.IsDiskImage() && !existingVideos.Contains(Path.GetRelativePath(settings.DirectoryLibrary, file)))
                         {
 
                             if (Path.GetFileName(directory).EqualsIgnoreCase(Featurettes))
@@ -726,14 +726,14 @@ internal static partial class Video
                         .Videos
                         .Select(video =>
                         {
-                            if (!TryReadVideoMetadata(video, out VideoMetadata? videoMetadata, group.Metadata, settings.LibraryDirectory))
+                            if (!TryReadVideoMetadata(video, out VideoMetadata? videoMetadata, group.Metadata, settings.DirectoryLibrary))
                             {
                                 log($"!Fail: {video}");
                             }
 
                             return (
                                 ImdbId: group.Metadata?.ImdbId ?? string.Empty,
-                                RelativePath: Path.GetRelativePath(settings.LibraryDirectory, video),
+                                RelativePath: Path.GetRelativePath(settings.DirectoryLibrary, video),
                                 Metadata: videoMetadata);
                         }))
                     .ToLookup(video => video.ImdbId)
@@ -764,7 +764,7 @@ internal static partial class Video
             .ToArray()
             .ForEach(group => Debug.Assert(existingMetadata.TryRemove(group)));
 
-        await settings.WriteMovieLibraryMetadataAsync(existingMetadata, cancellationToken);
+        await settings.WriteMetadataLibraryMoviesAsync(existingMetadata, cancellationToken);
     }
 
     internal static async Task WriteExternalVideoMetadataAsync(ISettings settings, CancellationToken cancellationToken = default, params string[] directories)
@@ -785,35 +785,35 @@ internal static partial class Video
             .Distinct(metadata => metadata.ImdbId)
             .ToDictionary(metadata => metadata.ImdbId, metadata => metadata.Value);
 
-        await settings.WriteMovieExternalMetadataAsync(allVideoMetadata, cancellationToken);
+        await settings.WriteMetadataLibraryMoviesExternalAsync(allVideoMetadata, cancellationToken);
     }
 
     internal static async Task WriteMergedMovieMetadataAsync(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
-        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
-        ConcurrentDictionary<string, ImdbMetadata> mergedMetadata = await settings.LoadMovieMergedMetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMetadataLibraryMoviesAsync(cancellationToken);
+        ConcurrentDictionary<string, ImdbMetadata> mergedMetadata = await settings.LoadMetadataAllMoviesAsync(cancellationToken);
         ILookup<string, string> cacheFilesByImdbId = Directory
-            .EnumerateFiles(settings.MovieMetadataCacheDirectory, ImdbCacheSearchPattern)
+            .EnumerateFiles(settings.DirectoryMetadataAllMoviesCache, ImdbCacheSearchPattern)
             .ToLookup(file => PathHelper.GetFileNameWithoutExtension(file).Split(Delimiter).First());
         Dictionary<string, string> metadataFilesByImdbId = Directory
-            .EnumerateFiles(settings.MovieMetadataDirectory, ImdbMetadataSearchPattern)
+            .EnumerateFiles(settings.DirectoryMetadataAllMovies, ImdbMetadataSearchPattern)
             .ToDictionary(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty);
 
         HashSet<string> topLibraryImdbIds = libraryMetadata
             .Where(group => group
                 .Value
                 .Select(video => PathHelper.GetFileNameWithoutExtension(video.Key))
-                .Any(name => name.ContainsIgnoreCase(".1080p.") && (name.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopEnglishKeyword}") || name.EndsWithIgnoreCase($"{VersionSeparator}{settings.TopForeignKeyword}"))))
+                .Any(name => name.ContainsIgnoreCase(".1080p.") && (name.EndsWithIgnoreCase($"{VersionSeparator}{settings.KeywordTopEnglish}") || name.EndsWithIgnoreCase($"{VersionSeparator}{settings.KeywordTopForeign}"))))
             .Select(group => group.Key)
             .ToHashSetOrdinalIgnoreCase();
-        Action<string> recycleMetadata = settings.MovieMetadataBackupDirectory.IsNullOrWhiteSpace()
+        Action<string> recycleMetadata = settings.DirectoryMetadataAllMoviesBackup.IsNullOrWhiteSpace()
             ? FileHelper.Recycle
-            : file => FileHelper.MoveToDirectory(file, settings.MovieMetadataBackupDirectory, true, true);
-        Action<string> recycleCache = settings.MovieMetadataCacheBackupDirectory.IsNullOrWhiteSpace()
+            : file => FileHelper.MoveToDirectory(file, settings.DirectoryMetadataAllMoviesBackup, true, true);
+        Action<string> recycleCache = settings.DirectoryMetadataAllMoviesCacheBackup.IsNullOrWhiteSpace()
             ? FileHelper.Recycle
-            : file => FileHelper.MoveToDirectory(file, settings.MovieMetadataCacheBackupDirectory, true, true);
+            : file => FileHelper.MoveToDirectory(file, settings.DirectoryMetadataAllMoviesCacheBackup, true, true);
         KeyValuePair<string, string>[] metadataToDelete = metadataFilesByImdbId
             .Where(metadataFile => topLibraryImdbIds.Contains(metadataFile.Key))
             .ToArray();
@@ -864,7 +864,7 @@ internal static partial class Video
                 }
             });
 
-        await settings.WriteMovieMergedMetadataAsync(mergedMetadata, cancellationToken);
+        await settings.WriteMetadataAllMoviesAsync(mergedMetadata, cancellationToken);
     }
 
     internal static async Task MergeMovieMetadataAsync(ISettings settings, string metadataDirectory, CancellationToken cancellationToken = default)
@@ -892,7 +892,7 @@ internal static partial class Video
                 }
             });
 
-        await settings.WriteMovieMergedMetadataAsync(mergedMetadata, cancellationToken);
+        await settings.WriteMetadataAllMoviesAsync(mergedMetadata, cancellationToken);
     }
 
     internal static async Task DownloadMissingTitlesFromDoubanAsync(ISettings settings, string directory, int level = DefaultDirectoryLevel, bool skipFormatted = false, Action<string>? log = null, CancellationToken cancellationToken = default)
@@ -998,7 +998,7 @@ internal static partial class Video
             Debugger.Break();
         }
 
-        string[] translatedTitles = await File.ReadAllLinesAsync(settings.TempFile, cancellationToken);
+        string[] translatedTitles = await File.ReadAllLinesAsync(settings.FileTemp, cancellationToken);
         Debug.Assert(noTranslation.Count == translatedTitles.Length);
         noTranslation.ForEach((movie, index) =>
         {

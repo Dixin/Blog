@@ -80,19 +80,19 @@ public interface ISettings
 
     DirectorySettings TVTemp2 { get; init; }
 
-    string MovieMetadataDirectory { get; init; }
+    string DirectoryMetadataAllMovies { get; init; }
 
-    string MovieMetadataBackupDirectory { get; init; }
+    string DirectoryMetadataAllMoviesBackup { get; init; }
 
-    string MovieMetadataCacheDirectory { get; init; }
+    string DirectoryMetadataAllMoviesCache { get; init; }
 
-    string MovieMetadataFileDirectory { get; init; }
+    string DirectoryMetadataAllMoviesFile { get; init; }
 
-    string MovieMetadataCacheBackupDirectory { get; init; }
+    string DirectoryMetadataAllMoviesCacheBackup { get; init; }
 
-    string TVMetadataDirectory { get; init; }
+    string DirectoryMetadataAllTV { get; init; }
 
-    string TVMetadataCacheDirectory { get; init; }
+    string DirectoryMetadataAllTVCache { get; init; }
 
     Dictionary<string, string[]> MovieRegions { get; init; }
 
@@ -102,155 +102,155 @@ public interface ISettings
 
     string[] AllImdbKeywords { get; init; }
 
-    string[] MovieTopDuplications { get; init; }
+    string[] MetadataTopMoviesDuplication { get; init; }
 
-    string TopEnglishKeyword { get; init; }
+    string KeywordTopEnglish { get; init; }
 
-    string TopForeignKeyword { get; init; }
+    string KeywordTopForeign { get; init; }
 
-    string PreferredOldKeyword { get; init; }
+    string KeywordPreferredOld { get; init; }
 
-    string PreferredNewKeyword { get; init; }
+    string KeywordPreferredNew { get; init; }
 
-    string ContrastKeyword { get; init; }
+    string KeywordContrast { get; init; }
 
-    string LibraryDirectory { get; init; }
+    string DirectoryLibrary { get; init; }
 
-    string MovieSubtitleBackupDirectory { get; init; }
+    string DirectoryMetadataAllMoviesSubtitles { get; init; }
 
-    string TVSubtitleBackupDirectory { get; init; }
+    string DirectoryMetadataAllTVSubtitles { get; init; }
 
-    string Drive115Url { get; init; }
+    string UrlDrive115 { get; init; }
 
-    string MovieTopX265Url { get; init; }
+    string UrlTopMoviesX265 { get; init; }
 
-    string MovieTopX265EnglishUrl { get; init; }
+    string UrlTopMoviesX265English { get; init; }
 
-    string MovieTopX265ForeignUrl { get; init; }
+    string UrlTopMoviesX265Foreign { get; init; }
 
-    string MovieTopH264Url { get; init; }
+    string UrlTopMoviesH264 { get; init; }
 
-    string MovieTopH264EnglishUrl { get; init; }
+    string UrlTopMoviesH264English { get; init; }
 
-    string MovieTopH264ForeignUrl { get; init; }
+    string UrlTopMoviesH264Foreign { get; init; }
 
-    string MovieTopH264720PUrl { get; init; }
+    string UrlTopMoviesH264720P { get; init; }
 
-    string MoviePreferredUrl { get; init; }
+    string UrlPreferredMovies { get; init; }
 
-    string MovieSharedUrl { get; init; }
+    string UrlSharedMovies { get; init; }
 
-    string TVTopX265Url { get; init; }
+    string UrlTopTVX265 { get; init; }
 
-    string TVContrastUrl { get; init; }
+    string UrlContrastTV { get; init; }
 
-    string Drive115Metadata { get; init; }
+    string MetadataDrive115Media { get; init; }
 
-    string MovieLibraryMetadata { get; init; }
+    string MetadataLibraryMovies { get; init; }
 
-    string MovieIgnoredMetadata { get; init; }
+    string MetadataAllMoviesIgnored { get; init; }
 
-    string MovieExternalMetadata { get; init; }
+    string MetadataLibraryMoviesExternal { get; init; }
 
-    string MovieTopX265Metadata { get; init; }
+    string MetadataTopMoviesX265 { get; init; }
 
-    string MovieTopX265XMetadata { get; init; }
+    string MetadataTopMoviesX265X { get; init; }
 
-    string MovieTopH264Metadata { get; init; }
+    string MetadataTopMoviesH264 { get; init; }
 
-    string MovieTopH264XMetadata { get; init; }
+    string MetadataTopMoviesH264X { get; init; }
 
-    string MovieTopH264720PMetadata { get; init; }
+    string MetadataTopMoviesH264720P { get; init; }
 
-    string MoviePreferredSummary { get; init; }
+    string MetadataPreferredMoviesSummaries { get; init; }
 
-    string MoviePreferredMetadata { get; init; }
+    string MetadataPreferredMovies { get; init; }
 
-    string MoviePreferredFileMetadata { get; init; }
+    string MetadataPreferredMoviesFiles { get; init; }
 
-    string MovieRareMetadata { get; init; }
+    string MetadataRareMovies { get; init; }
 
-    string MovieSharedMetadata { get; init; }
+    string MetadataSharedMovies { get; init; }
 
-    string MovieImdbSpecialMetadata { get; init; }
+    string MetadataAllMoviesSpecial { get; init; }
 
-    string MovieMergedMetadata { get; init; }
+    string MetadataAllMovies { get; init; }
 
-    string TVTopX265Metadata { get; init; }
+    string MetadataTopTVX265 { get; init; }
 
-    string TVContrastMetadata { get; init; }
+    string MetadataContrastTV { get; init; }
 
-    string TopMagnetUrls { get; init; }
+    string MetadataTopMediaMagnetUrls { get; init; }
 
-    string TopMetadata { get; init; }
+    string MetadataTopMedia { get; init; }
 
-    string TempFile { get; init; }
+    string FileTemp { get; init; }
 
-    Task<Dictionary<string, VideoMetadata>> LoadMovieExternalMetadataAsync(CancellationToken cancellationToken);
+    Task<Dictionary<string, VideoMetadata>> LoadMetadataLibraryMoviesExternalAsync(CancellationToken cancellationToken);
 
-    Task WriteMovieExternalMetadataAsync(Dictionary<string, VideoMetadata> value, CancellationToken cancellationToken);
+    Task WriteMetadataLibraryMoviesExternalAsync(Dictionary<string, VideoMetadata> value, CancellationToken cancellationToken);
 
-    Task<ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>>> LoadMovieLibraryMetadataAsync(CancellationToken cancellationToken);
+    Task<ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>>> LoadMetadataLibraryMoviesAsync(CancellationToken cancellationToken);
 
-    Task WriteMovieLibraryMetadataAsync(ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> value, CancellationToken cancellationToken);
+    Task WriteMetadataLibraryMoviesAsync(ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> value, CancellationToken cancellationToken);
 
-    Task<HashSet<string>> LoadIgnoredAsync(CancellationToken cancellationToken);
+    Task<HashSet<string>> LoadMetadataAllMoviesIgnoredAsync(CancellationToken cancellationToken);
 
-    Task WriteMovieIgnoredMetadataAsync(HashSet<string> value, CancellationToken cancellationToken);
+    Task WriteMetadataAllMoviesIgnoredAsync(HashSet<string> value, CancellationToken cancellationToken);
 
-    Task<Dictionary<string, TopMetadata[]>> LoadMovieTopX265MetadataAsync(CancellationToken cancellationToken);
+    Task<Dictionary<string, TopMetadata[]>> LoadMetadataTopMoviesX265Async(CancellationToken cancellationToken);
 
-    Task WriteMovieTopX265MetadataAsync(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken);
+    Task WriteMetadataTopMoviesX265Async(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken);
 
-    Task<Dictionary<string, TopMetadata[]>> LoadMovieTopH264MetadataAsync(CancellationToken cancellationToken);
+    Task<Dictionary<string, TopMetadata[]>> LoadMetadataTopMoviesH264Async(CancellationToken cancellationToken);
 
-    Task WriteMovieTopH264MetadataAsync(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken);
+    Task WriteMetadataTopMoviesH264Async(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken);
 
-    Task<Dictionary<string, TopMetadata[]>> LoadMovieTopX265XMetadataAsync(CancellationToken cancellationToken);
+    Task<Dictionary<string, TopMetadata[]>> LoadMetadataTopMoviesX265XAsync(CancellationToken cancellationToken);
 
-    Task WriteMovieTopX265XMetadataAsync(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken);
+    Task WriteMetadataTopMoviesX265XAsync(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken);
 
-    Task<Dictionary<string, TopMetadata[]>> LoadMovieTopH264XMetadataAsync(CancellationToken cancellationToken);
+    Task<Dictionary<string, TopMetadata[]>> LoadMetadataTopMoviesH264XAsync(CancellationToken cancellationToken);
 
-    Task WriteMovieTopH264XMetadataAsync(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken);
+    Task WriteMetadataTopMoviesH264XAsync(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken);
 
-    Task<Dictionary<string, TopMetadata[]>> LoadMovieTopH264720PMetadataAsync(CancellationToken cancellationToken);
+    Task<Dictionary<string, TopMetadata[]>> LoadMetadataTopMoviesH264720PAsync(CancellationToken cancellationToken);
 
-    Task WriteMovieTopH264720PMetadataAsync(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken);
+    Task WriteMetadataTopMoviesH264720PAsync(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken);
 
-    Task<ConcurrentDictionary<string, PreferredSummary>> LoadMoviePreferredSummaryAsync(CancellationToken cancellationToken);
+    Task<ConcurrentDictionary<string, PreferredSummary>> LoadMetadataPreferredMoviesSummariesAsync(CancellationToken cancellationToken);
 
-    Task WriteMoviePreferredSummaryAsync(ConcurrentDictionary<string, PreferredSummary> value, CancellationToken cancellationToken);
+    Task WriteMetadataPreferredMoviesSummariesAsync(ConcurrentDictionary<string, PreferredSummary> value, CancellationToken cancellationToken);
 
-    Task<ConcurrentDictionary<string, List<PreferredMetadata>>> LoadMoviePreferredMetadataAsync(CancellationToken cancellationToken);
+    Task<ConcurrentDictionary<string, List<PreferredMetadata>>> LoadMetadataPreferredMoviesAsync(CancellationToken cancellationToken);
 
-    Task WriteMoviePreferredMetadataAsync(ConcurrentDictionary<string, List<PreferredMetadata>> value, CancellationToken cancellationToken);
+    Task WriteMetadataPreferredMoviesAsync(ConcurrentDictionary<string, List<PreferredMetadata>> value, CancellationToken cancellationToken);
 
-    Task<ConcurrentDictionary<string, List<PreferredFileMetadata>>> LoadMoviePreferredFileMetadataAsync(CancellationToken cancellationToken);
+    Task<ConcurrentDictionary<string, List<PreferredFileMetadata>>> LoadMetadataPreferredMoviesFilesAsync(CancellationToken cancellationToken);
 
-    Task WriteMoviePreferredFileMetadataAsync(ConcurrentDictionary<string, List<PreferredFileMetadata>> value, CancellationToken cancellationToken);
+    Task WriteMetadataPreferredMoviesFilesAsync(ConcurrentDictionary<string, List<PreferredFileMetadata>> value, CancellationToken cancellationToken);
 
-    Task<ConcurrentDictionary<string, RareMetadata>> LoadMovieRareMetadataAsync(CancellationToken cancellationToken);
+    Task<ConcurrentDictionary<string, RareMetadata>> LoadMetadataRareMoviesAsync(CancellationToken cancellationToken);
 
-    Task WriteMovieRareMetadataAsync(ConcurrentDictionary<string, RareMetadata> value, CancellationToken cancellationToken);
+    Task WriteMetadataRareMoviesAsync(ConcurrentDictionary<string, RareMetadata> value, CancellationToken cancellationToken);
 
-    Task<SharedMetadata[]> LoadMovieSharedMetadataAsync(CancellationToken cancellationToken);
+    Task<SharedMetadata[]> LoadMetadataSharedMoviesAsync(CancellationToken cancellationToken);
 
-    Task WriteMovieSharedMetadataAsync(SharedMetadata[] value, CancellationToken cancellationToken);
+    Task WriteMetadataSharedMoviesAsync(SharedMetadata[] value, CancellationToken cancellationToken);
 
-    Task<string[]> LoadMovieImdbSpecialMetadataAsync(CancellationToken cancellationToken);
+    Task<string[]> LoadMetadataAllMoviesSpecialAsync(CancellationToken cancellationToken);
 
-    Task WriteMovieImdbSpecialMetadataAsync(string[] value, CancellationToken cancellationToken);
+    Task WriteMetadataAllMoviesSpecialAsync(string[] value, CancellationToken cancellationToken);
 
-    Task<ConcurrentDictionary<string, ImdbMetadata>> LoadMovieMergedMetadataAsync(CancellationToken cancellationToken);
+    Task<ConcurrentDictionary<string, ImdbMetadata>> LoadMetadataAllMoviesAsync(CancellationToken cancellationToken);
 
-    Task WriteMovieMergedMetadataAsync(ConcurrentDictionary<string, ImdbMetadata> value, CancellationToken cancellationToken);
+    Task WriteMetadataAllMoviesAsync(ConcurrentDictionary<string, ImdbMetadata> value, CancellationToken cancellationToken);
 
-    Task<Dictionary<string, TopMetadata[]>> LoadTVTopX265MetadataAsync(CancellationToken cancellationToken);
+    Task<Dictionary<string, TopMetadata[]>> LoadMetadataTopTVX265Async(CancellationToken cancellationToken);
 
-    Task WriteTVTopX265MetadataAsync(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken);
+    Task WriteMetadataTopTVX265Async(Dictionary<string, TopMetadata[]> value, CancellationToken cancellationToken);
 
-    Task<ParallelQuery<(int Order, string Title, string Category, string Id, string MagnetUrl, string ImdbId, DateTime DateTime)>> LoadTopMetadataAsync(CancellationToken cancellationToken);
+    Task<ParallelQuery<(int Order, string Title, string Category, string Id, string MagnetUrl, string ImdbId, DateTime DateTime)>> LoadMetadataTopMediaAsync(CancellationToken cancellationToken);
 
-    Task<ContrastMetadata[]> LoadTVContrastMetadataAsync(CancellationToken cancellationToken);
+    Task<ContrastMetadata[]> LoadMetadataContrastTVAsync(CancellationToken cancellationToken);
 }

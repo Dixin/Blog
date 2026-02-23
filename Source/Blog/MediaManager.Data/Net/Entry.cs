@@ -70,11 +70,11 @@ internal static partial class Entry
 
         await JsonHelper.SerializeToFileAsync(entryMetadata, entryJsonPath, cancellationToken);
 
-        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
-        Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadMovieTopX265MetadataAsync(cancellationToken);
-        Dictionary<string, TopMetadata[]> h264Metadata = await settings.LoadMovieTopH264MetadataAsync(cancellationToken);
-        ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
-        Dictionary<string, TopMetadata[]> h264720PMetadata = await settings.LoadMovieTopH264720PMetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMetadataLibraryMoviesAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadMetadataTopMoviesX265Async(cancellationToken);
+        Dictionary<string, TopMetadata[]> h264Metadata = await settings.LoadMetadataTopMoviesH264Async(cancellationToken);
+        ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMetadataPreferredMoviesAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> h264720PMetadata = await settings.LoadMetadataTopMoviesH264720PAsync(cancellationToken);
         entryMetadata
             .SelectMany(entry => ImdbMetadata.ImdbIdInLinkRegex().Matches(entry.Value.Content)
                 .Where(match => match.Success)
