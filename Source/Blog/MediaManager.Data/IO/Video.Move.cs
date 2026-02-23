@@ -21,12 +21,13 @@ internal static partial class Video
                 string newFile = rename(file, index);
                 if (!file.EqualsOrdinal(newFile))
                 {
-                    log(file);
+                    log(file.EscapeMarkup());
                     if (!isDryRun)
                     {
                         FileHelper.Move(file, newFile, overwrite);
                     }
-                    log(newFile);
+
+                    log(newFile.EscapeMarkup());
                 }
             });
     }
@@ -1517,9 +1518,9 @@ internal static partial class Video
                     return;
                 }
 
-                log(file);
+                log(file.EscapeMarkup());
                 string newFile = isDryRun ? PathHelper.ReplaceFileNameWithoutExtension(file, newFileName) : FileHelper.ReplaceFileNameWithoutExtension(file, newFileName);
-                log(newFileName.EndsWithIgnoreCase(extension) ? $"!{newFile}" : newFile);
+                log(newFileName.EndsWithIgnoreCase(extension) ? $"!{newFile.EscapeMarkup()}" : newFile.EscapeMarkup());
                 log("");
             });
 
