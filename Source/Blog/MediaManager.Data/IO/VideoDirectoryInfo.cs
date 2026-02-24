@@ -2,9 +2,8 @@ namespace MediaManager.IO;
 
 using Examples.Common;
 using Examples.IO;
-using Examples.Text.RegularExpressions;
 
-internal record VideoDirectoryInfo(
+internal partial record VideoDirectoryInfo(
     string DefaultTitle1, string DefaultTitle2, string DefaultTitle3,
     string OriginalTitle1, string OriginalTitle2, string OriginalTitle3,
     string Year,
@@ -14,26 +13,26 @@ internal record VideoDirectoryInfo(
     string Resolution, string Source,
     string Is3D, string Hdr) : INaming, ISimpleParsable<VideoDirectoryInfo>
 {
-    private static readonly Regex NameRegex = RegexHelper.Create(
-        @"^",
-        @"([^\.^\-^\=]+)",
-        @"(\-[^\.^\-^\=]+)?",
-        @"(\-[^\.^\-^\=]+)?",
-        @"((\=[^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?)?",
-        @"\.",
-        @"([0-9\-]{4})",
-        @"\.",
-        @"([^\.^\-^\=]+)",
-        @"(\-[^\.^\-^\=]+)?",
-        @"(\-[^\.^\-^\=]+)?",
-        @"(\-[^\.^\-^\=]+)?",
-        @"\[([0-9]\.[0-9]|\-)-([0-9\.KM]+|\-)\]",
-        @"\[(\-|13\+|16\+|18|18\+|AO|Approved|C|E|G|GP|M|MA17|MPG|NA|NC17|NotRated|Passed|PG|PG13|R|T|TV13|TV14|TVG|TVMA|TVPG|TVY|TVY7|TVY7FV|Unrated|X)\]",
-        @"(\[(2160|1080|720|480)(B|B[2-9]|F|F[2-9]|H|H[2-9]|K|K[2-9]|N|N[2-9]|P|P[2-9]|X|X[2-9]|Y|Y[2-9]|Z|Z[2-9]|b|b[2-9]|f|f[2-9]|h|h[2-9]|k|k[2-9]|n|n[2-9]|p|p[2-9]|x|x[2-9]|y|y[2-9]|z|z[2-9])(\+)?\])?",
-        @"(\[3D\])?",
-        @"(\[HDR\]|\[DV\])?",
-        @"$"
-    );
+    [GeneratedRegex(
+        @"^" +
+        @"([^\.^\-^\=]+)" +
+        @"(\-[^\.^\-^\=]+)?" +
+        @"(\-[^\.^\-^\=]+)?" +
+        @"((\=[^\.^\-^\=]+)(\-[^\.^\-^\=]+)?(\-[^\.^\-^\=]+)?)?" +
+        @"\." +
+        @"([0-9\-]{4})" +
+        @"\." +
+        @"([^\.^\-^\=]+)" +
+        @"(\-[^\.^\-^\=]+)?" +
+        @"(\-[^\.^\-^\=]+)?" +
+        @"(\-[^\.^\-^\=]+)?" +
+        @"\[([0-9]\.[0-9]|\-|10\.0)-([0-9\.KM]+|\-)\]" +
+        @"\[(\-|13\+|16\+|18|18\+|AO|Approved|C|E|G|GP|M|MA17|MPG|NA|NC17|NotRated|Passed|PG|PG13|R|T|TV13|TV14|TVG|TVMA|TVPG|TVY|TVY7|TVY7FV|Unrated|X)\]" +
+        @"(\[(2160|1080|720|480)(B|B[2-9]|F|F[2-9]|H|H[2-9]|K|K[2-9]|N|N[2-9]|P|P[2-9]|X|X[2-9]|Y|Y[2-9]|Z|Z[2-9]|b|b[2-9]|f|f[2-9]|h|h[2-9]|k|k[2-9]|n|n[2-9]|p|p[2-9]|x|x[2-9]|y|y[2-9]|z|z[2-9])(\+)?\])?" +
+        @"(\[3D\])?" +
+        @"(\[HDR\]|\[DV\])?" +
+        @"$")]
+    private static partial Regex NameRegex();
 
     internal string FormattedDefinition
     {
@@ -77,7 +76,7 @@ internal record VideoDirectoryInfo(
             return false;
         }
 
-        Match match = NameRegex.Match(value);
+        Match match = NameRegex().Match(value);
         if (!match.Success)
         {
             result = null;
