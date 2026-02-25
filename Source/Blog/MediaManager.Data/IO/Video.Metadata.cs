@@ -20,7 +20,7 @@ internal static partial class Video
             .Where(metadata => !PathHelper.GetFileNameWithoutExtension(metadata).EndsWithIgnoreCase($"{Delimiter}{flag}"))
             .Select(metadata => (Metadata: metadata, Backup: PathHelper.AddFilePostfix(metadata, $"{Delimiter}{flag}")))
             .Where(metadata => overwrite || !File.Exists(metadata.Backup))
-            .Do(metadata => log(metadata.Backup))
+            .Do(metadata => log(metadata.Backup.EscapeMarkup()))
             .ForEach(metadata => File.Copy(metadata.Metadata, metadata.Backup, overwrite));
     }
 
@@ -181,8 +181,8 @@ internal static partial class Video
 
     internal static void MoveMetadata(string directory, string cacheDirectory, string metadataDirectory, int level = DefaultDirectoryLevel)
     {
-        string[] cacheFiles = Directory.GetFiles(cacheDirectory, ImdbCacheSearchPattern);
-        string[] metadataFiles = Directory.GetFiles(metadataDirectory, ImdbMetadataSearchPattern);
+        List<string> cacheFiles = Directory.EnumerateFiles(cacheDirectory, ImdbCacheSearchPattern).ToList();
+        List<string> metadataFiles = Directory.EnumerateFiles(metadataDirectory, ImdbMetadataSearchPattern).ToList();
 
         EnumerateDirectories(directory, level).ForEach(movie =>
         {
@@ -205,12 +205,24 @@ internal static partial class Video
                     return name.EqualsIgnoreCase(imdbId) || name.StartsWithIgnoreCase($"{imdbId}{Delimiter}");
                 })
                 .ToArray()
-                .ForEach(file => FileHelper.TryMoveToDirectory(file, movie));
+                .ForEach(file =>
+                {
+                    if (FileHelper.TryMoveToDirectory(file, movie))
+                    {
+                        cacheFiles.Remove(file);
+                    }
+                });
 
             metadataFiles
                 .Where(file => file.HasImdbId(imdbId))
                 .ToArray()
-                .ForEach(file => FileHelper.TryMoveToDirectory(file, movie));
+                .ForEach(file =>
+                {
+                    if (FileHelper.TryMoveToDirectory(file, movie))
+                    {
+                        metadataFiles.Remove(file);
+                    }
+                });
         });
     }
 
@@ -246,31 +258,31 @@ internal static partial class Video
             switch (nfoImdbIds.Length)
             {
                 case 0:
-                {
-                    log($"!No JSON or XML metadata in {directory.EscapeMarkup()}.");
-                    return false;
-                }
-                case > 1:
-                {
-                    log($"[red]!Inconsistent IMDB ids {string.Join(", ", nfoImdbIds)} in {directory.EscapeMarkup()}.[/]");
-                    if (resolveImdbIdConflict is null)
                     {
+                        log($"!No JSON or XML metadata in {directory.EscapeMarkup()}.");
                         return false;
                     }
-
-                    imdbId = resolveImdbIdConflict(directory, files);
-                    break;
-                }
-                default:
-                {
-                    imdbId = nfoImdbIds.Single();
-                    if (!imdbId.IsImdbId())
+                case > 1:
                     {
-                        imdbId = NotExistingFlag;
-                    }
+                        log($"[red]!Inconsistent IMDB ids {string.Join(", ", nfoImdbIds)} in {directory.EscapeMarkup()}.[/]");
+                        if (resolveImdbIdConflict is null)
+                        {
+                            return false;
+                        }
 
-                    break;
-                }
+                        imdbId = resolveImdbIdConflict(directory, files);
+                        break;
+                    }
+                default:
+                    {
+                        imdbId = nfoImdbIds.Single();
+                        if (!imdbId.IsImdbId())
+                        {
+                            imdbId = NotExistingFlag;
+                        }
+
+                        break;
+                    }
             }
         }
 
@@ -959,7 +971,7 @@ internal static partial class Video
                         }
 
                         log($"""
-                            {movie}
+                            {movie.EscapeMarkup()}
                             {backupEnglishTitle}
                             {translatedTitle}
                             {doubanTitle}
@@ -991,7 +1003,7 @@ internal static partial class Video
 
         noTranslation.ForEach(movie => log($"{movie.Title} ({movie.Year})"));
         log(string.Empty);
-        noTranslation.OrderBy(movie => movie.Directory).ForEach(movie => log($"{movie.Title} ({movie.Year}) - {movie.Directory}"));
+        noTranslation.OrderBy(movie => movie.Directory).ForEach(movie => log($"{movie.Title} ({movie.Year}) - {movie.Directory.EscapeMarkup()}"));
 
         if (Debugger.IsAttached)
         {

@@ -1274,7 +1274,7 @@ internal static partial class Video
         log ??= Logger.WriteLine;
 
         string[] directories = EnumerateDirectories(directory, level).ToArray();
-        directories.Where(DirectoryHelper.IsHidden).Prepend("Hidden backup").Append(string.Empty).ForEach(log);
+        directories.Where(DirectoryHelper.IsHidden).Prepend("Hidden backup").Append(string.Empty).ForEach(movie => log(movie.EscapeMarkup()));
         directories
             .ForEach(movie =>
             {
@@ -1298,9 +1298,9 @@ internal static partial class Video
                         .SelectMany(advisory => advisory.Value)
                         .Select(advisory => advisory.Key));
                 string keywords = string.Join(VersionSeparator, OrderedKeywords.Intersect(metadata.MergedKeywords).Take(3));
-                log(movie);
+                log(movie.EscapeMarkup());
                 string newMovie = DirectoryHelper.ReplaceDirectoryName(movie, $"{name}{AdditionalMetadataSeparator}{severity}{Delimiter}{keywords}");
-                log(newMovie);
+                log(newMovie.EscapeMarkup());
             });
     }
 

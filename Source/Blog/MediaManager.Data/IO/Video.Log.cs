@@ -76,7 +76,7 @@ internal static partial class Video
             .OrderBy(result => result.Video)
             .ForEach(result =>
             {
-                log(result.Error.Message ?? result.Video.EscapeMarkup());
+                log(result.Error.Message?.EscapeMarkup() ?? result.Video.EscapeMarkup());
                 result.Error.Action?.Invoke(result.Video);
             });
     }
@@ -336,7 +336,7 @@ internal static partial class Video
 
                 if (!VideoDirectoryInfo.TryParse(trimmedMovie, out VideoDirectoryInfo? directoryInfo))
                 {
-                    log($"!Directory: {trimmedMovie}");
+                    log($"!Directory: {trimmedMovie.EscapeMarkup()}");
                     return;
                 }
 
@@ -360,7 +360,7 @@ internal static partial class Video
                     log($"!Special character ·: {trimmedMovie}");
                 }
 
-                DirectorySpecialCharacters.Where(trimmedMovie.Contains).ForEach(specialCharacter => log($"!Special character {specialCharacter}: {trimmedMovie}"));
+                DirectorySpecialCharacters.Where(trimmedMovie.Contains).ForEach(specialCharacter => log($"!Special character {specialCharacter}: {trimmedMovie.EscapeMarkup()}"));
                 translations
                     .Where(translated => Regex.IsMatch(translated.Split(InstallmentSeparator).First(), "[0-9]+"))
                     .ForEach(translated => log($"!Translation has number {translated}: {movie.EscapeMarkup()}"));
@@ -2265,13 +2265,13 @@ internal static partial class Video
                             string[] remoteImdbIds = preferredTitles.SelectMany(preferredTitle => preferredTitlesToImdbIds[preferredTitle]).ToArray();
                             if (!remoteImdbIds.ContainsIgnoreCase(xml.XmlImdbId))
                             {
-                                log($"!XML IMDB id {xml.XmlImdbId} should be {string.Join("|", remoteImdbIds)} for '{xml.XmlTitle}': {xml.File}");
+                                log($"!XML IMDB id {xml.XmlImdbId} should be {string.Join("|", remoteImdbIds)} for '{xml.XmlTitle.EscapeMarkup()}': {xml.File.EscapeMarkup()}");
                             }
 
                             return;
                         }
 
-                        log($"-{xml.XmlImdbId} with title {preferredVideo.Name} is missing in preferred for '{xml.XmlTitle}': {movie.Directory}");
+                        log($"-{xml.XmlImdbId} with title {preferredVideo.Name.EscapeMarkup()} is missing in preferred for '{xml.XmlTitle.EscapeMarkup()}': {movie.Directory.EscapeMarkup()}");
                     });
                 }
 
@@ -3209,107 +3209,120 @@ internal static partial class Video
         });
     }
 
-    internal static async Task PrintImdbFranchiseAsync(ISettings settings, string directory, int level = DefaultDirectoryLevel, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task<List<string>> PrintImdbFranchiseAsync(ISettings settings, string directory, int level = DefaultDirectoryLevel, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
         ILookup<string, (int Order, string Title, string Category, string Id, string MagnetUrl, string ImdbId, DateTime DateTime)> topMetadata = (await settings.LoadMetadataTopMediaAsync(cancellationToken))
-        .Where(metadata => metadata.ImdbId.IsImdbId())
-        .ToLookup(metadata => metadata.ImdbId);
+            .Where(metadata => metadata.ImdbId.IsImdbId())
+            .ToLookup(metadata => metadata.ImdbId);
         ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMetadataPreferredMoviesAsync(cancellationToken);
         ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMetadataLibraryMoviesAsync(cancellationToken);
-        
+
+        List<string> franchiseMovies = [];
         EnumerateDirectories(directory, level)
             .Where(movie => !movie.ContainsIgnoreCase(@"\Delete"))
             .ForEach(movie =>
             {
-                if (ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata))
+                if (!ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata))
                 {
-                    if (imdbMetadata.Connections.TryGetValue("Followed by", out string[][]? followedBy)
-                        && followedBy.Any())
+                    return;
+                }
+
+                bool isFranchise = false;
+                if (imdbMetadata.Connections.TryGetValue("Followed by", out string[][]? followedBy)
+                    && followedBy.Any())
+                {
+                    isFranchise = true;
+                    log(movie.EscapeMarkup());
+                    log("[yellow]Followed by:[/]");
+                    followedBy.ForEach(array =>
                     {
-                        log(movie.EscapeMarkup());
-                        log("[yellow]Followed by:[/]");
-                        followedBy.ForEach(array =>
+                        array[0] = $"[green]{array[0].EscapeMarkup()}[/]";
+                        string item = string.Join("|", array);
+                        log(item);
+                        Match match = ImdbMetadata.ImdbIdSubstringRegex().Match(item);
+                        if (!match.Success)
                         {
-                            array[0] = $"[green]{array[0].EscapeMarkup()}[/]";
-                            string item = string.Join("|", array);
-                            log(item);
-                            Match match = ImdbMetadata.ImdbIdSubstringRegex().Match(item);
-                            if (!match.Success)
-                            {
-                                return;
-                            }
+                            return;
+                        }
 
-                            string imdbId = match.Value;
-                            Debug.Assert(imdbId.IsImdbId());
-                            if (libraryMetadata.TryGetValue(imdbId, out ConcurrentDictionary<string, VideoMetadata>? localMetadata))
-                            {
-                                localMetadata.ForEach(metadata => log($"[red]{metadata.Key.EscapeMarkup()}[/]"));
-                                log(string.Empty);
-                                return;
-                            }
-
-                            if (topMetadata.Contains(imdbId))
-                            {
-                                topMetadata[imdbId].ForEach(metadata => log($"{metadata.Title.EscapeMarkup()}|[green]{metadata.MagnetUrl}[/]"));
-                            }
-
-                            if (preferredMetadata.TryGetValue(imdbId, out List<PreferredMetadata>? preferredMetadataList))
-                            {
-                                preferredMetadataList
-                                    .SelectMany(metadata => metadata.PreferredAvailabilities, (metadata, availability) => (metadata, availability))
-                                    .ForEach(availability => log($"{availability.metadata.Title.EscapeMarkup()}|[yellow]{availability.availability.Key}[/]|[green]{availability.availability.Value}[/]"));
-                            }
-
+                        string imdbId = match.Value;
+                        Debug.Assert(imdbId.IsImdbId());
+                        if (libraryMetadata.TryGetValue(imdbId, out ConcurrentDictionary<string, VideoMetadata>? localMetadata))
+                        {
+                            localMetadata.ForEach(metadata => log($"[red]{metadata.Key.EscapeMarkup()}[/]"));
                             log(string.Empty);
-                        });
+                            return;
+                        }
+
+                        if (topMetadata.Contains(imdbId))
+                        {
+                            topMetadata[imdbId].ForEach(metadata => log($"{metadata.Title.EscapeMarkup()}|[green]{metadata.MagnetUrl}[/]"));
+                        }
+
+                        if (preferredMetadata.TryGetValue(imdbId, out List<PreferredMetadata>? preferredMetadataList))
+                        {
+                            preferredMetadataList
+                                .SelectMany(metadata => metadata.PreferredAvailabilities, (metadata, availability) => (metadata, availability))
+                                .ForEach(availability => log($"{availability.metadata.Title.EscapeMarkup()}|[yellow]{availability.availability.Key}[/]|[green]{availability.availability.Value}[/]"));
+                        }
 
                         log(string.Empty);
-                    }
+                    });
 
-                    if (imdbMetadata.Connections.TryGetValue("Follows", out string[][]? follows)
-                        && follows.Any())
+                    log(string.Empty);
+                }
+
+                if (imdbMetadata.Connections.TryGetValue("Follows", out string[][]? follows)
+                    && follows.Any())
+                {
+                    isFranchise = true;
+                    log(movie.EscapeMarkup());
+                    log("[yellow]Followed by:[/]");
+                    follows.ForEach(array =>
                     {
-                        log(movie.EscapeMarkup());
-                        log("[yellow]Followed by:[/]");
-                        follows.ForEach(array =>
+                        array[0] = $"[green]{array[0].EscapeMarkup()}[/]";
+                        string item = string.Join("|", array);
+                        log(item);
+                        Match match = ImdbMetadata.ImdbIdSubstringRegex().Match(item);
+                        if (!match.Success)
                         {
-                            array[0] = $"[green]{array[0].EscapeMarkup()}[/]";
-                            string item = string.Join("|", array);
-                            log(item);
-                            Match match = ImdbMetadata.ImdbIdSubstringRegex().Match(item);
-                            if (!match.Success)
-                            {
-                                return;
-                            }
+                            return;
+                        }
 
-                            string imdbId = match.Value;
-                            Debug.Assert(imdbId.IsImdbId());
-                            if (libraryMetadata.TryGetValue(imdbId, out ConcurrentDictionary<string, VideoMetadata>? localMetadata))
-                            {
-                                localMetadata.ForEach(metadata => log($"[red]{metadata.Key.EscapeMarkup()}[/]"));
-                                log(string.Empty);
-                                return;
-                            }
-
-                            if (topMetadata.Contains(imdbId))
-                            {
-                                topMetadata[imdbId].ForEach(metadata => log($"{metadata.Title.EscapeMarkup()}|[green]{metadata.MagnetUrl}[/]"));
-                            }
-
-                            if (preferredMetadata.TryGetValue(imdbId, out List<PreferredMetadata>? preferredMetadataList))
-                            {
-                                preferredMetadataList
-                                    .SelectMany(metadata => metadata.PreferredAvailabilities, (metadata, availability) => (metadata, availability))
-                                    .ForEach(availability => log($"{availability.metadata.Title.EscapeMarkup()}|[yellow]{availability.availability.Key}[/]|[green]{availability.availability.Value}[/]"));
-                            }
-
+                        string imdbId = match.Value;
+                        Debug.Assert(imdbId.IsImdbId());
+                        if (libraryMetadata.TryGetValue(imdbId, out ConcurrentDictionary<string, VideoMetadata>? localMetadata))
+                        {
+                            localMetadata.ForEach(metadata => log($"[red]{metadata.Key.EscapeMarkup()}[/]"));
                             log(string.Empty);
-                        });
+                            return;
+                        }
+
+                        if (topMetadata.Contains(imdbId))
+                        {
+                            topMetadata[imdbId].ForEach(metadata => log($"{metadata.Title.EscapeMarkup()}|[green]{metadata.MagnetUrl}[/]"));
+                        }
+
+                        if (preferredMetadata.TryGetValue(imdbId, out List<PreferredMetadata>? preferredMetadataList))
+                        {
+                            preferredMetadataList
+                                .SelectMany(metadata => metadata.PreferredAvailabilities, (metadata, availability) => (metadata, availability))
+                                .ForEach(availability => log($"{availability.metadata.Title.EscapeMarkup()}|[yellow]{availability.availability.Key}[/]|[green]{availability.availability.Value}[/]"));
+                        }
+
                         log(string.Empty);
-                    }
+                    });
+                    log(string.Empty);
+                }
+
+                if (isFranchise)
+                {
+                    franchiseMovies.Add(movie);
                 }
             });
+
+        return franchiseMovies;
     }
 }

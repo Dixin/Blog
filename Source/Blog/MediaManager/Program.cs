@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Spectre.Console;
 using Xabe.FFmpeg;
 using SearchOption = System.IO.SearchOption;
 
@@ -551,11 +552,11 @@ DirectorySettings[][] metadataDrives = [
 //await Video.ConvertToUtf8Async(settings.MovieTemp3, false);
 //await Video.ConvertToUtf8Async(settings.TVTemp1, false);
 //await Video.ConvertToUtf8Async(settings.TVTemp2, false);
-//Video.MoveMovieSubtitleToParent(settings.MovieTemp1, settings.MovieSubtitleBackupDirectory, false);
-//Video.MoveMovieSubtitleToParent(settings.MovieTemp3, settings.MovieSubtitleBackupDirectory, false);
+//Video.MoveMovieSubtitleToParent(settings.MovieTemp1, settings.DirectoryMetadataAllMoviesSubtitles, false);
+//Video.MoveMovieSubtitleToParent(settings.MovieTemp3, settings.DirectoryMetadataAllMoviesSubtitles, false);
 //Video.FormatSubtitleSuffix(settings.TVTemp1);
-//Video.MoveMetadata(settings.MovieTemp1, settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory);
-//Video.MoveMetadata(settings.MovieTemp3, settings.MovieMetadataCacheDirectory, settings.MovieMetadataDirectory);
+//Video.MoveMetadata(settings.MovieTemp1, settings.DirectoryMetadataAllMoviesCache, settings.DirectoryMetadataAllMovies);
+//Video.MoveMetadata(settings.MovieTemp3, settings.DirectoryMetadataAllMoviesCache, settings.DirectoryMetadataAllMovies);
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp1, 2, overwrite: false, useCache: true, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp3, 2, overwrite: false, useCache: true, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.TVTemp1, 1, overwrite: false, useCache: true, useBrowser: true);
@@ -564,11 +565,12 @@ DirectorySettings[][] metadataDrives = [
 //Video.PrintDuplicateImdbId(null, @"G:\Files\Library",
 //    @"H:\Files\Library",
 //    @"I:\Files\Library",
-//    @"K:\Files\Library\Movies Controversial.非主流电影");
+//    @"K:\Files\Library.Movies\Movies Controversial.非主流电影");
 //Video.BackupMetadata(settings.MovieTemp1);
 //Video.BackupMetadata(settings.MovieTemp3);
 //await Video.DownloadMissingTitlesFromDoubanAsync(settings, settings.MovieTemp1, skipFormatted: true);
 //await Video.DownloadMissingTitlesFromDoubanAsync(settings, settings.MovieTemp3, skipFormatted: true);
+//Video.CopyMovieMetadata(settings.MovieTemp1, 2, true);
 //Video.CopyMovieMetadata(settings.MovieTemp3, 2, true);
 //Video.RenameDirectoriesWithMetadata(settings, settings.MovieTemp1, isDryRun: false, skipRenamed: true);
 //Video.RenameDirectoriesWithMetadata(settings, settings.MovieTemp3, isDryRun: false, skipRenamed: true);
@@ -585,6 +587,7 @@ DirectorySettings[][] metadataDrives = [
 //Video.RenameDirectoriesWithImdbMetadata(settings, settings.TVTemp2, 1, isDryRun: false, isTV: true);
 //Video.MoveFanArt(settings.MovieTemp1);
 //Video.RestoreMetadata(settings.MovieTemp1);
+//Video.RestoreMetadata(settings.MovieTemp3);
 //Video.DeleteSpecialCharacters(settings.TVTemp1);
 //Video.DeleteSpecialCharacters(settings.TVTemp2);
 //Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp1);

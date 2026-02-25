@@ -5,6 +5,7 @@ using Examples.Diagnostics;
 using Examples.IO;
 using Examples.Linq;
 using MediaManager.Net;
+using Spectre.Console;
 using Xabe.FFmpeg;
 
 public enum VideoCropMode
@@ -216,13 +217,13 @@ public static class FfmpegHelper
             TimeSpan difference = Video.ReadVideoMetadataAsync(input).Result.Duration - Video.ReadVideoMetadataAsync(dubbed).Result.Duration;
             if (difference > TimeSpan.FromSeconds(1) || difference < TimeSpan.FromSeconds(-1))
             {
-                log($"The difference between the durations of {input} and {dubbed} is {difference}.");
+                log($"The difference between the durations of {input.EscapeMarkup()} and {dubbed.EscapeMarkup()} is {difference}.");
                 return false;
             }
         }
 
-        log(input);
-        log(dubbed);
+        log(input.EscapeMarkup());
+        log(dubbed.EscapeMarkup());
         if (CompareDurationAsync(input, dubbed, log).Result != 0)
         {
             throw new ArgumentOutOfRangeException(nameof(dubbed), dubbed, string.Empty);
@@ -244,7 +245,7 @@ public static class FfmpegHelper
                 window: true);
         }
 
-        log(output);
+        log(output.EscapeMarkup());
         return result == 0;
     }
 
@@ -504,7 +505,7 @@ public static class FfmpegHelper
             .Select(match =>
                 (match, Result: MergeDubbed(match.OriginalVideo, ref match.MergedVideo, match.DubbedVideo, false, false, ignoreDurationDifference, isDryRun, log)))
             .Where(result => !result.Result)
-            .ForEach(result => log(result.match.ToString()));
+            .ForEach(result => log(result.match.ToString().EscapeMarkup()));
 
         if (isDryRun)
         {

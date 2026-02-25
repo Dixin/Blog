@@ -547,7 +547,7 @@ internal static partial class Video
                             }
                             else
                             {
-                                log($"Language is too short as {postfix} for {subtitle}");
+                                log($"Language is too short as {postfix} for {subtitle.EscapeMarkup()}");
                                 return postfix;
                             }
                         }
@@ -577,7 +577,7 @@ internal static partial class Video
                                     return "eng";
                                 }
 
-                                log($"!Language cannot be detected from {postfix} for {subtitle}.");
+                                log($"!Language cannot be detected from {postfix} for {subtitle.EscapeMarkup()}.");
                             }
                         }
 
