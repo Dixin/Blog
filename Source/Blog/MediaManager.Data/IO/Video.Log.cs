@@ -2367,7 +2367,7 @@ internal static partial class Video
 
         //if (updateMetadata)
         //{
-        //    HashSet<string> metadataDirectoryImdbIds = new(metadataFiles.Select(file => file.GetImdbId()), StringComparer.OrdinalIgnoreCase);
+        //    HashSet<string> metadataDirectoryImdbIds = new(metadataFiles.Select(file => file.GetImdbIdFromFileName()), StringComparer.OrdinalIgnoreCase);
         //    await imdbIds
         //        .Select(imdbId => imdbId.ImdbId)
         //        .Where(imdbId => !metadataDirectoryImdbIds.Contains(imdbId))
@@ -3025,7 +3025,7 @@ internal static partial class Video
                 tv,
                 Imdb: Directory.EnumerateFiles(tv, ImdbMetadataSearchPattern).Single()))
             .Where(tv => !PathHelper.GetFileNameWithoutExtension(tv.Imdb).EqualsOrdinal(NotExistingFlag))
-            .Select(tv => (tv.tv, ImdbId: tv.Imdb.GetImdbId()))
+            .Select(tv => (tv.tv, ImdbId: tv.Imdb.GetImdbIdFromFileName()))
             .Where(tv => contrastMetadata.Contains(tv.ImdbId))
             .Select(tv => (
                 TV: tv.tv,
@@ -3218,6 +3218,10 @@ internal static partial class Video
             .ToLookup(metadata => metadata.ImdbId);
         ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMetadataPreferredMoviesAsync(cancellationToken);
         ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMetadataLibraryMoviesAsync(cancellationToken);
+        string jsonFile = Path.Combine(settings.DirectoryLibrary, "Metadata.Library.Movies.Files.json");
+        Dictionary<string, string[]> libraryMetadataFiles = File.Exists(jsonFile)
+            ? JsonHelper.DeserializeFromFileAsync<Dictionary<string, string[]>>(jsonFile, cancellationToken).Result
+            : [];
 
         List<string> franchiseMovies = [];
         EnumerateDirectories(directory, level)
@@ -3249,6 +3253,13 @@ internal static partial class Video
 
                         string imdbId = match.Value;
                         Debug.Assert(imdbId.IsImdbId());
+                        if (libraryMetadataFiles.TryGetValue(imdbId, out string[]? localMetadataFiles))
+                        {
+                            localMetadataFiles.ForEach(metadataFile => log($"[red]{PathHelper.GetDirectoryName(metadataFile).EscapeMarkup()}[/]"));
+                            log(string.Empty);
+                            return;
+                        }
+
                         if (libraryMetadata.TryGetValue(imdbId, out ConcurrentDictionary<string, VideoMetadata>? localMetadata))
                         {
                             localMetadata.ForEach(metadata => log($"[red]{metadata.Key.EscapeMarkup()}[/]"));
@@ -3279,7 +3290,7 @@ internal static partial class Video
                 {
                     isFranchise = true;
                     log(movie.EscapeMarkup());
-                    log("[yellow]Followed by:[/]");
+                    log("[yellow]Follows:[/]");
                     follows.ForEach(array =>
                     {
                         array[0] = $"[green]{array[0].EscapeMarkup()}[/]";
@@ -3293,6 +3304,13 @@ internal static partial class Video
 
                         string imdbId = match.Value;
                         Debug.Assert(imdbId.IsImdbId());
+                        if (libraryMetadataFiles.TryGetValue(imdbId, out string[]? localMetadataFiles))
+                        {
+                            localMetadataFiles.ForEach(metadataFile => log($"[red]{PathHelper.GetDirectoryName(metadataFile).EscapeMarkup()}[/]"));
+                            log(string.Empty);
+                            return;
+                        }
+
                         if (libraryMetadata.TryGetValue(imdbId, out ConcurrentDictionary<string, VideoMetadata>? localMetadata))
                         {
                             localMetadata.ForEach(metadata => log($"[red]{metadata.Key.EscapeMarkup()}[/]"));

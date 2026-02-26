@@ -656,6 +656,45 @@ internal static partial class Video
         }
     }
 
+    internal static async Task WriteLibraryMovieMetadataFilesAsync(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default, params string[][] directoryDrives)
+    {
+        log ??= Logger.WriteLine;
+
+        string jsonFile = Path.Combine(settings.DirectoryLibrary, "Metadata.Library.Movies.Files.json");
+
+        ConcurrentDictionary<string, List<string>> existingMetadata = File.Exists(jsonFile)
+            ? await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, List<string>>>(jsonFile, cancellationToken)
+            : [];
+
+        existingMetadata
+            .SelectMany(group => group.Value, (group, file) => (group, file))
+            .AsParallel()
+            .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
+            .Where(video => !File.Exists(video.file))
+            .ToArray()
+            .ForEach(video =>
+            {
+                log($"Delete {video.file.EscapeMarkup()}.");
+                Debug.Assert(video.group.Value.Remove(video.file));
+            });
+
+        Dictionary<string, List<string>> libraryMetadata = directoryDrives
+            .AsParallel()
+            .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
+            .SelectMany(driveDirectories => driveDirectories
+                .SelectMany(directory => Directory.EnumerateFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories))
+                .Select(file => (ImdbId: ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty, File: file)))
+            .ToLookup(video => video.ImdbId)
+            .ToDictionary(group => group.Key, group => group.Select(video => video.File).ToList());
+
+        libraryMetadata.ForEach(group => existingMetadata.AddOrUpdate(
+            group.Key,
+            imdbId => group.Value,
+            (imdbId, files) => files.Union(group.Value, StringComparer.OrdinalIgnoreCase).ToList()));
+
+        await JsonHelper.SerializeToFileAsync(existingMetadata, jsonFile, cancellationToken);
+    }
+
     internal static async Task WriteLibraryMovieMetadataAsync(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default, params string[][] directoryDrives)
     {
         log ??= Logger.WriteLine;
@@ -1151,7 +1190,7 @@ internal static partial class Video
                 driveDirectories
                     .SelectMany(directory => Directory.EnumerateFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories))
                     .Where(metadataFile => !PathHelper.GetFileNameWithoutExtension(metadataFile).EqualsIgnoreCase(NotExistingFlag))
-                    .Select(metadataFile => (MetadataFile: metadataFile, AdvisoriesFile: PathHelper.ReplaceFileName(metadataFile, $"{metadataFile.GetImdbId()}.Advisories.log")))
+                    .Select(metadataFile => (MetadataFile: metadataFile, AdvisoriesFile: PathHelper.ReplaceFileName(metadataFile, $"{metadataFile.GetImdbIdFromFileName()}.Advisories.log")))
                     .AsParallel()
                     .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
                     .ForAll(file =>

@@ -375,7 +375,7 @@ internal static partial class Video
         log ??= Logger.WriteLine;
 
         string[] directories = EnumerateDirectories(directory, level).ToArray();
-        directories.Where(DirectoryHelper.IsHidden).Prepend("Hidden backup").Append(string.Empty).ForEach(log);
+        directories.Where(DirectoryHelper.IsHidden).Select(movie => movie.EscapeMarkup()).Prepend("Hidden backup").Append(string.Empty).ForEach(log);
         directories
             .ForEach(movie =>
             {
@@ -397,14 +397,14 @@ internal static partial class Video
 
                 if (isRenamed)
                 {
-                    log(movie);
+                    log(movie.EscapeMarkup());
                     string newMovie = PathHelper.ReplaceDirectoryName(movie, name);
                     if (!isDryRun)
                     {
                         DirectoryHelper.Move(movie, newMovie);
                     }
 
-                    log(newMovie);
+                    log(newMovie.EscapeMarkup());
                 }
             });
     }
@@ -1362,9 +1362,9 @@ internal static partial class Video
                 }
                 else
                 {
-                    log(movie);
+                    log(movie.EscapeMarkup());
                     string newMovie = DirectoryHelper.ReplaceDirectoryName(movie, movieName => newTitle + name[title.Length..]);
-                    log(newMovie);
+                    log(newMovie.EscapeMarkup());
                 }
 
                 log(string.Empty);

@@ -1439,7 +1439,7 @@ internal static partial class Imdb
         }
 
         imdbIds = imdbIds
-            .Except(metadataFiles.Select(file => file.GetImdbId()))
+            .Except(metadataFiles.Select(file => file.GetImdbIdFromFileName()))
             .ToArray();
         int trimmedLength = imdbIds.Length;
         ConcurrentQueue<string> imdbIdQueue = new(imdbIds);
@@ -1549,7 +1549,7 @@ internal static partial class Imdb
         }
 
         imdbIds = imdbIds
-            .Except(metadataFiles.Select(file => file.GetImdbId()))
+            .Except(metadataFiles.Select(file => file.GetImdbIdFromFileName()))
             .ToArray();
         int trimmedLength = imdbIds.Length;
         ConcurrentQueue<string> imdbIdQueue = new(imdbIds);

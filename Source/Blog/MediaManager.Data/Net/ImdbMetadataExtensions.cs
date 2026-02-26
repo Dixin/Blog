@@ -12,7 +12,7 @@ internal static class ImdbMetadataExtensions
     internal static bool HasImdbId(this string file, string? imdbId) =>
         ImdbMetadata.TryGet(file, out string? fileImdbId) && fileImdbId.EqualsIgnoreCase(imdbId);
 
-    internal static string GetImdbId(this string path) =>
+    internal static string GetImdbIdFromFileName(this string path) =>
         ImdbMetadata.TryGet(
             path.HasExtension(ImdbMetadata.Extension)
                 ? path

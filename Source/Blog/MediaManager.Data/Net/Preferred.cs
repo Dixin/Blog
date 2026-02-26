@@ -94,9 +94,17 @@ internal static class Preferred
         degreeOfParallelism ??= MaxDegreeOfParallelism;
         log ??= Logger.WriteLine;
 
-        summaries ??= new ConcurrentQueue<PreferredSummary>((await settings.LoadMetadataPreferredMoviesSummariesAsync(cancellationToken)).Values);
+        ConcurrentDictionary<string, PreferredSummary> existingSummaries = await settings.LoadMetadataPreferredMoviesSummariesAsync(cancellationToken);
+        summaries ??= new ConcurrentQueue<PreferredSummary>(existingSummaries.Values);
         summaries = new ConcurrentQueue<PreferredSummary>(summaries.OrderBy(summary => summary.Link));
         ConcurrentDictionary<string, List<PreferredMetadata>> details = await settings.LoadMetadataPreferredMoviesAsync(cancellationToken);
+
+        PreferredSummary[] missingSummaries = existingSummaries
+            .Values
+            .ExceptBy(details.Values.Concat().Select(metadata => metadata.Link), summary => summary.Link)
+            .ToArray();
+
+        missingSummaries.ForEach(summaries.Enqueue);
 
         int summaryIndex = 0;
         int summaryCount = summaries.Count;
@@ -384,7 +392,7 @@ internal static class Preferred
                     {
                         await Retry.FixedIntervalAsync(
                             async () => await httpClient.GetFileAsync(task.Link, task.File, token),
-                            isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound }, 
+                            isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound },
                             cancellationToken: token);
                         log($"""
                              Download {task.File}

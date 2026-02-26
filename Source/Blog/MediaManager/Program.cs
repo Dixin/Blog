@@ -1687,7 +1687,7 @@ const string Subdirectory = "HD.Encode.Crop";
 //             .ToLookup(cells => cells[^2], cells => (cells[1], cells[^3]))
 //             .ToDictionary(group => group.Key, group => group.ToArray());
 
-// HashSet<string> imdbIds = new(Directory.EnumerateFiles(settings.Movie4KHdr, "*.json", SearchOption.AllDirectories).Select(f => (f.GetImdbId())));
+// HashSet<string> imdbIds = new(Directory.EnumerateFiles(settings.Movie4KHdr, "*.json", SearchOption.AllDirectories).Select(f => (f.GetImdbIdFromFileName())));
 // top.Where(group => imdbIds.Contains(group.Key))
 //     .ForEach(group => group.Select(item => item.Item1).Prepend(group.Key).Append("").ForEach(log));
 
