@@ -334,11 +334,51 @@ internal static partial class Video
                     trimmedMovie = trimmedMovie[..trimmedMovie.IndexOfOrdinal("{")];
                 }
 
+                if (Regex.IsMatch(trimmedMovie[..trimmedMovie.IndexOfOrdinal("[")], @"([\-]{2,}|[\`]{2,}|[\s]{2,}|[\.]{2,}|[\=]{2,})"))
+                {
+                    log($"!Multiple special characters: {movie.EscapeMarkup()}");
+                }
+
                 if (!VideoDirectoryInfo.TryParse(trimmedMovie, out VideoDirectoryInfo? directoryInfo))
                 {
                     log($"!Directory: {trimmedMovie.EscapeMarkup()}");
                     return;
                 }
+
+                string beforeYear = trimmedMovie[..trimmedMovie.IndexOfOrdinal(directoryInfo.Year)];
+                int index = beforeYear.IndexOfOrdinal("=");
+                string beforeYearOriginal = string.Empty;
+                if (index >= 0)
+                {
+                    beforeYearOriginal = beforeYear[(index + "=".Length)..];
+                    beforeYear = beforeYear[..index];
+                }
+
+                string afterYear = trimmedMovie[(trimmedMovie.IndexOfOrdinal(directoryInfo.Year) + directoryInfo.Year.Length)..];
+                MatchCollection beforeYearMatches = Regex.Matches(beforeYear, @"\`[0-9]+");
+
+                MatchCollection afterYearMatches = Regex.Matches(afterYear, @"\`[0-9]+");
+                if (beforeYearMatches.Count != afterYearMatches.Count
+                   || beforeYearMatches.Any()
+                   && !beforeYearMatches
+                       .Zip(afterYearMatches)
+                       .All((matches) => matches.First.Success == matches.Second.Success && matches.First.Value == matches.Second.Value))
+                {
+                    log($"!Franchise number Mismatch: {movie.EscapeMarkup()}");
+                }
+
+                //if (beforeYearOriginal.IsNotNullOrWhiteSpace())
+                //{
+                //    MatchCollection originalBeforeYearMatches = Regex.Matches(beforeYearOriginal, @"\`[0-9]+");
+                //    if (beforeYearMatches.Count != originalBeforeYearMatches.Count
+                //        || beforeYearMatches.Any()
+                //        && !beforeYearMatches
+                //            .Zip(originalBeforeYearMatches)
+                //            .All((matches) => matches.First.Success == matches.Second.Success && matches.First.Value == matches.Second.Value))
+                //    {
+                //        log($"!Franchise number Mismatch: {movie.EscapeMarkup()}");
+                //    }
+                //}
 
                 //string[] allPaths = Directory.GetFiles(movie, PathHelper.AllSearchPattern, SearchOption.AllDirectories);
                 string[] translations = [directoryInfo.TranslatedTitle1, directoryInfo.TranslatedTitle2, directoryInfo.TranslatedTitle3];
@@ -357,7 +397,7 @@ internal static partial class Video
 
                 if (Regex.IsMatch(trimmedMovie, "·[0-9]"))
                 {
-                    log($"!Special character ·: {trimmedMovie}");
+                    log($"!Special character ·: {trimmedMovie.EscapeMarkup()}");
                 }
 
                 DirectorySpecialCharacters.Where(trimmedMovie.Contains).ForEach(specialCharacter => log($"!Special character {specialCharacter}: {trimmedMovie.EscapeMarkup()}"));
@@ -798,7 +838,7 @@ internal static partial class Video
                                 {
                                     return;
                                 }
-                                log(movie);
+                                log(movie.EscapeMarkup());
                                 log(preferredMetadata.Version.Key);
                                 log($"magnet:?xt=urn:btih:{exactTopic}");
                             });
@@ -887,7 +927,7 @@ internal static partial class Video
                             {
                                 return;
                             }
-                            log(movie);
+                            log(movie.EscapeMarkup());
                             log(preferredMetadata.Version.Key);
                             log($"magnet:?xt=urn:btih:{exactTopic}");
                         });
@@ -916,7 +956,7 @@ internal static partial class Video
                             {
                                 return;
                             }
-                            log(movie);
+                            log(movie.EscapeMarkup());
                             log(preferredMetadata.Version.Key);
                             log($"magnet:?xt=urn:btih:{exactTopic}");
                         });
@@ -2158,7 +2198,7 @@ internal static partial class Video
                     .ToDictionary(xml => PathHelper.GetFileNameWithoutExtension(xml.file), StringComparer.OrdinalIgnoreCase);
                 if (xmlDocuments.IsEmpty())
                 {
-                    log($"!XML is missing: {movie.Directory}");
+                    log($"!XML is missing: {movie.Directory.EscapeMarkup()}");
                     return;
                 }
 
@@ -2212,7 +2252,7 @@ internal static partial class Video
                             return;
                         }
 
-                        log($"-{xml.XmlImdbId} with title {x265Video.Name} is missing in x265 for '{xml.XmlTitle}': {movie.Directory}");
+                        log($"-{xml.XmlImdbId} with title {x265Video.Name} is missing in x265 for '{xml.XmlTitle}': {movie.Directory.EscapeMarkup()}");
                     });
                 }
 
@@ -3226,18 +3266,24 @@ internal static partial class Video
         List<string> franchiseMovies = [];
         EnumerateDirectories(directory, level)
             .Where(movie => !movie.ContainsIgnoreCase(@"\Delete"))
+            .ToArray()
             .ForEach(movie =>
             {
+                if (!Directory.Exists(movie))
+                {
+                    return;
+                }
+
                 if (!ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata))
                 {
                     return;
                 }
 
                 bool isFranchise = false;
+                List<string> directoriesToMove = [];
                 if (imdbMetadata.Connections.TryGetValue("Followed by", out string[][]? followedBy)
                     && followedBy.Any())
                 {
-                    isFranchise = true;
                     log(movie.EscapeMarkup());
                     log("[yellow]Followed by:[/]");
                     followedBy.ForEach(array =>
@@ -3255,8 +3301,10 @@ internal static partial class Video
                         Debug.Assert(imdbId.IsImdbId());
                         if (libraryMetadataFiles.TryGetValue(imdbId, out string[]? localMetadataFiles))
                         {
+                            isFranchise = true;
                             localMetadataFiles.ForEach(metadataFile => log($"[red]{PathHelper.GetDirectoryName(metadataFile).EscapeMarkup()}[/]"));
                             log(string.Empty);
+                            directoriesToMove.AddRange(localMetadataFiles.Select(PathHelper.GetDirectoryName).Where(directory => !directory.ContainsIgnoreCase(@"\Delete") && Directory.Exists(directory)));
                             return;
                         }
 
@@ -3306,8 +3354,10 @@ internal static partial class Video
                         Debug.Assert(imdbId.IsImdbId());
                         if (libraryMetadataFiles.TryGetValue(imdbId, out string[]? localMetadataFiles))
                         {
+                            isFranchise = true;
                             localMetadataFiles.ForEach(metadataFile => log($"[red]{PathHelper.GetDirectoryName(metadataFile).EscapeMarkup()}[/]"));
                             log(string.Empty);
+                            directoriesToMove.AddRange(localMetadataFiles.Select(PathHelper.GetDirectoryName).Where(directory => !directory.ContainsIgnoreCase(@"\Delete") && Directory.Exists(directory)));
                             return;
                         }
 
@@ -3339,6 +3389,15 @@ internal static partial class Video
                 {
                     franchiseMovies.Add(movie);
                 }
+
+                //directoriesToMove.Add(movie);
+                //string firstDirectory = directoriesToMove.OrderBy(directory => VideoDirectoryInfo.Parse(directory).Year).First();
+                //string destinationDirectory = Path.Combine(PathHelper.GetDirectoryName(movie), "@" + PathHelper.GetFileName(firstDirectory));
+                //directoriesToMove.ForEach(directory =>
+                //{
+                //    log($"Move from {directory.EscapeMarkup()}");
+                //    log($"Move to {DirectoryHelper.MoveToDirectory(directory, destinationDirectory).EscapeMarkup()}");
+                //});
             });
 
         return franchiseMovies;

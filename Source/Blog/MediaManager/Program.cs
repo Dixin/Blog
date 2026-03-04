@@ -510,7 +510,7 @@ DirectorySettings[][] metadataDrives = [
 //        //t = t.Substring(0, 1).ToUpper() + t.Substring(1);
 //        //string postfix = PathHelper.GetFileNameWithoutExtension(f).EndsWithIgnoreCase($"{Video.VersionSeparator}{Video.TopEnglishKeyword}.2Audio") ? $"{Video.VersionSeparator}{Video.TopEnglishKeyword}.2Audio" : $"{Video.VersionSeparator}{Video.TopEnglishKeyword}";
 
-//        string postfix = $"{Video.VersionSeparator}{settings.ContrastKeyword}";
+//        string postfix = $"{Video.VersionSeparator}{settings.KeywordContrast}";
 //        //Debug.Assert(!f.IsVideo() || PathHelper.GetFileNameWithoutExtension(f).EndsWithIgnoreCase(postfix));
 //        string name = PathHelper.GetFileNameWithoutExtension(f);
 //        Match match = Regex.Match(name, @"\.[2-9]Audio");

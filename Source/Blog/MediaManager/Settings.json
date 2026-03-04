@@ -25,7 +25,7 @@
     "MetadataTopMoviesDuplication": [],
 
     "MetadataDrive115Media": "D:\\Files\\Library\\Metadata.Drive115.Media.json",
-    "MetadataLibraryMovies": "D:\\Files\\Library\\Metadata.Library.Movies.json",
+    "MetadataLibraryMovies": "D:\\Files\\Library\\Metadata.Library.Movies.Old.json",
     "MetadataAllMoviesIgnored": "D:\\\\Files\\\\Library\\Metadata.All.Movies.Ignored.json",
     "MetadataLibraryMoviesExternal": "D:\\Files\\Library\\Metadata.Library.Movies.External.json",
     "MetadataTopMoviesX265": "D:\\Files\\Library\\Metadata.Top.Movies.X265.json",
@@ -490,13 +490,11 @@
         "Cypriot.塞浦路斯": [
             "Cyprus"
         ],
-        "Czech.捷克": [
+        "Czechoslovakia.捷克斯洛伐克": [
             "Czech Republic",
             "Czechoslovakia",
+            "Slovakia",
             "Franchise:Bound Heat"
-        ],
-        "Slovakian.斯洛伐克": [
-            "Slovakia"
         ],
         "Danish Action.丹麦动作": [
             "Denmark",
@@ -1084,9 +1082,9 @@
 
         "Cyprus": "Cypriot.塞浦路斯",
 
-        "Czech Republic": "Czech.捷克",
-        "Czechoslovakia": "Czech.捷克",
-        "Slovakia": "Slovakian.斯洛伐克",
+        "Czech Republic": "Czechoslovakia.捷克斯洛伐克",
+        "Czechoslovakia": "Czechoslovakia.捷克斯洛伐克",
+        "Slovakia": "Czechoslovakia.捷克斯洛伐克",
 
         "Denmark.Action": "Danish Action.丹麦动作",
 

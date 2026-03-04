@@ -656,7 +656,7 @@ internal static partial class Video
         }
     }
 
-    internal static async Task WriteLibraryMovieMetadataFilesAsync(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default, params string[][] directoryDrives)
+    internal static async Task<ConcurrentDictionary<string, List<string>>> WriteLibraryMovieMetadataFilesAsync(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default, params string[][] directoryDrives)
     {
         log ??= Logger.WriteLine;
 
@@ -687,12 +687,14 @@ internal static partial class Video
             .ToLookup(video => video.ImdbId)
             .ToDictionary(group => group.Key, group => group.Select(video => video.File).ToList());
 
-        libraryMetadata.ForEach(group => existingMetadata.AddOrUpdate(
+        libraryMetadata.AsParallel().ForAll(group => existingMetadata.AddOrUpdate(
             group.Key,
             imdbId => group.Value,
             (imdbId, files) => files.Union(group.Value, StringComparer.OrdinalIgnoreCase).ToList()));
 
         await JsonHelper.SerializeToFileAsync(existingMetadata, jsonFile, cancellationToken);
+
+        return existingMetadata;
     }
 
     internal static async Task WriteLibraryMovieMetadataAsync(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default, params string[][] directoryDrives)

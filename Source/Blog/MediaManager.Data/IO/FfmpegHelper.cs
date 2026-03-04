@@ -593,7 +593,7 @@ public static class FfmpegHelper
                 Title: GetSubtitleTitle(subtitle.Title),
                 File: PathHelper.ReplaceExtension(PathHelper.AddFilePostfix(outputVideo, $".{subtitle.Language}{GetSubtitleTitle(subtitle.Title)}"), GetSubtitleExtension(subtitle.Codec))))
             .OrderBy(subtitle => subtitle.Index)
-            .Do(subtitle => log(subtitle.File))
+            .Do(subtitle => log(subtitle.File.EscapeMarkup()))
             .ToArray();
 
         IGrouping<string, (int Index, int SubtitleIndex, string Title, string File)>[] duplicateSubtitles = subtitles
@@ -651,7 +651,7 @@ public static class FfmpegHelper
                 : $"""
                 -i "{inputVideo}" -i "{mergeAudio}" -c copy -map_metadata 0 -map 0:v -map 0:a -map 1:a {strict} "{outputVideo}" {subtitleArguments} -n
                 """;
-        log(arguments);
+        log(arguments.EscapeMarkup());
         log(string.Empty);
 
         int compare = 0;
@@ -831,7 +831,7 @@ public static class FfmpegHelper
 
                     int result = await ExtractAndCompareAsync(settings, inputVideo, dubbedVideo, outputVideo, isSubtitleOnly, isDryRun, log, cancellation);
 
-                    log($"{result} {task}");
+                    log($"{result} {task.ToString().EscapeMarkup()}");
                     log("");
 
                     if (result == 0 && deleteInput)
