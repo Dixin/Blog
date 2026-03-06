@@ -677,32 +677,6 @@ internal static partial class Video
             });
     }
 
-    internal static void RenameWithUpdatedRatings(string directory, int level = DefaultDirectoryLevel, bool isDryRun = false, Action<string>? log = null)
-    {
-        log ??= Logger.WriteLine;
-        EnumerateDirectories(directory, level)
-            .ToArray()
-            .ForEach(movie =>
-            {
-                string rating = ImdbMetadata.TryLoad(movie, out ImdbMetadata? imdbMetadata)
-                    ? imdbMetadata.FormattedAggregateRating
-                    : NotExistingFlag;
-                string name = PathHelper.GetFileName(movie);
-                string newName = Regex.Replace(name, @"\[([0-9]\.[0-9]|\-)\]", $"[{rating}]");
-                if (!name.EqualsOrdinal(newName))
-                {
-                    string newMovie = PathHelper.ReplaceFileName(movie, newName);
-                    log(movie);
-                    log(newMovie);
-                    log(string.Empty);
-                    if (!isDryRun)
-                    {
-                        Directory.Move(movie, newMovie);
-                    }
-                }
-            });
-    }
-
     internal static void RenameCollections(string directory, int level = DefaultDirectoryLevel, bool isDryRun = false, Action<string>? log = null)
     {
         log ??= Logger.WriteLine;

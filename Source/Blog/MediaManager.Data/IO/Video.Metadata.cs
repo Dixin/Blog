@@ -47,7 +47,6 @@ internal static partial class Video
                         .Do(log)
                         .Where(_ => !isDryRun)
                         .ForEach(FileHelper.Delete);
-                    // TODO.
                 }
             });
     }
@@ -828,12 +827,9 @@ internal static partial class Video
             {
                 string metadata = PathHelper.ReplaceExtension(video, TmdbMetadata.NfoExtension);
                 string imdbId = metadata.TryLoadNfoImdbId(out string? xmlImdbId) ? xmlImdbId : throw new InvalidOperationException(video);
-                if (TryReadVideoMetadata(video, out VideoMetadata? videoMetadata))
-                {
-                    return (ImdbId: imdbId, Value: videoMetadata);
-                }
-
-                throw new InvalidOperationException(video);
+                return TryReadVideoMetadata(video, out VideoMetadata? videoMetadata) 
+                    ? (ImdbId: imdbId, Value: videoMetadata) 
+                    : throw new InvalidOperationException(video);
             })
             .Distinct(metadata => metadata.ImdbId)
             .ToDictionary(metadata => metadata.ImdbId, metadata => metadata.Value);
@@ -1177,49 +1173,6 @@ internal static partial class Video
                                 FileHelper.CopyToDirectory(file, destinationMetadataDirectory);
                             }
                         });
-                    });
-            });
-    }
-
-    internal static void UpdateCertifications(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default, params string[][] directoryDrives)
-    {
-        log ??= Logger.WriteLine;
-
-        directoryDrives
-            .AsParallel()
-            .ForAll(driveDirectories =>
-            {
-                driveDirectories
-                    .SelectMany(directory => Directory.EnumerateFiles(directory, ImdbMetadataSearchPattern, SearchOption.AllDirectories))
-                    .Where(metadataFile => !PathHelper.GetFileNameWithoutExtension(metadataFile).EqualsIgnoreCase(NotExistingFlag))
-                    .Select(metadataFile => (MetadataFile: metadataFile, AdvisoriesFile: PathHelper.ReplaceFileName(metadataFile, $"{metadataFile.GetImdbIdFromFileName()}.Advisories.log")))
-                    .AsParallel()
-                    .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
-                    .ForAll(file =>
-                    {
-                        ImdbMetadata imdbMetadata = JsonHelper.DeserializeFromFile<ImdbMetadata>(file.MetadataFile);
-                        if (imdbMetadata.Certifications is not null && imdbMetadata.Certifications.Any())
-                        {
-                            return;
-                        }
-
-                        CQ advisoriesCQ = File.ReadAllText(file.AdvisoriesFile);
-                        Dictionary<string, string> certifications = advisoriesCQ
-                            .Find("#certificates li.ipl-inline-list__item")
-                            .Select(certificationDom => (
-                                Certification: Regex.Replace(certificationDom.TextContent.Trim(), @"\s+", " "),
-                                Link: certificationDom.Cq().Find("a").Attr("href").Trim()))
-                            .DistinctBy(certification => certification.Certification)
-                            .ToDictionary(certification => certification.Certification, certification => certification.Link);
-                        if (certifications.IsEmpty())
-                        {
-                            return;
-                        }
-
-                        log(file.MetadataFile);
-                        log(string.Join(Environment.NewLine, certifications.Keys));
-                        imdbMetadata = imdbMetadata with { Certifications = certifications };
-                        JsonHelper.SerializeToFile(imdbMetadata, file.MetadataFile);
                     });
             });
     }
