@@ -439,7 +439,7 @@ DirectorySettings[][] metadataDrives = [
 //    (@"G:\Files\Library", 3),
 //    (@"H:\Files\Library", 3),
 //    (@"I:\Files\Library", 3),
-//    (@"K:\Files\Library\Movies Controversial.非主流电影", 2));
+//    (@"K:\Files\Library.Movies\Movies Controversial.非主流电影", 2));
 
 //await Video.PrintLibraryMovieVersions(settings, log, cancellationToken,
 //    @"G:\Files\Library", @"H:\Files\Library", @"I:\Files\Library", @"K:\Files\Library\Movies Controversial.非主流电影");
@@ -538,14 +538,8 @@ DirectorySettings[][] metadataDrives = [
 //Video.CopyMovieMetadata(settings.MovieTemp3, 2, false);
 //await Video.PrintMovieImdbIdErrorsAsync(settings, true, log, cancellationTokenSource.Token, settings.MovieTemp1);
 //await Video.PrintMovieImdbIdErrorsAsync(settings, true, log, cancellationTokenSource.Token, settings.MovieTemp3);
-//await Video.ConvertToUtf8Async(@"G:\Files\Library\", false);
-//await Video.ConvertToUtf8Async(@"H:\Files\Library\", false);
-//await Video.ConvertToUtf8Async(@"I:\Files\Library\", false);
-//await Video.ConvertToUtf8Async(@"J:\Files\Library\", false);
-//await Video.ConvertToUtf8Async(@"K:\Files\Library\", false);
-//await Video.ConvertToUtf8Async(@"L:\Files\Library\", false);
 //await Parallel.ForEachAsync(
-//    [@"G:\Files\Library\", @"H:\Files\Library\", @"I:\Files\Library\", @"J:\Files\Library\", @"K:\Files\Library\", @"L:\Files\Library\"],
+//    [@"G:\Files\Library\", @"H:\Files\Library\", @"I:\Files\Library\", @"J:\Files\Library\", @"K:\Files\Library.Movies\", @"K:\Files\Library.TV\", @"K:\Files\Library\TV Mainstream Overflow.主流电视剧\", @"L:\Files\Library\"],
 //    cancellationToken,
 //    async (drive, token) => await Video.ConvertToUtf8Async(drive, cancellationToken: token));
 //await Video.ConvertToUtf8Async(settings.MovieTemp1, false);
@@ -576,11 +570,22 @@ DirectorySettings[][] metadataDrives = [
 //Video.RenameDirectoriesWithMetadata(settings, settings.MovieTemp3, isDryRun: false, skipRenamed: true);
 //Video.RenameDirectoriesWithMetadata(settings, settings.TVTemp1, 1, isDryRun: false, skipRenamed: true, isTV: true);
 //Video.RenameDirectoriesWithMetadata(settings, settings.TVTemp2, 1, isDryRun: false, skipRenamed: true, isTV: true);
-//Video.RenameDirectoriesWithImdbMetadata(settings, @"G:\Files\Library\", 3, isDryRun: false);
+//Video.SyncImdbMetadata([(@"L:\Files\Library", 3), (@"K:\Files\Library.TV", 3), (@"K:\Files\Library\TV Mainstream Overflow.主流电视剧", 2)], log);
+//Video.SyncImdbMetadata([
+//    (@"G:\Files\Library", 3),
+//    (@"H:\Files\Library", 3),
+//    (@"I:\Files\Library", 3),
+//    (@"J:\Files\Library", 3),
+//    (@"K:\Files\Library.Movies", 3)
+//], log);
+//Video.RenameDirectoriesWithImdbMetadata(settings, @"G:\Files\Library\", 3, isDryRun: true);
 //Video.RenameDirectoriesWithImdbMetadata(settings, @"H:\Files\Library\", 3, isDryRun: true);
 //Video.RenameDirectoriesWithImdbMetadata(settings, @"I:\Files\Library\", 3, isDryRun: true);
 //Video.RenameDirectoriesWithImdbMetadata(settings, @"J:\Files\Library\", 3, isDryRun: true);
-//Video.RenameDirectoriesWithImdbMetadata(settings, @"L:\Files\Library\", 3, isTV: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, @"K:\Files\Library.Movies\", 3, isDryRun: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, @"L:\Files\Library\", 3, isDryRun: true, isTV: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, @"K:\Files\Library.TV\", 3, isDryRun: true, isTV: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, @"K:\Files\Library\TV Mainstream Overflow.主流电视剧\", 2, isDryRun: true, isTV: true);
 //Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp1);
 //Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp3);
 //Video.RenameDirectoriesWithImdbMetadata(settings, settings.TVTemp1, 1, isDryRun: false, isTV: true);
@@ -607,14 +612,8 @@ DirectorySettings[][] metadataDrives = [
 //Video.PrintDirectoriesWithErrors(settings, @"K:\Files\Library.Movies", 3);
 //Video.PrintDirectoriesWithErrors(settings, @"L:\Files\Library", 3, isTV: true);
 //Video.PrintDirectoriesWithErrors(settings, @"K:\Files\Library.TV", 3, isTV: true);
-//Video.SyncImdbMetadata([(@"L:\Files\Library", 3), (@"K:\Files\Library.TV", 3)], log);
-//Video.SyncImdbMetadata([
-//    (@"G:\Files\Library", 3),
-//    (@"H:\Files\Library", 3),
-//    (@"I:\Files\Library", 3),
-//    (@"J:\Files\Library", 3),
-//    (@"K:\Files\Library.Movies", 3)
-//], log);
+//Video.PrintDirectoriesWithErrors(settings, @"K:\Files\Library\TV Mainstream Overflow.主流电视剧\", 2, isTV: true);
+
 //Video.EnumerateDirectories(@"L:\Files\Library\TV Mainstream.主流电视剧")
 //    .GroupBy(d => PathHelper.GetFileName(d)
 //        .Split(".", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).First()
