@@ -11,46 +11,28 @@ using WordRang = Microsoft.Office.Interop.Word.Range;
 
 using static System.FormattableString;
 
-internal partial class AllHtml
+internal partial class AllHtml(string title, IEnumerable<(string, List<(string Title, CQ Content)>)> chapters)
 {
-    internal AllHtml(string title, IEnumerable<(string, List<(string Title, CQ Content)>)> chapters)
-    {
-        this.Title = title;
-        this.Chapters = chapters;
-    }
+    internal string Title { get; } = title;
 
-    internal string Title { get; }
-
-    internal IEnumerable<(string Title, List<(string Title, CQ Content)> Sections)> Chapters { get; }
+    internal IEnumerable<(string Title, List<(string Title, CQ Content)> Sections)> Chapters { get; } = chapters;
 }
 
-internal partial class ChapterHtml
+internal partial class ChapterHtml(string title, IEnumerable<(string Title, CQ Content)> sections)
 {
-    internal ChapterHtml(string title, IEnumerable<(string Title, CQ Content)> sections)
-    {
-        this.Title = title;
-        this.Sections = sections;
-    }
+    internal string Title { get; } = title;
 
-    internal string Title { get; }
-
-    public IEnumerable<(string Title, CQ Content)> Sections { get; }
+    public IEnumerable<(string Title, CQ Content)> Sections { get; } = sections;
 }
 
-internal partial class SectionHtml
+internal partial class SectionHtml(string title, CQ content)
 {
-    internal SectionHtml(string title, CQ content)
-    {
-        this.Title = title;
-        this.Content = content;
-    }
+    internal string Title { get; } = title;
 
-    internal string Title { get; }
-
-    public CQ Content { get; }
+    public CQ Content { get; } = content;
 }
 
-internal static class Program
+internal static partial class Program
 {
     private static async Task Main(string[] arguments) =>
         await BuildDocumentsAsync(arguments.FirstOrDefault());
@@ -159,11 +141,14 @@ internal static class Program
             chapters);
     }
 
-    private static readonly Regex allowedTag = new("^(p|h[1-9]|pre|blockquote|table|img|ul|ol)$", RegexOptions.IgnoreCase);
+    [GeneratedRegex("^(p|h[1-9]|pre|blockquote|table|img|ul|ol)$", RegexOptions.IgnoreCase)]
+    private static partial Regex AllowedTag();
 
-    private static readonly Regex allowedParagraphTag = new("^(a|sub|sup|img)$", RegexOptions.IgnoreCase);
+    [GeneratedRegex("^(a|sub|sup|img)$", RegexOptions.IgnoreCase)]
+    private static partial Regex AllowedParagraphTag();
 
-    private static readonly Regex allowedSpanParentTag = new("^(pre|span)$", RegexOptions.IgnoreCase);
+    [GeneratedRegex("^(pre|span)$", RegexOptions.IgnoreCase)]
+    private static partial Regex AllowedSpanParentTag();
 
     private static CQ FormatArticleContent(string articleTitle, CQ articleContentCq)
     {
@@ -183,7 +168,7 @@ internal static class Program
             {
                 string paragraphText = paragraphCq.Text().Trim();
                 paragraphCq.Children()
-                    .Where(child => !allowedParagraphTag.IsMatch(child.NodeName))
+                    .Where(child => !AllowedParagraphTag().IsMatch(child.NodeName))
                     .Select(child => child.Cq())
                     .ForEach(childCq =>
                     {
@@ -213,7 +198,7 @@ internal static class Program
         articleContentCq.Find("pre").RemoveClass("code").AddClass("csharp");
         // Cleanup direct child elements.
         articleContentCq.Children()
-            .Where(child => !allowedTag.IsMatch(child.NodeName))
+            .Where(child => !AllowedTag().IsMatch(child.NodeName))
             .ForEach(child =>
             {
                 Trace.WriteLine($"[{articleTitle}] [{child.NodeName} is not allowed]: {child.OuterHTML}");
@@ -222,7 +207,7 @@ internal static class Program
         // Cleanup span.
         articleContentCq.Find("span")
             .Select(span => (Span: span, Parent: span.ParentNode))
-            .Where(spanAndParent => !allowedSpanParentTag.IsMatch(spanAndParent.Parent.NodeName))
+            .Where(spanAndParent => !AllowedSpanParentTag().IsMatch(spanAndParent.Parent.NodeName))
             .ForEach(spanAndParent =>
             {
                 Trace.WriteLine($"[{articleTitle}] [{spanAndParent.Span.NodeName} is not allowed]: {spanAndParent.Parent.OuterHTML}");
