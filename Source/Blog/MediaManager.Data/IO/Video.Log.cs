@@ -3402,4 +3402,15 @@ internal static partial class Video
 
         return franchiseMovies;
     }
+
+    internal static void PrintAllPopular(ISettings settings, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+
+        Directory
+            .EnumerateFiles(settings.MetadataAllMovies, ImdbMetadataSearchPattern)
+            .Select(ImdbMinMetadata.DeserializeFromFile)
+            .Where(metadata => metadata.AggregateRating is not null && metadata.AggregateRating.RatingCount >= 100_000 && string.CompareOrdinal(metadata.AggregateRating.RatingValue, "7.5") >= 0)
+            .ForEach(metadata => log(metadata.ImdbId));
+    }
 }

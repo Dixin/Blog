@@ -10,17 +10,19 @@ using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 internal static class Skin
 {
-    private static readonly int MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 1);
+    private static readonly int MaxDegreeOfParallelism = Math.Min(Environment.ProcessorCount, 12);
 
     private const int WriteCount = 100;
 
-    private const string MetadataCacheDirectory = @"D:\Files\Library\Metadata.Skin.Cache";
+    private const string SKinUrl = "https://www.mrskin.com";
 
-    private const string MetadataDirectory = @"D:\Files\Library\Metadata.Skin";
+    private const string MetadataCacheDirectory = @"D:\Files\Library\Metadata.Skin.Media.Cache";
 
-    private const string MetadataJson = @"D:\Files\Library\Metadata.Skin.json";
+    private const string MetadataDirectory = @"D:\Files\Library\Metadata.Skin.Media";
 
-    private const string SummariesJson = @"D:\Files\Library\Metadata.Skin.Summary.json";
+    private const string MetadataJson = @"D:\Files\Library\Metadata.Skin.Media.json";
+
+    private const string SummariesJson = @"D:\Files\Library\Metadata.Skin.Media.Summaries.json";
 
     internal static async Task<ConcurrentDictionary<string, SkinSummary>> DownloadSummariesAsync(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
@@ -36,7 +38,7 @@ internal static class Skin
                     IPage page = await playWrightWrapper.PageAsync();
                     while (pageIndexes.TryDequeue(out int pageIndex))
                     {
-                        string url = $"https://www.mrskin.com/search/titles?page={pageIndex}&sort=most_recent";
+                        string url = $"{SKinUrl}/search/titles?page={pageIndex}&sort=most_recent";
                         log(url);
                         string html = await page.GetStringAsync(url, "#search-results", cancellationToken: token);
                         if (await page.ClickOrPressAsync("#age-gate-agree a", cancellationToken: token) > 0)
@@ -65,10 +67,12 @@ internal static class Skin
         return summaries;
     }
 
-    internal static async Task DownloadMetadata(ISettings settings, ConcurrentDictionary<string, SkinSummary>? summaries = null, bool useCache = true, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task DownloadMetadataAsync(ISettings settings, ConcurrentDictionary<string, SkinSummary>? summaries = null, bool useCache = true, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
-        summaries ??= await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, SkinSummary>>(SummariesJson, cancellationToken);
+        summaries ??= File.Exists(SummariesJson)
+            ? await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, SkinSummary>>(SummariesJson, cancellationToken)
+            : [];
 
         Dictionary<string, string> cacheFiles = Directory
             .EnumerateFiles(MetadataCacheDirectory)
@@ -83,13 +87,27 @@ internal static class Skin
                     IPage page = await playWrightWrapper.PageAsync();
                     while (urls.TryDequeue(out string? url))
                     {
-                        string html = await Retry.FixedIntervalAsync(
-                            async () => await page.GetStringAsync($"https://www.mrskin.com{url}", "#titleShowView", cancellationToken: token), 
-                            cancellationToken: token);
-                        try { }
+                        string html = string.Empty;
+                        try
+                        {
+                            html = await Retry.FixedIntervalAsync(
+                                async () => await page.GetStringAsync($"{SKinUrl}{url}", "#titleShowView", cancellationToken: token),
+                                cancellationToken: token);
+                        }
+                        catch (HttpRequestException exception)
+                        {
+                            log($"Failed to download {url}: {exception.StatusCode} {exception.HttpRequestError} {exception.Message}");
+                        }
+                        catch (Exception exception)
+                        {
+                            log($"Failed to download {url}: {exception}");
+                        }
                         finally
                         {
-                            await File.WriteAllTextAsync(Path.Combine(MetadataCacheDirectory, $"{url.Trim('/')}{Video.ImdbCacheExtension}"), html, token);
+                            if (html.IsNotNullOrWhiteSpace())
+                            {
+                                await File.WriteAllTextAsync(Path.Combine(MetadataCacheDirectory, $"{url.Trim('/')}{Video.ImdbCacheExtension}"), html, token);
+                            }
                         }
                     }
                 },
@@ -97,7 +115,7 @@ internal static class Skin
                 cancellationToken);
     }
 
-    internal static async Task DownloadMemberMetadata(ISettings settings, ConcurrentDictionary<string, SkinSummary>? summaries = null, bool useCache = true, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task DownloadMemberMetadataAsync(ISettings settings, ConcurrentDictionary<string, SkinSummary>? summaries = null, bool useCache = true, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
         summaries ??= await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, SkinSummary>>(SummariesJson, cancellationToken);
@@ -143,7 +161,7 @@ internal static class Skin
             return await JsonHelper.DeserializeFromFileAsync<SkinMetadata>(metadataFile, cancellationToken);
         }
 
-        string clipsUrl = $"https://www.mrskin.com{url}/clips";
+        string clipsUrl = $"{SKinUrl}{url}/clips";
         string clipsFile = Path.Combine(MetadataCacheDirectory, $"{fileName}.Clips{Video.ImdbCacheExtension}");
         string[] clipsHtml = await GetHtmlAsync(clipsUrl, clipsFile, cacheFiles, useCache, playWrightWrapper, "#clips .thumbnails", cancellationToken: cancellationToken);
         SkinClip[] clips = clipsHtml
@@ -207,7 +225,7 @@ internal static class Skin
         int blogCount = blog.IsNullOrWhiteSpace() ? 0 : int.Parse(new Regex("[0-0]+").Match(blog).Value);
         string description = topCQ.Find(".description--expanded p").TextTrimDecode();
 
-        string picturesUrl = $"https://www.mrskin.com{url}/pics";
+        string picturesUrl = $"{SKinUrl}{url}/pics";
         string picturesFile = Path.Combine(MetadataCacheDirectory, $"{fileName}.Pictures{Video.ImdbCacheExtension}");
         SkinPicture[] pictures = clipsCQ.Find("#pics_tab").IsEmpty()
             ? []
@@ -253,7 +271,7 @@ internal static class Skin
                 .Concat()
                 .ToArray();
 
-        string celebratesUrl = $"https://www.mrskin.com{url}/celebs";
+        string celebratesUrl = $"{SKinUrl}{url}/celebs";
         string celebratesFile = Path.Combine(MetadataCacheDirectory, $"{fileName}.Celebrates{Video.ImdbCacheExtension}");
         SkinCelebrate[] celebrates = clipsCQ.Find("#celebs_tab").IsEmpty()
             ? []
@@ -342,7 +360,7 @@ internal static class Skin
             .Concat()
             .ToArray();
 
-        string celebrateScenesUrl = $"https://www.mrskin.com{url}/nude_scene_guide";
+        string celebrateScenesUrl = $"{SKinUrl}{url}/nude_scene_guide";
         string celebrateScenesFile = Path.Combine(MetadataCacheDirectory, $"{fileName}.Scenes{Video.ImdbCacheExtension}");
         SkinCelebrateScenes[] celebrateScenes = clipsCQ.Find("#nude_scene_guide_tab").IsEmpty()
             ? []
@@ -387,7 +405,7 @@ internal static class Skin
             .Concat()
             .ToArray();
 
-        string episodesUrl = $"https://www.mrskin.com{url}/episode_guide";
+        string episodesUrl = $"{SKinUrl}{url}/episode_guide";
         string episodesFile = Path.Combine(MetadataCacheDirectory, $"{fileName}.Episodes{Video.ImdbCacheExtension}");
         SkinEpisode[] episodes = clipsCQ.Find("#episode_guide_tab").IsEmpty()
             ? []
