@@ -1192,11 +1192,11 @@ internal static partial class Video
                     {
                         (string[] Genres, string SubDirectory)[] matchesWithoutDrama = matches.Where(match => !match.Genres.ContainsIgnoreCase("Drama")).ToArray();
                         string subDirectory = Path.Combine(directory, (matchesWithoutDrama.Any() ? matchesWithoutDrama : matches).First().SubDirectory);
-                        log(movie);
-                        log(subDirectory);
+                        log(movie.EscapeMarkup());
+                        log(subDirectory.EscapeMarkup());
                         if (!isDryRun)
                         {
-                            DirectoryHelper.MoveToDirectory(movie, subDirectory);
+                            log(DirectoryHelper.MoveToDirectory(movie, subDirectory).EscapeMarkup());
                         }
 
                         log(string.Empty);
@@ -1207,18 +1207,18 @@ internal static partial class Video
                 if (regionWithoutGenres.TryGetValue(region, out string? value))
                 {
                     string subDirectory = Path.Combine(directory, value);
-                    log(movie);
-                    log(subDirectory);
+                    log(movie.EscapeMarkup());
+                    log(subDirectory.EscapeMarkup());
                     if (!isDryRun)
                     {
-                        DirectoryHelper.MoveToDirectory(movie, subDirectory);
+                        log(DirectoryHelper.MoveToDirectory(movie, subDirectory).EscapeMarkup());
                     }
 
                     log(string.Empty);
                     return;
                 }
 
-                log($"!{movie}");
+                log($"!{movie.EscapeMarkup()}");
             });
     }
 

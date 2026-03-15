@@ -1431,7 +1431,7 @@ internal static partial class Imdb
         //    .OrderBy(imdbId => imdbId)
         //    .ToArray();
         //await JsonHelper.SerializeToFileAsync(imdbIds, Path.Combine(settings.LibraryDirectory, "Movie.ImdbIdsToDownload.json"), cancellationToken);
-        string[] imdbIds = await JsonHelper.DeserializeFromFileAsync<string[]>(Path.Combine(settings.DirectoryLibrary, "Movie.ImdbIdsToDownload.json"), cancellationToken);
+        string[] imdbIds = await JsonHelper.DeserializeFromFileAsync<string[]>(Path.Combine(settings.DirectoryLibrary, "Metadata.All.Movies.ImdbIdsToDownload.json"), cancellationToken);
         int length = imdbIds.Length;
         if (getRange is not null)
         {

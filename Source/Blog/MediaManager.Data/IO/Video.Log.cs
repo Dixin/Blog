@@ -3407,10 +3407,69 @@ internal static partial class Video
     {
         log ??= Logger.WriteLine;
 
+        List<(string, Exception)> errors = [];
+        List<ImdbMinMetadata> movies = [];
         Directory
-            .EnumerateFiles(settings.MetadataAllMovies, ImdbMetadataSearchPattern)
-            .Select(ImdbMinMetadata.DeserializeFromFile)
-            .Where(metadata => metadata.AggregateRating is not null && metadata.AggregateRating.RatingCount >= 100_000 && string.CompareOrdinal(metadata.AggregateRating.RatingValue, "7.5") >= 0)
-            .ForEach(metadata => log(metadata.ImdbId));
+            .EnumerateFiles(settings.DirectoryMetadataAllMovies, ImdbMetadataSearchPattern)
+            .Select(file =>
+            {
+                try
+                {
+                    return ImdbMinMetadata.DeserializeFromFile(file);
+                }
+                catch (Exception exception)
+                {
+                    if (exception.Message.ContainsOrdinal("'}' is invalid after a single JSON value. Expected end of data."))
+                    {
+                        string content = File.ReadAllText(file);
+                        if (content.EndsWithOrdinal($"{Environment.NewLine}}}{Environment.NewLine}}}"))
+                        {
+                            content = content[..^$"{Environment.NewLine}}}".Length];
+                            File.WriteAllText(file, content);
+                            return ImdbMinMetadata.Deserialize(content);
+                        }
+
+                        if (content.EndsWithOrdinal("}}"))
+                        {
+                            content = content[..^"}".Length];
+                            File.WriteAllText(file, content);
+                            return ImdbMinMetadata.Deserialize(content);
+                        }
+                    }
+                    else if (exception.Message.ContainsOrdinal("is invalid after a single JSON value. Expected end of data."))
+                    {
+                        int lineNumber = int.Parse(Regex.Match(exception.Message, @"\| LineNumber: ([0-9]+) \|").Groups[1].Value);
+                        string[] lines = File.ReadAllLines(file);
+                        if (lines[lineNumber - 1].StartsWithOrdinal("}"))
+                        {
+                            Array.Resize(ref lines, lineNumber);
+                            lines[^1] = lines[^1][..1];
+                            File.WriteAllLines(file, lines);
+                            string json = string.Join(Environment.NewLine, lines);
+                            return ImdbMinMetadata.Deserialize(json);
+                        }
+
+                        if (lines.Length > lineNumber && lines[lineNumber].StartsWithOrdinal("}"))
+                        {
+                            Array.Resize(ref lines, lineNumber + 1);
+                            lines[^1] = lines[^1][..1];
+                            File.WriteAllLines(file, lines);
+                            string json = string.Join(Environment.NewLine, lines);
+                            return ImdbMinMetadata.Deserialize(json);
+                        }
+                    }
+
+                    errors.Add((file, exception));
+                    return null;
+                }
+            })
+            .Where(metadata => metadata?.AggregateRating is { RatingCount: > 100_000 } && string.CompareOrdinal(metadata.AggregateRating.RatingValue, "7.5") == 0)
+            .ForEach(metadata => log(metadata!.ImdbId));
+
+        log("Movies:");
+        movies.ForEach(metadata => log($"{metadata.ImdbId} {metadata.Title.EscapeMarkup()} {metadata.Year} {metadata.FormattedAggregateRating} {metadata.FormattedAggregateRatingCount} {metadata.FormattedContentRating}"));
+
+        log("Errors:");
+        errors.ForEach(error => log($"{error.Item1}{Environment.NewLine}{error.Item2.ToString().EscapeMarkup()}"));
     }
 }

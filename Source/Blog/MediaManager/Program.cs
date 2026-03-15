@@ -536,8 +536,8 @@ DirectorySettings[][] metadataDrives = [
 //Video.PrintVideosWithErrors(settings, settings.TVTemp2, searchOption: SearchOption.AllDirectories);
 //Video.CopyMovieMetadata(settings.MovieTemp1, 2, false);
 //Video.CopyMovieMetadata(settings.MovieTemp3, 2, false);
-//await Video.PrintMovieImdbIdErrorsAsync(settings, true, log, cancellationTokenSource.Token, settings.MovieTemp1);
-//await Video.PrintMovieImdbIdErrorsAsync(settings, true, log, cancellationTokenSource.Token, settings.MovieTemp3);
+//await Video.PrintMovieImdbIdErrorsAsync(settings, true, log, cancellationToken, settings.MovieTemp1);
+//await Video.PrintMovieImdbIdErrorsAsync(settings, true, log, cancellationToken, settings.MovieTemp3);
 //await Parallel.ForEachAsync(
 //    [@"G:\Files\Library\", @"H:\Files\Library\", @"I:\Files\Library\", @"J:\Files\Library\", @"K:\Files\Library.Movies\", @"K:\Files\Library.TV\", @"K:\Files\Library\TV Mainstream Overflow.主流电视剧\", @"L:\Files\Library\"],
 //    cancellationToken,
@@ -599,12 +599,16 @@ DirectorySettings[][] metadataDrives = [
 //Video.PrintDirectoriesWithErrors(settings, settings.MovieTemp3);
 //Video.PrintDirectoriesWithErrors(settings, settings.TVTemp1, 1, isTV: true);
 //Video.PrintDirectoriesWithErrors(settings, settings.TVTemp2, 1, isTV: true);
+//Video.RenameDirectoriesWithDigits(settings.MovieTemp1);
 //Video.RenameDirectoriesWithDigits(settings.MovieTemp3);
 //Video.RenameDirectoriesWithAdditionalMetadata(settings, @"K:\Files\Library\1TV Encode");
 //Video.RenameDirectoriesWithoutAdditionalMetadata(@"K:\Files\Library\1TV Encode");
 //Video.RenameDirectoriesWithGraphicMetadata(settings.MovieTemp42);
 //Video.MoveDirectoriesByRegions(settings, settings.MovieTemp3, 2, isDryRun: false);
 //Video.RenameDirectoriesWithoutAdditionalMetadata(settings.MovieTemp42);
+//Video.RenameDirectoriesWithDigits(@"G:\Files\Library\", 3);
+//Video.RenameDirectoriesWithDigits(@"H:\Files\Library\", 3);
+//Video.RenameDirectoriesWithDigits(@"I:\Files\Library\", 3);
 //Video.PrintDirectoriesWithErrors(settings, @"G:\Files\Library\", 3);
 //Video.PrintDirectoriesWithErrors(settings, @"H:\Files\Library\", 3);
 //Video.PrintDirectoriesWithErrors(settings, @"I:\Files\Library\", 3);
@@ -665,7 +669,7 @@ DirectorySettings[][] metadataDrives = [
 
 //Video.CreateTVEpisodeMetadata(@"H:\Downloads7\New folder (6)\阅读\_1", f => PathHelper.GetFileNameWithoutExtension(f).Split(".").Last());
 
-//Video.MoveTopTVEpisodes(settings, @"", settings.TVSubtitleBackupDirectory, isDryRun: false);
+//Video.MoveTopTVEpisodes(settings, @"", settings.DirectoryMetadataAllTVSubtitles, isDryRun: false);
 //Video.FormatTV(
 //    @"E:\Files\TV",
 //    @"",
