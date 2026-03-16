@@ -2061,7 +2061,7 @@ static void MoveSubtitles(string sourceDirectory, string destinationDirectory, b
 //.Where(imdbId => imdbId.IsImdbId())
 //.Distinct(StringComparer.OrdinalIgnoreCase)
 //.ToArray();
-//JsonHelper.SerializeToFile(imdbIds, Path.Combine(settings.LibraryDirectory, "Movie.ImdbIds.json"));
+//JsonHelper.SerializeToFile(imdbIds, Path.Combine(settings.DirectoryLibrary, "Metadata.Library.Movies.ImdbIds.json"));
 //string[] imdbIds = new DirectorySettings[]
 //{
 //    (@"L:\Files\Library", 3),

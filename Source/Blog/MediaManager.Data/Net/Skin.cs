@@ -28,8 +28,10 @@ internal static class Skin
     {
         log ??= Logger.WriteLine;
 
-        ConcurrentQueue<int> pageIndexes = new(Enumerable.Range(1, 1330));
-        ConcurrentDictionary<string, SkinSummary> summaries = [];
+        ConcurrentDictionary<string, SkinSummary> summaries = File.Exists(SummariesJson)
+            ? JsonHelper.DeserializeFromFile<ConcurrentDictionary<string, SkinSummary>>(SummariesJson)
+            : [];
+        ConcurrentQueue<int> pageIndexes = new(Enumerable.Range(1, 5));
         await Enumerable.Range(0, MaxDegreeOfParallelism)
             .ParallelForEachAsync(
                 async (index, _, token) =>
@@ -118,14 +120,16 @@ internal static class Skin
     internal static async Task DownloadMemberMetadataAsync(ISettings settings, ConcurrentDictionary<string, SkinSummary>? summaries = null, bool useCache = true, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
-        summaries ??= await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, SkinSummary>>(SummariesJson, cancellationToken);
+        summaries ??= File.Exists(SummariesJson)
+            ? await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, SkinSummary>>(SummariesJson, cancellationToken)
+            : [];
 
         ConcurrentDictionary<string, SkinMetadata> metadata = File.Exists(MetadataJson)
             ? await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, SkinMetadata>>(MetadataJson, cancellationToken)
             : [];
         HashSet<string> metadataFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(MetadataDirectory);
         HashSet<string> cacheFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(MetadataCacheDirectory);
-        ConcurrentQueue<string> urls = new(summaries.Keys.Except(metadata.Keys));
+        ConcurrentQueue<string> urls = new(summaries.Keys.Except(metadata.Keys).Order());
         Lock writeJsonLock = new();
         int downloadedCount = 0;
         await Enumerable

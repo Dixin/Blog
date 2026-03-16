@@ -1397,41 +1397,41 @@ internal static partial class Imdb
         maxDegreeOfParallelism ??= MaxDegreeOfParallelism;
         log ??= Logger.WriteLine;
 
-        //ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMovieLibraryMetadataAsync(cancellationToken);
+        ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMetadataLibraryMoviesAsync(cancellationToken);
 
-        //ILookup<string, string> top = (await settings.LoadTopMetadataAsync(cancellationToken))
-        //    .Where(line => (line.Category.EqualsIgnoreCase("movies_x265") || line.Category.EqualsIgnoreCase("movies"))
-        //        && (line.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopEnglishKeyword}") || line.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.TopForeignKeyword}")))
-        //    .ToLookup(cells => cells.ImdbId, cells => cells.Title);
-        //Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadMovieTopX265MetadataAsync(cancellationToken);
-        //Dictionary<string, TopMetadata[]> h264Metadata = await settings.LoadMovieTopH264MetadataAsync(cancellationToken);
-        //Dictionary<string, TopMetadata[]> h264720PMetadata = await settings.LoadMovieTopH264720PMetadataAsync(cancellationToken);
-        //ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMoviePreferredMetadataAsync(cancellationToken);
-        //Dictionary<string, TopMetadata[]> x265XMetadata = await settings.LoadMovieTopX265XMetadataAsync(cancellationToken);
-        //Dictionary<string, TopMetadata[]> h264XMetadata = await settings.LoadMovieTopH264XMetadataAsync(cancellationToken);
+        ILookup<string, string> top = (await settings.LoadMetadataTopMediaAsync(cancellationToken))
+            .Where(line => (line.Category.EqualsIgnoreCase("movies_x265") || line.Category.EqualsIgnoreCase("movies"))
+                && (line.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.KeywordTopEnglish}") || line.Title.ContainsIgnoreCase($"{Video.VersionSeparator}{settings.KeywordTopForeign}")))
+            .ToLookup(cells => cells.ImdbId, cells => cells.Title);
+        Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadMetadataTopMoviesX265Async(cancellationToken);
+        Dictionary<string, TopMetadata[]> h264Metadata = await settings.LoadMetadataTopMoviesH264Async(cancellationToken);
+        Dictionary<string, TopMetadata[]> h264720PMetadata = await settings.LoadMetadataTopMoviesH264720PAsync(cancellationToken);
+        ConcurrentDictionary<string, List<PreferredMetadata>> preferredMetadata = await settings.LoadMetadataPreferredMoviesAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> x265XMetadata = await settings.LoadMetadataTopMoviesX265XAsync(cancellationToken);
+        Dictionary<string, TopMetadata[]> h264XMetadata = await settings.LoadMetadataTopMoviesH264XAsync(cancellationToken);
         //Dictionary<string, RareMetadata> rareMetadata = await JsonHelper.DeserializeFromFileAsync<Dictionary<string, RareMetadata>>(rareJsonPath);
 
         HashSet<string> cacheFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(settings.DirectoryMetadataAllMoviesCache);
         string[] metadataFiles = Directory.GetFiles(settings.DirectoryMetadataAllMovies);
-        //string[] imdbIds = x265Metadata.Keys.AsParallel()
-        //    .Concat(x265XMetadata.Keys.AsParallel())
-        //    .Concat(h264Metadata.Keys.AsParallel())
-        //    .Concat(h264XMetadata.Keys.AsParallel())
-        //    .Concat(preferredMetadata.Keys.AsParallel())
-        //    .Concat(h264720PMetadata.Keys.AsParallel())
-        //    .Concat(top.Select(group => group.Key).AsParallel())
-        //    .Distinct(StringComparer.OrdinalIgnoreCase)
-        //    .Except(libraryMetadata.Keys.AsParallel())
-        //    .Except((await JsonHelper.DeserializeFromFileAsync<string[]>(Path.Combine(settings.LibraryDirectory, "Movie.ImdbIds.json"), cancellationToken)).AsParallel())
-        //    //.Except(rareMetadata
-        //    //    .SelectMany(rare => Regex
-        //    //        .Matches(rare.Value.Content, @"imdb\.com/title/(tt[0-9]+)")
-        //    //        .Where(match => match.Success)
-        //    //        .Select(match => match.Groups[1].Value)))
-        //    .OrderBy(imdbId => imdbId)
-        //    .ToArray();
-        //await JsonHelper.SerializeToFileAsync(imdbIds, Path.Combine(settings.LibraryDirectory, "Movie.ImdbIdsToDownload.json"), cancellationToken);
-        string[] imdbIds = await JsonHelper.DeserializeFromFileAsync<string[]>(Path.Combine(settings.DirectoryLibrary, "Metadata.All.Movies.ImdbIdsToDownload.json"), cancellationToken);
+        string[] imdbIds = x265Metadata.Keys.AsParallel()
+            .Concat(x265XMetadata.Keys.AsParallel())
+            .Concat(h264Metadata.Keys.AsParallel())
+            .Concat(h264XMetadata.Keys.AsParallel())
+            .Concat(preferredMetadata.Keys.AsParallel())
+            .Concat(h264720PMetadata.Keys.AsParallel())
+            .Concat(top.Select(group => group.Key).AsParallel())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            //.Except(libraryMetadata.Keys.AsParallel())
+            .Except((await JsonHelper.DeserializeFromFileAsync<string[]>(Path.Combine(settings.DirectoryLibrary, "Metadata.Library.Movies.ImdbIds.json"), cancellationToken)).AsParallel())
+            //.Except(rareMetadata
+            //    .SelectMany(rare => Regex
+            //        .Matches(rare.Value.Content, @"imdb\.com/title/(tt[0-9]+)")
+            //        .Where(match => match.Success)
+            //        .Select(match => match.Groups[1].Value)))
+            .OrderBy(imdbId => imdbId)
+            .ToArray();
+        await JsonHelper.SerializeToFileAsync(imdbIds, Path.Combine(settings.DirectoryLibrary, "Metadata.All.Movies.ImdbIdsToDownload"), cancellationToken);
+        //string[] imdbIds = await JsonHelper.DeserializeFromFileAsync<string[]>(Path.Combine(settings.DirectoryLibrary, "Metadata.All.Movies.ImdbIdsToDownload.json"), cancellationToken);
         int length = imdbIds.Length;
         if (getRange is not null)
         {

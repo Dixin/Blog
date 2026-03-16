@@ -40,3 +40,5 @@ mklink /J "D:\Files\Library\Metadata.All.Movies.Subtitles" "K:\Files\Library\Met
 mklink /J "D:\Files\Library\Metadata.All.TV" "K:\Files\Library\Metadata.All.TV"
 mklink /J "D:\Files\Library\Metadata.All.TV.Cache" "K:\Files\Library\Metadata.All.TV.Cache"
 mklink /J "D:\Files\Library\Metadata.All.TV.Subtitles" "K:\Files\Library\Metadata.All.TV.Subtitles"
+
+mklink /J "D:\Files\Library\Metadata.Skin.Media.Cache" "K:\Files\Library\Metadata.Skin.Media.Cache"
