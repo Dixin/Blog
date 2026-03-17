@@ -7,13 +7,21 @@ internal class PlayWrightWrapper : IAsyncDisposable
 {
     private readonly string initialUrl;
 
+    private readonly string cookieFile;
+
     private IPlaywright? playwright;
 
     private IBrowser? browser;
 
+    private IBrowserContext? context;
+
     private IPage? page;
 
-    internal PlayWrightWrapper(string initialUrl = "") => this.initialUrl = initialUrl;
+    internal PlayWrightWrapper(string initialUrl = "", string cookieFile = "")
+    {
+        this.initialUrl = initialUrl;
+        this.cookieFile = cookieFile;
+    }
 
     internal ValueTask<IPage> PageAsync() => this.page == null ? this.InitializeAsync(this.initialUrl) : ValueTask.FromResult(this.page);
 
@@ -21,11 +29,14 @@ internal class PlayWrightWrapper : IAsyncDisposable
     {
         this.playwright = await Playwright.CreateAsync();
         this.browser = await this.playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions() { Headless = false });
-        this.page = await this.browser.NewPageAsync();
-        //await this.page.SetExtraHTTPHeadersAsync(new Dictionary<string, string>()
-        //{
-        //    ["cookie"] = "cf_clearance=z_dfCu_X81W8TP4HDFFbRj2rgHKtNpfHKE2nZjfHZkg-1769764272-1.2.1.1-RInEL_Pum2_VVmwamyLsc4d2tjOImlhmrHbrO90idsv7bfnOfjaLg.zdFXPmtLv7PfBe7y2tJz2MkMi18EwfwV68fZbIlr1I4XiryJhhNu7Cr1kkXtHFIvF0fLDRvcYJsi2YtN5lgs.2ej2GpqUyBn5C4yLu.DBj.L7CUuhS.3iJBp2TbQsycu7oIYOQ5nJOZfeIuF2U4Kt5PeA2CM2N_iAlM3..bLTpSwZb1V4oDgo"
-        //});
+        this.context = await this.browser.NewContextAsync();
+        if (this.cookieFile.IsNotNullOrWhiteSpace())
+        {
+            Cookie[] cookies = await JsonHelper.DeserializeFromFileAsync<Cookie[]>(this.cookieFile);
+            await this.context.AddCookiesAsync(cookies);
+        }
+
+        this.page = await this.context.NewPageAsync();
         await this.page.AbortMediaAsync();
         if (this.initialUrl.IsNotNullOrWhiteSpace())
         {
@@ -44,6 +55,15 @@ internal class PlayWrightWrapper : IAsyncDisposable
             if (this.page is not null)
             {
                 await this.page.CloseAsync();
+            }
+        }
+
+        try { }
+        finally
+        {
+            if (this.context is not null)
+            {
+                await this.context.DisposeAsync();
             }
         }
 

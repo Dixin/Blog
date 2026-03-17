@@ -24,6 +24,8 @@ internal static class Skin
 
     private const string SummariesJson = @"D:\Files\Library\Metadata.Skin.Media.Summaries.json";
 
+    private const string CookieFile = @"D:\Files\Library\Metadata.Skin.Cookie.json";
+
     internal static async Task<ConcurrentDictionary<string, SkinSummary>> DownloadSummariesAsync(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
@@ -137,7 +139,7 @@ internal static class Skin
             .ParallelForEachAsync(
                 async (index, _, token) =>
                 {
-                    await using PlayWrightWrapper playWrightWrapper = new();
+                    await using PlayWrightWrapper playWrightWrapper = new(cookieFile: CookieFile);
                     while (urls.TryDequeue(out string? url))
                     {
                         metadata[url] = await DownloadMetadataAsync(settings, url, metadataFiles, cacheFiles, useCache, playWrightWrapper, log, token);
@@ -159,6 +161,7 @@ internal static class Skin
         log ??= Logger.WriteLine;
 
         string fileName = url.Trim('/');
+        Debug.Assert(!fileName.ContainsOrdinal(Video.Delimiter));
         string metadataFile = Path.Combine(MetadataDirectory, $"{fileName}{ImdbMetadata.Extension}");
         if (useCache && metadataFiles.Contains(metadataFile))
         {
@@ -166,15 +169,15 @@ internal static class Skin
         }
 
         string clipsUrl = $"{SKinUrl}{url}/clips";
-        string clipsFile = Path.Combine(MetadataCacheDirectory, $"{fileName}.Clips{Video.ImdbCacheExtension}");
-        string[] clipsHtml = await GetHtmlAsync(clipsUrl, clipsFile, cacheFiles, useCache, playWrightWrapper, "#clips .thumbnails", cancellationToken: cancellationToken);
-        SkinClip[] clips = clipsHtml
+        string clipsFile = Path.Combine(MetadataCacheDirectory, $"{fileName}{Video.Delimiter}Clips{Video.ImdbCacheExtension}");
+        string[] clipsHtmls = await GetHtmlAsync(clipsUrl, clipsFile, cacheFiles, useCache, playWrightWrapper, "#clips .thumbnails", cancellationToken: cancellationToken);
+        SkinClip[] clips = clipsHtmls
             .Select(html =>
             {
                 CQ pageCQ = CQ.CreateDocument(html);
                 CQ thumbnailsCQ = pageCQ.Find(".tab-content .thumbnails");
                 CQ advertisementCQ = thumbnailsCQ.Children(".col-xs-12");
-                Debug.Assert(advertisementCQ.Length is 0 or 1);
+                Debug.Assert(advertisementCQ.Length is 0 or 1 or 2);
                 advertisementCQ.Remove();
 
                 return thumbnailsCQ
@@ -183,7 +186,7 @@ internal static class Skin
                     {
                         CQ thumbnailCQ = thumbnailDom.Cq();
                         CQ mediaCQ = thumbnailCQ.Find("a.media-item:eq(0)");
-                        string title = (string)mediaCQ.Data("modal-title-name");
+                        string title = mediaCQ.Attr("data-modal-title-name");
                         Debug.Assert(title.IsNotNullOrWhiteSpace());
                         string url = mediaCQ.Attr("href");
                         Debug.Assert(url.IsNotNullOrWhiteSpace());
@@ -202,14 +205,13 @@ internal static class Skin
                             .Find(".scene-keywords span:eq(1)")
                             .TextTrimDecode()
                             .Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                        Debug.Assert(keywords.Any());
                         return new SkinClip(title, url, image, names, rating, level, keywords);
                     });
             })
             .Concat()
             .ToArray();
 
-        CQ clipsCQ = CQ.CreateDocument(clipsHtml[0]);
+        CQ clipsCQ = CQ.CreateDocument(clipsHtmls.First());
         CQ topCQ = clipsCQ.Find(".top-details-container");
         string image = topCQ.Find("img.media-object").Attr("src");
         CQ titleCQ = topCQ.Find("h1");
@@ -220,17 +222,18 @@ internal static class Skin
         int rating = topCQ.Find(".star-rating i.active").Length;
         string ratingDescription = topCQ.Find(".rating-string").TextTrimDecode();
         string userRating = topCQ.Find(".rating-number").TextTrimDecode();
-        Dictionary<string, string> details = topCQ.Find(".list-details li:has(.detail-type)")
+        Dictionary<string, string[]> details = topCQ.Find(".list-details li:has(.detail-type)")
             .Select(itemDom => itemDom.Cq())
-            .ToDictionary(itemCQ => itemCQ.Find(".detail-type").TextTrimDecode(), itemCQ => itemCQ.Find(".detail-info").TextTrimDecode());
+            .ToLookup(itemCQ => itemCQ.Find(".detail-type").TextTrimDecode().TrimEnd(':', ' '), itemCQ => itemCQ.Find(".detail-info").TextTrimDecode())
+            .ToDictionary(group => group.Key, group => group.ToArray());
         CQ blogCQ = topCQ.Find(".list-details li a:contains('Blog Posts for this Title')");
         string blogUrl = blogCQ.Attr("href");
         string blog = blogCQ.TextTrimDecode();
-        int blogCount = blog.IsNullOrWhiteSpace() ? 0 : int.Parse(new Regex("[0-0]+").Match(blog).Value);
+        int blogCount = blog.IsNullOrWhiteSpace() ? 0 : int.Parse(new Regex("[0-9]+").Match(blog).Value);
         string description = topCQ.Find(".description--expanded p").TextTrimDecode();
 
         string picturesUrl = $"{SKinUrl}{url}/pics";
-        string picturesFile = Path.Combine(MetadataCacheDirectory, $"{fileName}.Pictures{Video.ImdbCacheExtension}");
+        string picturesFile = Path.Combine(MetadataCacheDirectory, $"{fileName}{Video.Delimiter}Pictures{Video.ImdbCacheExtension}");
         SkinPicture[] pictures = clipsCQ.Find("#pics_tab").IsEmpty()
             ? []
             : (await GetHtmlAsync(picturesUrl, picturesFile, cacheFiles, useCache, playWrightWrapper, "#pics .thumbnails", cancellationToken: cancellationToken))
@@ -248,7 +251,7 @@ internal static class Skin
                         {
                             CQ thumbnailCQ = thumbnailDom.Cq();
                             CQ mediaCQ = thumbnailCQ.Find("a.media-item:eq(0)");
-                            string title = (string)mediaCQ.Data("modal-title-name");
+                            string title = mediaCQ.Attr("data-modal-title-name");
                             Debug.Assert(title.IsNotNullOrWhiteSpace());
                             string url = mediaCQ.Attr("href");
                             Debug.Assert(url.IsNotNullOrWhiteSpace());
@@ -260,15 +263,21 @@ internal static class Skin
                                 .ToDictionary(linkCQ => linkCQ.Attr("href"), linkCQ => linkCQ.TextTrimDecode());
                             Debug.Assert(names.Any());
                             string @as = thumbnailCQ.Find(".role-type").TextTrimDecode();
-                            Debug.Assert(@as.StartsWithIgnoreCase("- As "));
-                            @as = @as.ReplaceIgnoreCase("- As ", string.Empty);
+                            if (@as.StartsWithIgnoreCase("- As "))
+                            {
+                                @as = @as["- As ".Length..];
+                            }
+                            else
+                            {
+                                Debug.Assert(@as.IsNullOrWhiteSpace());
+                                @as = string.Empty;
+                            }
                             string level = thumbnailCQ.Find(".scene-keywords span:eq(0)").TextTrimDecode();
                             Debug.Assert(level.IsNotNullOrWhiteSpace());
                             string[] keywords = thumbnailCQ
                                 .Find(".scene-keywords span:eq(1)")
                                 .TextTrimDecode()
                                 .Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                            Debug.Assert(keywords.Any());
                             return new SkinPicture(title, url, image, names, @as, level, keywords);
                         });
                 })
@@ -276,7 +285,7 @@ internal static class Skin
                 .ToArray();
 
         string celebratesUrl = $"{SKinUrl}{url}/celebs";
-        string celebratesFile = Path.Combine(MetadataCacheDirectory, $"{fileName}.Celebrates{Video.ImdbCacheExtension}");
+        string celebratesFile = Path.Combine(MetadataCacheDirectory, $"{fileName}{Video.Delimiter}Celebrates{Video.ImdbCacheExtension}");
         SkinCelebrate[] celebrates = clipsCQ.Find("#celebs_tab").IsEmpty()
             ? []
             : (await GetHtmlAsync(
@@ -305,7 +314,7 @@ internal static class Skin
                         {
                             CQ thumbnailCQ = thumbnailDom.Cq();
                             CQ mediaCQ = thumbnailCQ.Find("a.media-item:eq(0)");
-                            string title = (string)mediaCQ.Data("modal-title-name");
+                            string title = mediaCQ.Attr("data-modal-title-name");
                             Debug.Assert(title.IsNotNullOrWhiteSpace());
                             string url = mediaCQ.Attr("href");
                             Debug.Assert(url.IsNotNullOrWhiteSpace());
@@ -324,7 +333,6 @@ internal static class Skin
                                 .Find(".scene-keywords span:eq(1)")
                                 .TextTrimDecode()
                                 .Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                            Debug.Assert(keywords.Any());
                             return new SkinClip(title, url, image, names, rating, level, keywords);
                         })
                         .ToArray();
@@ -334,7 +342,7 @@ internal static class Skin
                         {
                             CQ thumbnailCQ = thumbnailDom.Cq();
                             CQ mediaCQ = thumbnailCQ.Find("a.media-item:eq(0)");
-                            string title = (string)mediaCQ.Data("modal-title-name");
+                            string title = mediaCQ.Attr("data-modal-title-name");
                             Debug.Assert(title.IsNotNullOrWhiteSpace());
                             string url = mediaCQ.Attr("href");
                             Debug.Assert(url.IsNotNullOrWhiteSpace());
@@ -346,15 +354,21 @@ internal static class Skin
                                 .ToDictionary(linkCQ => linkCQ.Attr("href"), linkCQ => linkCQ.TextTrimDecode());
                             Debug.Assert(names.Any());
                             string @as = thumbnailCQ.Find(".role-type").TextTrimDecode();
-                            Debug.Assert(@as.StartsWithIgnoreCase("- As "));
-                            @as = @as.ReplaceIgnoreCase("- As ", string.Empty);
+                            if (@as.StartsWithIgnoreCase("- As "))
+                            {
+                                @as = @as["- As ".Length..];
+                            }
+                            else
+                            {
+                                Debug.Assert(@as.IsNullOrWhiteSpace());
+                                @as = string.Empty;
+                            }
                             string level = thumbnailCQ.Find(".scene-keywords span:eq(0)").TextTrimDecode();
                             Debug.Assert(level.IsNotNullOrWhiteSpace());
                             string[] keywords = thumbnailCQ
                                 .Find(".scene-keywords span:eq(1)")
                                 .TextTrimDecode()
                                 .Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                            Debug.Assert(keywords.Any());
                             return new SkinPicture(title, url, image, names, @as, level, keywords);
                         })
                         .ToArray();
@@ -365,7 +379,7 @@ internal static class Skin
             .ToArray();
 
         string celebrateScenesUrl = $"{SKinUrl}{url}/nude_scene_guide";
-        string celebrateScenesFile = Path.Combine(MetadataCacheDirectory, $"{fileName}.Scenes{Video.ImdbCacheExtension}");
+        string celebrateScenesFile = Path.Combine(MetadataCacheDirectory, $"{fileName}{Video.Delimiter}Scenes{Video.ImdbCacheExtension}");
         SkinCelebrateScenes[] celebrateScenes = clipsCQ.Find("#nude_scene_guide_tab").IsEmpty()
             ? []
             : (await GetHtmlAsync(celebrateScenesUrl, celebrateScenesFile, cacheFiles, useCache, playWrightWrapper, "#nude_scene_guide", cancellationToken: cancellationToken))
@@ -385,7 +399,7 @@ internal static class Skin
                         {
                             CQ sceneCQ = sceneDom.Cq();
                             CQ linkCQ = sceneCQ.Find("a:eq(0)");
-                            string title = (string)linkCQ.Data("modal-title-name");
+                            string title = linkCQ.Attr("data-modal-title-name");
                             Debug.Assert(title.IsNotNullOrWhiteSpace());
                             string url = linkCQ.Attr("href");
                             Debug.Assert(url.IsNotNullOrWhiteSpace());
@@ -410,7 +424,7 @@ internal static class Skin
             .ToArray();
 
         string episodesUrl = $"{SKinUrl}{url}/episode_guide";
-        string episodesFile = Path.Combine(MetadataCacheDirectory, $"{fileName}.Episodes{Video.ImdbCacheExtension}");
+        string episodesFile = Path.Combine(MetadataCacheDirectory, $"{fileName}{Video.Delimiter}Episodes{Video.ImdbCacheExtension}");
         SkinEpisode[] episodes = clipsCQ.Find("#episode_guide_tab").IsEmpty()
             ? []
             : (await GetHtmlAsync(episodesUrl, episodesFile, cacheFiles, useCache, playWrightWrapper, "#episode_guide", cancellationToken: cancellationToken))
@@ -427,7 +441,7 @@ internal static class Skin
                         {
                             CQ thumbnailCQ = thumbnailDom.Cq();
                             CQ mediaCQ = thumbnailCQ.Find("a.media-item:eq(0)");
-                            string title = (string)mediaCQ.Data("modal-title-name");
+                            string title = mediaCQ.Attr("data-modal-title-name");
                             Debug.Assert(title.IsNotNullOrWhiteSpace());
                             string url = mediaCQ.Attr("href");
                             Debug.Assert(url.IsNotNullOrWhiteSpace());
@@ -446,7 +460,6 @@ internal static class Skin
                                 .Find(".scene-keywords span:eq(1)")
                                 .TextTrimDecode()
                                 .Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                            Debug.Assert(keywords.Any());
                             return new SkinClip(title, url, image, names, rating, level, keywords);
                         })
                         .ToArray();
@@ -456,7 +469,7 @@ internal static class Skin
                         {
                             CQ thumbnailCQ = thumbnailDom.Cq();
                             CQ mediaCQ = thumbnailCQ.Find("a.media-item:eq(0)");
-                            string title = (string)mediaCQ.Data("modal-title-name");
+                            string title = mediaCQ.Attr("data-modal-title-name");
                             Debug.Assert(title.IsNotNullOrWhiteSpace());
                             string url = mediaCQ.Attr("href");
                             Debug.Assert(url.IsNotNullOrWhiteSpace());
@@ -468,15 +481,21 @@ internal static class Skin
                                 .ToDictionary(linkCQ => linkCQ.Attr("href"), linkCQ => linkCQ.TextTrimDecode());
                             Debug.Assert(names.Any());
                             string @as = thumbnailCQ.Find(".role-type").TextTrimDecode();
-                            Debug.Assert(@as.StartsWithIgnoreCase("- As "));
-                            @as = @as.ReplaceIgnoreCase("- As ", string.Empty);
+                            if (@as.StartsWithIgnoreCase("- As "))
+                            {
+                                @as = @as["- As ".Length..];
+                            }
+                            else
+                            {
+                                Debug.Assert(@as.IsNullOrWhiteSpace());
+                                @as = string.Empty;
+                            }
                             string level = thumbnailCQ.Find(".scene-keywords span:eq(0)").TextTrimDecode();
                             Debug.Assert(level.IsNotNullOrWhiteSpace());
                             string[] keywords = thumbnailCQ
                                 .Find(".scene-keywords span:eq(1)")
                                 .TextTrimDecode()
                                 .Split(",", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-                            Debug.Assert(keywords.Any());
                             return new SkinPicture(title, url, image, names, @as, level, keywords);
                         })
                         .ToArray();
@@ -490,77 +509,121 @@ internal static class Skin
         return metadata;
     }
 
-    private static async Task<string[]> GetHtmlAsync(string url, string file, HashSet<string> cacheFiles, bool useCache, PlayWrightWrapper playWrightWrapper, string selector, Func<IPage, ValueTask>? update = null, CancellationToken cancellationToken = default)
+    private static async Task<string[]> GetHtmlAsync(string url, string fileInitial, HashSet<string> cacheFiles, bool useCache, PlayWrightWrapper playWrightWrapper, string selector, Func<IPage, ValueTask>? update = null, CancellationToken cancellationToken = default)
     {
         IPage page = await playWrightWrapper.PageAsync();
-        string html;
-        if (cacheFiles.Contains(file))
+        string firstHtml;
+        string firstFile = PathHelper.AddFilePostfix(fileInitial, $"{Video.Delimiter}1");
+        if (cacheFiles.Contains(firstFile))
         {
-            if (await FileHelper.TextEndsWithIgnoreCaseAsync(file, "</html>", cancellationToken: cancellationToken))
+            if (await FileHelper.TextEndsWithIgnoreCaseAsync(firstFile, "</html>", cancellationToken: cancellationToken))
             {
                 if (useCache)
                 {
-                    html = await File.ReadAllTextAsync(file, cancellationToken);
+                    firstHtml = await File.ReadAllTextAsync(firstFile, cancellationToken);
                 }
                 else
                 {
-                    html = await page.GetStringAsync(url, selector, cancellationToken: cancellationToken);
+                    firstHtml = await page.GetStringAsync(url, selector, cancellationToken: cancellationToken);
+                    if (update is not null)
+                    {
+                        await update(page);
+                        firstHtml = await page.ContentAsync();
+                    }
+
+                    await File.WriteAllTextAsync(firstFile, firstHtml, cancellationToken);
+                }
+            }
+            else
+            {
+                FileHelper.Recycle(firstFile);
+                cacheFiles.Remove(firstFile);
+                firstHtml = await page.GetStringAsync(url, selector, cancellationToken: cancellationToken);
+                if (update is not null)
+                {
+                    await update(page);
+                    firstHtml = await page.ContentAsync();
+                }
+
+                await File.WriteAllTextAsync(firstFile, firstHtml, cancellationToken);
+            }
+        }
+        else
+        {
+            firstHtml = await page.GetStringAsync(url, selector, cancellationToken: cancellationToken);
+            if (update is not null)
+            {
+                await update(page);
+                firstHtml = await page.ContentAsync();
+            }
+
+            await File.WriteAllTextAsync(firstFile, firstHtml, cancellationToken);
+        }
+
+        //ILocator? paginationLocator = (await page.Locator("nav.pagination .last a").AllAsync()).SingleOrDefault();
+        //string lastPageUrl = paginationLocator is null ? string.Empty : await paginationLocator.TextContentAsync() ?? string.Empty;
+        CQ pageCQ = CQ.CreateDocument(firstHtml);
+        string lastPageUrl = pageCQ.Find("nav.pagination .last a").Attr("href");
+        int lastPageNumber = lastPageUrl.IsNullOrWhiteSpace()
+            ? 1
+            : int.Parse(new Regex(@"page\=([0-9]+)", RegexOptions.IgnoreCase).Match(lastPageUrl).Groups[1].Value);
+
+        return await AsyncEnumerable
+            .Range(2, lastPageNumber - 1)
+            .Select(async (pageNumber, _, token) =>
+            {
+                url = $"{url}?page={pageNumber}";
+                string file = PathHelper.AddFilePostfix(fileInitial, $"{Video.Delimiter}{pageNumber}");
+                string html;
+                if (cacheFiles.Contains(file))
+                {
+                    if (await FileHelper.TextEndsWithIgnoreCaseAsync(file, "</html>", cancellationToken: token))
+                    {
+                        if (useCache)
+                        {
+                            html = await File.ReadAllTextAsync(file, token);
+                        }
+                        else
+                        {
+                            html = await page.GetStringAsync(url, selector, cancellationToken: token);
+                            if (update is not null)
+                            {
+                                await update(page);
+                                html = await page.ContentAsync();
+                            }
+
+                            await File.WriteAllTextAsync(file, html, token);
+                        }
+                    }
+                    else
+                    {
+                        FileHelper.Recycle(file);
+                        cacheFiles.Remove(file);
+                        html = await page.GetStringAsync(url, selector, cancellationToken: token);
+                        if (update is not null)
+                        {
+                            await update(page);
+                            html = await page.ContentAsync();
+                        }
+
+                        await File.WriteAllTextAsync(file, html, token);
+                    }
+                }
+                else
+                {
+                    html = await page.GetStringAsync(url, selector, cancellationToken: token);
                     if (update is not null)
                     {
                         await update(page);
                         html = await page.ContentAsync();
                     }
 
-                    await File.WriteAllTextAsync(file, html, cancellationToken);
-                }
-            }
-            else
-            {
-                FileHelper.Recycle(file);
-                cacheFiles.Remove(file);
-                html = await page.GetStringAsync(url, selector, cancellationToken: cancellationToken);
-                if (update is not null)
-                {
-                    await update(page);
-                    html = await page.ContentAsync();
+                    await File.WriteAllTextAsync(file, html, token);
                 }
 
-                await File.WriteAllTextAsync(file, html, cancellationToken);
-            }
-        }
-        else
-        {
-            html = await page.GetStringAsync(url, selector, cancellationToken: cancellationToken);
-            if (update is not null)
-            {
-                await update(page);
-                html = await page.ContentAsync();
-            }
-
-            await File.WriteAllTextAsync(file, html, cancellationToken);
-        }
-
-        string lastPageUrl = await page.Locator("nav.pagination .last a").TextContentAsync() ?? string.Empty;
-        //CQ pageCQ = CQ.CreateDocument(html);
-        //string lastPageUrl = pageCQ.Find("nav.pagination .last a").Attr("href");
-        int lastPageIndex = lastPageUrl.IsNullOrWhiteSpace()
-            ? 1
-            : int.Parse(new Regex(@"page\=([0-9]+)", RegexOptions.IgnoreCase).Match(lastPageUrl).Groups[1].Value);
-
-        return await AsyncEnumerable.Range(2, lastPageIndex - 1)
-            .Select(async (pageIndex, _, token) =>
-            {
-                string html = await page.GetStringAsync($"{url}?page={pageIndex}", selector, cancellationToken: token);
-                if (update is not null)
-                {
-                    await update(page);
-                    html = await page.ContentAsync();
-                }
-
-                await File.WriteAllTextAsync(PathHelper.AddFilePostfix(file, $"{Video.Delimiter}{pageIndex}"), html, token);
                 return html;
             })
-            .Prepend(html)
+            .Prepend(firstHtml)
             .ToArrayAsync(cancellationToken);
     }
 }

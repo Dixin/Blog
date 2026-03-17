@@ -5,7 +5,7 @@ public record SkinSummary(string Title, string Url, string Year, string Image, i
 public record SkinMetadata(
     string Title, string Url, string Image, string Year,
     int Rating, string RatingDescription, string UserRating, string Description, int BlogCount, string BlogUrl,
-    Dictionary<string, string> Details,
+    Dictionary<string, string[]> Details,
     SkinClip[] Clips,
     SkinPicture[] Pictures,
     SkinCelebrate[] Celebrates,

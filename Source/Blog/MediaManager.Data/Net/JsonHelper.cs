@@ -1,6 +1,7 @@
 ﻿namespace MediaManager.Net;
 
 using System.Text.Encodings.Web;
+using System.Text.Json.Serialization;
 using System.Text.Unicode;
 using Examples.Text.Json;
 
@@ -14,14 +15,24 @@ internal static class JsonHelper
         TypeInfoResolver = new AlphabeticalPropertyJsonTypeInfoResolver()
     };
 
-    internal static JsonSerializerOptions DeserializerOptions => new()
+    internal static JsonSerializerOptions DeserializerOptions
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        PropertyNameCaseInsensitive = true,
-        IgnoreReadOnlyProperties = true,
-        WriteIndented = true,
-        Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
-    };
+        get
+        {
+            JsonSerializerOptions options = new()
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                PropertyNameCaseInsensitive = true,
+                IgnoreReadOnlyProperties = true,
+                WriteIndented = true,
+                Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+            };
+
+            options.Converters.Add(new JsonStringEnumConverter());
+
+            return options;
+        }
+    }
 
     public static TValue Deserialize<TValue>([StringSyntax(StringSyntaxAttribute.Json)] string json) =>
         DeserializeNullable<TValue>(json) ?? throw new InvalidOperationException($"{json} should not be null.");
