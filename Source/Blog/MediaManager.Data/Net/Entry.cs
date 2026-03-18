@@ -68,7 +68,7 @@ internal static partial class Entry
             degreeOfParallelism,
             cancellationToken);
 
-        await JsonHelper.SerializeToFileAsync(entryMetadata, entryJsonPath, cancellationToken);
+        await JsonHelper.SerializeToFileAsync(entryMetadata, entryJsonPath, cancellationToken: cancellationToken);
 
         ConcurrentDictionary<string, ConcurrentDictionary<string, VideoMetadata>> libraryMetadata = await settings.LoadMetadataLibraryMoviesAsync(cancellationToken);
         Dictionary<string, TopMetadata[]> x265Metadata = await settings.LoadMetadataTopMoviesX265Async(cancellationToken);

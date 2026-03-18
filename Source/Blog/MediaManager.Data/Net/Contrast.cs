@@ -47,7 +47,7 @@ internal static class Contrast
             })
             .ToArrayAsync(cancellationToken);
 
-        await JsonHelper.SerializeToFileAsync(metadata, settings.MetadataContrastTV, cancellationToken);
+        await JsonHelper.SerializeToFileAsync(metadata, settings.MetadataContrastTV, cancellationToken: cancellationToken);
     }
 
     internal static async Task DownloadFromContrastAsync(ISettings settings, string htmlFile, CancellationToken cancellationToken = default)
@@ -139,7 +139,7 @@ internal static class Contrast
 
         Debug.Assert(all.Length == downloaded.Length + existing.Length - existingDuplicate.Length);
 
-        await JsonHelper.SerializeToFileAsync(all, settings.MetadataContrastTV, cancellationToken);
+        await JsonHelper.SerializeToFileAsync(all, settings.MetadataContrastTV, cancellationToken: cancellationToken);
     }
 
     internal static async Task PrintTVVersionsAsync(ISettings settings, string[][]? tvDrives = null, Action<string>? log = null, CancellationToken cancellationToken = default)

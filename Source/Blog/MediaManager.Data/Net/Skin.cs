@@ -77,7 +77,7 @@ internal static class Skin
                 MaxDegreeOfParallelism,
                 cancellationToken);
 
-        await JsonHelper.SerializeToFileAsync(summaries, FileMetadataMediaSummaries, cancellationToken);
+        await JsonHelper.SerializeToFileAsync(summaries, FileMetadataMediaSummaries, cancellationToken: cancellationToken);
         return summaries;
     }
 
@@ -125,7 +125,7 @@ internal static class Skin
                 MaxDegreeOfParallelism,
                 cancellationToken);
 
-        await JsonHelper.SerializeToFileAsync(summaries, FileMetadataCelebritySummaries, cancellationToken);
+        await JsonHelper.SerializeToFileAsync(summaries, FileMetadataCelebritySummaries, cancellationToken: cancellationToken);
         return summaries;
     }
 
@@ -173,7 +173,7 @@ internal static class Skin
                         {
                             if (html.IsNotNullOrWhiteSpace())
                             {
-                                await File.WriteAllTextAsync(Path.Combine(DirectoryMetadataMediaCache, $"{url.Trim('/')}{Video.ImdbCacheExtension}"), html, token);
+                                await FileHelper.WriteTextAsync(Path.Combine(DirectoryMetadataMediaCache, $"{url.Trim('/')}{Video.ImdbCacheExtension}"), html, cancellationToken: token);
                             }
                         }
                     }
@@ -220,7 +220,7 @@ internal static class Skin
                 MaxDegreeOfParallelism,
                 cancellationToken);
 
-        await JsonHelper.SerializeToFileAsync(metadata, FileMetadataMedia, cancellationToken);
+        await JsonHelper.SerializeToFileAsync(metadata, FileMetadataMedia, cancellationToken: cancellationToken);
     }
 
     internal static async Task DownloadMemberCelebrityMetadataAsync(ISettings settings, ConcurrentDictionary<string, SkinCelebritySummary>? summaries = null, bool useCache = true, Func<int, Range>? getRange = null, Action<string>? log = null, CancellationToken cancellationToken = default)
@@ -263,7 +263,7 @@ internal static class Skin
                 MaxDegreeOfParallelism,
                 cancellationToken);
 
-        await JsonHelper.SerializeToFileAsync(metadata, FileMetadataCelebrities, cancellationToken);
+        await JsonHelper.SerializeToFileAsync(metadata, FileMetadataCelebrities, cancellationToken: cancellationToken);
     }
 
     private static async Task<SkinMediaMetadata> DownloadMemberMediaMetadataAsync(string url, HashSet<string> metadataFiles, HashSet<string> cacheFiles, bool useCache, PlayWrightWrapper playWrightWrapper, Action<string>? log = null, CancellationToken cancellationToken = default)
@@ -283,7 +283,7 @@ internal static class Skin
         (string Content, string File)[] clipHtmls = await GetHtmlsAsync(clipsUrl, clipsFile, cacheFiles, useCache, playWrightWrapper, "#clips .thumbnails", cancellationToken: cancellationToken);
         foreach ((string Content, string File) html in clipHtmls.Where(html => html.File.IsNotNullOrWhiteSpace()))
         {
-            FileHelper.WriteText(html.File, html.Content, ref writeLock);
+            FileHelper.WriteText(html.File, html.Content, ref writeLock, true);
         }
 
         SkinMediaClip[] clips = clipHtmls
@@ -361,7 +361,7 @@ internal static class Skin
                 picturesUrl, picturesFile, cacheFiles, useCache, playWrightWrapper, "#pics .thumbnails", cancellationToken: cancellationToken);
             foreach ((string Content, string File) html in pictureHtmls.Where(html => html.File.IsNotNullOrWhiteSpace()))
             {
-                FileHelper.WriteText(html.File, html.Content, ref writeLock);
+                FileHelper.WriteText(html.File, html.Content, ref writeLock, true);
             }
 
             pictures = pictureHtmls
@@ -434,7 +434,7 @@ internal static class Skin
                 cancellationToken);
             foreach ((string Content, string File) html in celebrityHtmls.Where(html => html.File.IsNotNullOrWhiteSpace()))
             {
-                FileHelper.WriteText(html.File, html.Content, ref writeLock);
+                FileHelper.WriteText(html.File, html.Content, ref writeLock, true);
             }
 
             celebrities = celebrityHtmls
@@ -534,7 +534,7 @@ internal static class Skin
                 celebrityScenesUrl, celebrityScenesFile, cacheFiles, useCache, playWrightWrapper, "#nude_scene_guide", cancellationToken: cancellationToken);
             foreach ((string Content, string File) html in celebritySceneHtmls.Where(html => html.File.IsNotNullOrWhiteSpace()))
             {
-                FileHelper.WriteText(html.File, html.Content, ref writeLock);
+                FileHelper.WriteText(html.File, html.Content, ref writeLock, true);
             }
 
             celebrityScenes = celebritySceneHtmls
@@ -592,7 +592,7 @@ internal static class Skin
                 episodesUrl, episodesFile, cacheFiles, useCache, playWrightWrapper, "#episode_guide", cancellationToken: cancellationToken);
             foreach ((string Content, string File) html in episodeHtmls.Where(html => html.File.IsNotNullOrWhiteSpace()))
             {
-                FileHelper.WriteText(html.File, html.Content, ref writeLock);
+                FileHelper.WriteText(html.File, html.Content, ref writeLock, true);
             }
 
             episodes = episodeHtmls
@@ -675,7 +675,7 @@ internal static class Skin
         }
 
         SkinMediaMetadata metadata = new(title, url, image, year, rating, ratingDescription, userRating, description, blogCount, blogUrl, details, clips, pictures, celebrities, celebrityScenes, episodes);
-        JsonHelper.SerializeToFile(metadata, metadataFile, ref writeLock);
+        JsonHelper.SerializeToFile(metadata, metadataFile, ref writeLock, true);
         return metadata;
     }
 
@@ -696,7 +696,7 @@ internal static class Skin
         (string Content, string File)[] clipHtmls = await GetHtmlsAsync(clipsUrl, clipsFile, cacheFiles, useCache, playWrightWrapper, "#clips .thumbnails", cancellationToken: cancellationToken);
         foreach ((string Content, string File) html in clipHtmls.Where(html => html.File.IsNotNullOrWhiteSpace()))
         {
-            FileHelper.WriteText(html.File, html.Content, ref writeLock);
+            FileHelper.WriteText(html.File, html.Content, ref writeLock, true);
         }
 
         SkinCelebrityClip[] clips = clipHtmls
@@ -777,7 +777,7 @@ internal static class Skin
                 picturesUrl, picturesFile, cacheFiles, useCache, playWrightWrapper, "#pics .thumbnails", cancellationToken: cancellationToken);
             foreach ((string Content, string File) html in pictureHtmls.Where(html => html.File.IsNotNullOrWhiteSpace()))
             {
-                FileHelper.WriteText(html.File, html.Content, ref writeLock);
+                FileHelper.WriteText(html.File, html.Content, ref writeLock, true);
             }
 
             pictures = pictureHtmls
@@ -853,7 +853,7 @@ internal static class Skin
                 cancellationToken);
             foreach ((string Content, string File) html in celebrityHtmls.Where(html => html.File.IsNotNullOrWhiteSpace()))
             {
-                FileHelper.WriteText(html.File, html.Content, ref writeLock);
+                FileHelper.WriteText(html.File, html.Content, ref writeLock, true);
             }
 
             celebrities = celebrityHtmls
@@ -956,7 +956,7 @@ internal static class Skin
                 celebrityScenesUrl, celebrityScenesFile, cacheFiles, useCache, playWrightWrapper, "#nude_scene_guide", cancellationToken: cancellationToken);
             foreach ((string Content, string File) html in celebritySceneHtmls.Where(html => html.File.IsNotNullOrWhiteSpace()))
             {
-                FileHelper.WriteText(html.File, html.Content, ref writeLock);
+                FileHelper.WriteText(html.File, html.Content, ref writeLock, true);
             }
 
             celebrityScenes = celebritySceneHtmls
@@ -1014,7 +1014,7 @@ internal static class Skin
                 playlistsUrl, playlistsFile, cacheFiles, useCache, playWrightWrapper, "#playlists", cancellationToken: cancellationToken);
             foreach ((string Content, string File) html in playlistHtmls.Where(html => html.File.IsNotNullOrWhiteSpace()))
             {
-                FileHelper.WriteText(html.File, html.Content, ref writeLock);
+                FileHelper.WriteText(html.File, html.Content, ref writeLock, true);
             }
 
             playlists = playlistHtmls
@@ -1059,7 +1059,7 @@ internal static class Skin
                 videosUrl, videosFile, cacheFiles, useCache, playWrightWrapper, "#original_videos", cancellationToken: cancellationToken);
             foreach ((string Content, string File) html in videoHtmls.Where(html => html.File.IsNotNullOrWhiteSpace()))
             {
-                FileHelper.WriteText(html.File, html.Content, ref writeLock);
+                FileHelper.WriteText(html.File, html.Content, ref writeLock, true);
             }
 
             videos = videoHtmls
@@ -1087,7 +1087,7 @@ internal static class Skin
         SkinCelebrityMetadata metadata = new(
             title, url, image, year, rating, ratingDescription, userRating, description, blogCount, blogUrl, details,
             clips, pictures, celebrities, celebrityScenes, playlists, videos);
-        JsonHelper.SerializeToFile(metadata, metadataFile, ref writeLock);
+        JsonHelper.SerializeToFile(metadata, metadataFile, ref writeLock, true);
         return metadata;
     }
 

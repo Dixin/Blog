@@ -162,12 +162,24 @@ public static class FileHelper
             .ToArray()
             .ForEach(subtitle => Copy(subtitle, subtitle.Replace(sourceDirectory, destinationDirectory, StringComparison.InvariantCulture), overwrite));
 
-    public static async Task WriteTextAsync(string file, string text, Encoding? encoding = null, CancellationToken cancellationToken = default)
+    public static async Task WriteTextAsync(string file, string text, bool @finally = false, Encoding? encoding = null, CancellationToken cancellationToken = default)
     {
         encoding ??= Encoding.UTF8;
         string tempFile = $"{file}.tmp";
 
-        await File.WriteAllTextAsync(tempFile, text, encoding, cancellationToken);
+        if (@finally)
+        {
+            try { }
+            finally
+            {
+                await File.WriteAllTextAsync(tempFile, text, encoding, cancellationToken);
+            }
+        }
+        else
+        {
+            await File.WriteAllTextAsync(tempFile, text, encoding, cancellationToken);
+        }
+
         if (File.Exists(file))
         {
             Delete(file);
@@ -176,28 +188,40 @@ public static class FileHelper
         File.Move(tempFile, file);
     }
 
-    public static void WriteText(string file, string text, Encoding? encoding = null)
+    public static void WriteText(string file, string content, bool @finally = false, Encoding? encoding = null)
     {
         encoding ??= Encoding.UTF8;
         string tempFile = $"{file}.tmp";
 
-        WriteTextImplementation(file, tempFile, text, encoding);
+        WriteText(file, tempFile, content, @finally, encoding);
     }
 
-    public static void WriteText(string file, string text, ref readonly Lock @lock, Encoding? encoding = null)
+    public static void WriteText(string file, string content, ref readonly Lock @lock, bool @finally = false, Encoding? encoding = null)
     {
         encoding ??= Encoding.UTF8;
         string tempFile = $"{file}.tmp";
 
         lock (@lock)
         {
-            WriteTextImplementation(file, tempFile, text, encoding);
+            WriteText(file, tempFile, content, @finally, encoding);
         }
     }
 
-    private static void WriteTextImplementation(string file, string tempFile, string text, Encoding encoding)
+    private static void WriteText(string file, string tempFile, string content, bool @finally, Encoding encoding)
     {
-        File.WriteAllText(tempFile, text, encoding);
+        if (@finally)
+        {
+            try { }
+            finally
+            {
+                File.WriteAllText(tempFile, content, encoding);
+            }
+        }
+        else
+        {
+            File.WriteAllText(tempFile, content, encoding);
+        }
+
         if (File.Exists(file))
         {
             Recycle(file);

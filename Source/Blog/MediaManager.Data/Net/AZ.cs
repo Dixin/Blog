@@ -71,12 +71,8 @@ internal static partial class AZ
                 },
                 MaxDegreeOfParallelism,
                 cancellationToken);
-        try { }
-        finally
-        {
-            await JsonHelper.SerializeToFileAsync(summaries, TitleSummaryJson, cancellationToken);
-        }
 
+        await JsonHelper.SerializeToFileAsync(summaries, TitleSummaryJson, true, cancellationToken);
         return summaries;
     }
 
@@ -132,11 +128,7 @@ internal static partial class AZ
                                 }
 
                                 Debug.Assert(HtmlEndRegex().IsMatch(html));
-                                try { }
-                                finally
-                                {
-                                    await File.WriteAllTextAsync(Path.Combine(TitleMetadataCacheDirectory, $"{key}{Video.ImdbCacheExtension}"), html, token);
-                                }
+                                await FileHelper.WriteTextAsync(Path.Combine(TitleMetadataCacheDirectory, $"{key}{Video.ImdbCacheExtension}"), html, true, cancellationToken: token);
                             }
                         }
                         else
@@ -155,11 +147,7 @@ internal static partial class AZ
                             }
 
                             Debug.Assert(HtmlEndRegex().IsMatch(html));
-                            try { }
-                            finally
-                            {
-                                await File.WriteAllTextAsync(Path.Combine(TitleMetadataCacheDirectory, $"{key}{Video.ImdbCacheExtension}"), html, token);
-                            }
+                            await FileHelper.WriteTextAsync(Path.Combine(TitleMetadataCacheDirectory, $"{key}{Video.ImdbCacheExtension}"), html, true, cancellationToken: token);
                         }
 
                         CQ pageCQ = html;
@@ -263,11 +251,7 @@ internal static partial class AZ
                         {
                             log($"{downloadedCount} / {totalCount}");
                             task.Value = updatedDownloadedCount;
-                            try { }
-                            finally
-                            {
-                                JsonHelper.SerializeToFile(titleMetadata, TitleMetadataJson, ref @lock);
-                            }
+                            JsonHelper.SerializeToFile(titleMetadata, TitleMetadataJson, ref @lock, true);
                         }
                     }
                 },
@@ -275,11 +259,7 @@ internal static partial class AZ
                 cancellationToken);
 
             task.Value = downloadedCount;
-            try { }
-            finally
-            {
-                await JsonHelper.SerializeToFileAsync(titleMetadata, TitleMetadataJson, cancellationToken);
-            }
+            await JsonHelper.SerializeToFileAsync(titleMetadata, TitleMetadataJson, true, cancellationToken);
         });
     }
 
@@ -374,12 +354,7 @@ internal static partial class AZ
                 },
                 cancellationToken);
 
-        try { }
-        finally
-        {
-            await JsonHelper.SerializeToFileAsync(tagSummaries, TagSummaryJson, cancellationToken);
-        }
-
+        await JsonHelper.SerializeToFileAsync(tagSummaries, TagSummaryJson, true, cancellationToken);
         return tagSummaries;
     }
 
@@ -485,22 +460,14 @@ internal static partial class AZ
                         log($"{updatedDownloadedCount} / {totalCount} - {tag} with {firstPageVideos.Count} videos.");
                         if (updatedDownloadedCount % WriteTagMetadataCount == 0)
                         {
-                            try { }
-                            finally
-                            {
-                                JsonHelper.SerializeToFile(tagVideoMetadata, TagVideoMetadataJson, ref @lock);
-                            }
+                            JsonHelper.SerializeToFile(tagVideoMetadata, TagVideoMetadataJson, ref @lock, true);
                         }
                     }
                 },
                 MaxDegreeOfParallelism,
                 cancellationToken);
 
-        try { }
-        finally
-        {
-            await JsonHelper.SerializeToFileAsync(tagVideoMetadata, TagVideoMetadataJson, cancellationToken);
-        }
+        await JsonHelper.SerializeToFileAsync(tagVideoMetadata, TagVideoMetadataJson, true, cancellationToken);
     }
 
 
@@ -602,22 +569,14 @@ internal static partial class AZ
                         log($"{updatedDownloadedCount} / {totalCount} - {tag} with {firstPageVideos.Count} videos.");
                         if (updatedDownloadedCount % WriteTagMetadataCount == 0)
                         {
-                            try { }
-                            finally
-                            {
-                                JsonHelper.SerializeToFile(tagImageMetadata, TagImageMetadataJson, ref @lock);
-                            }
+                            JsonHelper.SerializeToFile(tagImageMetadata, TagImageMetadataJson, ref @lock, true);
                         }
                     }
                 },
                 MaxDegreeOfParallelism,
                 cancellationToken);
 
-        try { }
-        finally
-        {
-            await JsonHelper.SerializeToFileAsync(tagImageMetadata, TagImageMetadataJson, cancellationToken);
-        }
+        await JsonHelper.SerializeToFileAsync(tagImageMetadata, TagImageMetadataJson, true, cancellationToken);
     }
 
     [GeneratedRegex(@"\<\/html\>\s*$", RegexOptions.IgnoreCase)]

@@ -169,22 +169,11 @@ internal static partial class Imdb
 
         if (@lock is not null)
         {
-            lock (@lock)
-            {
-                try { }
-                finally
-                {
-                    File.WriteAllText(file, html);
-                }
-            }
+            FileHelper.WriteText(file, html, ref @lock, true);
         }
         else
         {
-            try { }
-            finally
-            {
-                await File.WriteAllTextAsync(file, html, cancellationToken);
-            }
+            await FileHelper.WriteTextAsync(file, html, true, cancellationToken: cancellationToken);
         }
 
         return (html, trimmedCQ);
@@ -348,22 +337,11 @@ internal static partial class Imdb
 
             if (@lock is not null)
             {
-                lock (@lock)
-                {
-                    try { }
-                    finally
-                    {
-                        File.WriteAllText(imdbFile, imdbHtml);
-                    }
-                }
+                FileHelper.WriteText(imdbFile, imdbHtml, ref @lock, true);
             }
             else
             {
-                try { }
-                finally
-                {
-                    await File.WriteAllTextAsync(imdbFile, imdbHtml, cancellationToken);
-                }
+                await FileHelper.WriteTextAsync(imdbFile, imdbHtml, true, cancellationToken: cancellationToken);
             }
         }
 
@@ -1430,7 +1408,7 @@ internal static partial class Imdb
             //        .Select(match => match.Groups[1].Value)))
             .OrderBy(imdbId => imdbId)
             .ToArray();
-        await JsonHelper.SerializeToFileAsync(imdbIds, Path.Combine(settings.DirectoryLibrary, "Metadata.All.Movies.ImdbIdsToDownload"), cancellationToken);
+        await JsonHelper.SerializeToFileAsync(imdbIds, Path.Combine(settings.DirectoryLibrary, "Metadata.All.Movies.ImdbIdsToDownload"), cancellationToken: cancellationToken);
         //string[] imdbIds = await JsonHelper.DeserializeFromFileAsync<string[]>(Path.Combine(settings.DirectoryLibrary, "Metadata.All.Movies.ImdbIdsToDownload.json"), cancellationToken);
         int length = imdbIds.Length;
         if (getRange is not null)

@@ -578,20 +578,12 @@ internal static partial class Video
                 }
 
                 log($"Merged {imdbUrl}, {advisoriesUrl}, {companiesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {faqsUrl}, {goofsUrl}, {keywordsUrl}, {locationsUrl}, {quotesUrl}, {releasesUrl}, {sitesUrl}, {soundtracksUrl}, {taglinesUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile.EscapeMarkup()}.");
-                try { }
-                finally
-                {
-                    JsonHelper.SerializeToFile(imdbMetadata, newJsonFile, ref @lock);
-                }
+                JsonHelper.SerializeToFile(imdbMetadata, newJsonFile, ref @lock, true);
             }
             else if (overwrite)
             {
                 log($"Merged {imdbUrl}, {advisoriesUrl}, {companiesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {faqsUrl}, {goofsUrl}, {keywordsUrl}, {locationsUrl}, {quotesUrl}, {releasesUrl}, {sitesUrl}, {soundtracksUrl}, {taglinesUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile.EscapeMarkup()}.");
-                try { }
-                finally
-                {
-                    JsonHelper.SerializeToFile(imdbMetadata, newJsonFile, ref @lock);
-                }
+                JsonHelper.SerializeToFile(imdbMetadata, newJsonFile, ref @lock, true);
             }
         }
         else
@@ -614,20 +606,12 @@ internal static partial class Video
                 }
 
                 log($"Merged {imdbUrl}, {advisoriesUrl}, {companiesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {faqsUrl}, {goofsUrl}, {keywordsUrl}, {locationsUrl}, {quotesUrl}, {releasesUrl}, {sitesUrl}, {soundtracksUrl}, {taglinesUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile.EscapeMarkup()}.");
-                try { }
-                finally
-                {
-                    await JsonHelper.SerializeToFileAsync(imdbMetadata, newJsonFile, cancellationToken);
-                }
+                await JsonHelper.SerializeToFileAsync(imdbMetadata, newJsonFile, true, cancellationToken);
             }
             else if (overwrite)
             {
                 log($"Merged {imdbUrl}, {advisoriesUrl}, {companiesUrl}, {connectionsUrl}, {crazyCreditsUrl}, {creditsUrl}, {faqsUrl}, {goofsUrl}, {keywordsUrl}, {locationsUrl}, {quotesUrl}, {releasesUrl}, {sitesUrl}, {soundtracksUrl}, {taglinesUrl}, {triviaUrl}, {versionsUrl} to {newJsonFile.EscapeMarkup()}.");
-                try { }
-                finally
-                {
-                    await JsonHelper.SerializeToFileAsync(imdbMetadata, newJsonFile, cancellationToken);
-                }
+                await JsonHelper.SerializeToFileAsync(imdbMetadata, newJsonFile, true, cancellationToken);
             }
         }
 
@@ -691,7 +675,7 @@ internal static partial class Video
             imdbId => group.Value,
             (imdbId, files) => files.Union(group.Value, StringComparer.OrdinalIgnoreCase).ToList()));
 
-        await JsonHelper.SerializeToFileAsync(existingMetadata, jsonFile, cancellationToken);
+        await JsonHelper.SerializeToFileAsync(existingMetadata, jsonFile, cancellationToken: cancellationToken);
 
         return existingMetadata;
     }
@@ -827,8 +811,8 @@ internal static partial class Video
             {
                 string metadata = PathHelper.ReplaceExtension(video, TmdbMetadata.NfoExtension);
                 string imdbId = metadata.TryLoadNfoImdbId(out string? xmlImdbId) ? xmlImdbId : throw new InvalidOperationException(video);
-                return TryReadVideoMetadata(video, out VideoMetadata? videoMetadata) 
-                    ? (ImdbId: imdbId, Value: videoMetadata) 
+                return TryReadVideoMetadata(video, out VideoMetadata? videoMetadata)
+                    ? (ImdbId: imdbId, Value: videoMetadata)
                     : throw new InvalidOperationException(video);
             })
             .Distinct(metadata => metadata.ImdbId)

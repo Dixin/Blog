@@ -27,7 +27,7 @@ internal static class Top
             async (url, index, token) => await DownloadMetadataAsync(url, jsonPath, allSummaries, index + 1, @continue, log, token),
             degreeOfParallelism,
             cancellationToken);
-        await JsonHelper.SerializeToFileAsync(allSummaries, jsonPath, cancellationToken);
+        await JsonHelper.SerializeToFileAsync(allSummaries, jsonPath, cancellationToken: cancellationToken);
     }
 
     internal static async Task DownloadMetadataAsync(string url, string jsonPath, Func<int, bool>? @continue = null, Action<string>? log = null, CancellationToken cancellationToken = default) =>
@@ -131,7 +131,7 @@ internal static class Top
             return false;
         }
 
-        webDriver.Url = nextPage[0].GetAttribute("href");
+        webDriver.Url = nextPage[0].GetAttribute("href") ?? throw new InvalidOperationException();
         try
         {
             pager = new WebDriverWait(webDriver, WebDriverHelper.DefaultManualWait).Until(driver => driver.FindElement(By.Id("pager_links")));

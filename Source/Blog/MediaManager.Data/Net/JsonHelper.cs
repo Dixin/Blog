@@ -81,24 +81,57 @@ internal static class JsonHelper
     public static string Serialize<TValue>(TValue value) =>
         JsonSerializer.Serialize(value, SerializerOptions);
 
-    public static void SerializeToFile<TValue>(TValue value, string file)
+    public static void SerializeToFile<TValue>(TValue value, string file, bool @finally = false)
     {
         using FileStream fileStream = new(file, FileMode.OpenOrCreate, FileAccess.Write);
-        JsonSerializer.Serialize(fileStream, value, SerializerOptions);
-    }
-
-    public static void SerializeToFile<TValue>(TValue value, string file, ref readonly Lock @lock)
-    {
-        using FileStream fileStream = new(file, FileMode.OpenOrCreate, FileAccess.Write);
-        lock (@lock)
+        if (@finally)
+        {
+            try { }
+            finally
+            {
+                JsonSerializer.Serialize(fileStream, value, SerializerOptions);
+            }
+        }
+        else
         {
             JsonSerializer.Serialize(fileStream, value, SerializerOptions);
         }
     }
 
-    public static async Task SerializeToFileAsync<TValue>(TValue value, string file, CancellationToken cancellationToken = default)
+    public static void SerializeToFile<TValue>(TValue value, string file, ref readonly Lock @lock, bool @finally = false)
+    {
+        using FileStream fileStream = new(file, FileMode.OpenOrCreate, FileAccess.Write);
+        lock (@lock)
+        {
+            if (@finally)
+            {
+                try { }
+                finally
+                {
+                    JsonSerializer.Serialize(fileStream, value, SerializerOptions);
+                }
+            }
+            else
+            {
+                JsonSerializer.Serialize(fileStream, value, SerializerOptions);
+            }
+        }
+    }
+
+    public static async Task SerializeToFileAsync<TValue>(TValue value, string file, bool @finally = false, CancellationToken cancellationToken = default)
     {
         await using FileStream fileStream = new(file, FileMode.OpenOrCreate, FileAccess.Write);
-        await JsonSerializer.SerializeAsync(fileStream, value, SerializerOptions, cancellationToken);
+        if (@finally)
+        {
+            try { }
+            finally
+            {
+                await JsonSerializer.SerializeAsync(fileStream, value, SerializerOptions, cancellationToken);
+            }
+        }
+        else
+        {
+            await JsonSerializer.SerializeAsync(fileStream, value, SerializerOptions, cancellationToken);
+        }
     }
 }
