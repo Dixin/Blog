@@ -235,7 +235,11 @@ internal static class Skin
             : [];
         HashSet<string> metadataFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(DirectoryMetadataCelebrities);
         HashSet<string> cacheFiles = DirectoryHelper.GetFilesOrdinalIgnoreCase(DirectoryMetadataCelebritiesCache);
-        ConcurrentQueue<string> urls = new(summaries.Keys.Except(metadata.Keys).Order());
+        ConcurrentQueue<string> urls = new(summaries
+            .Keys
+            .Except(metadata.Keys)
+            .Except(metadataFiles.Select(file => $"/{PathHelper.GetFileNameWithoutExtension(file)}"))
+            .Order());
         if (getRange is not null)
         {
             urls = new(urls.Take(getRange(urls.Count)));
