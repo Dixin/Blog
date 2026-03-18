@@ -250,7 +250,9 @@ internal static class Skin
                     await using PlayWrightWrapper playWrightWrapper = new(cookieFile: FileCookie);
                     while (urls.TryDequeue(out string? url))
                     {
-                        metadata[url] = await DownloadMemberCelebrityMetadataAsync(url, metadataFiles, cacheFiles, useCache, playWrightWrapper, log, token);
+                        metadata[url] = await Retry.FixedIntervalAsync(
+                            async () => await DownloadMemberCelebrityMetadataAsync(url, metadataFiles, cacheFiles, useCache, playWrightWrapper, log, token),
+                            cancellationToken: token);
                     }
 
                     if (Interlocked.Increment(ref downloadedCount) % WriteCount == 0)
