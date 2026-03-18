@@ -1,25 +1,50 @@
 ﻿namespace MediaManager.Net;
 
-public record SkinSummary(string Title, string Url, string Year, string Image, int Rating);
+public record SkinMediaSummary(string Title, string Url, string Year, string Image, int Rating);
 
-public record SkinMetadata(
+public record SkinMediaMetadata(
     string Title, string Url, string Image, string Year,
     int Rating, string RatingDescription, string UserRating, string Description, int BlogCount, string BlogUrl,
     Dictionary<string, string[]> Details,
-    SkinClip[] Clips,
-    SkinPicture[] Pictures,
+    SkinMediaClip[] Clips,
+    SkinMediaPicture[] Pictures,
     SkinCelebrity[] Celebrities,
     SkinCelebrityScenes[] CelebScenes,
     SkinEpisode[] Episodes);
 
-public record SkinClip(string Title, string Url, string Image, Dictionary<string, string> Names, int Rating, string Level, string[] Keywords);
+public record SkinMediaClip(string Title, string Url, string Image, Dictionary<string, string> Names, int Rating, string Level, string[] Keywords);
 
-public record SkinPicture(string Title, string Url, string Image, Dictionary<string, string> Names, string As, string Level, string[] Keywords);
+public record SkinMediaPicture(string Title, string Url, string Image, Dictionary<string, string> Names, string As, string Level, string[] Keywords);
 
-public record SkinCelebrity(string Name, string Url, string Image, string Level, string As, SkinClip[] Clips, SkinPicture[] Pictures);
+public record SkinCelebrity(string Name, string Url, string Image, string Level, string As, SkinMediaClip[] Clips, SkinMediaPicture[] Pictures);
 
 public record SkinCelebrityScenes(string Name, string Url, string Level, string As, SkinScene[] Scenes);
 
 public record SkinScene(string Title, string Url, string Image, int Rating, string Level, string[] Keywords, string Position, string Description);
 
-public record SkinEpisode(string Title, string Description, SkinClip[] Clips, SkinPicture[] Pictures);
+public record SkinEpisode(string Title, string Description, SkinMediaClip[] Clips, SkinMediaPicture[] Pictures);
+
+public record SkinCelebritySummary(string Name, string Url, string Image, int Rating);
+
+public record SkinCelebrityMetadata(
+    string Name, string Url, string Image, string Level,
+    int Rating, string RatingDescription, string UserRating, string Description, int BlogCount, string BlogUrl,
+    Dictionary<string, string[]> Details,
+    SkinCelebrityClip[] Clips,
+    SkinCelebrityPicture[] Pictures,
+    SkinTitle[] Titles,
+    SkinTitleScenes[] TitleScenes,
+    SkinPlaylist[] Playlist,
+    SkinVideo[] Videos);
+
+public record SkinTitle(string Title, string Url, string Year, string Image, string Level, string As, SkinMediaClip[] Clips, SkinMediaPicture[] Pictures);
+
+public record SkinTitleScenes(string Title, string Url, string Level, string As, SkinScene[] Scenes);
+
+public record SkinPlaylist(string Title, string Url, string Image, string Duration, int SceneCount);
+
+public record SkinVideo(string Title, string Url, string Image, string[] Keywords);
+
+public record SkinCelebrityClip(string Title, string Url, string Image, string Year, int Rating, string Level, string[] Keywords);
+
+public record SkinCelebrityPicture(string Title, string Url, string Image, string Year, string As, string Level, string[] Keywords);

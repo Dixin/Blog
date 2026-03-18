@@ -41,5 +41,7 @@ mklink /J "D:\Files\Library\Metadata.All.TV" "K:\Files\Library\Metadata.All.TV"
 mklink /J "D:\Files\Library\Metadata.All.TV.Cache" "K:\Files\Library\Metadata.All.TV.Cache"
 mklink /J "D:\Files\Library\Metadata.All.TV.Subtitles" "K:\Files\Library\Metadata.All.TV.Subtitles"
 
+mklink /J "D:\Files\Library\Metadata.Skin.Celebrities" "K:\Files\Library\Metadata.Skin.Celebrities"
+mklink /J "D:\Files\Library\Metadata.Skin.Celebrities.Cache" "K:\Files\Library\Metadata.Skin.Celebrities.Cache"
 mklink /J "D:\Files\Library\Metadata.Skin.Media" "K:\Files\Library\Metadata.Skin.Media"
 mklink /J "D:\Files\Library\Metadata.Skin.Media.Cache" "K:\Files\Library\Metadata.Skin.Media.Cache"
