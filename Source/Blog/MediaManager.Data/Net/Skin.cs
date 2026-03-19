@@ -838,7 +838,7 @@ internal static class Skin
 
         string celebritiesUrl = $"{BaseUrl}{url}/titles";
         string celebritiesFile = Path.Combine(DirectoryMetadataCelebritiesCache, $"{fileName}{Video.Delimiter}Titles{Video.ImdbCacheExtension}");
-        SkinTitle[] celebrities;
+        SkinMedia[] celebrities;
         if (clipsCQ.Find("#titles_tab").IsEmpty())
         {
             celebrities = [];
@@ -940,7 +940,7 @@ internal static class Skin
                             })
                             .ToArray();
 
-                        return new SkinTitle(name, url, year, image, level, @as, clips, pictures);
+                        return new SkinMedia(name, url, year, image, level, @as, clips, pictures);
                     }))
                 .Concat()
                 .ToArray();
@@ -948,7 +948,7 @@ internal static class Skin
 
         string celebrityScenesUrl = $"{BaseUrl}{url}/nude_scene_guide";
         string celebrityScenesFile = Path.Combine(DirectoryMetadataCelebritiesCache, $"{fileName}{Video.Delimiter}Scenes{Video.ImdbCacheExtension}");
-        SkinTitleScenes[] celebrityScenes;
+        SkinMediaScenes[] celebrityScenes;
         if (clipsCQ.Find("#nude_scene_guide_tab").IsEmpty())
         {
             celebrityScenes = [];
@@ -998,7 +998,7 @@ internal static class Skin
                                 return new SkinScene(title, url, image, rating, level, keywords, position, description);
                             })
                             .ToArray();
-                        return new SkinTitleScenes(name, url, level, @as, scenes);
+                        return new SkinMediaScenes(name, url, level, @as, scenes);
                     }))
                 .Concat()
                 .ToArray();
