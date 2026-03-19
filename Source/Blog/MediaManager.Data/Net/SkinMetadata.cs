@@ -9,7 +9,7 @@ public record SkinMediaMetadata(
     SkinMediaClip[] Clips,
     SkinMediaPicture[] Pictures,
     SkinCelebrity[] Celebrities,
-    SkinCelebrityScenes[] CelebScenes,
+    SkinCelebrityScenes[] CelebrityScenes,
     SkinEpisode[] Episodes);
 
 public record SkinMediaClip(string Title, string Url, string Image, Dictionary<string, string> Names, int Rating, string Level, string[] Keywords);
@@ -32,14 +32,14 @@ public record SkinCelebrityMetadata(
     Dictionary<string, string[]> Details,
     SkinCelebrityClip[] Clips,
     SkinCelebrityPicture[] Pictures,
-    SkinTitle[] Titles,
-    SkinTitleScenes[] TitleScenes,
+    SkinMedia[] Titles,
+    SkinMediaScenes[] TitleScenes,
     SkinPlaylist[] Playlist,
     SkinVideo[] Videos);
 
-public record SkinTitle(string Title, string Url, string Year, string Image, string Level, string As, SkinMediaClip[] Clips, SkinMediaPicture[] Pictures);
+public record SkinMedia(string Title, string Url, string Year, string Image, string Level, string As, SkinMediaClip[] Clips, SkinMediaPicture[] Pictures);
 
-public record SkinTitleScenes(string Title, string Url, string Level, string As, SkinScene[] Scenes);
+public record SkinMediaScenes(string Title, string Url, string Level, string As, SkinScene[] Scenes);
 
 public record SkinPlaylist(string Title, string Url, string Image, string Duration, int SceneCount);
 

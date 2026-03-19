@@ -238,7 +238,6 @@ internal static class Skin
         ConcurrentQueue<string> urls = new(summaries
             .Keys
             .Except(metadata.Keys)
-            .Except(metadataFiles.Select(file => $"/{PathHelper.GetFileNameWithoutExtension(file)}"))
             .Order());
         if (getRange is not null)
         {
