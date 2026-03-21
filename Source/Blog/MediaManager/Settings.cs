@@ -263,7 +263,7 @@ public partial record Settings
     private ConcurrentDictionary<string, ImdbMetadata>? movieMergedMetadata;
 
     public async Task<ConcurrentDictionary<string, ImdbMetadata>> LoadMetadataAllMoviesAsync(CancellationToken cancellationToken) =>
-        this.movieMergedMetadata ??= await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, ImdbMetadata>>(this.MetadataAllMovies, cancellationToken);
+        this.movieMergedMetadata ??= await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, ImdbMetadata>>(this.MetadataAllMovies, [], cancellationToken);
 
     public async Task WriteMetadataAllMoviesAsync(ConcurrentDictionary<string, ImdbMetadata> value, CancellationToken cancellationToken) =>
         await JsonHelper.SerializeToFileAsync(this.movieMergedMetadata = value, this.MetadataAllMovies, cancellationToken: cancellationToken);

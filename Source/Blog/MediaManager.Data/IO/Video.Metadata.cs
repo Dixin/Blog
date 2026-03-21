@@ -900,32 +900,85 @@ internal static partial class Video
         await settings.WriteMetadataAllMoviesAsync(mergedMetadata, cancellationToken);
     }
 
-    internal static async Task MergeMovieMetadataAsync(ISettings settings, string metadataDirectory, CancellationToken cancellationToken = default)
+    internal static async Task MergeMovieMetadataAsync(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
-        ConcurrentDictionary<string, ImdbMetadata> mergedMetadata = new();
+        log??= Logger.WriteLine;
 
-        string[] movieMetadataFiles = Directory.GetFiles(metadataDirectory);
-        Dictionary<string, string> metadataFilesByImdbId = movieMetadataFiles
+        ConcurrentDictionary<string, ImdbMetadata> mergedMetadata = await settings.LoadMetadataAllMoviesAsync(cancellationToken);
+
+        string[] movieMetadataFiles = Directory.GetFiles(settings.DirectoryMetadataAllMovies);
+        Dictionary<string, string> imdbIdToMetadataFiles = movieMetadataFiles
             .ToDictionary(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty);
 
-        metadataFilesByImdbId
+        mergedMetadata.Keys.Except(imdbIdToMetadataFiles.Keys, StringComparer.OrdinalIgnoreCase)
+            .ToArray()
+            .ForEach(key => Debug.Assert(mergedMetadata.TryRemove(key, out _)));
+
+        List<(string, Exception)> errors = [];
+        imdbIdToMetadataFiles
             .Keys
-            .AsParallel()
-            .WithDegreeOfParallelism(IOMaxDegreeOfParallelism)
-            .ForEach(imdbId =>
+            .Except(mergedMetadata.Keys, StringComparer.OrdinalIgnoreCase)
+            .Select(imdbId =>
             {
-                string file = metadataFilesByImdbId[imdbId];
-                if (ImdbMetadata.TryLoad(file, out ImdbMetadata? imdbMetadata))
+                string file = imdbIdToMetadataFiles[imdbId];
+
+                try
                 {
-                    mergedMetadata[imdbId] = imdbMetadata;
+                    return JsonHelper.DeserializeFromFile<ImdbMetadata>(file);
                 }
-                else
+                catch (Exception exception)
                 {
-                    throw new InvalidOperationException(file);
+                    if (exception.Message.ContainsOrdinal("'}' is invalid after a single JSON value. Expected end of data."))
+                    {
+                        string content = File.ReadAllText(file);
+                        if (content.EndsWithOrdinal($"{Environment.NewLine}}}{Environment.NewLine}}}"))
+                        {
+                            content = content[..^$"{Environment.NewLine}}}".Length];
+                            File.WriteAllText(file, content);
+                            return JsonHelper.Deserialize<ImdbMetadata>(content);
+                        }
+
+                        if (content.EndsWithOrdinal("}}"))
+                        {
+                            content = content[..^"}".Length];
+                            File.WriteAllText(file, content);
+                            return JsonHelper.Deserialize<ImdbMetadata>(content);
+                        }
+                    }
+                    else if (exception.Message.ContainsOrdinal("is invalid after a single JSON value. Expected end of data."))
+                    {
+                        int lineNumber = int.Parse(Regex.Match(exception.Message, @"\| LineNumber: ([0-9]+) \|").Groups[1].Value);
+                        string[] lines = File.ReadAllLines(file);
+                        if (lines[lineNumber - 1].StartsWithOrdinal("}"))
+                        {
+                            Array.Resize(ref lines, lineNumber);
+                            lines[^1] = lines[^1][..1];
+                            File.WriteAllLines(file, lines);
+                            string content = string.Join(Environment.NewLine, lines);
+                            return JsonHelper.Deserialize<ImdbMetadata>(content);
+                        }
+
+                        if (lines.Length > lineNumber && lines[lineNumber].StartsWithOrdinal("}"))
+                        {
+                            Array.Resize(ref lines, lineNumber + 1);
+                            lines[^1] = lines[^1][..1];
+                            File.WriteAllLines(file, lines);
+                            string content = string.Join(Environment.NewLine, lines);
+                            return JsonHelper.Deserialize<ImdbMetadata>(content);
+                        }
+                    }
+
+                    errors.Add((file, exception));
+                    return null;
                 }
-            });
+            })
+            .Where(metadata => metadata is not null)
+            .ForEach(metadata => mergedMetadata[metadata!.ImdbId] = metadata);
 
         await settings.WriteMetadataAllMoviesAsync(mergedMetadata, cancellationToken);
+
+        log("Errors:");
+        errors.ForEach(error => log($"{error.Item1}{Environment.NewLine}{error.Item2.ToString().EscapeMarkup()}"));
     }
 
     internal static async Task DownloadMissingTitlesFromDoubanAsync(ISettings settings, string directory, int level = DefaultDirectoryLevel, bool skipFormatted = false, Action<string>? log = null, CancellationToken cancellationToken = default)
