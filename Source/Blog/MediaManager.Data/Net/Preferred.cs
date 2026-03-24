@@ -6,6 +6,7 @@ using Examples.IO;
 using Examples.Linq;
 using Examples.Net;
 using MediaManager.IO;
+using Microsoft.Playwright;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using MonoTorrent;
 using Spectre.Console;
@@ -14,7 +15,7 @@ internal static class Preferred
 {
     private const int WriteCount = 800;
 
-    private static readonly int MaxDegreeOfParallelism = int.Min(16, Environment.ProcessorCount);
+    private static readonly int MaxDegreeOfParallelism = int.Min(12, Environment.ProcessorCount);
 
     internal static async Task<ConcurrentQueue<PreferredSummary>> DownloadSummariesAsync(
         ISettings settings, Func<int, bool>? predicate = null, int initialPageIndex = 1, int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
@@ -29,15 +30,16 @@ internal static class Preferred
         await Enumerable
             .Range(0, degreeOfParallelism.Value)
             .ParallelForEachAsync(
-                async (httpClientIndex, _, token) =>
+                async (index, _, token) =>
                 {
-                    using HttpClient httpClient = new HttpClient().AddEdgeHeaders();
+                    await using PlayWrightWrapper playWrightWrapper = new();
+                    IPage page = await playWrightWrapper.PageAsync();
                     while (pageIndexes.TryDequeue(out int pageIndex))
                     {
                         string url = $"{settings.UrlPreferredMovies}/browse-movies?page={pageIndex}";
                         log($"Start {url}");
-                        string html = await Retry.FixedIntervalAsync(async () => await httpClient.GetStringAsync(url, cancellationToken), cancellationToken: token);
-                        CQ cq = new(html);
+                        string html = await Retry.FixedIntervalAsync(async () => await page.GetStringAsync(url, ".browse-content .row", cancellationToken: token), cancellationToken: token);
+                        CQ cq = CQ.CreateDocument(html);
                         if (cq[".browse-movie-wrap"].IsEmpty())
                         {
                             log($"! {url} is empty");
@@ -48,7 +50,7 @@ internal static class Preferred
                             .Find(".browse-movie-wrap")
                             .Select(dom =>
                             {
-                                CQ cqMovie = new(dom);
+                                CQ cqMovie = dom.Cq();
                                 return new PreferredSummary(
                                     Link: cqMovie.Find(".browse-movie-title").Attr("href"),
                                     Title: cqMovie.Find(".browse-movie-title").Text(),
@@ -112,9 +114,10 @@ internal static class Preferred
         await Enumerable
             .Range(0, degreeOfParallelism.Value)
             .ParallelForEachAsync(
-                async (httpClientIndex, _, token) =>
+                async (index, _, token) =>
                 {
-                    using HttpClient httpClient = new HttpClient().AddEdgeHeaders();
+                    await using PlayWrightWrapper playWrightWrapper = new();
+                    IPage page = await playWrightWrapper.PageAsync();
                     while (summaries.TryDequeue(out PreferredSummary? summary))
                     {
                         token.ThrowIfCancellationRequested();
@@ -122,10 +125,10 @@ internal static class Preferred
                         try
                         {
                             string html = await Retry.FixedIntervalAsync(
-                                async () => await httpClient.GetStringAsync(summary.Link, token),
+                                async () => await page.GetStringAsync(summary.Link, "#movie-content", cancellationToken: token),
                                 isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound },
                                 cancellationToken: token);
-                            CQ cq = new(html);
+                            CQ cq = CQ.CreateDocument(html);
                             CQ info = cq.Find("#movie-info");
                             CQ specsCQ = cq.Find("#movie-tech-specs");
                             string[] qualities = specsCQ
