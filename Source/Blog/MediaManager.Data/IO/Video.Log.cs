@@ -2205,7 +2205,7 @@ internal static partial class Video
                 VideoMovieFileInfo[] videos = VideoDirectoryInfo.GetMovies(movie.Directory).ToArray();
                 if (videos.IsEmpty())
                 {
-                    log($"!Video is missing: {movie.Directory}");
+                    log($"!Video is missing: {movie.Directory.EscapeMarkup()}");
                     return;
                 }
 

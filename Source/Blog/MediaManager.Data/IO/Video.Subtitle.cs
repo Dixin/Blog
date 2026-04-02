@@ -1051,13 +1051,13 @@ internal static partial class Video
                             if (Regex.IsMatch(suffix, @"^\.[a-z]{3}\-.+"))
                             {
                                 string newSuffix = suffix[..4];
-                                log(nonVideo.nonVideo);
-                                log(FileHelper.ReplaceFileNameWithoutExtension(nonVideo.nonVideo, videoName + newSuffix));
+                                log(nonVideo.nonVideo.EscapeMarkup());
+                                log(FileHelper.ReplaceFileNameWithoutExtension(nonVideo.nonVideo, videoName + newSuffix).EscapeMarkup());
                                 log(string.Empty);
                             }
                             else
                             {
-                                log("!" + nonVideo.nonVideo);
+                                log("!" + nonVideo.nonVideo.EscapeMarkup());
                                 log(string.Empty);
                             }
                         });

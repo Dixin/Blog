@@ -98,7 +98,7 @@ public static class FfmpegHelper
 
         if (!overwrite && File.Exists(output))
         {
-            log($"Output exists: {output}.");
+            log($"Output exists: {output.EscapeMarkup()}.");
             return;
         }
 
@@ -450,13 +450,13 @@ public static class FfmpegHelper
         });
 
         log($"Existing {existingOutputVideos.Count} output videos");
-        existingOutputVideos.ForEach(log);
+        existingOutputVideos.ForEach(video => log(video.EscapeMarkup()));
 
         log($"Existing {existingOutputVideos.Distinct(StringComparer.OrdinalIgnoreCase).Count()} distinct output videos");
         existingOutputVideos.GroupBy(video => video).Where(group => group.Count() > 1).ForEach(group => log(group.Key));
 
         log($"Missing {missingOutputVideos.Count} output videos");
-        missingOutputVideos.ForEach(log);
+        missingOutputVideos.ForEach(video => log(video.EscapeMarkup()));
     }
 
     private static string AddEncoderIfMissing(this string file, bool isTV = false) =>

@@ -62,7 +62,7 @@ internal static partial class Video
             }
 
             videoMetadata = task.Result;
-            log($"{videoMetadata.VideoWidth}x{videoMetadata.VideoHeight}, {videoMetadata.AudioBitRates.Length} audio, {file}");
+            log($"{videoMetadata.VideoWidth}x{videoMetadata.VideoHeight}, {videoMetadata.AudioBitRates.Length} audio, {file.EscapeMarkup()}");
             return true;
         }
         catch (Exception exception) when (exception.IsNotCritical())
