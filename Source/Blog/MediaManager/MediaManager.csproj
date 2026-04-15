@@ -26,14 +26,14 @@
     </ItemGroup>
 
 	<ItemGroup>
-         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.5" />
-         <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.5" />
-         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.5" />
-         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
-         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.5" />
-         <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.5" />
-         <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.5" />
-         <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="146.0.7680.7600" />
+         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.6" />
+         <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.6" />
+         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.6" />
+         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.6" />
+         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.6" />
+         <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.6" />
+         <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.6" />
+         <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="147.0.7727.5600" />
          <PackageReference Include="Selenium.WebDriver.MSEdgeDriver" Version="145.0.3800.82" /> 
     </ItemGroup>
 
