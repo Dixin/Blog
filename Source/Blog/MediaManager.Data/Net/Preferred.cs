@@ -17,6 +17,8 @@ internal static class Preferred
 
     private static readonly int MaxDegreeOfParallelism = int.Min(12, Environment.ProcessorCount);
 
+    private const string CookieFile = "Metadata.Preferred.Cookies.json";
+
     internal static async Task<ConcurrentQueue<PreferredSummary>> DownloadSummariesAsync(
         ISettings settings, Func<int, bool>? predicate = null, int initialPageIndex = 1, int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
@@ -116,7 +118,7 @@ internal static class Preferred
             .ParallelForEachAsync(
                 async (index, _, token) =>
                 {
-                    await using PlayWrightWrapper playWrightWrapper = new();
+                    await using PlayWrightWrapper playWrightWrapper = new(cookieFile: Path.Combine(settings.DirectoryLibrary, CookieFile));
                     IPage page = await playWrightWrapper.PageAsync();
                     while (summaries.TryDequeue(out PreferredSummary? summary))
                     {

@@ -307,7 +307,7 @@ public static class FfmpegHelper
                 if (distinctTimestampCrops.Length != 1)
                 {
                     log($"""
-                        {Executable} {arguments}
+                        {Executable} {arguments.EscapeMarkup()}
                         {string.Join(Environment.NewLine, timestampCrops)}
                         """);
                 }
