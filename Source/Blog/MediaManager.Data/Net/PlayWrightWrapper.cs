@@ -91,4 +91,13 @@ internal class PlayWrightWrapper : IAsyncDisposable
     }
 
     internal async Task<string> GetUrlAsync() => (await this.PageAsync()).Url;
+
+    internal static async Task ConvertCookies(string cookieFile)
+    {
+        string text = await File.ReadAllTextAsync(cookieFile);
+        text = text
+            .ReplaceIgnoreCase(@"""sameSite"": ""no_restriction""", @"""sameSite"": ""none""")
+            .ReplaceIgnoreCase(@"""sameSite"": ""unspecified""", @"""sameSite"": null");
+        await File.WriteAllTextAsync(cookieFile, text);
+    }
 }

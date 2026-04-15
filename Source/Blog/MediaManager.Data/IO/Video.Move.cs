@@ -427,7 +427,7 @@ internal static partial class Video
                 string jsonFile = files.SingleOrDefault(IsImdbMetadata) ?? string.Empty;
                 if (jsonFile.IsNullOrWhiteSpace())
                 {
-                    log($"Missing JSON: {movie}.");
+                    log($"Missing JSON: {movie.EscapeMarkup()}.");
                     return;
                 }
 

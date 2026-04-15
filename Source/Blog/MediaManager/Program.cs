@@ -38,7 +38,7 @@ using TextWriterTraceListener textTraceListener = new(Path.Combine(Path.GetTempP
 using ConsoleTraceListener consoleTraceListener = new();
 Trace.Listeners.Add(consoleTraceListener);
 Console.OutputEncoding = Encoding.UTF8; // Or Unicode.
-FFmpeg.SetExecutablesPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.0.1-full_build\bin"));
+FFmpeg.SetExecutablesPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), @"Microsoft\WinGet\Packages\Gyan.FFmpeg_Microsoft.Winget.Source_8wekyb3d8bbwe\ffmpeg-8.1-full_build\bin"));
 Action<string> log = Logger.WriteLine;
 
 DirectorySettings[][] mediaDrives = [
@@ -843,8 +843,8 @@ static void RenameFilesWithDuplicateTitle(
 //await Entry.DownloadMetadataAsync(settings, "http://hotxshare.com", 1, 238, @"D:\Files\Library\Movie.EntryMetadata.json");
 
 //await FfmpegHelper.EncodeAllAsync(
-//    Path.Combine(settings.MovieTemp4Encode, "SD.Encode"), @"D:\Temp\Encode", VideoCropMode.NoCrop,
-//    inputPredicate: input => input.HasExtension(".mkv"),
+//    @"", _ => VideoCropMode.NoCrop,
+//    getOutput: f => f.Replace(@"", @"E:\Encode"),
 //    maxDegreeOfParallelism: 2, cancellationToken: cancellationTokenSource.Token);
 
 //Video.PrintMoviesWithoutSubtitle(@"E:\Files\Movies", 2, null, "eng");
