@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>de30a5c5-3652-404f-817a-97bb4385f77f</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>MediaManager.Python.py</StartupFile>
+    <StartupFile>Preferred.Parallel.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -12,6 +12,7 @@
     <Name>MediaManager.Python</Name>
     <RootNamespace>MediaManager.Python</RootNamespace>
     <InterpreterId>CondaEnv|CondaEnv|MediaManager.Python</InterpreterId>
+    <IsWindowsApplication>False</IsWindowsApplication>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -22,7 +23,8 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="MediaManager.Python.py" />
+    <Compile Include="Preferred.py" />
+    <Compile Include="Preferred.Parallel.py" />
   </ItemGroup>
   <ItemGroup>
     <InterpreterReference Include="CondaEnv|CondaEnv|MediaManager.Python" />
