@@ -639,15 +639,23 @@ internal static partial class Video
         }
     }
 
+    [Obsolete]
+    internal static async Task<ConcurrentDictionary<string, List<string>>> LoadLibraryMovieMetadataFilesAsync(ISettings settings, CancellationToken cancellationToken = default)
+    {
+        string jsonFile = Path.Combine(settings.DirectoryLibrary, "Metadata.Library.Movies.Files.json");
+        return File.Exists(jsonFile)
+            ? await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, List<string>>>(jsonFile, cancellationToken)
+            : [];
+    }
+
+    [Obsolete]
     internal static async Task<ConcurrentDictionary<string, List<string>>> WriteLibraryMovieMetadataFilesAsync(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default, params string[][] directoryDrives)
     {
         log ??= Logger.WriteLine;
 
         string jsonFile = Path.Combine(settings.DirectoryLibrary, "Metadata.Library.Movies.Files.json");
 
-        ConcurrentDictionary<string, List<string>> existingMetadata = File.Exists(jsonFile)
-            ? await JsonHelper.DeserializeFromFileAsync<ConcurrentDictionary<string, List<string>>>(jsonFile, cancellationToken)
-            : [];
+        ConcurrentDictionary<string, List<string>> existingMetadata = await LoadLibraryMovieMetadataFilesAsync(settings, cancellationToken);
 
         existingMetadata
             .SelectMany(group => group.Value, (group, file) => (group, file))

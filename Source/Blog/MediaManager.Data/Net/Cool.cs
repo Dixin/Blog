@@ -8,13 +8,13 @@ using Examples.Net;
 using MediaManager.IO;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
-internal static class Cool
+internal static partial class Cool
 {
     private const int ChunkLength = 100;
 
     internal static async Task<int> DownloadAllPostsAsync(int startPostId, int endPostId, string directory, bool isDetection = false, int? degreeOfParallelism = null, bool overwrite = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
-        degreeOfParallelism ??= Environment.ProcessorCount * 5;
+        degreeOfParallelism ??= Environment.ProcessorCount;
         log ??= Logger.WriteLine;
 
         ConcurrentQueue<int> postIds = new(Enumerable.Range(startPostId, endPostId - startPostId).Chunk(ChunkLength).Select(chunk => chunk[0]));
@@ -155,7 +155,7 @@ internal static class Cool
         senderCQ.Html($"""<a class="title-link">{name}</a> {dateTime}</span>""");
 
         CQ postCQ = mainCQ.Children(".post-content");
-        postCQ.Children(".content-section").Siblings().Remove().End().Children(".view_ad_incontent").Remove();
+        postCQ.Children(".content-section").Siblings().Remove().End().Children(".view_ad_incontent, .ai-detection-feedback").Remove();
         //postCQ.Find("center:contains('最后编辑于')").NextAll(":not(.post-list)").Remove();
 
         CQ repliesCQ = mainCQ.Find(".post-list").Children(".list-header").Remove().End();
@@ -178,7 +178,7 @@ internal static class Cool
                     return;
                 }
 
-                Match match = PostIdRegex.Match(href);
+                Match match = PostIdRegex().Match(href);
                 if (match.Success)
                 {
                     int referencePostId = int.Parse(match.Groups[1].Value);
@@ -199,8 +199,6 @@ internal static class Cool
     private static string GetPostDirectoryName(int postId) => $"{postId / 100_000:00000}";
 
     private static string GetPostFileName(int postId) => $"{postId}.htm";
-
-    private static readonly Regex PostIdRegex = new(@"^index\.php\?app=forum&act=threadview&tid=([0-9]+)$", RegexOptions.IgnoreCase);
 
     internal static async Task DownloadPostWithTemplateAsync(int postId, string directory, HttpClient? httpClient = null, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
@@ -641,4 +639,7 @@ internal static class Cool
                 log(post.file);
             });
     }
+
+    [GeneratedRegex(@"^index\.php\?app=forum&act=threadview&tid=([0-9]+)$", RegexOptions.IgnoreCase)]
+    private static partial Regex PostIdRegex();
 }

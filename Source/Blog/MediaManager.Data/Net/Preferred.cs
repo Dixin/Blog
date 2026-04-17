@@ -20,7 +20,7 @@ internal static class Preferred
     private const string CookieFile = "Metadata.Preferred.Cookies.json";
 
     internal static async Task<ConcurrentQueue<PreferredSummary>> DownloadSummariesAsync(
-        ISettings settings, Func<int, bool>? predicate = null, int initialPageIndex = 1, int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
+        ISettings settings, Func<int, bool>? predicate = null, int initialPageIndex = 1, int? degreeOfParallelism = null, string cacheDirectory = "", Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
         degreeOfParallelism ??= MaxDegreeOfParallelism;
@@ -28,23 +28,34 @@ internal static class Preferred
         ConcurrentDictionary<string, PreferredSummary> allSummaries = await settings.LoadMetadataPreferredMoviesSummariesAsync(cancellationToken);
         ConcurrentQueue<PreferredSummary> downloadedSummaries = [];
         ConcurrentQueue<int> pageIndexes = new(Enumerable.Range(initialPageIndex, int.MaxValue).Where(predicate));
+        log($"All summary count: {allSummaries.Count}");
+
         Lock writeJsonLock = new();
         await Enumerable
             .Range(0, degreeOfParallelism.Value)
             .ParallelForEachAsync(
                 async (index, _, token) =>
                 {
-                    await using PlayWrightWrapper playWrightWrapper = new();
+                    await using PlayWrightWrapper playWrightWrapper = new(cookieFile: Path.Combine(settings.DirectoryLibrary, CookieFile), loadMedia: true);
                     IPage page = await playWrightWrapper.PageAsync();
                     while (pageIndexes.TryDequeue(out int pageIndex))
                     {
-                        string url = $"{settings.UrlPreferredMovies}/browse-movies?page={pageIndex}";
-                        log($"Start {url}");
-                        string html = await Retry.FixedIntervalAsync(async () => await page.GetStringAsync(url, ".browse-content .row", cancellationToken: token), cancellationToken: token);
-                        CQ cq = CQ.CreateDocument(html);
+                        CQ cq;
+                        if (cacheDirectory.IsNullOrWhiteSpace())
+                        {
+                            string url = $"{settings.UrlPreferredMovies}/browse-movies?page={pageIndex}";
+                            log($"Start {url}");
+                            string html = await Retry.FixedIntervalAsync(async () => await page.GetStringAsync(url, ".browse-content .row", cancellationToken: token), cancellationToken: token);
+                            cq = CQ.CreateDocument(html);
+                        }
+                        else
+                        {
+                            cq = CQ.CreateDocumentFromFile(Path.Combine(cacheDirectory, $"Preferred{Video.Delimiter}Summary{Video.Delimiter}{pageIndex}{Video.ImdbCacheExtension}"));
+                        }
+
                         if (cq[".browse-movie-wrap"].IsEmpty())
                         {
-                            log($"! {url} is empty");
+                            log($"! Summary page {pageIndex} is unavailable.");
                             break;
                         }
 
@@ -64,7 +75,7 @@ internal static class Preferred
                             .ToArray();
 
                         summaries
-                            .Do(summary => downloadedSummaries.Enqueue(summary))
+                            .Do(downloadedSummaries.Enqueue)
                             .ForEach(summary => allSummaries[summary.Link.GetUrlPath()] = summary);
 
                         if (pageIndex % WriteCount == 0)
@@ -72,7 +83,7 @@ internal static class Preferred
                             JsonHelper.SerializeToFile(allSummaries, settings.MetadataPreferredMoviesSummaries, ref writeJsonLock);
                         }
 
-                        log($"End {url}");
+                        log($"End summary page {pageIndex}");
                     }
                 },
                 degreeOfParallelism.Value,
@@ -80,20 +91,21 @@ internal static class Preferred
 
         log($"Downloaded {downloadedSummaries.Count}");
 
+        log($"All summary count: {allSummaries.Count}");
         await settings.WriteMetadataPreferredMoviesSummariesAsync(allSummaries, cancellationToken);
         return downloadedSummaries;
     }
 
-    internal static async Task DownloadMetadataAsync(ISettings settings, Func<int, bool>? @continue = null, int index = 1, int? degreeOfParallelism = null, bool skipSummaries = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task DownloadMetadataAsync(ISettings settings, Func<int, bool>? @continue = null, int index = 1, int? degreeOfParallelism = null, bool skipSummaries = false, string cacheDirectory = "", Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         degreeOfParallelism ??= MaxDegreeOfParallelism;
         ConcurrentQueue<PreferredSummary> downloadedSummaries = skipSummaries
             ? new((await settings.LoadMetadataPreferredMoviesSummariesAsync(cancellationToken)).Values)
-            : await DownloadSummariesAsync(settings, @continue, index, degreeOfParallelism, log, cancellationToken);
-        await DownloadMetadataAsync(settings, downloadedSummaries, degreeOfParallelism, log, cancellationToken);
+            : await DownloadSummariesAsync(settings, @continue, index, degreeOfParallelism, cacheDirectory, log, cancellationToken);
+        await DownloadMetadataAsync(settings, downloadedSummaries, degreeOfParallelism, cacheDirectory, log, cancellationToken);
     }
 
-    private static async Task DownloadMetadataAsync(ISettings settings, ConcurrentQueue<PreferredSummary>? summaries = null, int? degreeOfParallelism = null, Action<string>? log = null, CancellationToken cancellationToken = default)
+    private static async Task DownloadMetadataAsync(ISettings settings, ConcurrentQueue<PreferredSummary>? summaries = null, int? degreeOfParallelism = null, string cacheDirectory = "", Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         degreeOfParallelism ??= MaxDegreeOfParallelism;
         log ??= Logger.WriteLine;
@@ -118,7 +130,7 @@ internal static class Preferred
             .ParallelForEachAsync(
                 async (index, _, token) =>
                 {
-                    await using PlayWrightWrapper playWrightWrapper = new(cookieFile: Path.Combine(settings.DirectoryLibrary, CookieFile));
+                    await using PlayWrightWrapper playWrightWrapper = new(cookieFile: Path.Combine(settings.DirectoryLibrary, CookieFile), loadMedia: true);
                     IPage page = await playWrightWrapper.PageAsync();
                     while (summaries.TryDequeue(out PreferredSummary? summary))
                     {
@@ -126,11 +138,34 @@ internal static class Preferred
                         //log($"Start {summaryIndex}/{summaryCount}: {summary.Link}");
                         try
                         {
-                            string html = await Retry.FixedIntervalAsync(
-                                async () => await page.GetStringAsync(summary.Link, "#movie-content", cancellationToken: token),
-                                isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound },
-                                cancellationToken: token);
-                            CQ cq = CQ.CreateDocument(html);
+                            CQ cq;
+                            if (cacheDirectory.IsNullOrWhiteSpace())
+                            {
+                                string html = await Retry.FixedIntervalAsync(
+                                    async () => await page.GetStringAsync(summary.Link, "#movie-content", cancellationToken: token),
+                                    isTransient: exception => exception is not HttpRequestException { StatusCode: HttpStatusCode.NotFound },
+                                    cancellationToken: token);
+                                cq = CQ.CreateDocument(html);
+                            }
+                            else
+                            {
+                                string file = Path.Combine(cacheDirectory, $"Preferred{Video.Delimiter}Movie{Video.Delimiter}{summary.Link.Split("/", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Last()}{Video.ImdbCacheExtension}");
+                                if(File.Exists(file))
+                                {
+                                    cq = CQ.CreateDocumentFromFile(file);
+                                }
+                                else
+                                {
+                                    continue;
+                                }
+                            }
+
+                            string title = cq.Find("head title").TextTrimDecode();
+                            if (title.ContainsIgnoreCase("not found") && title.ContainsIgnoreCase("(Error 404)") || cq.Find("h2.heading-center:Contains(') not available.')").Any())
+                            {
+                                continue;
+                            }
+
                             CQ info = cq.Find("#movie-info");
                             CQ specsCQ = cq.Find("#movie-tech-specs");
                             string[] qualities = specsCQ
@@ -175,6 +210,11 @@ internal static class Preferred
                                         Runtime: qualitySpec.Second.Runtime,
                                         Seeds: qualitySpec.Second.Seeds))
                                     .ToArray());
+
+                            if (newDetail.Availabilities.Count <= 0)
+                            {
+                                Debugger.Break();
+                            }
 
                             details.AddOrUpdate(
                                 newDetail.ImdbId,

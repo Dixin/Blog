@@ -9,6 +9,8 @@ internal class PlayWrightWrapper : IAsyncDisposable
 
     private readonly string cookieFile;
 
+    private readonly bool loadMedia;
+
     private IPlaywright? playwright;
 
     private IBrowser? browser;
@@ -17,10 +19,11 @@ internal class PlayWrightWrapper : IAsyncDisposable
 
     private IPage? page;
 
-    internal PlayWrightWrapper(string initialUrl = "", string cookieFile = "")
+    internal PlayWrightWrapper(string initialUrl = "", string cookieFile = "", bool loadMedia = false)
     {
         this.initialUrl = initialUrl;
         this.cookieFile = cookieFile;
+        this.loadMedia = loadMedia;
     }
 
     internal ValueTask<IPage> PageAsync() => this.page == null ? this.InitializeAsync(this.initialUrl) : ValueTask.FromResult(this.page);
@@ -37,7 +40,11 @@ internal class PlayWrightWrapper : IAsyncDisposable
         }
 
         this.page = await this.context.NewPageAsync();
-        await this.page.AbortMediaAsync();
+        if (!this.loadMedia)
+        {
+            await this.page.AbortMediaAsync();
+        }
+
         if (this.initialUrl.IsNotNullOrWhiteSpace())
         {
             IResponse? response = await this.page.GotoAsync(url);

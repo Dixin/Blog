@@ -469,16 +469,24 @@ DirectorySettings[][] metadataDrives = [
 //    || imdbMetadata.AllKeywords.Intersect(keywords, StringComparer.OrdinalIgnoreCase).Any()), isDryRun: true);
 
 //await Video.WriteMergedMovieMetadataAsync(settings);
+//Directory.EnumerateFiles(settings.DirectoryMetadataAllMovies)
+//    .GroupBy(file => ImdbMetadata.TryGet(file, out string? imdbId) ? imdbId : string.Empty)
+//    .Where(group => group.Key.IsImdbId() && group.Count() > 1)
+//    .ForEach(group =>
+//    {
+//        group.OrderByDescending(file => new FileInfo(file).LastWriteTimeUtc).Skip(1).ForEach(FileHelper.Recycle);
+//    });
+//await Video.MergeMovieMetadataAsync(settings, log, cancellationToken);
 //await Video.PrintMovieLinksAsync(
 //    settings,
 //    (imdbMetadata, keywords) =>
-//     imdbMetadata.Advisories
+//        imdbMetadata.Advisories is not null && imdbMetadata.Advisories
 //        .Where(advisory => advisory.Key.ContainsIgnoreCase("sex") || advisory.Key.ContainsIgnoreCase("nudity"))
 //        .SelectMany(advisory => advisory.Value)
-//        .Any(advisory => advisory.FormattedSeverity == ImdbAdvisorySeverity.Severe)
-//        || imdbMetadata.AllKeywords.Any(keywords.Contains),
+//        .Any(advisory => advisory.Key.ContainsIgnoreCase("Severe"))
+//        || imdbMetadata.AllKeywords is not null && imdbMetadata.AllKeywords.Keys.Any(keywords.Contains),
 //    isDryRun: true,
-//    drives: [@"G:\Files\Library", @"H:\Files\Library", @"I:\Files\Library", @"K:\Files\Library\Movies Controversial.非主流电影"]);
+//    drives: [@"G:\Files\Library", @"H:\Files\Library", @"I:\Files\Library", @"K:\Files\Library.Movies\Movies Controversial.非主流电影"]);
 
 //Audio.ReplaceTraditionalChinese(settings.AudioMainstream, true);
 
@@ -616,7 +624,7 @@ DirectorySettings[][] metadataDrives = [
 //Video.PrintDirectoriesWithErrors(settings, @"K:\Files\Library.Movies", 3);
 //Video.PrintDirectoriesWithErrors(settings, @"L:\Files\Library", 3, isTV: true);
 //Video.PrintDirectoriesWithErrors(settings, @"K:\Files\Library.TV", 3, isTV: true);
-//Video.PrintDirectoriesWithErrors(settings, @"K:\Files\Library\TV Mainstream Overflow.主流电视剧\", 2, isTV: true);
+//Video.PrintDirectoriesWithErrors(settings, @"K:\Files\TV Mainstream Overflow.主流电视剧\", 2, isTV: true);
 
 //Video.EnumerateDirectories(@"L:\Files\Library\TV Mainstream.主流电视剧")
 //    .GroupBy(d => PathHelper.GetFileName(d)
@@ -2045,7 +2053,7 @@ static void MoveSubtitles(string sourceDirectory, string destinationDirectory, b
 //        })
 //);
 
-//int lastPostId = await Cool.DownloadAllPostsAsync(14523909, 14523909 + 10000, @"M:\Files\Chinese.Text.Cool18Raw\Posts", true);
+//int lastPostId = await Cool.DownloadAllPostsAsync(14557981 + 1, 14557981 + 1000, @"\\box-t\F\Files\Chinese.Text.Cool18Raw\Posts", true);
 //log(lastPostId.ToString());
 //string[] imdbIds = new DirectorySettings[]
 //{
