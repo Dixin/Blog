@@ -124,11 +124,15 @@ public partial record Settings(
 
     public Dictionary<string, string> MovieRegionDirectories { get; init; } = new();
 
+    public string[] ImdbCoreKeywords { get; init; } = [];
+
     public string[] ImdbKeywords { get; init; } = [];
 
-    public string[] AllImdbKeywords { get; init; } = [];
+    public string[] ImdbAllKeywords { get; init; } = [];
 
     public string[] MetadataTopMoviesDuplication { get; init; } = [];
+
+    public Dictionary<string, string[]> Languages { get; init; } = [];
 }
 
 public partial record Settings : ISettings

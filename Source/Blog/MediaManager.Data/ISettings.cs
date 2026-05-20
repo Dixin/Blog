@@ -98,9 +98,11 @@ public interface ISettings
 
     Dictionary<string, string> MovieRegionDirectories { get; init; }
 
+    string[] ImdbCoreKeywords { get; init; }
+
     string[] ImdbKeywords { get; init; }
 
-    string[] AllImdbKeywords { get; init; }
+    string[] ImdbAllKeywords { get; init; }
 
     string[] MetadataTopMoviesDuplication { get; init; }
 
@@ -185,6 +187,8 @@ public interface ISettings
     string MetadataTopMedia { get; init; }
 
     string FileTemp { get; init; }
+
+    Dictionary<string, string[]> Languages { get; init; }
 
     Task<Dictionary<string, VideoMetadata>> LoadMetadataLibraryMoviesExternalAsync(CancellationToken cancellationToken);
 

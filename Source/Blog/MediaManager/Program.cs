@@ -439,7 +439,8 @@ DirectorySettings[][] metadataDrives = [
 //    (@"G:\Files\Library", 3),
 //    (@"H:\Files\Library", 3),
 //    (@"I:\Files\Library", 3),
-//    (@"K:\Files\Library.Movies\Movies Controversial.非主流电影", 2));
+//    (@"K:\Files\Library.Movies\Movies Controversial.非主流电影", 2),
+//    (@"K:\Files\Library.Movies\Movies Musical.音乐", 2));
 
 //await Video.PrintLibraryMovieVersions(settings, log, cancellationToken,
 //    @"G:\Files\Library", @"H:\Files\Library", @"I:\Files\Library", @"K:\Files\Library\Movies Controversial.非主流电影");
@@ -560,6 +561,7 @@ DirectorySettings[][] metadataDrives = [
 //Video.MoveMetadata(settings.MovieTemp1, settings.DirectoryMetadataAllMoviesCache, settings.DirectoryMetadataAllMovies);
 //Video.MoveMetadata(settings.MovieTemp3, settings.DirectoryMetadataAllMoviesCache, settings.DirectoryMetadataAllMovies);
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp1, 2, overwrite: false, useCache: true, useBrowser: true);
+//await Video.DownloadImdbMetadataAsync(settings.MovieTemp2, 2, overwrite: false, useCache: true, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.MovieTemp3, 2, overwrite: false, useCache: true, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.TVTemp1, 1, overwrite: false, useCache: true, useBrowser: true);
 //await Video.DownloadImdbMetadataAsync(settings.TVTemp2, 1, overwrite: false, useCache: true, useBrowser: true);
@@ -593,7 +595,7 @@ DirectorySettings[][] metadataDrives = [
 //Video.RenameDirectoriesWithImdbMetadata(settings, @"K:\Files\Library.Movies\", 3, isDryRun: true);
 //Video.RenameDirectoriesWithImdbMetadata(settings, @"L:\Files\Library\", 3, isDryRun: true, isTV: true);
 //Video.RenameDirectoriesWithImdbMetadata(settings, @"K:\Files\Library.TV\", 3, isDryRun: true, isTV: true);
-//Video.RenameDirectoriesWithImdbMetadata(settings, @"K:\Files\Library\TV Mainstream Overflow.主流电视剧\", 2, isDryRun: true, isTV: true);
+//Video.RenameDirectoriesWithImdbMetadata(settings, @"K:\Files\TV Mainstream Overflow.主流电视剧\", 2, isDryRun: true, isTV: true);
 //Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp1);
 //Video.RenameDirectoriesWithImdbMetadata(settings, settings.MovieTemp3);
 //Video.RenameDirectoriesWithImdbMetadata(settings, settings.TVTemp1, 1, isDryRun: false, isTV: true);
@@ -851,8 +853,9 @@ static void RenameFilesWithDuplicateTitle(
 //await Entry.DownloadMetadataAsync(settings, "http://hotxshare.com", 1, 238, @"D:\Files\Library\Movie.EntryMetadata.json");
 
 //await FfmpegHelper.EncodeAllAsync(
-//    @"", _ => VideoCropMode.NoCrop,
-//    getOutput: f => f.Replace(@"", @"E:\Encode"),
+//    @"", _ => VideoCropMode.AdaptiveCropWithoutLimit,
+//    getOutput: f => f.Replace(@"", @"E:\Encode")
+//        .Replace(".mkv", ".mp4"),
 //    maxDegreeOfParallelism: 2, cancellationToken: cancellationTokenSource.Token);
 
 //Video.PrintMoviesWithoutSubtitle(@"E:\Files\Movies", 2, null, "eng");
@@ -1876,10 +1879,10 @@ static void MoveSubtitles(string sourceDirectory, string destinationDirectory, b
 //.ForAll(action => action());
 //Video.FormatSubtitleSuffix(@"L:\Files\Library\TV Mainstream.主流电视剧\German.德国\Germany-USA.German.Crime-Drama-Mystery@Dark.2017.暗黑[8.7-433K][TVMA][1080K2]", 1);
 
-//await FfmpegHelper.ExtractAllAsync(settings, @"\\box-d\E\Files\Movies.Mkv", isTV: false, outputVideos: [input => PathHelper.ReplaceExtension(input, ".mp4")
-//    .ReplaceIgnoreCase(@"\\box-d\E\Files\Movies.Mkv\",@"G:\Files\Library\Movies Temp 1\New folder\")]);
-//await FfmpegHelper.ExtractAllAsync(settings, @"\\box-d\E\Files\TV.Mkv", isTV: true, outputVideos: [input => PathHelper.ReplaceExtension(input, ".mp4")
-//    .ReplaceIgnoreCase(@"\\box-d\E\Files\TV.Mkv\", @"L:\Files\Library\TV Temp 1\")]);
+//await FfmpegHelper.ExtractAllAsync(settings, @"\\box-t\K\Files\TV.Mkv", isTV: true, skipParsing: true, outputVideos: [input => PathHelper.ReplaceExtension(input, ".mp4")
+//    .ReplaceIgnoreCase(@"\\box-t\K\Files\TV.Mkv\", @"L:\Files\Library\TV Temp 1\")]);
+//await FfmpegHelper.ExtractAllAsync(settings, @"\\box-t\K\Files\Movies.Mkv", isTV: false, outputVideos: [input => PathHelper.ReplaceExtension(input, ".mp4")
+//    .ReplaceIgnoreCase(@"\\box-t\K\Files\Movies.Mkv\",@"I:\Files\Library\Movies Temp 3\")]);
 //await FfmpegHelper.ExtractAllAsync(settings, @"\\box-x\E\Files\New folder (2)", isTV: true, outputVideos: [input => PathHelper.ReplaceExtension(input, ".mp4")
 //    .ReplaceIgnoreCase(@"\\box-x\E\Files\New folder (2)\",@"L:\Files\Library\TV Temp 1\")]);
 //await FfmpegHelper.ExtractAllAsync(settings, @"\\box-x\E\Files\New folder (2)", isTV: true, outputVideos: [input => PathHelper.ReplaceExtension(input, ".mp4")
@@ -2082,4 +2085,299 @@ static void MoveSubtitles(string sourceDirectory, string destinationDirectory, b
 //.Distinct(StringComparer.OrdinalIgnoreCase)
 //.ToArray();
 //JsonHelper.SerializeToFile(imdbIds, Path.Combine(settings.LibraryDirectory, "TV.ImdbIds.json"));
-//await Skin.DownloadDetails(settings);
+//string[] drives = [
+//    @"G:\Files\Library",
+//    @"H:\Files\Library",
+//    @"I:\Files\Library",
+//    @"K:\Files\Library.Movies"
+//];
+//
+//drives.AsParallel()
+//    .SelectMany(drive => Directory.EnumerateFiles(drive, "*.json", SearchOption.AllDirectories))
+//    .Where(json => !json.ContainsIgnoreCase(@"\Delete"))
+//    .Select(json => (json, ImdbId: PathHelper.GetFileNameWithoutExtension(json).Split(".").First()))
+//    .Where(json => json.ImdbId.IsImdbId())
+//    .ToLookup(json => json.ImdbId, json => json.json)
+//    .ForEach(group =>
+//    {
+//        string[] directories = group.Select(PathHelper.GetDirectoryName).ToArray();
+//        string[] directoryNames = directories.Select(PathHelper.GetFileName).Select(name => name[..name.IndexOf('[')]).ToArray();
+//        if (directoryNames.Distinct(StringComparer.Ordinal).Count() != 1)
+//        {
+//            log(group.Key);
+//            directories.ForEach(d => log(d.EscapeMarkup()));
+//            log("");
+//        }
+//
+//        string[] categories = directories.Select(directory => PathHelper.GetFileName(PathHelper.GetDirectoryName(directory))).ToArray();
+//        if (categories.Distinct(StringComparer.Ordinal).Count() != 1)
+//        {
+//            log(group.Key);
+//            directories.ForEach(d => log($"[yellow]{d.EscapeMarkup()}[/]"));
+//            log("");
+//           }
+//    });
+//ConcurrentDictionary<string, List<string>> libraryFiles = await Video.WriteLibraryMovieMetadataFilesAsync(settings, log, cancellationToken, [
+//    [@"G:\Files\Library"],
+//    [@"H:\Files\Library"],
+//    [@"I:\Files\Library"],
+//    [@"K:\Files\Library.Movies\Movies Controversial.非主流电影", @"K:\Files\Library.Movies\Movies Musical.音乐"]
+//]);
+//libraryFiles.Where(pair => pair.Value.Count(f => !f.ContainsIgnoreCase(@"\Delete")) > 1)
+//    .ForEach(pair =>
+//    {
+//        log(pair.Key);
+//        pair.Value.Where(f => !f.ContainsIgnoreCase(@"\Delete")).ForEach(f => log(PathHelper.GetDirectoryName(f).EscapeMarkup()));
+//        log("");
+//    });
+
+//List<string> franchiseMovies = await Video.PrintImdbFranchiseAsync(settings, @"I:\Files\Library\Movies Temp 3", 2);
+//franchiseMovies.ForEach(movie =>
+//{
+//    log(movie.EscapeMarkup());
+//    string newMovie = movie.ReplaceIgnoreCase(@"Movies Mainstream 1.主流电影1", @"Movies Franchise 2.系列电影2")
+//        .ReplaceIgnoreCase(@"Movies Mainstream 2.主流电影2", @"Movies Franchise 2.系列电影2");
+//    DirectoryHelper.Move(movie, newMovie);
+//    log(newMovie.EscapeMarkup());
+//    log("");
+//});
+//log($"Total: {franchiseMovies.Count}");
+//
+
+//Video.EnumerateDirectories(@"G:\Files\Library", 3)
+//    .Where(movie => Directory.EnumerateFiles(movie).Where(file => file.IsVideo()).IsEmpty())
+//    .ToArray()
+//    .ForEach(movie => DirectoryHelper.Move(movie, movie.Replace(@":\Files\Library", @":\Files\Library_")));
+//Video.EnumerateDirectories(@"H:\Files\Library", 3)
+//    .Where(movie => Directory.EnumerateFiles(movie).Where(file => file.IsVideo()).IsEmpty())
+//    .ToArray()
+//    .ForEach(movie => DirectoryHelper.Move(movie, movie.Replace(@":\Files\Library", @":\Files\Library_")));
+//Video.EnumerateDirectories(@"I:\Files\Library", 3)
+//    .Where(movie => Directory.EnumerateFiles(movie).Where(file => file.IsVideo()).IsEmpty())
+//    .ToArray()
+//    .ForEach(movie => DirectoryHelper.Move(movie, movie.Replace(@":\Files\Library", @":\Files\Library_")));
+//Video.EnumerateDirectories(@"J:\Files\Library", 3)
+//    .Where(movie => Directory.EnumerateFiles(movie).Where(file => file.IsVideo()).IsEmpty())
+//    .ToArray()
+//    .ForEach(movie => DirectoryHelper.Move(movie, movie.Replace(@":\Files\Library", @":\Files\Library_")));
+//Video.EnumerateDirectories(@"K:\Files\Library.Movies", 3)
+//    .Where(movie => Directory.EnumerateFiles(movie).Where(file => file.IsVideo()).IsEmpty())
+//    .ToArray()
+//    .ForEach(movie => DirectoryHelper.Move(movie, movie.Replace(@":\Files\Library", @":\Files\Library_")));
+//(string movie, VideoDirectoryInfo)[] array = Video.EnumerateDirectories(@"G:\Files\Library\Movies Mainstream 1.主流电影1")
+//    .Select(movie => (movie, VideoDirectoryInfo.Parse(movie)))
+//    .ToArray();
+//(string movie, VideoDirectoryInfo)[] unpopular = array
+//    .Where(movie =>
+//    {
+//        string category = PathHelper.GetDirectoryName(movie.movie);
+//        return (movie.Item2.ContentRating is "-" || !movie.Item2.AggregateRatingCount.EndsWithOrdinal("M") && !movie.Item2.AggregateRatingCount.EndsWithOrdinal("K")
+//                && movie.Item2.AggregateRating.CompareTo("7.5", StringComparison.Ordinal) <= 0)
+//            && /*!category.ContainsOrdinal(@"Chinese ") &&*/ !category.ContainsOrdinal(@"Korean Erotic.") && !category.ContainsOrdinal(@" Disability.") /*&& !category.ContainsOrdinal(@" Document.")*/;
+//    })
+//    .OrderByDescending(movie => movie.Item2.AggregateRating)
+//    .Do(movie => log(movie.movie.EscapeMarkup()))
+//    .ToArray();
+
+//(string movie, VideoDirectoryInfo)[] lowRating = array
+//    .ExceptBy(unpopular.Select(m => m.movie), m => m.movie, StringComparer.OrdinalIgnoreCase)
+//    .Where(movie =>
+//    {
+//        string category = PathHelper.GetDirectoryName(movie.movie);
+//        return (movie.Item2.AggregateRating.CompareTo("5.9", StringComparison.Ordinal) <= 0)
+//            && /*!category.ContainsOrdinal(@"Chinese ") &&*/ !category.ContainsOrdinal(@"Korean Erotic.") && !category.ContainsOrdinal(@" Disability.") /*&& !category.ContainsOrdinal(@" Document.")*/;
+//    })
+//    .OrderByDescending(movie => movie.Item2.AggregateRating)
+//    .Do(movie => log(movie.movie.EscapeMarkup()))
+//    .ToArray();
+
+//log($"Total: {array.Length}, unpopular {unpopular.Length}, low rating: {lowRating.Length}");
+
+//lowRating.ForEach(movie =>
+//{
+//    string newMovie = movie.movie.ReplaceIgnoreCase(@"Movies Mainstream 1.主流电影1", DirectoryHelper.IsHidden(movie.movie) ? "Movies Mainstream 2.主流电影2" : "Movies Mainstream 3.主流电影3");
+//    log(movie.movie.EscapeMarkup());
+//    DirectoryHelper.Move(movie.movie, newMovie);
+//    log(newMovie.EscapeMarkup());
+//    log("");
+//});
+//
+//(string movie, VideoDirectoryInfo)[] highRating = Video.EnumerateDirectories(@"G:\Files\Library\Movies Mainstream 2.主流电影2")
+//    .Select(movie => (movie, VideoDirectoryInfo.Parse(movie)))
+//    .Where(movie =>
+//    {
+//        string category = PathHelper.GetDirectoryName(movie.movie);
+//        return !DirectoryHelper.IsHidden(movie.movie);
+//    })
+//    .OrderByDescending(movie => movie.Item2.AggregateRating)
+//    .Do(movie => log(movie.movie.EscapeMarkup()))
+//    .ToArray();
+//
+//log($"High rating: {highRating.Length}");
+//
+//highRating.ForEach(movie =>
+//{
+//    string newMovie = movie.movie.ReplaceIgnoreCase(@"Movies Mainstream 2.主流电影2", @"Movies Mainstream 3.主流电影3");
+//    log(movie.movie.EscapeMarkup());
+//    DirectoryHelper.Move(movie.movie, newMovie);
+//    log(newMovie.EscapeMarkup());
+//    log("");
+//});
+//HashSet<string> missing = new(Video.EnumerateDirectories(@"\\box-d\E\Files\TV", 1)
+//    .Where(movie => Directory.EnumerateFiles(movie).Where(file => file.IsVideo()).IsEmpty())
+//    .Select(movie => PathHelper.GetFileName(movie.EscapeMarkup())), StringComparer.OrdinalIgnoreCase);
+//
+//(await settings.LoadMetadataTopMediaAsync(cancellationToken))
+//    .Where(media => missing.Contains(media.Title))
+//    .ForAll(media => log(media.MagnetUrl)); 
+//
+//Dictionary<string, string> redirect = File.ReadAllLines(settings.FileTemp)
+//    .Where(line => line.StartsWithIgnoreCase("Redirect"))
+//    .Select(line =>
+//    {
+//        Match match = Regex.Match(line, @"^Redirected (tt[0-9]+) to (tt[0-9]+)(\.)?$");
+//        Debug.Assert(match.Success);
+//        return (From: match.Groups[1].Value, To: match.Groups[2].Value);
+//    })
+//    .Distinct()
+//    .ToDictionary(item => item.From, item => item.To);
+//string[] files = [
+//    settings.MetadataPreferredMovies, 
+//    settings.MetadataPreferredMoviesFiles,
+//    settings.MetadataTopTVX265,
+//    settings.MetadataContrastTV,
+//    Path.Combine(settings.DirectoryLibrary, "Metadata.Library.Movies.ImdbIds.json"), 
+//    Path.Combine(settings.DirectoryLibrary, "Metadata.Library.TV.ImdbIds.json"), 
+//    Path.Combine(settings.DirectoryLibrary, "Metadata.All.Movies.ImdbIdsToDownload.json"),
+//    Path.Combine(settings.DirectoryLibrary, "Metadata.All.TV.ImdbIdsToDownload.json"),
+//    //settings.MetadataLibraryMovies,
+//    settings.MetadataTopMedia,
+//    settings.MetadataTopMoviesH264,
+//    settings.MetadataTopMoviesX265,
+//    settings.MetadataTopMoviesH264X,
+//    settings.MetadataTopMoviesX265X,
+//    settings.MetadataTopMoviesH264720P
+//];
+//files.ForEach(file =>
+//{
+//    string content = File.ReadAllText(file);
+//    //KeyValuePair<string, string>[] notRedirect = redirect
+//    //    .Where(pair => content.Contains(pair.Value, StringComparison.Ordinal))
+//    //    .ToArray();
+//    KeyValuePair<string, string>[] toRedirect = redirect
+//        .Where(pair => !content.ContainsOrdinal(pair.Value) && content.ContainsOrdinal(pair.Key))
+//        .ToArray();
+//    if (toRedirect.Any())
+//    {
+//        toRedirect.ForEach(pair => content.Replace(pair.Key, pair.Value, StringComparison.Ordinal));
+//        File.WriteAllText(file, content);
+//    }
+//});
+//Video.EnumerateDirectories(@"G:\Files\Movies Franchise 2.系列电影2", 2)
+//    .ToArray()
+//    .ForEach(d =>
+//    {
+//        string parent = PathHelper.GetDirectoryName(d);
+//        string name = PathHelper.GetFileName(d);
+//        Debug.Assert(name.StartsWithIgnoreCase("@"));
+//        Directory.GetDirectories(d).ForEach(movie => DirectoryHelper.MoveToDirectory(movie, parent, skipDestinationDirectory: true));
+//        DirectoryHelper.Recycle(d);
+//    });
+//Video.EnumerateDirectories(@"G:\Files\Library\Movies Mainstream 2.主流电影2")
+//    .Where(movie => !DirectoryHelper.IsHidden(movie))
+//    .ToArray()
+//    .ForEach(movie => DirectoryHelper.Move(movie, movie.ReplaceIgnoreCase("Movies Mainstream 2.主流电影2", "Movies Mainstream 3.主流电影3")));
+//
+//var movies = Video.EnumerateDirectories(@"I:\Files\Library\Movies Mainstream 3.主流电影3")
+//    .Select(d =>(d, VideoDirectoryInfo.Parse(d)))
+//    .Where(d =>
+//    {
+//        if (d.Item2.AggregateRating is "-" || string.CompareOrdinal(d.Item2.AggregateRating, "7.5") <= 0)
+//        {
+//            return false;
+//        }
+//
+//        string count = d.Item2.AggregateRatingCount;
+//        if (count.EndsWithIgnoreCase("M"))
+//        {
+//            return true;
+//        }
+//
+//        if(count.EndsWithIgnoreCase("K"))
+//        {
+//            count = count.TrimEnd('K');
+//            int index = count.IndexOf('.');
+//            if (index != -1)
+//            {
+//                count = count[..index];
+//            }
+//            return count.Length >= 3;
+//        }
+//
+//        return false;
+//    })
+//    .ToArray();
+//log($"Total: {movies.Length}");
+//movies.ForEach(movie =>
+//{
+//    string newMovie = movie.d.ReplaceIgnoreCase(@"Movies Mainstream 3.主流电影3", @"Movies Mainstream 1.主流电影1");
+//    log(movie.d.EscapeMarkup());
+//    DirectoryHelper.Move(movie.d, newMovie);
+//    log(newMovie.EscapeMarkup());
+//    log("");
+//});
+//log($"Total: {movies.Length}");
+//Video.PrintPopularMoviesAsync(settings, log);
+
+//Video.EnumerateDirectories(@"G:\Files\Library\Movies Mainstream 1.主流电影1", 2)
+//    .Concat(Video.EnumerateDirectories(@"H:\Files\Library\Movies Mainstream 2.主流电影2", 2))
+//    .Concat(Video.EnumerateDirectories(@"I:\Files\Library\Movies Mainstream 3.主流电影3", 2))
+//    .Where(movie => PathHelper.GetFileName(movie).ContainsOrdinal("`"))
+//    .ForEach(movie => log(movie.EscapeMarkup()));
+//Video.EnumerateDirectories(@"N:\Files\Library", 3)
+//    .Where(movie => Directory.EnumerateFiles(movie).Where(file=>file.IsVideo()).IsEmpty())
+//    .ToArray()
+//    .ForEach(movie => DirectoryHelper.Move(movie, movie.Replace(@":\Files\Library", @":\Files\Library_")));
+//Video.RenameFiles(@"K:\Files\Library\TV Temp 2\Supersex.2024.超性[6.2-5.1K][TVMA]\Season 01", (f, i) =>
+//    f.Replace(".2024.2160p", ".2160p"), searchOption: SearchOption.AllDirectories);
+//Video.RenameFiles(@"K:\Files\Library\TV Temp 2\Supersex\Season 01", (f, i) => PathHelper.ReplaceFileNameWithoutExtension(f, name =>
+//{
+//    Match match = Regex.Match(name, @"(\.2Audio\.[a-z]{3})\-.+$");
+//    if (match.Success)
+//    {
+//        string newName = name[..match.Index] + match.Groups[1].Value;
+//        return newName;
+//    }
+//
+//    return name;
+//}));
+//await Skin.DownloadMemberMediaMetadataAsync(settings);
+//await Skin.DownloadMemberCelebrityMetadataAsync(settings);
+//await Video.MergeMovieMetadataAsync(settings);
+//await Video.PrintPopularMoviesAsync(settings, log);
+//string[] titles = Directory.EnumerateDirectories(@"\\box-t\E\Files\Movies.Top").Select(PathHelper.GetFileName).ToArray();
+//File.ReadAllLines(settings.FileTemp).Select(line => (line, MagnetUri.Parse(line)))
+//    .ExceptBy(titles, line => line.Item2.DisplayName, StringComparer.OrdinalIgnoreCase)
+//    .ForEach(line => log(line.line));
+//var iJsons = Directory.EnumerateFiles(@"I:\Files\Library\Movies Mainstream 3.主流电影3", "*.json", SearchOption.AllDirectories)
+//        .Where(file => !file.ContainsIgnoreCase(@"\Delete"))
+//        .Select(file => (PathHelper.GetFileNameWithoutExtension(file).Split(".").First(), file))
+//        .Where(pair => pair.Item1.IsImdbId())
+//        .ToDictionary(pair => pair.Item1, pair => pair.file);
+
+//var hJsons = Directory.EnumerateFiles(@"N:\Files\Library\Movies Mainstream 2.主流电影2", "*.json", SearchOption.AllDirectories)
+//    //.Where(file=>!file.ContainsIgnoreCase(@"\Delete"))
+//    .Select(file => (PathHelper.GetFileNameWithoutExtension(file).Split(".").First(), file))
+//        .Where(pair => pair.Item1.IsImdbId())
+//        .ToDictionary(pair => pair.Item1, pair => pair.file);
+//iJsons
+//    .Where(pair => pair.Key.IsImdbId() && hJsons.ContainsKey(pair.Key))
+//    .ToArray()
+//    .ForEach(pair =>
+//    {
+//        string movie = PathHelper.GetDirectoryName(pair.Value);
+//        string newMovie = movie.ReplaceIgnoreCase(@"I:\Files\Library\Movies Mainstream 3.主流电影3", @"I:\Files\Library\Movies Mainstream 3.主流电影3.NoNudity");
+//        DirectoryHelper.Move(movie, newMovie);
+//    });
+;
+

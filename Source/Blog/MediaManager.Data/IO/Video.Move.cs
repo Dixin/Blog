@@ -849,13 +849,13 @@ internal static partial class Video
                 destinationFanArt = Regex.Replace(destinationFanArt, @"(\\|\-)fanart[0-9]+\.jpg$", "$1fanart.jpg");
                 if (!fanArt.EqualsIgnoreCase(destinationFanArt))
                 {
-                    log(fanArt);
+                    log(fanArt.EscapeMarkup());
                     if (!isDryRun)
                     {
                         FileHelper.Move(fanArt, destinationFanArt, overwrite, true);
                     }
 
-                    log(destinationFanArt);
+                    log(destinationFanArt.EscapeMarkup());
                 }
             });
 

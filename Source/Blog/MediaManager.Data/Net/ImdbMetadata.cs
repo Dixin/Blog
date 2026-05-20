@@ -14,12 +14,12 @@ public record ImdbEntry(string Type)
 public record ImdbEntity(string Type, string Name, string Url) : ImdbEntry(Type);
 
 public partial record ImdbMinMetadata(
-    string Url, string Title, string OriginalTitle,
-    string Type, string Name, string Image, string[]? Genres,
-    ImdbAggregateRating? AggregateRating,
-    Dictionary<string, string[][]> Details,
+    string[]? Genres, ImdbAggregateRating? AggregateRating, Dictionary<string, string[][]>? Details,
+    string Type = "", string Name = "", string Url = "",
+    string Title = "", string OriginalTitle = "", string Image = "",
     string AlternateName = "", string Year = "", string ContentRating = "") : ImdbEntity(Type, Name, Url)
 {
+    public Dictionary<string, string[][]> Details { get; init; } = Details ?? [];
 
     [JsonIgnore]
     internal string FormattedAggregateRating => (this.AggregateRating?.RatingValue).IfNullOrWhiteSpace("0.0");
@@ -68,13 +68,43 @@ public partial record ImdbMinMetadata(
 
 public partial record ImdbMinMetadata : IImdbMetadata
 {
-    public string ImdbId => this.Link.GetUrlPath().Split("/", StringSplitOptions.RemoveEmptyEntries).Single(item => ImdbMetadata.ImdbIdOnlyRegex().IsMatch(item));
+    public string ImdbId => this.Link.GetImdbIdFromUrl();
 
     public string ImdbRating => this.AggregateRating?.RatingValue ?? string.Empty;
 
     [JsonConverter(typeof(StringOrArrayConverter))]
     [JsonPropertyName("genre")]
     public string[] Genres { get; init; } = Genres ?? [];
+
+    public string Link => this.Url;
+}
+
+public partial record ImdbGraphicMetadata(
+    Dictionary<string, string> AllKeywords,
+    Dictionary<string, Dictionary<string, string[]>> Advisories,
+    string Type = "", string Name = "", string Url = "",
+    string Title = "", string Image = "",
+    string Keywords = "", string ContentRating = "") : ImdbEntity(Type, Name, Url)
+{
+    [JsonIgnore]
+    internal string FormattedContentRating => this.ContentRating.IsNullOrWhiteSpace()
+        ? "NA"
+        : this.ContentRating.Replace("-", string.Empty).Replace(" ", string.Empty).Replace("/", string.Empty).Replace(":", string.Empty);
+
+    public IEnumerable<string> MergedKeywords => this.Keywords
+        .Split(",", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+        .Union(this.AllKeywords.Keys, StringComparer.OrdinalIgnoreCase);
+}
+
+public partial record ImdbGraphicMetadata : IImdbMetadata
+{
+    public string ImdbId => this.Link.GetImdbIdFromUrl();
+
+    public string ImdbRating => string.Empty;
+
+    [JsonConverter(typeof(StringOrArrayConverter))]
+    [JsonPropertyName("genre")]
+    public string[] Genres => [];
 
     public string Link => this.Url;
 }
@@ -237,7 +267,9 @@ public partial record ImdbMetadata(
             ? languages.Select(studio => studio.First())
             : [];
 
-    internal IEnumerable<string> MergedKeywords => this.Keywords.Split(",").Union(this.AllKeywords.Keys, StringComparer.OrdinalIgnoreCase);
+    internal IEnumerable<string> MergedKeywords => this.Keywords
+        .Split(",", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+        .Union(this.AllKeywords.Keys, StringComparer.OrdinalIgnoreCase);
 
     internal static bool TryRead(string path, [NotNullWhen(true)] out string? imdbId, [NotNullWhen(true)] out string? year, [NotNullWhen(true)] out string[]? regions, [NotNullWhen(true)] out string[]? languages, [NotNullWhen(true)] out string[]? genres)
     {
@@ -388,7 +420,7 @@ public partial record ImdbMetadata(
 
 public partial record ImdbMetadata : IImdbMetadata
 {
-    public string ImdbId => this.Link.GetUrlPath().Split("/", StringSplitOptions.RemoveEmptyEntries).Single(item => ImdbIdOnlyRegex().IsMatch(item));
+    public string ImdbId => this.Link.GetImdbIdFromUrl();
 
     public string ImdbRating => this.AggregateRating?.RatingValue ?? string.Empty;
 

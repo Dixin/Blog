@@ -481,7 +481,7 @@ public static class FfmpegHelper
                     ? imdbId
                     : throw new InvalidOperationException($"!IMDB id is missing in {movie}."))
             .Select(group => group.ToArray())
-            .Where(group => group.Length == 2)
+            .Where(group => group.Length >= 2)
             .Select(group => (
                 Dubbed: group.FirstOrDefault(movie => PathHelper.GetFileName(movie).ContainsIgnoreCase(".DUBBED."), string.Empty),
                 Original: group.FirstOrDefault(movie => !PathHelper.GetFileName(movie).ContainsIgnoreCase(".DUBBED."), string.Empty)))
@@ -857,8 +857,8 @@ public static class FfmpegHelper
         int result = CompareDuration(duration1, duration2);
         if (result != 0)
         {
-            log($"{duration1} {video1}");
-            log($"{duration2} {video2}");
+            log($"{duration1} {video1.EscapeMarkup()}");
+            log($"{duration2} {video2.EscapeMarkup()}");
             log(string.Empty);
         }
 

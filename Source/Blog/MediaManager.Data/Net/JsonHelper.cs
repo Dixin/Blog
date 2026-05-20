@@ -7,7 +7,7 @@ using Examples.Text.Json;
 
 internal static class JsonHelper
 {
-    internal static JsonSerializerOptions SerializerOptions => new()
+    internal static JsonSerializerOptions SerializerOptions { get; } = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = true,
@@ -19,18 +19,21 @@ internal static class JsonHelper
     {
         get
         {
-            JsonSerializerOptions options = new()
+            if (field is null)
             {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                PropertyNameCaseInsensitive = true,
-                IgnoreReadOnlyProperties = true,
-                WriteIndented = true,
-                Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
-            };
+                field = new()
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                    PropertyNameCaseInsensitive = true,
+                    IgnoreReadOnlyProperties = true,
+                    WriteIndented = true,
+                    Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+                };
 
-            options.Converters.Add(new JsonStringEnumConverter());
+                field.Converters.Add(new JsonStringEnumConverter());
+            }
 
-            return options;
+            return field;
         }
     }
 
@@ -121,17 +124,20 @@ internal static class JsonHelper
     public static async Task SerializeToFileAsync<TValue>(TValue value, string file, bool @finally = false, CancellationToken cancellationToken = default)
     {
         await using FileStream fileStream = new(file, FileMode.OpenOrCreate, FileAccess.Write);
+        //string json = JsonSerializer.Serialize(value, SerializerOptions);
         if (@finally)
         {
             try { }
             finally
             {
                 await JsonSerializer.SerializeAsync(fileStream, value, SerializerOptions, cancellationToken);
+                //await File.WriteAllTextAsync(file, json, cancellationToken);
             }
         }
         else
         {
             await JsonSerializer.SerializeAsync(fileStream, value, SerializerOptions, cancellationToken);
+            //await File.WriteAllTextAsync(file, json, cancellationToken);
         }
     }
 }

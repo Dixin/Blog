@@ -307,9 +307,9 @@ internal static partial class Video
                 .ForEach(log));
     }
 
-    private static readonly string[] TitlesWithNoTranslation = ["Beyond", "IMAX", "Paul & Wing", "Paul & Steve", "Paul", "Wing", "Steve", "GEM", "Metro", "TVB"];
+    private static readonly string[] TitlesWithNoTranslation = ["Beyond", "IMAX", "Paul & Wing", "Paul & Steve", "Paul", "Wing", "Steve", "GEM", "Metro", "TVB", "DC", "XXX"];
 
-    private static readonly char[] DirectorySpecialCharacters = "：@#(){}—".ToCharArray();
+    private static readonly char[] DirectorySpecialCharacters = "：@#(){}—…".ToCharArray();
 
     internal static void PrintDirectoriesWithErrors(ISettings settings, string directory, int level = DefaultDirectoryLevel, bool isLoadingVideo = false, bool isNoAudioAllowed = false, bool isTV = false, Action<string>? log = null)
     {
@@ -341,7 +341,7 @@ internal static partial class Video
 
                 if (!VideoDirectoryInfo.TryParse(trimmedMovie, out VideoDirectoryInfo? directoryInfo))
                 {
-                    log($"!Directory: {trimmedMovie.EscapeMarkup()}");
+                    log($"!Directory: {movie.EscapeMarkup()}");
                     return;
                 }
 
@@ -1048,7 +1048,7 @@ internal static partial class Video
                                     && metadataInfo
                                         .Edition
                                         .Split(Delimiter, StringSplitOptions.RemoveEmptyEntries)
-                                        .All(metadataEdition => videoEditions.ContainsIgnoreCase(metadataEdition)));
+                                        .All(videoEditions.ContainsIgnoreCase));
                         }))
                         .ToArray();
                     if (otherX265Metadata.Any())
@@ -1134,7 +1134,7 @@ internal static partial class Video
                                     && metadataInfo
                                         .Edition
                                         .Split(Delimiter, StringSplitOptions.RemoveEmptyEntries)
-                                        .All(metadataEdition => videoEditions.ContainsIgnoreCase(metadataEdition)));
+                                        .All(videoEditions.ContainsIgnoreCase));
                         }))
                         .ToArray();
                     if (otherH264Metadata.Any())
@@ -1373,7 +1373,7 @@ internal static partial class Video
                                     && metadataInfo
                                         .Edition
                                         .Split(Delimiter, StringSplitOptions.RemoveEmptyEntries)
-                                        .All(metadataEdition => videoEditions.ContainsIgnoreCase(metadataEdition)));
+                                        .All(videoEditions.ContainsIgnoreCase));
                         }))
                         .ToArray();
                     if (otherX265Metadata.Any())
@@ -1459,7 +1459,7 @@ internal static partial class Video
                                     && metadataInfo
                                         .Edition
                                         .Split(Delimiter, StringSplitOptions.RemoveEmptyEntries)
-                                        .All(metadataEdition => videoEditions.ContainsIgnoreCase(metadataEdition)));
+                                        .All(videoEditions.ContainsIgnoreCase));
                         }))
                         .ToArray();
                     if (otherH264Metadata.Any())
@@ -1627,9 +1627,9 @@ internal static partial class Video
         ConcurrentDictionary<string, List<PreferredMetadata>> preferredDetails = await settings.LoadMetadataPreferredMoviesAsync(cancellationToken);
 
         specialImdbIds = specialImdbIds
-            .Where(imdbId => x265Summaries.ContainsKey(imdbId))
-            .Concat(specialImdbIds.Where(imdbId => h264Summaries.ContainsKey(imdbId)))
-            .Concat(specialImdbIds.Where(imdbId => preferredDetails.ContainsKey(imdbId)))
+            .Where(x265Summaries.ContainsKey)
+            .Concat(specialImdbIds.Where(h264Summaries.ContainsKey))
+            .Concat(specialImdbIds.Where(preferredDetails.ContainsKey))
             .DistinctIgnoreCase()
             .ToArray();
 
@@ -2214,7 +2214,7 @@ internal static partial class Video
                         .Order()
                         .SequenceEqual(videos.Where(video => video.Part is "" or ".cd1" or ".cd01").Select(video => PathHelper.GetFileNameWithoutExtension(video.Name)).Order()))
                 {
-                    log($"!Video is inconsistent with XML: {movie.Directory}");
+                    log($"!Video is inconsistent with XML: {movie.Directory.EscapeMarkup()}");
                     return;
                 }
 
@@ -2380,7 +2380,7 @@ internal static partial class Video
             //        .Where(match => match.Success)
             //        .Select(match => match.Groups[1].Value)))
             //.Intersect(mergedMetadata.Keys)
-            .Select(imdbId => mergedMetadata.GetValueOrDefault(imdbId))
+            .Select(mergedMetadata.GetValueOrDefault)
             .NotNull()
             .Where(imdbMetadata => predicate(imdbMetadata, keywords))
             .OrderBy(imdbMetadata => imdbMetadata.ImdbId)
@@ -2871,7 +2871,7 @@ internal static partial class Video
                             }
                             else
                             {
-                                await page.GetStringAsync(metadata.Link, string.Empty, cancellationToken: cancellationToken);
+                                await page.GetStringAsync(metadata.Link, string.Empty, cancellationToken: token);
                                 await page.Locator("""img[src$="magnet.gif"]""").WaitForAsync(new LocatorWaitForOptions() { State = WaitForSelectorState.Visible });
                                 html = await page.ContentAsync();
                                 await Task.Delay(WebDriverHelper.DefaultDomWait, token);
@@ -3433,5 +3433,76 @@ internal static partial class Video
             
             log(string.Empty);
         });
+    }
+
+    internal static void PrintTopLanguageErrors(ISettings settings, string directory, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+
+        Directory.EnumerateFiles(directory, $"{PathHelper.AllSearchPattern}{settings.KeywordTopForeign}{VideoSearchPattern}", SearchOption.AllDirectories)
+            .Select(video =>
+            {
+                string region = PathHelper.GetFileName(PathHelper.GetDirectoryName(PathHelper.GetDirectoryName(video)));
+                region = region
+                    .Split(Delimiter, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                    .First()
+                    .Split(" ", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+                    .First();
+
+                VideoMovieFileInfo parsed = VideoMovieFileInfo.Parse(video);
+                string[] languages = parsed.Edition.Split(Delimiter, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                return (Video: video, Region: region, Languages: languages);
+            })
+            .Where(video => !video.Region.StartsWithIgnoreCase("Delete") && (!settings.Languages.TryGetValue(video.Region, out string[]? allowedLanguages) || allowedLanguages.Intersect(video.Languages, StringComparer.OrdinalIgnoreCase).IsEmpty()))
+            .ForEach(video => log(video.Video.EscapeMarkup()));
+    }
+    
+    internal static void PrintGraphicInfo(ISettings settings, string directory, Action<string>? log = null)
+    {
+        log ??= Logger.WriteLine;
+
+        int index = 0;
+        HashSet<string> keywords = settings.ImdbAllKeywords.ToHashSetOrdinalIgnoreCase();
+        EnumerateDirectories(directory)
+            .Where(movie => !DirectoryHelper.IsHidden(movie) && !movie.ContainsIgnoreCase(@"\Delete"))
+            .ToArray()
+            .ForEach(movie =>
+            {
+                //log($"{++index:00} {movie.EscapeMarkup()}");
+                //DirectoryHelper.Move(movie, movie.ReplaceIgnoreCase(@"H:\Files\Library\Movies Temp 2", @"I:\Files\Library\Movies Mainstream 3.主流电影3"));
+
+                //return;
+
+                string json = Directory.EnumerateFiles(movie, ImdbMetadataSearchPattern).Single();
+                string imdbId = PathHelper.GetFileNameWithoutExtension(json).Split(Delimiter).First();
+                if (!imdbId.IsImdbId())
+                {
+                    //log("-" + movie.EscapeMarkup());
+                    return;
+                }
+
+                ImdbGraphicMetadata imdbGraphicMetadata = JsonHelper.DeserializeFromFile<ImdbGraphicMetadata>(json);
+                string[] movieKeywords = imdbGraphicMetadata.MergedKeywords
+                    .Intersect(keywords, StringComparer.OrdinalIgnoreCase)
+                    .Select(keyword => $"[yellow]{keyword}[/]")
+                    .Concat(imdbGraphicMetadata.MergedKeywords.Where(keyword => keyword.ContainsIgnoreCase("gay")).Select(keyword => $"[blue]{keyword}[/]"))
+                    .Order()
+                    .ToArray();
+                Dictionary<string, string[]> advisories = new(
+                    imdbGraphicMetadata.Advisories.Where(pair => pair.Key.ContainsIgnoreCase("nud")).SelectMany(pair => pair.Value),
+                    StringComparer.OrdinalIgnoreCase);
+                //if (advisories.ContainsKey("Moderate"))
+                {
+                    movieKeywords.ForEach(log);
+                    advisories.ForEach(pair => pair.Value.Select(advisory => "-" + advisory.EscapeMarkup()).Prepend($"[red]{pair.Key}[/]").ForEach(log));
+                    log($"{++index:00} [green]{movie.EscapeMarkup()}[/]");
+                    log("");
+                    //DirectoryHelper.Move(movie, movie.ReplaceIgnoreCase(@"I:\Files\Library\Movies Mainstream 3.主流电影3", @"I:\Files\Library\Movies Mainstream 3.主流电影3.Moderate"));
+                    return;
+                }
+
+                //log("!!!" + movie.EscapeMarkup());
+                //DirectoryHelper.Move(movie, movie.ReplaceIgnoreCase(@"H:\Files\Library\Movies Mainstream 3.主流电影3", @"H:\Files\Library\Movies Temp 2"));
+            });
     }
 }

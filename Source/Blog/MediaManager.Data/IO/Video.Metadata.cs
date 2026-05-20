@@ -7,6 +7,7 @@ using Examples.Linq;
 using Examples.Net;
 using Examples.Text;
 using MediaManager.Net;
+using Microsoft.Playwright;
 using Spectre.Console;
 
 internal static partial class Video
@@ -910,7 +911,7 @@ internal static partial class Video
 
     internal static async Task MergeMovieMetadataAsync(ISettings settings, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
-        log??= Logger.WriteLine;
+        log ??= Logger.WriteLine;
 
         ConcurrentDictionary<string, ImdbMetadata> mergedMetadata = await settings.LoadMetadataAllMoviesAsync(cancellationToken);
 
@@ -989,7 +990,7 @@ internal static partial class Video
         errors.ForEach(error => log($"{error.Item1}{Environment.NewLine}{error.Item2.ToString().EscapeMarkup()}"));
     }
 
-    internal static async Task DownloadMissingTitlesFromDoubanAsync(ISettings settings, string directory, int level = DefaultDirectoryLevel, bool skipFormatted = false, Action<string>? log = null, CancellationToken cancellationToken = default)
+    internal static async Task DownloadMissingTitlesFromDoubanAsync(ISettings settings, string directory, int level = DefaultDirectoryLevel, bool skipFormatted = false, bool isDryRun = false, Action<string>? log = null, CancellationToken cancellationToken = default)
     {
         log ??= Logger.WriteLine;
 
@@ -998,13 +999,14 @@ internal static partial class Video
         ConcurrentQueue<string> movies = new(skipFormatted
             ? EnumerateDirectories(directory, level).Where(movie => !VideoDirectoryInfo.TryParse(movie, out _))
             : EnumerateDirectories(directory, level));
-        List<(string Title, string Year, string Directory)> noTranslation = [];
+        List<(string Title, string Year, string Directory, string ImdbId)> noTranslation = [];
         await Enumerable
             .Range(0, Douban.MaxDegreeOfParallelism)
             .ParallelForEachAsync(
                 async (webDriverIndex, _, token) =>
                 {
-                    using WebDriverWrapper webDriver = new(() => WebDriverHelper.Start(webDriverIndex, keepExisting: true));
+                    await using PlayWrightWrapper playWrightWrapper = new("https://movie.douban.com/", Path.Combine(settings.DirectoryLibrary, "Metadata.Douban.Cookies.json"));
+                    IPage page = await playWrightWrapper.PageAsync();
                     while (movies.TryDequeue(out string? movie))
                     {
                         string[] metadataFiles = Directory
@@ -1029,13 +1031,13 @@ internal static partial class Video
                         {
                             if (backupOriginalTitle.IsNullOrWhiteSpace() || !backupOriginalTitle.ContainsCjkCharacter())
                             {
-                                noTranslation.Add((backupEnglishTitle, year, movie));
+                                noTranslation.Add((backupEnglishTitle, year, movie, imdbId ?? string.Empty));
                             }
 
                             continue;
                         }
 
-                        string doubanTitle = await Douban.GetTitleAsync(webDriver, imdbId, token);
+                        string doubanTitle = isDryRun ? string.Empty : await Douban.GetTitleAsync(page, imdbId, token);
                         int lastIndex = doubanTitle.LastIndexOfIgnoreCase(backupEnglishTitle);
                         if (lastIndex >= 0)
                         {
@@ -1074,10 +1076,13 @@ internal static partial class Video
 
                         if (!doubanTitle.ContainsCjkCharacter() && !backupOriginalTitle.ContainsCjkCharacter())
                         {
-                            noTranslation.Add((backupEnglishTitle, year, movie));
+                            noTranslation.Add((backupEnglishTitle, year, movie, imdbId));
                         }
 
-                        await Task.Delay(TimeSpan.FromSeconds(15), token);
+                        if (!isDryRun)
+                        {
+                            await Task.Delay(TimeSpan.FromSeconds(30), token);
+                        }
                     }
                 },
                 Douban.MaxDegreeOfParallelism,
@@ -1085,7 +1090,7 @@ internal static partial class Video
 
         noTranslation.ForEach(movie => log($"{movie.Title} ({movie.Year})"));
         log(string.Empty);
-        noTranslation.OrderBy(movie => movie.Directory).ForEach(movie => log($"{movie.Title} ({movie.Year}) - {movie.Directory.EscapeMarkup()}"));
+        noTranslation.OrderBy(movie => movie.Directory).ForEach(movie => log($"{movie.ImdbId} {movie.Title} ({movie.Year}) - {movie.Directory.EscapeMarkup()}"));
 
         if (Debugger.IsAttached)
         {
