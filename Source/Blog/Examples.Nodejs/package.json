@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "bluebird": "^3.5.2",
-    "cheerio": "^0.22.0",
+    "cheerio": "^1.0.0-rc.12",
     "oauth": "^0.9.15",
     "opn": "^5.4.0",
     "tumblr.js": "^1.1.1",
