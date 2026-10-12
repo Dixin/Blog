@@ -731,6 +731,7 @@ public static class FfmpegHelper
             "HDMV_PGS_SUBTITLE" => ".sup",
             "ASS" => ".ass",
             "DVD_SUBTITLE" => ".idx",
+            "WEBVTT" => ".vtt",
             _ => throw new InvalidOperationException(codec)
         };
 
