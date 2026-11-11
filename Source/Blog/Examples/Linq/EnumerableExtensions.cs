@@ -1,6 +1,7 @@
 ﻿namespace Examples.Linq;
 
 using Examples.Common;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 public static class EnumerableExtensions
 {
@@ -186,8 +187,18 @@ public static class EnumerableExtensions
     public static HashSet<string> ToHashSetOrdinalIgnoreCase(this IEnumerable<string> source) => 
         source.ThrowIfNull().ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-    extension<TSource>(IEnumerable<TSource>)
+    extension<TSource>(IEnumerable<TSource> source)
     {
         public static IEnumerable<TSource> operator +(IEnumerable<TSource> left, IEnumerable<TSource> right) => left.Concat(right);
+
+        public static IEnumerable<TSource> operator +(IEnumerable<TSource> left, TSource right) => left.Append(right);
+
+        public static IEnumerable<TSource> operator +(TSource left, IEnumerable<TSource> right) => right.Prepend(left);
+
+        public TSource this[int index] => source.ElementAt(index);
+
+        public TSource this[Index index] => source.ElementAt(index);
+
+        public IEnumerable<TSource> this[Range range] => source.Take(range);
     }
 }

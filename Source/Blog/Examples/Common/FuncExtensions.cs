@@ -74,4 +74,19 @@ public static class FuncExtensions
 
         public static TResult operator <(Func<T1, T2, T3, T4, TResult> func, (T1 Arg1, T2 Arg2, T3 Arg3, T4 Arg4) args) => func.ThrowIfNull()(args.Arg1, args.Arg2, args.Arg3, args.Arg4);
     }
+
+    extension<T1, T2, TResult>(Func<T1, T2, TResult> func)
+    {
+        public Func<T2, TResult> this[T1 arg1] => arg2 => func.ThrowIfNull()(arg1, arg2);
+    }
+
+    extension<T1, T2, T3, TResult>(Func<T1, T2, T3, TResult> func)
+    {
+        public Func<T2, T3, TResult> this[T1 arg1] => (arg2, arg3) => func.ThrowIfNull()(arg1, arg2, arg3);
+    }
+
+    extension<T1, T2, T3, T4, TResult>(Func<T1, T2, T3, T4, TResult> func)
+    {
+        public Func<T2, T3, T4, TResult> this[T1 arg1] => (arg2, arg3, arg4) => func.ThrowIfNull()(arg1, arg2, arg3, arg4);
+    }
 }
