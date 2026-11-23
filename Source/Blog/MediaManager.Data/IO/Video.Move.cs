@@ -1027,9 +1027,9 @@ internal static partial class Video
             {
                 string videoDirectory = Path.Combine(PathHelper.GetDirectoryName(video), PathHelper.GetFileNameWithoutExtension(video));
                 FileHelper.MoveToDirectory(video, videoDirectory);
-                string videoWithoutExtension = video[..video.LastIndexOfOrdinal(".")];
+                string videoWithoutExtension = PathHelper.GetFileNameWithoutExtension(video);
                 files
-                    .Where(file => !file.IsVideo() && file.StartsWithIgnoreCase(videoWithoutExtension))
+                    .Where(file => !file.IsVideo() && PathHelper.GetFileNameWithoutExtension(file).StartsWithIgnoreCase(videoWithoutExtension))
                     .ToArray()
                     .ForEach(file => FileHelper.MoveToDirectory(file, videoDirectory));
             });
