@@ -8,19 +8,16 @@ public interface IAwaitable
 
 public interface IAwaiter : INotifyCompletion // or ICriticalNotifyCompletion
 {
-    // INotifyCompletion has one method: void OnCompleted(Action continuation);
-
-    // ICriticalNotifyCompletion implements INotifyCompletion,
-    // with one more method: void UnsafeOnCompleted(Action continuation);
-
     bool IsCompleted { get; }
 
     void GetResult();
 }
 
-public interface IAwaitable<out TResult>
+public interface ICriticalAwaiter : IAwaiter, ICriticalNotifyCompletion;
+
+public interface IAwaitable<out TResult, out TAwaiter> where TAwaiter : IAwaiter<TResult>
 {
-    IAwaiter<TResult> GetAwaiter();
+    TAwaiter GetAwaiter();
 }
 
 public interface IAwaiter<out TResult> : INotifyCompletion // or ICriticalNotifyCompletion
@@ -30,53 +27,87 @@ public interface IAwaiter<out TResult> : INotifyCompletion // or ICriticalNotify
     TResult GetResult();
 }
 
-internal class FuncAwaitable<TResult> : IAwaitable<TResult>
+public interface ICriticalAwaiter<out TResult> : IAwaiter<TResult>, ICriticalNotifyCompletion;
+
+public interface IAsyncMethodBuilder<in TResult, out TSelf, out TAwaitable>
+    where TSelf : IAsyncMethodBuilder<TResult, TSelf, TAwaitable>
 {
-    private readonly Func<TResult> function;
+    static abstract TSelf Create();
 
-    public FuncAwaitable(Func<TResult> function)
-    {
-        this.function = function;
-    }
+    TAwaitable Task { get; }
 
-    public IAwaiter<TResult> GetAwaiter() => new FuncAwaiter<TResult>(this.function);
+    public void Start<TStateMachine>(ref TStateMachine stateMachine)
+        where TStateMachine : IAsyncStateMachine;
+
+    public void SetStateMachine(IAsyncStateMachine stateMachine);
+
+    public void SetResult(TResult result);
+
+    public void SetException(Exception exception);
+
+    public void AwaitOnCompleted<TNotifyCompletionAwaiter, TStateMachine>(
+        ref TNotifyCompletionAwaiter awaiter, ref TStateMachine stateMachine)
+        where TNotifyCompletionAwaiter : INotifyCompletion
+        where TStateMachine : IAsyncStateMachine;
+
+    public void AwaitUnsafeOnCompleted<TCriticalNotifyCompletionAwaiter, TStateMachine>(
+        ref TCriticalNotifyCompletionAwaiter awaiter, ref TStateMachine stateMachine)
+        where TCriticalNotifyCompletionAwaiter : ICriticalNotifyCompletion
+        where TStateMachine : IAsyncStateMachine;
 }
 
-public sealed class FuncAwaiter<TResult> : IAwaiter<TResult>, IDisposable
+[AsyncMethodBuilder(typeof(AsyncFunMethodBuilder<>))]
+public delegate TResult Fun<out TResult>();
+
+public sealed class FunAwaiter<TResult>(TaskAwaiter<TResult> taskAwaiter) : IAwaiter<TResult>
 {
-    private readonly Task<TResult> task;
 
-    public FuncAwaiter(Func<TResult> function)
-    {
-        this.task = new(function);
-        this.task.Start();
-    }
+    public bool IsCompleted => taskAwaiter.IsCompleted;
 
-    bool IAwaiter<TResult>.IsCompleted => this.task.IsCompleted;
+    public TResult GetResult() => taskAwaiter.GetResult();
 
-    TResult IAwaiter<TResult>.GetResult() => this.task.Result;
-
-    void INotifyCompletion.OnCompleted(Action continuation) => new Task(continuation).Start();
-
-    public void Dispose() => this.task.Dispose();
+    public void OnCompleted(Action continuation) => taskAwaiter.OnCompleted(continuation);
 }
 
-public static partial class FuncExtensions
+public static partial class FunExtensions
 {
-    public static TaskAwaiter<TResult> GetAwaiter<TResult>(this Func<TResult> function)
-    {
-        Task<TResult> task = new(function);
-        task.Start();
-        return task.GetAwaiter();
-    }
+    public static FunAwaiter<TResult> GetAwaiter<TResult>(this Fun<TResult> fun) => 
+        new(Task.Run(() => fun()).GetAwaiter());
 }
+// Not needed
+// public class FunAwaitable<TResult>(Task<TResult> task) : IAwaitable<TResult, FunAwaiter<TResult>>
+// {
+//    public FunAwaiter<TResult> GetAwaiter() => new(task.GetAwaiter());
+// }
 
-public static partial class ActionExtensions
+public class AsyncFunMethodBuilder<TResult> : IAsyncMethodBuilder<TResult, AsyncFunMethodBuilder<TResult>, Fun<TResult>>
 {
-    public static TaskAwaiter GetAwaiter(this Action action)
-    {
-        Task task = new(action);
-        task.Start();
-        return task.GetAwaiter();
-    }
+    private AsyncTaskMethodBuilder<TResult> taskBuilder;
+
+    public static AsyncFunMethodBuilder<TResult> Create() =>
+        new() { taskBuilder = AsyncTaskMethodBuilder<TResult>.Create() };
+
+    public void Start<TStateMachine>(ref TStateMachine stateMachine)
+        where TStateMachine : IAsyncStateMachine =>
+        this.taskBuilder.Start(ref stateMachine);
+
+    public void SetStateMachine(IAsyncStateMachine stateMachine) =>
+        this.taskBuilder.SetStateMachine(stateMachine);
+
+    public void SetResult(TResult result) => this.taskBuilder.SetResult(result);
+
+    public void SetException(Exception exception) =>
+        this.taskBuilder.SetException(exception);
+
+    public Fun<TResult> Task => new(() => this.taskBuilder.Task.Result);
+
+    public void AwaitOnCompleted<TAwaiter, TStateMachine>(
+        ref TAwaiter awaiter, ref TStateMachine stateMachine)
+        where TAwaiter : INotifyCompletion where TStateMachine : IAsyncStateMachine =>
+        this.taskBuilder.AwaitOnCompleted(ref awaiter, ref stateMachine);
+
+    public void AwaitUnsafeOnCompleted<TAwaiter, TStateMachine>(
+        ref TAwaiter awaiter, ref TStateMachine stateMachine)
+        where TAwaiter : ICriticalNotifyCompletion where TStateMachine : IAsyncStateMachine =>
+        this.taskBuilder.AwaitUnsafeOnCompleted(ref awaiter, ref stateMachine);
 }

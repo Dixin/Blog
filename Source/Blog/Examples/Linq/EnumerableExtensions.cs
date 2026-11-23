@@ -1,7 +1,6 @@
 ﻿namespace Examples.Linq;
 
 using Examples.Common;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 public static class EnumerableExtensions
 {
@@ -184,7 +183,7 @@ public static class EnumerableExtensions
         }
     }
 
-    public static HashSet<string> ToHashSetOrdinalIgnoreCase(this IEnumerable<string> source) => 
+    public static HashSet<string> ToHashSetOrdinalIgnoreCase(this IEnumerable<string> source) =>
         source.ThrowIfNull().ToHashSet(StringComparer.OrdinalIgnoreCase);
 
     extension<TSource>(IEnumerable<TSource> source)

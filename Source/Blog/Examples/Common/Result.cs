@@ -1,191 +1,91 @@
 ﻿namespace Examples.Common;
 
-using System.Collections;
+using Examples.Threading.Tasks;
+using static Result;
 
-public interface IResult<TResult> where TResult : IResult<TResult>
+using Ok = Examples.Common.Unit;
+
+public class ResultException : Exception
 {
-    Exception? Exception { get; }
+    public ResultException() { }
 
-    bool IsOk { get; }
+    public ResultException(string message) : base(message) { }
 
-    ValueTaskAwaiter GetAwaiter();
-
-    static abstract explicit operator ValueTask(in TResult result);
-
-    static abstract TResult operator |(in TResult x, in TResult y);
-
-    static abstract bool operator &(in TResult left, in TResult right);
-
-    static abstract bool operator !(in TResult result);
-
-    static abstract bool operator true(in TResult result);
-
-    static abstract bool operator false(in TResult result);
+    public ResultException(string message, Exception innerException)
+        : base(message, innerException) { }
 }
 
-public interface IResult<T, TResult> : IResult<TResult>, IEnumerable<T> where TResult : IResult<T, TResult>
+public class ResultException<TError> : ResultException
 {
-    T Value { get; }
+    public TError Error { get; }
 
-    T? ValueOrDefault { get; }
+    public ResultException(TError error) => this.Error = error;
 
-    bool HasValue { get; }
+    public ResultException(string message, TError error)
+        : base(message) =>
+        this.Error = error;
 
-    bool TryGet(out T? value);
-
-    T? Or(T? value);
-
-    new ValueTaskAwaiter<T> GetAwaiter();
-
-    static abstract explicit operator ValueTask<T>(in TResult result);
-
-    static abstract T? operator |(in TResult result, T? value);
-
-    static abstract implicit operator T(TResult result);
-
-    static abstract implicit operator TResult(T value);
+    public ResultException(string message, TError error, Exception innerException)
+        : base(message, innerException) =>
+        this.Error = error;
 }
 
-public readonly struct Result<T> : IResult<T, Result<T>>
+public static partial class Result
 {
-    private readonly T? value;
+    public static Ok Ok() => Common.Unit.Value;
 
-    public Result(T value) => this.value = value;
+    public static Unit Unit() => Common.Unit.Value;
+}
 
-    public Result(Exception exception) => this.Exception = exception ?? throw new ArgumentNullException(nameof(exception));
+internal static class ResultTest
+{
+    internal static Result<int, DivideByZeroException> Divide(int a, int b) =>
+        b == 0
+            ? new DivideByZeroException()
+            : a / b;
 
-    public Exception? Exception { get; }
-
-    public bool IsOk => this.Exception is null;
-
-    public bool HasValue => this.IsOk;
-
-    //[field: AllowNull][field: MaybeNull]
-    public T Value => this.IsOk ? this.value! : throw new InvalidOperationException("The result does not have value.", this.Exception);
-
-    public T? ValueOrDefault => this.IsOk ? this.value : default;
-
-    public bool TryGet(out T? value)
+    internal static Result<int, OverflowException> Abs(int value)
     {
-        if (this.IsOk)
+        if (value >= 0)
         {
-            value = this.value;
-            return true;
+            return value;
         }
 
-        value = default;
-        return false;
+        value = -value;
+        return value < 0 ? new OverflowException() : value;
     }
 
-    public T? Or(T? value) => this.IsOk ? this.value : value;
-
-    public ValueTaskAwaiter<T> GetAwaiter() => ((ValueTask<T>)this).GetAwaiter();
-
-    ValueTaskAwaiter IResult<Result<T>>.GetAwaiter() => ((ValueTask)this).GetAwaiter();
-
-    public IEnumerator<T> GetEnumerator()
+    internal static void PrintDivide(int a, int b, int c)
     {
-        if (this.IsOk)
-        {
-            yield return this.value!;
-        }
+        string message =
+            (from result1 in Divide(a, b)
+             from result2 in Divide(result1, c)
+             select result2) switch
+            {
+                int result => $"Ok: {result}",
+                DivideByZeroException error => $"Fail: {error.Message}"
+            };
+
+        Console.WriteLine(message);
     }
 
-    IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
-
-    public override string ToString() => this.IsOk ? this.Exception!.ToString() : this.value?.ToString() ?? "<null>";
-
-    public static explicit operator ValueTask(in Result<T> result) => new(((ValueTask<T>)result).AsTask());
-
-    public static explicit operator ValueTask<T>(in Result<T> result) =>
-        result.Exception switch
-        {
-            null => ValueTask.FromResult(result.value!),
-            OperationCanceledException operationCanceledException => ValueTask.FromCanceled<T>(operationCanceledException.CancellationToken),
-            { } exception => ValueTask.FromException<T>(exception)
-        };
-
-    public static T? operator |(in Result<T> result, T? value) => result.Or(value);
-
-    public static Result<T> operator |(in Result<T> x, in Result<T> y) => x.IsOk ? x : y;
-
-    public static bool operator &(in Result<T> left, in Result<T> right) => left.IsOk && right.IsOk;
-
-    public static bool operator !(in Result<T> result) => !result.IsOk;
-
-    public static bool operator true(in Result<T> result) => result.IsOk;
-
-    public static bool operator false(in Result<T> result) => !result.IsOk;
-
-    public static implicit operator T(Result<T> result) => result.Value;
-
-    public static implicit operator Result<T>(T value) => new(value);
-}
-
-public readonly partial struct Result(Exception exception) : IResult<Result>
-{
-    public Exception? Exception { get; } = exception ?? throw new ArgumentNullException(nameof(exception));
-
-    public bool IsOk => this.Exception is null;
-
-    public ValueTaskAwaiter GetAwaiter() => ((ValueTask)this).GetAwaiter();
-
-    public override string ToString() => this.Exception?.ToString() ?? "<void>";
-
-    public static explicit operator ValueTask(in Result result) =>
-        result.Exception switch
-        {
-            null => ValueTask.CompletedTask,
-            OperationCanceledException operationCanceledException => ValueTask.FromCanceled(operationCanceledException.CancellationToken),
-            { } exception => ValueTask.FromException(exception)
-        };
-
-    public static Result operator |(in Result x, in Result y) => x.IsOk ? x : y;
-
-    public static bool operator &(in Result left, in Result right) => left.IsOk && right.IsOk;
-
-    public static bool operator !(in Result result) => !result.IsOk;
-
-    public static bool operator true(in Result result) => result.IsOk;
-
-    public static bool operator false(in Result result) => !result.IsOk;
-}
-
-public readonly partial struct Result
-{
-    private static readonly Result ok = new();
-
-    public static Result<T> Ok<T>(T value) => new(value);
-
-    public static Result<T> Error<T>(Exception exception) => new(exception);
-
-    public static Result Ok() => ok;
-
-    public static Result Error(Exception exception) => new(exception);
-}
-
-// https://fsharp.github.io/fsharp-core-docs/reference/fsharp-core-resultmodule.html
-public static class ResultExtensions
-{
-    public static Result<TResult> Select<TSource, TResult>(this Result<TSource> source, Func<TSource, TResult> selector) =>
-        source.IsOk ? Result.Ok(selector(source.Value)) : Result.Error<TResult>(source.Exception!);
-
-    public static Result<TResult> SelectMany<TSource, TResult>(this Result<TSource> source, Func<TSource, Result<TResult>> selector) =>
-        source.IsOk ? selector(source.Value) : Result.Error<TResult>(source.Exception!);
-
-    public static bool Contains<TSource>(this Result<TSource> source, TSource value, IEqualityComparer<TSource>? comparer = null) =>
-        source.IsOk && (comparer ?? EqualityComparer<TSource>.Default).Equals(source.Value, value);
-
-    public static int Count<TSource>(this Result<TSource> source) => source.IsOk ? 1 : 0;
-
-    public static bool Any<TSource>(this Result<TSource> source, Func<TSource, bool> predicate) =>
-        source.IsOk && predicate(source.Value);
-
-    public static void ForEach<TSource>(this Result<TSource> source, Action<TSource> action)
+    internal static Result<Ok> Print(int a, int b, int c)
     {
-        if (source.IsOk)
+        Result<string> result =
+            from result1 in ~Divide(a, b)
+            let d = result1 + c
+            from result2 in ~Divide(d, c)
+            from result3 in ~Abs(result2)
+            select Math.Abs(result2).ToString();
+
+        return result switch
         {
-            action(source.Value);
-        }
+            string message => new Func<Ok>(() =>
+            {
+                Console.WriteLine($"Ok: {message}");
+                return Ok();
+            })(),
+            Exception error => error,
+        };
     }
 }
